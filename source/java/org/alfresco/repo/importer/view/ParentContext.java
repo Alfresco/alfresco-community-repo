@@ -73,7 +73,6 @@ public class ParentContext extends ElementContext
         parentRef = parent.getNodeRef();
     }
     
-    
     /**
      * Construct 
      * 

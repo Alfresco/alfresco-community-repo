@@ -278,7 +278,7 @@ public class ImporterComponent
     }
     
     /**
-     * Perform the actual import
+     * Perform Import via Parser
      * 
      * @param nodeRef node reference to import under
      * @param childAssocType the child association type to import under
@@ -306,7 +306,16 @@ public class ImporterComponent
         }
     }
     
-    
+    /**
+     * Perform import via Content Handler
+     * 
+     * @param nodeRef node reference to import under
+     * @param childAssocType the child association type to import under
+     * @param handler the import content handler
+     * @param binding import configuration
+     * @param progress import progress
+     * @return  content handler to interact with
+     */
     public ContentHandler handlerImport(NodeRef nodeRef, QName childAssocType, ImportContentHandler handler, ImporterBinding binding, ImporterProgress progress)
     {
         ParameterCheck.mandatory("Node Reference", nodeRef);
@@ -318,8 +327,7 @@ public class ImporterComponent
         return defaultHandler;        
     }
     
-    
-    
+
     /**
      * Default Importer strategy
      * 

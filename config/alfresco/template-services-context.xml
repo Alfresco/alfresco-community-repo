@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean id="templateService" class="org.alfresco.repo.template.TemplateServiceImpl">
+        <!-- A Map of named template engines to class implementations/Spring bean IDs -->
+        <!-- The key of each property is the name of the engine - this is the name that is passed in -->
+        <!-- to the TemplateService by the caller. The value is either a fully qualified class name for -->
+        <!-- the object to create, or the Spring bean ID if the object requires Spring service injection. -->
+		  <property name="templateEngines">
+            <map>
+                <entry key="freemarker">
+                    <value>freeMarkerProcessor</value>
+                </entry>
+            </map>
+        </property>
+        <property name="defaultTemplateEngine">
+            <value>freemarker</value>
+        </property>
+    </bean>
+    
+    <!-- This engine requires Spring config setup to use Repository services -->
+    <!-- The beans are not thread safe and therefore we create one per request -->
+    <bean id="freeMarkerProcessor" class="org.alfresco.repo.template.FreeMarkerProcessor" singleton="false">
+        <property name="nodeService">
+            <ref bean="NodeService"/>
+		  </property>
+		  <property name="contentService">
+            <ref bean="ContentService"/>
+		  </property>
+    </bean>
+</beans>

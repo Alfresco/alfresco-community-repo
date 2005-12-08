@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<beans>
+   
+   <bean id="type1_component" class="org.alfresco.repo.service.StoreRedirectorProxyFactoryTest$Type1Component">
+   </bean>
+
+   <bean id="type2_component" class="org.alfresco.repo.service.StoreRedirectorProxyFactoryTest$Type2Component">
+   </bean>
+   
+   <bean id="type3_component" class="org.alfresco.repo.service.StoreRedirectorProxyFactoryTest$Type3Component">
+   </bean>
+   
+   <bean id="redirector_service1" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
+      <property name="proxyInterface">
+         <value>org.alfresco.repo.service.StoreRedirectorProxyFactoryTest$TestServiceInterface</value>
+      </property>
+      <property name="defaultBinding">
+         <ref bean="type1_component"></ref>
+      </property>
+      <property name="redirectedProtocolBindings">
+         <map>
+            <entry key="Type1"><ref bean="type1_component"></ref></entry>
+            <entry key="Type2"><ref bean="type2_component"></ref></entry>
+         </map>
+      </property>
+      <property name="redirectedStoreBindings">
+         <map>
+            <entry key="Type3://id"><ref bean="type3_component"></ref></entry>
+         </map>
+      </property>
+   </bean>
+   
+</beans>

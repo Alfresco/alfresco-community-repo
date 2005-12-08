@@ -1,0 +1,1099 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:cm="http://www.alfresco.org/model/content/1.0">
+
+	<cm:category_root view:childName="cm:categoryRoot">
+		<cm:name>categories</cm:name>
+		<cm:categories>
+
+			<!-- Software Document Classification -->
+			<cm:category view:childName="cm:generalclassifiable">
+                <cm:name>General</cm:name>
+				<cm:subcategories>
+                <cm:category>
+				<cm:name>Software Document Classification</cm:name>
+				<cm:subcategories>
+					<cm:category>
+						<cm:name>Software Descriptions</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>Main Software Descriptions</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Short System Description</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Requirement Description</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Architecture Description</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Implementation Description</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Configuration Description</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>Software Description Appendices</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Terminology Description</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Internal Message Description</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>External Message Description</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Record Description</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>User Interface Description</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Process Description</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Initialization Description</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+					<cm:category>
+						<cm:name>Utilization Documents</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>User's Manual</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Operator's Manual</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Installation Manual</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Service Manual</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>User's Help</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Operator's Help</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Installations Help</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Service Help</cm:name>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+					<cm:category>
+						<cm:name>Development Plans</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>Responsibility Plan</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Work Breakdown Plan</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Schedule Plan</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Expense Plan</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Phase Plan</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Risk Plan</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Test Plan</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Acceptance Plan</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Manual Plan</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Method Plan</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Quality Plan</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Documentation Plan</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Version Control Plan</cm:name>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+					<cm:category>
+						<cm:name>Quality Documents</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>Change Request</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Analysis Request</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Information Request</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Reader's Report</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Review Report</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Inspection Report</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Test Report</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Review Call</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Inspection Call</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Test Call</cm:name>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+					<cm:category>
+						<cm:name>Administrative Documents</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>Preliminary Contract</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Development Contract</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Extended Contract</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Maintenance Contract</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Contract Review Minutes</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Project Meeting Minutes</cm:name>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+				</cm:subcategories>
+			    </cm:category>
+
+
+			    <!-- Languages -->
+			    <cm:category>
+				<cm:name>Languages</cm:name>
+				<cm:subcategories>
+					<cm:category>
+						<cm:name>English</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>British English</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>American English</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Australian English</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Canadian English</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Indian English</cm:name>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+					<cm:category>
+						<cm:name>French</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>French French</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Canadian French</cm:name>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+					<cm:category>
+						<cm:name>German</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>German German</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Austrian German</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Swiss German</cm:name>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+					<cm:category>
+						<cm:name>Spanish</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>Spanish</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Mexican Spanish</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>American Spanish</cm:name>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+				</cm:subcategories>
+			    </cm:category>
+
+
+			    <!-- Regions -->
+			    <cm:category>
+				<cm:name>Regions</cm:name>
+				<cm:subcategories>
+					<cm:category>
+						<cm:name>AFRICA</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>Eastern Africa</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Burundi</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Comoros</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Djibouti</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Eritrea</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Ethiopia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Kenya</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Madagascar</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Malawi</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Mauritius</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Mozambique</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Reunion</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Rwanda</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Seychelles</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Somalia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Uganda</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>United Rep. of Tanzania</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Zambia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Zimbabwe</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>Middle Africa</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Angola</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Cameroon</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Central African Republic</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Chad</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Congo</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Dem. Republic of the Congo</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Equatorial Guinea</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Gabon</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Sao Tome and Principe</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>Northern Africa</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Algeria</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Egypt</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Libyan Arab Jamahiriya</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Morocco</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Sudan</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Tunisia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Western Sahara</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>Southern Africa</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Botswana</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Lesotho</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Namibia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>South Africa</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Swaziland</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>Western Africa</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Benin</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Burkina Faso</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Cape Verde</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Cote d'Ivoire</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Gambia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Ghana</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Guinea</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Guinea-Bissau</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Liberia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Mali</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Mauritania</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Niger</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Nigeria</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Saint Helena</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Senegal</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Sierra Leone</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Togo</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+					<cm:category>
+						<cm:name>ASIA</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>Eastern Asia</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>China</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Dem. People's Rep. of Korea</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Hong Kong SAR</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Japan</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Macao, China</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Mongolia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Republic of Korea</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>South-central Asia</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Afghanistan</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Bangladesh</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Bhutan</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>India</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Iran (Islamic Republic of)</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Kazakhstan</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Kyrgyzstan</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Maldives</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Nepal</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Pakistan</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Sri Lanka</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Tajikistan</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Turkmenistan</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Uzbekistan</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>South-eastern Asia</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Brunei Darussalam</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Cambodia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Indonesia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Lao People's Dem. Republic</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Malaysia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Myanmar</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Philippines</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Singapore</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Thailand</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Timor-Leste</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Viet Nam</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>Western Asia</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Armenia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Azerbaijan</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Bahrain</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Cyprus</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Georgia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Iraq</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Israel</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Jordan</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Kuwait</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Lebanon</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Occupied Palestinian Territory</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Oman</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Qatar</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Saudi Arabia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Syrian Arab Republic</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Turkey</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>United Arab Emirates</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Yemen</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+					<cm:category>
+						<cm:name>EUROPE</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>Eastern Europe</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Belarus</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Bulgaria</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Czech Republic</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Hungary</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Poland</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Republic of Moldova</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Romania</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Russian Federation</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Slovakia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Ukraine</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>Northern Europe</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Channel Islands</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Denmark</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Estonia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Faeroe Islands</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Finland</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Iceland</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Ireland</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Isle of Man</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Latvia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Lithuania</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Norway</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Sweden</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>United Kingdom</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>Southern Europe</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Albania</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Andorra</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Bosnia and Herzegovina</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Croatia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Gibraltar</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Greece</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Holy See</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Italy</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Malta</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Portugal</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>San Marino</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Slovenia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Spain</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>The Former Yugoslav Republic of Macedonia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Yugoslavia</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>Western Europe</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Austria</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Belgium</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>France</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Germany</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Liechtenstein</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Luxembourg</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Monaco</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Netherlands</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Switzerland</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+					<cm:category>
+						<cm:name>LATIN AMERICA</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>Caribbean</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Anguilla</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Antigua and Barbuda</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Aruba</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Bahamas</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Barbados</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>British Virgin Islands</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Cayman Islands</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Cuba</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Dominica</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Dominican Republic</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Grenada</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Guadeloupe</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Haiti</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Jamaica</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Martinique</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Montserrat</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Netherlands Antilles</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Puerto Rico</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Saint Kitts and Nevis</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Saint Lucia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Saint Vincent and Grenadines.</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Trinidad and Tobago</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Turks and Caicos Islands</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>United States Virgin Islands.</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>Central America</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Belize</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Costa Rica</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>El Salvador</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Guatemala</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Honduras</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Mexico</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Nicaragua</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Panama</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>South America</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Argentina</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Bolivia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Brazil</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Chile</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Colombia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Ecuador</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Falkland Islands (Malvinas)</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>French Guiana</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Guyana</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Paraguay</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Peru</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Suriname</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Uruguay</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Venezuela</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+					<cm:category>
+						<cm:name>NORTHERN AMERICA</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>Bermuda</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Canada</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Greenland</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>Saint Pierre and Miquelon</cm:name>
+							</cm:category>
+							<cm:category>
+								<cm:name>United States of America</cm:name>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+					<cm:category>
+						<cm:name>OCEANIA</cm:name>
+						<cm:subcategories>
+							<cm:category>
+								<cm:name>Australia and New Zealand</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Australia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>New Zealand</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Norfolk Island</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>Melanesia</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Fiji</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>New Caledonia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Papua New Guinea</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Solomon Islands</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Vanuatu</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>Micronesia</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>Fed. States of Micronesia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Guam</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Johnston Island</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Kiribati</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Marshall Islands</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Nauru</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Northern Mariana Islands</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Palau</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+							<cm:category>
+								<cm:name>Polynesia</cm:name>
+								<cm:subcategories>
+									<cm:category>
+										<cm:name>American Samoa</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Cook Islands</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>French Polynesia</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Niue</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Pitcairn</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Samoa</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Tokelau</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Tonga</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Tuvalu</cm:name>
+									</cm:category>
+									<cm:category>
+										<cm:name>Wallis and Futuna Islands</cm:name>
+									</cm:category>
+								</cm:subcategories>
+							</cm:category>
+						</cm:subcategories>
+					</cm:category>
+				</cm:subcategories>
+			    </cm:category>
+                </cm:subcategories>
+             </cm:category>
+		</cm:categories>
+	</cm:category_root>
+
+</view:view>

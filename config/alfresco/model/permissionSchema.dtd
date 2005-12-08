@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT permissions (namespaces+, permissionSet*, globalPermission*)>
+<!ELEMENT namespaces (namespace+)>
+<!ELEMENT namespace EMPTY>
+<!ATTLIST namespace uri CDATA #REQUIRED>
+<!ATTLIST namespace prefix CDATA #REQUIRED>
+<!ELEMENT permissionGroup (includePermissionGroup* )>
+<!ATTLIST permissionGroup name CDATA #REQUIRED>
+<!ATTLIST permissionGroup type CDATA #IMPLIED>
+<!ATTLIST permissionGroup extends (true | false) "false">
+<!ATTLIST permissionGroup expose (true | false) "false">
+<!ATTLIST permissionGroup allowFullControl (true | false) "false" >
+<!ATTLIST permissionGroup requiresType (true | false) "true">
+<!ELEMENT includePermissionGroup EMPTY>
+<!ATTLIST includePermissionGroup type CDATA #IMPLIED>
+<!ATTLIST includePermissionGroup permissionGroup CDATA #REQUIRED>
+<!ELEMENT permissionSet (permissionGroup*, permission*, dynamicAuthority*)>
+<!ATTLIST permissionSet type CDATA #REQUIRED>
+<!ATTLIST permissionSet expose (all | selected) "all">
+<!ELEMENT permission (grantedToGroup*, requiredPermission* )>
+<!ATTLIST permission name CDATA #REQUIRED>
+<!ATTLIST permission expose (true | false) "false">
+<!ATTLIST permission requiresType (true | false) "true">
+<!ELEMENT dynamicAuthority EMPTY>
+<!ATTLIST dynamicAuthority evaluator CDATA #REQUIRED>
+<!ELEMENT requiredPermission EMPTY>
+<!ATTLIST requiredPermission name CDATA #REQUIRED>
+<!ATTLIST requiredPermission type CDATA #IMPLIED>
+<!ATTLIST requiredPermission on (node | parent | children) #REQUIRED>
+<!ATTLIST requiredPermission implies (true | false) "false">
+<!ELEMENT grantedToGroup EMPTY >
+<!ATTLIST grantedToGroup type CDATA #IMPLIED>
+<!ATTLIST grantedToGroup permissionGroup CDATA #REQUIRED>
+<!ELEMENT globalPermission EMPTY >
+<!ATTLIST globalPermission authority CDATA #IMPLIED>
+<!ATTLIST globalPermission permission CDATA #REQUIRED>
+

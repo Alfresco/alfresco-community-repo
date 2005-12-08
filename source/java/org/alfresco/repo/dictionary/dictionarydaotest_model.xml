@@ -1,0 +1,148 @@
+<model name="test:dictionarydaotest" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Content Model</description>
+   <author>Alfresco</author>
+   <published>2005-05-30</published>
+   <version>1.0</version>
+   
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/test/dictionarydaotest/1.0" prefix="test"/>
+   </namespaces>
+
+   <data-types>
+
+      <data-type name="test:datatype">
+         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <java-class>java.lang.Object</java-class>
+      </data-type>
+
+   </data-types>
+
+   <types>
+      
+      <type name="test:base">
+         <title>Base</title>
+         <description>The Base Type</description>
+         <parent></parent>
+         
+         <properties>
+            <property name="test:prop1">
+               <type>d:text</type>
+               <protected>true</protected>
+               <default></default>
+            </property>
+         </properties>
+         
+         <associations>
+            <association name="test:assoc1">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>test:base</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+            <association name="test:assoc2">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>test:referenceable</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+            <child-association name="test:childassoc1">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>test:referenceable</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+               <child-name>fred</child-name>
+               <duplicate>true</duplicate>
+            </child-association>
+         </associations>
+         
+         <mandatory-aspects>
+            <aspect>test:referenceable</aspect>
+         </mandatory-aspects>
+      </type>
+   
+      <type name="test:file">
+         <parent>test:base</parent>
+         
+         <properties>
+            <property name="test:fileprop">
+               <type>d:text</type>
+               <protected>true</protected>
+               <default></default>
+            </property>
+
+         </properties>
+
+         <associations>
+            <child-association name="test:childassoc2">
+               <target>
+                  <class>test:referenceable</class>
+               </target>
+               <child-name>fred</child-name>
+               <duplicate>true</duplicate>
+            </child-association>
+         </associations>
+
+         <overrides>
+            <property name="test:prop">
+               <default>an overriden default value</default>
+            </property>
+         </overrides>
+      </type>
+
+      <type name="test:folder">
+         <parent>test:base</parent>
+         
+         <properties>
+            <property name="test:folderprop">
+               <type>d:text</type>
+               <protected>true</protected>
+               <default></default>
+            </property>
+
+         </properties>
+
+      </type>
+      
+   </types>
+   
+   <aspects>
+      <aspect name="test:referenceable">
+         <title>Referenceable</title>
+         <description>The referenceable aspect</description>
+         <parent></parent>
+         
+         <properties>
+            <property name="test:id">
+               <type>d:int</type>
+               <protected>true</protected>
+               <mandatory>true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+   </aspects>
+   
+</model>

@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+   <bean name="fileFolderService" class="org.alfresco.repo.model.filefolder.FileFolderServiceImpl" init-method="init">
+      <property name="namespaceService"><ref bean="namespaceService" /></property>
+      <property name="dictionaryService"><ref bean="dictionaryService" /></property>
+      <property name="nodeService"><ref bean="nodeService" /></property>
+      <property name="copyService"><ref bean="copyService" /></property>
+      <!-- NOTE: using Big SearchService until AR-279 is completed -->
+      <property name="searchService"><ref bean="SearchService" /></property>
+      <property name="contentService"><ref bean="contentService" /></property>
+      <property name="mimetypeService"><ref bean="mimetypeMap" /></property>
+   </bean>
+
+</beans>

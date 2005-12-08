@@ -1,0 +1,38 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:cm="http://www.alfresco.org/model/content/1.0"
+           xmlns:app="http://www.alfresco.org/model/application/1.0">
+
+	<cm:folder view:childName="${spaces.company_home.childname}">
+		<app:uifacets />
+		<cm:name>${spaces.company_home.name}</cm:name>
+		<app:icon>space-icon-default</app:icon>
+		<cm:title>${spaces.company_home.name}</cm:title>
+		<cm:description>${spaces.company_home.description}</cm:description>
+		<cm:contains>
+			<cm:folder view:childName="${spaces.dictionary.childname}">
+				<app:uifacets />
+				<cm:name>${spaces.dictionary.name}</cm:name>
+				<app:icon>space-icon-default</app:icon>
+				<cm:title>${spaces.dictionary.name}</cm:title>
+				<cm:description>${spaces.dictionary.description}</cm:description>
+				<cm:contains>
+					<cm:folder view:childName="${spaces.templates.childname}">
+						<app:uifacets />
+						<cm:name>${spaces.templates.name}</cm:name>
+						<app:icon>space-icon-default</app:icon>
+						<cm:title>${spaces.templates.name}</cm:title>
+						<cm:description>${spaces.templates.description}</cm:description>
+					</cm:folder>
+					<cm:folder view:childName="${spaces.templates.content.childname}">
+						<app:uifacets />
+						<cm:name>${spaces.templates.content.name}</cm:name>
+						<app:icon>space-icon-default</app:icon>
+						<cm:title>${spaces.templates.content.name}</cm:title>
+						<cm:description>${spaces.templates.content.description}</cm:description>
+					</cm:folder>
+				</cm:contains>
+			</cm:folder>
+		</cm:contains>
+	</cm:folder>
+
+</view:view>

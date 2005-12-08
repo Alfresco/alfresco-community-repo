@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<!-- sample bean configuration to test cache configurations -->
+<beans>
+   
+   <bean name="ehCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" >
+      <property name="configLocation">
+         <value>classpath:ehcache.xml</value>
+      </property>
+   </bean>
+   
+   <bean name="ehCache1" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheName">
+               <value>cache1</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <bean name="backingCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheName">
+               <value>backingCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <bean name="transactionalCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="backingCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="ehCacheManager" />
+      </property>
+      <property name="name">
+         <value>transactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>20000</value>
+      </property>
+   </bean>
+   
+</beans>

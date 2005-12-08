@@ -1,0 +1,140 @@
+<model name="test:integrity" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Test Model for Integrity tests</description>
+   <author>Alfresco</author>
+   <published>2005-06-05</published>
+   <version>0.1</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/test/IntegrityTest" prefix="test"/>
+   </namespaces>
+
+   <types>
+      <!-- Type without anyting -->
+      <type name="test:typeWithoutAnything">
+         <title>Type Without Anything</title>
+         <parent>sys:base</parent>
+      </type>
+      <!-- Type with mandatory properties -->
+      <type name="test:typeWithProperties">
+         <title>Type With Properties</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:prop-text-a">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:prop-text-b">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+      <!-- Type with mandatory aspect -->
+      <type name="test:typeWithAspect">
+         <title>Type With Aspect</title>
+         <parent>sys:base</parent>
+         <mandatory-aspects>
+            <aspect>test:aspectWithProperties</aspect>
+         </mandatory-aspects>
+      </type>
+      <!-- Type with assocs -->
+      <type name="test:typeWithAssocs">
+         <title>Type With Assocs</title>
+         <parent>sys:base</parent>
+         <associations>
+            <association name="test:assoc-0to* - 0to*">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>test:typeWithoutAnything</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+            <association name="test:assoc-1to1 - 1to1">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>test:typeWithoutAnything</class>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+         </associations>
+      </type>
+      <!-- Type with child assocs -->
+      <type name="test:typeWithChildAssocs">
+         <title>Type With Child Assocs</title>
+         <parent>sys:base</parent>
+         <associations>
+            <child-association name="test:child-0to* - 0to*">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>test:typeWithoutAnything</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+            <child-association name="test:child-1to1 - 1to1">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>test:typeWithoutAnything</class>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </type>
+   </types>
+   
+   <aspects>
+      <!-- aspect with properties -->
+      <aspect name="test:aspectWithProperties">
+         <title>Aspect with Properties</title>
+         <properties>
+            <property name="test:prop-int-a">
+               <type>d:int</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="test:prop-int-b">
+               <type>d:int</type>
+            </property>
+         </properties>
+      </aspect>
+      <!-- aspect with associations -->
+      <aspect name="test:aspectWithAssoc">
+         <title>Aspect with associations</title>
+         <associations>
+             <association name="test:aspect-assoc-1to1 - 1to1">
+                <source>
+                   <mandatory>true</mandatory>
+                   <many>false</many>
+                </source>
+                <target>
+                   <class>test:typeWithoutAnything</class>
+                   <mandatory>true</mandatory>
+                   <many>false</many>
+                </target>
+             </association>
+         </associations>
+      </aspect>
+   </aspects>
+
+</model>

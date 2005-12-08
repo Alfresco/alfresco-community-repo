@@ -1,0 +1,385 @@
+/*
+ * Copyright (C) 2005 Alfresco, Inc.
+ *
+ * Licensed under the Mozilla Public License version 1.1 
+ * with a permitted attribution clause. You may obtain a
+ * copy of the License at
+ *
+ *   http://www.alfresco.org/legal/license.txt
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License.
+ */
+package org.alfresco.repo.node.integrity;
+
+import java.io.InputStream;
+
+import javax.transaction.UserTransaction;
+
+import junit.framework.TestCase;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.node.BaseNodeServiceTest;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.PropertyMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
+
+/**
+ * Attempts to build faulty node structures in order to test integrity.
+ * <p>
+ * The entire application context is loaded as is, but the integrity fail-
+ * mode is set to throw an exception.
+ * 
+ * TODO: Role name restrictions must be checked
+ * 
+ * @author Derek Hulley
+ */
+public class IntegrityTest extends TestCase
+{
+    private static Log logger = LogFactory.getLog(IntegrityTest.class);
+    
+    public static final String NAMESPACE = "http://www.alfresco.org/test/IntegrityTest";
+    public static final String TEST_PREFIX = "test";
+    
+    public static final QName TEST_TYPE_WITHOUT_ANYTHING = QName.createQName(NAMESPACE, "typeWithoutAnything");
+    public static final QName TEST_TYPE_WITH_ASPECT = QName.createQName(NAMESPACE, "typeWithAspect");
+    public static final QName TEST_TYPE_WITH_PROPERTIES = QName.createQName(NAMESPACE, "typeWithProperties");
+    public static final QName TEST_TYPE_WITH_ASSOCS = QName.createQName(NAMESPACE, "typeWithAssocs");
+    public static final QName TEST_TYPE_WITH_CHILD_ASSOCS = QName.createQName(NAMESPACE, "typeWithChildAssocs");
+    
+    public static final QName TEST_ASSOC_NODE_ZEROMANY_ZEROMANY = QName.createQName(NAMESPACE, "assoc-0to* - 0to*");
+    public static final QName TEST_ASSOC_CHILD_ZEROMANY_ZEROMANY = QName.createQName(NAMESPACE, "child-0to* - 0to*");
+    public static final QName TEST_ASSOC_NODE_ONE_ONE = QName.createQName(NAMESPACE, "assoc-1to1 - 1to1");
+    public static final QName TEST_ASSOC_CHILD_ONE_ONE = QName.createQName(NAMESPACE, "child-1to1 - 1to1");
+    public static final QName TEST_ASSOC_ASPECT_ONE_ONE = QName.createQName(NAMESPACE, "aspect-assoc-1to1 - 1to1");
+    
+    public static final QName TEST_ASPECT_WITH_PROPERTIES = QName.createQName(NAMESPACE, "aspectWithProperties");
+    public static final QName TEST_ASPECT_WITH_ASSOC = QName.createQName(NAMESPACE, "aspectWithAssoc");
+    
+    public static final QName TEST_PROP_TEXT_A = QName.createQName(NAMESPACE, "prop-text-a");
+    public static final QName TEST_PROP_TEXT_B = QName.createQName(NAMESPACE, "prop-text-b");
+    public static final QName TEST_PROP_INT_A = QName.createQName(NAMESPACE, "prop-int-a");
+    public static final QName TEST_PROP_INT_B = QName.createQName(NAMESPACE, "prop-int-b");
+    
+    private static ApplicationContext ctx;
+    static
+    {
+        ctx = ApplicationContextHelper.getApplicationContext();
+    }
+    
+    private IntegrityChecker integrityChecker;
+    private ServiceRegistry serviceRegistry;
+    private NodeService nodeService;
+    private NodeRef rootNodeRef;
+    private PropertyMap allProperties;
+    private UserTransaction txn;
+    private AuthenticationComponent authenticationComponent;
+    
+    public void setUp() throws Exception
+    {
+        DictionaryDAO dictionaryDao = (DictionaryDAO) ctx.getBean("dictionaryDAO");
+        ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
+        // load the test model
+        InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/node/integrity/IntegrityTest_model.xml");
+        assertNotNull(modelStream);
+        M2Model model = M2Model.createModel(modelStream);
+        dictionaryDao.putModel(model);
+
+        integrityChecker = (IntegrityChecker) ctx.getBean("integrityChecker");
+        integrityChecker.setEnabled(true);
+        integrityChecker.setFailOnViolation(true);
+        integrityChecker.setTraceOn(true);
+        integrityChecker.setMaxErrorsPerTransaction(100);   // we want to count the correct number of errors
+
+        serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        nodeService = serviceRegistry.getNodeService();
+        this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
+        
+        this.authenticationComponent.setSystemUserAsCurrentUser();
+        
+        // begin a transaction
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, getName());
+        if (!nodeService.exists(storeRef))
+        {
+            nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
+        }
+        rootNodeRef = nodeService.getRootNode(storeRef);
+        
+        allProperties = new PropertyMap();
+        allProperties.put(TEST_PROP_TEXT_A, "ABC");
+        allProperties.put(TEST_PROP_TEXT_B, "DEF");
+        allProperties.put(TEST_PROP_INT_A, "123");
+        allProperties.put(TEST_PROP_INT_B, "456");
+    }
+    
+    public void tearDown() throws Exception
+    {
+        authenticationComponent.clearCurrentSecurityContext();
+        txn.rollback();
+    }
+
+    /**
+     * Create a node of the given type, and hanging off the root node
+     */
+    private NodeRef createNode(String name, QName type, PropertyMap properties)
+    {
+        return nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NAMESPACE, name),
+                type,
+                properties
+                ).getChildRef();
+    }
+    
+    private void checkIntegrityNoFailure() throws Exception
+    {
+        integrityChecker.checkIntegrity();
+    }
+    
+    /**
+     * 
+     * @param failureMsg the fail message if an integrity exception doesn't occur
+     * @param expectedCount the expected number of integrity failures, or -1 to ignore
+     */
+    private void checkIntegrityExpectFailure(String failureMsg, int expectedCount)
+    {
+        try
+        {
+            integrityChecker.checkIntegrity();
+            fail(failureMsg);
+        }
+        catch (IntegrityException e)
+        {
+            if (expectedCount >= 0)
+            {
+                assertEquals("Incorrect number of integrity records generated", expectedCount, e.getRecords().size());
+            }
+        }
+    }
+    
+    public void testSetUp() throws Exception
+    {
+        assertNotNull("Static IntegrityChecker not created", integrityChecker);
+    }
+    
+    public void testCreateWithoutProperties() throws Exception
+    {
+        NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_PROPERTIES, null);
+        checkIntegrityExpectFailure("Failed to detect missing properties", 1);
+    }
+    
+    public void testCreateWithProperties() throws Exception
+    {
+        NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_PROPERTIES, allProperties);
+        checkIntegrityNoFailure();
+    }
+    
+    public void testMandatoryPropertiesRemoved() throws Exception
+    {
+        NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_PROPERTIES, allProperties);
+        
+        // remove all the properties
+        PropertyMap properties = new PropertyMap();
+        nodeService.setProperties(nodeRef, properties);
+        
+        checkIntegrityExpectFailure("Failed to detect missing removed properties", 1);
+    }
+    
+    public void testCreateWithoutPropertiesForAspect() throws Exception
+    {
+        NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_ASPECT, null);
+        
+        checkIntegrityExpectFailure("Failed to detect missing properties for aspect", 1);
+    }
+
+    public void testCreateWithPropertiesForAspect() throws Exception
+    {
+        NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_ASPECT, allProperties);
+        checkIntegrityNoFailure();
+    }
+
+    public void testCreateTargetOfAssocsWithMandatorySourcesPresent() throws Exception
+    {
+        // this is the target of 3 assoc types where the source cardinality is 1..1
+        NodeRef targetAndChild = createNode("targetAndChild", TEST_TYPE_WITHOUT_ANYTHING, null);
+        
+        NodeRef source = createNode("source", TEST_TYPE_WITH_ASSOCS, null);
+        nodeService.createAssociation(source, targetAndChild, TEST_ASSOC_NODE_ONE_ONE);
+
+        NodeRef parent = createNode("parent", TEST_TYPE_WITH_CHILD_ASSOCS, null);
+        nodeService.addChild(parent, targetAndChild, TEST_ASSOC_CHILD_ONE_ONE, QName.createQName(NAMESPACE, "mandatoryChild"));
+
+        NodeRef aspected = createNode("aspectNode", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.addAspect(aspected, TEST_ASPECT_WITH_ASSOC, null);
+        nodeService.createAssociation(aspected, targetAndChild, TEST_ASSOC_ASPECT_ONE_ONE);
+        
+        checkIntegrityNoFailure();
+    }
+
+    /**
+     * TODO: The dictionary support for the reverse lookup of mandatory associations will
+     *       allow this method to go in
+     * <p>
+     * <b>Does nothing</b>.
+     */
+    public void testCreateTargetOfAssocsWithMandatorySourcesMissing() throws Exception
+    {
+//        // this is the target of 3 associations where the source cardinality is 1..1
+//        NodeRef target = createNode("abc", TEST_TYPE_WITHOUT_ANYTHING, null);
+//        
+//        checkIntegrityExpectFailure("Failed to detect missing mandatory assoc sources", 3);
+        logger.error("Method commented out: testCreateTargetOfAssocsWithMandatorySourcesMissing");
+    }
+
+    /**
+     * TODO: Reactivate once cascade delete notifications are back on
+     * <p>
+     * <b>Does nothing</b>.
+     */
+    public void testRemoveSourcesOfMandatoryAssocs() throws Exception
+    {
+//        // this is the target of 3 assoc types where the source cardinality is 1..1
+//        NodeRef targetAndChild = createNode("targetAndChild", TEST_TYPE_WITHOUT_ANYTHING, null);
+//        
+//        NodeRef source = createNode("source", TEST_TYPE_WITH_ASSOCS, null);
+//        nodeService.createAssociation(source, targetAndChild, TEST_ASSOC_NODE_ONE_ONE);
+//
+//        NodeRef parent = createNode("parent", TEST_TYPE_WITH_CHILD_ASSOCS, null);
+//        nodeService.addChild(parent, targetAndChild, TEST_ASSOC_CHILD_ONE_ONE, QName.createQName(NAMESPACE, "mandatoryChild"));
+//
+//        NodeRef aspectSource = createNode("aspectSource", TEST_TYPE_WITHOUT_ANYTHING, null);
+//        nodeService.addAspect(aspectSource, TEST_ASPECT_WITH_ASSOC, null);
+//        nodeService.createAssociation(aspectSource, targetAndChild, TEST_ASSOC_ASPECT_ONE_ONE);
+//        
+//        checkIntegrityNoFailure();
+//        
+//        // remove source nodes
+//        nodeService.deleteNode(source);
+//        nodeService.deleteNode(parent);
+//        nodeService.deleteNode(aspectSource);
+//        
+//        checkIntegrityExpectFailure("Failed to detect removal of mandatory assoc sources", 3);
+        logger.error("Method commented out: testRemoveSourcesOfMandatoryAssocs");
+    }
+    
+    public void testDuplicateTargetAssocs() throws Exception
+    {
+        NodeRef parent = createNode("source", TEST_TYPE_WITH_CHILD_ASSOCS, null);
+        NodeRef child1 = createNode("child1", TEST_TYPE_WITHOUT_ANYTHING, null);
+        NodeRef child2 = createNode("child2", TEST_TYPE_WITHOUT_ANYTHING, null);
+        NodeRef child3 = createNode("child3", TEST_TYPE_WITHOUT_ANYTHING, null);
+        
+        // satisfy the one-to-one
+        nodeService.addChild(parent, child3, TEST_ASSOC_CHILD_ONE_ONE, QName.createQName(NAMESPACE, "mandatoryChild"));
+        
+        // create the non-duplicate assocs
+        nodeService.addChild(parent, child1, TEST_ASSOC_CHILD_ZEROMANY_ZEROMANY, QName.createQName(NAMESPACE, "dupli_cate"));
+        nodeService.addChild(parent, child2, TEST_ASSOC_CHILD_ZEROMANY_ZEROMANY, QName.createQName(NAMESPACE, "dupli_cate"));
+        
+        checkIntegrityExpectFailure("Failed to detect duplicate association names", 1);
+    }
+
+    public void testCreateSourceOfAssocsWithMandatoryTargetsPresent() throws Exception
+    {
+        NodeRef source = createNode("abc", TEST_TYPE_WITH_ASSOCS, null);
+        NodeRef target = createNode("target", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.createAssociation(source, target, TEST_ASSOC_NODE_ONE_ONE);
+        
+        NodeRef parent = createNode("parent", TEST_TYPE_WITH_CHILD_ASSOCS, null);
+        NodeRef child = createNode("child", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.addChild(parent, child, TEST_ASSOC_CHILD_ONE_ONE, QName.createQName(NAMESPACE, "one-to-one"));
+        
+        NodeRef aspectSource = createNode("aspectSource", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.addAspect(aspectSource, TEST_ASPECT_WITH_ASSOC, null);
+        NodeRef aspectTarget = createNode("aspectTarget", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.createAssociation(aspectSource, aspectTarget, TEST_ASSOC_ASPECT_ONE_ONE);
+        
+        checkIntegrityNoFailure();
+    }
+
+    public void testCreateSourceOfAssocsWithMandatoryTargetsMissing() throws Exception
+    {
+        NodeRef source = createNode("abc", TEST_TYPE_WITH_ASSOCS, null);
+        
+        NodeRef parent = createNode("parent", TEST_TYPE_WITH_CHILD_ASSOCS, null);
+
+        NodeRef aspectSource = createNode("aspectSource", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.addAspect(aspectSource, TEST_ASPECT_WITH_ASSOC, null);
+        
+        checkIntegrityExpectFailure("Failed to detect missing assoc targets", 3);
+    }
+
+    /**
+     * TODO: Reactivate once cascade delete notifications are back on
+     * <p>
+     * <b>Does nothing</b>.
+     */
+    public void testRemoveTargetsOfMandatoryAssocs() throws Exception
+    {
+//        NodeRef source = createNode("abc", TEST_TYPE_WITH_ASSOCS, null);
+//        NodeRef target = createNode("target", TEST_TYPE_WITHOUT_ANYTHING, null);
+//        nodeService.createAssociation(source, target, TEST_ASSOC_NODE_ONE_ONE);
+//        
+//        NodeRef parent = createNode("parent", TEST_TYPE_WITH_CHILD_ASSOCS, null);
+//        NodeRef child = createNode("child", TEST_TYPE_WITHOUT_ANYTHING, null);
+//        nodeService.addChild(parent, child, TEST_ASSOC_CHILD_ONE_ONE, QName.createQName(NAMESPACE, "one-to-one"));
+//        
+//        NodeRef aspectSource = createNode("aspectSource", TEST_TYPE_WITHOUT_ANYTHING, null);
+//        nodeService.addAspect(aspectSource, TEST_ASPECT_WITH_ASSOC, null);
+//        NodeRef aspectTarget = createNode("aspectTarget", TEST_TYPE_WITHOUT_ANYTHING, null);
+//        nodeService.createAssociation(aspectSource, aspectTarget, TEST_ASSOC_ASPECT_ONE_ONE);
+//        
+//        checkIntegrityNoFailure();
+//        
+//        // remove target nodes
+//        nodeService.deleteNode(target);
+//        nodeService.deleteNode(child);
+//        nodeService.deleteNode(aspectTarget);
+//        
+//        checkIntegrityExpectFailure("Failed to detect removal of mandatory assoc targets", 3);
+        logger.error("Method commented out: testRemoveTargetsOfMandatoryAssocs");
+    }
+
+    public void testExcessTargetsOfOneToOneAssocs() throws Exception
+    {
+        NodeRef source = createNode("abc", TEST_TYPE_WITH_ASSOCS, null);
+        NodeRef target1 = createNode("target1", TEST_TYPE_WITHOUT_ANYTHING, null);
+        NodeRef target2 = createNode("target2", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.createAssociation(source, target1, TEST_ASSOC_NODE_ONE_ONE);
+        nodeService.createAssociation(source, target2, TEST_ASSOC_NODE_ONE_ONE);
+        
+        NodeRef parent = createNode("parent", TEST_TYPE_WITH_CHILD_ASSOCS, null);
+        NodeRef child1 = createNode("child1", TEST_TYPE_WITHOUT_ANYTHING, null);
+        NodeRef child2 = createNode("child2", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.addChild(parent, child1, TEST_ASSOC_CHILD_ONE_ONE, QName.createQName(NAMESPACE, "one-to-one-first"));
+        nodeService.addChild(parent, child2, TEST_ASSOC_CHILD_ONE_ONE, QName.createQName(NAMESPACE, "one-to-one-second"));
+        
+        NodeRef aspectSource = createNode("aspectSource", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.addAspect(aspectSource, TEST_ASPECT_WITH_ASSOC, null);
+        NodeRef aspectTarget1 = createNode("aspectTarget1", TEST_TYPE_WITHOUT_ANYTHING, null);
+        NodeRef aspectTarget2 = createNode("aspectTarget2", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.createAssociation(aspectSource, aspectTarget1, TEST_ASSOC_ASPECT_ONE_ONE);
+        nodeService.createAssociation(aspectSource, aspectTarget2, TEST_ASSOC_ASPECT_ONE_ONE);
+        
+        checkIntegrityExpectFailure("Failed to detect excess target cardinality for one-to-one assocs", 3);
+    }
+}

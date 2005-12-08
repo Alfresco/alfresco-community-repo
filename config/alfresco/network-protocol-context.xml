@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<beans>
+   <!-- File Server Configuration -->
+   <bean id="fileServerConfiguration"
+         class="org.alfresco.filesys.server.config.ServerConfiguration"
+         init-method="init"
+         destroy-method="closeConfiguration"
+         depends-on="importerBootstrap">
+      <constructor-arg>
+         <ref bean="authenticationManager"/>
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="authenticationService"/>
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="authenticationComponent"/>
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="nodeService"/>
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="personService"/>
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="transactionComponent"/>
+      </constructor-arg>
+      <constructor-arg>
+         <value>alfresco/file-servers.xml</value>
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="contentDiskDriver" />
+      </constructor-arg>
+   </bean>
+   
+   <!-- CIFS Server -->
+   <bean id="cifsServer" class="org.alfresco.filesys.CIFSServer" init-method="startServer" destroy-method="stopServer" depends-on="importerBootstrap">
+      <constructor-arg>
+         <ref bean="fileServerConfiguration"/>
+      </constructor-arg>
+   </bean>
+   
+   <!-- FTP Server -->
+   <bean id="ftpServer" class="org.alfresco.filesys.FTPServer" init-method="startServer" destroy-method="stopServer" depends-on="importerBootstrap">
+      <constructor-arg>
+         <ref bean="fileServerConfiguration"/>
+      </constructor-arg>
+   </bean>
+
+   <!-- Filesystem Interface -->
+   <bean id="contentDiskDriver" class="org.alfresco.filesys.smb.server.repo.ContentDiskDriver" >
+         <constructor-arg>
+            <ref bean="cifsHelper" />
+         </constructor-arg>
+         <property name="transactionService"><ref bean="transactionComponent" /></property>
+         <property name="nodeService"><ref bean="NodeService" /></property>
+         <property name="unprotectedNodeService"><ref bean="nodeService" /></property>
+         <property name="unprotectedSearchService"><ref bean="searchService" /></property>
+         <property name="namespaceService"><ref bean="namespaceService" /></property>
+         <property name="contentService"><ref bean="ContentService" /></property>
+         <property name="permissionService"><ref bean="permissionService"/></property>
+   </bean>
+   
+   <bean id="cifsHelper" class="org.alfresco.filesys.smb.server.repo.CifsHelper">
+      <property name="dictionaryService"><ref bean="dictionaryService" /></property>
+      <property name="nodeService"><ref bean="NodeService" /></property>
+      <property name="fileFolderService"><ref bean="FileFolderService" /></property>
+      <property name="mimetypeService"><ref bean="mimetypeMap" /></property>
+      <property name="permissionService"><ref bean="permissionService"/></property>
+   </bean>
+   
+</beans>

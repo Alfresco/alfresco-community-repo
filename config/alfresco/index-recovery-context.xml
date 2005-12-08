@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+   <!-- full node index recovery -->
+   <bean id="indexRecoveryComponent" class="org.alfresco.repo.node.index.FtsIndexRecoveryComponent" >
+      <property name="transactionService">
+         <ref bean="transactionComponent" />
+      </property>
+      <property name="ftsIndexer">
+         <ref bean="LuceneFullTextSearchIndexer" />
+      </property>
+      <property name="nodeService">
+          <ref bean="nodeService" />
+      </property>
+      <property name="stores">
+        <list>
+            <value>workspace://SpacesStore</value>
+        </list>
+      </property>
+   </bean>
+    
+</beans>

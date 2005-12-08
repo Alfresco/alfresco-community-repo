@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- ========================================================= -->
+<!-- The configuration of the Authority Service Implementation -->
+<!-- ========================================================= -->
+
+<!--                                                                          -->
+<!-- This implementation supports the identification of users as admin users. -->
+<!-- It does NOT support any other groupings of users.                        -->
+<!--                                                                          --> 
+
+<beans>
+    <bean id="authorityService" class="org.alfresco.repo.security.authority.SimpleAuthorityServiceImpl">
+        <!-- Wiring up of services on which this service depends -->
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <!--                                                                  -->
+        <!-- A list of users with admin rights.                               -->
+        <!--                                                                  -->
+        <!-- If the security framework is case sensitive these values should  -->
+        <!-- be case sensitive user names. If the security framework is not   -->
+        <!-- case sensitive these values should be the lower-case user names. -->
+        <!--                                                                  -->
+        <!-- By default this includes:                                        -->
+        <!--    admin (the user name of default alfresco admin user)          -->
+        <!--    administrator (the windows default admin user)                -->
+        <!--                                                                  -->
+        <!-- This assumes that user names are not case sensitive.             -->
+        <!--                                                                  -->
+        <property name="adminUsers">
+            <set>
+    			<value>admin</value>
+    			<value>administrator</value>
+    		</set>
+        </property>
+    </bean>
+</beans>

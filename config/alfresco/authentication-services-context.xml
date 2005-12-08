@@ -1,0 +1,282 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- ===================================================================  -->
+<!-- This file contains the bean definitions that support authentication  -->
+<!-- ===================================================================  -->
+
+<!--                                                                        -->
+<!-- Acegi is used for authentication and protecting method calls on public -->
+<!-- services. To do this requires our authentication mechanism to work     -->
+<!-- within the acegi framework.                                            -->
+<!--                                                                        --> 
+<!-- It is important to decide if user names are case sensitive or not.     -->
+<!-- This is configured in repository.properties.                           -->
+<!--                                                                        -->  
+<!--                                                                        -->
+<!-- TODO:                                                                  -->
+<!--                                                                        -->
+<!-- The transactional wrappers should be removed from the beans in this    -->
+<!-- file. This should be done in the public services definitions.          -->
+<!-- This requires some tests to be fixed up.                               -->
+<!--                                                                        -->
+                                                                         
+    
+<beans>
+    <!--                                                                    -->
+    <!-- The Acegi authentication manager.                                  -->
+    <!--                                                                    -->
+    <!-- Provders are asked to authenticate in order.                       -->
+    <!-- First, is a provider that checks if an acegi authentication object -->
+    <!-- is already bound to the executing thread. If it is, and it is set  -->
+    <!-- as authenticated then no further authentication is required. If    -->
+    <!-- this is absent, Acegi validates the password for every method      -->
+    <!-- invocation, which is too CPU expensive. If we set an               -->
+    <!-- authentication based on a ticket etc .... or we want to set the    -->
+    <!-- the system user as the current user ... we do not have the         -->
+    <!-- password. So if we have set an authentication and set it as        -->
+    <!-- authenticated that is sufficient to validate the user.             -->
+    <!--                                                                    -->
+    <!-- If the authentication bound to the current thread is not set as    -->
+    <!-- authenticated the standard Acegi DAO Authentication provider       -->
+    <!-- is used to authenticate.                                           -->
+    <!--                                                                    -->
+
+    <bean id="authenticationManager" class="net.sf.acegisecurity.providers.ProviderManager">
+        <property name="providers">
+            <list>
+                <ref bean="authenticatedAuthenticationPassthroughProvider" />
+                <ref bean="daoAuthenticationProvider" />
+            </list>
+        </property>
+    </bean>
+
+    <!-- We provide a DAO to plug into the Acegi DaoAuthenticationProvider  -->
+
+    <bean id="daoAuthenticationProvider" class="net.sf.acegisecurity.providers.dao.DaoAuthenticationProvider">
+        <property name="authenticationDao">
+            <ref bean="alfDaoImpl" />
+        </property>
+        <property name="saltSource">
+            <ref bean="saltSource" />
+        </property>
+        <property name="passwordEncoder">
+            <ref bean="passwordEncoder" />
+        </property>
+    </bean>
+
+    <!-- An authentication Provider that just believes authentications      -->
+    <!-- bound to the local thread are valid if they are set as             -->
+    <!-- authenticated.                                                     -->
+
+    <bean id="authenticatedAuthenticationPassthroughProvider" class="org.alfresco.repo.security.authentication.AuthenticatedAuthenticationPassthroughProvider" />
+
+    <!-- The authroity DAO implements an interface extended from the Acegi  -->
+    <!-- DAO that supports CRUD.                                            -->
+
+    <bean id="alfDaoImpl" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.security.authentication.MutableAuthenticationDao</value>
+        </property>
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="target">
+           <bean  class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">
+              <property name="nodeService">
+                  <ref bean="nodeService" />
+              </property>
+              <property name="dictionaryService">
+                  <ref bean="dictionaryService" />
+              </property>
+              <property name="namespaceService">
+                  <ref bean="namespaceService" />
+              </property>
+              <property name="passwordEncoder">
+                  <ref bean="passwordEncoder" />
+              </property>
+              <property name="searchService">
+                  <ref bean="searchService" />
+              </property>
+              <property name="userNamesAreCaseSensitive">
+                 <value>${user.name.caseSensitive}</value>
+              </property>
+           </bean>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <!-- The DAO also acts as a salt provider.                              -->
+    
+    <alias alias="saltSource" name="alfDaoImpl"/>
+
+    <!-- Passwords are encoded using MD4                                    -->
+    <!-- This is not ideal and only done to be compatible with NTLM         -->
+    <!-- authentication against the default authentication mechanism.       -->
+
+    <bean id="passwordEncoder" class="org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl"></bean>
+
+
+    <!-- A transactional wrapper around the implementation.                 -->
+    <!-- TODO: This should be removed.                                      -->              
+
+    <bean id="authenticationService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.security.AuthenticationService</value>
+        </property>
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="target">
+            <ref bean="authenticationServiceImpl" />
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- The Authentication Service implementation.                         -->
+    <!--                                                                    -->
+    <!-- This delegates its work to two services:                           -->
+    <!-- an AuthenticationComponent and a MutableAuthenticationDAO.         -->
+    <!--                                                                    -->
+    <!-- The permissions service is required so that permissions can be     -->
+    <!-- cleaned up when a user is deleted.                                 -->
+    
+    <bean id="authenticationServiceImpl" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
+        <property name="authenticationDao">
+            <ref bean="alfDaoImpl" />
+        </property>
+        <property name="ticketComponent">
+            <ref bean="ticketComponent" />
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponentImpl" />
+        </property>
+        <property name="permissionServiceSPI">
+            <ref bean="permissionServiceImpl" />
+        </property>
+    </bean>
+
+    <!-- A transactional wrapper that should be removed.                    -->
+
+    <bean id="authenticationComponent" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.security.authentication.AuthenticationComponent</value>
+        </property>
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="target">
+            <ref bean="authenticationComponentImpl" />
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- The authentication component.                                      -->
+
+    <bean id="authenticationComponentImpl" class="org.alfresco.repo.security.authentication.AuthenticationComponentImpl">
+        <property name="authenticationDao">
+            <ref bean="alfDaoImpl" />
+        </property>
+        <property name="authenticationManager">
+            <ref bean="authenticationManager" />
+        </property>
+    </bean>
+
+    <!-- The person service.                                                -->
+
+    <bean id="personService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.security.PersonService</value>
+        </property>
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="target">
+           <bean id="personServiceImpl" class="org.alfresco.repo.security.person.PersonServiceImpl">
+              <property name="nodeService">
+                 <ref bean="nodeService" />
+              </property>
+              <property name="searchService">
+                 <ref bean="searchService" />
+              </property>
+              <property name="dictionaryService">
+                 <ref bean="dictionaryService" />
+              </property>
+              <property name="namespacePrefixResolver">
+                 <ref bean="namespaceService" />
+              </property>
+              <!-- Configurable properties.                                 -->
+              <!--                                                          -->
+              <!-- TODO:                                                    -->
+              <!-- Add support for creating real home spaces adn setting    -->
+              <!-- permissions on the hame space and people created.        -->
+              <!--                                                          -->
+              <!-- The store in which people are persisted.                 -->
+              <property name="storeUrl">
+                 <value>${spaces.store}</value>
+              </property>
+              <!-- The path to the company home space, used to set the      -->
+              <!-- default home space for users that are created if         -->
+              <!-- missing.                                                 --> 
+              <property name="companyHomePath">
+                 <value>/${spaces.company_home.childname}</value>
+              </property>
+              <!-- Some authentication mechanisms may need to create people -->
+              <!-- in the repository on demand. This enables that feature.  -->
+              <!-- If dsiabled an error will be generated for missing       -->
+              <!-- people. If enabled then a person will be created and     -->
+              <!-- persisted.                                               -->
+              <!--                                                          -->
+              <!-- This value should be false or only true if the           -->
+              <!-- repository is mutable; set from the property             -->
+              <!-- ${server.transaction.allow-writes}                       -->
+              <property name="createMissingPeople">
+                 <value>${server.transaction.allow-writes}</value>
+              </property>
+              <!-- Set is user names are case sensitive - taken from the    -->
+              <!-- repository wide setting - you are advised not to change  -->
+              <!-- this setting.                                            -->
+              <!-- This value should be ${user.name.caseSensitive}          -->
+              <property name="userNamesAreCaseSensitive">
+                 <value>${user.name.caseSensitive}</value>
+              </property>
+           </bean>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- The ticket component.                                              -->
+    <!-- Used for reauthentication                                          -->
+    <bean id="ticketComponent" class="org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl">
+        <!-- The period for which tickets are valid in XML duration format. -->
+        <!-- The default is P1H for one hour.                               -->
+        <property name="validDuration">
+            <value>P1H</value>
+        </property>
+        <!-- Do tickets expire or live for ever?                            -->
+        <property name="ticketsExpire">
+            <value>false</value>
+        </property>
+        <!-- Are tickets only valid for a single use?                       -->
+        <property name="oneOff">
+            <value>false</value>
+        </property>
+    </bean>
+    
+</beans>

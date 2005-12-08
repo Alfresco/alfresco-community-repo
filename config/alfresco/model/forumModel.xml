@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="fm:forummodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Forum Model</description>
+   <author></author>
+   <version>1.0</version>
+
+   <!-- Imports are required to allow references to definitions in other models -->   
+   <imports>
+   	  <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/forum/1.0" prefix="fm"/>
+   </namespaces>
+   
+   <types>
+      <type name="fm:forums">
+         <parent>cm:folder</parent>
+      </type>
+      
+      <type name="fm:forum">
+         <parent>cm:folder</parent>
+         <properties>
+            <property name="fm:status">
+               <type>d:category</type>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="fm:topic">
+         <parent>cm:folder</parent>
+         <properties>
+            <property name="fm:type">
+               <type>d:category</type>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="fm:post">
+         <parent>cm:content</parent>
+      </type>
+    </types>
+    
+    <aspects>
+      <aspect name="fm:discussable">
+         <properties>
+            <property name="fm:forum">
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+   </aspects>
+   
+</model>

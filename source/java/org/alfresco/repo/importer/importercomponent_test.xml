@@ -1,0 +1,74 @@
+
+<!-- Note: The import will be performed relative to a specific path specified at import
+           time -->
+   
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:cm="http://www.alfresco.org/model/content/1.0"
+           xmlns="">
+
+   <view:metadata>
+      <view:exportBy>unknown</view:exportBy>
+      <view:exportDate>2005-10-19T19:18:01.387+01:00</view:exportDate>
+      <view:exporterVersion>1.0.0 (rc1b)</view:exporterVersion>
+      <view:exportOf>/system</view:exportOf>
+   </view:metadata>
+      
+   <cm:systemfolder view:childName="system">
+      <cm:name>System</cm:name>
+      <cm:orderedchildren>true</cm:orderedchildren>
+      <cm:contains>
+         
+         <cm:systemfolder view:childName="cm:people folder">
+            <view:aspects>
+            	<cm:auditable/>
+            </view:aspects>
+            <view:properties>
+            	<cm:name>`Â¬Â¦!Â£$%^&amp;()-_=+tnu0000[]{};'#@~,</cm:name>
+            	<cm:creator>testuser</cm:creator>
+            	<cm:modifier>testuser</cm:modifier>
+            	<cm:notinmodel>
+            	    <view:value view:datatype="d:text">dfsdfsdf</view:value>
+            	</cm:notinmodel>
+            </view:properties>
+            <view:associations>
+            <cm:contains>
+               <cm:person view:childName="cm:fredb">
+                  <view:aspects/>
+                  <view:properties>
+                  <cm:userName>${username}</cm:userName>
+                  <cm:firstName>Fred</cm:firstName>
+                  <cm:lastName>Bloggs</cm:lastName>
+                  <cm:homeFolder>../../cm:people_x0020_folder</cm:homeFolder>
+                  </view:properties>
+               </cm:person>
+            </cm:contains>
+            </view:associations>
+         </cm:systemfolder>
+         
+         <!-- note: if no explicit view:childName, take from name if one exists -->
+         <cm:cmobject>
+            <cm:translatable/>
+            <cm:generalclassifiable/>
+            <cm:name>Some Content</cm:name>
+            <cm:categories>
+                <view:value>../cm:people_x0020_folder</view:value>
+                <view:value>../cm:people_x0020_folder</view:value>
+            </cm:categories>
+            <cm:translations view:idref="xyz"/>
+         </cm:cmobject>
+   
+         <cm:cmobject view:id="xyz">
+            <cm:name>Translation of Some Content</cm:name>
+            <cm:creator></cm:creator>
+         </cm:cmobject>
+         
+         <cm:content>
+            <cm:name>Real content</cm:name>
+            <cm:content>contentUrl=classpath:org/alfresco/repo/importer/importercomponent_testfile.txt|mimetype=text|size=|encoding=</cm:content>
+         </cm:content>
+
+      </cm:contains>
+      
+   </cm:systemfolder>
+
+</view:view>

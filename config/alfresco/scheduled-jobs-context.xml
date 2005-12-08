@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <!--                -->
+    <!-- Scheduled jobs -->
+    <!--                -->
+
+    <bean id="ftsIndexerTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        <property name="jobDetail">
+            <bean id="ftsIndexerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.search.impl.lucene.fts.FTSIndexerJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="bean">
+                            <ref bean="LuceneFullTextSearchIndexer" />
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="startDelay">
+            <value>10000</value>
+        </property>
+        <property name="repeatInterval">
+            <value>10000</value>
+        </property>
+    </bean>
+
+    <bean id="tempFileCleanerTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        <property name="jobDetail">
+            <bean id="tempFileCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.util.TempFileProvider$TempFileCleanerJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="protectHours">
+                            <value>1</value>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="startDelay">
+            <value>1800000</value><!-- start after half an hour -->
+        </property>
+        <property name="repeatInterval">
+            <value>3600000</value><!-- repeat every hour -->
+        </property>
+    </bean>
+
+    <bean id="fileContentStoreCleanerTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        <property name="jobDetail">
+            <bean id="fileContentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.content.ContentStoreCleanupJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="contentStore">
+                            <ref bean="fileContentStore" />
+                        </entry>
+                        <entry key="searcher">
+                            <ref bean="searchService" />
+                        </entry>
+                        <entry key="protectHours">
+                            <value>24</value>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="startDelay">
+            <value>600000</value><!-- start after 10 minutes -->
+        </property>
+        <property name="repeatInterval">
+            <value>3600000</value><!-- repeat every hour -->
+        </property>
+    </bean>
+
+    <bean id="indexRecoveryTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        <property name="jobDetail">
+            <bean id="IndexRecoveryJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="indexRecoveryComponent">
+                            <ref bean="indexRecoveryComponent" />
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="startDelay">
+            <value>60000</value>       <!-- start after 1 minute -->
+        </property>
+        <property name="repeatCount">
+            <value>0</value>           <!-- DO NOT REPEAT !!!!! -->
+        </property>
+    </bean>
+
+    <bean id="indexBackupTrigger" class="org.alfresco.util.TriggerBean">
+        <property name="jobDetail">
+            <bean id="IndexBackupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory$LuceneIndexBackupJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="luceneIndexBackupComponent">
+                            <ref bean="luceneIndexBackupComponent" />
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <!-- trigger at 3am -->
+        <property name="hour">
+            <value>03</value>
+        </property>
+        <property name="minute">
+            <value>00</value>
+        </property>
+        <property name="repeatInterval">
+            <value>86400000</value>     <!-- repeat daily -->
+        </property>
+    </bean>
+
+    <!-- Scheduled tasks -->
+    <bean id="schedulerFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref local="tempFileCleanerTrigger" />
+                <!-- <ref local="fileContentStoreCleanerTrigger"/> -->
+                <ref local="ftsIndexerTrigger" />
+                <ref local="indexRecoveryTrigger" />
+                <ref local="indexBackupTrigger" />
+            </list>
+        </property>
+        <property name="waitForJobsToCompleteOnShutdown">
+            <value>true</value>
+        </property>
+    </bean>
+    
+</beans>

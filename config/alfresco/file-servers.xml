@@ -1,0 +1,70 @@
+<alfresco-config area="file-servers">
+
+   <config evaluator="string-compare" condition="CIFS Server">
+      <host name="${localname}_A"/>
+      <comment>Alfresco CIFS Server</comment>
+
+      <!-- Set to the broadcast mask for the subnet -->
+      <broadcast>255.255.255.255</broadcast>
+
+      <!-- Use Java socket based NetBIOS over TCP/IP and native SMB on linux -->
+      <tcpipSMB platforms="linux,solaris,macosx"/>
+      <netBIOSSMB platforms="linux,solaris,macosx"/>
+      <hostAnnounce interval="5"/>
+
+      <!-- Use Win32 NetBIOS interface on Windows -->
+      <Win32NetBIOS/>
+      <Win32Announce interval="5"/>
+
+<!--
+      <WINS>
+         <primary>1.2.3.4</primary>
+         <secondary>5.6.7.8</secondary>
+      </WINS>
+-->
+      <sessionDebug flags="Negotiate,Socket"/>
+   </config>
+
+   <config evaluator="string-compare" condition="FTP Server">
+<!--      <debug flags="File,Search,Error,Directory,Info,DataPort"/> -->
+   </config>
+   
+   <config evaluator="string-compare" condition="Filesystems">
+      <filesystem name="Alfresco">
+         <store>workspace://SpacesStore</store>
+         <rootPath>/app:company_home</rootPath>
+<!--
+         <accessControl default="Write">
+            <user name="admin" access="Write"/>
+            <address subnet="90.1.0.0" mask="255.255.0.0" access="Write"/>
+         </accessControl>
+-->
+      </filesystem>
+   </config>
+
+   <config evaluator="string-compare" condition="Filesystem Security">
+      <authenticator type="alfresco">
+      </authenticator>
+
+<!--
+      <globalAccessControl default="None">
+         <user name="admin" access="Write"/>
+         <address ip="90.1.0.90" access="Write"/>
+      </globalAccessControl>
+
+      <users>
+         <localuser name="user">
+            <password>user</password>
+            <comment>Normal user account</comment>
+         </localuser>
+	
+         <localuser name="administrator">
+            <password>admin</password>
+            <administrator/>
+            <comment>Administrator account</comment>
+         </localuser>
+      </users>
+-->
+   </config>
+
+</alfresco-config>

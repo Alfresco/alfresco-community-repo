@@ -1,0 +1,90 @@
+<model name="usr:usermodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco User Model</description>
+   <author>Alfresco</author>
+   <published>2005-08-16</published>
+   <version>0.1</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/user/1.0" prefix="usr"/>
+   </namespaces>
+
+   
+   <types>
+      
+      <type name="usr:authority">
+        <title>Alfreco Authority Abstract Type</title>
+         <parent>sys:base</parent>
+      </type>
+      
+      <type name="usr:user">
+         <title>Alfresco User Type</title>
+         <parent>usr:authority</parent>
+         <properties>
+            <property name="usr:username">
+               <type>d:text</type>
+            </property>
+            <property name="usr:password">
+               <type>d:text</type>
+            </property>
+            <property name="usr:enabled">
+               <type>d:boolean</type>
+            </property>
+            <property name="usr:accountExpires">
+               <type>d:boolean</type>
+            </property>
+            <property name="usr:accountExpiryDate">
+               <type>d:datetime</type>
+            </property>
+            <property name="usr:credentialsExpire">
+               <type>d:boolean</type>
+            </property>
+            <property name="usr:credentialsExpiryDate">
+               <type>d:datetime</type>
+            </property>
+            <property name="usr:accountLocked">
+               <type>d:boolean</type>
+            </property>
+            <property name="usr:salt">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+   
+      <type name="usr:authorityContainer">
+         <title>Alfresco Authority Type</title>
+         <parent>usr:authority</parent>
+         <properties>
+            <property name="usr:authorityName">
+               <type>d:text</type>
+            </property>
+            <property name="usr:members">
+               <type>d:text</type>
+               <multiple>true</multiple>   
+            </property>
+         </properties>
+         <associations>
+            <child-association name="usr:member">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>usr:authority</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </type>  
+
+   </types>
+   
+   
+</model>

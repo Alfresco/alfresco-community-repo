@@ -1,0 +1,342 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE permissions >
+<!--PUBLIC '-//ALFRECSO//DTD PERMISSIONS//EN' 'permissionSchema.dtd' -->
+
+<!-- Note: the above is commented out as spring does not seem to find the dtd -->
+
+<!-- ============================================ -->
+<!-- The base permission model for the repository -->
+<!-- ============================================ -->
+
+<permissions>
+    
+    <!-- Namespaces used in type references -->
+    
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+      <namespace uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </namespaces>
+
+   <!--                                                                                   -->
+   <!-- Permission sets link permissions and groups of permissions to types and aspects   -->
+   <!-- defined in the model. Permissions defined against a type apply to all objects     -->
+   <!-- that inherit from that type. Permissions defined against aspects apply to all     -->
+   <!-- objects or only objects that have the aspect applied. For example, the permission -->
+   <!-- to lock an object could apply to any object but the permission to unlock an       -->
+   <!-- object woujld only apply to objects that have the lockable aspect.                -->
+   <!--                                                                                   -->
+    
+   <!-- =============================================== -->
+   <!-- Base permissions available on all types of node -->
+   <!-- =============================================== -->
+    
+   <permissionSet type="sys:base" expose="all" >
+    
+      <!-- ================= -->
+      <!-- Permission groups -->
+      <!-- ================= -->
+      
+      <!--                                                                                -->
+      <!-- Permission groups are convenient groups of permissions. They may be used in    -->
+      <!-- thier own right or as the effective set of permissions. If an authority has    -->
+      <!-- all the permissions that make up a permission group they also have that        -->
+      <!-- permission group even though it has not been explicitly granted.               -->
+      <!--                                                                                -->
+
+      <!-- =========== -->    
+      <!-- Full access -->
+      <!-- =========== -->
+    
+      <!--                                                                                -->  
+      <!-- By default this is exposed for all objects unless inherited objects choose to  -->
+      <!-- expose only selected objects at the object level.                              -->
+      <!--                                                                                -->
+      
+      <permissionGroup name="FullControl" expose="true" allowFullControl="true" />
+ 
+      <!-- ============================================= -->
+      <!-- Convenient groupings of low level permissions -->
+      <!-- ============================================= -->
+      
+      <permissionGroup name="Read"  expose="true" allowFullControl="false" />  
+      <permissionGroup name="Write" expose="true" allowFullControl="false" />  
+      <permissionGroup name="Delete" expose="true" allowFullControl="false" />  
+      <permissionGroup name="AddChildren" expose="true" allowFullControl="false" />  
+    
+      <!-- =========== -->
+      <!-- Permissions -->
+      <!-- =========== -->
+    
+      <!-- The permission to read properties on a node                                    -->
+      <!--                                                                                -->
+      <!-- The properties of a node may ony be read if there is read access to the parent -->
+      <!-- node. ReadChildren access to the parent node is recursive for all nodes from   -->
+      <!-- which the node inherits permissions. Access is required down the permission    -->
+      <!-- tree at all pioints.                                                           -->
+      <!--                                                                                -->
+      
+      <permission name="ReadProperties" expose="true" >
+         <grantedToGroup permissionGroup="Read" />
+         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+      </permission>
+      
+      <!-- The permission to read the children of a node                                 -->
+      <!--                                                                               -->
+      <!-- This permission is recursive. It requires the same permission is granted to   -->
+      <!-- all of the parent nodes from which this node inherits permissions             -->
+      <!--                                                                               -->
+      
+      <permission name="ReadChildren" expose="true" >
+         <grantedToGroup permissionGroup="Read" />
+         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+      </permission>
+      
+      <!-- The permission to write to the properties of a node                           -->
+      <!--                                                                               -->
+      <!-- This permission includes adding aspects to a node as they are stored as       -->
+      <!-- a property.                                                                   -->
+      <!--                                                                               -->
+      
+      <permission name="WriteProperties" expose="true" >
+         <grantedToGroup permissionGroup="Write" />
+         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+      </permission>
+      
+      <!-- The permission to delete a node                                               -->
+      <!--                                                                               -->
+      <!-- A node can only be deleted if there is delete permission on the node, if the  -->
+      <!-- node is accesible via its parent, and if the node can be deleted from its     -->
+      <!-- parent. Currently, there is no check that all the children can be deleted.    -->
+      <!-- This check can be added but requires more work so the UI is not checking this -->
+      <!-- permission just to show the delete icon.                                      -->
+      <!--                                                                               -->
+      
+      <permission name="DeleteNode" expose="true" >
+         <grantedToGroup permissionGroup="Delete" />
+         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+         <requiredPermission on="parent" name="DeleteChildren" implies="false"/>
+         <requiredPermission on="node" name="DeleteChildren" implies="false"/>
+         <!-- Remove the recursive check for now for performance -->
+         <!-- TODO: have one permission to check for delete on an item and one to check  -->
+         <!--       child permissions when delete is called on the node service          --> 
+         <!--  <requiredPermission on="children" name="DeleteNode" implies="false"/>     -->
+      </permission>
+      
+      
+      <!-- The permission to delete children of a node                                   -->
+      <!--                                                                               -->
+      <!-- At the moment this includes both unlink and delete                            -->
+      <!--                                                                               -->
+      <permission name="DeleteChildren" expose="true" >
+         <grantedToGroup permissionGroup="Delete" />
+         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+      </permission>
+      
+      <!-- The permission to create new nodes                                            -->
+      
+      <permission name="CreateChildren" expose="true" >
+         <grantedToGroup permissionGroup="AddChildren" />
+         <requiredPermission on="parent" name="ReadChildren" implies="false" />
+      </permission>
+      
+      <!-- The permission to link nodes                                                  -->
+      
+      <permission name="LinkChildren" expose="true" >
+         <grantedToGroup permissionGroup="AddChildren" />
+         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+      </permission>
+     
+     <!-- The permission to delte associations between nodes (not children)              -->
+     
+      <permission name="DeleteAssociations" expose="true" >
+        <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+      </permission>
+      
+      <!-- The permission to read associations                                           -->
+      
+      <permission name="ReadAssociations" expose="true" >
+        <requiredPermission on="parent" name="ReadChildren" implies="false" />
+      </permission>
+      
+      <!-- The permission to create associations                                         -->
+      
+      <permission name="CreateAssociations" expose="true" >
+        <requiredPermission on="parent" name="ReadChildren" implies="false" />
+      </permission>
+      
+      <!-- ==================================================== -->
+      <!-- Permissions related to the management of permissions -->
+      <!-- ==================================================== -->
+      
+      <!-- The permission to read the permissions on a node                              -->
+      
+      <permission name="ReadPermissions" expose="true" >
+        <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+      </permission>
+      
+      <!-- The permission to the change the permissions associated with a node           -->
+      
+      <permission name="ChangePermissions" expose="true" >
+        <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+      </permission>
+      
+   </permissionSet>
+   
+   <!-- =============================== -->
+   <!-- Permissions specific to content -->
+   <!-- =============================== -->
+   
+   <permissionSet type="cm:content" expose="all">
+
+      <!-- Extend some base permission groups to include permissoins related to content. -->
+      <permissionGroup name="Read" extends="true" expose="true"/>
+      <permissionGroup name="Write" extends="true" expose="true"/>
+      
+      <!-- Add an execute permission group.                                              -->
+      <permissionGroup name="Execute" allowFullControl="false" expose="true"/>
+      
+      <!-- Content specific low-level permissions.                                       -->
+      
+      <!-- The permission to read content.                                               -->
+      
+      <permission name="ReadContent" expose="true">
+         <grantedToGroup permissionGroup="Read"/>
+         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+      </permission>
+
+      <!-- The permission to write content.                                              -->
+      
+      <permission name="WriteContent" expose="true">
+         <grantedToGroup permissionGroup="Write" />
+         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+      </permission>
+      
+      <!-- Execute permission on content.                                                -->
+      
+      <permission name="ExecuteContent" expose="true">
+         <grantedToGroup permissionGroup="Execute" />
+         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+      </permission>
+      
+   </permissionSet>
+   
+   <!-- ============================================== -->
+   <!-- Permissions associated with the Ownable aspect -->
+   <!-- ============================================== -->
+   
+   <permissionSet type="cm:ownable" expose="selected">
+      
+      <!-- Permission control to allow ownership of the node to be taken from others     -->
+      <permissionGroup name="TakeOwnership" requiresType="false" expose="false"/>
+      
+      <!-- The low level permission to control setting the owner of a node               -->
+      <permission name="SetOwner" expose="false" requiresType="false">
+        <grantedToGroup permissionGroup="TakeOwnership" />
+        <!-- require to be able to reach the node and set properties in the node         -->
+        <requiredPermission on="parent" name="ReadChildren" />
+        <requiredPermission on="node" name="WriteProperties" />
+      </permission>
+      
+   </permissionSet>
+   
+   
+   <!-- =================================================== -->
+   <!-- Permission related to lock, check out and check in. -->
+   <!-- =================================================== -->
+   
+   <permissionSet type="cm:lockable" expose="selected">
+    
+      <!-- At the moment these permissions are hidden so they do not appear in the list  -->
+      <!-- of permissions.                                                               -->
+    
+      <!-- Check Out permission - exposed for all object types                           -->
+      <permissionGroup name="CheckOut" requiresType="false" expose="false"/>
+      
+      <!-- Check In permission - only exposed when the lockable aspect is present        -->
+      <permissionGroup name="CheckIn" requiresType="true" expose="false"/>
+      
+      <!-- Cancel Check Out permission - only exposed for the lockable aspect is present -->
+      <permissionGroup name="CancelCheckOut" requiresType="true" expose="false"/>
+    
+      <!-- Low level lock permission                                                     -->
+      <permission name="Lock" requiresType="false" expose="false">
+        <grantedToGroup permissionGroup="CheckOut" />
+        <requiredPermission on="node" type="sys:base"  name="Write"/>
+      </permission>
+      
+      <!-- Low level unlock permission                                                   -->
+      <permission name="Unlock" requiresType="true" expose="false">
+        <grantedToGroup permissionGroup="CheckIn" />
+        <grantedToGroup permissionGroup="CancelCheckOut" />
+      </permission>      
+      
+   </permissionSet>
+   
+   
+   <!-- ============================== -->
+   <!-- Permissions for spaces/folders -->
+   <!-- ============================== -->
+   
+   
+   <permissionSet type="cm:folder" expose="selected">
+        <!-- Kept for backward compatibility - the folder administrator permission has   -->
+        <!-- been removed to aviod confusion --> 
+        <permissionGroup name="Administrator" allowFullControl="true" expose="false" />
+        
+        <!-- A coordinator can do anything in the folder or its childeren unless the     -->
+        <!-- permissions are set not to inherit or permission is denied.                 -->
+        <permissionGroup name="Coordinator" allowFullControl="true" expose="true" />
+        
+        <!-- A contributor can create content and then they have full permission on what -->
+        <!-- they have created - via the permissions assigned to the owner.              -->
+        <permissionGroup name="Contributor" allowFullControl="false" expose="true" >
+            <!-- Contributor is a guest who can add content, and then can modify via the -->
+            <!-- owner permissions.                                                      -->
+            <includePermissionGroup permissionGroup="Guest" type="cm:folder"/>
+            <includePermissionGroup permissionGroup="AddChildren" type="sys:base"/>
+            <!-- Check out requires write permissions so this will not apply to all      -->
+            <!-- documents.                                                              -->
+            <includePermissionGroup type="cm:lockable" permissionGroup="CheckOut"/>
+        </permissionGroup> 
+        
+        <!-- An editor can read and write to anything in a space; they can not create    -->
+        <!-- new nodes. They can cehck out content into a space to which they have       -->
+        <!-- create permission.                                                          -->
+        <permissionGroup name="Editor"  expose="true" allowFullControl="false" >
+            <includePermissionGroup type="cm:folder" permissionGroup="Guest"/>
+            <includePermissionGroup type="sys:base" permissionGroup="Write"/>
+            <includePermissionGroup type="cm:lockable" permissionGroup="CheckOut"/>
+        </permissionGroup>
+        
+        <!-- The guest permission allows read to everything by default.                  -->
+        <permissionGroup name="Guest" allowFullControl="false" expose="true" >
+            <includePermissionGroup permissionGroup="Read" type="sys:base" />
+        </permissionGroup>
+   </permissionSet>
+   
+   
+   <!-- ================== -->
+   <!-- Global permissions -->
+   <!-- ================== -->
+   
+   <!--                                                                                  -->
+   <!-- Global permissions apply regardless of any particular node context.              -->
+   <!-- They can not be denied by the permissions set on any node.                       -->
+   <!--                                                                                  --> 
+      
+   <!-- Admin can do anything to any ndoe                                                -->
+   <globalPermission permission="FullControl" authority="ROLE_ADMINISTRATOR"/>
+   
+   <!-- For now, owners can always see, find and manipulate their stuff                  -->
+   <globalPermission permission="FullControl" authority="ROLE_OWNER"/>
+   
+   <!-- Unlock is granted to the lock owner                                              -->
+   <globalPermission permission="Unlock" authority="ROLE_LOCK_OWNER"/>
+   
+   <!-- Check in is granted to the lock owner                                            -->
+   <globalPermission permission="CheckIn" authority="ROLE_LOCK_OWNER"/>
+   
+   <!-- Cancel check out is granted to the locak owner                                   -->
+   <globalPermission permission="CancelCheckOut" authority="ROLE_LOCK_OWNER"/>
+   
+</permissions>

@@ -478,7 +478,7 @@ public final class TemplateNode implements Serializable
     {
         ContentService contentService = this.services.getContentService();
         ContentReader reader = contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
-        return reader != null ? reader.getContentString() : "";
+        return (reader != null && reader.exists()) ? reader.getContentString() : "";
     }
     
     /**
@@ -568,19 +568,32 @@ public final class TemplateNode implements Serializable
      */
     public class TemplateContentData implements Serializable
     {
+       /**
+        * Constructor
+        * 
+        * @param contentData  The ContentData object this object wraps 
+        * @param property     The property the ContentData is attached too
+        */
         public TemplateContentData(ContentData contentData, QName property)
         {
             this.contentData = contentData;
             this.property = property;
         }
         
+        /**
+         * @return the content stream
+         */
         public String getContent()
         {
             ContentService contentService = services.getContentService();
             ContentReader reader = contentService.getReader(nodeRef, property);
-            return reader != null ? reader.getContentString() : "";
+            
+            return (reader != null && reader.exists()) ? reader.getContentString() : "";
         }
         
+        /**
+         * @return 
+         */
         public String getUrl()
         {
             try

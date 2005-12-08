@@ -1,0 +1,431 @@
+body 
+{
+   font-family: Tahoma, Arial, Helvetica, sans-serif;
+   background-color: white;
+}
+
+p
+{
+   font-family: Tahoma, Arial, Helvetica, sans-serif;
+}
+
+table.moduletable td
+{
+	font-family: Tahoma, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	font-weight: normal;
+}
+
+td,tr,p,div
+{
+   color: #003366;
+	font-family: Tahoma, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+}
+
+th
+{
+   vertical-align: top;
+   padding-left: 1px;
+   padding-right: 1px;
+}
+
+p.status
+{
+   margin:0px;
+   padding-left:0px;
+   padding-top:4px;
+   padding-bottom:4px;
+}
+
+a:link, a:visited
+{
+	font-size: 11px;
+	color: #003366;
+	text-decoration: none;
+	font-family: Tahoma, Arial, Helvetica, sans-serif;
+	font-weight: normal;
+}
+
+a:hover
+{
+	color: #4272B4;
+	text-decoration: underline;
+	font-weight: normal;
+}
+
+a.path:link, a.path:visited
+{
+	font-size: 14px;
+	color: #003366;
+	text-decoration: none;
+	font-weight: normal;
+}
+
+a.path:hover
+{
+   font-size: 14px;
+	color: #4272B4;
+	text-decoration: underline;
+	font-weight: normal;
+}
+
+a.header:link, a.header:visited
+{
+	font-weight: bold;
+}
+
+a.header:hover
+{
+	font-weight: bold;
+}
+
+a.title:link, a.title:visited
+{
+   font-size: 12px;
+	font-weight: bold;
+}
+
+a.title:hover
+{
+   font-size: 12px;
+	font-weight: bold;
+}
+
+a.moreactions:link, a.moreactions:visited
+{
+   vertical-align: 30%;
+	font-size: 10px;
+}
+
+a.moreactions:hover
+{
+   vertical-align: 30%;
+	font-size: 10px;
+}
+
+a.small:link, a.small:visited
+{
+   font-size: 11px;
+   font-weight: normal;
+   color: #003366;
+}
+
+a.small:hover
+{
+   font-size: 11px;
+   font-weight: normal;
+   color: #4272B4;
+}
+
+.pageTitle
+{
+   color: #003366;
+   font-size: 14px;
+}
+
+.main
+{
+   color: #003366;
+   font-size: 11px;
+}
+
+.mainTitle
+{
+   color: #003366;
+   font-family: Arial, Helvetica, sans-serif;
+   font-size: 16px;
+   font-weight: bold;
+   vertical-align: middle;
+}
+
+.mainSubTitle
+{
+   color: #003366;
+   font-size: 11px;
+   font-weight: bold;
+   padding: 2px;
+}
+
+.mainSubText
+{
+   color: #003366;
+   font-size: 11px;
+   padding: 2px;
+}
+
+.summary
+{
+   color: #003366;
+   font-size: 11px;
+   padding-left: 8px;
+   padding-right: 8px;
+   margin-top: 4px;
+   border: 1px solid #dddddd;
+}
+
+a.headbarLink
+{
+   color: #003366;
+   font-size: 11px;
+   font-weight: normal;
+}
+
+.headbarTitle
+{
+   color: #003366;
+   font-size: 11px;
+   font-weight: bold;
+   margin-bottom: 5px;
+}
+
+.mainSubTextSmall
+{
+   color: #003366;
+   font-size: 10px;
+}
+
+.moreActionsMenu
+{
+   background-color: #eeeeee;
+   border-top: thin solid #FFFFFF;
+   border-left: thin solid #FFFFFF;
+   border-right: thin solid #444444;
+   border-bottom: thin solid #444444;
+}
+
+.welcomeHeader
+{
+   background-color: #eeeeee;
+   border-top: thin solid #666666;
+   border-bottom: thin solid #cccccc;
+}
+
+.headerTopActions
+{
+   background-color: #CCCCCC;
+   border-top: thin solid #FFFFFF;
+   border-bottom: thin solid #999999;
+}
+
+.headerMainActions
+{
+   background-color: #CCCCCC;
+   border-top: thin solid #FFFFFF;
+   border-bottom: thin solid #999999;
+}
+
+.headerTopDetail
+{
+   background-color: #EEEEEE;
+   border-top: thin solid #FFFFFF;
+   border-bottom: thin solid #999999;
+}
+
+.headerTopDetailNoActions
+{
+   background-color: #EEEEEE;
+   border-top: thin solid #FFFFFF;
+   border-bottom: thin solid #999999;
+}
+
+.contentsListActions
+{
+   background-color: #FFFFFF;
+   font-size: 11px;
+}
+
+.infoText
+{
+   background-color: #FFFFCC;
+   color: #1B3557;
+}
+
+.statusInfoText
+{
+   font-size: 11px;
+}
+
+.statusWarningText
+{
+   font-size: 11px;
+   color: #4272B4;
+}
+
+.statusErrorText
+{
+   font-size: 11px;
+   color: #e00028;
+}
+
+.recordSet
+{
+   padding: 2px;
+   border-spacing: 1px;
+}
+
+.recordSetRow
+{
+   background-color: #FFFFFF;
+}
+
+.recordSetRowAlt
+{
+   background-color: #DEE5EC;
+}
+
+.recordSetHeader
+{
+   background-color: #C6D8EB;
+   color: #1B3557;
+   font-weight: bold;
+}
+
+.errorMessage
+{
+   font-size: 11px;
+   color: #e00028;
+   padding: 4px;
+}
+
+.statusMessage
+{
+   font-size: 11px;
+   color: #4272B4;
+   padding-top: 6px;
+   display: block;
+}
+
+input,textarea,select
+{
+   font-family: Tahoma, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+}
+
+.dialogControls
+{
+   font-size: 11px;
+}
+
+.dialogButtonSpacing
+{
+	height: 5px;
+}
+
+.topToolbar
+{
+   background-color:#465F7D;
+}
+
+.topToolbarTitle
+{
+   background-color:#5D747F;
+   color: #ffffff;
+   font-weight: bold;
+   padding-left: 5px;
+}
+
+a.topToolbarLink, a.topToolbarLink:link, a.topToolbarLink:visited
+{
+   color: white;
+   font-weight: bold;
+}
+
+.topToolbarHighlight
+{
+   background-color:#FFFFFF;
+   border:solid #5D6B71;
+   border-width:1px;
+}
+
+a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighlight:visited
+{
+   color:#5D747F;
+   font-weight: bold;
+}
+
+.statusListHighlight
+{
+   background-color:#FFFFFF;
+   border:solid #71828A;
+   border-width:1px;
+}
+
+.statusListDisabled
+{
+   color: #93a8b2;
+}
+
+.inlineAction
+{
+   padding-right:3px;
+}
+
+.paddingRow
+{
+   padding-top: 3px;
+}
+
+.wizardSectionHeading
+{
+   padding: 2px;
+   background-color: #cddbe8;
+   font-weight: bold;
+}
+
+.wizardButton
+{
+   font-size: 11px;
+}
+
+.wizardButtonSpacing
+{
+	height: 5px;
+}
+
+.propertiesLabel
+{
+   padding-right: 20px;
+   color: #93a8b2;
+}
+
+.selector
+{
+   border: 1px dashed #cccccc;
+   padding: 4px;
+}
+
+.selectedItems
+{
+   border: 1px solid #DEE5EC;
+}
+
+.selectedItemsHeader
+{
+   padding: 4px;
+   background-color: #c6d8eb;
+   font-weight: bold;
+   text-align: left;
+}
+
+.selectedItemsRow
+{
+   padding: 4px;
+}
+
+.selectedItemsRowAlt
+{
+   padding: 4px;
+   background-color: #e9f0f4;
+}
+
+.pager
+{
+   padding: 3px;
+   border: 1px dashed #cccccc;
+}
+
+.pager img
+{
+   vertical-align: -20%;
+}

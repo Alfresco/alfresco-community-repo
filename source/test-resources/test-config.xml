@@ -1,0 +1,106 @@
+<alfresco-config>
+   
+   <plug-ins>
+      <element-readers>
+         <element-reader element-name="property-sheet" class="org.alfresco.web.config.PropertySheetElementReader"/>
+         <element-reader element-name="server" class="org.alfresco.web.config.ServerElementReader"/>
+         <element-reader element-name="client" class="org.alfresco.web.config.ClientElementReader"/>
+         <element-reader element-name="navigation" class="org.alfresco.web.config.NavigationElementReader" />
+      </element-readers>
+   </plug-ins>
+
+   <config>
+      <property-sheet>
+         <show-property name="name" />
+      </property-sheet>
+      <server>
+         <mode>servlet</mode>
+         <error-page>/jsp/error.jsp</error-page>
+      </server>
+      <client>
+         <!-- the views available in the client -->
+         <views>
+            <view>org.alfresco.web.ui.common.renderer.data.RichListRenderer.DetailsViewRenderer</view>
+            <view>org.alfresco.web.ui.common.renderer.data.RichListRenderer.IconViewRenderer</view>
+         </views>
+         
+         <!-- default values for the views available in the client -->
+         <view-defaults>
+            <browse>
+               <!-- allowable values: list|details|icons -->
+               <view>icons</view>
+               <sort-descending>false</sort-descending>
+               <page-size>
+                  <list>10</list>
+                  <details>10</details>
+                  <icons>9</icons>
+               </page-size>
+            </browse>
+            <forums>
+               <!-- allowable values: list|details|icons -->
+               <view>list</view>
+               <page-size>
+                  <list>20</list>
+                  <details>20</details>
+                  <icons>20</icons>
+               </page-size>
+            </forums>
+            <forum>
+               <!-- allowable values: details -->
+               <view>details</view>
+               <page-size>
+                  <details>20</details>
+               </page-size>
+            </forum>
+            <topic>
+               <!-- allowable values: details|bubble -->
+               <view>bubble</view>
+               <sort-column>created</sort-column>
+               <sort-descending>true</sort-descending>
+               <page-size>
+                  <bubble>5</bubble>
+                  <details>20</details>
+               </page-size>
+            </topic>
+         </view-defaults>
+      </client>
+   </config>
+   
+   <config evaluator="string-compare" condition="space-aspect">
+      <property-sheet>
+         <show-property name="createddate" readOnly="true" />
+         <show-property name="modifieddate" readOnly="true" />
+         <show-property name="description" displayLabel="Description" readOnly="false" />
+         <show-property name="icon" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="object-type" condition="org.alfresco.web.ui.common.component.data.UIRichList">
+      <renderers>
+         <renderer mode="details">org.alfresco.web.ui.common.renderer.data.RichListRenderer.DetailsViewRenderer</renderer>
+      </renderers>
+   </config>
+   
+   <config evaluator="string-compare" condition="viewid-navigation-result">
+      <navigation>
+         <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/forums/forums.jsp" />
+         <override from-outcome="browse" to-view-id="/jsp/forums/topics.jsp" />
+      </navigation>
+   </config>
+   
+   <config evaluator="string-compare" condition="outcome-navigation-result">
+      <navigation>
+         <override from-view-id="/jsp/browse/browse.jsp" to-outcome="showSomethingElse" />
+         <override from-outcome="browse" to-outcome="showSomethingElse"  />
+      </navigation>
+   </config>
+   
+   <config evaluator="string-compare" condition="duplicate-navigation-overrides">
+      <navigation>
+         <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/forums/forums.jsp" />
+         <override from-outcome="browse" to-outcome="showSomethingElse"  />
+         <override from-outcome="browse" to-outcome="newOutcome"  />
+      </navigation>
+   </config>
+   
+</alfresco-config>

@@ -1,0 +1,7 @@
+<?xml version="1.0" standalone="yes"?>
+<instances>
+   <instance>
+      <instance-name>AlfrescoClientInstance</instance-name>
+      <component-ref>AlfrescoClient</component-ref>
+   </instance>
+</instances>

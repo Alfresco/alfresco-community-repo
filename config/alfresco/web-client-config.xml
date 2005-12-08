@@ -1,0 +1,325 @@
+<alfresco-config>
+   
+   <plug-ins>
+      <evaluators>
+         <evaluator id="node-type" class="org.alfresco.web.config.NodeTypeEvaluator" />
+         <evaluator id="aspect-name" class="org.alfresco.web.config.AspectEvaluator" />
+      </evaluators>
+      <element-readers>
+         <element-reader element-name="server" class="org.alfresco.web.config.ServerElementReader"/>
+         <element-reader element-name="client" class="org.alfresco.web.config.ClientElementReader"/>
+         <element-reader element-name="property-sheet" class="org.alfresco.web.config.PropertySheetElementReader"/>
+         <element-reader element-name="navigation" class="org.alfresco.web.config.NavigationElementReader" />
+      </element-readers>
+   </plug-ins>
+   
+   <config>
+      <server>
+         <error-page>/jsp/error.jsp</error-page>
+         <error-pages>
+            <error-page>/jsp/error.jsp</error-page>
+            <error-page type="org.alfresco.service.cmr.repository.InvalidNodeRefException">
+               /jsp/error_missing.jsp
+            </error-page>
+         </error-pages>
+         <login-page>/jsp/login.jsp</login-page>
+      </server>
+      <admin>
+         <initial-password>admin</initial-password>
+      </admin>
+      <client>
+         <!-- the list of available language files -->
+         <languages>
+            <language locale="en_US">English</language>
+            <!-- <language locale="fr_FR">French</language> -->
+            <!-- <language locale="de_DE">German</language> -->
+            <!-- <language locale="ja_JP">Japanese</language> -->
+         </languages>
+         
+         <!-- advanced search custom attribute config -->
+         <advanced-search>
+            <!-- type constraint drop-down -->
+            <content-types>
+               <!-- cm:content type is implicit in this list -->
+               <!-- types must extend cm:content for the Alfresco web-client -->
+               <type name="cm:dictionaryModel" />
+               <type name="fm:post" />
+            </content-types>
+            <!-- custom properties to be shown in the More Options panel -->
+            <custom-properties>
+            </custom-properties>
+         </advanced-search>
+         
+         <!-- the views available in the client -->
+         <views>
+            <view>org.alfresco.web.ui.common.renderer.data.RichListRenderer$DetailsViewRenderer</view>
+            <view>org.alfresco.web.ui.common.renderer.data.RichListRenderer$IconViewRenderer</view>
+            <view>org.alfresco.web.ui.common.renderer.data.RichListRenderer$ListViewRenderer</view>
+            <view>org.alfresco.web.bean.ForumsBean$TopicBubbleViewRenderer</view>
+         </views>
+         
+         <!-- default values for the views available in the client -->
+         <view-defaults>
+            <browse>
+               <!-- allowable values: list|details|icons -->
+               <view>icons</view>
+               <page-size>
+                  <list>10</list>
+                  <details>10</details>
+                  <icons>9</icons>
+               </page-size>
+            </browse>
+            <forums>
+               <!-- allowable values: list|details|icons -->
+               <view>list</view>
+               <page-size>
+                  <list>20</list>
+                  <details>20</details>
+                  <icons>20</icons>
+               </page-size>
+            </forums>
+            <forum>
+               <!-- allowable values: details -->
+               <view>details</view>
+               <page-size>
+                  <details>20</details>
+               </page-size>
+            </forum>
+            <topic>
+               <!-- allowable values: details|bubble -->
+               <view>bubble</view>
+               <sort-column>created</sort-column>
+               <sort-descending>true</sort-descending>
+               <page-size>
+                  <bubble>5</bubble>
+                  <details>20</details>
+               </page-size>
+            </topic>
+         </view-defaults>
+         
+         <!-- the maximum number of items to show in the recent spaces shelf component -->
+         <recent-spaces-items>6</recent-spaces-items>
+         
+         <!-- the minimum number of characters required for a valid search string -->
+         <search-minimum>3</search-minimum>
+         
+         <!-- The default permissions to apply to a new users Home Space when first created -->
+         <!-- this permission is for other users attempting to access that Home Space -->
+         <!-- generally set to "Guest" or empty value to indicate a private hidden space. -->
+         <!-- see org.alfresco.service.cmr.security.PermissionService for allowed values -->
+         <home-space-permission>Guest</home-space-permission>
+         
+         <!-- the URL to the client Help file -->
+         <help-url>http://www.alfresco.org/mediawiki/index.php/Client_Help</help-url>
+         
+         <!-- the type of edit link to use, NOTE: inline editable will always take precedence -->
+         <!-- can be: http|webdav|cifs -->
+         <edit-link-type>http</edit-link-type>
+      </client>
+   </config>
+   
+   <config evaluator="node-type" condition="content">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="mimetype" displayLabelId="mimetype" converter="org.alfresco.faces.MimeTypeConverter"/>
+         <show-property name="title"/>
+         <show-property name="description"/>
+         <show-property name="size" displayLabelId="size" converter="org.alfresco.faces.ByteSizeConverter"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="folder">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="description"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="fm:forums">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="description"/>
+      </property-sheet>
+
+      <navigation>
+         <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/forums/forums.jsp" />
+         <override from-outcome="browse" to-view-id="/jsp/forums/forums.jsp" />
+         <override from-outcome="showSpaceDetails" to-view-id="/jsp/forums/forums-details.jsp" />
+         <override from-outcome="deleteSpace" to-view-id="/jsp/forums/delete-forums.jsp" />
+      </navigation>
+   </config>
+   
+   <config evaluator="node-type" condition="fm:forum">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="description"/>
+         <show-property name="fm:status"/>
+      </property-sheet>
+
+      <navigation>
+         <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/forums/forum.jsp" />
+         <override from-outcome="browse" to-view-id="/jsp/forums/forum.jsp" />
+         <override from-outcome="showSpaceDetails" to-view-id="/jsp/forums/forum-details.jsp" />
+         <override from-outcome="deleteSpace" to-view-id="/jsp/forums/delete-forum.jsp" />
+      </navigation>
+   </config>
+   
+   <config evaluator="node-type" condition="fm:topic">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="fm:type"/>
+      </property-sheet>
+
+      <navigation>
+         <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/forums/topic.jsp" />
+         <override from-outcome="browse" to-view-id="/jsp/forums/topic.jsp" />
+         <override from-outcome="showSpaceDetails" to-view-id="/jsp/forums/topic-details.jsp" />
+      </navigation>
+   </config>
+   
+   <config evaluator="node-type" condition="dictionaryModel">
+      <property-sheet>      
+	     <show-property name="modelActive"/>
+      </property-sheet>
+   </config>
+
+   <!-- Example client config for type defined in exampleModel.xml -->   
+   <config evaluator="node-type" condition="my:sop">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="mimetype" displayLabelId="mimetype" converter="org.alfresco.faces.MimeTypeConverter"/>
+         <show-property name="title"/>
+         <show-property name="description"/>
+         <show-property name="size" displayLabelId="size" converter="org.alfresco.faces.ByteSizeConverter"/>
+         <show-property name="my:publishedDate"/>
+         <show-association name="my:signOff"/>
+         <show-property name="my:authorisedBy"/>
+         <show-child-association name="my:processSteps"/>
+      </property-sheet>
+   </config>
+   <!-- End Example -->   
+   
+   <config evaluator="aspect-name" condition="complianceable">
+      <property-sheet>
+         <show-property name="removeAfter"/>
+      </property-sheet>
+   </config>
+
+   <config evaluator="aspect-name" condition="dublincore">
+      <property-sheet>
+         <show-property name="publisher"/>
+         <show-property name="contributor"/>
+         <show-property name="type"/>
+         <show-property name="identifier"/>
+         <show-property name="dcsource"/>
+         <show-property name="coverage"/>
+         <show-property name="rights"/>
+         <show-property name="subject"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="effectivity">
+      <property-sheet>
+         <show-property name="from"/>
+         <show-property name="to"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="summarizable">
+      <property-sheet>
+         <show-property name="summary"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="versionable">
+      <property-sheet>
+         <show-property name="versionLabel"/>
+         <show-property name="autoVersion" converter="org.alfresco.faces.BooleanLabelConverter"/>         
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="translatable">
+      <property-sheet>
+         <show-association name="translations"/>
+      </property-sheet>
+   </config>
+
+   <config evaluator="aspect-name" condition="localizable">
+      <property-sheet>
+         <show-property name="locale"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="auditable">
+      <property-sheet>
+         <show-property name="creator"/>
+         <show-property name="created" readOnly="true"/>
+         <show-property name="modifier"/>
+         <show-property name="modified" readOnly="true"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="app:inlineeditable">
+      <property-sheet>
+         <show-property name="app:editInline" converter="org.alfresco.faces.BooleanLabelConverter" />
+      </property-sheet>
+   </config>
+   
+   <!-- Example Client Configuration for exposing aspects defined in exampleModel.xml -->
+   <config evaluator="aspect-name" condition="my:imageClassification">
+      <property-sheet>
+         <show-property name="my:width"/>
+         <show-property name="my:height"/>
+         <show-property name="my:resolution"/>
+      </property-sheet>
+   </config>
+   <!-- End Example -->
+
+   <config evaluator="string-compare" condition="Action Wizards">
+      <types>
+         <type name="folder" displayLabelId="space"/>
+         <type name="content"/>
+      </types>
+      <aspects>
+         <aspect name="generalclassifiable"/>
+         <aspect name="complianceable"/>
+         <aspect name="dublincore"/>
+         <aspect name="effectivity"/>
+         <aspect name="summarizable"/>
+         <aspect name="versionable"/>
+<!--         <aspect name="templatable"/> -->
+         <aspect name="translatable"/>
+         <aspect name="localizable"/>
+         <!-- Example configuration to demonstrate how to expose aspect from exampleModel.xml -->
+         <!-- <aspect name="my:imageClassification"/> -->
+      </aspects>
+      <transformers>
+         <transformer name="text/html"/>
+         <transformer name="application/pdf"/>
+         <transformer name="text/plain"/>
+         <transformer name="text/xml"/>
+         <transformer name="application/x-shockwave-flash"/>
+         <transformer name="image/gif"/>
+         <transformer name="image/jpeg"/>
+      </transformers>
+      <image-transformers>
+         <transformer name="image/gif"/>
+         <transformer name="image/jpeg"/>
+         <transformer name="image/png"/>
+      </image-transformers>
+   </config>
+   
+   <config evaluator="string-compare" condition="Custom Content Types">
+      <content-types>
+         <!-- <type name="my:sop" /> -->
+      	<type name="cm:dictionaryModel"/>
+      </content-types>
+   </config>
+   
+   <config evaluator="string-compare" condition="Custom Folder Types">
+      <folder-types>
+         <type name="fm:forums" icon="/images/icons/forums_large.gif" descriptionMsgId="forums_desc" />
+      </folder-types>
+   </config>
+      
+</alfresco-config>

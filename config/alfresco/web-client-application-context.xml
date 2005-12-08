@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   
+   <bean id="configSource" class="org.alfresco.config.source.ClassPathConfigSource">
+      <constructor-arg>
+         <list>
+            <value>alfresco/web-client-config.xml</value>
+            <value>alfresco/web-client-config-edit-properties.xml</value>
+         </list>
+      </constructor-arg>
+   </bean>
+   
+   <bean id="configService" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
+      <constructor-arg>
+         <ref bean="configSource"/>
+      </constructor-arg>
+   </bean>
+   
+   <!-- NOTE: This references a bean in the repository Spring configuration -->
+   <bean id="dataDictionary" class="org.alfresco.web.bean.repository.DataDictionary">
+      <constructor-arg>
+         <ref bean="DictionaryService"/>
+      </constructor-arg>
+   </bean>
+   
+</beans>

@@ -387,17 +387,23 @@ public class ClientConfigElement extends ConfigElementAdapter
    }
    
    
+   /**
+    * Simple wrapper class for custom advanced search property
+    * @author Kevin Roast
+    */
    public static class CustomProperty
    {
-      CustomProperty(String type, String aspect, String property)
+      CustomProperty(String type, String aspect, String property, String labelId)
       {
          Type = type;
          Aspect = aspect;
          Property = property;
+         LabelId = labelId;
       }
       
       public String Type;
       public String Aspect;
       public String Property;
+      public String LabelId;
    }
 }

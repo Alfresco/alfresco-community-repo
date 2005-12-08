@@ -168,8 +168,17 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
                // if we found a def, then we can build components to represent it
                if (propDef != null)
                {
-                  // TODO: add display label I18N message support to configelement and here
-                  String label = propDef.getTitle() != null ? propDef.getTitle() : propDef.getName().getLocalName();
+                  // resolve display label I18N message
+                  String label;
+                  if (property.LabelId != null && property.LabelId.length() != 0)
+                  {
+                     label = Application.getMessage(context, property.LabelId);
+                  }
+                  else
+                  {
+                     // or use dictionary label or QName as last resort
+                     label = propDef.getTitle() != null ? propDef.getTitle() : propDef.getName().getLocalName();
+                  }
                   
                   // special handling for Date and DateTime
                   DataTypeDefinition dataTypeDef = propDef.getDataType();

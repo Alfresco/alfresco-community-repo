@@ -58,6 +58,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ATTRIBUTE_TYPE = "type";
    public static final String ATTRIBUTE_PROPERTY = "property";
    public static final String ATTRIBUTE_ASPECT = "aspect";
+   public static final String ATTRIBUTE_DISPLAYLABEL = "displayLabelId";
    
    private static Log logger = LogFactory.getLog(ClientElementReader.class);
    
@@ -220,7 +221,8 @@ public class ClientElementReader implements ConfigElementReader
                String type = propElement.attributeValue(ATTRIBUTE_TYPE);
                String aspect = propElement.attributeValue(ATTRIBUTE_ASPECT);
                String prop = propElement.attributeValue(ATTRIBUTE_PROPERTY);
-               props.add(new ClientConfigElement.CustomProperty(type, aspect, prop));
+               String labelId = propElement.attributeValue(ATTRIBUTE_DISPLAYLABEL);
+               props.add(new ClientConfigElement.CustomProperty(type, aspect, prop, labelId));
             }
             configElement.setCustomProperties(props);
          }

@@ -1,0 +1,387 @@
+<!-- Use this file to deploy some handlers/chains and services      -->
+<!-- Two ways to do this:                                           -->
+<!--   java org.apache.axis.client.AdminClient deploy.wsdd          -->
+<!--      after the axis server is running                          -->
+<!-- or                                                             -->
+<!--   java org.apache.axis.utils.Admin client|server deploy.wsdd   -->
+<!--      from the same directory that the Axis engine runs         -->
+
+<deployment
+    xmlns="http://xml.apache.org/axis/wsdd/"
+    xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
+
+  <!-- Services from AuthoringService WSDL service -->
+
+  <service name="AuthoringService" provider="java:RPC" style="wrapped" use="literal">
+      <parameter name="wsdlTargetNamespace" value="http://www.alfresco.org/ws/service/authoring/1.0"/>
+      <parameter name="wsdlServiceElement" value="AuthoringService"/>
+      <parameter name="schemaQualified" value="http://www.alfresco.org/ws/service/authoring/1.0,http://www.alfresco.org/ws/model/content/1.0"/>
+      <parameter name="wsdlServicePort" value="AuthoringService"/>
+      <parameter name="className" value="org.alfresco.repo.webservice.authoring.AuthoringServiceSoapBindingImpl"/>
+      <parameter name="wsdlPortType" value="AuthoringServiceSoapPort"/>
+      <parameter name="typeMappingVersion" value="1.2"/>
+      <operation name="checkout" qname="operNS:checkout" xmlns:operNS="http://www.alfresco.org/ws/service/authoring/1.0" returnQName="retNS:checkoutReturn" xmlns:retNS="http://www.alfresco.org/ws/service/authoring/1.0" returnType="rtns:CheckoutResult" xmlns:rtns="http://www.alfresco.org/ws/service/authoring/1.0" soapAction="http://www.alfresco.org/ws/service/authoring/1.0/checkout" >
+        <parameter qname="pns:items" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:destination" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:ParentReference" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <fault name="AuthoringFault" qname="fns:AuthoringFault" xmlns:fns="http://www.alfresco.org/ws/service/authoring/1.0" class="org.alfresco.repo.webservice.authoring.AuthoringFault" type="tns:AuthoringFault" xmlns:tns="http://www.alfresco.org/ws/service/authoring/1.0"/>
+      </operation>
+      <operation name="checkin" qname="operNS:checkin" xmlns:operNS="http://www.alfresco.org/ws/service/authoring/1.0" returnQName="retNS:checkinReturn" xmlns:retNS="http://www.alfresco.org/ws/service/authoring/1.0" returnType="rtns:CheckinResult" xmlns:rtns="http://www.alfresco.org/ws/service/authoring/1.0" soapAction="http://www.alfresco.org/ws/service/authoring/1.0/checkin" >
+        <parameter qname="pns:items" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:comments" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:NamedValue" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:keepCheckedOut" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:boolean" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="AuthoringFault" qname="fns:AuthoringFault" xmlns:fns="http://www.alfresco.org/ws/service/authoring/1.0" class="org.alfresco.repo.webservice.authoring.AuthoringFault" type="tns:AuthoringFault" xmlns:tns="http://www.alfresco.org/ws/service/authoring/1.0"/>
+      </operation>
+      <operation name="checkinExternal" qname="operNS:checkinExternal" xmlns:operNS="http://www.alfresco.org/ws/service/authoring/1.0" returnQName="retNS:checkinExternalReturn" xmlns:retNS="http://www.alfresco.org/ws/service/authoring/1.0" returnType="rtns:Reference" xmlns:rtns="http://www.alfresco.org/ws/model/content/1.0" soapAction="http://www.alfresco.org/ws/service/authoring/1.0/checkinExternal" >
+        <parameter qname="pns:items" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:Reference" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:comments" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:NamedValue" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:keepCheckedOut" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:boolean" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <parameter qname="pns:format" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:ContentFormat" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:content" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:base64Binary" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="AuthoringFault" qname="fns:AuthoringFault" xmlns:fns="http://www.alfresco.org/ws/service/authoring/1.0" class="org.alfresco.repo.webservice.authoring.AuthoringFault" type="tns:AuthoringFault" xmlns:tns="http://www.alfresco.org/ws/service/authoring/1.0"/>
+      </operation>
+      <operation name="cancelCheckout" qname="operNS:cancelCheckout" xmlns:operNS="http://www.alfresco.org/ws/service/authoring/1.0" returnQName="retNS:cancelCheckoutReturn" xmlns:retNS="http://www.alfresco.org/ws/service/authoring/1.0" returnType="rtns:CancelCheckoutResult" xmlns:rtns="http://www.alfresco.org/ws/service/authoring/1.0" soapAction="http://www.alfresco.org/ws/service/authoring/1.0/cancelCheckout" >
+        <parameter qname="pns:items" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <fault name="AuthoringFault" qname="fns:AuthoringFault" xmlns:fns="http://www.alfresco.org/ws/service/authoring/1.0" class="org.alfresco.repo.webservice.authoring.AuthoringFault" type="tns:AuthoringFault" xmlns:tns="http://www.alfresco.org/ws/service/authoring/1.0"/>
+      </operation>
+      <operation name="lock" qname="operNS:lock" xmlns:operNS="http://www.alfresco.org/ws/service/authoring/1.0" returnQName="retNS:lockReturn" xmlns:retNS="http://www.alfresco.org/ws/service/authoring/1.0" returnType="rtns:Reference" xmlns:rtns="http://www.alfresco.org/ws/model/content/1.0" soapAction="http://www.alfresco.org/ws/service/authoring/1.0/lock" >
+        <parameter qname="pns:items" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:lockChildren" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:boolean" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <parameter qname="pns:lockType" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:LockTypeEnum" xmlns:tns="http://www.alfresco.org/ws/service/authoring/1.0"/>
+        <fault name="AuthoringFault" qname="fns:AuthoringFault" xmlns:fns="http://www.alfresco.org/ws/service/authoring/1.0" class="org.alfresco.repo.webservice.authoring.AuthoringFault" type="tns:AuthoringFault" xmlns:tns="http://www.alfresco.org/ws/service/authoring/1.0"/>
+      </operation>
+      <operation name="unlock" qname="operNS:unlock" xmlns:operNS="http://www.alfresco.org/ws/service/authoring/1.0" returnQName="retNS:unlockReturn" xmlns:retNS="http://www.alfresco.org/ws/service/authoring/1.0" returnType="rtns:Reference" xmlns:rtns="http://www.alfresco.org/ws/model/content/1.0" soapAction="http://www.alfresco.org/ws/service/authoring/1.0/unlock" >
+        <parameter qname="pns:items" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:unlockChildren" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:boolean" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="AuthoringFault" qname="fns:AuthoringFault" xmlns:fns="http://www.alfresco.org/ws/service/authoring/1.0" class="org.alfresco.repo.webservice.authoring.AuthoringFault" type="tns:AuthoringFault" xmlns:tns="http://www.alfresco.org/ws/service/authoring/1.0"/>
+      </operation>
+      <operation name="getLockStatus" qname="operNS:getLockStatus" xmlns:operNS="http://www.alfresco.org/ws/service/authoring/1.0" returnQName="retNS:getLockStatusReturn" xmlns:retNS="http://www.alfresco.org/ws/service/authoring/1.0" returnType="rtns:LockStatus" xmlns:rtns="http://www.alfresco.org/ws/service/authoring/1.0" soapAction="http://www.alfresco.org/ws/service/authoring/1.0/getLockStatus" >
+        <parameter qname="pns:items" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <fault name="AuthoringFault" qname="fns:AuthoringFault" xmlns:fns="http://www.alfresco.org/ws/service/authoring/1.0" class="org.alfresco.repo.webservice.authoring.AuthoringFault" type="tns:AuthoringFault" xmlns:tns="http://www.alfresco.org/ws/service/authoring/1.0"/>
+      </operation>
+      <operation name="createVersion" qname="operNS:createVersion" xmlns:operNS="http://www.alfresco.org/ws/service/authoring/1.0" returnQName="retNS:createVersionReturn" xmlns:retNS="http://www.alfresco.org/ws/service/authoring/1.0" returnType="rtns:VersionResult" xmlns:rtns="http://www.alfresco.org/ws/service/authoring/1.0" soapAction="http://www.alfresco.org/ws/service/authoring/1.0/createVersion" >
+        <parameter qname="pns:items" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:comments" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:NamedValue" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:versionChildren" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:boolean" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="AuthoringFault" qname="fns:AuthoringFault" xmlns:fns="http://www.alfresco.org/ws/service/authoring/1.0" class="org.alfresco.repo.webservice.authoring.AuthoringFault" type="tns:AuthoringFault" xmlns:tns="http://www.alfresco.org/ws/service/authoring/1.0"/>
+      </operation>
+      <operation name="getVersionHistory" qname="operNS:getVersionHistory" xmlns:operNS="http://www.alfresco.org/ws/service/authoring/1.0" returnQName="retNS:getVersionHistoryReturn" xmlns:retNS="http://www.alfresco.org/ws/service/authoring/1.0" returnType="rtns:VersionHistory" xmlns:rtns="http://www.alfresco.org/ws/model/content/1.0" soapAction="http://www.alfresco.org/ws/service/authoring/1.0/getVersionHistory" >
+        <parameter qname="pns:node" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:Reference" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <fault name="AuthoringFault" qname="fns:AuthoringFault" xmlns:fns="http://www.alfresco.org/ws/service/authoring/1.0" class="org.alfresco.repo.webservice.authoring.AuthoringFault" type="tns:AuthoringFault" xmlns:tns="http://www.alfresco.org/ws/service/authoring/1.0"/>
+      </operation>
+      <operation name="revertVersion" qname="operNS:revertVersion" xmlns:operNS="http://www.alfresco.org/ws/service/authoring/1.0" soapAction="http://www.alfresco.org/ws/service/authoring/1.0/revertVersion" >
+        <parameter qname="pns:node" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:Reference" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:versionLabel" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="AuthoringFault" qname="fns:AuthoringFault" xmlns:fns="http://www.alfresco.org/ws/service/authoring/1.0" class="org.alfresco.repo.webservice.authoring.AuthoringFault" type="tns:AuthoringFault" xmlns:tns="http://www.alfresco.org/ws/service/authoring/1.0"/>
+      </operation>
+      <operation name="deleteAllVersions" qname="operNS:deleteAllVersions" xmlns:operNS="http://www.alfresco.org/ws/service/authoring/1.0" returnQName="retNS:deleteAllVersionsReturn" xmlns:retNS="http://www.alfresco.org/ws/service/authoring/1.0" returnType="rtns:VersionHistory" xmlns:rtns="http://www.alfresco.org/ws/model/content/1.0" soapAction="http://www.alfresco.org/ws/service/authoring/1.0/deleteAllVersions" >
+        <parameter qname="pns:node" xmlns:pns="http://www.alfresco.org/ws/service/authoring/1.0" type="tns:Reference" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <fault name="AuthoringFault" qname="fns:AuthoringFault" xmlns:fns="http://www.alfresco.org/ws/service/authoring/1.0" class="org.alfresco.repo.webservice.authoring.AuthoringFault" type="tns:AuthoringFault" xmlns:tns="http://www.alfresco.org/ws/service/authoring/1.0"/>
+      </operation>
+      <parameter name="allowedMethods" value="checkinExternal getVersionHistory unlock lock checkout revertVersion deleteAllVersions createVersion getLockStatus checkin cancelCheckout"/>
+
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ParentReference"
+        type="java:org.alfresco.repo.webservice.types.ParentReference"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:QueryLanguageEnum"
+        type="java:org.alfresco.repo.webservice.types.QueryLanguageEnum"
+        serializer="org.apache.axis.encoding.ser.EnumSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Cardinality"
+        type="java:org.alfresco.repo.webservice.types.Cardinality"
+        serializer="org.apache.axis.encoding.ser.EnumSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ClassDefinition"
+        type="java:org.alfresco.repo.webservice.types.ClassDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ContentFormat"
+        type="java:org.alfresco.repo.webservice.types.ContentFormat"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Version"
+        type="java:org.alfresco.repo.webservice.types.Version"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/authoring/1.0"
+        qname="ns:LockTypeEnum"
+        type="java:org.alfresco.repo.webservice.authoring.LockTypeEnum"
+        serializer="org.apache.axis.encoding.ser.EnumSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Node"
+        type="java:org.alfresco.repo.webservice.types.Node"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Predicate"
+        type="java:org.alfresco.repo.webservice.types.Predicate"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ResultSetRow"
+        type="java:org.alfresco.repo.webservice.types.ResultSetRow"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Path"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ResultSet"
+        type="java:org.alfresco.repo.webservice.types.ResultSet"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ResultSetMetaData"
+        type="java:org.alfresco.repo.webservice.types.ResultSetMetaData"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/authoring/1.0"
+        qname="ns:LockStatus"
+        type="java:org.alfresco.repo.webservice.authoring.LockStatus"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/authoring/1.0"
+        qname="ns:CancelCheckoutResult"
+        type="java:org.alfresco.repo.webservice.authoring.CancelCheckoutResult"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/authoring/1.0"
+        qname="ns:VersionResult"
+        type="java:org.alfresco.repo.webservice.authoring.VersionResult"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:NodeDefinition"
+        type="java:org.alfresco.repo.webservice.types.NodeDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Category"
+        type="java:org.alfresco.repo.webservice.types.Category"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ValueDefinition"
+        type="java:org.alfresco.repo.webservice.types.ValueDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:>ContentFormat>mimetype"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Query"
+        type="java:org.alfresco.repo.webservice.types.Query"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/authoring/1.0"
+        qname="ns:AuthoringFault"
+        type="java:org.alfresco.repo.webservice.authoring.AuthoringFault"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:StoreEnum"
+        type="java:org.alfresco.repo.webservice.types.StoreEnum"
+        serializer="org.apache.axis.encoding.ser.EnumSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Reference"
+        type="java:org.alfresco.repo.webservice.types.Reference"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:NamedValue"
+        type="java:org.alfresco.repo.webservice.types.NamedValue"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:UUID"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/authoring/1.0"
+        qname="ns:CheckinResult"
+        type="java:org.alfresco.repo.webservice.authoring.CheckinResult"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Name"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:>ResultSetRow>node"
+        type="java:org.alfresco.repo.webservice.types.ResultSetRowNode"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:>ContentFormat>encoding"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/authoring/1.0"
+        qname="ns:CheckoutResult"
+        type="java:org.alfresco.repo.webservice.authoring.CheckoutResult"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Classification"
+        type="java:org.alfresco.repo.webservice.types.Classification"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Store"
+        type="java:org.alfresco.repo.webservice.types.Store"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:>Store>address"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:AssociationDefinition"
+        type="java:org.alfresco.repo.webservice.types.AssociationDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:RoleDefinition"
+        type="java:org.alfresco.repo.webservice.types.RoleDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:PropertyDefinition"
+        type="java:org.alfresco.repo.webservice.types.PropertyDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:VersionHistory"
+        type="java:org.alfresco.repo.webservice.types.VersionHistory"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+  </service>
+</deployment>

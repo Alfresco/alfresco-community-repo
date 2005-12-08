@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="source/java"/>
+	<classpathentry kind="src" path="source/generated"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Repository"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/3rd Party"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Core"/>
+	<classpathentry kind="output" path="build/classes"/>
+</classpath>

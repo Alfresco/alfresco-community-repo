@@ -1,0 +1,50 @@
+<!-- Use this file to deploy some handlers/chains and services      -->
+<!-- Two ways to do this:                                           -->
+<!--   java org.apache.axis.client.AdminClient deploy.wsdd          -->
+<!--      after the axis server is running                          -->
+<!-- or                                                             -->
+<!--   java org.apache.axis.utils.Admin client|server deploy.wsdd   -->
+<!--      from the same directory that the Axis engine runs         -->
+
+<deployment
+    xmlns="http://xml.apache.org/axis/wsdd/"
+    xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
+
+  <!-- Services from AuthenticationService WSDL service -->
+
+  <service name="AuthenticationService" provider="java:RPC" style="wrapped" use="literal">
+      <parameter name="wsdlTargetNamespace" value="http://www.alfresco.org/ws/service/authentication/1.0"/>
+      <parameter name="wsdlServiceElement" value="AuthenticationService"/>
+      <parameter name="schemaQualified" value="http://www.alfresco.org/ws/service/authentication/1.0"/>
+      <parameter name="wsdlServicePort" value="AuthenticationService"/>
+      <parameter name="className" value="org.alfresco.repo.webservice.authentication.AuthenticationServiceSoapBindingImpl"/>
+      <parameter name="wsdlPortType" value="AuthenticationServiceSoapPort"/>
+      <parameter name="typeMappingVersion" value="1.2"/>
+      <operation name="startSession" qname="operNS:startSession" xmlns:operNS="http://www.alfresco.org/ws/service/authentication/1.0" returnQName="retNS:startSessionReturn" xmlns:retNS="http://www.alfresco.org/ws/service/authentication/1.0" returnType="rtns:AuthenticationResult" xmlns:rtns="http://www.alfresco.org/ws/service/authentication/1.0" soapAction="http://www.alfresco.org/ws/service/authentication/1.0/startSession" >
+        <parameter qname="pns:username" xmlns:pns="http://www.alfresco.org/ws/service/authentication/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <parameter qname="pns:password" xmlns:pns="http://www.alfresco.org/ws/service/authentication/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="AuthenticationFault" qname="fns:AuthenticationFault" xmlns:fns="http://www.alfresco.org/ws/service/authentication/1.0" class="org.alfresco.repo.webservice.authentication.AuthenticationFault" type="tns:AuthenticationFault" xmlns:tns="http://www.alfresco.org/ws/service/authentication/1.0"/>
+      </operation>
+      <operation name="endSession" qname="operNS:endSession" xmlns:operNS="http://www.alfresco.org/ws/service/authentication/1.0" soapAction="http://www.alfresco.org/ws/service/authentication/1.0/endSession" >
+        <fault name="AuthenticationFault" qname="fns:AuthenticationFault" xmlns:fns="http://www.alfresco.org/ws/service/authentication/1.0" class="org.alfresco.repo.webservice.authentication.AuthenticationFault" type="tns:AuthenticationFault" xmlns:tns="http://www.alfresco.org/ws/service/authentication/1.0"/>
+      </operation>
+      <parameter name="allowedMethods" value="startSession endSession"/>
+
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/authentication/1.0"
+        qname="ns:AuthenticationResult"
+        type="java:org.alfresco.repo.webservice.authentication.AuthenticationResult"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/authentication/1.0"
+        qname="ns:AuthenticationFault"
+        type="java:org.alfresco.repo.webservice.authentication.AuthenticationFault"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+  </service>
+</deployment>

@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- Axis handler to validate the ticket sent with the web service request -->
+   <bean id="ticketCallbackHandler" class="org.alfresco.repo.webservice.axis.TicketCallbackHandler">
+      <property name="authenticationService">
+         <ref bean="authenticationService"/>
+      </property>
+   </bean>
+   
+   <!-- Cache to use to store QuerySession instances -->
+   <bean id="querySessionCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheName">
+               <value>webservice.QuerySessionCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- CLM Util bean -->
+   <bean id="CMLUtil" class="org.alfresco.repo.webservice.CMLUtil">
+      <property name="nodeService">
+         <ref bean="NodeService"/>
+      </property>
+      <property name="searchService">
+         <ref bean="SearchService"/>
+      </property>
+      <property name="namespaceService">
+         <ref bean="namespaceService"/>
+      </property>
+      <property name="copyService">
+         <ref bean="copyService"/>
+      </property>
+   </bean>
+   
+   <!-- Implementations of each exposed web service -->
+   
+   <bean id="authenticationWebService" class="org.alfresco.repo.webservice.authentication.AuthenticationWebService">
+      <property name="authenticationService">
+         <ref bean="authenticationService"/>
+      </property>
+   </bean>
+   
+   <bean id="repositoryWebService" class="org.alfresco.repo.webservice.repository.RepositoryWebService">
+      <property name="nodeService">
+         <ref bean="NodeService"/>
+      </property>
+      <property name="contentService">
+         <ref bean="ContentService"/>
+      </property>
+      <property name="searchService">
+         <ref bean="SearchService"/>
+      </property>
+      <property name="namespaceService">
+         <ref bean="namespaceService"/>
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService"/>
+      </property>
+      <property name="querySessionCache">
+         <ref bean="querySessionCache"/>
+      </property>
+      <property name="cmlUtil">
+         <ref bean="CMLUtil"/>
+      </property>
+   </bean>
+   
+   <bean id="contentWebService" class="org.alfresco.repo.webservice.content.ContentWebService">
+      <property name="nodeService">
+         <ref bean="NodeService"/>
+      </property>
+      <property name="contentService">
+         <ref bean="ContentService"/>
+      </property>
+      <property name="searchService">
+         <ref bean="SearchService"/>
+      </property>
+      <property name="namespaceService">
+         <ref bean="namespaceService"/>
+      </property>
+   </bean>
+   
+   <bean id="authoringWebService" class="org.alfresco.repo.webservice.authoring.AuthoringWebService">
+      <property name="nodeService">
+         <ref bean="NodeService"/>
+      </property>
+      <property name="contentService">
+         <ref bean="ContentService"/>
+      </property>
+      <property name="searchService">
+         <ref bean="SearchService"/>
+      </property>
+      <property name="namespaceService">
+         <ref bean="namespaceService"/>
+      </property>
+      <property name="checkOutCheckinService">
+         <ref bean="checkOutCheckInService"/>
+      </property>
+      <property name="lockService">
+         <ref bean="lockService"/>
+      </property>
+      <property name="versionService">
+         <ref bean="versionService"/>
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionComponent"/>
+      </property>
+   </bean>
+   
+   <bean id="classificationWebService" class="org.alfresco.repo.webservice.classification.ClassificationWebService">
+      <property name="nodeService">
+         <ref bean="NodeService"/>
+      </property>
+      <property name="contentService">
+         <ref bean="ContentService"/>
+      </property>
+      <property name="searchService">
+         <ref bean="SearchService"/>
+      </property>
+      <property name="namespaceService">
+         <ref bean="namespaceService"/>
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService"/>
+      </property>
+      <property name="categoryService">
+         <ref bean="CategoryService"/>
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionComponent"/>
+      </property>
+   </bean>
+ 
+</beans>

@@ -956,6 +956,10 @@
          <from-outcome>deletePost</from-outcome>
          <to-view-id>/jsp/forums/delete-post.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>manageInvitedUsers</from-outcome>
+         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <navigation-rule>

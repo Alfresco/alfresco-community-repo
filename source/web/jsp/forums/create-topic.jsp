@@ -155,7 +155,7 @@
                                     <td><h:outputText value="#{msg.message}" />:</td>
                                     <td valign="top">
                                        <h:inputTextarea id="message" value="#{CreateTopicDialog.message}" rows="6" cols="70" 
-                                                        onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState();" />
+                                                        onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState();" />&nbsp;*
                                     </td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>

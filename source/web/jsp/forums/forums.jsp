@@ -90,11 +90,28 @@
                                  <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" padding="4" action="showForumsDetails" actionListener="#{BrowseBean.setupSpaceAction}" id="link3">
                                     <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param1" />
                                  </a:actionLink>
-                                 <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval3">
-                                    <a:actionLink value="#{msg.delete_forums}" image="/images/icons/delete.gif" padding="4" action="deleteForums" actionListener="#{BrowseBean.setupDeleteAction}" id="link4">
-                                       <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param2" />
+                                 <%-- Current space More actions menu --%>
+                                 <a:menu id="spaceMenu" itemSpacing="4" label="#{msg.more_options}" image="/images/icons/more.gif" tooltip="#{msg.more_options_space}" menuStyleClass="moreActionsMenu" style="padding-left:20px">
+                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval3">
+                                       <a:actionLink value="#{msg.delete_forums}" image="/images/icons/delete.gif" action="deleteForums" actionListener="#{BrowseBean.setupDeleteAction}" id="link4">
+                                          <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param2" />
+                                       </a:actionLink>
+                                       <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" actionListener="#{ClipboardBean.cutNode}" id="link5">
+                                          <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param3" />
+                                       </a:actionLink>
+                                    </r:permissionEvaluator>
+                                    <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" actionListener="#{ClipboardBean.copyNode}" id="link6">
+                                       <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param4" />
                                     </a:actionLink>
-                                 </r:permissionEvaluator>
+                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Write" id="eval4">
+                                       <a:actionLink value="#{msg.paste_all}" image="/images/icons/paste.gif" actionListener="#{ClipboardBean.pasteAll}" id="link7" />
+                                    </r:permissionEvaluator>
+                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="ChangePermissions" id="eval5">
+                                       <a:actionLink value="#{msg.manage_invited_users}" image="/images/icons/invite.gif" action="manageInvitedUsers" actionListener="#{BrowseBean.setupSpaceAction}" id="link8">
+                                          <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param5" />
+                                       </a:actionLink>
+                                    </r:permissionEvaluator>
+                                 </a:menu>
                               </td>
                            </a:panel>
                                                       

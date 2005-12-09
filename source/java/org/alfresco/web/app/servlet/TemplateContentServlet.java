@@ -143,6 +143,13 @@ public class TemplateContentServlet extends HttpServlet
             templateRef = new NodeRef(storeRef, t.nextToken());
          }
          
+         String mimetype = MIMETYPE_HTML;
+         if (req.getParameter(ARG_MIMETYPE) != null)
+         {
+            mimetype = req.getParameter(ARG_MIMETYPE);
+         }
+         res.setContentType(mimetype);
+         
          // get the services we need to retrieve the content
          WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
          ServiceRegistry serviceRegistry = (ServiceRegistry)context.getBean(ServiceRegistry.SERVICE_REGISTRY);

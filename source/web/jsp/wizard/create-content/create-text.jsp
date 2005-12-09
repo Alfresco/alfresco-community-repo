@@ -111,7 +111,7 @@
                               
                               <a:errors message="#{msg.error_wizard}" styleClass="errorMessage" />
                               
-                              <h:inputTextarea id="textArea" rows="20" cols="80" value="#{CreateContentWizard.content}" />
+                              <h:inputTextarea id="textArea" rows="24" cols="112" value="#{CreateContentWizard.content}" />
                               
                            </td>
                            

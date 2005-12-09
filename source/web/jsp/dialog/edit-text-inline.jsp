@@ -138,7 +138,7 @@
                         <%-- Inline editor --%>
                         <tr>
                            <td width="100%" valign="top" height="100%">
-                              <h:inputTextarea id="textArea" rows="20" cols="80" value="#{CheckinCheckoutBean.editorOutput}" />
+                              <h:inputTextarea id="textArea" rows="24" cols="112" value="#{CheckinCheckoutBean.editorOutput}" />
                            </td>
                         </tr>
                      </table>

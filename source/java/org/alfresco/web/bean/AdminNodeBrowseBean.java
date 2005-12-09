@@ -29,7 +29,6 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.search.ISO9075;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -43,6 +42,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 
 

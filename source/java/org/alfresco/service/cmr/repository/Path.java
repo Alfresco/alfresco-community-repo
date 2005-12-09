@@ -21,10 +21,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.ISO9075;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO9075;
 
 /**
  * Representation of a simple path e.g.

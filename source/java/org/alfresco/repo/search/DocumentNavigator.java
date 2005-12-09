@@ -36,6 +36,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.ISO9075;
 import org.jaxen.DefaultNavigator;
 import org.jaxen.JaxenException;
 import org.jaxen.UnsupportedAxisException;

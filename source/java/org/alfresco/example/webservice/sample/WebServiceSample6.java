@@ -31,7 +31,7 @@ import org.alfresco.example.webservice.types.Query;
 import org.alfresco.example.webservice.types.QueryLanguageEnum;
 import org.alfresco.example.webservice.types.Store;
 import org.alfresco.example.webservice.types.StoreEnum;
-import org.alfresco.repo.search.ISO9075;
+import org.alfresco.util.ISO9075;
 import org.apache.axis.EngineConfiguration;
 import org.apache.axis.configuration.FileProvider;
 

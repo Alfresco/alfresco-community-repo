@@ -17,6 +17,7 @@
 package org.alfresco.web.ui.common;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -511,7 +512,7 @@ public final class Utils
                   path.append("/").append(paths.get(x).getName());
                }
                
-               url = path.toString();
+               url = Utils.replace(URLEncoder.encode(path.toString(), "UTF-8"), "+", "%20");
             }
             catch (Exception e)
             {

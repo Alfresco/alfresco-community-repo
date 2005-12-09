@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.LoginBean;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
@@ -255,7 +256,7 @@ public class DownloadContentServlet extends HttpServlet
                   ref.getStoreRef().getProtocol(),
                   ref.getStoreRef().getIdentifier(),
                   ref.getId(),
-                  URLEncoder.encode(name, "US-ASCII") } );
+                  Utils.replace(URLEncoder.encode(name, "UTF-8"), "+", "%20") } );
       }
       catch (UnsupportedEncodingException uee)
       {
@@ -285,7 +286,7 @@ public class DownloadContentServlet extends HttpServlet
                   ref.getStoreRef().getProtocol(),
                   ref.getStoreRef().getIdentifier(),
                   ref.getId(),
-                  URLEncoder.encode(name, "US-ASCII") } );
+                  Utils.replace(URLEncoder.encode(name, "UTF-8"), "+", "%20") } );
       }
       catch (UnsupportedEncodingException uee)
       {

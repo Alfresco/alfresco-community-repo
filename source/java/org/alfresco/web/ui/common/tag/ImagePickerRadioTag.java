@@ -49,6 +49,9 @@ public class ImagePickerRadioTag extends HtmlComponentTag
    /** the onclick handler */
    private String onclick;
    
+   /** the name of the config section to lookup to get the icons */
+   private String configSection;
+   
    /**
     * @see javax.faces.webapp.UIComponentTag#getComponentType()
     */
@@ -77,6 +80,7 @@ public class ImagePickerRadioTag extends HtmlComponentTag
       setStringProperty(component, "value", this.value);
       setStringProperty(component, "image", this.image);
       setStringProperty(component, "onclick", this.onclick);
+      setStringProperty(component, "configSection", this.configSection);
       setIntProperty(component, "spacing", this.spacing);
       setIntProperty(component, "columns", this.columns);
    }
@@ -95,6 +99,7 @@ public class ImagePickerRadioTag extends HtmlComponentTag
       this.image = null;
       this.columns = null;
       this.onclick = null;
+      this.configSection = null;
    }   
 
    /**
@@ -223,5 +228,21 @@ public class ImagePickerRadioTag extends HtmlComponentTag
    public void setOnclick(String onclick)
    {
       this.onclick = onclick;
+   }
+
+   /**
+    * @return Returns the config section to lookup
+    */
+   public String getConfigSection()
+   {
+      return this.configSection;
+   }
+
+   /**
+    * @param configSection The config section to lookup
+    */
+   public void setConfigSection(String configSection)
+   {
+      this.configSection = configSection;
    }
 }

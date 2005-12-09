@@ -26,6 +26,10 @@ import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
+import org.alfresco.config.Config;
+import org.alfresco.config.ConfigElement;
+import org.alfresco.config.ConfigService;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIImagePicker;
 import org.alfresco.web.ui.common.component.UIListItem;
@@ -101,6 +105,7 @@ public class ImagePickerRadioRenderer extends BaseRenderer
    /**
     * @see javax.faces.render.Renderer#encodeChildren(javax.faces.context.FacesContext, javax.faces.component.UIComponent)
     */
+   @SuppressWarnings("unchecked")
    public void encodeChildren(FacesContext context, UIComponent component) throws IOException
    {
       if (component.isRendered() == false)
@@ -122,30 +127,64 @@ public class ImagePickerRadioRenderer extends BaseRenderer
          
       ResponseWriter out = context.getResponseWriter();
       
-      // get the child components
-      for (Iterator i = imagePicker.getChildren().iterator(); i.hasNext(); /**/)
+      // determine whether the options should be pulled from config or
+      // from the child components
+      String configSection = (String)attrs.get("configSection");
+      
+      if (configSection != null && configSection.length() > 0)
       {
-         UIComponent child = (UIComponent)i.next();
-         if (child instanceof UIListItems)
+         // render all the icons from the list that appear in the given
+         // config section
+         ConfigService cfgService = Application.getConfigService(context);
+         Config cfg = cfgService.getConfig(configSection);
+         if (cfg != null)
          {
-            // get the value of the list items component and iterate
-            // through it's collection
-            Object listItems = ((UIListItems)child).getValue();
-            if (listItems instanceof Collection)
+            ConfigElement iconsCfg = cfg.getConfigElement("icons");
+            if (iconsCfg != null)
             {
-               Iterator iter = ((Collection)listItems).iterator();
-               while (iter.hasNext())
+               for (ConfigElement icon : iconsCfg.getChildren())
                {
-                  UIListItem item = (UIListItem)iter.next();
-                  renderItem(context, out, imagePicker, item, onclick);
+                  String iconName = icon.getAttribute("name");
+                  String iconPath = icon.getAttribute("path");
+                  
+                  if (iconName != null && iconPath != null)
+                  {
+                     UIListItem item = new UIListItem();
+                     item.setValue(iconName);
+                     item.getAttributes().put("image", iconPath);
+                     renderItem(context, out, imagePicker, item, onclick);
+                  }
                }
             }
          }
-         else if (child instanceof UIListItem && child.isRendered() == true)
+      }
+      else
+      {
+         // get the child components
+         for (Iterator i = imagePicker.getChildren().iterator(); i.hasNext(); /**/)
          {
-            // found a valid UIListItem child to render
-            UIListItem item = (UIListItem)child;
-            renderItem(context, out, imagePicker, item, onclick);
+            UIComponent child = (UIComponent)i.next();
+            if (child instanceof UIListItems)
+            {
+               // get the value of the list items component and iterate
+               // through it's collection
+               Object listItems = ((UIListItems)child).getValue();
+               if (listItems instanceof Collection)
+               {
+                  Iterator iter = ((Collection)listItems).iterator();
+                  while (iter.hasNext())
+                  {
+                     UIListItem item = (UIListItem)iter.next();
+                     renderItem(context, out, imagePicker, item, onclick);
+                  }
+               }
+            }
+            else if (child instanceof UIListItem && child.isRendered() == true)
+            {
+               // found a valid UIListItem child to render
+               UIListItem item = (UIListItem)child;
+               renderItem(context, out, imagePicker, item, onclick);
+            }
          }
       }
       

@@ -262,6 +262,14 @@
          <property-name>dictionaryService</property-name>
          <value>#{DictionaryService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>configService</property-name>
+         <value>#{configService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -290,6 +298,14 @@
       <managed-property>
          <property-name>browseBean</property-name>
          <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>configService</property-name>
+         <value>#{configService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
    
@@ -323,6 +339,14 @@
       <managed-property>
          <property-name>searchService</property-name>
          <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>configService</property-name>
+         <value>#{configService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
    
@@ -926,6 +950,14 @@
          <property-name>searchService</property-name>
          <value>#{SearchService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>configService</property-name>
+         <value>#{configService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -958,6 +990,14 @@
       <managed-property>
          <property-name>searchService</property-name>
          <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>configService</property-name>
+         <value>#{configService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
    
@@ -992,6 +1032,14 @@
          <property-name>searchService</property-name>
          <value>#{SearchService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>configService</property-name>
+         <value>#{configService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -1024,6 +1072,14 @@
       <managed-property>
          <property-name>searchService</property-name>
          <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>configService</property-name>
+         <value>#{configService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
    
@@ -1062,6 +1118,14 @@
          <property-name>contentService</property-name>
          <value>#{ContentService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>configService</property-name>
+         <value>#{configService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -1094,6 +1158,14 @@
       <managed-property>
          <property-name>searchService</property-name>
          <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>configService</property-name>
+         <value>#{configService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
    

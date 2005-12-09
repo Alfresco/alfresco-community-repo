@@ -47,8 +47,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class NewTopicWizard extends NewSpaceWizard
 {
-   public static final String TOPIC_ICON_DEFAULT = "topic_large";
-   
    private static final Log logger = LogFactory.getLog(NewTopicWizard.class);
    
    protected String message;
@@ -134,31 +132,8 @@ public class NewTopicWizard extends NewSpaceWizard
       super.init();
 
       this.spaceType = ForumModel.TYPE_TOPIC.toString();
-      this.icon = TOPIC_ICON_DEFAULT;
       this.topicType = "0";
       this.message = null;
-   }
-   
-   /**
-    * Returns a list of icons to allow the user to select from.
-    * 
-    * @return A list of icons
-    */
-   @SuppressWarnings("unchecked")
-   public List<UIListItem> getIcons()
-   {
-      // return the various forum icons
-      if (this.topicIcons == null)
-      {
-         this.topicIcons = new ArrayList<UIListItem>(2);
-         
-         UIListItem item = new UIListItem();
-         item.setValue(TOPIC_ICON_DEFAULT);
-         item.getAttributes().put("image", "/images/icons/topic_large.gif");
-         this.topicIcons.add(item);
-      }
-      
-      return this.topicIcons;
    }
 
    /**

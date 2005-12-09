@@ -33,7 +33,6 @@ import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -63,7 +62,6 @@ import org.springframework.web.jsf.FacesContextUtils;
 public class NewSpaceWizard extends AbstractWizardBean
 {
    public static final String SPACE_ICON_DEFAULT = "space-icon-default";
-   public static final String FORUMS_ICON_DEFAULT = "forums_large";
 
    private static Log logger = LogFactory.getLog(NewSpaceWizard.class);
    
@@ -83,7 +81,9 @@ public class NewSpaceWizard extends AbstractWizardBean
 
    // new space wizard specific properties
    private SearchService searchService;
+   private NamespaceService namespaceService;
    private DictionaryService dictionaryService;
+   private ConfigService configService;
    
    protected String spaceType;
    protected String icon;
@@ -97,8 +97,6 @@ public class NewSpaceWizard extends AbstractWizardBean
    protected boolean saveAsTemplate;
    protected List<SelectItem> templates;
    protected List<UIListItem> folderTypes;
-   protected List<UIListItem> genericIcons;
-   protected List<UIListItem> forumsIcons;
    protected List<UIDescription> folderTypeDescriptions;
    
    // the NodeRef of the node created during finish
@@ -683,72 +681,57 @@ public class NewSpaceWizard extends AbstractWizardBean
    @SuppressWarnings("unchecked")
    public List<UIListItem> getIcons()
    {
-      // TODO: Drive the list of icons to show for each space type from the config
-      //       this will then remove the dependency on forums from this generic 
-      //       class
+      // NOTE: we can't cache this list as it depends on the space type
+      //       which the user can change during the advanced space wizard
       
       List<UIListItem> icons = null;
       
-      if (this.spaceType.equals(ForumModel.TYPE_FORUMS.toString()))
+      QName type = QName.createQName(this.spaceType);
+      String typePrefixForm = type.toPrefixString(this.namespaceService);
+      
+      Config config = this.configService.getConfig(typePrefixForm);
+      if (config != null)
       {
-         // return the various forum icons
-         if (this.forumsIcons == null)
+         ConfigElement iconsCfg = config.getConfigElement("icons");
+         if (iconsCfg != null)
          {
-            this.forumsIcons = new ArrayList<UIListItem>(2);
-            
-            // change default icon to be forums
-            this.icon = FORUMS_ICON_DEFAULT;
-            
-            UIListItem item = new UIListItem();
-            item.setValue(FORUMS_ICON_DEFAULT);
-            item.getAttributes().put("image", "/images/icons/forums_large.gif");
-            this.forumsIcons.add(item);
+            boolean first = true;
+            for (ConfigElement icon : iconsCfg.getChildren())
+            {
+               String iconName = icon.getAttribute("name");
+               String iconPath = icon.getAttribute("path");
+               
+               if (iconName != null && iconPath != null)
+               {
+                  if (first)
+                  {
+                     // if this is the first icon create the list and make 
+                     // the first icon in the list the default
+                     
+                     icons = new ArrayList<UIListItem>(iconsCfg.getChildCount());
+                     this.icon = iconName;
+                     first = false;
+                  }
+                  
+                  UIListItem item = new UIListItem();
+                  item.setValue(iconName);
+                  item.getAttributes().put("image", iconPath);
+                  icons.add(item);
+               }
+            }
          }
-         
-         icons = this.forumsIcons;
       }
-      else
+      
+      // if we didn't find any icons display one default choice
+      if (icons == null)
       {
-         // return the generic space icons
-         if (this.genericIcons == null)
-         {
-            this.genericIcons = new ArrayList<UIListItem>(6);
-            
-            // change default icon
-            this.icon = SPACE_ICON_DEFAULT;
-            
-            UIListItem item = new UIListItem();
-            item.setValue("space-icon-default");
-            item.getAttributes().put("image", "/images/icons/space-icon-default.gif");
-            this.genericIcons.add(item);
-            
-            item = new UIListItem();
-            item.setValue("space-icon-star");
-            item.getAttributes().put("image", "/images/icons/space-icon-star.gif");
-            this.genericIcons.add(item);
-            
-            item = new UIListItem();
-            item.setValue("space-icon-doc");
-            item.getAttributes().put("image", "/images/icons/space-icon-doc.gif");
-            this.genericIcons.add(item);
-            
-            item = new UIListItem();
-            item.setValue("space-icon-pen");
-            item.getAttributes().put("image", "/images/icons/space-icon-pen.gif");
-            this.genericIcons.add(item);
-            
-            item = new UIListItem();
-            item.setValue("space-icon-cd");
-            item.getAttributes().put("image", "/images/icons/space-icon-cd.gif");
-            this.genericIcons.add(item);
-            
-            item = new UIListItem();
-            item.setValue("space-icon-image");
-            item.getAttributes().put("image", "/images/icons/space-icon-image.gif");
-            this.genericIcons.add(item);
-         }
+         icons = new ArrayList<UIListItem>(1);
+         this.icon = SPACE_ICON_DEFAULT;
          
-         icons = this.genericIcons;
+         UIListItem item = new UIListItem();
+         item.setValue("space-icon-default");
+         item.getAttributes().put("image", "/images/icons/space-icon-default.gif");
+         icons.add(item);
       }
       
       return icons;
@@ -771,6 +754,14 @@ public class NewSpaceWizard extends AbstractWizardBean
    }
    
    /**
+    * @param namespaceService The NamespaceService
+    */
+   public void setNamespaceService(NamespaceService namespaceService)
+   {
+      this.namespaceService = namespaceService;
+   }
+
+   /**
     * Sets the dictionary service
     * 
     * @param dictionaryService  the dictionary service
@@ -780,6 +771,16 @@ public class NewSpaceWizard extends AbstractWizardBean
       this.dictionaryService = dictionaryService;
    }
    
+   /**
+    * Sets the config service
+    * 
+    * @param configService The ConfigService
+    */
+   public void setConfigService(ConfigService configService)
+   {
+      this.configService = configService;
+   }
+
    /**
     * @return Returns the copyPolicy.
     */

@@ -1,0 +1,39 @@
+<alfresco-config>
+
+   <!-- This config file holds all the icons choices displayed -->
+   <!-- to users when creating various types of spaces in the  -->
+   <!-- client. --> 
+   <!-- NOTE: The conditions in this file are all string based -->
+   <!-- and will therefore not be found when using Node based -->
+   <!-- lookups, this also means the cm: can not be presumed. -->
+
+   <config evaluator="string-compare" condition="cm:folder">
+      <icons>
+         <icon name="space-icon-default" path="/images/icons/space-icon-default.gif" />
+         <icon name="space-icon-star" path="/images/icons/space-icon-star.gif" />
+         <icon name="space-icon-doc" path="/images/icons/space-icon-doc.gif" />
+         <icon name="space-icon-pen" path="/images/icons/space-icon-pen.gif" />
+         <icon name="space-icon-cd" path="/images/icons/space-icon-cd.gif" />
+         <icon name="space-icon-image" path="/images/icons/space-icon-image.gif" />
+      </icons>
+   </config>
+
+   <config evaluator="string-compare" condition="fm:forums">
+      <icons>
+         <icon name="forums_large" path="/images/icons/forums_large.gif" />
+      </icons>
+   </config>
+   
+   <config evaluator="string-compare" condition="fm:forum">
+      <icons>
+         <icon name="forum_large" path="/images/icons/forum_large.gif" />
+      </icons>
+   </config>
+   
+   <config evaluator="string-compare" condition="fm:topic">
+      <icons>
+         <icon name="topic_large" path="/images/icons/topic_large.gif" />
+      </icons>
+   </config>
+   
+</alfresco-config>

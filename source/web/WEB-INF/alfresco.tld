@@ -1160,6 +1160,12 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
+      
+      <attribute>
+         <name>configSection</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
    </tag>
    
    <tag>

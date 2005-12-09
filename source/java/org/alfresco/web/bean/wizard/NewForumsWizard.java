@@ -17,7 +17,6 @@
  */
 package org.alfresco.web.bean.wizard;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.model.ForumModel;
@@ -30,8 +29,6 @@ import org.alfresco.web.ui.common.component.UIListItem;
  */
 public class NewForumsWizard extends NewSpaceWizard
 {
-   public static final String FORUMS_ICON_DEFAULT = "forums_large";
-   
    protected List<UIListItem> forumsIcons;
 
    /**
@@ -42,28 +39,5 @@ public class NewForumsWizard extends NewSpaceWizard
       super.init();
       
       this.spaceType = ForumModel.TYPE_FORUMS.toString();
-      this.icon = FORUMS_ICON_DEFAULT;
-   }
-   
-   /**
-    * Returns a list of icons to allow the user to select from.
-    * 
-    * @return A list of icons
-    */
-   @SuppressWarnings("unchecked")
-   public List<UIListItem> getIcons()
-   {
-      // return the various forums icons
-      if (this.forumsIcons == null)
-      {
-         this.forumsIcons = new ArrayList<UIListItem>(1);
-         
-         UIListItem item = new UIListItem();
-         item.setValue(FORUMS_ICON_DEFAULT);
-         item.getAttributes().put("image", "/images/icons/forums_large.gif");
-         this.forumsIcons.add(item);
-      }
-      
-      return this.forumsIcons;
    }
 }

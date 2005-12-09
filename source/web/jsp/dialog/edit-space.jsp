@@ -139,12 +139,7 @@
                                        <table border="0" cellpadding="0" cellspacing="0"><tr><td>
                                        <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
                                        <a:imagePickerRadio columns="6" spacing="4" value="#{EditSpaceDialog.icon}">
-                                          <a:listItem value="space-icon-default" image="/images/icons/space-icon-default.gif" />
-                                          <a:listItem value="space-icon-star" image="/images/icons/space-icon-star.gif" />
-                                          <a:listItem value="space-icon-doc" image="/images/icons/space-icon-doc.gif" />
-                                          <a:listItem value="space-icon-pen" image="/images/icons/space-icon-pen.gif" />
-                                          <a:listItem value="space-icon-cd" image="/images/icons/space-icon-cd.gif" />
-                                          <a:listItem value="space-icon-image" image="/images/icons/space-icon-image.gif" />
+                                          <a:listItems value="#{EditSpaceDialog.icons}" />
                                        </a:imagePickerRadio>
                                        <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
                                        </td></tr></table>

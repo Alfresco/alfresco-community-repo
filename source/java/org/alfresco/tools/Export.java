@@ -23,6 +23,7 @@ import java.util.Collection;
 import org.alfresco.repo.exporter.FileExportPackageHandler;
 import org.alfresco.repo.exporter.ACPExportPackageHandler;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.view.ExportPackageHandler;
@@ -212,16 +213,17 @@ public final class Export extends Tool
     void execute() throws ToolException
     {
         ExporterService exporter = getServiceRegistry().getExporterService();
+        MimetypeService mimetypeService = getServiceRegistry().getMimetypeService();
 
         // create export package handler
         ExportPackageHandler exportHandler = null;
         if (context.zipped)
         {
-            exportHandler = new ZipHandler(context.getDestDir(), context.getZipFile(), context.getPackageFile(), context.getPackageDir(), context.overwrite);
+            exportHandler = new ZipHandler(context.getDestDir(), context.getZipFile(), context.getPackageFile(), context.getPackageDir(), context.overwrite, mimetypeService);
         }
         else
         {
-            exportHandler = new FileHandler(context.getDestDir(), context.getPackageFile(), context.getPackageDir(), context.overwrite);
+            exportHandler = new FileHandler(context.getDestDir(), context.getPackageFile(), context.getPackageDir(), context.overwrite, mimetypeService);
         }
 
         // export Repository content to export package
@@ -255,9 +257,9 @@ public final class Export extends Tool
          * @param contentDir
          * @param overwrite
          */
-        public FileHandler(File destDir, File dataFile, File contentDir, boolean overwrite)
+        public FileHandler(File destDir, File dataFile, File contentDir, boolean overwrite, MimetypeService mimetypeService)
         {
-            super(destDir, dataFile, contentDir, overwrite);
+            super(destDir, dataFile, contentDir, overwrite, mimetypeService);
         }
 
         /**
@@ -286,9 +288,9 @@ public final class Export extends Tool
          * @param dataFile
          * @param contentDir
          */
-        public ZipHandler(File destDir, File zipFile, File dataFile, File contentDir, boolean overwrite)
+        public ZipHandler(File destDir, File zipFile, File dataFile, File contentDir, boolean overwrite, MimetypeService mimetypeService)
         {
-            super(destDir, zipFile, dataFile, contentDir, overwrite);
+            super(destDir, zipFile, dataFile, contentDir, overwrite, mimetypeService);
         }
 
         /**

@@ -26,7 +26,9 @@ import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.view.ExportPackageHandler;
 import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.util.TempFileProvider;
@@ -43,6 +45,7 @@ public class ACPExportPackageHandler
     /** ACP File Extension */
     public final static String ACP_EXTENSION = "acp";
     
+    protected MimetypeService mimetypeService;
     protected OutputStream outputStream;
     protected File dataFile;
     protected File contentDir;
@@ -60,7 +63,7 @@ public class ACPExportPackageHandler
      * @param dataFile
      * @param contentDir
      */
-    public ACPExportPackageHandler(File destDir, File zipFile, File dataFile, File contentDir, boolean overwrite)
+    public ACPExportPackageHandler(File destDir, File zipFile, File dataFile, File contentDir, boolean overwrite, MimetypeService mimetypeService)
     {
         try
         {
@@ -86,6 +89,7 @@ public class ACPExportPackageHandler
             this.outputStream = new FileOutputStream(absZipFile);
             this.dataFile = dataFile;
             this.contentDir = contentDir;
+            this.mimetypeService = mimetypeService;
         }
         catch (FileNotFoundException e)
         {
@@ -100,11 +104,12 @@ public class ACPExportPackageHandler
      * @param dataFile
      * @param contentDir
      */
-    public ACPExportPackageHandler(OutputStream outputStream, File dataFile, File contentDir)
+    public ACPExportPackageHandler(OutputStream outputStream, File dataFile, File contentDir, MimetypeService mimetypeService)
     {
         this.outputStream = outputStream;
         this.dataFile = dataFile;
         this.contentDir = contentDir;
+        this.mimetypeService = mimetypeService;
     }
 
     /* (non-Javadoc)
@@ -143,7 +148,23 @@ public class ACPExportPackageHandler
         {
             contentDirPath = contentDirPath.substring(0, contentDirPath.indexOf("."));
         }
-        File file = new File(contentDirPath, "content" + iFileCnt++ + ".bin");
+        String extension = "bin";
+        if (mimetypeService != null)
+        {
+            String mimetype = contentData.getMimetype();
+            if (mimetype != null && mimetype.length() > 0)
+            {
+                try
+                {
+                    extension = mimetypeService.getExtension(mimetype);
+                }
+                catch(AlfrescoRuntimeException e)
+                {
+                    // use default extension
+                }
+            }
+        }
+        File file = new File(contentDirPath, "content" + iFileCnt++ + "." + extension);
         
         try
         {

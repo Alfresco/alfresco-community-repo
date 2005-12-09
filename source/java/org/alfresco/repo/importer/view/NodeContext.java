@@ -137,16 +137,15 @@ public class NodeContext extends ElementContext
      */
     public void addPropertyCollection(QName property)
     {
-        // Do not import properties of sys:referenceable or cm:versionable
+        // Do not import properties of sys:referenceable or cm:versionable or cm:copiedfrom
         // TODO: Make this configurable...
         PropertyDefinition propDef = getDictionaryService().getProperty(property);
         ClassDefinition classDef = (propDef == null) ? null : propDef.getContainerClass();
         if (classDef != null)
         {
-            if (classDef.getName().equals(ContentModel.ASPECT_REFERENCEABLE) ||
-                classDef.getName().equals(ContentModel.ASPECT_VERSIONABLE))
+            if (!isImportableClass(classDef.getName()))
             {
-                return;                
+                return;
             }
         }
         
@@ -170,10 +169,9 @@ public class NodeContext extends ElementContext
         ClassDefinition classDef = (propDef == null) ? null : propDef.getContainerClass();
         if (classDef != null)
         {
-            if (classDef.getName().equals(ContentModel.ASPECT_REFERENCEABLE) ||
-                classDef.getName().equals(ContentModel.ASPECT_VERSIONABLE))
+            if (!isImportableClass(classDef.getName()))
             {
-                return;                
+                return;
             }
         }
         
@@ -234,7 +232,10 @@ public class NodeContext extends ElementContext
      */
     public void addAspect(AspectDefinition aspect)
     {
-        nodeAspects.put(aspect.getName(), aspect);
+        if (isImportableClass(aspect.getName()))
+        {
+            nodeAspects.put(aspect.getName(), aspect);
+        }
     }
     
     /* (non-Javadoc)
@@ -326,6 +327,19 @@ public class NodeContext extends ElementContext
             def = getDictionaryService().getAssociation(defName);
         }
         return def;
+    }
+    
+    /**
+     * Determine if the provided class name is to be imported
+     * 
+     * @param className  class to check (type or aspect)
+     * @return  true => import,  false => ignore on import
+     */
+    private boolean isImportableClass(QName className)
+    {
+        return !(className.equals(ContentModel.ASPECT_REFERENCEABLE) ||
+                 className.equals(ContentModel.ASPECT_COPIEDFROM) ||
+                 className.equals(ContentModel.ASPECT_VERSIONABLE));
     }
     
     /* (non-Javadoc)

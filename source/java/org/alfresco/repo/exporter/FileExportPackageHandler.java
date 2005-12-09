@@ -23,7 +23,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.view.ExportPackageHandler;
 import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.util.TempFileProvider;
@@ -37,6 +39,7 @@ import org.alfresco.util.TempFileProvider;
 public class FileExportPackageHandler
     implements ExportPackageHandler
 {
+    protected MimetypeService mimetypeService = null;
     protected File contentDir;
     protected File absContentDir;
     protected File absDataFile;
@@ -50,13 +53,15 @@ public class FileExportPackageHandler
      * @param dataFile  filename of data file (relative to destDir)
      * @param packageDir  directory for content (relative to destDir)  
      * @param overwrite  force overwrite of existing package directory
+     * @param mimetypeService (optional) mimetype service
      */
-    public FileExportPackageHandler(File destDir, File dataFile, File contentDir, boolean overwrite)
+    public FileExportPackageHandler(File destDir, File dataFile, File contentDir, boolean overwrite, MimetypeService mimetypeService)
     {
         this.contentDir = contentDir;
         this.absContentDir = new File(destDir, contentDir.getPath());
         this.absDataFile = new File(destDir, dataFile.getPath());
         this.overwrite = overwrite;
+        this.mimetypeService = mimetypeService;
     }
 
     /* (non-Javadoc)
@@ -119,7 +124,23 @@ public class FileExportPackageHandler
         }
         
         // Create file in package directory to hold exported content
-        File outputFile = TempFileProvider.createTempFile("export", ".bin", absContentDir);
+        String extension = "bin";
+        if (mimetypeService != null)
+        {
+            String mimetype = contentData.getMimetype();
+            if (mimetype != null && mimetype.length() > 0)
+            {
+                try
+                {
+                    extension = mimetypeService.getExtension(mimetype);
+                }
+                catch(AlfrescoRuntimeException e)
+                {
+                    // use default extension
+                }
+            }
+        }
+        File outputFile = TempFileProvider.createTempFile("export", "." + extension, absContentDir);
         
         try
         {

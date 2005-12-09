@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -70,6 +71,11 @@ public class ExporterActionExecuter extends ActionExecuterAbstractBase
     private ExporterService exporterService;
     
     /**
+     * The Mime type service
+     */
+    private MimetypeService mimetypeService;
+
+    /**
      * The node service
      */
     private NodeService nodeService;
@@ -88,6 +94,16 @@ public class ExporterActionExecuter extends ActionExecuterAbstractBase
 	{
 		this.exporterService = exporterService;
 	}
+    
+    /**
+     * Sets the MimetypeService to use
+     * 
+     * @param mimetypeService
+     */
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
+    }
     
     /**
      * Sets the NodeService to use
@@ -124,7 +140,7 @@ public class ExporterActionExecuter extends ActionExecuterAbstractBase
             // create a temporary file to hold the zip
             zipFile = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, ACPExportPackageHandler.ACP_EXTENSION);
             ACPExportPackageHandler zipHandler = new ACPExportPackageHandler(new FileOutputStream(zipFile), 
-                 dataFile, contentDir);
+                 dataFile, contentDir, mimetypeService);
            
             ExporterCrawlerParameters params = new ExporterCrawlerParameters();
             boolean includeChildren = true;

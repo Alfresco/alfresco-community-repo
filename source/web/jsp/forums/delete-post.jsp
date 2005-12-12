@@ -71,7 +71,7 @@
                            </td>
                            <td>
                               <div class="mainSubTitle"><h:outputText value="#{NavigationBean.nodeProperties.name}" /></div>
-                              <div class="mainTitle"><h:outputText value="#{msg.delete_post}" /> '<h:outputText value="#{BrowseBean.actionSpace.name}" />'</div>
+                              <div class="mainTitle"><h:outputText value="#{msg.delete_post}" /></div>
                               <div class="mainSubText"><h:outputText value="#{msg.delete_post_info}" /></div>
                            </td>
                         </tr>
@@ -117,7 +117,7 @@
                                  <tr>
                                     <td class="mainSubTitle">
                                        <h:outputFormat value="#{msg.delete_post_confirm}">
-                                          <f:param value="#{BrowseBean.actionSpace.name}"/>
+                                          <f:param value="#{BrowseBean.document.properties.creator}"/>
                                        </h:outputFormat>
                                     </td>
                                  </tr>
@@ -137,7 +137,7 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.yes}" action="#{BrowseBean.deleteSpaceOK}" styleClass="dialogControls" />
+                                       <h:commandButton value="#{msg.yes}" action="#{BrowseBean.deleteFileOK}" styleClass="dialogControls" />
                                     </td>
                                  </tr>
                                  <tr><td class="dialogButtonSpacing"></td></tr>

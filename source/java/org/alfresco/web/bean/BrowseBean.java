@@ -1098,7 +1098,8 @@ public class BrowseBean implements IContextListener
       // clear the UI state in preparation for finishing the next action
       if (invalidate == true)
       {
-         invalidateComponents();
+         // use the context service to notify all registered beans
+         UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
       }
    }
    

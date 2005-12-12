@@ -16,7 +16,9 @@
  */
 package org.alfresco.web.ui.common;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -276,6 +278,43 @@ public final class Utils
       }
       
       return out.append(str.substring(lastindex, str.length())).toString();
+   }
+   
+   /**
+    * Replaces carriage returns and line breaks with the &lt;br&gt; tag.
+    * 
+    * @param str The string to be parsed
+    * @return The string with line breaks removed
+    */
+   public static String replaceLineBreaks(String str)
+   {
+      String replaced = null;
+      
+      if (str != null)
+      {
+         try
+         {
+            StringBuilder parsedContent = new StringBuilder();
+            BufferedReader reader = new BufferedReader(new StringReader(str));
+            String line = reader.readLine();
+            while (line != null)
+            {
+               parsedContent.append(line).append("<br/>");
+               line = reader.readLine();
+            }
+            
+            replaced = parsedContent.toString();
+         }
+         catch (IOException ioe)
+         {
+            if (logger.isWarnEnabled())
+            {
+               logger.warn("Failed to replace line breaks in string: " + str);
+            }
+         }
+      }
+      
+      return replaced;
    }
    
    /**

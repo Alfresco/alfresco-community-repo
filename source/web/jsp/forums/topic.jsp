@@ -88,7 +88,7 @@
                                  </a:actionLink>
                                  <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval2">
                                     <a:actionLink value="#{msg.delete_topic}" image="/images/icons/delete.gif" padding="4" action="deleteTopic" actionListener="#{BrowseBean.setupDeleteAction}" id="link3">
-                                       <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param1" />
+                                       <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param2" />
                                     </a:actionLink>
                                  </r:permissionEvaluator>
                                  <%-- Current space More actions menu --%>
@@ -160,7 +160,7 @@
                            <f:facet name="header">
                               <h:outputText value="#{msg.post}" />
                            </f:facet>
-                           <h:outputText value="#{r.message}" />
+                           <h:outputText value="#{r.message}" escape="false" />
                         </a:column>
                         
                         <%-- Author column for the details view mode --%>
@@ -227,7 +227,7 @@
                               </a:actionLink>
                            </r:permissionEvaluator>
                            <r:permissionEvaluator value="#{r}" allow="Delete">
-                              <a:actionLink value="#{msg.delete_post}" image="/images/icons/delete.gif" showLink="false" styleClass="inlineAction" action="deletePost" actionListener="#{BrowseBean.setupDeleteAction}">
+                              <a:actionLink value="#{msg.delete_post}" image="/images/icons/delete.gif" showLink="false" styleClass="inlineAction" action="deletePost" actionListener="#{BrowseBean.setupContentAction}">
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
                            </r:permissionEvaluator>

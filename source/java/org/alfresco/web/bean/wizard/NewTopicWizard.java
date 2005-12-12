@@ -36,6 +36,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -192,7 +193,7 @@ public class NewTopicWizard extends NewSpaceWizard
          // set the mimetype and encoding
          writer.setMimetype(Repository.getMimeTypeForFileName(context, fileName));
          writer.setEncoding("UTF-8");
-         writer.putContent(this.message);
+         writer.putContent(Utils.replaceLineBreaks(this.message));
       }
    }
 }

@@ -84,7 +84,7 @@ public class TemplateContentServlet extends HttpServlet
    private static Log logger = LogFactory.getLog(TemplateContentServlet.class);
    
    private static final String DEFAULT_URL  = "/template/{0}/{1}/{2}";
-   private static final String TEMPALTE_URL = "/template/{0}/{1}/{2}/{3}/{4}/{5}";
+   private static final String TEMPLATE_URL = "/template/{0}/{1}/{2}/{3}/{4}/{5}";
    
    private static final String MSG_ERROR_CONTENT_MISSING = "error_content_missing";
    
@@ -209,14 +209,27 @@ public class TemplateContentServlet extends HttpServlet
          catch (Throwable txnErr)
          {
             try { if (txn != null) {txn.rollback();} } catch (Exception tex) {}
+            throw txnErr;
          }
       }
       catch (Throwable err)
       {
-         throw new AlfrescoRuntimeException("Error during download content servlet processing: " + err.getMessage(), err);
+         throw new AlfrescoRuntimeException("Error during template servlet processing: " + err.getMessage(), err);
       }
    }
    
+   /**
+    * Build the model that to process the template against.
+    * <p>
+    * The model includes the usual template root objects such as 'companyhome', 'userhome',
+    * 'person' and also includes the node specified on the servlet URL as 'space' and 'document'
+    *  
+    * @param services      ServiceRegistry required for TemplateNode construction
+    * @param session       HttpSession for accessing current User
+    * @param nodeRef       NodeRef of the space/document to process template against
+    * 
+    * @return an object model ready for executing template against
+    */
    private Object getModel(ServiceRegistry services, HttpSession session, NodeRef nodeRef)
    {
       // create FreeMarker default model and merge
@@ -262,20 +275,33 @@ public class TemplateContentServlet extends HttpServlet
    };
    
    /**
-    * Helper to generate a URL to a content node for downloading content from the server.
-    * The content is supplied as an HTTP1.1 attachment to the response. This generally means
-    * a browser should prompt the user to save the content to specified location.
+    * Helper to generate a URL to process a template against a node.
+    * <p>
+    * The result of the template is supplied returned as the response.
     * 
-    * @param ref     NodeRef of the content node to generate URL for (cannot be null)
-    * @param name    File name to return in the URL (cannot be null)
+    * @param nodeRef       NodeRef of the content node to generate URL for (cannot be null)
+    * @param templateRef   NodeRef of the template to process against, or null to use default
     * 
-    * @return URL to download the content from the specified node
+    * @return URL to process the template
     */
-   public final static String generateURL(NodeRef ref, String name)
+   public final static String generateURL(NodeRef nodeRef, NodeRef templateRef)
    {
-      return MessageFormat.format(DEFAULT_URL, new Object[] {
-                ref.getStoreRef().getProtocol(),
-                ref.getStoreRef().getIdentifier(),
-                ref.getId() } );
+      if (templateRef == null)
+      {
+         return MessageFormat.format(DEFAULT_URL, new Object[] {
+                   nodeRef.getStoreRef().getProtocol(),
+                   nodeRef.getStoreRef().getIdentifier(),
+                   nodeRef.getId() } );
+      }
+      else
+      {
+         return MessageFormat.format(TEMPLATE_URL, new Object[] {
+                   nodeRef.getStoreRef().getProtocol(),
+                   nodeRef.getStoreRef().getIdentifier(),
+                   nodeRef.getId(),
+                   templateRef.getStoreRef().getProtocol(),
+                   templateRef.getStoreRef().getIdentifier(),
+                   templateRef.getId()} );
+      }
    }
 }

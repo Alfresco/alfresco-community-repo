@@ -33,6 +33,7 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
@@ -77,7 +78,12 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
     */
    public void processAction(ActionRequest request, ActionResponse response) 
       throws PortletException, IOException 
-   {      
+   {
+      Application.setInPortalServer(true);
+      
+      // Set the current locale
+      I18NUtil.setLocale(Application.getLanguage(request.getPortletSession()));
+      
       boolean isMultipart = PortletFileUpload.isMultipartContent(request);
       
       try
@@ -142,8 +148,32 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
          }
          else
          {
-            // do the normal JSF processing
-            super.processAction(request, response);
+            String viewId = request.getParameter(VIEW_ID);
+            User user = (User)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+            if (user != null)
+            {
+               // setup the authentication context
+               try
+               {
+                  WebApplicationContext ctx = (WebApplicationContext)getPortletContext().getAttribute(
+                        WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+                  AuthenticationService auth = (AuthenticationService)ctx.getBean("authenticationService");
+                  auth.validate(user.getTicket());
+                  
+                  // do the normal JSF processing
+                  super.processAction(request, response);
+               }
+               catch (AuthenticationException authErr)
+               {
+                  // remove User object as it's now useless
+                  request.getPortletSession().removeAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+               }
+            }
+            else
+            {
+               // do the normal JSF processing as we may be on the login page
+               super.processAction(request, response);
+            }
          }
       }
       catch (Throwable e)
@@ -180,6 +210,9 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
    {
       Application.setInPortalServer(true);
       
+      // Set the current locale
+      I18NUtil.setLocale(Application.getLanguage(request.getPortletSession()));
+      
       if (request.getParameter(ERROR_OCCURRED) != null)
       {
          String errorPage = Application.getErrorPage(getPortletContext());
@@ -193,14 +226,14 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
       }
       else
       {
-         // if we have no User object in the session then a timeout must have occured
+         // if we have no User object in the session then an HTTP Session timeout must have occured
          // use the viewId to check that we are not already on the login page
          String viewId = request.getParameter(VIEW_ID);
          User user = (User)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
          if (user == null && (viewId == null || viewId.equals(getLoginPage()) == false))
          {
             if (logger.isDebugEnabled())
-               logger.debug("No valid login, requesting login page. ViewId: " + viewId);
+               logger.debug("No valid User login, requesting login page. ViewId: " + viewId);
             
             // login page redirect
             response.setContentType("text/html");
@@ -213,6 +246,9 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
             {
                if (user != null)
                {
+                  if (logger.isDebugEnabled())
+                     logger.debug("Validating ticket: " + user.getTicket());
+                  
                   // setup the authentication context
                   WebApplicationContext ctx = (WebApplicationContext)getPortletContext().getAttribute(
                         WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
@@ -220,11 +256,22 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                   auth.validate(user.getTicket());
                }
                
-               // Set the current locale
-               I18NUtil.setLocale(Application.getLanguage(request.getPortletSession()));
-               
                // do the normal JSF processing
                super.facesRender(request, response);
+            }
+            catch (AuthenticationException authErr)
+            {
+               // ticket is no longer valid!
+               if (logger.isDebugEnabled())
+                  logger.debug("Invalid ticket, requesting login page.");
+               
+               // remove User object as it's now useless
+               request.getPortletSession().removeAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+               
+               // login page redirect
+               response.setContentType("text/html");
+               request.getPortletSession().setAttribute(PortletUtil.PORTLET_REQUEST_FLAG, "true");
+               nonFacesRequest(request, response);
             }
             catch (Throwable e)
             {

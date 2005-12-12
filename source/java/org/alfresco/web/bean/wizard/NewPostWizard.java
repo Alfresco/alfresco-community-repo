@@ -22,6 +22,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.ForumModel;
 import org.alfresco.util.GUID;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * Backing bean for posting forum articles.
@@ -54,6 +55,9 @@ public class NewPostWizard extends CreateContentWizard
       this.contentType = Repository.getMimeTypeForFileName(
                   FacesContext.getCurrentInstance(), this.fileName);
       this.title = this.fileName;
+      
+      // remove link breaks and replace with <br/>
+      this.content = Utils.replaceLineBreaks(this.content);
       
       return super.finish();
    }

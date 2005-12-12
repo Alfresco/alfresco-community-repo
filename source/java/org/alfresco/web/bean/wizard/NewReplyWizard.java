@@ -20,6 +20,7 @@ package org.alfresco.web.bean.wizard;
 import javax.faces.event.ActionEvent;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,7 +45,19 @@ public class NewReplyWizard extends NewPostWizard
       // also setup the content in the browse bean
       this.browseBean.setupContentAction(event);
    }
-   
+
+   /**
+    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#finish()
+    */
+   @Override
+   public String finish()
+   {
+      // remove link breaks and replace with <br/>
+      this.content = Utils.replaceLineBreaks(this.content);
+      
+      return super.finish();
+   }
+
    /**
     * @see org.alfresco.web.bean.wizard.BaseContentWizard#performCustomProcessing()
     */

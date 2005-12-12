@@ -110,6 +110,16 @@ public class ParentContext extends ElementContext
         return parentRef;
     }
     
+    /**
+     * Set Parent Reference
+     * 
+     * @param  parentRef  parent reference
+     */
+    public void setParentRef(NodeRef parentRef)
+    {
+        this.parentRef = parentRef;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.importer.ImportParent#getAssocType()
      */
@@ -118,6 +128,16 @@ public class ParentContext extends ElementContext
         return assocType;
     }
 
+    /**
+     * Set Parent / Child Assoc Type
+     *  
+     * @param assocType  association type
+     */
+    public void setAssocType(QName assocType)
+    {
+        this.assocType = assocType;
+    }
+    
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */

@@ -50,6 +50,11 @@ public interface ImportNode
     public NodeRef getNodeRef();
     
     /**
+     * @return  node uuid to create node with
+     */
+    public String getUUID();
+    
+    /**
      * @return  the child name
      */
     public String getChildName();

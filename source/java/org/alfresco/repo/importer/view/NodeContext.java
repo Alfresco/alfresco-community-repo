@@ -49,6 +49,7 @@ public class NodeContext extends ElementContext
 {
     private ParentContext parentContext;
     private NodeRef nodeRef;
+    private String uuid;
     private TypeDefinition typeDef;
     private String childName;
     private Map<QName, AspectDefinition> nodeAspects = new HashMap<QName, AspectDefinition>();
@@ -69,6 +70,7 @@ public class NodeContext extends ElementContext
         super(elementName, parentContext.getDictionaryService(), parentContext.getImporter());
         this.parentContext = parentContext;
         this.typeDef = typeDef;
+        this.uuid = null;
     }
     
     /* (non-Javadoc)
@@ -112,6 +114,23 @@ public class NodeContext extends ElementContext
     {
         this.nodeRef = nodeRef;
     }
+
+    /*
+     *  (non-Javadoc)
+     * @see org.alfresco.repo.importer.ImportNode#getUUID()
+     */
+    public String getUUID()
+    {
+        return uuid;
+    }
+    
+    /**
+     * @param uuid  uuid
+     */
+    public void setUUID(String uuid)
+    {
+        this.uuid = uuid;
+    }
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.importer.ImportNode#getChildName()
@@ -128,8 +147,7 @@ public class NodeContext extends ElementContext
     {
         this.childName = childName;
     }
-    
-    
+
     /**
      * Adds a collection property to the node
      * 
@@ -163,9 +181,17 @@ public class NodeContext extends ElementContext
      */
     public void addProperty(QName property, String value)
     {
-        // Do not import properties of sys:referenceable or cm:versionable
+        // Process "special" properties
         // TODO: Make this configurable...
         PropertyDefinition propDef = getDictionaryService().getProperty(property);
+
+        // Process Alfresco UUID
+        if (propDef != null && propDef.getName().equals(ContentModel.PROP_NODE_UUID))
+        {
+            uuid = value;
+        }
+
+        // Do not import properties of sys:referenceable or cm:versionable
         ClassDefinition classDef = (propDef == null) ? null : propDef.getContainerClass();
         if (classDef != null)
         {

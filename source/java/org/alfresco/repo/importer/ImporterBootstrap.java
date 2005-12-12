@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
+import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -431,6 +432,16 @@ public class ImporterBootstrap
                 value = resourceBundle.getString(key);
             }
             return value;
+        }
+
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterBinding#getUUIDBinding()
+         */
+        public UUID_BINDING getUUIDBinding()
+        {
+            // always use create new strategy for bootstrap import
+            return UUID_BINDING.CREATE_NEW;
         }
     }
     

@@ -31,11 +31,25 @@ public interface ImportParent
     /**
      * @return  the parent ref
      */    
-    /*package*/ NodeRef getParentRef();
+    public NodeRef getParentRef();
     
     /**
      * @return  the child association type
      */
-    /*package*/ QName getAssocType();
+    public QName getAssocType();
+
+    /**
+     * Re-set parent reference
+     * 
+     * @param parentRef  parent reference
+     */
+    public void setParentRef(NodeRef parentRef);
+    
+    /**
+     * Re-set association type
+     * 
+     * @param  assocType  association type
+     */
+    public void setAssocType(QName assocType);
     
 }

@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.XPathException;
@@ -56,6 +57,7 @@ import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
+import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
@@ -326,8 +328,20 @@ public class ImporterComponent
         defaultHandler.setImporter(nodeImporter);
         return defaultHandler;        
     }
-    
 
+    /**
+     * Encapsulate how a node is imported into the repository
+     */
+    public interface NodeImporterStrategy
+    {
+        /**
+         * Import a node
+         * 
+         * @param  node to import
+         */
+        public NodeRef importNode(ImportNode node);
+    }
+    
     /**
      * Default Importer strategy
      * 
@@ -342,6 +356,7 @@ public class ImporterComponent
         private ImporterProgress progress;
         private ImportPackageHandler streamHandler;
         private List<ImportedNodeRef> nodeRefs = new ArrayList<ImportedNodeRef>();
+        private NodeImporterStrategy importStrategy;
 
         // Flush threshold
         private int flushThreshold = 500;
@@ -363,6 +378,41 @@ public class ImporterComponent
             this.binding = binding;
             this.progress = progress;
             this.streamHandler = streamHandler;
+            this.importStrategy = createNodeImporterStrategy(binding == null ? null : binding.getUUIDBinding());
+        }
+
+        /**
+         * Create Node Importer Strategy
+         * 
+         * @param uuidBinding  UUID Binding
+         * @return  Node Importer Strategy
+         */
+        private NodeImporterStrategy createNodeImporterStrategy(ImporterBinding.UUID_BINDING uuidBinding)
+        {
+            if (uuidBinding == null)
+            {
+                return new CreateNewNodeImporterStrategy(true);
+            }
+            else if (uuidBinding.equals(UUID_BINDING.CREATE_NEW))
+            {
+                return new CreateNewNodeImporterStrategy(true);
+            }
+            else if (uuidBinding.equals(UUID_BINDING.REMOVE_EXISTING))
+            {
+                return new RemoveExistingNodeImporterStrategy();
+            }
+            else if (uuidBinding.equals(UUID_BINDING.REPLACE_EXISTING))
+            {
+                return new ReplaceExistingNodeImporterStrategy();
+            }
+            else if (uuidBinding.equals(UUID_BINDING.THROW_ON_COLLISION))
+            {
+                return new ThrowOnCollisionNodeImporterStrategy();
+            }
+            else
+            {
+                return new CreateNewNodeImporterStrategy(true);
+            }
         }
         
         /* (non-Javadoc)
@@ -411,66 +461,10 @@ public class ImporterComponent
          */
         public NodeRef importNode(ImportNode context)
         {
-            TypeDefinition nodeType = context.getTypeDefinition();
-            NodeRef parentRef = context.getParentContext().getParentRef();
-            QName assocType = getAssocType(context);
-            QName childQName = null;
-
-            // Determine child name
-            String childName = context.getChildName();
-            if (childName != null)
-            {
-                childName = bindPlaceHolder(childName, binding);
-                String[] qnameComponents = QName.splitPrefixedQName(childName);
-                childQName = QName.createQName(qnameComponents[0], QName.createValidLocalName(qnameComponents[1]), namespaceService); 
-            }
-            else
-            {
-                Map<QName, Serializable> typeProperties = context.getProperties();
-                String name = (String)typeProperties.get(ContentModel.PROP_NAME);
-                if (name == null || name.length() == 0)
-                {
-                    throw new ImporterException("Cannot import node of type " + nodeType.getName() + " - it does not have a name");
-                }
-                
-                name = bindPlaceHolder(name, binding);
-                String localName = QName.createValidLocalName(name);
-                childQName = QName.createQName(assocType.getNamespaceURI(), localName);
-            }
+            // import node
+            NodeRef nodeRef = importStrategy.importNode(context);
             
-            // Build initial map of properties
-            Map<QName, Serializable> initialProperties = bindProperties(context);
-
-            // Create initial node (but, first disable behaviour for the node to be created)
-            Set<QName> disabledBehaviours = getDisabledBehaviours(context);
-            for (QName disabledBehaviour: disabledBehaviours)
-            {
-                boolean alreadyDisabled = behaviourFilter.disableBehaviour(disabledBehaviour);
-                if (alreadyDisabled)
-                {
-                    disabledBehaviours.remove(disabledBehaviour);
-                }
-            }
-            ChildAssociationRef assocRef = nodeService.createNode(parentRef, assocType, childQName, nodeType.getName(), initialProperties);
-            for (QName disabledBehaviour : disabledBehaviours)
-            {
-                behaviourFilter.enableBehaviour(disabledBehaviour);
-            }
-            
-            // Report creation
-            NodeRef nodeRef = assocRef.getChildRef();
-            reportNodeCreated(assocRef);
-            reportPropertySet(nodeRef, initialProperties);
-
-            // Disable behaviour for the node until the complete node (and its children have been imported)
-            for (QName disabledBehaviour : disabledBehaviours)
-            {
-                behaviourFilter.disableBehaviour(nodeRef, disabledBehaviour);
-            }
-            // TODO: Replace this with appropriate rule/action import handling
-            ruleService.disableRules(nodeRef);
-            
-            // Apply aspects
+            // apply aspects
             for (QName aspect : context.getNodeAspects())
             {
                 if (nodeService.hasAspect(nodeRef, aspect) == false)
@@ -490,7 +484,7 @@ public class ImporterComponent
                 }
             }
             
-            // Do we need to flush?
+            // do we need to flush?
             flushCount++;
             if (flushCount > flushThreshold)
             {
@@ -879,6 +873,209 @@ public class ImporterComponent
                 {
                     progress.propertySet(nodeRef, property, properties.get(property));
                 }
+            }
+        }
+        
+        /**
+         * Import strategy where imported nodes are always created regardless of whether a
+         * node of the same UUID already exists in the repository
+         */
+        private class CreateNewNodeImporterStrategy implements NodeImporterStrategy
+        {
+            // force allocation of new UUID, even if one already specified
+            private boolean assignNewUUID;
+            
+            /**
+             * Construct
+             * 
+             * @param newUUID  force allocation of new UUID
+             */
+            public CreateNewNodeImporterStrategy(boolean assignNewUUID)
+            {
+                this.assignNewUUID = assignNewUUID;
+            }
+            
+            /*
+             *  (non-Javadoc)
+             * @see org.alfresco.repo.importer.ImporterComponent.NodeImporterStrategy#importNode(org.alfresco.repo.importer.ImportNode)
+             */
+            public NodeRef importNode(ImportNode node)
+            {
+                TypeDefinition nodeType = node.getTypeDefinition();
+                NodeRef parentRef = node.getParentContext().getParentRef();
+                QName assocType = getAssocType(node);
+                QName childQName = null;
+
+                // Determine child name
+                String childName = node.getChildName();
+                if (childName != null)
+                {
+                    childName = bindPlaceHolder(childName, binding);
+                    String[] qnameComponents = QName.splitPrefixedQName(childName);
+                    childQName = QName.createQName(qnameComponents[0], QName.createValidLocalName(qnameComponents[1]), namespaceService); 
+                }
+                else
+                {
+                    Map<QName, Serializable> typeProperties = node.getProperties();
+                    String name = (String)typeProperties.get(ContentModel.PROP_NAME);
+                    if (name == null || name.length() == 0)
+                    {
+                        throw new ImporterException("Cannot import node of type " + nodeType.getName() + " - it does not have a name");
+                    }
+                    
+                    name = bindPlaceHolder(name, binding);
+                    String localName = QName.createValidLocalName(name);
+                    childQName = QName.createQName(assocType.getNamespaceURI(), localName);
+                }
+                
+                // Create initial node (but, first disable behaviour for the node to be created)
+                Set<QName> disabledBehaviours = getDisabledBehaviours(node);
+                for (QName disabledBehaviour: disabledBehaviours)
+                {
+                    boolean alreadyDisabled = behaviourFilter.disableBehaviour(disabledBehaviour);
+                    if (alreadyDisabled)
+                    {
+                        disabledBehaviours.remove(disabledBehaviour);
+                    }
+                }
+            
+                // Build initial map of properties
+                Map<QName, Serializable> initialProperties = bindProperties(node);
+                
+                // Assign UUID if already specified on imported node
+                if (!assignNewUUID && node.getUUID() != null)
+                {
+                    initialProperties.put(ContentModel.PROP_NODE_UUID, node.getUUID());
+                }
+                
+                // Create Node
+                ChildAssociationRef assocRef = nodeService.createNode(parentRef, assocType, childQName, nodeType.getName(), initialProperties);
+                for (QName disabledBehaviour : disabledBehaviours)
+                {
+                    behaviourFilter.enableBehaviour(disabledBehaviour);
+                }
+                
+                // Report creation
+                NodeRef nodeRef = assocRef.getChildRef();
+                reportNodeCreated(assocRef);
+                reportPropertySet(nodeRef, initialProperties);
+
+                // Disable behaviour for the node until the complete node (and its children have been imported)
+                for (QName disabledBehaviour : disabledBehaviours)
+                {
+                    behaviourFilter.disableBehaviour(nodeRef, disabledBehaviour);
+                }
+                // TODO: Replace this with appropriate rule/action import handling
+                ruleService.disableRules(nodeRef);
+                
+                // return newly created node reference
+                return nodeRef;
+            }
+        }
+        
+        /**
+         * Importer strategy where an existing node (one with the same UUID) as a node being
+         * imported is first removed.  The imported node is placed in the location specified
+         * at import time. 
+         */
+        private class RemoveExistingNodeImporterStrategy implements NodeImporterStrategy
+        {
+            private NodeImporterStrategy createNewStrategy = new CreateNewNodeImporterStrategy(false);
+            
+            /*
+             *  (non-Javadoc)
+             * @see org.alfresco.repo.importer.ImporterComponent.NodeImporterStrategy#importNode(org.alfresco.repo.importer.ImportNode)
+             */
+            public NodeRef importNode(ImportNode node)
+            {                
+                // remove existing node, if node to import has a UUID and an existing node of the same
+                // uuid already exists
+                String uuid = node.getUUID();
+                if (uuid != null && uuid.length() > 0)
+                {
+                    NodeRef existingNodeRef = new NodeRef(rootRef.getStoreRef(), uuid);
+                    if (nodeService.exists(existingNodeRef))
+                    {
+                        // remove primary parent link forcing deletion
+                        ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(existingNodeRef);
+                        
+                        // TODO: Check for root node
+                        
+                        nodeService.removeChild(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+                    }
+                }
+                
+                // import as if a new node into current import parent location
+                return createNewStrategy.importNode(node);
+            }
+        }
+
+        /**
+         * Importer strategy where an existing node (one with the same UUID) as a node being
+         * imported is first removed.  The imported node is placed under the parent of the removed
+         * node.
+         */        
+        private class ReplaceExistingNodeImporterStrategy implements NodeImporterStrategy
+        {
+            private NodeImporterStrategy createNewStrategy = new CreateNewNodeImporterStrategy(false);
+
+            /*
+             *  (non-Javadoc)
+             * @see org.alfresco.repo.importer.ImporterComponent.NodeImporterStrategy#importNode(org.alfresco.repo.importer.ImportNode)
+             */
+            public NodeRef importNode(ImportNode node)
+            {                
+                // replace existing node, if node to import has a UUID and an existing node of the same
+                // uuid already exists
+                String uuid = node.getUUID();
+                if (uuid != null && uuid.length() > 0)
+                {
+                    NodeRef existingNodeRef = new NodeRef(rootRef.getStoreRef(), uuid);
+                    if (nodeService.exists(existingNodeRef))
+                    {
+                        // remove primary parent link forcing deletion
+                        ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(existingNodeRef);
+                        nodeService.removeChild(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+                        
+                        // update the parent context of the node being imported to the parent of the node just deleted
+                        node.getParentContext().setParentRef(childAssocRef.getParentRef());
+                        node.getParentContext().setAssocType(childAssocRef.getTypeQName());
+                    }
+                }
+
+                // import as if a new node
+                return createNewStrategy.importNode(node);
+            }
+        }
+        
+        /**
+         * Import strategy where an error is thrown when importing a node that has the same UUID
+         * of an existing node in the repository.
+         */
+        private class ThrowOnCollisionNodeImporterStrategy implements NodeImporterStrategy
+        {
+            private NodeImporterStrategy createNewStrategy = new CreateNewNodeImporterStrategy(false);
+
+            /*
+             *  (non-Javadoc)
+             * @see org.alfresco.repo.importer.ImporterComponent.NodeImporterStrategy#importNode(org.alfresco.repo.importer.ImportNode)
+             */
+            public NodeRef importNode(ImportNode node)
+            {
+                // if node to import has a UUID and an existing node of the same uuid already exists
+                // then throw an error
+                String uuid = node.getUUID();
+                if (uuid != null && uuid.length() > 0)
+                {
+                    NodeRef existingNodeRef = new NodeRef(rootRef.getStoreRef(), uuid);
+                    if (nodeService.exists(existingNodeRef))
+                    {
+                        throw new InvalidNodeRefException("Node " + existingNodeRef + " already exists", existingNodeRef);
+                    }
+                }
+                
+                // import as if a new node
+                return createNewStrategy.importNode(node);
             }
         }
     }

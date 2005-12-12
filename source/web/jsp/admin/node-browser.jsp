@@ -71,7 +71,7 @@
    <tr>
       <td><nobr><b>Primary Path:</b></nobr></td><td>
           <nobr>
-          <h:commandLink id="selectPrimaryParent" action="#{AdminNodeBrowseBean.selectPrimaryPath}">
+          <h:commandLink id="selectPrimaryPath" action="#{AdminNodeBrowseBean.selectPrimaryPath}">
               <h:outputText id="primaryPath" value="#{AdminNodeBrowseBean.primaryPath}"/>
           </h:commandLink>
           </nobr>

@@ -111,7 +111,21 @@ public abstract class BaseContentWizard extends AbstractWizardBean
             Map<QName, Serializable> contentProps = this.nodeService.getProperties(nodeRef);
             contentProps.put(ContentModel.PROP_TITLE, this.title);
             contentProps.put(ContentModel.PROP_DESCRIPTION, this.description);
-            contentProps.put(ContentModel.PROP_CREATOR, this.author);
+            
+            // add author property
+            if (this.author != null && this.author.length() != 0)
+            {
+               if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUTHOR) == false)
+               {
+                  Map<QName, Serializable> authorProps = new HashMap<QName, Serializable>(1, 1.0f);
+                  authorProps.put(ContentModel.PROP_AUTHOR, this.author);
+                  this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
+               }
+               else
+               {
+                  contentProps.put(ContentModel.PROP_AUTHOR, this.author);
+               }
+            }
             
             // set up content properties - copy or create the compound property
             ContentData contentData = (ContentData)contentProps.get(ContentModel.PROP_CONTENT);
@@ -161,10 +175,12 @@ public abstract class BaseContentWizard extends AbstractWizardBean
                   Repository.resolveToQName(this.objectType));
             NodeRef fileNodeRef = fileInfo.getNodeRef();
             
-            // set the author (if we have)
+            // set the author aspect (if we have one)
             if (this.author != null && this.author.length() > 0)
             {
-               this.nodeService.setProperty(fileNodeRef, ContentModel.PROP_CREATOR, this.author);
+               Map<QName, Serializable> authorProps = new HashMap<QName, Serializable>(1, 1.0f);
+               authorProps.put(ContentModel.PROP_AUTHOR, this.author);
+               this.nodeService.addAspect(fileNodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
             }
             
             if (logger.isDebugEnabled())

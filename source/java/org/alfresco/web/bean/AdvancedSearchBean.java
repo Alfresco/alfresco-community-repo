@@ -565,7 +565,7 @@ public class AdvancedSearchBean
          }
          if (this.author != null && this.author.length() != 0)
          {
-            search.addAttributeQuery(ContentModel.PROP_CREATOR, this.author);
+            search.addAttributeQuery(ContentModel.PROP_AUTHOR, this.author);
          }
          if (this.contentFormat != null && this.contentFormat.length() != 0)
          {

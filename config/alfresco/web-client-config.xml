@@ -177,7 +177,7 @@
          <override from-outcome="deleteSpace" to-view-id="/jsp/forums/delete-topic.jsp" />
       </navigation>
    </config>
-   
+
    <config evaluator="node-type" condition="dictionaryModel">
       <property-sheet>      
 	     <show-property name="modelActive"/>
@@ -251,11 +251,17 @@
       </property-sheet>
    </config>
    
+   <config evaluator="aspect-name" condition="author">
+      <property-sheet>
+         <show-property name="author"/>
+      </property-sheet>
+   </config>
+   
    <config evaluator="aspect-name" condition="auditable">
       <property-sheet>
-         <show-property name="creator"/>
+         <show-property name="creator" readOnly="true"/>
          <show-property name="created" readOnly="true"/>
-         <show-property name="modifier"/>
+         <show-property name="modifier" readOnly="true"/>
          <show-property name="modified" readOnly="true"/>
       </property-sheet>
    </config>

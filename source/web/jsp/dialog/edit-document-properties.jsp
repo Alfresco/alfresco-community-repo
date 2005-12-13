@@ -146,7 +146,7 @@
                                  <tr>
                                     <td><nobr><h:outputText value="#{msg.author}" />:</nobr></td>
                                     <td>
-                                       <h:inputText value="#{EditDocPropsDialog.properties.creator}" size="35" maxlength="1024" />
+                                       <h:inputText value="#{EditDocPropsDialog.properties.author}" size="35" maxlength="1024" />
                                     </td>
                                  </tr>
                                  <tr><td colspan="2" class="paddingRow"></td></tr>

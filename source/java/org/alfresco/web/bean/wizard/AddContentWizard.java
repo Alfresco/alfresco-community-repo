@@ -82,7 +82,7 @@ public class AddContentWizard extends BaseContentWizard
          
          if (Repository.extractMetadata(FacesContext.getCurrentInstance(), cr, contentProps))
          {
-            this.author = (String)(contentProps.get(ContentModel.PROP_CREATOR));
+            this.author = (String)(contentProps.get(ContentModel.PROP_AUTHOR));
             this.title = (String)(contentProps.get(ContentModel.PROP_TITLE));
             this.description = (String)(contentProps.get(ContentModel.PROP_DESCRIPTION));
          }

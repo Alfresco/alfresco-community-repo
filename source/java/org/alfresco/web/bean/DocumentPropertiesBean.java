@@ -19,6 +19,7 @@ package org.alfresco.web.bean;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -144,6 +145,20 @@ public class DocumentPropertiesBean
                contentData = ContentData.setMimetype(contentData, mimetype);
                props.put(ContentModel.PROP_CONTENT.toString(), contentData);
             }
+         }
+         
+         // extra and deal with the Author prop if the aspect has not been applied yet
+         String author = (String)props.get(ContentModel.PROP_AUTHOR);
+         if (author != null)
+         {
+            // add aspect if required
+            if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUTHOR) == false)
+            {
+               Map<QName, Serializable> authorProps = new HashMap<QName, Serializable>(1, 1.0f);
+               authorProps.put(ContentModel.PROP_AUTHOR, author);
+               this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
+            }
+            // else it will get updated in the later setProperties() call
          }
          
          // add the remaining properties

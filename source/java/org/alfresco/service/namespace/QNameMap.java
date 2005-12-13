@@ -73,7 +73,7 @@ public class QNameMap<K,V> implements Map, Cloneable
      */
     public boolean containsKey(Object key)
     {
-        return (this.contents.containsKey(QName.resolveToQNameString(resolver, (String)key)));
+        return (this.contents.containsKey(QName.resolveToQNameString(resolver, key.toString())));
     }
     
     /**
@@ -100,7 +100,7 @@ public class QNameMap<K,V> implements Map, Cloneable
      */
     public Object put(Object key, Object value)
     {
-        return this.contents.put(QName.resolveToQNameString(resolver, (String)key), value);
+        return this.contents.put(QName.resolveToQNameString(resolver, key.toString()), value);
     }
     
     /**
@@ -108,7 +108,7 @@ public class QNameMap<K,V> implements Map, Cloneable
      */
     public Object remove(Object key)
     {
-        return this.contents.remove(QName.resolveToQNameString(resolver, (String)key));
+        return this.contents.remove(QName.resolveToQNameString(resolver, key.toString()));
     }
     
     /**

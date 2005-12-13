@@ -83,6 +83,10 @@ public interface ContentModel
     static final QName PROP_MODIFIER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modifier");
     static final QName PROP_ACCESSED = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "accessed");
     
+    // author aspect
+    static final QName ASPECT_AUTHOR = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "author");
+    static final QName PROP_AUTHOR = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "author");
+    
     // categories
     static final QName TYPE_CATEGORYROOT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "category_root");  
     static final QName ASPECT_CLASSIFIABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "classifiable");

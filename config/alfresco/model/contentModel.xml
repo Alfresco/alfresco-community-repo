@@ -218,7 +218,7 @@
                <type>d:datetime</type>
             </property>
             <property name="cm:creator">
-               <title>Author</title>
+               <title>Creator</title>
                <type>d:text</type>
             </property>
             <property name="cm:modified">
@@ -309,7 +309,7 @@
          <parent>cm:auditable</parent>
          <!-- TODO: Support mandatory-aspects on an aspect in the meta-model
          <mandatory-aspects>
-            <aspect>Auditable</aspect>
+            <aspect>cm:auditable</aspect>
          </mandatory-aspects>
          -->
          <properties>
@@ -329,15 +329,20 @@
             </property>
          </properties>
       </aspect>
+      
+      <aspect name="cm:author">
+         <title>Author</title>
+         <properties>
+            <property name="cm:author">
+               <title>Author</title>
+               <type>d:text</type> 
+            </property>
+         </properties>
+      </aspect>
    
       <aspect name="cm:dublincore">
          <title>Dublin Core</title>
          <parent>cm:titled</parent>
-         <!-- TODO: Support mandatory-aspects on an aspect in the meta-model
-         <mandatory-aspects>
-            <aspect>Auditable</aspect>
-         </mandatory-aspects>
-         -->
          <properties>
             <property name="cm:publisher">
                <title>Publisher</title>
@@ -372,13 +377,17 @@
                <type>d:text</type>
             </property>
          </properties>
+         <mandatory-aspects>
+            <aspect>cm:auditable</aspect>
+            <aspect>cm:author</aspect>
+         </mandatory-aspects>
       </aspect>
    
       <!--
       <aspect name="cm:subjectable">
          <title>Subjectable</title>
          <mandatory-aspects>
-            <aspect>Auditable</aspect>
+            <aspect>cm:auditable</aspect>
          </mandatory-aspects>
          <properties>
             <property name="cm:subject">

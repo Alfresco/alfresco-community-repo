@@ -116,7 +116,7 @@ public class HtmlMetadataExtracter extends AbstractMetadataExtracter
                         if (name.equalsIgnoreCase("creator") || name.equalsIgnoreCase("author")
                                 || name.equalsIgnoreCase("dc.creator"))
                         {
-                            trimPut(ContentModel.PROP_CREATOR, valueO, tempDestination);
+                            trimPut(ContentModel.PROP_AUTHOR, valueO, tempDestination);
                         }
                         if (name.equalsIgnoreCase("description") || name.equalsIgnoreCase("dc.description"))
                         {

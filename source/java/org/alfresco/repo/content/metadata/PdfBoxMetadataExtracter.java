@@ -60,7 +60,7 @@ public class PdfBoxMetadataExtracter extends AbstractMetadataExtracter
             // Scoop out the metadata
             PDDocumentInformation docInfo = pdf.getDocumentInformation();
 
-            trimPut(ContentModel.PROP_CREATOR, docInfo.getAuthor(), destination);
+            trimPut(ContentModel.PROP_AUTHOR, docInfo.getAuthor(), destination);
             trimPut(ContentModel.PROP_TITLE, docInfo.getTitle(), destination);
             trimPut(ContentModel.PROP_DESCRIPTION, docInfo.getSubject(), destination);
 

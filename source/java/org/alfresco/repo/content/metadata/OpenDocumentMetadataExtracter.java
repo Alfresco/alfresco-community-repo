@@ -78,7 +78,7 @@ public class OpenDocumentMetadataExtracter extends AbstractMetadataExtracter
             if (docInfo != null)
             {
                 // set the metadata
-                destination.put(ContentModel.PROP_CREATOR, docInfo.getCreator());
+                destination.put(ContentModel.PROP_AUTHOR, docInfo.getCreator());
                 destination.put(ContentModel.PROP_TITLE, docInfo.getTitle());
                 destination.put(ContentModel.PROP_DESCRIPTION, docInfo.getDescription());
                 destination.put(ContentModel.PROP_CREATED, docInfo.getCreationDate());

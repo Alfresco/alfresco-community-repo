@@ -146,7 +146,7 @@ public class UnoMetadataExtracter extends AbstractMetadataExtracter
                     // Auditable aspect
                     // trimPut(ContentModel.PROP_CREATED,
                     // si.getCreateDateTime(), destination);
-                    trimPut(ContentModel.PROP_CREATOR, propSet.getPropertyValue("Author"), destination);
+                    trimPut(ContentModel.PROP_AUTHOR, propSet.getPropertyValue("Author"), destination);
                     // trimPut(ContentModel.PROP_MODIFIED,
                     // si.getLastSaveDateTime(), destination);
                     // trimPut(ContentModel.PROP_MODIFIER, si.getLastAuthor(),

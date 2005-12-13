@@ -26,6 +26,9 @@ import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -96,6 +99,19 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
     {
         this.contentService = contentService;
     }
+    
+    /**
+     * The dictionary service
+     */
+    private DictionaryService dictionaryService;
+    
+    /**
+     * @param dictService  The DictionaryService to set.
+     */
+    public void setDictionaryService(DictionaryService dictService)
+    {
+        this.dictionaryService = dictService;
+    }
 
     /**
      * Our Extracter
@@ -140,10 +156,29 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
                     boolean changed = false;
                     for (QName key : newProps.keySet())
                     {
+                        // check if we need to add an aspect for the prop
+                        ClassDefinition propClass = dictionaryService.getProperty(key).getContainerClass();
+                        if (propClass.isAspect() &&
+                            nodeService.hasAspect(actionedUponNodeRef, propClass.getName()) == false)
+                        {
+                            Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>(3, 1.0f);
+                            for (QName defKey : propClass.getProperties().keySet())
+                            {
+                                if (dictionaryService.getProperty(defKey).isMandatory())
+                                {
+                                    aspectProps.put(defKey, allProps.get(defKey));
+                                    allProps.remove(defKey);
+                                }
+                            }
+                            nodeService.addAspect(actionedUponNodeRef, propClass.getName(), aspectProps);
+                        }
+                        
                         Serializable value = newProps.get(key);
                         if (value == null)
+                        {
                             continue; // Content extracters shouldn't do this
-
+                        }
+                        
                         // Look up the old value, and check for nulls
                         Serializable oldValue = allProps.get(key);
                         if (oldValue == null || oldValue.toString().length() == 0)
@@ -152,11 +187,11 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
                             changed = true;
                         }
                     }
-                    // TODO: Should we be adding the associated aspects or is
-                    // that done by the type system
-                    // (or are ad-hoc properties allowed?)
+                    
                     if (changed)
+                    {
                         nodeService.setProperties(actionedUponNodeRef, allProps);
+                    }
                 }
             }
         }

@@ -71,9 +71,8 @@ public class OfficeMetadataExtracter extends AbstractMetadataExtracter
 
                         // Auditable aspect
                         trimPut(ContentModel.PROP_CREATED, si.getCreateDateTime(), destination);
-                        trimPut(ContentModel.PROP_CREATOR, si.getAuthor(), destination);
-                        trimPut(ContentModel.PROP_MODIFIED, si.getLastSaveDateTime(), destination);
-                        trimPut(ContentModel.PROP_MODIFIER, si.getLastAuthor(), destination);
+                        trimPut(ContentModel.PROP_MODIFIED, si.getLastSaveDateTime(), destination); 
+                        trimPut(ContentModel.PROP_AUTHOR, si.getAuthor(), destination);
                     }
                     else if (ps instanceof DocumentSummaryInformation)
                     {

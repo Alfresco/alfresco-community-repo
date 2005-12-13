@@ -138,7 +138,7 @@ public class MP3MetadataExtracter extends AbstractMetadataExtracter
             }
             if (props.get(PROP_ARTIST) != null)
             {
-                destination.put(ContentModel.PROP_CREATOR, props.get(PROP_ARTIST));
+                destination.put(ContentModel.PROP_AUTHOR, props.get(PROP_ARTIST));
             }
             String description = getDescription(props);
             if (description != null)

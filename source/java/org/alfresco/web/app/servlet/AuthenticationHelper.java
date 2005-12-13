@@ -64,7 +64,14 @@ public final class AuthenticationHelper
          // setup the authentication context
          WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
          AuthenticationService auth = (AuthenticationService)ctx.getBean("authenticationService");
-         auth.validate(user.getTicket());
+         try
+         {
+            auth.validate(user.getTicket());
+         }
+         catch (AuthenticationException authErr)
+         {
+            return false;
+         }
          
          // Set the current locale
          I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));

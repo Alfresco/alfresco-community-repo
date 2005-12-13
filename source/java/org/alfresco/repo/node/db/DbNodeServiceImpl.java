@@ -40,6 +40,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -334,8 +335,32 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             if (properties.containsKey(entry.getKey()) == false)
             {
+                Serializable value = entry.getValue();
+                
+                // TODO what other conversions are nessesary here for other types of default values ?
+                
+                // Check the type of the default property
+                PropertyDefinition prop = this.dictionaryService.getProperty(entry.getKey());
+                if (prop != null)
+                {
+                    if (DataTypeDefinition.BOOLEAN.equals(prop.getDataType().getName()) == true)
+                    {
+                        if (value instanceof String)
+                        {
+                            if (((String)value).toUpperCase().equals("TRUE") == true)
+                            {
+                                value = Boolean.TRUE;
+                            }
+                            else if (((String)value).toUpperCase().equals("FALSE") == true)
+                            {
+                                value = Boolean.FALSE;
+                            }
+                        }
+                    }
+                }
+                
                 // Set the default value of the property
-                properties.put(entry.getKey(), entry.getValue());
+                properties.put(entry.getKey(), value);
             }
         }
     }

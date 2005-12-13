@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.lock;
 import java.text.MessageFormat;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -36,10 +37,8 @@ public class NodeLockedException extends AlfrescoRuntimeException
     /**
      * Error message
      */
-    private static final String ERROR_MESSAGE = "Can not perform operation since " +
-            "the node (id:{0}) is locked by another user.";
-    private static final String ERROR_MESSAGE_2 = "Can not perform operation {0} since " +
-    "the node (id:{1}) is locked by another user.";
+    private static final String ERROR_MESSAGE = I18NUtil.getMessage("lock_service.no_op");
+    private static final String ERROR_MESSAGE_2 = I18NUtil.getMessage("lock_service.no_op2");
 
     /**
      * @param message

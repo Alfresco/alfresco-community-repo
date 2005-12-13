@@ -18,6 +18,7 @@ package org.alfresco.service.cmr.lock;
 
 import java.text.MessageFormat;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -35,10 +36,7 @@ public class UnableToReleaseLockException extends RuntimeException
     /**
      * Error message
      */
-    private static final String ERROR_MESSAGE = 
-        "You have insufficent priveleges to realese the " +
-        "lock on the node (id: {0}).  The node is locked by " +
-        "another user.";
+    private static final String ERROR_MESSAGE = I18NUtil.getMessage("lock_service.insufficent_preveleges");
 
     /**
      * Constructor

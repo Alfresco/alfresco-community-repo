@@ -165,6 +165,7 @@ public class LockServiceImplTest extends BaseSpringTest
         }
         catch (UnableToAquireLockException exception)
         {
+            System.out.println(exception.getMessage());
         }
         
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -220,6 +221,7 @@ public class LockServiceImplTest extends BaseSpringTest
         }
         catch (UnableToReleaseLockException exception)
         {
+            System.out.println(exception.getMessage());
         }
         
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);

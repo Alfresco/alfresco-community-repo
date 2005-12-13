@@ -18,6 +18,7 @@ package org.alfresco.service.cmr.lock;
 
 import java.text.MessageFormat;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -33,8 +34,7 @@ public class UnableToAquireLockException extends RuntimeException
     /**
      * Error message
      */
-    private final static String ERROR_MESSAGE = "The node (id: {0})could not be locked since it" +
-            " is already locked by antoher user.";
+    private final static String ERROR_MESSAGE = I18NUtil.getMessage("lock_service.node_locked");
 
     /**
      * Constructor

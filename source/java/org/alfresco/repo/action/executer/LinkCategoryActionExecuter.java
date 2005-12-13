@@ -17,6 +17,7 @@
 package org.alfresco.repo.action.executer;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -117,10 +119,21 @@ public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase
                 
                 if (categoryAspect != null)
                 {
-                    // Add the aspect setting the category property to the approptiate values
-                    Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-                    properties.put(categoryProperty, categoryValue);
-                    this.nodeService.addAspect(actionedUponNodeRef, categoryAspect, properties);
+                    if (this.nodeService.hasAspect(actionedUponNodeRef, categoryAspect) == false)
+                    {
+                        // Add the aspect and set the category property value
+                        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+                        properties.put(categoryProperty, categoryValue);
+                        this.nodeService.addAspect(actionedUponNodeRef, categoryAspect, properties);
+                    }
+                    else
+                    {
+                        // Append the category value to the existing values
+                        Serializable value = this.nodeService.getProperty(actionedUponNodeRef, categoryProperty);
+                        Collection<NodeRef> categories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, value);
+                        categories.add(categoryValue);
+                        this.nodeService.setProperty(actionedUponNodeRef, categoryProperty, (Serializable)categories);
+                    }
                 }
             }			
 		}

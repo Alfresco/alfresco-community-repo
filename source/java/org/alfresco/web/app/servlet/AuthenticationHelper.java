@@ -70,6 +70,8 @@ public final class AuthenticationHelper
          }
          catch (AuthenticationException authErr)
          {
+            // no user/ticket - redirect to login page
+            httpResponse.sendRedirect(httpRequest.getContextPath() + "/faces" + Application.getLoginPage(context));
             return false;
          }
          

@@ -95,7 +95,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
 
         // Get the old props
         Map<QName, Serializable> props = this.nodeService.getProperties(this.nodeRef);
-        props.remove(ContentModel.PROP_CREATOR);
+        props.remove(ContentModel.PROP_AUTHOR);
         props.put(ContentModel.PROP_TITLE, "");
         props.put(ContentModel.PROP_DESCRIPTION, null); // Wonder how this will
                                                         // be handled
@@ -109,7 +109,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
         // Check that the properties have been set
         assertEquals(QUICK_TITLE, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_TITLE));
         assertEquals(QUICK_DESCRIPTION, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_DESCRIPTION));
-        assertEquals(QUICK_CREATOR, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_CREATOR));
+        assertEquals(QUICK_CREATOR, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_AUTHOR));
     }
 
     /**
@@ -124,7 +124,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
 
         // Get the old props
         Map<QName, Serializable> props = this.nodeService.getProperties(this.nodeRef);
-        props.put(ContentModel.PROP_CREATOR, myCreator);
+        props.put(ContentModel.PROP_AUTHOR, myCreator);
         props.put(ContentModel.PROP_TITLE, myTitle);
         props.remove(ContentModel.PROP_DESCRIPTION); // Allow this baby
         this.nodeService.setProperties(this.nodeRef, props);
@@ -136,7 +136,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
 
         // Check that the properties have been preserved
         assertEquals(myTitle, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_TITLE));
-        assertEquals(myCreator, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_CREATOR));
+        assertEquals(myCreator, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_AUTHOR));
 
         // But this one should have been set
         assertEquals(QUICK_DESCRIPTION, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_DESCRIPTION));

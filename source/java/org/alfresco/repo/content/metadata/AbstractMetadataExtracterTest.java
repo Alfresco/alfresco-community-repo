@@ -123,6 +123,6 @@ public abstract class AbstractMetadataExtracterTest extends BaseSpringTest
     {
         assertEquals(QUICK_TITLE, destination.get(ContentModel.PROP_TITLE));
         assertEquals(QUICK_DESCRIPTION, destination.get(ContentModel.PROP_DESCRIPTION));
-        assertEquals(QUICK_CREATOR, destination.get(ContentModel.PROP_CREATOR));
+        assertEquals(QUICK_CREATOR, destination.get(ContentModel.PROP_AUTHOR));
     }
 }

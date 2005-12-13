@@ -169,7 +169,7 @@ public class Duration implements Comparable, Serializable
          tok.ordinaryChars('D', 'D');
          tok.ordinaryChars('T', 'T');
          tok.ordinaryChars('H', 'H');
-         tok.ordinaryChars('M', 'M');
+         tok.ordinaryChars('m', 'm');
          tok.ordinaryChars('S', 'S');
 
          int token;

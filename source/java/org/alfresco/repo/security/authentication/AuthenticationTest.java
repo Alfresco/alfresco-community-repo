@@ -58,7 +58,7 @@ import org.springframework.context.ApplicationContext;
 public class AuthenticationTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-
+    
     private NodeService nodeService;
 
     private SearchService searchService;
@@ -470,6 +470,7 @@ public class AuthenticationTest extends TestCase
         tc.validateTicket(ticket);
         tc.validateTicket(ticket);
         tc.validateTicket(ticket);
+        
         synchronized (this)
         {
             try
@@ -482,6 +483,50 @@ public class AuthenticationTest extends TestCase
                 e.printStackTrace();
             }
         }
+        try
+        {
+            tc.validateTicket(ticket);
+            assertNotNull(null);
+        }
+        catch (AuthenticationException e)
+        {
+
+        }
+        
+        try
+        {
+            tc.validateTicket(ticket);
+            assertNotNull(null);
+        }
+        catch (AuthenticationException e)
+        {
+
+        }
+        
+        try
+        {
+            tc.validateTicket(ticket);
+            assertNotNull(null);
+        }
+        catch (AuthenticationException e)
+        {
+
+        }
+        
+        
+        synchronized (this)
+        {
+            try
+            {
+                wait(10000);
+            }
+            catch (InterruptedException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        
         try
         {
             tc.validateTicket(ticket);
@@ -579,6 +624,7 @@ public class AuthenticationTest extends TestCase
 
         }
 
+        authenticationService.authenticate("Andy", "auth3".toCharArray());
         // get the ticket that represents the current user authentication
         // instance
         String ticket = authenticationService.getCurrentTicket();
@@ -596,7 +642,35 @@ public class AuthenticationTest extends TestCase
         {
 
         }
+        
+        Authentication current = authenticationComponent.getCurrentAuthentication();
+        if(current != null)
+        {
+            assertFalse(current.isAuthenticated());
+        }
 
+        try
+        {
+            authenticationService.validate(ticket);
+            assertNotNull(null);
+        }
+        catch (AuthenticationException e)
+        {
+
+        }
+
+        
+        try
+        {
+            authenticationService.validate(ticket);
+            assertNotNull(null);
+        }
+        catch (AuthenticationException e)
+        {
+
+        }
+
+        
         // clear any context and check we are no longer authenticated
         authenticationService.clearCurrentSecurityContext();
         assertNull(authenticationService.getCurrentUserName());
@@ -650,6 +724,7 @@ public class AuthenticationTest extends TestCase
 
         }
 
+        pubAuthenticationService.authenticate("Andy", "auth3".toCharArray());
         // get the ticket that represents the current user authentication
         // instance
         String ticket = pubAuthenticationService.getCurrentTicket();

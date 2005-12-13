@@ -88,7 +88,15 @@ public class AuthenticationServiceImpl implements AuthenticationService
 
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
-        authenticationComponent.authenticate(userName, password);
+        try
+        {
+           authenticationComponent.authenticate(userName, password);
+        }
+        catch(AuthenticationException ae)
+        {
+            clearCurrentSecurityContext();
+            throw ae;
+        }
     }
 
     public String getCurrentUserName() throws AuthenticationException
@@ -108,7 +116,15 @@ public class AuthenticationServiceImpl implements AuthenticationService
 
     public void validate(String ticket) throws AuthenticationException
     {
-        authenticationComponent.setCurrentUser(ticketComponent.validateTicket(ticket));
+        try
+        {
+           authenticationComponent.setCurrentUser(ticketComponent.validateTicket(ticket));
+        }
+           catch(AuthenticationException ae)
+           {
+               clearCurrentSecurityContext();
+               throw ae;
+           } 
     }
 
     public String getCurrentTicket()

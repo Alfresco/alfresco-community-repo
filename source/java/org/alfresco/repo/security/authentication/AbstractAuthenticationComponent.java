@@ -57,8 +57,13 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      *            String
      * @return Authentication
      */
-    public Authentication setCurrentUser(String userName)
+    public Authentication setCurrentUser(String userName) throws AuthenticationException
     {
+        if(userName == null)
+        {
+            throw new AuthenticationException("Null user name");
+        }
+        
         try
         {
             UserDetails ud = null;

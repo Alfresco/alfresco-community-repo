@@ -146,18 +146,16 @@
                         <tr>
                            <td width="100%" valign="top">
                               <%-- wrapper comment used by the panel to add additional component facets --%>
-                              <%--
                               <h:column id="props-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
                                        <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif"
-                                             action="editSpaceProperties" actionListener="#{EditSpaceDialog.startWizardForEdit}" />
+                                             action="editForumsProperties" actionListener="#{EditForumsDialog.startWizardForEdit}" />
                                     </r:permissionEvaluator>
                                  </f:facet>
                               </h:column>
-                              facetsId="props-panel-facets"
-                              --%>
-                              <a:panel label="#{msg.properties}" id="properties-panel" 
+
+                              <a:panel label="#{msg.properties}" id="properties-panel" facetsId="props-panel-facets"
                                        border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true">
                                  <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                     <tr>

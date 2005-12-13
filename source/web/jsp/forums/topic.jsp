@@ -222,7 +222,7 @@
                               </a:actionLink>
                            </r:permissionEvaluator>
                            <r:permissionEvaluator value="#{r}" allow="Write">
-                              <a:actionLink value="#{msg.edit_post}" image="/images/icons/edit_icon.gif" showLink="false" styleClass="inlineAction" action="editPost" actionListener="#{BrowseBean.setupContentAction}">
+                              <a:actionLink value="#{msg.edit_post}" image="/images/icons/edit_icon.gif" showLink="false" styleClass="inlineAction" action="editPost" actionListener="#{EditPostDialog.startWizardForEdit}">
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
                            </r:permissionEvaluator>

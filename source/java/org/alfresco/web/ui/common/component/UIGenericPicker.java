@@ -82,6 +82,14 @@ public class UIGenericPicker extends UICommand
    // Component implementation
    
    /**
+    * Default constructor
+    */
+   public UIGenericPicker()
+   {
+      setRendererType(null);
+   }
+   
+   /**
     * @see javax.faces.component.UIComponent#getFamily()
     */
    public String getFamily()

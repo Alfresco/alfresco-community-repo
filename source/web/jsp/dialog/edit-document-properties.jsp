@@ -29,8 +29,7 @@
 <script language="JavaScript1.2">
    function checkButtonState()
    {
-      if (document.getElementById("edit-doc-properties:file-name").value.length == 0 ||
-          document.getElementById("edit-doc-properties:title").value.length == 0)
+      if (document.getElementById("edit-doc-properties:file-name").value.length == 0)
       {
          document.getElementById("edit-doc-properties:ok-button").disabled = true;
       }
@@ -133,8 +132,7 @@
                                  <tr>
                                     <td><nobr><h:outputText value="#{msg.title}" />:</nobr></td>
                                     <td>
-                                       <h:inputText id="title" value="#{EditDocPropsDialog.properties.title}" size="35" maxlength="1024"
-                                                    onkeyup="javascript:checkButtonState();" />&nbsp;*
+                                       <h:inputText id="title" value="#{EditDocPropsDialog.properties.title}" size="35" maxlength="1024" />
                                     </td>
                                  </tr>
                                  <tr>

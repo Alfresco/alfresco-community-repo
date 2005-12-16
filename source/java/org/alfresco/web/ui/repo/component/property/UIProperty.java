@@ -110,15 +110,14 @@ public class UIProperty extends PropertySheetItem
          else
          {
             if (logger.isDebugEnabled())
-               logger.debug("Failed to find property definition for property '" + propertyName + "'");
+               logger.debug("Failed to find property definition for property '" + propertyName + "' for node: " + node.getNodeRef().toString());
             
+            // NOTE: removed the error as it simply serves to confuse users and clutter the screen,
+            //       the debugging log level should be used instead when developing property screens.
             // add an error message as the property is not defined in the data dictionary and 
             // not in the node's set of properties
-            String msg = MessageFormat.format(Application.getMessage(context, MSG_ERROR_PROPERTY), new Object[] {propertyName});
-            Utils.addErrorMessage(msg);
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Added global error message: " + msg);
+            //String msg = MessageFormat.format(Application.getMessage(context, MSG_ERROR_PROPERTY), new Object[] {propertyName});
+            //Utils.addErrorMessage(msg);
          }
       }
       else

@@ -149,7 +149,7 @@ public class DocumentPropertiesBean
          
          // extra and deal with the Author prop if the aspect has not been applied yet
          String author = (String)props.get(ContentModel.PROP_AUTHOR);
-         if (author != null)
+         if (author != null && author.length() != 0)
          {
             // add aspect if required
             if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUTHOR) == false)
@@ -159,6 +159,16 @@ public class DocumentPropertiesBean
                this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
             }
             // else it will get updated in the later setProperties() call
+         }
+         
+         // deal with adding the "titled" aspect if required
+         String title = (String)props.get(ContentModel.PROP_TITLE);
+         String description = (String)props.get(ContentModel.PROP_DESCRIPTION);
+         if (title != null || description != null)
+         {
+            // add the aspect to be sure it's present
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
+            // props will get added later in setProperties()
          }
          
          // add the remaining properties

@@ -265,6 +265,10 @@ public class CifsHelper
         try
         {
             NodeRef nodeRef = fileFolderService.create(parentFolderNodeRef, name, typeQName).getNodeRef();
+            
+            // the title and description will be set automatically
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, null);
+            
             // done
             if (logger.isDebugEnabled())
             {

@@ -98,6 +98,9 @@ public class FileFolderServiceImpl implements FileFolderService
     private ContentService contentService;
     private MimetypeService mimetypeService;
     
+    // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
+    private List systemPaths;
+    
     /**
      * Default constructor
      */
@@ -140,6 +143,13 @@ public class FileFolderServiceImpl implements FileFolderService
         this.mimetypeService = mimetypeService;
     }
 
+    // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
+    public void setSystemPaths(List<String> systemPaths)
+    {
+        this.systemPaths = systemPaths;
+    }
+    
+    
     public void init()
     {
         PARAMS_ANY_NAME[0] = new QueryParameterDefImpl(
@@ -481,13 +491,22 @@ public class FileFolderServiceImpl implements FileFolderService
         NodeRef targetNodeRef = null;
         if (move)
         {
-            // move the node so that the association moves as well
-            ChildAssociationRef newAssocRef = nodeService.moveNode(
-                    sourceNodeRef,
-                    targetParentRef,
-                    assocRef.getTypeQName(),
-                    qname);
-            targetNodeRef = newAssocRef.getChildRef();
+            // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
+            if (!isSystemPath(sourceNodeRef))
+            {
+                // move the node so that the association moves as well
+                ChildAssociationRef newAssocRef = nodeService.moveNode(
+                        sourceNodeRef,
+                        targetParentRef,
+                        assocRef.getTypeQName(),
+                        qname);
+                targetNodeRef = newAssocRef.getChildRef();
+            }
+            else
+            {
+                // system path folders do not need to be moved
+                targetNodeRef = sourceNodeRef;
+            }
         }
         else
         {
@@ -513,6 +532,21 @@ public class FileFolderServiceImpl implements FileFolderService
                     "   after: " + afterFileInfo);
         }
         return afterFileInfo;
+    }
+    
+    /**
+     * Determine if the specified node is a special "system" folder path based node
+     * 
+     * TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
+     * 
+     * @param nodeRef  node to check
+     * @return  true => system folder path based node
+     */
+    private boolean isSystemPath(NodeRef nodeRef)
+    {
+        Path path = nodeService.getPath(nodeRef);
+        String prefixedPath = path.toPrefixString(namespaceService);
+        return systemPaths.contains(prefixedPath);
     }
     
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName) throws FileExistsException

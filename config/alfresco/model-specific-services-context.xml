@@ -12,6 +12,15 @@
       <property name="searchService"><ref bean="SearchService" /></property>
       <property name="contentService"><ref bean="contentService" /></property>
       <property name="mimetypeService"><ref bean="mimetypeMap" /></property>
+
+      <property name="systemPaths">
+         <list>
+            <value>/${spaces.company_home.childname}</value>
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}</value>
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.childname}</value>
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</value>
+         </list>
+      </property>
    </bean>
 
 </beans>

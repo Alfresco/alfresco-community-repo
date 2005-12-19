@@ -34,6 +34,7 @@ public class ISO9075Test extends TestCase
     public void testEncoding()
     {
         assertEquals("MyDocuments", ISO9075.encode("MyDocuments"));
+        assertEquals("My_x002f_Documents", ISO9075.encode("My/Documents"));
         assertEquals("My_Documents", ISO9075.encode("My_Documents"));
         assertEquals("My_x0020_Documents", ISO9075.encode("My Documents"));
         assertEquals("My_x0020Documents", ISO9075.encode("My_x0020Documents"));

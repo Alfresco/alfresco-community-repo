@@ -194,6 +194,25 @@
         </property>
     </bean>
 
+
+    <!-- Simple LDAP example config -->
+    <!--
+    <bean id="authenticationComponentImpl" class="org.alfresco.repo.security.authentication.LDAPAuthenticationComponentImpl">
+    </bean>
+    -->
+    
+    <!-- Simple Authentication component that rejects all authentication requests -->
+    <!-- Use this defintion for Novell IChain integration.                        -->
+    <!-- It should never go to the login screen  so this is not required          -->
+    <!-- (Enterprise version only)
+    
+    <!--
+    <bean id="authenticationComponentImpl" class="org.alfresco.repo.security.authentication.SimpleAcceptOrRejectAllAuthenticationComponentImpl">
+    </bean>
+    -->
+
+
+
     <!-- The person service.                                                -->
 
     <bean id="personService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
@@ -278,5 +297,39 @@
             <value>false</value>
         </property>
     </bean>
+    
+    <!-- Authentication bootstrap -->
+    
+<!-- WIP
+    <bean id="authenticationBootstrap" class="org.alfresco.repo.security.authentication.AuthenticationBootstrap" init-method="bootstrap">
+        <property name="config">
+            <ref bean="authenticationBoostrapConfig"/>
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponentImpl"/>
+        </property>
+        <property name="authenticationService">
+            <ref bean="authenticationService"/>
+        </property>
+        <property name="authenticationDao">
+            <ref bean="alfDaoImpl" />
+        </property>
+    </bean>
+    
+    <bean id="authenticationBoostrapConfigSource" class="org.alfresco.config.source.ClassPathConfigSource">
+      <constructor-arg>
+         <list>
+            <value>alfresco/authentication-bootstrap-config.xml</value>
+         </list>
+      </constructor-arg>
+   </bean>
+   
+   <bean id="authenticationBoostrapConfig" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
+      <constructor-arg>
+         <ref bean="authenticationBoostrapConfigSource"/>
+      </constructor-arg>
+   </bean>
+   
+-->
     
 </beans>

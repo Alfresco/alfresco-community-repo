@@ -108,40 +108,36 @@ public abstract class AbstractPermission extends AbstractPermissionReference imp
                 throw new PermissionModelException("Required permission must specify parent or node for the on attribute.");
             }
             
-             boolean implies = false;
-             Attribute impliesAttribute = requiredPermissionElement.attribute(RP_IMPLIES);
-             if( impliesAttribute != null)
-             {
-                 implies = Boolean.parseBoolean(impliesAttribute.getStringValue());
-             }
-             
-             RequiredPermission rq = new RequiredPermission(qName, requiredName, on, implies);
-             
-             requiredPermissions.add(rq);
+            boolean implies = false;
+            Attribute impliesAttribute = requiredPermissionElement.attribute(RP_IMPLIES);
+            if (impliesAttribute != null)
+            {
+                implies = Boolean.parseBoolean(impliesAttribute.getStringValue());
+            }
             
+            RequiredPermission rq = new RequiredPermission(qName, requiredName, on, implies);
+            
+            requiredPermissions.add(rq);
         }
-        
     }
 
-    public String getName()
+    public final String getName()
     {
         return name;
     }
 
-    public Set<RequiredPermission> getRequiredPermissions()
+    public final Set<RequiredPermission> getRequiredPermissions()
     {
         return Collections.unmodifiableSet(requiredPermissions);
     }
 
-    public QName getTypeQName()
+    public final QName getTypeQName()
     {
         return typeQName;
     }
 
-
-    public QName getQName()
+    public final QName getQName()
     {
         return getTypeQName();
     }
-    
 }

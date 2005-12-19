@@ -26,14 +26,15 @@ import org.alfresco.repo.security.permissions.PermissionReference;
  */
 public abstract class AbstractPermissionReference implements PermissionReference
 {
-
+    private int hashcode = 0;
+    
     public AbstractPermissionReference()
     {
         super();
     }
 
     @Override
-    public boolean equals(Object o)
+    public final boolean equals(Object o)
     {
         if(this == o)
         {
@@ -48,9 +49,13 @@ public abstract class AbstractPermissionReference implements PermissionReference
     }
 
     @Override
-    public int hashCode()
+    public final int hashCode()
     {
-        return getQName().hashCode() * 37 + getName().hashCode();
+        if (hashcode == 0)
+        {
+           hashcode = getQName().hashCode() * 37 + getName().hashCode();
+        }
+        return hashcode;
     }
 
     @Override
@@ -58,6 +63,4 @@ public abstract class AbstractPermissionReference implements PermissionReference
     {
         return getQName()+ "." + getName(); 
     }
-    
-    
 }

@@ -65,7 +65,6 @@ public class Permission extends AbstractPermission implements XMLModelInitialisa
     public Permission(QName typeQName)
     {
         super(typeQName);
-       
     }
 
     public void initialise(Element element, NamespacePrefixResolver nspr, PermissionModel permissionModel)
@@ -130,8 +129,7 @@ public class Permission extends AbstractPermission implements XMLModelInitialisa
             String grantedName = grantedToGroupsElement.attributeValue(GTG_NAME);
             
             grantedToGroups.add(new PermissionReferenceImpl(qName, grantedName));
-        }      
- 
+        }
     }
 
     public AccessStatus getDefaultPermission()
@@ -153,5 +151,4 @@ public class Permission extends AbstractPermission implements XMLModelInitialisa
     {
         return requiresType;
     }
-
 }

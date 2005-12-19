@@ -145,6 +145,9 @@
         <property name="waitForJobsToCompleteOnShutdown">
             <value>true</value>
         </property>
+        <property name="configLocation">
+            <value>classpath:alfresco/domain/quartz.properties</value>
+        </property>
     </bean>
     
 </beans>

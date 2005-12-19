@@ -204,7 +204,7 @@
     <!-- Simple Authentication component that rejects all authentication requests -->
     <!-- Use this defintion for Novell IChain integration.                        -->
     <!-- It should never go to the login screen  so this is not required          -->
-    <!-- (Enterprise version only)
+    <!-- (Enterprise version only)                                                -->
     
     <!--
     <bean id="authenticationComponentImpl" class="org.alfresco.repo.security.authentication.SimpleAcceptOrRejectAllAuthenticationComponentImpl">

@@ -120,8 +120,8 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         GrantedAuthority[] gas = new GrantedAuthority[1];
         gas[0] = new GrantedAuthorityImpl("ROLE_AUTHENTICATED");
 
-        UserDetails ud = new User(userName, password, getEnabled(userName), !getAccountHasExpired(userName),
-                !getCredentialsHaveExpired(userName), !getAccountlocked(userName), gas);
+        UserDetails ud = new User(userName, password, getEnabled(userRef), !getAccountHasExpired(userRef),
+                !getCredentialsHaveExpired(userRef), !getAccountlocked(userRef), gas);
         return ud;
     }
 
@@ -305,7 +305,11 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 
     public boolean getAccountHasExpired(String userName)
     {
-        NodeRef userNode = getUserOrNull(userName);
+        return getAccountHasExpired(getUserOrNull(userName));
+    }
+    
+    private boolean getAccountHasExpired(NodeRef userNode)
+    {
         if (userNode == null)
         {
             return false;
@@ -332,7 +336,11 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 
     public boolean getAccountlocked(String userName)
     {
-        NodeRef userNode = getUserOrNull(userName);
+        return getAccountlocked(getUserOrNull(userName));
+    }
+
+    private boolean getAccountlocked(NodeRef userNode)
+    {
         if (userNode == null)
         {
             return false;
@@ -347,10 +355,14 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
             return DefaultTypeConverter.INSTANCE.booleanValue(ser);
         }
     }
-
+    
     public boolean getCredentialsExpire(String userName)
     {
-        NodeRef userNode = getUserOrNull(userName);
+        return getCredentialsExpired(getUserOrNull(userName));
+    }
+    
+    private boolean getCredentialsExpired(NodeRef userNode)
+    {
         if (userNode == null)
         {
             return false;
@@ -387,7 +399,11 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 
     public boolean getCredentialsHaveExpired(String userName)
     {
-        NodeRef userNode = getUserOrNull(userName);
+        return getCredentialsHaveExpired(getUserOrNull(userName));
+    }
+    
+    private boolean getCredentialsHaveExpired(NodeRef userNode)
+    {
         if (userNode == null)
         {
             return false;
@@ -414,7 +430,11 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 
     public boolean getEnabled(String userName)
     {
-        NodeRef userNode = getUserOrNull(userName);
+        return getEnabled(getUserOrNull(userName));
+    }
+    
+    private boolean getEnabled(NodeRef userNode)
+    {
         if (userNode == null)
         {
             return false;

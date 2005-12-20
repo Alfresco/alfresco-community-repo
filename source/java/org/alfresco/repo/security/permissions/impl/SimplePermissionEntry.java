@@ -25,7 +25,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
  *  
  * @author andyh
  */
-public class SimplePermissionEntry extends AbstractPermissionEntry
+public final class SimplePermissionEntry extends AbstractPermissionEntry
 {
     
     /*

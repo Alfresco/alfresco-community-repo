@@ -347,7 +347,6 @@ public class HibernatePermissionsDAO extends HibernateDaoSupport implements Perm
     @SuppressWarnings("unchecked")
     public void deleteAllPermissionsForAuthority(final String authority)
     {
-
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
@@ -365,8 +364,7 @@ public class HibernatePermissionsDAO extends HibernateDaoSupport implements Perm
         
     }
 
-    // Utility methods to create simple detached objects for the outside
-    // // world
+    // Utility methods to create simple detached objects for the outside world
     // We do not pass out the hibernate objects
 
     private static SimpleNodePermissionEntry createSimpleNodePermissionEntry(
@@ -388,10 +386,13 @@ public class HibernatePermissionsDAO extends HibernateDaoSupport implements Perm
         {
             return null;
         }
-        HashSet<SimplePermissionEntry> spes = new HashSet<SimplePermissionEntry>();
-        for (org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntry pe : nes)
+        HashSet<SimplePermissionEntry> spes = new HashSet<SimplePermissionEntry>(nes.size(), 1.0f);
+        if (nes.size() != 0)
         {
-            spes.add(createSimplePermissionEntry(pe));
+            for (org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntry pe : nes)
+            {
+                spes.add(createSimplePermissionEntry(pe));
+            }
         }
         return spes;
     }

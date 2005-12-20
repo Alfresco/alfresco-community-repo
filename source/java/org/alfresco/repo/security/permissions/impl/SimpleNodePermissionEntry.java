@@ -27,7 +27,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author andyh
  */
-public class SimpleNodePermissionEntry extends AbstractNodePermissionEntry implements Serializable
+public final class SimpleNodePermissionEntry extends AbstractNodePermissionEntry implements Serializable
 {
     /**
      * Comment for <code>serialVersionUID</code>

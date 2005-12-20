@@ -23,7 +23,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author andyh
  */
-public class SimplePermissionReference extends AbstractPermissionReference
+public final class SimplePermissionReference extends AbstractPermissionReference
 {
     /*
      * The type

@@ -67,6 +67,12 @@
          <fileset dir="${dir.config.repository}"/>
          <fileset dir="${dir.config.webclient}"/>
       </copy>
+      
+      <copy todir="${dir.assemble}/WEB-INF/classes/alfresco/messages">
+         <fileset dir="${dir.assemble}/WEB-INF/classes/alfresco/messages"/>
+         <mapper type="glob" from="*.properties" to="*_en_US.properties"/>
+      </copy>
+      
       <copy todir="${dir.assemble}/WEB-INF/classes" file="${dir.project.core}/source/java/log4j.properties" />
    </target>
    
@@ -83,6 +89,11 @@
       <copy todir="${dir.deploy.jboss}/../conf" >
          <fileset dir="${dir.config.repository}"/>
          <fileset dir="${dir.config.webclient}"/>
+      </copy>
+      
+      <copy todir="${dir.deploy.jboss}/../conf/alfresco/messages">
+         <fileset dir="${dir.deploy.jboss}/../conf/alfresco/messages"/>
+         <mapper type="glob" from="*.properties" to="*_en_US.properties"/>
       </copy>
    </target>
    

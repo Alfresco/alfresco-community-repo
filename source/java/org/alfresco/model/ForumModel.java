@@ -38,6 +38,5 @@ public interface ForumModel
 
     static final QName ASPECT_DISCUSSABLE = QName.createQName(FORUMS_MODEL_URI, "discussable");
     
-    static final QName PROP_STATUS = QName.createQName(FORUMS_MODEL_URI, "status");
-    static final QName PROP_TYPE = QName.createQName(FORUMS_MODEL_URI, "type");
+    static final QName ASSOC_DISCUSSION = QName.createQName(FORUMS_MODEL_URI, "discussion");
 }

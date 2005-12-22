@@ -25,20 +25,10 @@
       
       <type name="fm:forum">
          <parent>cm:folder</parent>
-         <properties>
-            <property name="fm:status">
-               <type>d:category</type>
-            </property>
-         </properties>
       </type>
       
       <type name="fm:topic">
          <parent>cm:folder</parent>
-         <properties>
-            <property name="fm:type">
-               <type>d:category</type>
-            </property>
-         </properties>
       </type>
       
       <type name="fm:post">
@@ -48,12 +38,20 @@
     
     <aspects>
       <aspect name="fm:discussable">
-         <properties>
-            <property name="fm:forum">
-               <type>d:noderef</type>
-               <mandatory>true</mandatory>
-            </property>
-         </properties>
+         <associations>
+            <child-association name="fm:discussion">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>fm:forum</class>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
       </aspect>
    </aspects>
    

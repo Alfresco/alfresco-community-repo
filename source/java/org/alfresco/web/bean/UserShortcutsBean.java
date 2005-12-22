@@ -27,6 +27,7 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -88,16 +89,19 @@ public class UserShortcutsBean
    {
       if (this.shortcuts == null)
       {
+         List<String> shortcuts = null;
+         NodeRef prefRef = null;
          UserTransaction tx = null;
+         boolean rollback = false;
          try
          {
             FacesContext context = FacesContext.getCurrentInstance();
-            tx = Repository.getUserTransaction(context);
+            tx = Repository.getUserTransaction(context, true);
             tx.begin();
             
             // get the shortcuts from the preferences for this user
-            NodeRef prefRef = getShortcutsNodeRef();
-            List<String> shortcuts = (List<String>)this.nodeService.getProperty(prefRef, QNAME_SHORTCUTS);
+            prefRef = getShortcutsNodeRef();
+            shortcuts = (List<String>)this.nodeService.getProperty(prefRef, QNAME_SHORTCUTS);
             if (shortcuts != null)
             {
                // each shortcut node ID is persisted as a list item in a well known property
@@ -105,35 +109,34 @@ public class UserShortcutsBean
                for (int i=0; i<shortcuts.size(); i++)
                {
                   NodeRef ref = new NodeRef(Repository.getStoreRef(), shortcuts.get(i));
-                  if (this.nodeService.exists(ref) == true)
+                  try
                   {
-                     Node node = new Node(ref);
-                     
-                     // quick init properties while in the usertransaction
-                     node.getProperties();
-                     
-                     // save ref to the Node for rendering
-                     this.shortcuts.add(node);
+                     if (this.nodeService.exists(ref) == true)
+                     {
+                        Node node = new Node(ref);
+                        
+                        // quick init properties while in the usertransaction
+                        node.getProperties();
+                        
+                        // save ref to the Node for rendering
+                        this.shortcuts.add(node);
+                     }
+                     else
+                     {
+                        // ignore this shortcut node - no longer exists in the system!
+                        // we write the node list back again afterwards to correct this
+                        if (logger.isDebugEnabled())
+                           logger.debug("Found invalid shortcut node Id: " + ref.getId());
+                     }
                   }
-                  else
+                  catch (AccessDeniedException accessErr)
                   {
                      // ignore this shortcut node - no longer exists in the system!
                      // we write the node list back again afterwards to correct this
                      if (logger.isDebugEnabled())
                         logger.debug("Found invalid shortcut node Id: " + ref.getId());
+                     rollback = true;
                   }
-               }
-               
-               // if the count of accessable shortcuts is different to our original list then
-               // write the valid shortcut IDs back to correct invalid node refs
-               if (this.shortcuts.size() != shortcuts.size())
-               {
-                  shortcuts = new ArrayList<String>(this.shortcuts.size());
-                  for (int i=0; i<this.shortcuts.size(); i++)
-                  {
-                     shortcuts.add(this.shortcuts.get(i).getId());
-                  }
-                  this.nodeService.setProperty(prefRef, QNAME_SHORTCUTS, (Serializable)shortcuts);
                }
             }
             else
@@ -141,13 +144,40 @@ public class UserShortcutsBean
                this.shortcuts = new ArrayList<Node>(5);
             }
             
-            tx.commit();
+            if (rollback == false)
+            {
+               tx.commit();
+            }
+            else
+            {
+               tx.rollback();
+            }
          }
          catch (Exception err)
          {
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                   FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
             try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
+         
+         // if the count of accessable shortcuts is different to our original list then
+         // write the valid shortcut IDs back to correct invalid node refs
+         if (shortcuts != null && shortcuts.size() != this.shortcuts.size())
+         {
+            try
+            {
+               shortcuts = new ArrayList<String>(this.shortcuts.size());
+               for (int i=0; i<this.shortcuts.size(); i++)
+               {
+                  shortcuts.add(this.shortcuts.get(i).getId());
+               }
+               this.nodeService.setProperty(prefRef, QNAME_SHORTCUTS, (Serializable)shortcuts);
+            }
+            catch (Exception err)
+            {
+               Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                     FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+            }
          }
       }
       

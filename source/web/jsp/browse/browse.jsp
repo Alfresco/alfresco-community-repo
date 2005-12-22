@@ -107,7 +107,7 @@
                                        <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param6" />
                                     </a:actionLink>
                                     <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval4">
-                                       <a:actionLink value="#{msg.delete_space}" image="/images/icons/delete.gif" action="deleteSpace" actionListener="#{BrowseBean.setupDeleteAction}" id="link2">
+                                       <a:actionLink value="#{msg.delete_space}" image="/images/icons/delete.gif" action="dialog:deleteSpace" actionListener="#{BrowseBean.setupDeleteAction}" id="link2">
                                           <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param1" />
                                        </a:actionLink>
                                        <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" id="link6" actionListener="#{ClipboardBean.cutNode}">
@@ -311,7 +311,7 @@
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
                            <r:permissionEvaluator value="#{r}" allow="Delete">
-                              <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" showLink="false" styleClass="inlineAction" action="deleteSpace" actionListener="#{BrowseBean.setupDeleteAction}">
+                              <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" showLink="false" styleClass="inlineAction" action="dialog:deleteSpace" actionListener="#{BrowseBean.setupDeleteAction}">
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
                            </r:permissionEvaluator>
@@ -479,7 +479,7 @@
                            </a:actionLink>
                            <r:permissionEvaluator value="#{r}" allow="Delete">
                               <a:booleanEvaluator value="#{r.locked == false && r.workingCopy == false}">
-                                 <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" showLink="false" styleClass="inlineAction" actionListener="#{BrowseBean.setupContentAction}" action="deleteFile">
+                                 <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" showLink="false" styleClass="inlineAction" actionListener="#{BrowseBean.setupContentAction}" action="dialog:deleteFile">
                                     <f:param name="id" value="#{r.id}" />
                                  </a:actionLink>
                               </a:booleanEvaluator>

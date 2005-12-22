@@ -709,7 +709,11 @@ public class NewSpaceWizard extends AbstractWizardBean
                      // the first icon in the list the default
                      
                      icons = new ArrayList<UIListItem>(iconsCfg.getChildCount());
-                     this.icon = iconName;
+                     if (this.icon == null)
+                     {
+                        // set the default if it is not already
+                        this.icon = iconName;
+                     }
                      first = false;
                   }
                   

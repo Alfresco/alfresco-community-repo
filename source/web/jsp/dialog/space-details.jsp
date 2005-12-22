@@ -88,7 +88,7 @@
                                  <f:param name="id" value="#{SpaceDetailsBean.id}" />
                               </a:actionLink>
                               <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Delete">
-                                 <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" padding="4" action="deleteSpace" actionListener="#{BrowseBean.setupSpaceAction}">
+                                 <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" padding="4" action="dialog:deleteSpace" actionListener="#{BrowseBean.setupSpaceAction}">
                                     <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                  </a:actionLink>
                               </r:permissionEvaluator>

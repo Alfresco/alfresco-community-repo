@@ -143,7 +143,7 @@
                                  <tr><td class="dialogButtonSpacing"></td></tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.no}" action="browse" styleClass="dialogControls" />
+                                       <h:commandButton value="#{msg.no}" action="dialog:close" styleClass="dialogControls" />
                                     </td>
                                  </tr>
                               </table>

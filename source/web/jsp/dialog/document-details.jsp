@@ -153,7 +153,7 @@
                                  <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Delete">
                                     <a:booleanEvaluator value="#{DocumentDetailsBean.locked == false && DocumentDetailsBean.workingCopy == false}">
                                        <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif"
-                                                     actionListener="#{BrowseBean.setupContentAction}" action="deleteFile">
+                                                     actionListener="#{BrowseBean.setupContentAction}" action="dialog:deleteFile">
                                           <f:param name="id" value="#{DocumentDetailsBean.id}" />
                                        </a:actionLink>
                                     </a:booleanEvaluator>
@@ -441,7 +441,7 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.close}" action="browse" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.close}" action="dialog:close" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

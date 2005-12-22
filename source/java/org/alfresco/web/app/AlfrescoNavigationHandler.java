@@ -110,7 +110,11 @@ public class AlfrescoNavigationHandler extends NavigationHandler
                {
                   // there is an overidden outcome so extract it
                   outcome = outcome.substring(idx+1, outcome.length());
-            
+                  
+                  // we also need to empty the dialog stack if we have been given
+                  // an overidden outcome as we could be going anywhere in the app
+                  getViewStack(context).clear();
+                  
                   if (logger.isDebugEnabled())
                      logger.debug("Closing dialog with an overridden outcome of '" + outcome + "'");
                   
@@ -123,15 +127,10 @@ public class AlfrescoNavigationHandler extends NavigationHandler
                // log a warning and return a null outcome to stay on the same page
                if (logger.isWarnEnabled())
                {
-                  logger.warn("Attempting to close a dialog with an empty view stack, returning 'browse' outcome");
+                  logger.warn("Attempting to close a dialog with an empty view stack, returning null outcome");
                }
                
-               // TODO: change this back to returning null outcome as that
-               //       will highlight any areas we have neglected to launch
-               //       in a dilaog, for backwards compatibility for the short
-               //       term return 'browse' outcome.
-               
-               this.origHandler.handleNavigation(context, fromAction, "browse");
+               this.origHandler.handleNavigation(context, fromAction, null);
             }
          }
          else

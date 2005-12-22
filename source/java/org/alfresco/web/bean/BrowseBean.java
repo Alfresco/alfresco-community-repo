@@ -1181,7 +1181,8 @@ public class BrowseBean implements IContextListener
             setActionSpace(null);
             
             // setting the outcome will show the browse view again
-            outcome = "browse";
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+                      AlfrescoNavigationHandler.DIALOG_SEPARATOR + "browse";
          }
          catch (Throwable err)
          {
@@ -1220,7 +1221,8 @@ public class BrowseBean implements IContextListener
             setDocument(null);
             
             // setting the outcome will show the browse view again
-            outcome = "browse";
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
+                      AlfrescoNavigationHandler.DIALOG_SEPARATOR + "browse";
          }
          catch (Throwable err)
          {

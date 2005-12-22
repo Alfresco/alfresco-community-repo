@@ -60,6 +60,7 @@
          <property name="namespaceService"><ref bean="namespaceService" /></property>
          <property name="contentService"><ref bean="ContentService" /></property>
          <property name="permissionService"><ref bean="permissionService"/></property>
+         <property name="checkInOutService"><ref bean="checkOutCheckInService"/></property>
    </bean>
    
    <bean id="cifsHelper" class="org.alfresco.filesys.smb.server.repo.CifsHelper">

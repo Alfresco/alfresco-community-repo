@@ -428,14 +428,14 @@ public class NewSpaceWizard extends AbstractWizardBean
       // reset all variables
       this.createFrom = "scratch";
       this.spaceType = ContentModel.TYPE_FOLDER.toString();
-      this.icon = SPACE_ICON_DEFAULT;
+      this.icon = null;
       this.copyPolicy = "contents";
       this.existingSpaceId = null;
       this.templateSpaceId = null;
       this.name = null;
       this.description = "";
       this.templateName = null;
-      this.saveAsTemplate = false;  
+      this.saveAsTemplate = false;
    }
 
    /**

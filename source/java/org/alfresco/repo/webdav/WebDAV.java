@@ -17,7 +17,9 @@
 package org.alfresco.repo.webdav;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,7 +45,7 @@ public class WebDAV
 {
     // Logging
 
-    private static Log logger = LogFactory.getLog("org.alfresco.protocol.webdav");
+    private static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
     
     // WebDAV XML namespace
     
@@ -335,8 +337,22 @@ public class WebDAV
     {
         // Try and get the path
 
-        String strPath = request.getPathInfo();
+        String strPath = null;
+        
+        try {
+            strPath = URLDecoder.decode( request.getRequestURI(), "UTF-8");
+        }
+        catch (Exception ex) {
+        }
 
+        // Find the servlet path and trim from the request path
+        
+        String servletPath = request.getServletPath();
+        
+        int rootPos = strPath.indexOf(servletPath);
+        if ( rootPos != -1)
+            strPath = strPath.substring( rootPos);
+        
         // If we failed to get the path from the request try and get the path from the servlet path
 
         if (strPath == null)
@@ -372,7 +388,7 @@ public class WebDAV
 
         // Return the path
         
-        return decodeURL(strPath);
+        return strPath;
     }
 
     /**
@@ -403,7 +419,27 @@ public class WebDAV
                 urlStr.append(path);
         }
         
-        return urlStr.toString();
+        // If the URL is to a collection add a trailing slash
+        
+        if ( isCollection && urlStr.charAt( urlStr.length() - 1) != PathSeperatorChar)
+            urlStr.append( PathSeperator);
+            
+        // Encode the URL
+        
+        String encUrlStr = null;
+        
+        try
+        {
+            encUrlStr = URLEncoder.encode( urlStr.toString(), "UTF-8");
+        }
+        catch (UnsupportedEncodingException ex)
+        {
+            logger.error(ex);
+        }
+        
+        // Return the encoded URL string
+
+        return encUrlStr;
     }
 
     /**

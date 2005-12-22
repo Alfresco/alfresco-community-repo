@@ -24,60 +24,60 @@ public class NTIOCtl
 
     //	Device type codes
   
-    public static final int DeviceBeep							=	0x0001;
-    public static final int DeviceCDRom							= 0x0002;
-    public static final int DeviceCDRomFileSystem		= 0x0003;
-    public static final int DeviceController				= 0x0004;
-    public static final int DeviceDataLink					= 0x0005;
-    public static final int DeviceDFS								= 0x0006;
-    public static final int DeviceDisk							= 0x0007;
-    public static final int DeviceDiskFileSystem		= 0x0008;
-    public static final int DeviceFileSystem				= 0x0009;
-    public static final int DeviceInportPort				= 0x000A;
-    public static final int DeviceKeyboard					= 0x000B;
-    public static final int DeviceMailSlot					= 0x000C;
-    public static final int DeviceMidiIn						= 0x000D;
-    public static final int DeviceMidiOut						= 0x000E;
-    public static final int DeviceMouse							= 0x000F;
-    public static final int DeviceMultiUNCProvider	= 0x0010;
-    public static final int DeviceNamedPipe					= 0x0011;
-    public static final int DeviceNetwork						= 0x0012;
-    public static final int DeviceNetworkBrowser		= 0x0013;
-    public static final int DeviceNetworkFileSystem = 0x0014;
-    public static final int DeviceNull							= 0x0015;
-    public static final int DeviceParallelPort			= 0x0016;
-    public static final int DevicePhysicalNetCard		= 0x0017;
-    public static final int DevicePrinter						= 0x0018;
-    public static final int DeviceScanner						= 0x0019;
-    public static final int DeviceSerialMousePort		= 0x001A;
-    public static final int DeviceSerialPort				= 0x001B;
-    public static final int DeviceScreen						= 0x001C;
-    public static final int DeviceSound							= 0x001D;
-    public static final int DeviceStreams						= 0x001E;
-    public static final int DeviceTape							= 0x001F;
-    public static final int DeviceTapeFileSystem		= 0x0020;
-    public static final int DeviceTransport					= 0x0021;
-    public static final int DeviceUnknown						= 0x0022;
-    public static final int DeviceVideo							= 0x0023;
-    public static final int DeviceVirtualDisk				= 0x0024;
-    public static final int DeviceWaveIn						= 0x0025;
-    public static final int DeviceWaveOut						= 0x0026;
-    public static final int Device8042Port					= 0x0027;
-    public static final int DeviceNetworkRedirector	= 0x0028;
-    public static final int DeviceBattery						= 0x0029;
-    public static final int DeviceBusExtender				= 0x002A;
-    public static final int DeviceModem							= 0x002B;
-    public static final int DeviceVDM								= 0x002C;
-    public static final int DeviceMassStorage				= 0x002D;
-    public static final int DeviceSMB								= 0x002E;
-    public static final int DeviceKS								= 0x002F;
-    public static final int DeviceChanger						= 0x0030;
-    public static final int DeviceSmartCard					= 0x0031;
-    public static final int DeviceACPI							= 0x0032;
-    public static final int DeviceDVD								= 0x0033;
-    public static final int DeviceFullScreenVideo		= 0x0034;
-    public static final int DeviceDFSFileSystem			= 0x0035;
-    public static final int DeviceDFSVolume					= 0x0036;
+    public static final int DeviceBeep                  = 0x0001;
+    public static final int DeviceCDRom                 = 0x0002;
+    public static final int DeviceCDRomFileSystem       = 0x0003;
+    public static final int DeviceController            = 0x0004;
+    public static final int DeviceDataLink              = 0x0005;
+    public static final int DeviceDFS                   = 0x0006;
+    public static final int DeviceDisk                  = 0x0007;
+    public static final int DeviceDiskFileSystem        = 0x0008;
+    public static final int DeviceFileSystem            = 0x0009;
+    public static final int DeviceInportPort            = 0x000A;
+    public static final int DeviceKeyboard              = 0x000B;
+    public static final int DeviceMailSlot              = 0x000C;
+    public static final int DeviceMidiIn                = 0x000D;
+    public static final int DeviceMidiOut               = 0x000E;
+    public static final int DeviceMouse                 = 0x000F;
+    public static final int DeviceMultiUNCProvider      = 0x0010;
+    public static final int DeviceNamedPipe             = 0x0011;
+    public static final int DeviceNetwork               = 0x0012;
+    public static final int DeviceNetworkBrowser        = 0x0013;
+    public static final int DeviceNetworkFileSystem     = 0x0014;
+    public static final int DeviceNull                  = 0x0015;
+    public static final int DeviceParallelPort          = 0x0016;
+    public static final int DevicePhysicalNetCard       = 0x0017;
+    public static final int DevicePrinter               = 0x0018;
+    public static final int DeviceScanner               = 0x0019;
+    public static final int DeviceSerialMousePort       = 0x001A;
+    public static final int DeviceSerialPort            = 0x001B;
+    public static final int DeviceScreen                = 0x001C;
+    public static final int DeviceSound                 = 0x001D;
+    public static final int DeviceStreams               = 0x001E;
+    public static final int DeviceTape                  = 0x001F;
+    public static final int DeviceTapeFileSystem        = 0x0020;
+    public static final int DeviceTransport             = 0x0021;
+    public static final int DeviceUnknown               = 0x0022;
+    public static final int DeviceVideo                 = 0x0023;
+    public static final int DeviceVirtualDisk           = 0x0024;
+    public static final int DeviceWaveIn                = 0x0025;
+    public static final int DeviceWaveOut               = 0x0026;
+    public static final int Device8042Port              = 0x0027;
+    public static final int DeviceNetworkRedirector     = 0x0028;
+    public static final int DeviceBattery               = 0x0029;
+    public static final int DeviceBusExtender           = 0x002A;
+    public static final int DeviceModem                 = 0x002B;
+    public static final int DeviceVDM                   = 0x002C;
+    public static final int DeviceMassStorage           = 0x002D;
+    public static final int DeviceSMB                   = 0x002E;
+    public static final int DeviceKS                    = 0x002F;
+    public static final int DeviceChanger               = 0x0030;
+    public static final int DeviceSmartCard             = 0x0031;
+    public static final int DeviceACPI                  = 0x0032;
+    public static final int DeviceDVD                   = 0x0033;
+    public static final int DeviceFullScreenVideo       = 0x0034;
+    public static final int DeviceDFSFileSystem         = 0x0035;
+    public static final int DeviceDFSVolume             = 0x0036;
   
     //	Method types for I/O and filesystem controls
   
@@ -150,7 +150,11 @@ public class NTIOCtl
     public static final int FsCtlReadFileUsnData    	= 58;
     public static final int FsCtlWriteUsnCloseRecord	= 59;
     public static final int FsCtlExtendVolume       	= 60;
-  
+
+    // Base value for custom control codes
+    
+    public static final int FsCtlCustom                 = 0x800;
+    
     /**
      * Extract the device type from an I/O control code
      * 

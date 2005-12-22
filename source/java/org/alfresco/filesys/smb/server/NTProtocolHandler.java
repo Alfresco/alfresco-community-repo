@@ -47,6 +47,8 @@ import org.alfresco.filesys.server.filesys.FileOpenParams;
 import org.alfresco.filesys.server.filesys.FileSharingException;
 import org.alfresco.filesys.server.filesys.FileStatus;
 import org.alfresco.filesys.server.filesys.FileSystem;
+import org.alfresco.filesys.server.filesys.IOControlNotImplementedException;
+import org.alfresco.filesys.server.filesys.IOCtlInterface;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.server.filesys.NotifyChange;
 import org.alfresco.filesys.server.filesys.PathNotFoundException;
@@ -69,6 +71,7 @@ import org.alfresco.filesys.smb.NTTime;
 import org.alfresco.filesys.smb.PCShare;
 import org.alfresco.filesys.smb.PacketType;
 import org.alfresco.filesys.smb.SMBDate;
+import org.alfresco.filesys.smb.SMBException;
 import org.alfresco.filesys.smb.SMBStatus;
 import org.alfresco.filesys.smb.WinNT;
 import org.alfresco.filesys.smb.server.notify.NotifyChangeEventList;
@@ -476,7 +479,8 @@ public class NTProtocolHandler extends CoreProtocolHandler
             logger.debug("NT Session setup from user=" + user + ", password="
                     + (uniPwd != null ? HexDump.hexString(uniPwd) : "none") + ", ANSIpwd="
                     + (ascPwd != null ? HexDump.hexString(ascPwd) : "none") + ", domain=" + domain + ", os=" + clientOS
-                    + ", VC=" + vcNum + ", maxBuf=" + maxBufSize + ", maxMpx=" + maxMpx);
+                    + ", VC=" + vcNum + ", maxBuf=" + maxBufSize + ", maxMpx=" + maxMpx
+                    + ", challenge=" + HexDump.hexString(m_sess.getChallengeKey()));
             logger.debug("  MID=" + m_smbPkt.getMultiplexId() + ", UID=" + m_smbPkt.getUserId() + ", PID="
                     + m_smbPkt.getProcessId());
         }
@@ -6633,23 +6637,106 @@ public class NTProtocolHandler extends CoreProtocolHandler
     protected final void procNTTransactIOCtl(SrvTransactBuffer tbuf, NTTransPacket outPkt) throws IOException,
             SMBSrvException
     {
-
+        
         // Get the tree connection details
 
         int treeId = tbuf.getTreeId();
         TreeConnection conn = m_sess.findConnection(treeId);
 
-        if (conn == null)
-        {
+        if (conn == null) {
             m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.DOSInvalidDrive, SMBStatus.ErrDos);
             return;
         }
 
-        // Send back an error, IOctl not supported
+        // Unpack the request details
 
-        m_sess.sendErrorResponseSMB(SMBStatus.NTNotImplemented, SMBStatus.SRVNotSupported, SMBStatus.ErrSrv);
+        DataBuffer setupBuf = tbuf.getSetupBuffer();    
+    
+        int ctrlCode = setupBuf.getInt();
+        int fid      = setupBuf.getShort();
+        boolean fsctrl = setupBuf.getByte() == 1 ? true : false;
+        int filter   = setupBuf.getByte();      
+
+        // Debug
+
+        if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_TRAN))
+            logger.debug("NT IOCtl code=" + NTIOCtl.asString(ctrlCode) + ", fid=" + fid + ", fsctrl=" + fsctrl + ", filter=" + filter);
+
+        // Access the disk interface that is associated with the shared device
+
+        DiskInterface disk = null;
+        try {
+            
+            // Get the disk interface for the share
+            
+            disk = (DiskInterface) conn.getSharedDevice().getInterface();
+        }
+        catch (InvalidDeviceInterfaceException ex) {
+
+            // Failed to get/initialize the disk interface
+
+            m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+
+        // Check if the disk interface implements the optional IO control interface
+    
+        if ( disk instanceof IOCtlInterface) {
+
+            // Access the IO control interface
+      
+            IOCtlInterface ioControl = (IOCtlInterface) disk;
+      
+            try {
+        
+                // Pass the request to the IO control interface for processing
+                
+                DataBuffer response = ioControl.processIOControl(m_sess, conn, ctrlCode, fid, tbuf.getDataBuffer(), fsctrl, filter);
+                
+                // Pack the response
+                
+                if ( response != null) {
+                  
+                    // Pack the response data block
+                  
+                    outPkt.initTransactReply(null, 0, response.getBuffer(), response.getLength(), 1);
+                    outPkt.setSetupParameter(0, response.getLength());
+                }
+                else {
+                  
+                    // Pack an empty response data block
+                  
+                    outPkt.initTransactReply(null, 0, null, 0, 1);
+                    outPkt.setSetupParameter(0, 0);
+                }
+            }
+            catch (IOControlNotImplementedException ex) {
+            
+                // Return a not implemented error status
+            
+                m_sess.sendErrorResponseSMB(SMBStatus.NTNotImplemented, SMBStatus.SRVInternalServerError, SMBStatus.ErrSrv);
+                return;
+            }
+            catch (SMBException ex) {
+            
+                // Return the specified SMB status, this should be an NT status code
+            
+                m_sess.sendErrorResponseSMB(ex.getErrorCode(), SMBStatus.SRVInternalServerError, SMBStatus.ErrSrv);
+                return;
+            }
+          
+            // Send the IOCtl response
+              
+            m_sess.sendResponseSMB(outPkt);     
+        }
+        else {
+          
+            // Send back an error, IOctl not supported
+        
+            m_sess.sendErrorResponseSMB(SMBStatus.NTNotImplemented, SMBStatus.SRVNotSupported, SMBStatus.ErrSrv);
+        }
     }
-
+    
     /**
      * Process an NT query security descriptor transaction
      * 

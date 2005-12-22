@@ -254,8 +254,12 @@ public class DataBuffer
                 maxlen = availLen;
 
             ret = DataPacker.getUnicodeString(m_data, m_pos, maxlen);
-            if (ret != null)
-                m_pos += (ret.length() * 2) + 2;
+            if (ret != null) {
+                if ( ret.length() < maxlen)
+                    m_pos += (ret.length() * 2) + 2;
+                else
+                    m_pos += maxlen * 2;
+            }
         }
         else
         {
@@ -269,8 +273,12 @@ public class DataBuffer
             // Unpack the ASCII string
 
             ret = DataPacker.getString(m_data, m_pos, maxlen);
-            if (ret != null)
-                m_pos += ret.length() + 1;
+            if (ret != null) {
+                if ( ret.length() < maxlen)
+                    m_pos += ret.length() + 1;
+                else
+                    m_pos += maxlen;
+            }
         }
 
         // Return the string

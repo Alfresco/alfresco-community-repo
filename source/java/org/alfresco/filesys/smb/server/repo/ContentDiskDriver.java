@@ -25,10 +25,12 @@ import javax.transaction.UserTransaction;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.server.SrvSession;
+import org.alfresco.filesys.server.auth.SrvAuthenticator;
 import org.alfresco.filesys.server.core.DeviceContext;
 import org.alfresco.filesys.server.core.DeviceContextException;
 import org.alfresco.filesys.server.filesys.AccessDeniedException;
 import org.alfresco.filesys.server.filesys.AccessMode;
+import org.alfresco.filesys.server.filesys.DiskDeviceContext;
 import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.FileName;
@@ -36,13 +38,24 @@ import org.alfresco.filesys.server.filesys.FileOpenParams;
 import org.alfresco.filesys.server.filesys.FileSharingException;
 import org.alfresco.filesys.server.filesys.FileStatus;
 import org.alfresco.filesys.server.filesys.FileSystem;
+import org.alfresco.filesys.server.filesys.IOControlNotImplementedException;
+import org.alfresco.filesys.server.filesys.IOCtlInterface;
 import org.alfresco.filesys.server.filesys.NetworkFile;
+import org.alfresco.filesys.server.filesys.NotifyChange;
 import org.alfresco.filesys.server.filesys.SearchContext;
 import org.alfresco.filesys.server.filesys.SrvDiskInfo;
 import org.alfresco.filesys.server.filesys.TreeConnection;
+import org.alfresco.filesys.smb.NTIOCtl;
+import org.alfresco.filesys.smb.SMBException;
+import org.alfresco.filesys.smb.SMBStatus;
 import org.alfresco.filesys.smb.SharingMode;
 import org.alfresco.filesys.smb.server.repo.FileState.FileStateStatus;
+import org.alfresco.filesys.util.DataBuffer;
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -62,12 +75,18 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class ContentDiskDriver implements DiskInterface
+public class ContentDiskDriver implements DiskInterface, IOCtlInterface
 {
-    private static final String KEY_STORE = "store";
-    private static final String KEY_ROOT_PATH = "rootPath";
+    // Logging
     
     private static final Log logger = LogFactory.getLog(ContentDiskDriver.class);
+    
+    // Configuration key names
+    
+    private static final String KEY_STORE = "store";
+    private static final String KEY_ROOT_PATH = "rootPath";
+
+    // Services and helpers
     
     private CifsHelper cifsHelper;
     private TransactionService transactionService;
@@ -77,7 +96,12 @@ public class ContentDiskDriver implements DiskInterface
     private SearchService unprotectedSearchService;
     private ContentService contentService;
     private PermissionService permissionService;
+    private CheckOutCheckInService checkInOutService;
 
+    // I/O control handler
+    
+    private IOControlHandler m_ioHandler;
+    
     /**
      * Class constructor
      * 
@@ -145,6 +169,16 @@ public class ContentDiskDriver implements DiskInterface
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+    
+    /**
+     * Set the check in/out service
+     * 
+     * @param checkInOutService CheckOutCheckInService
+     */
+    public void setCheckInOutService(CheckOutCheckInService checkInOutService)
+    {
+        this.checkInOutService = checkInOutService;
     }
     
     /**
@@ -259,6 +293,30 @@ public class ContentDiskDriver implements DiskInterface
                     logger.warn("Failed to rollback transaction", ex);
                 }
             }                
+        }
+
+        // Load the I/O control handler, if available
+        
+        try
+        {
+            // Load the I/O control handler class
+            
+            Object ioctlObj = Class.forName("org.alfresco.filesys.server.smb.repo.ContentIOControlHandler").newInstance();
+            
+            // Verify that the class is an I/O control interface
+            
+            if ( ioctlObj instanceof IOControlHandler)
+            {
+                // Set the I/O control handler, and initialize
+                
+                m_ioHandler = (IOControlHandler) ioctlObj;
+                m_ioHandler.initialize( this, cifsHelper, transactionService, nodeService, checkInOutService);
+            }
+        }
+        catch (Exception ex)
+        {
+            if ( logger.isDebugEnabled())
+                logger.debug("No I/O control handler available");
         }
         
         // Return the context for this shared filesystem
@@ -1464,7 +1522,7 @@ public class ContentDiskDriver implements DiskInterface
      * @return NodeRef
      * @exception FileNotFoundException
      */
-    private NodeRef getNodeForPath(TreeConnection tree, String path)
+    public NodeRef getNodeForPath(TreeConnection tree, String path)
         throws FileNotFoundException
     {
         // Check if there is a cached state for the path
@@ -1515,5 +1573,37 @@ public class ContentDiskDriver implements DiskInterface
     public void treeOpened(SrvSession sess, TreeConnection tree)
     {
         // Nothing to do
+    }
+    
+    /**
+     * Process a filesystem I/O control request
+     * 
+     * @param sess Server session
+     * @param tree Tree connection.
+     * @param ctrlCode I/O control code
+     * @param fid File id
+     * @param dataBuf I/O control specific input data
+     * @param isFSCtrl true if this is a filesystem control, or false for a device control
+     * @param filter if bit0 is set indicates that the control applies to the share root handle
+     * @return DataBuffer
+     * @exception IOControlNotImplementedException
+     * @exception SMBException
+     */
+    public DataBuffer processIOControl(SrvSession sess, TreeConnection tree, int ctrlCode, int fid, DataBuffer dataBuf,
+            boolean isFSCtrl, int filter)
+        throws IOControlNotImplementedException, SMBException
+    {
+        // Validate the file id
+        
+        NetworkFile netFile = tree.findFile(fid);
+        if ( netFile == null || netFile.isDirectory() == false)
+            throw new SMBException(SMBStatus.NTErr, SMBStatus.NTInvalidParameter);
+        
+        // Check if the I/O control handler is enabled
+        
+        if ( m_ioHandler != null)
+            return m_ioHandler.processIOControl( sess, tree, ctrlCode, fid, dataBuf, isFSCtrl, filter);
+        else
+            throw new IOControlNotImplementedException();
     }
 }

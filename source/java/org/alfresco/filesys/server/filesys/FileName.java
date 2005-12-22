@@ -48,8 +48,6 @@ public final class FileName
     public static String buildPath(String dev, String path, String filename, char sep)
     {
 
-        // Debug.println ( "BuildPath: dev=" + dev + ", path=" + path + ",filename=" + filename);
-
         // Build the path string
 
         StringBuffer fullPath = new StringBuffer();
@@ -101,10 +99,6 @@ public final class FileName
             else
                 fullPath.append(filename);
         }
-
-        // Debug
-
-        // Debug.println ( "BuildPath: " + fullPath.toString ());
 
         // Convert the file seperator characters in the path if we are not using the normal
         // DOS file seperator character.

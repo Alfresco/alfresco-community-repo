@@ -103,7 +103,7 @@
                                  </r:permissionEvaluator>
                                  <%-- Current space More actions menu --%>
                                  <a:menu id="spaceMenu" itemSpacing="4" label="#{msg.more_options}" image="/images/icons/more.gif" tooltip="#{msg.more_options_space}" menuStyleClass="moreActionsMenu" style="padding-left:20px">
-                                    <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" action="showSpaceDetails" actionListener="#{BrowseBean.setupSpaceAction}" id="link5">
+                                    <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" action="dialog:showSpaceDetails" actionListener="#{BrowseBean.setupSpaceAction}" id="link5">
                                        <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param6" />
                                     </a:actionLink>
                                     <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval4">
@@ -124,7 +124,7 @@
                                        <a:actionLink value="#{msg.advanced_space_wizard}" image="/images/icons/create_space.gif" action="createAdvancedSpace" actionListener="#{NewSpaceWizard.startWizard}" id="link9" />
                                     </r:permissionEvaluator>
                                     <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="ChangePermissions" id="eval3_1">
-                                       <a:actionLink value="#{msg.manage_invited_users}" image="/images/icons/invite.gif" id="link4" action="manageInvitedUsers" actionListener="#{BrowseBean.setupSpaceAction}">
+                                       <a:actionLink value="#{msg.manage_invited_users}" image="/images/icons/invite.gif" id="link4" action="dialog:manageInvitedUsers" actionListener="#{BrowseBean.setupSpaceAction}">
                                           <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param6_1" />
                                        </a:actionLink>
                                     </r:permissionEvaluator>
@@ -315,9 +315,22 @@
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
                            </r:permissionEvaluator>
-                           <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" showLink="false" styleClass="inlineAction" action="showSpaceDetails" actionListener="#{BrowseBean.setupSpaceAction}">
+                           <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" showLink="false" styleClass="inlineAction" action="dialog:showSpaceDetails" actionListener="#{BrowseBean.setupSpaceAction}">
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
+                           <%-- More actions menu --%>
+                           <a:menu itemSpacing="4" image="/images/icons/more.gif" tooltip="#{msg.more_actions}" menuStyleClass="moreActionsMenu">
+                              <a:booleanEvaluator value="#{r.beingDiscussed == false}">
+                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
+                                    <f:param name="id" value="#{r.id}" />
+                                 </a:actionLink>
+                              </a:booleanEvaluator>
+                              <a:booleanEvaluator value="#{r.beingDiscussed == true}">
+                                 <a:actionLink value="#{msg.discuss}" image="/images/icons/forum.gif" actionListener="#{ForumsBean.discuss}">
+                                    <f:param name="id" value="#{r.id}" />
+                                 </a:actionLink>
+                              </a:booleanEvaluator>
+                           </a:menu>
                         </a:column>
                         
                         <a:dataPager styleClass="pager" />
@@ -461,7 +474,7 @@
                                  <f:param name="id" value="#{r.id}" />
                              </a:actionLink>
                            </a:booleanEvaluator>
-                           <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" showLink="false" styleClass="inlineAction" actionListener="#{BrowseBean.setupContentAction}" action="showDocDetails">
+                           <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" showLink="false" styleClass="inlineAction" actionListener="#{BrowseBean.setupContentAction}" action="dialog:showDocDetails">
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
                            <r:permissionEvaluator value="#{r}" allow="Delete">
@@ -506,6 +519,16 @@
                               <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" actionListener="#{ClipboardBean.copyNode}">
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
+                              <a:booleanEvaluator value="#{r.beingDiscussed == false}">
+                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
+                                    <f:param name="id" value="#{r.id}" />
+                                 </a:actionLink>
+                              </a:booleanEvaluator>
+                              <a:booleanEvaluator value="#{r.beingDiscussed == true}">
+                                 <a:actionLink value="#{msg.discuss}" image="/images/icons/forum.gif" actionListener="#{ForumsBean.discuss}">
+                                    <f:param name="id" value="#{r.id}" />
+                                 </a:actionLink>
+                              </a:booleanEvaluator>
                            </a:menu>
                         </a:column>
                         

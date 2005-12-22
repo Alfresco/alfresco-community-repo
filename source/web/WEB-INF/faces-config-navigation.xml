@@ -158,6 +158,18 @@
          <from-outcome>previewSpace</from-outcome>
          <to-view-id>/jsp/dialog/preview-space.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>startDiscussion</from-outcome>
+         <to-view-id>/jsp/forums/create-topic.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>showForum</from-outcome>
+         <to-view-id>/jsp/forums/forum.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>showTopic</from-outcome>
+         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <!-- Admin Console rules -->
@@ -901,14 +913,6 @@
       <!-- NOTE: we can't have a case for browse in here otherwise you can -->
       <!--       never navigate back to the main browse screen             -->
       <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/forums/forums.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/forums/forums.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>createForums</from-outcome>
          <to-view-id>/jsp/forums/create-forums.jsp</to-view-id>
       </navigation-case>
@@ -976,14 +980,22 @@
          <from-outcome>manageInvitedUsers</from-outcome>
          <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>import</from-outcome>
+         <to-view-id>/jsp/dialog/import.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>export</from-outcome>
+         <to-view-id>/jsp/dialog/export.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>createDiscussion</from-outcome>
+         <to-view-id>/jsp/forums/create-discussion.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <navigation-rule>
       <from-view-id>/jsp/forums/forums-details.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>browse</from-outcome>
-         <to-view-id>/jsp/forums/forums.jsp</to-view-id>
-      </navigation-case>
       <navigation-case>
          <from-outcome>nextItem</from-outcome>
          <to-view-id>/jsp/forums/forums-details.jsp</to-view-id>
@@ -997,164 +1009,52 @@
    <navigation-rule>
       <from-view-id>/jsp/forums/forum-details.jsp</from-view-id>
       <navigation-case>
-         <from-outcome>browse</from-outcome>
-         <to-view-id>/jsp/forums/forum.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>nextItem</from-outcome>
          <to-view-id>/jsp/forums/forum-details.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>previousItem</from-outcome>
          <to-view-id>/jsp/forums/forum-details.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+
+   <navigation-rule>
+      <from-view-id>/jsp/forums/topic-details.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>nextItem</from-outcome>
+         <to-view-id>/jsp/forums/topic-details.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>previousItem</from-outcome>
+         <to-view-id>/jsp/forums/topic-details.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
+      <from-view-id>/jsp/forums/delete-forums.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>forumsDeleted</from-outcome>
+         <to-view-id>/jsp/forums/forums.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>browse</from-outcome>
+         <to-view-id>/jsp/browse/browse.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
    <navigation-rule>
       <from-view-id>/jsp/forums/delete-forum.jsp</from-view-id>
       <navigation-case>
-         <from-outcome>browse</from-outcome>
+         <from-outcome>forumDeleted</from-outcome>
          <to-view-id>/jsp/forums/forums.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/create-topic.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/forums/forum.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/forums/forum.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
    <navigation-rule>
       <from-view-id>/jsp/forums/delete-topic.jsp</from-view-id>
       <navigation-case>
-         <from-outcome>browse</from-outcome>
+         <from-outcome>topicDeleted</from-outcome>
          <to-view-id>/jsp/forums/forum.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/forums/forum.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/forums/forum.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/topic-details.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>browse</from-outcome>
-         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>nextItem</from-outcome>
-         <to-view-id>/jsp/forums/topic-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>previousItem</from-outcome>
-         <to-view-id>/jsp/forums/topic-details.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/create-post.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/create-reply.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/delete-post.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>browse</from-outcome>
-         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/edit-forums.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/forums/forums-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/forums/forums-details.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/edit-forum.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/forums/forum-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/forums/forum-details.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/edit-topic.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/forums/topic-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/forums/topic-details.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/edit-post.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
 

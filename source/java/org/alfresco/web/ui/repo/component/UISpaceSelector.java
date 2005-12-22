@@ -27,6 +27,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.repo.WebResources;
@@ -83,7 +84,8 @@ public class UISpaceSelector extends AbstractItemSelector
    public Collection<ChildAssociationRef> getChildrenForNode(FacesContext context)
    {
       NodeRef nodeRef = new NodeRef(Repository.getStoreRef(), this.navigationId);
-      List<ChildAssociationRef> allKids = getNodeService(context).getChildAssocs(nodeRef);
+      List<ChildAssociationRef> allKids = getNodeService(context).getChildAssocs(nodeRef,
+            ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
       DictionaryService dd = getDictionaryService(context);
       NodeService service = getNodeService(context);
       

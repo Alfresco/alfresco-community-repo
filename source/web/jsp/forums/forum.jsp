@@ -81,13 +81,13 @@
                                  <%-- Current object actions --%>
                                  <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.actions}" id="msg5" /><br>
                                  <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval1">
-                                    <a:actionLink value="#{msg.create_topic}" image="/images/icons/create_topic.gif" padding="4" action="createTopic" actionListener="#{CreateTopicDialog.startWizard}" id="link1" />
+                                    <a:actionLink value="#{msg.create_topic}" image="/images/icons/create_topic.gif" padding="4" action="dialog:createTopic" actionListener="#{CreateTopicDialog.startWizard}" id="link1" />
                                  </r:permissionEvaluator>
-                                 <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" padding="4" action="showForumDetails" actionListener="#{BrowseBean.setupSpaceAction}" id="link2">
+                                 <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" padding="4" action="dialog:showForumDetails" actionListener="#{BrowseBean.setupSpaceAction}" id="link2">
                                     <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param1" />
                                  </a:actionLink>
                                  <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval2">
-                                    <a:actionLink value="#{msg.delete_forum}" image="/images/icons/delete.gif" padding="4" action="deleteForum" actionListener="#{BrowseBean.setupDeleteAction}" id="link3">
+                                    <a:actionLink value="#{msg.delete_forum}" image="/images/icons/delete.gif" padding="4" action="dialog:deleteForum" actionListener="#{BrowseBean.setupDeleteAction}" id="link3">
                                        <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param2" />
                                     </a:actionLink>
                                  </r:permissionEvaluator>
@@ -105,7 +105,7 @@
                                        <a:actionLink value="#{msg.paste_all}" image="/images/icons/paste.gif" actionListener="#{ClipboardBean.pasteAll}" id="link6" />
                                     </r:permissionEvaluator>
                                     <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="ChangePermissions" id="eval5">
-                                       <a:actionLink value="#{msg.manage_invited_users}" image="/images/icons/invite.gif" action="manageInvitedUsers" actionListener="#{BrowseBean.setupSpaceAction}" id="link7">
+                                       <a:actionLink value="#{msg.manage_invited_users}" image="/images/icons/invite.gif" action="dialog:manageInvitedUsers" actionListener="#{BrowseBean.setupSpaceAction}" id="link7">
                                           <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param5" />
                                        </a:actionLink>
                                     </r:permissionEvaluator>
@@ -183,11 +183,19 @@
                               <h:outputText value="#{msg.actions}"/>
                            </f:facet>
                            <r:permissionEvaluator value="#{r}" allow="Delete">
-                              <a:actionLink value="#{msg.delete_topic}" image="/images/icons/delete.gif" showLink="false" styleClass="inlineAction" action="deleteTopic" actionListener="#{BrowseBean.setupDeleteAction}">
+                              <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" showLink="false" styleClass="inlineAction" actionListener="#{ClipboardBean.cutNode}">
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
                            </r:permissionEvaluator>
-                           <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" showLink="false" styleClass="inlineAction" action="showTopicDetails" actionListener="#{BrowseBean.setupSpaceAction}">
+                           <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" showLink="false" styleClass="inlineAction" actionListener="#{ClipboardBean.copyNode}">
+                              <f:param name="id" value="#{r.id}" />
+                           </a:actionLink>
+                           <r:permissionEvaluator value="#{r}" allow="Delete">
+                              <a:actionLink value="#{msg.delete_topic}" image="/images/icons/delete.gif" showLink="false" styleClass="inlineAction" action="dialog:deleteTopic" actionListener="#{BrowseBean.setupDeleteAction}">
+                                 <f:param name="id" value="#{r.id}" />
+                              </a:actionLink>
+                           </r:permissionEvaluator>
+                           <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" showLink="false" styleClass="inlineAction" action="dialog:showTopicDetails" actionListener="#{BrowseBean.setupSpaceAction}">
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
                         </a:column>

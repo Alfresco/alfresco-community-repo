@@ -48,7 +48,7 @@ public class ExportBean
    private static final String ALL_SPACES = "all";
    private static final String CURRENT_SPACE = "current";
 
-   private static final String DEFAULT_OUTCOME = "browse";
+   private static final String DEFAULT_OUTCOME = "dialog:close";
    
    private static final String MSG_ERROR = "error_export";
    

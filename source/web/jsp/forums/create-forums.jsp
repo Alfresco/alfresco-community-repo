@@ -90,7 +90,7 @@
                      <table cellspacing="4" cellpadding="0" width="100%">
                         <tr valign="top">
                            <td width="32">
-                              <h:graphicImage id="wizard-logo" url="/images/icons/create_forum_large.gif" />
+                              <h:graphicImage id="wizard-logo" url="/images/icons/create_forums_large.gif" />
                            </td>
                            <td>
                               <div class="mainSubTitle"><h:outputText value="#{NavigationBean.nodeProperties.name}" /></div>

@@ -17,10 +17,8 @@
  */
 package org.alfresco.web.bean.wizard;
 
-import java.util.List;
-
 import org.alfresco.model.ForumModel;
-import org.alfresco.web.ui.common.component.UIListItem;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 
 /**
  * Wizard bean used for creating and editing forums spaces
@@ -29,8 +27,6 @@ import org.alfresco.web.ui.common.component.UIListItem;
  */
 public class NewForumsWizard extends NewSpaceWizard
 {
-   protected List<UIListItem> forumsIcons;
-
    /**
     * @see org.alfresco.web.bean.wizard.AbstractWizardBean#init()
     */
@@ -39,5 +35,27 @@ public class NewForumsWizard extends NewSpaceWizard
       super.init();
       
       this.spaceType = ForumModel.TYPE_FORUMS.toString();
+   }
+
+   /**
+    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#finish()
+    */
+   @Override
+   public String finish()
+   {
+      super.finish();
+      
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+   }
+
+   /**
+    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#cancel()
+    */
+   @Override
+   public String cancel()
+   {
+      super.cancel();
+      
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
 }

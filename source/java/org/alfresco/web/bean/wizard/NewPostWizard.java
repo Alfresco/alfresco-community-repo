@@ -25,6 +25,8 @@ import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.GUID;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
+import org.alfresco.web.bean.ForumsBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
@@ -56,7 +58,8 @@ public class NewPostWizard extends CreateContentWizard
    public void startWizardForEdit(ActionEvent event)
    {
       // TODO: Allow action link to have multiple action listeners
-      //       then we wouldn't need to have this coupling in here
+      //       then we wouldn't need to have this coupling back
+      //       to the browse bean in here
       
       // we need to setup the content in the browse bean first
       this.browseBean.setupContentAction(event);
@@ -101,17 +104,18 @@ public class NewPostWizard extends CreateContentWizard
       }
       else
       {
-         // create appropriate values for filename, title and content type
-         this.fileName = GUID.generate() + ".html";
+         // create appropriate values for filename and content type
+         this.fileName = ForumsBean.createPostFileName();
          this.contentType = Repository.getMimeTypeForFileName(
                      FacesContext.getCurrentInstance(), this.fileName);
-         this.title = this.fileName;
          
          // remove link breaks and replace with <br/>
          this.content = Utils.replaceLineBreaks(this.content);
       }
       
-      return super.finish();
+      super.finish();
+      
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
 
    /**
@@ -120,16 +124,28 @@ public class NewPostWizard extends CreateContentWizard
    @Override
    protected void performCustomProcessing()
    {
-      // update the content
-      Node currentDocument = this.browseBean.getDocument();
-      
-      ContentWriter writer = this.contentService.getWriter(currentDocument.getNodeRef(), 
-            ContentModel.PROP_CONTENT, true);
-      if (writer != null)
+      if (this.editMode)
       {
-         writer.putContent(this.content);
+         // update the content
+         Node currentDocument = this.browseBean.getDocument();
+         
+         ContentWriter writer = this.contentService.getWriter(currentDocument.getNodeRef(), 
+               ContentModel.PROP_CONTENT, true);
+         if (writer != null)
+         {
+            writer.putContent(this.content);
+         }
       }
    }
-   
-   
+
+   /**
+    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#cancel()
+    */
+   @Override
+   public String cancel()
+   {
+      super.cancel();
+      
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+   }
 }

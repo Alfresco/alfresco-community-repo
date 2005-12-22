@@ -20,6 +20,7 @@ package org.alfresco.web.bean.wizard;
 import javax.faces.event.ActionEvent;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,7 +56,9 @@ public class NewReplyWizard extends NewPostWizard
       // remove link breaks and replace with <br/>
       this.content = Utils.replaceLineBreaks(this.content);
       
-      return super.finish();
+      super.finish();
+      
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
 
    /**
@@ -78,5 +81,16 @@ public class NewReplyWizard extends NewPostWizard
             logger.debug("existing node: " + this.browseBean.getDocument().getNodeRef());
          }
       }
+   }
+
+   /**
+    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#cancel()
+    */
+   @Override
+   public String cancel()
+   {
+      super.cancel();
+      
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
 }

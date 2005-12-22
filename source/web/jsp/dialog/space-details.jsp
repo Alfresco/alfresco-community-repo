@@ -94,11 +94,11 @@
                               </r:permissionEvaluator>
                               <a:menu itemSpacing="4" label="#{msg.more_options}" image="/images/icons/more.gif" tooltip="#{msg.more_options_space}" menuStyleClass="moreActionsMenu" style="padding-left:20px">
                                  <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
-                                    <a:actionLink value="#{msg.import}" image="/images/icons/import.gif" action="import" actionListener="#{BrowseBean.setupSpaceAction}">
+                                    <a:actionLink value="#{msg.import}" image="/images/icons/import.gif" action="dialog:import" actionListener="#{BrowseBean.setupSpaceAction}">
                                        <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                     </a:actionLink>
                                  </r:permissionEvaluator>
-                                 <a:actionLink value="#{msg.export}" image="/images/icons/export.gif" action="export" actionListener="#{BrowseBean.setupSpaceAction}">
+                                 <a:actionLink value="#{msg.export}" image="/images/icons/export.gif" action="dialog:export" actionListener="#{BrowseBean.setupSpaceAction}">
                                     <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                  </a:actionLink>
                                  <a:actionLink value="#{msg.create_shortcut}" image="/images/icons/shortcut.gif" actionListener="#{UserShortcutsBean.createShortcut}">

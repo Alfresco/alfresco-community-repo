@@ -33,6 +33,8 @@
    <config evaluator="string-compare" condition="fm:topic">
       <icons>
          <icon name="topic_large" path="/images/icons/topic_large.gif" />
+         <icon name="topic_exclamation_large" path="/images/icons/topic_exclamation_large.gif" />
+         <icon name="topic_question_large" path="/images/icons/topic_question_large.gif" />
       </icons>
    </config>
    

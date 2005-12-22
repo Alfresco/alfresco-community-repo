@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -208,6 +209,7 @@ public class SpaceDetailsBean
     * 
     * @return model containing current current space info.
     */
+   @SuppressWarnings("unchecked")
    public Map getTemplateModel()
    {
       HashMap model = new HashMap(1, 1.0f);
@@ -402,6 +404,6 @@ public class SpaceDetailsBean
    public String closeDialog()
    {
       this.navigator.resetCurrentNodeProperties();
-      return "browse";
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
 }

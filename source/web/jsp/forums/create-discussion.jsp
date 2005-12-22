@@ -24,18 +24,19 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
-<r:page titleId="title_create_reply">
+<r:page titleId="title_create_discussion">
 
 <script language="JavaScript1.2">
    function checkButtonState()
    {
-      if (document.getElementById("create-reply:message").value.length == 0)
+      if (document.getElementById("create-discussion:subject").value.length == 0 ||
+          document.getElementById("create-discussion:message").value.length == 0)
       {
-         document.getElementById("create-reply:ok-button").disabled = true;
+         document.getElementById("create-discussion:ok-button").disabled = true;
       }
       else
       {
-         document.getElementById("create-reply:ok-button").disabled = false;
+         document.getElementById("create-discussion:ok-button").disabled = false;
       }
    }
 
@@ -46,7 +47,7 @@
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
-   <h:form acceptCharset="UTF-8" id="create-reply">
+   <h:form acceptCharset="UTF-8" id="create-discussion">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
@@ -81,12 +82,12 @@
                      <table cellspacing="4" cellpadding="0" width="100%">
                         <tr valign="top">
                            <td width="32">
-                              <h:graphicImage id="wizard-logo" url="/images/icons/post_reply_large.gif" />
+                              <h:graphicImage id="wizard-logo" url="/images/icons/create_topic_large.gif" />
                            </td>
                            <td>
-                              <div class="mainSubTitle"><h:outputText value="#{BrowseBean.actionSpace.name}" /></div>
-                              <div class="mainTitle"><h:outputText value="#{msg.post_reply}" /></div>
-                              <div class="mainSubText"><h:outputText value="#{msg.create_reply_description}" /></div>
+                              <div class="mainSubTitle"><h:outputText value="#{NavigationBean.nodeProperties.name}" /></div>
+                              <div class="mainTitle"><h:outputText value="#{msg.create_topic}" /></div>
+                              <div class="mainSubText"><h:outputText value="#{msg.create_topic_description}" /></div>
                            </td>
                         </tr>
                      </table>
@@ -110,23 +111,46 @@
                         <tr>
                            <td width="100%" valign="top">
                               
-                              <a:errors message="#{msg.error_create_reply_dialog}" styleClass="errorMessage" />
+                              <a:errors message="#{msg.error_create_forum_dialog}" styleClass="errorMessage" />
                               
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <table cellpadding="2" cellspacing="2" border="0" width="100%">
                                  <tr>
-                                    <td colspan="2" class="wizardSectionHeading"><h:outputText value="#{msg.reply_message}" /></td>
+                                    <td colspan="2" class="wizardSectionHeading"><h:outputText value="#{msg.topic_props}" /></td>
                                  </tr>
                                  <tr>
-                                    <td valign="top"><h:outputText value="#{msg.message}" />:</td>
+                                    <td><h:outputText value="#{msg.subject}" />:</td>
                                     <td>
-                                       <h:inputTextarea id="message" value="#{CreateReplyDialog.content}" rows="6" cols="70" 
-                                                        onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState();" />
+                                       <h:inputText id="subject" value="#{CreateDiscussionDialog.name}" size="50" maxlength="1024" 
+                                                    onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState();" />&nbsp;*
+                                    </td>
+                                 </tr>
+                                 <tr>
+                                    <td><nobr><h:outputText value="#{msg.choose_icon}" />:</nobr></td>
+                                    <td>
+                                       <table border="0" cellpadding="0" cellspacing="0"><tr><td>
+                                       <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
+                                       <a:imagePickerRadio columns="6" spacing="4" value="#{CreateDiscussionDialog.icon}">
+                                          <a:listItems value="#{CreateDiscussionDialog.icons}" />
+                                       </a:imagePickerRadio>
+                                       <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+                                       </td></tr></table>
                                     </td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td colspan="2"><h:outputText value="#{msg.create_reply_finish}" /></td>
+                                    <td colspan="2" class="wizardSectionHeading">&nbsp;<h:outputText value="#{msg.message}" /></td>
+                                 </tr>
+                                 <tr>
+                                    <td><h:outputText value="#{msg.message}" />:</td>
+                                    <td valign="top">
+                                       <h:inputTextarea id="message" value="#{CreateDiscussionDialog.message}" rows="6" cols="70" 
+                                                        onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState();" />&nbsp;*
+                                    </td>
+                                 </tr>
+                                 <tr><td class="paddingRow"></td></tr>
+                                 <tr>
+                                    <td colspan="2"><h:outputText value="#{msg.create_topic_finish}" /></td>
                                  </tr>
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
@@ -137,13 +161,13 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton id="ok-button" value="#{msg.reply}" action="#{CreateReplyDialog.finish}" 
+                                       <h:commandButton id="ok-button" value="#{msg.create_topic}" action="#{CreateDiscussionDialog.finish}" 
                                                         styleClass="wizardButton" disabled="true" />
                                     </td>
                                  </tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel}" action="#{CreateReplyDialog.cancel}" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.cancel}" action="#{CreateDiscussionDialog.cancel}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>
@@ -170,7 +194,7 @@
    </h:form>
     
    <script language="JavaScript1.2">
-      document.getElementById("create-reply:message").focus();
+      document.getElementById("create-discussion:subject").focus();
    </script>
 
 </f:view>

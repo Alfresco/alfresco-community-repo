@@ -88,30 +88,10 @@
                                  <f:param name="id" value="#{SpaceDetailsBean.id}" />
                               </a:actionLink>
                               <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Delete">
-                                 <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" padding="4" action="deleteSpace" actionListener="#{BrowseBean.setupSpaceAction}">
+                                 <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" padding="4" action="dialog:deleteSpace" actionListener="#{BrowseBean.setupSpaceAction}">
                                     <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                  </a:actionLink>
                               </r:permissionEvaluator>
-                              <%--
-                              <a:menu itemSpacing="4" label="#{msg.more_options}" image="/images/icons/more.gif" tooltip="#{msg.more_options_space}" menuStyleClass="moreActionsMenu" style="padding-left:20px">
-                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
-                                    <a:actionLink value="#{msg.import}" image="/images/icons/import.gif" action="import" actionListener="#{BrowseBean.setupSpaceAction}">
-                                       <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                    </a:actionLink>
-                                 </r:permissionEvaluator>
-                                 <a:actionLink value="#{msg.export}" image="/images/icons/export.gif" action="export" actionListener="#{BrowseBean.setupSpaceAction}">
-                                    <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                 </a:actionLink>
-                                 <a:actionLink value="#{msg.create_shortcut}" image="/images/icons/shortcut.gif" actionListener="#{UserShortcutsBean.createShortcut}">
-                                    <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                 </a:actionLink>
-                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="ChangePermissions">
-                                    <a:actionLink value="#{msg.manage_invited_users}" image="/images/icons/invite.gif" action="manageInvitedUsers" actionListener="#{BrowseBean.setupSpaceAction}">
-                                       <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                    </a:actionLink>
-                                 </r:permissionEvaluator>
-                              </a:menu>
-                              --%>
                            </td>
                            
                            <%-- Navigation --%>
@@ -150,7 +130,7 @@
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
                                        <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif"
-                                             action="editForumsProperties" actionListener="#{EditForumsDialog.startWizardForEdit}" />
+                                             action="dialog:editForumsProperties" actionListener="#{EditForumsDialog.startWizardForEdit}" />
                                     </r:permissionEvaluator>
                                  </f:facet>
                               </h:column>

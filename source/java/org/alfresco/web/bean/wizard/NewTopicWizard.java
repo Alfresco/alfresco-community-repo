@@ -18,26 +18,22 @@
 package org.alfresco.web.bean.wizard;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.GUID;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
+import org.alfresco.web.bean.ForumsBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.UIListItem;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -51,51 +47,8 @@ public class NewTopicWizard extends NewSpaceWizard
    private static final Log logger = LogFactory.getLog(NewTopicWizard.class);
    
    protected String message;
-   protected String topicType;
-   protected List<UIListItem> topicIcons;
-   protected List<SelectItem> topicTypes;
    
    protected ContentService contentService;
-   
-   /**
-    * Returns a list of topic types for the user to select from
-    * 
-    * @return The topic types
-    */
-   public List<SelectItem> getTopicTypes()
-   {
-      if (this.topicTypes == null)
-      {
-         this.topicTypes = new ArrayList<SelectItem>(3);
-         
-         // TODO: change this to be based on categories
-         this.topicTypes.add(new SelectItem("1", "Announcement"));
-         this.topicTypes.add(new SelectItem("0", "Normal"));
-         this.topicTypes.add(new SelectItem("2", "Sticky"));
-      }
-      
-      return this.topicTypes;
-   }
-   
-   /**
-    * Returns the type of the topic
-    * 
-    * @return The type of topic
-    */
-   public String getTopicType()
-   {
-      return this.topicType;
-   }
-   
-   /**
-    * Sets the type of the topic
-    *  
-    * @param topicType The type of the topic
-    */
-   public void setTopicType(String topicType)
-   {
-      this.topicType = topicType;
-   }
 
    /**
     * Returns the message entered by the user for the first post
@@ -133,7 +86,6 @@ public class NewTopicWizard extends NewSpaceWizard
       super.init();
 
       this.spaceType = ForumModel.TYPE_TOPIC.toString();
-      this.topicType = "0";
       this.message = null;
    }
 
@@ -141,34 +93,19 @@ public class NewTopicWizard extends NewSpaceWizard
     * @see org.alfresco.web.bean.wizard.NewSpaceWizard#performCustomProcessing(javax.faces.context.FacesContext)
     */
    @Override
-   protected void performCustomProcessing(FacesContext context)
+   protected void performCustomProcessing(FacesContext context) throws Exception
    {
       if (this.editMode == false)
       {
-         // *************************
-         // TODO: Add or update the ForumModel.PROP_TYPE property depending on the editMode
-         // *************************
-         
          // get the node ref of the node that will contain the content
          NodeRef containerNodeRef = this.createdNode;
          
          // create a unique file name for the message content
-         String fileName = GUID.generate() + ".txt";
+         String fileName = ForumsBean.createPostFileName();
          
-         // create properties for content type
-         Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>(5, 1.0f);
-         contentProps.put(ContentModel.PROP_NAME, fileName);
-         
-         // create the node to represent the content
-         String assocName = QName.createValidLocalName(fileName);
-         ChildAssociationRef assocRef = this.nodeService.createNode(
-               containerNodeRef,
-               ContentModel.ASSOC_CONTAINS,
-               QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, assocName),
-               Repository.resolveToQName(ForumModel.TYPE_POST.toString()),
-               contentProps);
-         
-         NodeRef postNodeRef = assocRef.getChildRef();
+         FileInfo fileInfo = this.fileFolderService.create(containerNodeRef,
+               fileName, ForumModel.TYPE_POST);
+         NodeRef postNodeRef = fileInfo.getNodeRef();
          
          if (logger.isDebugEnabled())
             logger.debug("Created post node with filename: " + fileName);
@@ -195,5 +132,27 @@ public class NewTopicWizard extends NewSpaceWizard
          writer.setEncoding("UTF-8");
          writer.putContent(Utils.replaceLineBreaks(this.message));
       }
+   }
+   
+   /**
+    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#finish()
+    */
+   @Override
+   public String finish()
+   {
+      super.finish();
+      
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+   }
+
+   /**
+    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#cancel()
+    */
+   @Override
+   public String cancel()
+   {
+      super.cancel();
+      
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
 }

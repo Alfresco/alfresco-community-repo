@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.renderer.BaseRenderer;
@@ -115,7 +116,8 @@ public class NodeDescendantsLinkRenderer extends BaseRenderer
             // calculate the number of displayed child refs
             if (service.exists(parentRef) == true)
             {
-               List<ChildAssociationRef> childRefs = service.getChildAssocs(parentRef);
+               List<ChildAssociationRef> childRefs = service.getChildAssocs(parentRef,
+                     ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
                List<ChildAssociationRef> refs = new ArrayList<ChildAssociationRef>(childRefs.size());
                for (int index=0; index<childRefs.size(); index++)
                {

@@ -28,6 +28,7 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.lock.LockService;
@@ -43,6 +44,8 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -399,6 +402,7 @@ public class BrowseBean implements IContextListener
       node.addPropertyResolver("size", this.resolverSize);
       node.addPropertyResolver("cancelCheckOut", this.resolverCancelCheckOut);
       node.addPropertyResolver("checkIn", this.resolverCheckIn);
+      node.addPropertyResolver("beingDiscussed", this.resolverBeingDiscussed);
       node.addPropertyResolver("editLinkType", this.resolverEditLinkType);
       node.addPropertyResolver("webdavUrl", this.resolverWebdavUrl);
       node.addPropertyResolver("cifsPath", this.resolverCifsPath);
@@ -490,9 +494,9 @@ public class BrowseBean implements IContextListener
             // build a NodeRef for the specified Id and our store
             parentRef = new NodeRef(Repository.getStoreRef(), parentNodeId);
          }
-         
-         // TODO: can we improve the Get here with an API call for children of a specific type?
-         List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(parentRef);
+
+         List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(parentRef, 
+               ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
          this.containerNodes = new ArrayList<Node>(childRefs.size());
          this.contentNodes = new ArrayList<Node>(childRefs.size());
          for (ChildAssociationRef ref: childRefs)
@@ -517,6 +521,7 @@ public class BrowseBean implements IContextListener
                      // create our Node representation
                      MapNode node = new MapNode(nodeRef, this.nodeService, true);
                      node.addPropertyResolver("icon", this.resolverSpaceIcon);
+                     node.addPropertyResolver("beingDiscussed", this.resolverBeingDiscussed);
                      
                      this.containerNodes.add(node);
                   }
@@ -632,6 +637,7 @@ public class BrowseBean implements IContextListener
                         node.addPropertyResolver("path", this.resolverPath);
                         node.addPropertyResolver("displayPath", this.resolverDisplayPath);
                         node.addPropertyResolver("icon", this.resolverSpaceIcon);
+                        node.addPropertyResolver("beingDiscussed", this.resolverBeingDiscussed);
                         
                         this.containerNodes.add(node);
                      }
@@ -729,6 +735,12 @@ public class BrowseBean implements IContextListener
    public NodePropertyResolver resolverWorkingCopy = new NodePropertyResolver() {
       public Object get(Node node) {
          return node.hasAspect(ContentModel.ASPECT_WORKING_COPY);
+      }
+   };
+   
+   public NodePropertyResolver resolverBeingDiscussed = new NodePropertyResolver() {
+      public Object get(Node node) {
+         return node.hasAspect(ForumModel.ASPECT_DISCUSSABLE);
       }
    };
    
@@ -865,9 +877,7 @@ public class BrowseBean implements IContextListener
          try
          {
             NodeRef ref = new NodeRef(Repository.getStoreRef(), id);
-            
-            // refresh UI based on node selection
-            updateUILocation(ref);
+            clickSpace(ref);
          }
          catch (InvalidNodeRefException refErr)
          {
@@ -875,6 +885,17 @@ public class BrowseBean implements IContextListener
                FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {id}) );
          }
       }
+   }
+   
+   /**
+    * Action called when a folder space is clicked.
+    *
+    * @param nodeRef The node being clicked
+    */
+   public void clickSpace(NodeRef nodeRef)
+   {
+      // refresh UI based on node selection
+      updateUILocation(nodeRef);
    }
    
    /**

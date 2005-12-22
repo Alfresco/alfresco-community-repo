@@ -80,10 +80,10 @@ public class NewSpaceWizard extends AbstractWizardBean
    private static final String DEFAULT_SPACE_TYPE_ICON = "/images/icons/space.gif";
 
    // new space wizard specific properties
-   private SearchService searchService;
-   private NamespaceService namespaceService;
-   private DictionaryService dictionaryService;
-   private ConfigService configService;
+   protected SearchService searchService;
+   protected NamespaceService namespaceService;
+   protected DictionaryService dictionaryService;
+   protected ConfigService configService;
    
    protected String spaceType;
    protected String icon;
@@ -996,7 +996,7 @@ public class NewSpaceWizard extends AbstractWizardBean
     * 
     * @param context Faces context
     */
-   protected void performCustomProcessing(FacesContext context)
+   protected void performCustomProcessing(FacesContext context) throws Exception
    {
       // used by subclasses if necessary
    }

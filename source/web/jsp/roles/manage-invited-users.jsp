@@ -173,7 +173,7 @@
                               <table cellpadding="0" cellspacing="0" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.close}" action="browse" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.close}" action="dialog:close" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

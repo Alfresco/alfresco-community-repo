@@ -53,7 +53,7 @@ public class ImportBean
 {
    private static final Log logger = LogFactory.getLog(ImportBean.class);
 
-   private static final String DEFAULT_OUTCOME = "browse";
+   private static final String DEFAULT_OUTCOME = "dialog:close";
    
    private static final String MSG_ERROR = "error_import";
    private static final String MSG_ERROR_NO_FILE = "error_import_no_file";

@@ -17,11 +17,15 @@
 package org.alfresco.web.bean;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -29,6 +33,7 @@ import javax.faces.context.ResponseWriter;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -44,6 +49,8 @@ import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -53,6 +60,7 @@ import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.common.component.data.UIColumn;
 import org.alfresco.web.ui.common.component.data.UIRichList;
@@ -428,8 +436,8 @@ public class ForumsBean implements IContextListener
             parentRef = new NodeRef(Repository.getStoreRef(), parentNodeId);
          }
          
-         // TODO: can we improve the Get here with an API call for children of a specific type?
-         List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(parentRef);
+         List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(parentRef,
+               ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
          this.forums = new ArrayList<Node>(childRefs.size());
          this.topics = new ArrayList<Node>(childRefs.size());
          this.posts = new ArrayList<Node>(childRefs.size());
@@ -596,6 +604,13 @@ public class ForumsBean implements IContextListener
       
       // push the view mode into the lists
       setForumsViewMode(viewMode);
+      
+      // get the default for the forum page
+      this.forumsPageSize = this.clientConfig.getDefaultPageSize(PAGE_NAME_FORUMS, 
+            this.forumsViewMode);
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Set default forums page size to: " + this.forumsPageSize);
    }
    
    /**
@@ -612,6 +627,13 @@ public class ForumsBean implements IContextListener
       
       // push the view mode into the lists
       setForumViewMode(viewMode);
+      
+      // get the default for the forum page
+      this.forumPageSize = this.clientConfig.getDefaultPageSize(PAGE_NAME_FORUM, 
+            this.forumViewMode);
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Set default forum page size to: " + this.forumPageSize);
    }
    
    /**
@@ -628,6 +650,137 @@ public class ForumsBean implements IContextListener
       
       // push the view mode into the lists
       setTopicViewMode(viewMode);
+      
+      // change the default page size if necessary
+      this.topicPageSize = this.clientConfig.getDefaultPageSize(PAGE_NAME_TOPIC, 
+            this.topicViewMode);
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Set default topic page size to: " + this.topicPageSize);
+   }
+
+   /**
+    * Event handler called when a user wants to view or participate 
+    * in a discussion on an object
+    * 
+    * @param event ActionEvent
+    */
+   public void discuss(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String id = params.get("id");
+      if (id == null || id.length() == 0)
+      {
+         throw new AlfrescoRuntimeException("discuss called without an id");
+      }
+      
+      FacesContext context = FacesContext.getCurrentInstance();
+      
+      NodeRef nodeRef = new NodeRef(Repository.getStoreRef(), id);
+         
+      if (this.nodeService.hasAspect(nodeRef, ForumModel.ASPECT_DISCUSSABLE) == false)
+      {
+         throw new AlfrescoRuntimeException("discuss called for an object that does not have a discussion!");
+      }
+      
+      // as the node has the discussable aspect there must be a discussions child assoc
+      List<ChildAssociationRef> children = this.nodeService.getChildAssocs(nodeRef, 
+            ForumModel.ASSOC_DISCUSSION, RegexQNamePattern.MATCH_ALL);
+      
+      // there should only be one child, retrieve it if there is
+      if (children.size() == 1)
+      {
+         NodeRef forumNodeRef = children.get(0).getChildRef();
+
+         // query for the number of topics there are
+         String repliesXPath = "./*[(subtypeOf('" + ForumModel.TYPE_TOPIC + "'))]";         
+         List<NodeRef> topics = searchService.selectNodes(forumNodeRef, repliesXPath,
+                new QueryParameterDefinition[] {}, this.namespaceService, false);
+         if (topics.size() == 1)
+         {
+            // if the forum has only one topic go straight into the topic by 
+            // setting the context and navigating to it
+            NodeRef topicNodeRef = topics.get(0);
+            this.browseBean.clickSpace(topicNodeRef);
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, "showTopic");
+         }
+         else
+         {
+            // if the forum has more than one topic we need to setup the context 
+            // for the forum and navigate to the forum page
+            this.browseBean.clickSpace(forumNodeRef);
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, "showForum");
+         }
+      }
+   }
+      
+   /**
+    * Called when the user confirms they wish to delete a forum space
+    * 
+    * @return The outcome
+    */
+   public String deleteForumsOK()
+   {
+      String outcome = "browse";
+      
+      // find out what the parent type of the node being deleted 
+      Node node = this.browseBean.getActionSpace();
+      ChildAssociationRef assoc = this.nodeService.getPrimaryParent(node.getNodeRef());
+      if (assoc != null)
+      {
+         NodeRef parent = assoc.getParentRef();
+         QName parentType = this.nodeService.getType(parent);
+         if (parentType.equals(ForumModel.TYPE_FORUMS))
+         {
+            outcome = "forumsDeleted";
+         }
+      }
+      
+      // call the generic handler
+      this.browseBean.deleteSpaceOK();
+      
+      // return an overidden outcome which closes the dialog with an outcome
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
+             AlfrescoNavigationHandler.DIALOG_SEPARATOR + outcome;
+   }
+   
+   /**
+    * Called when the user confirms they wish to delete a forum space
+    * 
+    * @return The outcome
+    */
+   public String deleteForumOK()
+   {
+      this.browseBean.deleteSpaceOK();
+      
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
+             AlfrescoNavigationHandler.DIALOG_SEPARATOR + "forumDeleted";
+   }
+   
+   /**
+    * Called when the user confirms they wish to delete a forum space
+    * 
+    * @return The outcome
+    */
+   public String deleteTopicOK()
+   {
+      this.browseBean.deleteSpaceOK();
+      
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
+             AlfrescoNavigationHandler.DIALOG_SEPARATOR + "topicDeleted";
+   }
+   
+   /**
+    * Called when the user confirms they wish to delete a forum space
+    * 
+    * @return The outcome
+    */
+   public String deletePostOK()
+   {
+      this.browseBean.deleteFileOK();
+      
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
    
    // ------------------------------------------------------------------------------
@@ -702,6 +855,25 @@ public class ForumsBean implements IContextListener
          return replyTo;
       }
    };
+   
+   /**
+    * Creates a file name for the message being posted
+    * 
+    * @return The file name for the post
+    */
+   public static String createPostFileName()
+   {
+      StringBuilder name = new StringBuilder("posted-");
+      
+      // add a timestamp
+      SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy-hh:mm:ss");
+      name.append(dateFormat.format(new Date()));
+      
+      // add the HTML file extension
+      name.append(".html");
+      
+      return name.toString();
+   }
    
    // ------------------------------------------------------------------------------
    // Private helpers
@@ -840,6 +1012,124 @@ public class ForumsBean implements IContextListener
       }
       
       /**
+       * Renders the top part of the bubble i.e. before the header
+       * 
+       * @param out The writer to output to
+       * @param contextPath Context path of the application
+       * @param colour The colour of the bubble
+       * @param titleBgColour Background colour of the header area
+       */
+      public static void renderBubbleTop(Writer out, String contextPath, 
+            String colour, String titleBgColour) throws IOException
+      {
+         out.write("<table border='0' cellpadding='0' cellspacing='0' width='100%'><tr>");
+         out.write("<td style='background: url(");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("header_1.gif) no-repeat #FFFFFF;' width='24' height='24'></td>");
+         out.write("<td style='background: url(");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("header_2.gif) repeat-x ");
+         out.write(titleBgColour);
+         out.write("'>");
+      }
+      
+      /**
+       * Renders the middle part of the bubble i.e. after the header and before the body
+       * 
+       * @param out The writer to output to
+       * @param contextPath Context path of the application
+       * @param colour The colour of the bubble
+       */
+      public static void renderBubbleMiddle(Writer out, String contextPath, String colour) 
+            throws IOException
+      {
+         out.write("</td>");
+         out.write("<td style='background: url(");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("header_3.gif) no-repeat #FFFFFF;' width='24' height='24'></td>");
+         out.write("</tr><tr>");
+         out.write("<td width='24' height='13'><img width='24' height='13' alt='' src='");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("body_1.gif' /></td>");
+         out.write("<td background='");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("body_2.gif'><img width='21' height='13' alt='' src='");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("body_2.gif' /></td>");
+         out.write("<td width='24' height='13'><img width='24' height='13' alt='' src='");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("body_3.gif' /></td>");
+         out.write("</tr><tr>");
+         out.write("<td width='24' height='13' background='");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("body_4.gif'><img width='24' height='4' alt='' src='");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("body_4.gif' /></td>");         
+         out.write("<td>");
+      }
+      
+      /**
+       * Renders the bottom part of the bubble i.e. after the body
+       * 
+       * @param out The writer to output to
+       * @param contextPath Context path of the application
+       * @param colour The colour of the bubble
+       */
+      public static void renderBubbleBottom(Writer out, String contextPath, String colour)
+            throws IOException
+      {
+         out.write("</td>");
+         out.write("<td width='24' height='13' background='");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("body_6.gif'><img width='24' height='3' alt='' src='");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("body_6.gif' /></td>");
+         out.write("</tr><tr>");
+         out.write("<td width='24' height='13'><img width='24' height='13' alt='' src='");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("body_7.gif' /></td>");
+         out.write("<td background='");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("body_8.gif'><img width='20' height='13' alt='' src='");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("body_8.gif' /></td>");
+         out.write("<td width='24' height='13'><img width='24' height='13' alt='' src='");
+         out.write(contextPath);
+         out.write("/images/parts/");
+         out.write(colour);
+         out.write("body_9.gif' /></td>");
+         out.write("</tr></table>");
+      }
+      
+      /**
        * Renders the new post speech bubble
        * 
        * @param context Faces context
@@ -852,13 +1142,22 @@ public class ForumsBean implements IContextListener
       private void renderNewPostBubble(FacesContext context, ResponseWriter out, Node node, 
             UIColumn primaryColumn, UIColumn actionsColumn, UIColumn[] columns) throws IOException
       {
+         String contextPath = context.getExternalContext().getRequestContextPath();
+         String colour = "orange";
+         
          out.write("<td><table border='0' cellpadding='0' cellspacing='0' width='100%'><tr>");
          out.write("<td><img src='");
-         out.write(context.getExternalContext().getRequestContextPath());
+         out.write(contextPath);
          out.write("/images/icons/user_large.gif'/><br/>");
          out.write((String)node.getProperties().get("creator"));
          out.write("</td><td width='100%'>");
-         renderBubble(context, out, "orange", "#FCC75E", primaryColumn, actionsColumn, columns);
+         
+         renderBubbleTop(out, contextPath, colour, "#FCC75E");
+         renderHeaderContents(context, out, primaryColumn, actionsColumn, columns); 
+         renderBubbleMiddle(out, contextPath, colour);
+         renderBodyContents(context, primaryColumn);
+         renderBubbleBottom(out, contextPath, colour);
+         
          out.write("</td><td><div style='width:32px;' /></td></table></td>");
       }
       
@@ -875,48 +1174,28 @@ public class ForumsBean implements IContextListener
       private void renderReplyToBubble(FacesContext context, ResponseWriter out, Node node, 
             UIColumn primaryColumn, UIColumn actionsColumn, UIColumn[] columns) throws IOException
       {
+         String contextPath = context.getExternalContext().getRequestContextPath();
+         String colour = "yellow";
+         
          out.write("<td width='100%'><table border='0' cellpadding='0' cellspacing='0' width='100%'><tr>");
          out.write("<td><div style='width:32px;' /></td><td width='100%'>");
-         renderBubble(context, out, "yellow", "#FFF5A3", primaryColumn, actionsColumn, columns);
+         
+         renderBubbleTop(out, contextPath, colour, "#FFF5A3");
+         renderHeaderContents(context, out, primaryColumn, actionsColumn, columns); 
+         renderBubbleMiddle(out, contextPath, colour);
+         renderBodyContents(context, primaryColumn);
+         renderBubbleBottom(out, contextPath, colour);
+         
          out.write("</td><td><img src='");
-         out.write(context.getExternalContext().getRequestContextPath());
+         out.write(contextPath);
          out.write("/images/icons/user_large.gif'/><br/>");
          out.write((String)node.getProperties().get("creator"));
          out.write("</td></table></td>");
       }
 
-      /**
-       * Renders the speech bubble
-       * 
-       * @param context Faces context
-       * @param out The response writer
-       * @param colour The colour of the bubble
-       * @param titleBgColour The colour of the background of the title area (#rrggbb)
-       * @param primaryColumn The primary column containing the message content
-       * @param actionsColumn The actions column containing all the actions
-       * @param columns All configured columns
-       */
-      private void renderBubble(FacesContext context, ResponseWriter out,
-            String colour, String titleBgColour, 
-            UIColumn primaryColumn, UIColumn actionsColumn, UIColumn[] columns)
-            throws IOException
+      private void renderHeaderContents(FacesContext context, ResponseWriter out,  
+            UIColumn primaryColumn, UIColumn actionsColumn, UIColumn[] columns) throws IOException
       {
-         String contextPath = context.getExternalContext().getRequestContextPath();
-         
-         out.write("<table border='0' cellpadding='0' cellspacing='0' width='100%'><tr>");
-         out.write("<td style='background: url(");
-         out.write(contextPath);
-         out.write("/images/parts/");
-         out.write(colour);
-         out.write("header_1.gif) no-repeat #FFFFFF;' width='24' height='24'></td>");
-         out.write("<td style='background: url(");
-         out.write(contextPath);
-         out.write("/images/parts/");
-         out.write(colour);
-         out.write("header_2.gif) repeat-x ");
-         out.write(titleBgColour);
-         out.write("'>");
-         
          // render the header area with the configured columns
          out.write("<table width='100%' cellpadding='2' cellspacing='2' border='0'><tr>");
          
@@ -948,73 +1227,28 @@ public class ForumsBean implements IContextListener
          }
          
          // render the actions column
-         out.write("<td align='right' width='100%'>");
+         out.write("<td align='right' width='100%'><nobr>");
          if (actionsColumn != null && actionsColumn.getChildCount() != 0)
          {
             Utils.encodeRecursive(context, actionsColumn);
          }
-         out.write("</td></tr></table>");
-         
-         out.write("</td>");
-         out.write("<td style='background: url(");
-         out.write(contextPath);
-         out.write("/images/parts/");
-         out.write(colour);
-         out.write("header_3.gif) no-repeat #FFFFFF;' width='24' height='24'></td>");
-         out.write("</tr></tr>");
-         out.write("<td style='background: url(");
-         out.write(contextPath);
-         out.write("/images/parts/");
-         out.write(colour);
-         out.write("body_1.gif) no-repeat #FFFFFF;' width='24' height='13'></td>");
-         out.write("<td style='background: url(");
-         out.write(contextPath);
-         out.write("/images/parts/");
-         out.write(colour);
-         out.write("body_2.gif) repeat-x #FFFFFF;'></td>");
-         out.write("<td style='background: url(");
-         out.write(contextPath);
-         out.write("/images/parts/");
-         out.write(colour);
-         out.write("body_3.gif) no-repeat #FFFFFF;' width='24' height='13'></td>");
-         out.write("</tr><tr>");
-         out.write("<td style='background: url(");
-         out.write(contextPath);
-         out.write("/images/parts/");
-         out.write(colour);
-         out.write("body_4.gif) repeat-y #FFFFFF;' width='24' height='13'></td>");
-         out.write("<td>");
-         
+         out.write("</nobr></td></tr></table>");
+      }
+      
+      /**
+       * Renders the body contents for the bubble using the given primary coumn 
+       * 
+       * @param context Faces context
+       * @param primaryColumn The primary column holding the message text
+       */
+      private void renderBodyContents(FacesContext context, UIColumn primaryColumn)
+            throws IOException
+      {
          // render the primary column
          if (primaryColumn != null && primaryColumn.getChildCount() != 0)
          {
             Utils.encodeRecursive(context, primaryColumn);
          }
-         
-         out.write("</td>");
-         
-         out.write("<td style='background: url(");
-         out.write(contextPath);
-         out.write("/images/parts/");
-         out.write(colour);
-         out.write("body_6.gif) repeat-y #FFFFFF;' width='24' height='13'></td>");
-         out.write("</tr><tr>");
-         out.write("<td style='background: url(");
-         out.write(contextPath);
-         out.write("/images/parts/");
-         out.write(colour);
-         out.write("body_7.gif) no-repeat #FFFFFF;' width='24' height='13'></td>");
-         out.write("<td style='background: url(");
-         out.write(contextPath);
-         out.write("/images/parts/");
-         out.write(colour);
-         out.write("body_8.gif) repeat-x #FFFFFF;'></td>");
-         out.write("<td style='background: url(");
-         out.write(contextPath);
-         out.write("/images/parts/");
-         out.write(colour);
-         out.write("body_9.gif) no-repeat #FFFFFF;' width='24' height='13'></td>");
-         out.write("</tr></table>");
       }
    }
 }

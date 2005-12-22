@@ -137,13 +137,13 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.yes}" action="#{BrowseBean.deleteSpaceOK}" styleClass="dialogControls" />
+                                       <h:commandButton value="#{msg.yes}" action="#{ForumsBean.deleteForumOK}" styleClass="dialogControls" />
                                     </td>
                                  </tr>
                                  <tr><td class="dialogButtonSpacing"></td></tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.no}" action="cancel" styleClass="dialogControls" />
+                                       <h:commandButton value="#{msg.no}" action="dialog:close" styleClass="dialogControls" />
                                     </td>
                                  </tr>
                               </table>

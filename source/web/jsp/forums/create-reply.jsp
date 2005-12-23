@@ -23,6 +23,7 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
+<%@ page import="org.alfresco.web.bean.ForumsBean.TopicBubbleViewRenderer" %>
 
 <r:page titleId="title_create_reply">
 
@@ -84,7 +85,7 @@
                               <h:graphicImage id="wizard-logo" url="/images/icons/post_reply_large.gif" />
                            </td>
                            <td>
-                              <div class="mainSubTitle"><h:outputText value="#{BrowseBean.actionSpace.name}" /></div>
+                              <div class="mainSubTitle"><h:outputText value="#{NavigationBean.nodeProperties.name}" /></div>
                               <div class="mainTitle"><h:outputText value="#{msg.post_reply}" /></div>
                               <div class="mainSubText"><h:outputText value="#{msg.create_reply_description}" /></div>
                            </td>
@@ -127,6 +128,29 @@
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
                                     <td colspan="2"><h:outputText value="#{msg.create_reply_finish}" /></td>
+                                 </tr>
+                                 <tr><td class="paddingRow"></td></tr>
+                                 <tr>
+                                    <td colspan="2">
+                                       <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                          <tr>
+                                          <td width="100%">
+                                             <% TopicBubbleViewRenderer.renderBubbleTop(out, request.getContextPath(), "yellow", "#FFF5A3"); %>
+                                             <h:outputText value="#{msg.posted}:" styleClass="mainSubTitle" />&nbsp;
+                                             <h:outputText value="#{BrowseBean.document.properties.created}">
+                                                <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
+                                             </h:outputText>
+                                             <% TopicBubbleViewRenderer.renderBubbleMiddle(out, request.getContextPath(), "yellow"); %>
+                                             <h:outputText value="#{CreateReplyDialog.replyContent}" escape="false" />
+                                             <% TopicBubbleViewRenderer.renderBubbleBottom(out, request.getContextPath(), "yellow"); %>
+                                          </td>
+                                          <td valign="top">
+                                             <h:graphicImage id="poster" url="/images/icons/user_large.gif" /><br/>
+                                             <h:outputText value="#{BrowseBean.document.properties.creator}" />
+                                          </td>
+                                          </tr>
+                                       </table>
+                                    </td>
                                  </tr>
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>

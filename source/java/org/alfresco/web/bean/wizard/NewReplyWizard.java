@@ -20,6 +20,8 @@ package org.alfresco.web.bean.wizard;
 import javax.faces.event.ActionEvent;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
@@ -35,6 +37,44 @@ public class NewReplyWizard extends NewPostWizard
 {
    private static Log logger = LogFactory.getLog(NewReplyWizard.class);
    
+   private String replyContent = null;
+   
+   /**
+    * Returns the content of the post we are replying to
+    * 
+    * @return The content
+    */
+   public String getReplyContent()
+   {
+      if (this.replyContent == null)
+      {
+         // get the content reader of the node we are replying to
+         NodeRef replyNode = this.browseBean.getDocument().getNodeRef();
+         if (replyNode != null)
+         {
+            ContentReader reader = this.contentService.getReader(replyNode, ContentModel.PROP_CONTENT);
+            
+            if (reader != null)
+            {
+               this.replyContent = reader.getContentString();
+            }
+         }
+      }
+      
+      return this.replyContent;
+   }
+   
+   /**
+    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#init()
+    */
+   @Override
+   public void init()
+   {
+      super.init();
+      
+      this.replyContent = null;
+   }
+
    /**
     * @see org.alfresco.web.bean.wizard.AbstractWizardBean#startWizard(javax.faces.event.ActionEvent)
     */

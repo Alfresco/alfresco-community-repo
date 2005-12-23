@@ -995,6 +995,14 @@
    </navigation-rule>
    
    <navigation-rule>
+      <from-view-id>/jsp/forums/create-topic.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>showTopic</from-outcome>
+         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
       <from-view-id>/jsp/forums/forums-details.jsp</from-view-id>
       <navigation-case>
          <from-outcome>nextItem</from-outcome>

@@ -57,7 +57,9 @@ import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
+import org.alfresco.web.bean.repository.QNameNodeMap;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wizard.NewSpaceWizard;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -67,6 +69,7 @@ import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.alfresco.web.ui.common.renderer.data.IRichListRenderer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StringUtils;
 
 /**
  * Bean providing properties and behaviour for the forums screens.
@@ -467,6 +470,7 @@ public class ForumsBean implements IContextListener
                         // create our Node representation
                         MapNode node = new MapNode(nodeRef, this.nodeService, true);
                         node.addPropertyResolver("icon", this.browseBean.resolverSpaceIcon);
+                        node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                         
                         this.forums.add(node);
                      }
@@ -475,6 +479,7 @@ public class ForumsBean implements IContextListener
                         // create our Node representation
                         MapNode node = new MapNode(nodeRef, this.nodeService, true);
                         node.addPropertyResolver("icon", this.browseBean.resolverSpaceIcon);
+                        node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                         node.addPropertyResolver("replies", this.resolverReplies);
                         
                         this.topics.add(node);
@@ -485,6 +490,7 @@ public class ForumsBean implements IContextListener
                         MapNode node = new MapNode(nodeRef, this.nodeService, true);
                         
                         this.browseBean.setupDataBindingProperties(node);
+                        node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                         node.addPropertyResolver("message", this.resolverContent);
                         node.addPropertyResolver("replyTo", this.resolverReplyTo);
                         
@@ -785,6 +791,24 @@ public class ForumsBean implements IContextListener
    
    // ------------------------------------------------------------------------------
    // Property Resolvers
+   
+   public NodePropertyResolver resolverSmallIcon = new NodePropertyResolver() {
+      public Object get(Node node) {
+         QNameNodeMap props = (QNameNodeMap)node.getProperties();
+         String icon = (String)props.getRaw("app:icon");
+         
+         if (icon != null)
+         {
+            icon = StringUtils.replace(icon, "_large", "");
+         }
+         else
+         {
+            icon = "space_small";
+         }
+         
+         return icon;
+      }
+   };
    
    public NodePropertyResolver resolverReplies = new NodePropertyResolver() {
       public Object get(Node node) 
@@ -1146,7 +1170,7 @@ public class ForumsBean implements IContextListener
          String colour = "orange";
          
          out.write("<td><table border='0' cellpadding='0' cellspacing='0' width='100%'><tr>");
-         out.write("<td><img src='");
+         out.write("<td valign='top'><img src='");
          out.write(contextPath);
          out.write("/images/icons/user_large.gif'/><br/>");
          out.write((String)node.getProperties().get("creator"));
@@ -1186,7 +1210,7 @@ public class ForumsBean implements IContextListener
          renderBodyContents(context, primaryColumn);
          renderBubbleBottom(out, contextPath, colour);
          
-         out.write("</td><td><img src='");
+         out.write("</td><td valign='top'><img src='");
          out.write(contextPath);
          out.write("/images/icons/user_large.gif'/><br/>");
          out.write((String)node.getProperties().get("creator"));

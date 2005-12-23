@@ -172,7 +172,7 @@
                               <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
                            </f:facet>
                            <f:facet name="small-icon">
-                              <a:actionLink value="#{r.name}" image="/images/icons/space_small.gif" actionListener="#{BrowseBean.clickSpace}" action="showTopics" showLink="false">
+                              <a:actionLink value="#{r.name}" image="/images/icons/#{r.smallIcon}.gif" actionListener="#{BrowseBean.clickSpace}" action="showTopics" showLink="false">
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
                            </f:facet>

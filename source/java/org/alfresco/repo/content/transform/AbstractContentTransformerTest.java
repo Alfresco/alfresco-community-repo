@@ -43,7 +43,6 @@ public abstract class AbstractContentTransformerTest extends BaseSpringTest
             "quick", "brown", "fox", "jumps", "lazy", "dog"};
 
     protected MimetypeMap mimetypeMap;
-    protected ContentTransformer transformer;
 
     public final void setMimetypeMap(MimetypeMap mimetypeMap)
     {
@@ -206,7 +205,7 @@ public abstract class AbstractContentTransformerTest extends BaseSpringTest
                             sourceMimetype + " --> " + targetMimetype + "\n" +
                             "   source: " + sourceReader + "\n" +
                             "   target: " + targetWriter + "\n" +
-                            "   transformer: " + transformer);
+                            "   transformer: " + getTransformer(sourceMimetype, targetMimetype));
                 }
             }
         }

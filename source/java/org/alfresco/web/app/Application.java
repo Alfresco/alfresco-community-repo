@@ -60,7 +60,7 @@ public class Application
    
    public static final String MESSAGE_BUNDLE = "alfresco.messages.webclient";
    
-   private static boolean inPortalServer = true;
+   private static boolean inPortalServer = false;
    private static StoreRef repoStoreRef;
    private static String rootPath;
    private static String companyRootId;

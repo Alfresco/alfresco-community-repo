@@ -83,11 +83,6 @@
    </filter>
 
    <filter>
-      <filter-name>Mode Detection Filter</filter-name>
-      <filter-class>org.alfresco.web.app.servlet.ModeDetectionFilter</filter-class>
-   </filter>
-
-   <filter>
       <filter-name>WebDAV Authentication Filter</filter-name>
       <filter-class>org.alfresco.repo.webdav.auth.AuthenticationFilter</filter-class>
       
@@ -111,11 +106,6 @@
       <url-pattern>/navigate/*</url-pattern>
    </filter-mapping>
    -->
-         
-   <filter-mapping>
-      <filter-name>Mode Detection Filter</filter-name>
-      <url-pattern>/faces/*</url-pattern>
-   </filter-mapping>
    
    <filter-mapping>
       <filter-name>WebDAV Authentication Filter</filter-name>

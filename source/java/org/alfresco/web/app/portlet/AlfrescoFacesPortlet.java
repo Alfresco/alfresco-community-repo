@@ -60,9 +60,7 @@ import org.springframework.web.context.WebApplicationContext;
 public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
 {
    public static final String INSTANCE_NAME = "AlfrescoClientInstance";
-   public static final String WINDOW_NAME = "AlfrescoClientWindow";
-   public static final String MANAGED_BEAN_PREFIX = "javax.portlet.p." + INSTANCE_NAME + 
-                                                    "." + WINDOW_NAME + "?";
+   public static final String MANAGED_BEAN_PREFIX = "javax.portlet.p." + INSTANCE_NAME + "?";
    
    private static final String ERROR_PAGE_PARAM = "error-page";
    private static final String ERROR_OCCURRED = "error-occurred";

@@ -178,7 +178,9 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
 
     /**
      * Unless otherwise configured, this component supports all mimetypes.
-     * If the {@link #init() initialization} failed, 
+     * If the {@link #init() initialization} failed, then it returns 0.0.
+     * 
+     * @return Returns 1.0 if initialization succeeded, otherwise 0.0.
      */
     public double getReliability(String sourceMimetype, String targetMimetype)
     {

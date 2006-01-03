@@ -17,6 +17,7 @@
 package org.alfresco.web.ui.common.component.debug;
 
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Component which displays the system properties of the VM
@@ -36,8 +37,34 @@ public class UISystemProperties extends BaseDebugComponent
    /**
     * @see org.alfresco.web.ui.common.component.debug.BaseDebugComponent#getDebugData()
     */
+   @SuppressWarnings("unchecked")
    public Map getDebugData()
    {
-      return System.getProperties();
+      // note: sort properties
+      Map properties = new TreeMap();
+      
+      // add the jvm system properties
+      Map systemProperties = System.getProperties();
+      properties.putAll(systemProperties);
+      
+      // add heap size properties
+      properties.put("heap.size", formatBytes(Runtime.getRuntime().totalMemory()));
+      properties.put("heap.maxsize", formatBytes(Runtime.getRuntime().maxMemory()));
+      properties.put("heap.free", formatBytes(Runtime.getRuntime().freeMemory()));
+      
+      return properties; 
+   }
+   
+   /**
+    * Helper to format bytes for human output
+    * 
+    * @param bytes  bytes
+    * @return  formatted string
+    */
+   private static String formatBytes(long bytes)
+   {
+       float f = bytes / 1024l;
+       f = f / 1024l;
+       return String.format("%.3f MB (%d bytes)", f, bytes);
    }
 }

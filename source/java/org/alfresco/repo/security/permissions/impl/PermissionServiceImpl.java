@@ -16,8 +16,12 @@
  */
 package org.alfresco.repo.security.permissions.impl;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.sf.acegisecurity.Authentication;
@@ -50,18 +54,18 @@ import org.springframework.beans.factory.InitializingBean;
  * The Alfresco implementation of a permissions service against our APIs for the
  * permissions model and permissions persistence.
  * 
- * 
  * @author andyh
  */
 public class PermissionServiceImpl implements PermissionServiceSPI, InitializingBean
 {
-    
     static SimplePermissionReference OLD_ALL_PERMISSIONS_REFERENCE = new SimplePermissionReference(QName.createQName(
             NamespaceService.SECURITY_MODEL_1_0_URI, PermissionService.ALL_PERMISSIONS), PermissionService.ALL_PERMISSIONS);
     
-
     private static Log log = LogFactory.getLog(PermissionServiceImpl.class);
-
+    
+    private static AccessCache accessCache = new AccessCache();
+    
+    
     /*
      * Access to the model
      */
@@ -85,15 +89,16 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     /*
      * Access to the authentication component
      */
-
     private AuthenticationComponent authenticationComponent;
 
+    /*
+     * Access to the authority component
+     */
     private AuthorityService authorityService;
     
     /*
      * Dynamic authorities providers
      */
-
     private List<DynamicAuthority> dynamicAuthorities;
 
     /*
@@ -336,20 +341,36 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             return AccessStatus.DENIED;
         }
 
+        // Get the current authentications
+        // Use the smart authentication cache to improve permissions performance
+        Authentication auth = authenticationComponent.getCurrentAuthentication();
+        Set<String> authorisations = getAuthorisations(auth, nodeRef);
+        Object key = AccessCache.generateKey(
+                authorisations,
+                nodeRef,
+                perm);
+        AccessStatus status = accessCache.get(key);
+        if (status != null)
+        {
+            return status;
+        }
+        
         // Allow permissions for nodes that do not exist
         if (!nodeService.exists(nodeRef))
         {
+            accessCache.put(key, AccessStatus.ALLOWED);
             return AccessStatus.ALLOWED;
         }
-
+        
         // If the node does not support the given permission there is no point
         // doing the test
         Set<PermissionReference> available = modelDAO.getAllPermissions(nodeRef);
         available.add(getAllPermissionReference());
         available.add(OLD_ALL_PERMISSIONS_REFERENCE);
-
+        
         if (!(available.contains(perm)))
         {
+            accessCache.put(key, AccessStatus.DENIED);
             return AccessStatus.DENIED;
         }
 
@@ -362,12 +383,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
          * given node.
          */
 
-        // Get the current authentications
-        Authentication auth = authenticationComponent.getCurrentAuthentication();
-
-        // Get the available authorisations
-        Set<String> authorisations = getAuthorisations(auth, nodeRef);
-
         QName typeQname = nodeService.getType(nodeRef);
         Set<QName> aspectQNames = nodeService.getAspects(nodeRef);
 
@@ -379,8 +394,10 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
                     + perm + "> is " + (result ? "allowed" : "denied") + " for "
                     + authenticationComponent.getCurrentUserName() + " on node " + nodeService.getPath(nodeRef));
         }
-        return result ? AccessStatus.ALLOWED : AccessStatus.DENIED;
-
+        
+        status = result ? AccessStatus.ALLOWED : AccessStatus.DENIED;
+        accessCache.put(key, status);
+        return status;
     }
 
     /**
@@ -428,46 +445,55 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     public void deletePermissions(NodeRef nodeRef)
     {
         permissionsDAO.deletePermissions(nodeRef);
+        accessCache.clear();
     }
 
     public void deletePermissions(NodePermissionEntry nodePermissionEntry)
     {
         permissionsDAO.deletePermissions(nodePermissionEntry);
+        accessCache.clear();
     }
 
     public void deletePermission(PermissionEntry permissionEntry)
     {
         permissionsDAO.deletePermissions(permissionEntry);
+        accessCache.clear();
     }
 
     public void deletePermission(NodeRef nodeRef, String authority, PermissionReference perm, boolean allow)
     {
         permissionsDAO.deletePermissions(nodeRef, authority, perm, allow);
+        accessCache.clear();
     }
 
     public void clearPermission(NodeRef nodeRef, String authority)
     {
         permissionsDAO.clearPermission(nodeRef, authority);
+        accessCache.clear();
     }
 
     public void setPermission(NodeRef nodeRef, String authority, PermissionReference perm, boolean allow)
     {
         permissionsDAO.setPermission(nodeRef, authority, perm, allow);
+        accessCache.clear();
     }
 
     public void setPermission(PermissionEntry permissionEntry)
     {
         permissionsDAO.setPermission(permissionEntry);
+        accessCache.clear();
     }
 
     public void setPermission(NodePermissionEntry nodePermissionEntry)
     {
         permissionsDAO.setPermission(nodePermissionEntry);
+        accessCache.clear();
     }
 
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions)
     {
         permissionsDAO.setInheritParentPermissions(nodeRef, inheritParentPermissions);
+        accessCache.clear();
     }
     
     /**
@@ -478,10 +504,175 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         return permissionsDAO.getInheritParentPermissions(nodeRef);
     }
 
+    
+    public PermissionReference getPermissionReference(QName qname, String permissionName)
+    {
+        return modelDAO.getPermissionReference(qname, permissionName);
+    }
+
+    public PermissionReference getAllPermissionReference()
+    {
+        return getPermissionReference(ALL_PERMISSIONS);
+    }
+    
+    public String getPermission(PermissionReference permissionReference)
+    {
+        if (modelDAO.isUnique(permissionReference))
+        {
+            return permissionReference.getName();
+        }
+        else
+        {
+            return permissionReference.toString();
+        }
+    }
+
+    public PermissionReference getPermissionReference(String permissionName)
+    {
+        return modelDAO.getPermissionReference(null, permissionName);
+    }
+
+    public Set<PermissionReference> getSettablePermissionReferences(QName type)
+    {
+        return modelDAO.getExposedPermissions(type);
+    }
+
+    public Set<PermissionReference> getSettablePermissionReferences(NodeRef nodeRef)
+    {
+        return modelDAO.getExposedPermissions(nodeRef);
+    }
+
+    public void deletePermission(NodeRef nodeRef, String authority, String perm, boolean allow)
+    {
+        deletePermission(nodeRef, authority, getPermissionReference(perm), allow);
+    }
+
+    public AccessStatus hasPermission(NodeRef nodeRef, String perm)
+    {
+        return hasPermission(nodeRef, getPermissionReference(perm));
+    }
+
+    public void setPermission(NodeRef nodeRef, String authority, String perm, boolean allow)
+    {
+        setPermission(nodeRef, authority, getPermissionReference(perm), allow);
+    }
+
+    public void deletePermissions(String recipient)
+    {
+        permissionsDAO.deleteAllPermissionsForAuthority(recipient);
+        accessCache.clear();
+    }
+    
     //
     // SUPPORT CLASSES
     //
 
+    /**
+     * Cache to enhance performance of the permissions framework
+     * @author Kevin Roast
+     */
+    private static class AccessCache
+    {
+        /**
+         * Return a permissions value from for the specified key
+         * 
+         * @param key object @see generateKey()
+         * 
+         * @return AccessStatus if found for the key
+         */
+        synchronized AccessStatus get(Object key)
+        {
+            AccessCacheItem wrapper = cache.get(key);
+            if (wrapper != null)
+            {
+                // we cache values till a specific timeout then remove them
+                // this also gives other values a chance to get added if we are nearing the max size
+                if (cache.size() > (MAXSIZE * THRESHOLD) &&
+                    System.nanoTime() > (wrapper.Timestamp + TIMEDIFF))
+                {
+                    //if (log.isDebugEnabled())
+                    //   log.debug("*****Removing timedout key: " + key);
+                    cache.remove(key);
+                    wrapper = null;
+                }
+            }
+            return wrapper != null ? wrapper.Status : null;
+        }
+        
+        /**
+         * Add an AccessStatus to the cache for the specified key
+         * 
+         * @param key       as a String @see generateKey()
+         * @param status    AccessStatus to set for the key
+         */
+        synchronized void put(Object key, AccessStatus status)
+        {
+            if (cache.size() < MAXSIZE)
+            {
+                //if (log.isDebugEnabled())
+                //   log.debug("***Adding new key: " + key + "   size: " + cache.size());
+                cache.put(key, new AccessCacheItem(key, status));
+            }
+        }
+        
+        /**
+         * Key for a cache object is built from all the known Authorities (which can change
+         * dynamically so they must all be used) the NodeRef ID and the permission reference itself.
+         * This gives a unique key for each permission test.
+         */
+        static Object generateKey(Set auths, NodeRef ref, PermissionReference perm)
+        {
+            Set key = new HashSet(auths);
+            key.add(ref.getId());
+            key.add(perm.toString());
+            
+            return key;
+        }
+        
+        void clear()
+        {
+            // better to let the GC deal with removing the old map in one shot
+            // rather than try to clear each slot slowly using clear()
+            cache = new HashMap<Object, AccessCacheItem>(MAXSIZE, 1.0f);
+        }
+        
+        // TODO: configure these values via Spring
+        private final long  TIMEDIFF  = 1000000L * 1000L * 60L * 5L;    // 5 mins in nano-seconds
+        private final int   MAXSIZE   = 4096;                           // maximum size of the cache
+        private final float THRESHOLD = 0.75f;                          // before we start removing items
+        private Map<Object, AccessCacheItem> cache = new HashMap<Object, AccessCacheItem>(MAXSIZE, 1.0f);
+    }
+    
+    /**
+     * Simple wrapper class for a cache item.
+     * Stores a timestamp of when the item was added so it can be purged from the cache later.
+     * @author Kevin Roast
+     */
+    private static class AccessCacheItem
+    {
+        AccessCacheItem(Object key, AccessStatus status)
+        {
+            this.key = key;
+            Status = status;
+            Timestamp = System.nanoTime();
+        }
+        
+        public int hashCode()
+        {
+            return key.hashCode();
+        }
+        
+        public boolean equals(Object o)
+        {
+            if (o instanceof AccessCacheItem == false) return false;
+            return key.equals( ((AccessCacheItem)o).key );
+        }
+        
+        private Object key;
+        long Timestamp;
+        AccessStatus Status;
+    }
+    
     /**
      * Support class to test the permission on a node.
      * 
@@ -979,64 +1170,5 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             return value;
         }
-    }
-
-    public PermissionReference getPermissionReference(QName qname, String permissionName)
-    {
-        return modelDAO.getPermissionReference(qname, permissionName);
-    }
-
-    public PermissionReference getAllPermissionReference()
-    {
-        return getPermissionReference(ALL_PERMISSIONS);
-    }
-    
-    
-
-    public String getPermission(PermissionReference permissionReference)
-    {
-        if (modelDAO.isUnique(permissionReference))
-        {
-            return permissionReference.getName();
-        }
-        else
-        {
-            return permissionReference.toString();
-        }
-    }
-
-    public PermissionReference getPermissionReference(String permissionName)
-    {
-        return modelDAO.getPermissionReference(null, permissionName);
-    }
-
-    public Set<PermissionReference> getSettablePermissionReferences(QName type)
-    {
-        return modelDAO.getExposedPermissions(type);
-    }
-
-    public Set<PermissionReference> getSettablePermissionReferences(NodeRef nodeRef)
-    {
-        return modelDAO.getExposedPermissions(nodeRef);
-    }
-
-    public void deletePermission(NodeRef nodeRef, String authority, String perm, boolean allow)
-    {
-        deletePermission(nodeRef, authority, getPermissionReference(perm), allow);
-    }
-
-    public AccessStatus hasPermission(NodeRef nodeRef, String perm)
-    {
-        return hasPermission(nodeRef, getPermissionReference(perm));
-    }
-
-    public void setPermission(NodeRef nodeRef, String authority, String perm, boolean allow)
-    {
-        setPermission(nodeRef, authority, getPermissionReference(perm), allow);
-    }
-
-    public void deletePermissions(String recipient)
-    {
-        permissionsDAO.deleteAllPermissionsForAuthority(recipient);
     }
 }

@@ -215,9 +215,13 @@ public class LeafScorer extends Scorer
                     counter.count++;
                 }
             }
-            if (parentIds.size() != 1)
+            if (parentIds.size() > 1)
             {
-                throw new SearcherException("More than one root node? " + parentIds.size());
+                throw new SearcherException("More than one root node in index: " + parentIds.size());
+            }
+            else if (parentIds.size() == 0)
+            {
+                throw new SearcherException("Index has no root node.  Check that the correct index locations are being used.");
             }
         }
 

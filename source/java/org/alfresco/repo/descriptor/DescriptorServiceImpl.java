@@ -134,6 +134,9 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
         return repoDescriptor;
     }
 
+    /**
+     * Initialise Descriptors
+     */
     public void init()
     {
         // initialise descriptors
@@ -156,13 +159,36 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
         {
             if (serverDescriptor != null)
             {
-                // log output of version initialised
-                String serverVersion = serverDescriptor.getVersion();
-                String serverEdition = serverDescriptor.getEdition();
-                String repoVersion = repoDescriptor.getVersion();
+                // log output of VM stats
+                Map properties = System.getProperties();
+                String version = (properties.get("java.runtime.version") == null) ? "unknown" : (String)properties.get("java.runtime.version");
+                long maxHeap = Runtime.getRuntime().maxMemory();
+                float maxHeapMB = maxHeap / 1024l;
+                maxHeapMB = maxHeapMB / 1024l;
+                if (logger.isInfoEnabled())
+                {
+                    logger.info(String.format("Alfresco JVM - v%s; maximum heap size %.3fMB", version, maxHeapMB));
+                }
+                if (logger.isWarnEnabled())
+                {
+                    if (version.startsWith("1.2") || version.startsWith("1.3") || version.startsWith("1.4"))
+                    {
+                        logger.warn(String.format("Alfresco JVM - WARNING - v1.5 is required; currently using v%s", version));
+                    }
+                    if (maxHeapMB < 500)
+                    {
+                        logger.warn(String.format("Alfresco JVM - WARNING - maximum heap size %.3fMB is less than recommended 512MB", maxHeapMB));
+                    }
+                }
                 
-                if (logger.isInfoEnabled())                
-                    logger.info("Alfresco started (" + serverEdition + ") - v" + serverVersion + "; repository v" + repoVersion);
+                // log output of version initialised
+                if (logger.isInfoEnabled())
+                {
+                    String serverEdition = serverDescriptor.getEdition();
+                    String serverVersion = serverDescriptor.getVersion();
+                    String repoVersion = repoDescriptor.getVersion();
+                    logger.info(String.format("Alfresco started (%s) - v%s; repository v%s", serverEdition, serverVersion, repoVersion));
+                }
             }
         }
     }

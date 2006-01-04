@@ -157,7 +157,7 @@ public final class User
          if (nodeService.hasAspect(person, ContentModel.ASPECT_CONFIGURABLE) == false)
          {
             // create the configuration folder for this Person node
-        	 configurableService.makeConfigurable(person);
+        	   configurableService.makeConfigurable(person);
          }
          
          // target of the assoc is the configurations folder ref

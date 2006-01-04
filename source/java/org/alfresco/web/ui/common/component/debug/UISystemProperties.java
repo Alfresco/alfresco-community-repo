@@ -65,6 +65,6 @@ public class UISystemProperties extends BaseDebugComponent
    {
        float f = bytes / 1024l;
        f = f / 1024l;
-       return String.format("%.3f MB (%d bytes)", f, bytes);
+       return String.format("%.3fMB (%d bytes)", f, bytes);
    }
 }

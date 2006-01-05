@@ -328,19 +328,23 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         // If the node ref is null there is no sensible test to do - and there
         // must be no permissions
         // - so we allow it
-
         if (nodeRef == null)
         {
             return AccessStatus.ALLOWED;
         }
 
         // If the permission is null we deny
-
         if (perm == null)
         {
             return AccessStatus.DENIED;
         }
-
+        
+        // Allow permissions for nodes that do not exist
+        if (!nodeService.exists(nodeRef))
+        {
+            return AccessStatus.ALLOWED;
+        }
+        
         // Get the current authentications
         // Use the smart authentication cache to improve permissions performance
         Authentication auth = authenticationComponent.getCurrentAuthentication();
@@ -353,13 +357,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         if (status != null)
         {
             return status;
-        }
-        
-        // Allow permissions for nodes that do not exist
-        if (!nodeService.exists(nodeRef))
-        {
-            accessCache.put(key, AccessStatus.ALLOWED);
-            return AccessStatus.ALLOWED;
         }
         
         // If the node does not support the given permission there is no point

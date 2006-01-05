@@ -216,8 +216,7 @@ public class UIProperty extends PropertySheetItem
             control = (UIInput)context.getApplication().
                   createComponent(ComponentConstants.JAVAX_FACES_INPUT);
             control.setRendererType(RepoConstants.ALFRESCO_FACES_DATE_PICKER_RENDERER);
-            control.getAttributes().put("startYear", new Integer(1970));
-            control.getAttributes().put("yearCount", new Integer(50));
+            control.getAttributes().put("yearCount", new Integer(30));
             control.getAttributes().put("showTime", Boolean.valueOf(true));
             control.getAttributes().put("style", "margin-right: 7px;");
          }
@@ -226,8 +225,7 @@ public class UIProperty extends PropertySheetItem
             control = (UIInput)context.getApplication().
                   createComponent(ComponentConstants.JAVAX_FACES_INPUT);
             control.setRendererType(RepoConstants.ALFRESCO_FACES_DATE_PICKER_RENDERER);
-            control.getAttributes().put("startYear", new Integer(1970));
-            control.getAttributes().put("yearCount", new Integer(50));
+            control.getAttributes().put("yearCount", new Integer(30));
             control.getAttributes().put("style", "margin-right: 7px;");
          }
          else

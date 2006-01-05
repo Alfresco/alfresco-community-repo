@@ -291,8 +291,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          UIInput inputFromDate = (UIInput)facesApp.createComponent(ComponentConstants.JAVAX_FACES_INPUT);
          inputFromDate.setId(context.getViewRoot().createUniqueId());
          inputFromDate.setRendererType(RepoConstants.ALFRESCO_FACES_DATE_PICKER_RENDERER);
-         inputFromDate.getAttributes().put("startYear", new Integer(1970));
-         inputFromDate.getAttributes().put("yearCount", new Integer(50));
+         inputFromDate.getAttributes().put("yearCount", new Integer(30));
          inputFromDate.getAttributes().put("showTime", showTime);
          ValueBinding vbFromDate = facesApp.createValueBinding(
             "#{" + beanBinding + "[\"" + PREFIX_DATE_FROM + propDef.getName().toString() + "\"]}");
@@ -310,8 +309,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          UIInput inputToDate = (UIInput)facesApp.createComponent(ComponentConstants.JAVAX_FACES_INPUT);
          inputToDate.setId(context.getViewRoot().createUniqueId());
          inputToDate.setRendererType(RepoConstants.ALFRESCO_FACES_DATE_PICKER_RENDERER);
-         inputToDate.getAttributes().put("startYear", new Integer(1970));
-         inputToDate.getAttributes().put("yearCount", new Integer(50));
+         inputToDate.getAttributes().put("yearCount", new Integer(30));
          inputToDate.getAttributes().put("showTime", showTime);
          ValueBinding vbToDate = facesApp.createValueBinding(
             "#{" + beanBinding + "[\"" + PREFIX_DATE_TO + propDef.getName().toString() + "\"]}");

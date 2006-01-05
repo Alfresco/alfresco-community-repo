@@ -55,8 +55,8 @@ public class InputDatePickerTag extends HtmlComponentTag
    public void release()
    {
       super.release();
-      this.startYear = "1990";
-      this.yearCount = "10";
+      this.startYear = null;
+      this.yearCount = null;
       this.value = null;
       this.showTime = null;
       this.disabled = null;
@@ -127,8 +127,8 @@ public class InputDatePickerTag extends HtmlComponentTag
       this.disabled = disabled;
    }
    
-   private String startYear = "1990";
-   private String yearCount = "10";
+   private String startYear = null;
+   private String yearCount = null;
    private String value = null;
    private String showTime = null;
    private String disabled = null;

@@ -141,14 +141,18 @@ public class DatePickerRenderer extends BaseRenderer
          }
          
          // get the attributes from the component we need for rendering
-         int nStartYear = 1990;
+         int nStartYear;
          Integer startYear = (Integer)component.getAttributes().get("startYear");
          if (startYear != null)
          {
             nStartYear = startYear.intValue();
          }
+         else
+         {
+            nStartYear = new Date().getYear() + 1900;
+         }
          
-         int nYearCount = 10;
+         int nYearCount = 25;
          Integer yearCount = (Integer)component.getAttributes().get("yearCount");
          if (yearCount != null)
          {
@@ -278,7 +282,7 @@ public class DatePickerRenderer extends BaseRenderer
    private List getYears(int startYear, int yearCount)
    {
       List<SelectItem> years = new ArrayList<SelectItem>();
-      for (int i=startYear; i<startYear + yearCount; i++)
+      for (int i=startYear; i>startYear - yearCount; i--)
       {
          Integer year = Integer.valueOf(i);
          years.add(new SelectItem(year, year.toString()));

@@ -23,8 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.component.UISelectBoolean;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.model.DataModel;
+import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.config.ConfigService;
@@ -42,12 +45,15 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.repository.MapNode;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.config.ClientConfigElement.CustomProperty;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
+import org.alfresco.web.ui.repo.component.UICategorySelector;
 import org.alfresco.web.ui.repo.component.UISearchCustomProperties;
 
 /**
@@ -181,19 +187,20 @@ public class AdvancedSearchBean
    }
    
    /**
-    * @return Returns the category.
+    * Returns the properties for current categories JSF DataModel
+    * 
+    * @return JSF DataModel representing the current categories to search against
     */
-   public NodeRef getCategory()
+   public DataModel getCategoriesDataModel()
    {
-      return this.category;
-   }
-   
-   /**
-    * @param category The category to set.
-    */
-   public void setCategory(NodeRef category)
-   {
-      this.category = category;
+      if (this.categoriesDataModel == null)
+      {
+         this.categoriesDataModel = new ListDataModel();
+      }
+      
+      this.categoriesDataModel.setWrappedData(this.categories);
+      
+      return this.categoriesDataModel;
    }
    
    /**
@@ -210,22 +217,6 @@ public class AdvancedSearchBean
    public void setLocationChildren(boolean locationChildren)
    {
       this.locationChildren = locationChildren;
-   }
-   
-   /**
-    * @return Returns true to search category children, false for just the specified category.
-    */
-   public boolean getCategoryChildren()
-   {
-      return this.categoryChildren;
-   }
-   
-   /**
-    * @param categoryChildren    True to search category children, false for just the specified category.
-    */
-   public void setCategoryChildren(boolean categoryChildren)
-   {
-      this.categoryChildren = categoryChildren;
    }
    
    /**
@@ -511,7 +502,8 @@ public class AdvancedSearchBean
       this.lookin = LOOKIN_ALL;
       this.contentType = null;
       this.location = null;
-      this.category = null;
+      this.locationChildren = false;
+      this.categories = new ArrayList<Node>(2);
       this.title = null;
       this.description = null;
       this.author = null;
@@ -650,10 +642,16 @@ public class AdvancedSearchBean
          }
          
          // category path search
-         if (this.category != null)
+         if (this.categories.size() != 0)
          {
-            search.setCategories(new String[]{SearchContext.getPathFromSpaceRef(
-                  new NodeRef(Repository.getStoreRef(), this.category.getId()), this.categoryChildren)});
+            String[] paths = new String[this.categories.size()];
+            for (int i=0; i<paths.length; i++)
+            {
+               Node category = this.categories.get(i);
+               boolean includeChildren = (Boolean)category.getProperties().get("includeChildren");
+               paths[i] = SearchContext.getPathFromSpaceRef(category.getNodeRef(), includeChildren);
+            }
+            search.setCategories(paths);
          }
          
          // content type restriction
@@ -670,6 +668,41 @@ public class AdvancedSearchBean
       }
       
       return outcome;
+   }
+   
+   /**
+    * Action handler called when the Add button is pressed to add the current Category selection
+    */
+   public void addCategory(ActionEvent event)
+   {
+      UICategorySelector selector = (UICategorySelector)event.getComponent().findComponent("catSelector");
+      UISelectBoolean chkChildren = (UISelectBoolean)event.getComponent().findComponent("chkCatChildren");
+      
+      NodeRef categoryRef = (NodeRef)selector.getValue();
+      if (categoryRef != null)
+      {
+         //final boolean incChildren = chkChildren.isSelected();
+         Node categoryNode = new MapNode(categoryRef);
+         categoryNode.getProperties().put("includeChildren", chkChildren.isSelected());
+         /*categoryNode.addPropertyResolver("includeChildren", new NodePropertyResolver() {
+            public Object get(Node node) {
+               return incChildren;
+            };
+         });*/
+         this.categories.add(categoryNode);
+      }
+   }
+   
+   /**
+    * Action handler called when the Remove button is pressed to remove a category
+    */
+   public void removeCategory(ActionEvent event)
+   {
+      Node node = (Node)this.categoriesDataModel.getRowData();
+      if (node != null)
+      {
+         this.categories.remove(node);
+      }
    }
    
    /**
@@ -795,7 +828,10 @@ public class AdvancedSearchBean
    private NodeRef location = null;
    
    /** categories to search */
-   private NodeRef category = null;
+   private List<Node> categories = new ArrayList<Node>(2);
+   
+   /** datamodel for table of categories to search */
+   private DataModel categoriesDataModel = null;
    
    /** title attribute to search */
    private String title = null;
@@ -817,9 +853,6 @@ public class AdvancedSearchBean
    
    /** true to search location children as well as location */
    private boolean locationChildren = true;
-   
-   /** true to search category children as well as category */
-   private boolean categoryChildren = true;
    
    /** author (creator) attribute to search */
    private String author = null;

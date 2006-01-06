@@ -189,13 +189,57 @@
                                           <table cellpadding="2" cellspacing="2" border="0">
                                              <tr>
                                                 <td style="padding-left:8px;padding-top:8px">
-                                                   <r:categorySelector label="#{msg.select_category_prompt}" value="#{AdvancedSearchBean.category}" styleClass="selector" id="catSelector" />
+                                                   <r:categorySelector id="catSelector" label="#{msg.select_category_prompt}" styleClass="selector" />
                                                 </td>
                                              </tr>
                                              <tr>
                                                 <td style="padding-left:4px">
-                                                   <h:selectBooleanCheckbox value="#{AdvancedSearchBean.categoryChildren}" id="chkCategory" />
+                                                   <h:selectBooleanCheckbox id="chkCatChildren" />
                                                    <span style="vertical-align:20%"><h:outputText value="#{msg.include_sub_categories}" id="incCats" /></span>
+                                                </td>
+                                             </tr>
+                                             <tr>
+                                                <td style="padding-left:4px">
+                                                   <h:commandButton id="btnAddCat" value="#{msg.add_to_list_button}" actionListener="#{AdvancedSearchBean.addCategory}" styleClass="wizardButton" />
+                                                </td>
+                                             </tr>
+                                             <tr>
+                                                <td style="padding-left:4px">
+                                                   <h:dataTable value="#{AdvancedSearchBean.categoriesDataModel}" var="row" id="catTable"
+                                                                rowClasses="selectedItemsRow,selectedItemsRowAlt"
+                                                                styleClass="selectedItems" headerClass="selectedItemsHeader"
+                                                                cellspacing="0" cellpadding="4" 
+                                                                rendered="#{AdvancedSearchBean.categoriesDataModel.rowCount != 0}">
+                                                      <h:column id="col1">
+                                                         <f:facet name="header">
+                                                            <h:outputText value="#{msg.category}" id="tblCatNameHead" />
+                                                         </f:facet>
+                                                         <h:outputText value="#{row.name}" id="tblCatName" />
+                                                      </h:column>
+                                                      <h:column id="col2">
+                                                         <f:facet name="header">
+                                                            <h:outputText value="#{msg.include_sub_categories}" id="tblCatIncHead" />
+                                                         </f:facet>
+                                                         <h:outputText value="#{row.includeChildren}" id="tblCatInc" >
+                                                            <a:convertBoolean/>
+                                                         </h:outputText>
+                                                      </h:column>
+                                                      <h:column id="col3">
+                                                         <a:actionLink actionListener="#{AdvancedSearchBean.removeCategory}" image="/images/icons/delete.gif"
+                                                                       value="#{msg.remove}" showLink="false" style="padding-left:6px" id="tblCatAdd" />
+                                                      </h:column>
+                                                   </h:dataTable>
+                                                   
+                                                   <a:panel id="no-items" rendered="#{AdvancedSearchBean.categoriesDataModel.rowCount == 0}">
+                                                      <table cellspacing='0' cellpadding='2' border='0' class='selectedItems'>
+                                                         <tr>
+                                                            <td colspan='2' class='selectedItemsHeader'><h:outputText id="no-items-category" value="#{msg.category}" /></td>
+                                                         </tr>
+                                                         <tr>
+                                                            <td class='selectedItemsRow'><h:outputText id="no-items-msg" value="#{msg.no_selected_items}" /></td>
+                                                         </tr>
+                                                      </table>
+                                                   </a:panel>
                                                 </td>
                                              </tr>
                                           </table>

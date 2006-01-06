@@ -295,10 +295,10 @@ public final class SearchContext implements Serializable
          query = attributeQuery + " AND (" + query + ')';
       }
       
-      // match entire query against specified Space path
+      // match entire query against any specified paths
       if (pathQuery != null)
       {
-         query = pathQuery + " AND (" + query + ')';
+         query = "(" + pathQuery + ") AND (" + query + ')';
       }
       
       if (logger.isDebugEnabled())
@@ -308,7 +308,7 @@ public final class SearchContext implements Serializable
    }
    
    /**
-    * Generate a search XPATH pointing to the specified node Id, optionally return an XPATH
+    * Generate a search XPATH pointing to the specified node, optionally return an XPATH
     * that includes the child nodes.
     *  
     * @param id         Of the node to generate path too
@@ -364,7 +364,7 @@ public final class SearchContext implements Serializable
    }
    
    /**
-    * @param categories    The categories to set.
+    * @param categories    The categories to set as a list of search XPATHs
     */
    public void setCategories(String[] categories)
    {

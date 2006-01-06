@@ -681,14 +681,9 @@ public class AdvancedSearchBean
       NodeRef categoryRef = (NodeRef)selector.getValue();
       if (categoryRef != null)
       {
-         //final boolean incChildren = chkChildren.isSelected();
          Node categoryNode = new MapNode(categoryRef);
+         // add a value bound propery used to indicate if searching across children is selected
          categoryNode.getProperties().put("includeChildren", chkChildren.isSelected());
-         /*categoryNode.addPropertyResolver("includeChildren", new NodePropertyResolver() {
-            public Object get(Node node) {
-               return incChildren;
-            };
-         });*/
          this.categories.add(categoryNode);
       }
    }

@@ -292,7 +292,7 @@
          <aspect name="effectivity"/>
          <aspect name="summarizable"/>
          <aspect name="versionable"/>
-<!--         <aspect name="templatable"/> -->
+         <aspect name="templatable"/>
          <aspect name="translatable"/>
          <aspect name="localizable"/>
          <!-- Example configuration to demonstrate how to expose aspect from exampleModel.xml -->

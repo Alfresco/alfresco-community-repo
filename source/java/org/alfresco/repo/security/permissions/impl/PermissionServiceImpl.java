@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.security.permissions.impl;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,6 +29,7 @@ import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.providers.dao.User;
 
+import org.alfresco.repo.cache.AutoExpireCache;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
@@ -63,7 +65,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     
     private static Log log = LogFactory.getLog(PermissionServiceImpl.class);
     
-    private static AccessCache accessCache = new AccessCache();
+    private static AutoExpireCache<Serializable, AccessStatus> accessCache = new AutoExpireCache<Serializable, AccessStatus>(4096, 0.75f);
     
     
     /*
@@ -349,7 +351,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         // Use the smart authentication cache to improve permissions performance
         Authentication auth = authenticationComponent.getCurrentAuthentication();
         Set<String> authorisations = getAuthorisations(auth, nodeRef);
-        Object key = AccessCache.generateKey(
+        Serializable key = generateKey(
                 authorisations,
                 nodeRef,
                 perm);
@@ -395,6 +397,19 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         status = result ? AccessStatus.ALLOWED : AccessStatus.DENIED;
         accessCache.put(key, status);
         return status;
+    }
+    
+    /**
+     * Key for a cache object is built from all the known Authorities (which can change
+     * dynamically so they must all be used) the NodeRef ID and the permission reference itself.
+     * This gives a unique key for each permission test.
+     */
+    static Serializable generateKey(Set auths, NodeRef ref, PermissionReference perm)
+    {
+        HashSet key = new HashSet(auths);
+        key.add(ref.getId());
+        key.add(perm.toString());
+        return key;
     }
 
     /**
@@ -564,112 +579,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     // SUPPORT CLASSES
     //
 
-    /**
-     * Cache to enhance performance of the permissions framework
-     * @author Kevin Roast
-     */
-    private static class AccessCache
-    {
-        /**
-         * Return a permissions value from for the specified key
-         * 
-         * @param key object @see generateKey()
-         * 
-         * @return AccessStatus if found for the key
-         */
-        synchronized AccessStatus get(Object key)
-        {
-            AccessCacheItem wrapper = cache.get(key);
-            if (wrapper != null)
-            {
-                // we cache values till a specific timeout then remove them
-                // this also gives other values a chance to get added if we are nearing the max size
-                if (cache.size() > (MAXSIZE * THRESHOLD) &&
-                    System.nanoTime() > (wrapper.Timestamp + TIMEDIFF))
-                {
-                    //if (log.isDebugEnabled())
-                    //   log.debug("*****Removing timedout key: " + key);
-                    cache.remove(key);
-                    wrapper = null;
-                }
-            }
-            return wrapper != null ? wrapper.Status : null;
-        }
-        
-        /**
-         * Add an AccessStatus to the cache for the specified key
-         * 
-         * @param key       as a String @see generateKey()
-         * @param status    AccessStatus to set for the key
-         */
-        synchronized void put(Object key, AccessStatus status)
-        {
-            if (cache.size() < MAXSIZE)
-            {
-                //if (log.isDebugEnabled())
-                //   log.debug("***Adding new key: " + key + "   size: " + cache.size());
-                cache.put(key, new AccessCacheItem(key, status));
-            }
-        }
-        
-        /**
-         * Key for a cache object is built from all the known Authorities (which can change
-         * dynamically so they must all be used) the NodeRef ID and the permission reference itself.
-         * This gives a unique key for each permission test.
-         */
-        static Object generateKey(Set auths, NodeRef ref, PermissionReference perm)
-        {
-            Set key = new HashSet(auths);
-            key.add(ref.getId());
-            key.add(perm.toString());
-            
-            return key;
-        }
-        
-        void clear()
-        {
-            // better to let the GC deal with removing the old map in one shot
-            // rather than try to clear each slot slowly using clear()
-            cache = new HashMap<Object, AccessCacheItem>(MAXSIZE, 1.0f);
-        }
-        
-        // TODO: configure these values via Spring
-        private final long  TIMEDIFF  = 1000000L * 1000L * 60L * 5L;    // 5 mins in nano-seconds
-        private final int   MAXSIZE   = 4096;                           // maximum size of the cache
-        private final float THRESHOLD = 0.75f;                          // before we start removing items
-        private Map<Object, AccessCacheItem> cache = new HashMap<Object, AccessCacheItem>(MAXSIZE, 1.0f);
-    }
-    
-    /**
-     * Simple wrapper class for a cache item.
-     * Stores a timestamp of when the item was added so it can be purged from the cache later.
-     * @author Kevin Roast
-     */
-    private static class AccessCacheItem
-    {
-        AccessCacheItem(Object key, AccessStatus status)
-        {
-            this.key = key;
-            Status = status;
-            Timestamp = System.nanoTime();
-        }
-        
-        public int hashCode()
-        {
-            return key.hashCode();
-        }
-        
-        public boolean equals(Object o)
-        {
-            if (o instanceof AccessCacheItem == false) return false;
-            return key.equals( ((AccessCacheItem)o).key );
-        }
-        
-        private Object key;
-        long Timestamp;
-        AccessStatus Status;
-    }
-    
     /**
      * Support class to test the permission on a node.
      * 

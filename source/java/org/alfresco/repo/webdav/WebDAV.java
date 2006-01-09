@@ -424,22 +424,9 @@ public class WebDAV
         if ( isCollection && urlStr.charAt( urlStr.length() - 1) != PathSeperatorChar)
             urlStr.append( PathSeperator);
             
-        // Encode the URL
-        
-        String encUrlStr = null;
-        
-        try
-        {
-            encUrlStr = URLEncoder.encode( urlStr.toString(), "UTF-8");
-        }
-        catch (UnsupportedEncodingException ex)
-        {
-            logger.error(ex);
-        }
-        
         // Return the encoded URL string
 
-        return encUrlStr;
+        return encodeURL( urlStr.toString());
     }
 
     /**
@@ -518,6 +505,86 @@ public class WebDAV
         // Return the normalized path that we have completed
         
         return strNormalized;
+    }
+    
+    /**
+     * Encodes the given URL string
+     * 
+     * @param string     the String to convert
+     */
+    public static String encodeURL(String string)
+    {
+       if (string == null)
+       {
+          return "";
+       }
+
+       StringBuilder sb = null;      //create on demand
+       String enc;
+       char c;
+       for (int i = 0; i < string.length(); i++)
+       {
+          enc = null;
+          c = string.charAt(i);
+          switch (c)
+          {
+             case '"': enc = "&quot;"; break;    //"
+             case '&': enc = "&amp;"; break;     //&
+             case '<': enc = "&lt;"; break;      //<
+             case '>': enc = "&gt;"; break;      //>
+              
+             //german umlauts
+             case '\u00E4' : enc = "&auml;";  break;
+             case '\u00C4' : enc = "&Auml;";  break;
+             case '\u00F6' : enc = "&ouml;";  break;
+             case '\u00D6' : enc = "&Ouml;";  break;
+             case '\u00FC' : enc = "&uuml;";  break;
+             case '\u00DC' : enc = "&Uuml;";  break;
+             case '\u00DF' : enc = "&szlig;"; break;
+             
+             //misc
+             //case 0x80: enc = "&euro;"; break;  sometimes euro symbol is ascii 128, should we suport it?
+             case '\u20AC': enc = "&euro;";  break;
+             case '\u00AB': enc = "&laquo;"; break;
+             case '\u00BB': enc = "&raquo;"; break;
+             case '\u00A0': enc = "&nbsp;"; break;
+             
+             default:
+                if (((int)c) >= 0x80)
+                {
+                   //encode all non basic latin characters
+                   enc = "&#" + ((int)c) + ";";
+                }
+                break;
+          }
+          
+          if (enc != null)
+          {
+             if (sb == null)
+             {
+                String soFar = string.substring(0, i);
+                sb = new StringBuilder(i + 8);
+                sb.append(soFar);
+             }
+             sb.append(enc);
+          }
+          else
+          {
+             if (sb != null)
+             {
+                sb.append(c);
+             }
+          }
+       }
+       
+       if (sb == null)
+       {
+          return string;
+       }
+       else
+       {
+          return sb.toString();
+       }
     }
     
     /**

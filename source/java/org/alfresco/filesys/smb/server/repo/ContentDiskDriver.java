@@ -1171,6 +1171,17 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                         "   file: " + name);
             }
         }
+        catch (NodeLockedException ex)
+        {
+            // Debug
+            
+            if ( logger.isDebugEnabled())
+                logger.debug("Delete file - access denied (locked)");
+            
+            // Convert to a filesystem access denied status
+            
+            throw new AccessDeniedException("Delete " + name);
+        }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             // Debug
@@ -1378,6 +1389,23 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             if ( permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
                 throw new AccessDeniedException("No write access to " + name);
+            
+            // Check if the file is being marked for deletion, if so then check if the file is locked
+            
+            if ( info.hasSetFlag(FileInfo.SetDeleteOnClose) && info.hasDeleteOnClose())
+            {
+                // Check if the node is locked
+                
+                if ( nodeService.hasAspect( nodeRef, ContentModel.ASPECT_LOCKABLE))
+                {
+                    // Get the lock type, if any
+                    
+                    String lockTypeStr = (String) nodeService.getProperty( nodeRef, ContentModel.PROP_LOCK_TYPE);
+                    
+                    if ( lockTypeStr != null)
+                        throw new AccessDeniedException("Node locked, cannot mark for delete");
+                }
+            }
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {

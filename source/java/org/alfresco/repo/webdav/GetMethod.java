@@ -318,7 +318,7 @@ public class GetMethod extends WebDAVMethod
             writer.write("<body>\n");
             writer.write("<table cellspacing='2' cellpadding='3' border='0' width='100%'>\n");
             writer.write("<tr><td colspan='3' class='textLocation'>Directory listing for ");
-            writer.write(getPath());
+            writer.write(WebDAVHelper.encodeHTML(getPath()));
             writer.write("</td></tr>\n");
             writer.write("<tr><td height='10'></td></tr></table>");
 
@@ -331,7 +331,9 @@ public class GetMethod extends WebDAVMethod
             // Get the URL for the root path
             String rootURL = WebDAV.getURLForPath(m_request, getPath(), true);
             if (rootURL.endsWith(WebDAVHelper.PathSeperator) == false)
+            {
                 rootURL = rootURL + WebDAVHelper.PathSeperator;
+            }
 
             // Start with a link to the parent folder so we can navigate back up, unless we are at the root level
             if (fileInfo.getNodeRef().equals(getRootNodeRef()) == false)
@@ -370,9 +372,9 @@ public class GetMethod extends WebDAVMethod
 
                 String fname = childNodeInfo.getName();
 
-                writer.write(fname);
+                writer.write(WebDAVHelper.encodeURL(fname));
                 writer.write("\">");
-                writer.write(fname);
+                writer.write(WebDAVHelper.encodeHTML(fname));
                 writer.write("</a>");
 
                 writer.write("</td><td class='textData'>");

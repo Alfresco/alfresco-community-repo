@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.webdav;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -414,5 +416,134 @@ public class WebDAVHelper
     public final AttributesImpl getNullAttributes()
     {
         return m_nullAttribs;
+    }
+    
+    /**
+     * Encodes the given string to valid URL format
+     * 
+     * @param s      the String to convert
+     */
+    public final static String encodeURL(String s)
+    {
+        try
+        {
+            return replace(URLEncoder.encode(s, "UTF-8"), "+", "%20");
+        }
+        catch (UnsupportedEncodingException err)
+        {
+            throw new RuntimeException(err);
+        }
+    }
+    
+    /**
+     * Replace one string instance with another within the specified string
+     * 
+     * @param str
+     * @param repl
+     * @param with
+     * 
+     * @return replaced string
+     */
+    public static String replace(String str, String repl, String with)
+    {
+        int lastindex = 0;
+        int pos = str.indexOf(repl);
+        
+        // If no replacement needed, return the original string
+        // and save StringBuffer allocation/char copying
+        if (pos < 0)
+        {
+            return str;
+        }
+        
+        int len = repl.length();
+        int lendiff = with.length() - repl.length();
+        StringBuilder out = new StringBuilder((lendiff <= 0) ? str.length() : (str.length() + (lendiff << 3)));
+        for (; pos >= 0; pos = str.indexOf(repl, lastindex = pos + len))
+        {
+            out.append(str.substring(lastindex, pos)).append(with);
+        }
+        
+        return out.append(str.substring(lastindex, str.length())).toString();
+    }
+    
+    /**
+     * Encodes the given string to valid HTML format
+     * 
+     * @param string     the String to convert
+     */
+    public final static String encodeHTML(String string)
+    {
+        if (string == null)
+        {
+            return "";
+        }
+        
+        StringBuilder sb = null;      //create on demand
+        String enc;
+        char c;
+        for (int i = 0; i < string.length(); i++)
+        {
+            enc = null;
+            c = string.charAt(i);
+            switch (c)
+            {
+                case '"': enc = "&quot;"; break;    //"
+                case '&': enc = "&amp;"; break;     //&
+                case '<': enc = "&lt;"; break;      //<
+                case '>': enc = "&gt;"; break;      //>
+                
+                //german umlauts
+                case '\u00E4' : enc = "&auml;";  break;
+                case '\u00C4' : enc = "&Auml;";  break;
+                case '\u00F6' : enc = "&ouml;";  break;
+                case '\u00D6' : enc = "&Ouml;";  break;
+                case '\u00FC' : enc = "&uuml;";  break;
+                case '\u00DC' : enc = "&Uuml;";  break;
+                case '\u00DF' : enc = "&szlig;"; break;
+                
+                //misc
+                //case 0x80: enc = "&euro;"; break;  sometimes euro symbol is ascii 128, should we suport it?
+                case '\u20AC': enc = "&euro;";  break;
+                case '\u00AB': enc = "&laquo;"; break;
+                case '\u00BB': enc = "&raquo;"; break;
+                case '\u00A0': enc = "&nbsp;"; break;
+                
+                default:
+                    if (((int)c) >= 0x80)
+                    {
+                        //encode all non basic latin characters
+                        enc = "&#" + ((int)c) + ";";
+                    }
+                break;
+            }
+            
+            if (enc != null)
+            {
+                if (sb == null)
+                {
+                    String soFar = string.substring(0, i);
+                    sb = new StringBuilder(i + 8);
+                    sb.append(soFar);
+                }
+                sb.append(enc);
+            }
+            else
+            {
+                if (sb != null)
+                {
+                    sb.append(c);
+                }
+            }
+        }
+        
+        if (sb == null)
+        {
+            return string;
+        }
+        else
+        {
+            return sb.toString();
+        }
     }
 }

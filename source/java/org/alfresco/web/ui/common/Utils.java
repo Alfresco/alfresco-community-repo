@@ -548,10 +548,9 @@ public final class Utils
                boolean homeSpaceFound = false;
                for (int x = 1; x < paths.size(); x++)
                {
-                  path.append("/").append(paths.get(x).getName());
+                  path.append("/").append(
+                        Utils.replace(URLEncoder.encode(paths.get(x).getName(), "UTF-8"), "+", "%20"));
                }
-               
-               url = Utils.replace(URLEncoder.encode(path.toString(), "UTF-8"), "+", "%20");
             }
             catch (Exception e)
             {

@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ISO9075;
@@ -65,11 +66,12 @@ public class AdminNodeBrowseBean
         queryLanguages.add(new SelectItem("noderef"));
         queryLanguages.add(new SelectItem(SearchService.LANGUAGE_XPATH));
         queryLanguages.add(new SelectItem(SearchService.LANGUAGE_LUCENE));
+        queryLanguages.add(new SelectItem("selectnodes"));
     }
 
     // query and results
     private String query = null;
-    private SearchResults searchResults = new SearchResults(null);
+    private SearchResults searchResults = new SearchResults((List<NodeRef>)null);
     
     // stores and node
     private DataModel stores = null;
@@ -86,6 +88,7 @@ public class AdminNodeBrowseBean
     private NodeService nodeService;
     private DictionaryService dictionaryService;
     private SearchService searchService;
+    private NamespaceService namespaceService;
     
     /**
      * @param nodeService  node service
@@ -111,6 +114,13 @@ public class AdminNodeBrowseBean
         this.dictionaryService = dictionaryService;
     }
     
+    /**
+     * @param namespaceService   namespace service
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
 
     /**
      * Gets the list of repository stores
@@ -475,6 +485,12 @@ public class AdminNodeBrowseBean
                 setNodeRef(nodeRef);
                 return "node";
             }
+            else if (queryLanguage.equals("selectnodes"))
+            {
+                List<NodeRef> nodes = searchService.selectNodes(getNodeRef(), query, null, namespaceService, false);
+                searchResults = new SearchResults(nodes);
+                return "search";
+            }
             
             // perform search
             searchResults = new SearchResults(searchService.query(getNodeRef().getStoreRef(), queryLanguage, query));
@@ -717,6 +733,27 @@ public class AdminNodeBrowseBean
             }
         }
         
+        /**
+         * Construct
+         * 
+         * @param resultSet  query result set
+         */
+        public SearchResults(List<NodeRef> resultSet)
+        {
+            rows = new ListDataModel();
+            if (resultSet != null)
+            {
+                List<ChildAssociationRef> assocRefs = new ArrayList<ChildAssociationRef>(resultSet.size());
+                for (NodeRef nodeRef : resultSet)
+                {
+                    ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(nodeRef);
+                    assocRefs.add(childAssocRef);
+                }
+                rows.setWrappedData(assocRefs);
+                length = resultSet.size();
+            }
+        }
+
         /**
          * Gets the row count
          * 

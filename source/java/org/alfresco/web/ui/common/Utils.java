@@ -551,6 +551,7 @@ public final class Utils
                   path.append("/").append(
                         Utils.replace(URLEncoder.encode(paths.get(x).getName(), "UTF-8"), "+", "%20"));
                }
+               url = path.toString();
             }
             catch (Exception e)
             {

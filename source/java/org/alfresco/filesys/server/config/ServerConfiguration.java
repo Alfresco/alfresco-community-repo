@@ -34,7 +34,8 @@ import net.sf.acegisecurity.AuthenticationManager;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigLookupContext;
-import org.alfresco.config.source.ClassPathConfigSource;
+import org.alfresco.config.ConfigSource;
+import org.alfresco.config.source.UrlConfigSource;
 import org.alfresco.config.xml.XMLConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.ftp.FTPPath;
@@ -195,9 +196,6 @@ public class ServerConfiguration
     // Global access control list, applied to all shares that do not have access
     // controls
     private AccessControlList m_globalACLs;
-
-    // SMB server, NetBIOS name server and host announcer debug enable
-    private boolean m_srvDebug = false;
 
     private boolean m_nbDebug = false;
 
@@ -404,8 +402,8 @@ public class ServerConfiguration
 
         // Create the configuration source
 
-        ClassPathConfigSource classPathConfigSource = new ClassPathConfigSource(configLocation);
-        XMLConfigService xmlConfigService = new XMLConfigService(classPathConfigSource);
+        ConfigSource configSource = new UrlConfigSource(configLocation);
+        XMLConfigService xmlConfigService = new XMLConfigService(configSource);
         xmlConfigService.init();
 
         // Create the configuration context

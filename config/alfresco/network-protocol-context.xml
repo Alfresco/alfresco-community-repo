@@ -27,7 +27,7 @@
          <ref bean="transactionComponent"/>
       </constructor-arg>
       <constructor-arg>
-         <value>alfresco/file-servers.xml</value>
+         <value>classpath:alfresco/file-servers.xml</value>
       </constructor-arg>
       <constructor-arg>
          <ref bean="contentDiskDriver" />

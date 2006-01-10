@@ -157,9 +157,7 @@ public class NodeSearcher
                     {
                         buffer.append(" ").append(nodeService.getProperty(node, attOrd.attribute));
                     }
-                    System.out.println(buffer.toString());
                 }
-                System.out.println();
             }
             return answer;
         }

@@ -263,7 +263,8 @@ public class VersionableAspect
             Action action = this.actionService.createAction(CreateVersionActionExecuter.NAME);
             ActionCondition condition = this.actionService.createActionCondition(HasVersionHistoryEvaluator.NAME);
             condition.setInvertCondition(true);
-            action.addActionCondition(condition);
+            // conditions are only evaluated on the parent rule - not the contained actions
+            rule.addActionCondition(condition);
             this.rule.addAction(action);
         }
         

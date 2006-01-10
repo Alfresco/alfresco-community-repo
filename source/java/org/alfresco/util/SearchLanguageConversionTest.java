@@ -79,7 +79,7 @@ public class SearchLanguageConversionTest extends TestCase
     {
         String good = SearchLanguageConversion.convertXPathLikeToRegex(BAD_STRING);
         assertEquals("XPath like to regex failed",
-                "\\ \\| ! \" £ " +
+                "(?s)\\ \\| ! \" £ " +
                 "\\$ .* \\^ & \\* \\( " +
                 "\\) . \\{ \\} [ ] " +
                 "@ # ~ ' : ; " +

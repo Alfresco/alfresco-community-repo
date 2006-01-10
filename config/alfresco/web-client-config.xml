@@ -323,7 +323,7 @@
    
    <config evaluator="string-compare" condition="Custom Folder Types">
       <folder-types>
-         <type name="fm:forums" icon="/images/icons/create_forums_large.gif" descriptionMsgId="forums_desc" />
+         <type name="fm:forums" icon="/images/icons/forums_large.gif" descriptionMsgId="forums_desc" />
       </folder-types>
    </config>
       

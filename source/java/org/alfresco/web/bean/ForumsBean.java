@@ -697,27 +697,10 @@ public class ForumsBean implements IContextListener
       // there should only be one child, retrieve it if there is
       if (children.size() == 1)
       {
+         // show the forum for the discussion
          NodeRef forumNodeRef = children.get(0).getChildRef();
-
-         // query for the number of topics there are
-         String repliesXPath = "./*[(subtypeOf('" + ForumModel.TYPE_TOPIC + "'))]";         
-         List<NodeRef> topics = searchService.selectNodes(forumNodeRef, repliesXPath,
-                new QueryParameterDefinition[] {}, this.namespaceService, false);
-         if (topics.size() == 1)
-         {
-            // if the forum has only one topic go straight into the topic by 
-            // setting the context and navigating to it
-            NodeRef topicNodeRef = topics.get(0);
-            this.browseBean.clickSpace(topicNodeRef);
-            context.getApplication().getNavigationHandler().handleNavigation(context, null, "showTopic");
-         }
-         else
-         {
-            // if the forum has more than one topic we need to setup the context 
-            // for the forum and navigate to the forum page
-            this.browseBean.clickSpace(forumNodeRef);
-            context.getApplication().getNavigationHandler().handleNavigation(context, null, "showForum");
-         }
+         this.browseBean.clickSpace(forumNodeRef);
+         context.getApplication().getNavigationHandler().handleNavigation(context, null, "showForum");
       }
    }
       

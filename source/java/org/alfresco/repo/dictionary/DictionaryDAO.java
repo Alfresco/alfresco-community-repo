@@ -79,4 +79,12 @@ public interface DictionaryDAO extends ModelQuery
      */
     public void putModel(M2Model model);
     
+    /**
+     * Removes a model from the dictionary.  The types and aspect in the model will no longer be 
+     * available.
+     * 
+     * @param model     the qname of the model to remove
+     */
+    public void removeModel(QName model);
+    
 }

@@ -44,7 +44,7 @@ public class DictionaryModelType
 {
     /** Key to the pending models */
     private static final String KEY_PENDING_MODELS = "dictionaryModelType.pendingModels";
-
+    
     /** The dictionary DAO */
     private DictionaryDAO dictionaryDAO;
     
@@ -124,6 +124,18 @@ public class DictionaryModelType
                 ContentModel.TYPE_DICTIONARY_MODEL, 
                 new JavaBehaviour(this, "onContentUpdate"));
         
+        // Register interest in the onPropertyUpdate policy for the dictionary model type
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
+                ContentModel.TYPE_DICTIONARY_MODEL, 
+                new JavaBehaviour(this, "onUpdateProperties"));
+        
+        // Register interest in the node delete policy
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
+                ContentModel.TYPE_DICTIONARY_MODEL, 
+                new JavaBehaviour(this, "beforeDeleteNode"));
+        
         // Create the transaction listener
         this.transactionListener = new DictionaryModelTypeTransactionListener(this.nodeService, this.contentService);
     }
@@ -133,8 +145,13 @@ public class DictionaryModelType
      * 
      * @param nodeRef   the node reference whose content has been updated
      */
-    @SuppressWarnings("unchecked")
     public void onContentUpdate(NodeRef nodeRef)
+    {
+        queueModel(nodeRef);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void queueModel(NodeRef nodeRef)
     {
         Set<NodeRef> pendingModelUpdates = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_MODELS);
         if (pendingModelUpdates == null)
@@ -147,9 +164,52 @@ public class DictionaryModelType
         AlfrescoTransactionSupport.bindListener(this.transactionListener);
     }
     
-    // TODO need to listen for a change in the modelActive attribute and update appropriatly
+    /**
+     * On update properties behaviour implementation
+     * 
+     * @param nodeRef   the node reference
+     * @param before    the values of the properties before update
+     * @param after     the values of the properties after the update
+     */
+    public void onUpdateProperties(
+            NodeRef nodeRef,
+            Map<QName, Serializable> before,
+            Map<QName, Serializable> after)
+    {
+        Boolean beforeValue = (Boolean)before.get(ContentModel.PROP_MODEL_ACTIVE);
+        Boolean afterValue = (Boolean)after.get(ContentModel.PROP_MODEL_ACTIVE);
+        
+        if (beforeValue == null && afterValue != null)
+        {
+            queueModel(nodeRef);
+        }
+        else if (afterValue == null && beforeValue != null)
+        {
+            // Remove the model since the value has been cleared
+            queueModel(nodeRef);
+        }
+        else if (beforeValue != null && afterValue != null && beforeValue.equals(afterValue) == false)
+        {
+            queueModel(nodeRef);
+        }
+    }
     
-    // TODO need to listen for node deletion and act accordingly
+    @SuppressWarnings("unchecked")
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        // Ignore if the node is a working copy 
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
+        {
+            QName modelName = (QName)this.nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_NAME);
+            if (modelName != null)
+            {
+                // Remove the model from the dictionary
+                dictionaryDAO.removeModel(modelName);
+                
+                // TODO how can we make this transactional ??
+            }
+        }
+    }
     
     /**
      * Dictionary model type transaction listener class.
@@ -190,7 +250,7 @@ public class DictionaryModelType
                 for (NodeRef nodeRef : pendingModels)
                 {
                     // Find out whether the model is active (by default it is)
-                    boolean isActive = true;
+                    boolean isActive = false;
                     Boolean value = (Boolean)nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
                     if (value != null)
                     {
@@ -198,36 +258,47 @@ public class DictionaryModelType
                     }
                     
                     // Ignore if the node is a working copy or if its inactive
-                    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false &&
-                        isActive == true)
+                    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
                     {
-                        // 1. Compile the model and update the details on the node            
-                        // 2. Re-put the model
-                        
-                        ContentReader contentReader = this.contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-                        if (contentReader != null)
+                        if (isActive == true)
                         {
-                            // Create a model from the current content
-                            M2Model m2Model = M2Model.createModel(contentReader.getContentInputStream());                
-                            // TODO what do we do if we don't have a model??
+                            // 1. Compile the model and update the details on the node            
+                            // 2. Re-put the model
                             
-                            // Try and compile the model
-                            ModelDefinition modelDefintion = m2Model.compile(dictionaryDAO, namespaceDAO).getModelDefinition();
-                            // TODO what do we do if the model does not compile
-                            
-                            // Update the meta data for the model
-                            Map<QName, Serializable> props = this.nodeService.getProperties(nodeRef);
-                            props.put(ContentModel.PROP_MODEL_NAME, modelDefintion.getName());
-                            props.put(ContentModel.PROP_MODEL_DESCRIPTION, modelDefintion.getDescription());
-                            props.put(ContentModel.PROP_MODEL_AUTHOR, modelDefintion.getAuthor());
-                            props.put(ContentModel.PROP_MODEL_PUBLISHED_DATE, modelDefintion.getPublishedDate());
-                            props.put(ContentModel.PROP_MODEL_VERSION, modelDefintion.getVersion());
-                            this.nodeService.setProperties(nodeRef, props);
-                            
-                            // TODO how do we get the dependancies for this model ??
-                            
-                            // Put the model
-                            dictionaryDAO.putModel(m2Model);
+                            ContentReader contentReader = this.contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+                            if (contentReader != null)
+                            {
+                                // Create a model from the current content
+                                M2Model m2Model = M2Model.createModel(contentReader.getContentInputStream());                
+                                // TODO what do we do if we don't have a model??
+                                
+                                // Try and compile the model
+                                ModelDefinition modelDefintion = m2Model.compile(dictionaryDAO, namespaceDAO).getModelDefinition();
+                                // TODO what do we do if the model does not compile
+                                
+                                // Update the meta data for the model
+                                Map<QName, Serializable> props = this.nodeService.getProperties(nodeRef);
+                                props.put(ContentModel.PROP_MODEL_NAME, modelDefintion.getName());
+                                props.put(ContentModel.PROP_MODEL_DESCRIPTION, modelDefintion.getDescription());
+                                props.put(ContentModel.PROP_MODEL_AUTHOR, modelDefintion.getAuthor());
+                                props.put(ContentModel.PROP_MODEL_PUBLISHED_DATE, modelDefintion.getPublishedDate());
+                                props.put(ContentModel.PROP_MODEL_VERSION, modelDefintion.getVersion());
+                                this.nodeService.setProperties(nodeRef, props);
+                                
+                                // TODO how do we get the dependancies for this model ??
+                                
+                                // Put the model
+                                dictionaryDAO.putModel(m2Model);
+                            }
+                        }
+                        else
+                        {
+                            QName modelName = (QName)this.nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_NAME);
+                            if (modelName != null)
+                            {
+                                // Remove the model from the dictionary
+                                dictionaryDAO.removeModel(modelName);
+                            }
                         }
                     }
                 }
@@ -251,6 +322,7 @@ public class DictionaryModelType
         /**
          * @see org.alfresco.repo.transaction.TransactionListener#afterRollback()
          */
+        @SuppressWarnings("unchecked")
         public void afterRollback()
         {
         }

@@ -112,6 +112,7 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
     private CheckOutCheckInService cociService;
+    private DictionaryDAO dictionaryDAO;
     
     /**
      * On setup in transaction override
@@ -126,6 +127,7 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         this.dictionaryService = (DictionaryService)this.applicationContext.getBean("dictionaryService");
         this.namespaceService = (NamespaceService)this.applicationContext.getBean("namespaceService");
         this.cociService = (CheckOutCheckInService)this.applicationContext.getBean("checkOutCheckInService");
+        this.dictionaryDAO = (DictionaryDAO)this.applicationContext.getBean("dictionaryDAO");
         
     }
     
@@ -223,5 +225,126 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
             }
         });
        
+    }
+    
+    public void testIsActiveFlagAndDelete()
+    {
+        this.dictionaryDAO.removeModel(TEST_MODEL_ONE);
+        
+        try
+        {
+            // Check that the model has not yet been loaded into the dictionary
+            this.dictionaryService.getModel(TEST_MODEL_ONE);
+            fail("This model has not yet been loaded into the dictionary service");
+        }
+        catch (DictionaryException exception)
+        {
+            // We expect this exception
+        }
+
+        // Create a model node
+        PropertyMap properties = new PropertyMap(1);
+        final NodeRef modelNode = this.nodeService.createNode(
+                this.rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "dictionaryModels"),
+                ContentModel.TYPE_DICTIONARY_MODEL,
+                properties).getChildRef();        
+        assertNotNull(modelNode);
+        
+        // Add the model content to the model node
+        ContentWriter contentWriter = this.contentService.getWriter(modelNode, ContentModel.PROP_CONTENT, true);
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.setMimetype(MimetypeMap.MIMETYPE_XML);
+        contentWriter.putContent(MODEL_ONE_XML);
+        
+        // End the transaction to force update
+        setComplete();
+        endTransaction();
+        
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {      
+                // The model should not yet be loaded
+                try
+                {
+                    // Check that the model has not yet been loaded into the dictionary
+                    DictionaryModelTypeTest.this.dictionaryService.getModel(TEST_MODEL_ONE);
+                    fail("This model has not yet been loaded into the dictionary service");
+                }
+                catch (DictionaryException exception)
+                {
+                    // We expect this exception
+                }
+                
+                // Set the isActive flag
+                DictionaryModelTypeTest.this.nodeService.setProperty(modelNode, ContentModel.PROP_MODEL_ACTIVE, true);
+                
+                return null;
+            }
+        });
+        
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {      
+                // The model should now be loaded
+                assertNotNull(DictionaryModelTypeTest.this.dictionaryService.getModel(TEST_MODEL_ONE));
+                
+                // Set the isActive flag
+                DictionaryModelTypeTest.this.nodeService.setProperty(modelNode, ContentModel.PROP_MODEL_ACTIVE, false);
+                
+                return null;
+            }
+        });
+        
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {      
+                // The model should not be loaded
+                try
+                {
+                    // Check that the model has not yet been loaded into the dictionary
+                    DictionaryModelTypeTest.this.dictionaryService.getModel(TEST_MODEL_ONE);
+                    fail("This model has not yet been loaded into the dictionary service");
+                }
+                catch (DictionaryException exception)
+                {
+                    // We expect this exception
+                }
+                
+                // Set the isActive flag
+                DictionaryModelTypeTest.this.nodeService.setProperty(modelNode, ContentModel.PROP_MODEL_ACTIVE, true);
+                
+                return null;
+            }
+        });
+        
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {      
+                // The model should now be loaded
+                assertNotNull(DictionaryModelTypeTest.this.dictionaryService.getModel(TEST_MODEL_ONE));
+                
+                DictionaryModelTypeTest.this.nodeService.deleteNode(modelNode);
+                
+                // The model should not be loaded
+                try
+                {
+                    // Check that the model has not yet been loaded into the dictionary
+                    DictionaryModelTypeTest.this.dictionaryService.getModel(TEST_MODEL_ONE);
+                    fail("This model has not yet been loaded into the dictionary service");
+                }
+                catch (DictionaryException exception)
+                {
+                    // We expect this exception
+                }
+                
+                return null;
+            }
+        });
     }
 }

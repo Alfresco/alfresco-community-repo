@@ -99,6 +99,28 @@ public class DictionaryDAOImpl implements DictionaryDAO
         // Publish new Model Definition
         compiledModels.put(modelName, compiledModel);
     }
+    
+    /**
+     * @see org.alfresco.repo.dictionary.DictionaryDAO#removeModel(org.alfresco.service.namespace.QName)
+     */
+    public void removeModel(QName modelName)
+    {
+        CompiledModel compiledModel = this.compiledModels.get(modelName);
+        if (compiledModel != null)
+        {
+            // Remove the namespaces from the namespace service
+            M2Model model = compiledModel.getM2Model();            
+            for (M2Namespace namespace : model.getNamespaces())
+            {
+                namespaceDAO.removePrefix(namespace.getPrefix());
+                namespaceDAO.removeURI(namespace.getUri());
+                namespaceToModel.remove(namespace.getUri());
+            }
+            
+            // Remove the model from the list
+            this.compiledModels.remove(modelName);
+        }
+    }
 
     
     /**

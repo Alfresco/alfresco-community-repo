@@ -113,7 +113,7 @@ public class SearchLanguageConversion
      */
     public static String convertXPathLikeToRegex(String xpathLikeClause)
     {
-        return convert(DEF_XPATH_LIKE, DEF_REGEX, xpathLikeClause);
+        return "(?s)" + convert(DEF_XPATH_LIKE, DEF_REGEX, xpathLikeClause);
     }
     
     /**

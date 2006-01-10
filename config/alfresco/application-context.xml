@@ -21,9 +21,9 @@
     <import resource="classpath:alfresco/authority-services-context.xml" />
     <import resource="classpath:alfresco/authentication-services-context.xml" />
 
-    <!-- custom and overriding bean definitions -->
+    <!-- Import custom and overriding bean definitions.  This must be done after the Alfresco-maintained beans. -->
     <!-- e.g.
-    <import resource="file:/tmp/custom-services-context.xml" />
+    <import resource="file:/etc/alfresco/config/custom-services-context.xml" />
     -->
 
 </beans>

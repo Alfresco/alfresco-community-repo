@@ -22,7 +22,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.MutableAttributeSet;
@@ -35,8 +37,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * 
@@ -44,12 +44,16 @@ import org.apache.commons.logging.LogFactory;
  */
 public class HtmlMetadataExtracter extends AbstractMetadataExtracter
 {
-
-    private static final Log logger = LogFactory.getLog(HtmlMetadataExtracter.class);
+    private static final Set<String> MIMETYPES = new HashSet<String>(5);
+    static
+    {
+        MIMETYPES.add(MimetypeMap.MIMETYPE_HTML);
+        MIMETYPES.add(MimetypeMap.MIMETYPE_XHTML);
+    }
 
     public HtmlMetadataExtracter()
     {
-        super(MimetypeMap.MIMETYPE_HTML, 1.0, 1000);
+        super(MIMETYPES, 1.0, 1000);
     }
 
     public void extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException
@@ -95,7 +99,7 @@ public class HtmlMetadataExtracter extends AbstractMetadataExtracter
                     {
                         inHead = false;
                     }
-                    else if (HTML.Tag.TITLE.equals(t))
+                    else if (HTML.Tag.TITLE.equals(t) && title != null)
                     {
                         trimPut(ContentModel.PROP_TITLE, title.toString(), tempDestination);
                         title = null;

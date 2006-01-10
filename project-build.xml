@@ -49,7 +49,7 @@
         </delete>
     </target>
         
-    <target name="gen-all-services" depends="gen-auth-service, gen-repo-service, gen-content-service, gen-authoring-service, gen-classification-service" />
+    <target name="gen-all-services" depends="gen-auth-service, gen-repo-service, gen-content-service, gen-authoring-service, gen-classification-service, gen-action-service" />
 
     <target name="gen-auth-service" depends="gen-auth-service-client, gen-auth-service-server" />
 
@@ -187,6 +187,33 @@
         </wsdl2java>
         <delete>
             <fileset dir="${dir.src.java.generated}/org/alfresco/repo/webservice/authoring" includes="${files.delete.include}" />
+        </delete>
+    </target>
+	   
+    <target name="gen-action-service" depends="gen-action-service-client, gen-action-service-server" />
+
+    <target name="gen-action-service-client" depends="init">
+        <mkdir dir="${dir.src.java.generated}/org/alfresco/example/webservice/action" />
+        <delete>
+            <fileset dir="${dir.src.java.generated}/org/alfresco/example/webservice/action" />
+        </delete>
+        <wsdl2java url="${dir.src}/wsdl/action-service.wsdl" output="${dir.src.java.generated}" testcase="no" all="true">
+            <mapping namespace="http://www.alfresco.org/ws/service/action/1.0" package="org.alfresco.example.webservice.action" />
+            <mapping namespace="http://www.alfresco.org/ws/model/content/1.0" package="org.alfresco.example.webservice.types" />
+        </wsdl2java>
+    </target>
+
+    <target name="gen-action-service-server" depends="init">
+        <mkdir dir="${dir.src.java.generated}/org/alfresco/repo/webservice/action" />
+        <delete>
+            <fileset dir="${dir.src.java.generated}/org/alfresco/repo/webservice/action" />
+        </delete>
+        <wsdl2java url="${dir.src}/wsdl/action-service.wsdl" output="${dir.src.java.generated}" serverSide="true" skeletondeploy="false" all="true">
+            <mapping namespace="http://www.alfresco.org/ws/service/action/1.0" package="org.alfresco.repo.webservice.action" />
+            <mapping namespace="http://www.alfresco.org/ws/model/content/1.0" package="org.alfresco.repo.webservice.types" />
+        </wsdl2java>
+        <delete>
+            <fileset dir="${dir.src.java.generated}/org/alfresco/repo/webservice/action" includes="${files.delete.include}" />
         </delete>
     </target>
 

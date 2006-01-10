@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<wsdl:definitions name="action-service"
+   targetNamespace="http://www.alfresco.org/ws/service/action/1.0"
+   xmlns:apachesoap="http://xml.apache.org/xml-soap" 
+   xmlns:action="http://www.alfresco.org/ws/service/action/1.0"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" 
+   xmlns:cms="http://www.alfresco.org/ws/model/content/1.0"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+   <!-- ************************************** -->
+   <!-- Copyright Alfresco Software, Inc. 2005 -->
+   <!-- ************************************** -->
+   <wsdl:import namespace="http://www.alfresco.org/ws/model/content/1.0" location="types.xsd"/>
+   <wsdl:types>
+      <schema elementFormDefault="qualified" targetNamespace="http://www.alfresco.org/ws/service/action/1.0" xmlns="http://www.w3.org/2001/XMLSchema">
+
+         <!-- Type Definitions -->
+
+         <complexType name="ParameterDefinition">
+            <sequence>
+               <element name="name" type="xsd:string"/>
+               <element name="type" type="xsd:string"/>
+               <element name="isMandatory" type="xsd:boolean"/>
+               <element name="displayLabel" type="xsd:string"/>
+            </sequence>
+         </complexType>
+         <element name="ParameterDefinition" type="action:ParameterDefinition"/>
+
+         <complexType name="ActionItemType">
+            <sequence>
+               <element name="name" type="xsd:string"/>
+               <element name="title" type="xsd:string" nillable="true"/>
+               <element name="description" type="xsd:string" nillable="true"/>
+               <element name="adHocPropertiesAllowed" type="xsd:boolean"/>
+               <element name="parameterDefinition" type="action:ParameterDefinition" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+            </sequence>
+         </complexType>
+         <element name="ActionItemType" type="action:ActionItemType"/>
+
+         <complexType name="Condition">
+            <sequence>
+               <element name="id" type="xsd:string"/>
+               <element name="type" type="action:ActionItemType"/>
+               <element name="invertCondition" type="xsd:boolean"/>
+               <element name="parameters" type="cms:NamedValue" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+            </sequence>
+         </complexType>
+         <element name="Condition" type="action:Condition"/>
+
+         <complexType name="Action">
+            <sequence>
+               <element name="id" type="xsd:string"/>
+               <element name="type" type="action:ActionItemType"/>
+               <element name="title" type="xsd:string" nillable="true"/>
+               <element name="description" type="xsd:string" nillable="true"/>
+               <element name="executeAsynchronously" type="xsd:boolean"/>
+               <element name="parameters" type="cms:NamedValue" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+               <element name="conditions" type="action:Condition" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+               <element name="compensatingAction" type="action:Action" nillable="true"/>
+               <element name="actions" type="action:Action" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+               <element name="reference" type="cms:Reference" nillable="true"/>
+            </sequence>
+         </complexType>
+         <element name="Action" type="action:Action"/>
+
+         <complexType name="RuleType">
+            <sequence>
+               <element name="name" type="xsd:string"/>
+               <element name="displayLabel" type="xsd:string"/>
+            </sequence>
+         </complexType>
+         <element name="RuleType" type="action:RuleType"/>
+
+         <complexType name="Rule">
+            <sequence>
+               <element name="id" type="xsd:string"/>
+               <element name="ruleType" type="action:RuleType"/>
+               <element name="title" type="xsd:string" nillable="true"/>
+               <element name="description" type="xsd:string" nillable="true"/>
+               <element name="executeAsynchronously" type="xsd:boolean"/>
+               <element name="conditions" type="action:Condition" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+               <element name="actions" type="action:Action" maxOccurs="unbounded" minOccurs="1"/>
+               <element name="runAsUserName" type="xsd:string" nillable="true"/>
+               <element name="reference" type="cms:Reference" nillable="true"/>
+            </sequence>
+         </complexType>
+         <element name="Rule" type="action:Rule"/>
+
+         <complexType name="ActionFilter">
+            <sequence>
+               <element name="ids" type="xsd:string" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+               <element name="types" type="xsd:string" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+            </sequence>
+         </complexType>
+         <element name="ActionFilter" type="action:ActionFilter"/>
+
+         <complexType name="RuleFilter">
+            <sequence>
+               <element name="ids" type="xsd:string" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+               <element name="ruleTypeNames" type="xsd:string" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+               <element name="includeInherited" type="xsd:boolean"/>
+            </sequence>
+         </complexType>
+         <element name="RuleFilter" type="action:RuleFilter"/>
+
+         <complexType name="ActionExecutionResult">
+            <sequence>
+               <element name="reference" type="cms:Reference"/>
+               <element name="actions" type="action:Action" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+            </sequence>
+         </complexType>
+         <element name="ActionExecutionResult" type="action:ActionExecutionResult"/>
+
+         <complexType name="ActionFault">
+            <sequence>
+               <element name="errorCode" type="xsd:int"/>
+               <element name="message" type="xsd:string"/>
+            </sequence>
+         </complexType>
+         <element name="ActionFault" type="action:ActionFault"/>
+         
+         <!-- Method Definitions -->
+         
+         <element name="getConditionDefinitions">
+            <complexType>
+               <sequence/>
+            </complexType>
+         </element>
+
+         <element name="getConditionDefinitionsResponse">
+            <complexType>
+               <sequence>
+                  <element name="actionItemType" type="action:ActionItemType" maxOccurs="unbounded" minOccurs="0"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="getActionDefinitions">
+            <complexType>
+               <sequence/>
+            </complexType>
+         </element>
+         
+         <element name="getActionDefinitionsResponse">
+            <complexType>
+               <sequence>
+                  <element name="actionItemType" type="action:ActionItemType" maxOccurs="unbounded" minOccurs="0"/>
+               </sequence>
+            </complexType>
+         </element>
+
+         <element name="getRuleTypes">
+            <complexType>
+               <sequence/>
+            </complexType>
+         </element>
+         
+         <element name="getRuleTypesResponse">
+            <complexType>
+               <sequence>
+                  <element name="ruleType" type="action:RuleType" maxOccurs="unbounded" minOccurs="0"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="getActions">
+            <complexType>
+               <sequence>
+                  <element name="reference" type="cms:Reference"/>
+                  <element name="filter" type="action:ActionFilter"/>
+               </sequence>
+            </complexType>
+         </element>
+
+         <element name="getActionsResponse">
+            <complexType>
+               <sequence>
+                  <element name="action" type="action:Action" maxOccurs="unbounded" minOccurs="0"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="saveActions">
+            <complexType>
+               <sequence>
+                  <element name="reference" type="cms:Reference"/>
+                  <element name="actions" type="action:Action" maxOccurs="unbounded" minOccurs="0"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="saveActionsResponse">
+            <complexType>
+               <sequence>
+                  <element name="action" type="action:Action" maxOccurs="unbounded" minOccurs="0"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="removeActions">
+            <complexType>
+               <sequence>
+                  <element name="reference" type="cms:Reference"/>
+                  <element name="actions" type="action:Action" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="removeActionsResponse">
+            <complexType>
+               <sequence/>
+            </complexType>
+         </element>
+
+         <element name="executeActions">
+            <complexType>
+               <sequence>
+                  <element name="predicate" type="cms:Predicate"/>
+                  <element name="actions" type="action:Action" maxOccurs="unbounded" minOccurs="0"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="executeActionsResponse">
+            <complexType>
+               <sequence>
+                  <element name="actionExecutionResult" type="action:ActionExecutionResult" maxOccurs="unbounded" minOccurs="0"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="getRules">
+            <complexType>
+               <sequence>
+                  <element name="reference" type="cms:Reference"/>
+                  <element name="ruleFilter" type="action:RuleFilter"/>
+               </sequence>
+            </complexType>
+         </element>
+
+         <element name="getRulesResponse">
+            <complexType>
+               <sequence>
+                  <element name="rule" type="action:Rule" maxOccurs="unbounded" minOccurs="0"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="saveRules">
+            <complexType>
+               <sequence>
+                  <element name="reference" type="cms:Reference"/>
+                  <element name="rules" type="action:Rule" maxOccurs="unbounded" minOccurs="0"/>
+               </sequence>
+            </complexType>
+         </element>
+
+         <element name="saveRulesResponse">
+            <complexType>
+               <sequence>
+                  <element name="rule" type="action:Rule" maxOccurs="unbounded" minOccurs="0"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="removeRules">
+            <complexType>
+               <sequence>
+                  <element name="reference" type="cms:Reference"/>
+                  <element name="rules" type="action:Rule" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="removeRulesResponse">
+            <complexType>
+               <sequence/>
+            </complexType>
+         </element>
+
+      </schema>
+   </wsdl:types>
+   
+   <wsdl:message name="getConditionDefinitionsRequest">
+      <wsdl:part element="action:getConditionDefinitions" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="getConditionDefinitionsResponse">
+      <wsdl:part element="action:getConditionDefinitionsResponse" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="getActionDefinitionsRequest">
+      <wsdl:part element="action:getActionDefinitions" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="getActionDefinitionsResponse">
+      <wsdl:part element="action:getActionDefinitionsResponse" name="parameters"/>
+   </wsdl:message>
+   
+   <wsdl:message name="getRuleTypesRequest">
+      <wsdl:part element="action:getRuleTypes" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="getRuleTypesResponse">
+      <wsdl:part element="action:getRuleTypesResponse" name="parameters"/>
+   </wsdl:message>
+   
+   <wsdl:message name="getActionsRequest">
+      <wsdl:part element="action:getActions" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="getActionsResponse">
+      <wsdl:part element="action:getActionsResponse" name="parameters"/>
+   </wsdl:message>
+   
+   <wsdl:message name="saveActionsRequest">
+      <wsdl:part element="action:saveActions" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="saveActionsResponse">
+      <wsdl:part element="action:saveActionsResponse" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="removeActionsRequest">
+      <wsdl:part element="action:removeActions" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="removeActionsResponse">
+      <wsdl:part element="action:removeActionsResponse" name="parameters"/>
+   </wsdl:message>
+   
+   <wsdl:message name="executeActionsRequest">
+      <wsdl:part element="action:executeActions" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="executeActionsResponse">
+      <wsdl:part element="action:executeActionsResponse" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="getRulesRequest">
+      <wsdl:part element="action:getRules" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="getRulesResponse">
+      <wsdl:part element="action:getRulesResponse" name="parameters"/>
+   </wsdl:message>
+   
+   <wsdl:message name="saveRulesRequest">
+      <wsdl:part element="action:saveRules" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="saveRulesResponse">
+      <wsdl:part element="action:saveRulesResponse" name="parameters"/>
+   </wsdl:message>
+   
+   <wsdl:message name="removeRulesRequest">
+      <wsdl:part element="action:removeRules" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="removeRulesResponse">
+      <wsdl:part element="action:removeRulesResponse" name="parameters"/>
+   </wsdl:message>
+   
+   <wsdl:message name="ActionFault">
+      <wsdl:part element="action:ActionFault" name="fault"/>
+   </wsdl:message>
+   
+   <wsdl:portType name="ActionServiceSoapPort">
+      <wsdl:operation name="getConditionDefinitions">
+         <wsdl:documentation>Gets the available condition definitions.</wsdl:documentation>
+         <wsdl:input message="action:getConditionDefinitionsRequest" name="getConditionDefinitionsRequest"/>
+         <wsdl:output message="action:getConditionDefinitionsResponse" name="getConditionDefinitionsResponse"/>
+         <wsdl:fault message="action:ActionFault" name="ActionFault"/>
+      </wsdl:operation>
+      <wsdl:operation name="getActionDefinitions">
+         <wsdl:documentation>Gets the available action definitions.</wsdl:documentation>
+         <wsdl:input message="action:getActionDefinitionsRequest" name="getActionDefinitionsRequest"/>
+         <wsdl:output message="action:getActionDefinitionsResponse" name="getActionDefinitionsResponse"/>
+         <wsdl:fault message="action:ActionFault" name="ActionFault"/>
+      </wsdl:operation>
+      <wsdl:operation name="getRuleTypes">
+         <wsdl:documentation>Gets the availble action types.</wsdl:documentation>
+         <wsdl:input message="action:getRuleTypesRequest" name="getRuleTypesRequest"/>
+         <wsdl:output message="action:getRuleTypesResponse" name="getRuleTypesResponse"/>
+         <wsdl:fault message="action:ActionFault" name="ActionFault"/>
+      </wsdl:operation>
+      <wsdl:operation name="getActions">
+         <wsdl:documentation>Gets the actions saved against a reference.</wsdl:documentation>
+         <wsdl:input message="action:getActionsRequest" name="getActionsRequest"/>
+         <wsdl:output message="action:getActionsResponse" name="getActionsResponse"/>
+         <wsdl:fault message="action:ActionFault" name="ActionFault"/>
+      </wsdl:operation>
+      <wsdl:operation name="saveActions">
+         <wsdl:documentation>Save actions against a given reference.</wsdl:documentation>
+         <wsdl:input message="action:saveActionsRequest" name="saveActionsRequest"/>
+         <wsdl:output message="action:saveActionsResponse" name="saveActionsResponse"/>
+         <wsdl:fault message="action:ActionFault" name="ActionFault"/>
+      </wsdl:operation>
+      <wsdl:operation name="removeActions">
+         <wsdl:documentation>Removes saved actions.</wsdl:documentation>
+         <wsdl:input message="action:removeActionsRequest" name="removeActionsRequest"/>
+         <wsdl:output message="action:removeActionsResponse" name="removeActionsResponse"/>
+         <wsdl:fault message="action:ActionFault" name="ActionFault"/>
+      </wsdl:operation>
+      <wsdl:operation name="executeActions">
+         <wsdl:documentation>Executes actions.</wsdl:documentation>
+         <wsdl:input message="action:executeActionsRequest" name="executeActionsRequest"/>
+         <wsdl:output message="action:executeActionsResponse" name="executeActionsResponse"/>
+         <wsdl:fault message="action:ActionFault" name="ActionFault"/>
+      </wsdl:operation>
+      <wsdl:operation name="getRules">
+         <wsdl:documentation>Gets the rules for a reference.</wsdl:documentation>
+         <wsdl:input message="action:getRulesRequest" name="getRulesRequest"/>
+         <wsdl:output message="action:getRulesResponse" name="getRulesResponse"/>
+         <wsdl:fault message="action:ActionFault" name="ActionFault"/>
+      </wsdl:operation>
+      <wsdl:operation name="saveRules">
+         <wsdl:documentation>Save rules.</wsdl:documentation>
+         <wsdl:input message="action:saveRulesRequest" name="saveRulesRequest"/>
+         <wsdl:output message="action:saveRulesResponse" name="saveRulesResponse"/>
+         <wsdl:fault message="action:ActionFault" name="ActionFault"/>
+      </wsdl:operation>
+      <wsdl:operation name="removeRules">
+         <wsdl:documentation>Remove saved rules.</wsdl:documentation>
+         <wsdl:input message="action:removeRulesRequest" name="removeRulesRequest"/>
+         <wsdl:output message="action:removeRulesResponse" name="removeRulesResponse"/>
+         <wsdl:fault message="action:ActionFault" name="ActionFault"/>
+      </wsdl:operation>
+   </wsdl:portType>
+   
+   <wsdl:binding name="ActionServiceSoapBinding" type="action:ActionServiceSoapPort">
+      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+      <wsdl:operation name="getConditionDefinitions">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/action/1.0/getConditionDefinitions"/>
+         <wsdl:input>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="ActionFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/action/1.0" use="literal" name="ActionFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="getActionDefinitions">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/action/1.0/getActionDefinitions"/>
+         <wsdl:input>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="ActionFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/action/1.0" use="literal" name="ActionFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="getRuleTypes">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/action/1.0/getRuleTypes"/>
+         <wsdl:input>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="ActionFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/action/1.0" use="literal" name="ActionFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="getActions">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/action/1.0/getActions"/>
+         <wsdl:input>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="ActionFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/action/1.0" use="literal" name="ActionFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="saveActions">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/action/1.0/saveActions"/>
+         <wsdl:input>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="ActionFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/action/1.0" use="literal" name="ActionFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="removeActions">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/action/1.0/removeActions"/>
+         <wsdl:input>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="ActionFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/action/1.0" use="literal" name="ActionFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="executeActions">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/action/1.0/executeActions"/>
+         <wsdl:input>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="ActionFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/action/1.0" use="literal" name="ActionFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="getRules">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/action/1.0/getRules"/>
+         <wsdl:input>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="ActionFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/action/1.0" use="literal" name="ActionFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="saveRules">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/action/1.0/saveRules"/>
+         <wsdl:input>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="ActionFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/action/1.0" use="literal" name="ActionFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="removeRules">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/action/1.0/removeRules"/>
+         <wsdl:input>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="ActionFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/action/1.0" use="literal" name="ActionFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+    </wsdl:binding>
+
+    <wsdl:service name="ActionService">
+       <wsdl:documentation>Provides Action and Rule manipulation methods.</wsdl:documentation>
+       <wsdl:port binding="action:ActionServiceSoapBinding" name="ActionService">
+          <wsdlsoap:address location="http://localhost:8080/alfresco/api/ActionService"/>
+       </wsdl:port>
+    </wsdl:service>
+
+</wsdl:definitions>

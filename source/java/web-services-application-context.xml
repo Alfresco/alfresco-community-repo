@@ -134,5 +134,29 @@
          <ref bean="transactionComponent"/>
       </property>
    </bean>
+   
+   <bean id="actionWebService" class="org.alfresco.repo.webservice.action.ActionWebService">
+      <property name="nodeService">
+         <ref bean="NodeService"/>
+      </property>
+      <property name="contentService">
+         <ref bean="ContentService"/>
+      </property>
+      <property name="searchService">
+         <ref bean="SearchService"/>
+      </property>
+      <property name="namespaceService">
+         <ref bean="namespaceService"/>
+      </property>
+      <property name="actionService">
+      	<ref bean="actionService"/>
+      </property>
+      <property name="ruleService">
+      	<ref bean="ruleService"/>
+      </property>
+      <property name="dictionaryService">
+      	<ref bean="dictionaryService"/>
+      </property>
+   </bean>
  
 </beans>

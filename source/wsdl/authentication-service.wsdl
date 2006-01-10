@@ -93,9 +93,12 @@
       </wsdl:operation>
    </wsdl:portType>
    
-   <wsdl:binding name="AuthenticationServiceSoapBinding" type="auth:AuthenticationServiceSoapPort">      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-      <wsdl:operation name="startSession">         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/authentication/1.0/startSession"/>
-         <wsdl:input name="startSessionRequest">            <wsdlsoap:body use="literal"/>
+   <wsdl:binding name="AuthenticationServiceSoapBinding" type="auth:AuthenticationServiceSoapPort">
+      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+      <wsdl:operation name="startSession">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/authentication/1.0/startSession"/>
+         <wsdl:input name="startSessionRequest">
+            <wsdlsoap:body use="literal"/>
          </wsdl:input>
          <wsdl:output name="startSessionResponse">
             <wsdlsoap:body use="literal"/>

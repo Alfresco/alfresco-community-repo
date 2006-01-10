@@ -117,6 +117,14 @@
         encodingStyle=""
       />
       <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/headers/1.0"
+        qname="ns:NamespaceConfigurationInner"
+        type="java:org.alfresco.repo.webservice.types.NamespaceConfigurationInner"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
         qname="ns:NodeDefinition"
         type="java:org.alfresco.repo.webservice.types.NodeDefinition"
@@ -359,8 +367,8 @@
       <arrayMapping
         xmlns:ns="http://www.alfresco.org/ws/headers/1.0"
         qname="ns:NamespaceConfiguration"
-        type="java:org.alfresco.repo.webservice.types.NamespaceConfigurationMapping[]"
-        innerType="cmp-ns:>NamespaceConfiguration>mapping" xmlns:cmp-ns="http://www.alfresco.org/ws/headers/1.0"
+        type="java:org.alfresco.repo.webservice.types.NamespaceConfigurationInner[]"
+        innerType="cmp-ns:NamespaceConfigurationInner" xmlns:cmp-ns="http://www.alfresco.org/ws/headers/1.0"
         encodingStyle=""
       />
       <typeMapping
@@ -447,14 +455,6 @@
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
         qname="ns:RoleDefinition"
         type="java:org.alfresco.repo.webservice.types.RoleDefinition"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/headers/1.0"
-        qname="ns:>NamespaceConfiguration>mapping"
-        type="java:org.alfresco.repo.webservice.types.NamespaceConfigurationMapping"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""

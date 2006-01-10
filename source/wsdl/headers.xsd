@@ -15,15 +15,15 @@
 	
 	<complexType name="NamespaceConfiguration">
 		<sequence>
-			<element name="mapping" maxOccurs="unbounded" minOccurs="0">
-				<complexType>
-					<sequence>
-						<element name="prefix" type="NCName"></element>
-						<element name="uri" type="string"></element>
-					</sequence>
-				</complexType>
-			</element>
+			<element name="mapping" maxOccurs="unbounded" minOccurs="0" type="headers:NamespaceConfigurationInner"></element>
 		</sequence>
+	</complexType>
+	
+	<complexType name="NamespaceConfigurationInner">
+	  <sequence>
+	     <element name="prefix" type="NCName"></element>
+	     <element name="uri" type="string"></element>
+     </sequence>
 	</complexType>
 
 </schema>

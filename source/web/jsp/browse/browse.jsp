@@ -302,6 +302,11 @@
                            <a:actionLink value="#{msg.preview}" image="/images/icons/preview.gif" showLink="false" styleClass="inlineAction" actionListener="#{BrowseBean.setupSpaceAction}" action="previewSpace">
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
+                           <a:booleanEvaluator value="#{r.beingDiscussed == true}">
+                              <a:actionLink value="#{msg.discuss}" image="/images/icons/forum.gif" showLink="false" styleClass="inlineAction" actionListener="#{ForumsBean.discuss}">
+                                 <f:param name="id" value="#{r.id}" />
+                              </a:actionLink>
+                           </a:booleanEvaluator>
                            <r:permissionEvaluator value="#{r}" allow="Delete">
                               <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" showLink="false" styleClass="inlineAction" actionListener="#{ClipboardBean.cutNode}">
                                  <f:param name="id" value="#{r.id}" />
@@ -310,26 +315,23 @@
                            <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" showLink="false" styleClass="inlineAction" actionListener="#{ClipboardBean.copyNode}">
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
-                           <r:permissionEvaluator value="#{r}" allow="Delete">
-                              <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" showLink="false" styleClass="inlineAction" action="dialog:deleteSpace" actionListener="#{BrowseBean.setupDeleteAction}">
-                                 <f:param name="id" value="#{r.id}" />
-                              </a:actionLink>
-                           </r:permissionEvaluator>
                            <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" showLink="false" styleClass="inlineAction" action="dialog:showSpaceDetails" actionListener="#{BrowseBean.setupSpaceAction}">
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
                            <%-- More actions menu --%>
                            <a:menu itemSpacing="4" image="/images/icons/more.gif" tooltip="#{msg.more_actions}" menuStyleClass="moreActionsMenu">
-                              <a:booleanEvaluator value="#{r.beingDiscussed == false}">
-                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
-                                    <f:param name="id" value="#{r.id}" />
-                                 </a:actionLink>
-                              </a:booleanEvaluator>
-                              <a:booleanEvaluator value="#{r.beingDiscussed == true}">
-                                 <a:actionLink value="#{msg.discuss}" image="/images/icons/forum.gif" actionListener="#{ForumsBean.discuss}">
-                                    <f:param name="id" value="#{r.id}" />
-                                 </a:actionLink>
-                              </a:booleanEvaluator>
+                              <r:permissionEvaluator value="#{r}" allow="Delete">
+	                              <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" action="dialog:deleteSpace" actionListener="#{BrowseBean.setupDeleteAction}">
+	                                 <f:param name="id" value="#{r.id}" />
+	                              </a:actionLink>
+                           	</r:permissionEvaluator>
+                           	<r:permissionEvaluator value="#{r}" allow="CreateChildren">
+	                              <a:booleanEvaluator value="#{r.beingDiscussed == false}">
+	                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
+	                                    <f:param name="id" value="#{r.id}" />
+	                                 </a:actionLink>
+	                              </a:booleanEvaluator>
+                              </r:permissionEvaluator>
                            </a:menu>
                         </a:column>
                         
@@ -474,18 +476,26 @@
                                  <f:param name="id" value="#{r.id}" />
                              </a:actionLink>
                            </a:booleanEvaluator>
+                           <a:booleanEvaluator value="#{r.beingDiscussed == true}">
+                              <a:actionLink value="#{msg.discuss}" image="/images/icons/forum.gif" showLink="false" styleClass="inlineAction" actionListener="#{ForumsBean.discuss}">
+                                 <f:param name="id" value="#{r.id}" />
+                              </a:actionLink>
+                           </a:booleanEvaluator>
                            <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" showLink="false" styleClass="inlineAction" actionListener="#{BrowseBean.setupContentAction}" action="dialog:showDocDetails">
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
-                           <r:permissionEvaluator value="#{r}" allow="Delete">
-                              <a:booleanEvaluator value="#{r.locked == false && r.workingCopy == false}">
-                                 <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" showLink="false" styleClass="inlineAction" actionListener="#{BrowseBean.setupContentAction}" action="dialog:deleteFile">
-                                    <f:param name="id" value="#{r.id}" />
-                                 </a:actionLink>
-                              </a:booleanEvaluator>
-                           </r:permissionEvaluator>
+                           <a:actionLink value="#{msg.preview}" image="/images/icons/preview.gif" showLink="false" styleClass="inlineAction" actionListener="#{BrowseBean.setupContentAction}" action="previewContent">
+                              <f:param name="id" value="#{r.id}" />
+                           </a:actionLink>
                            <%-- More actions menu --%>
                            <a:menu itemSpacing="4" image="/images/icons/more.gif" tooltip="#{msg.more_actions}" menuStyleClass="moreActionsMenu">
+                              <r:permissionEvaluator value="#{r}" allow="Delete">
+	                              <a:booleanEvaluator value="#{r.locked == false && r.workingCopy == false}">
+	                                 <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" actionListener="#{BrowseBean.setupContentAction}" action="dialog:deleteFile">
+	                                    <f:param name="id" value="#{r.id}" />
+	                                 </a:actionLink>
+	                              </a:booleanEvaluator>
+                              </r:permissionEvaluator>
                               <r:permissionEvaluator value="#{r}" allow="Write">
                                  <a:booleanEvaluator value="#{(r.locked == false && r.workingCopy == false) || r.owner == true}">
                                     <a:actionLink value="#{msg.update}" image="/images/icons/update.gif" actionListener="#{CheckinCheckoutBean.setupContentAction}" action="updateFile">
@@ -508,9 +518,6 @@
                                     <f:param name="id" value="#{r.id}" />
                                  </a:actionLink>
                               </a:booleanEvaluator>
-                              <a:actionLink value="#{msg.preview}" image="/images/icons/preview.gif" actionListener="#{BrowseBean.setupContentAction}" action="previewContent">
-                                 <f:param name="id" value="#{r.id}" />
-                              </a:actionLink>
                               <r:permissionEvaluator value="#{r}" allow="Delete">
                                  <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" actionListener="#{ClipboardBean.cutNode}">
                                     <f:param name="id" value="#{r.id}" />
@@ -519,16 +526,13 @@
                               <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" actionListener="#{ClipboardBean.copyNode}">
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
-                              <a:booleanEvaluator value="#{r.beingDiscussed == false}">
-                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
-                                    <f:param name="id" value="#{r.id}" />
-                                 </a:actionLink>
-                              </a:booleanEvaluator>
-                              <a:booleanEvaluator value="#{r.beingDiscussed == true}">
-                                 <a:actionLink value="#{msg.discuss}" image="/images/icons/forum.gif" actionListener="#{ForumsBean.discuss}">
-                                    <f:param name="id" value="#{r.id}" />
-                                 </a:actionLink>
-                              </a:booleanEvaluator>
+                              <r:permissionEvaluator value="#{r}" allow="CreateChildren">
+	                              <a:booleanEvaluator value="#{r.beingDiscussed == false}">
+	                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
+	                                    <f:param name="id" value="#{r.id}" />
+	                                 </a:actionLink>
+	                              </a:booleanEvaluator>
+	                           </r:permissionEvaluator>
                            </a:menu>
                         </a:column>
                         

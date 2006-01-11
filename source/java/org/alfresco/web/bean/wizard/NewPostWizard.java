@@ -24,7 +24,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.util.GUID;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.bean.ForumsBean;
 import org.alfresco.web.bean.repository.Node;
@@ -113,9 +112,15 @@ public class NewPostWizard extends CreateContentWizard
          this.content = Utils.replaceLineBreaks(this.content);
       }
       
-      super.finish();
+      String outcome = super.finish();
       
-      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+      // if we had a successful outcome from the creation close the dialog
+      if (outcome != null);
+      {
+         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+      }
+      
+      return outcome;
    }
 
    /**

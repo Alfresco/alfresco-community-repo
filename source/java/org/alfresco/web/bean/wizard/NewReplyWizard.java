@@ -96,9 +96,15 @@ public class NewReplyWizard extends NewPostWizard
       // remove link breaks and replace with <br/>
       this.content = Utils.replaceLineBreaks(this.content);
       
-      super.finish();
+      String outcome = super.finish();
       
-      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+      // if we had a successful outcome from the creation close the dialog
+      if (outcome != null);
+      {
+         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+      }
+      
+      return outcome;
    }
 
    /**

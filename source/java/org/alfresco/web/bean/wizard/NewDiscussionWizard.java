@@ -32,7 +32,9 @@ import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -128,5 +130,52 @@ public class NewDiscussionWizard extends NewTopicWizard
          context.getApplication().getNavigationHandler().handleNavigation(context, null, "dialog:createDiscussion");
       }
    }
+
+   /**
+    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#cancel()
+    */
+   @Override
+   public String cancel()
+   {
+      // if we cancel the creation of a discussion all the setup that was done 
+      // when the wizard started needs to be undone i.e. removing the created forum
+      // and the discussable aspect
+      
+      FacesContext context = FacesContext.getCurrentInstance();
+      UserTransaction tx = null;
+      
+      try
+      {
+         tx = Repository.getUserTransaction(context);
+         tx.begin();
+         
+         // remove the discussable aspect from the node we were going to discuss!
+         this.nodeService.removeAspect(this.discussingNodeRef, ForumModel.ASPECT_DISCUSSABLE);
+         
+         // delete the forum space created when the wizard started         
+         this.browseBean.setActionSpace(this.navigator.getCurrentNode());
+         this.browseBean.deleteSpaceOK();
+         
+         // commit the transaction
+         tx.commit();
+      }
+      catch (Exception e)
+      {
+         // rollback the transaction
+         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               context, Repository.ERROR_GENERIC), e.getMessage()), e);
+      }
+      
+      // do cancel processing
+      super.cancel();
+      
+      // as we are cancelling the creation of a discussion we know we need to go back
+      // to the browse screen, this also makes sure we don't end up in the forum that
+      // just got deleted!
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+             AlfrescoNavigationHandler.DIALOG_SEPARATOR + "browse";
+   }
+   
    
 }

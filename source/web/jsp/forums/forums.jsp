@@ -93,7 +93,7 @@
                                  <%-- Current space More actions menu --%>
                                  <a:menu id="spaceMenu" itemSpacing="4" label="#{msg.more_options}" image="/images/icons/more.gif" tooltip="#{msg.more_options_space}" menuStyleClass="moreActionsMenu" style="padding-left:20px">
                                     <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval3">
-                                       <a:actionLink value="#{msg.delete_forums}" image="/images/icons/delete.gif" action="dialog:deleteForums" actionListener="#{BrowseBean.setupDeleteAction}" id="link4">
+                                       <a:actionLink value="#{msg.delete_forums}" image="/images/icons/delete_forums.gif" action="dialog:deleteForums" actionListener="#{BrowseBean.setupDeleteAction}" id="link4">
                                           <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param2" />
                                        </a:actionLink>
                                        <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" actionListener="#{ClipboardBean.cutNode}" id="link5">

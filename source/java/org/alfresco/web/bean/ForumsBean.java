@@ -59,7 +59,6 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.QNameNodeMap;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wizard.NewSpaceWizard;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -702,6 +701,11 @@ public class ForumsBean implements IContextListener
          this.browseBean.clickSpace(forumNodeRef);
          context.getApplication().getNavigationHandler().handleNavigation(context, null, "showForum");
       }
+      else if (logger.isWarnEnabled())
+      {
+         logger.warn("Node has the discussable aspect but does not have 1 child, it has " + 
+                     children.size() + " children!");
+      }
    }
       
    /**
@@ -711,7 +715,7 @@ public class ForumsBean implements IContextListener
     */
    public String deleteForumsOK()
    {
-      String outcome = "browse";
+      String outcomeOverride = "browse";
       
       // find out what the parent type of the node being deleted 
       Node node = this.browseBean.getActionSpace();
@@ -722,16 +726,22 @@ public class ForumsBean implements IContextListener
          QName parentType = this.nodeService.getType(parent);
          if (parentType.equals(ForumModel.TYPE_FORUMS))
          {
-            outcome = "forumsDeleted";
+            outcomeOverride = "forumsDeleted";
          }
       }
       
       // call the generic handler
-      this.browseBean.deleteSpaceOK();
+      String outcome = this.browseBean.deleteSpaceOK();
       
-      // return an overidden outcome which closes the dialog with an outcome
-      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
-             AlfrescoNavigationHandler.DIALOG_SEPARATOR + outcome;
+      // if the delete was successful update the outcome
+      if (outcome != null)
+      {
+         // return an overidden outcome which closes the dialog with an outcome
+         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
+                   AlfrescoNavigationHandler.DIALOG_SEPARATOR + outcomeOverride;
+      }
+
+      return outcome;
    }
    
    /**
@@ -741,10 +751,48 @@ public class ForumsBean implements IContextListener
     */
    public String deleteForumOK()
    {
-      this.browseBean.deleteSpaceOK();
+      String outcomeOverride = "browse";
       
-      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
-             AlfrescoNavigationHandler.DIALOG_SEPARATOR + "forumDeleted";
+      // if this forum is being used for a discussion on a node we also
+      // need to remove the discussable aspect from the node.
+      Node forumSpace = this.browseBean.getActionSpace();
+      ChildAssociationRef assoc = this.nodeService.getPrimaryParent(forumSpace.getNodeRef());
+      if (assoc != null)
+      {
+         // get the parent node
+         NodeRef parent = assoc.getParentRef();
+         
+         // get the association type
+         QName type = assoc.getTypeQName();
+         if (type.equals(ForumModel.ASSOC_DISCUSSION))
+         {
+            // if the association type is the 'discussion' association we
+            // need to remove the discussable aspect from the parent node
+            this.nodeService.removeAspect(parent, ForumModel.ASPECT_DISCUSSABLE);
+         }
+         
+         // if the parent type is a forum space then we need the dialog to go
+         // back to the forums view otherwise it will use the default of 'browse',
+         // this happens when a forum being used to discuss a node is deleted.
+         QName parentType = this.nodeService.getType(parent);
+         if (parentType.equals(ForumModel.TYPE_FORUMS))
+         {
+            outcomeOverride = "forumDeleted";
+         }
+      }
+      
+      // call the generic handler
+      String outcome = this.browseBean.deleteSpaceOK();
+      
+      // if the delete was successful update the outcome
+      if (outcome != null)
+      {
+         // return an overidden outcome which closes the dialog with an outcome
+         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
+                   AlfrescoNavigationHandler.DIALOG_SEPARATOR + outcomeOverride;
+      }
+      
+      return outcome;
    }
    
    /**
@@ -754,10 +802,17 @@ public class ForumsBean implements IContextListener
     */
    public String deleteTopicOK()
    {
-      this.browseBean.deleteSpaceOK();
+      // call the generic handler
+      String outcome = this.browseBean.deleteSpaceOK();
       
-      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
-             AlfrescoNavigationHandler.DIALOG_SEPARATOR + "topicDeleted";
+      // if the delete was successful update the outcome
+      if (outcome != null)
+      {
+         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
+                   AlfrescoNavigationHandler.DIALOG_SEPARATOR + "topicDeleted";
+      }
+      
+      return outcome;
    }
    
    /**
@@ -767,9 +822,16 @@ public class ForumsBean implements IContextListener
     */
    public String deletePostOK()
    {
-      this.browseBean.deleteFileOK();
+      // call the generic handler
+      String outcome = this.browseBean.deleteFileOK();
       
-      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+      // if the delete was successful update the outcome
+      if (outcome != null)
+      {
+         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+      }
+      
+      return outcome;
    }
    
    // ------------------------------------------------------------------------------

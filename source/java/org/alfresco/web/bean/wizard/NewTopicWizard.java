@@ -140,18 +140,22 @@ public class NewTopicWizard extends NewSpaceWizard
    @Override
    public String finish()
    {
-      super.finish();
+      String outcome = super.finish();
       
-      String outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
-      
-      if (this.editMode == false)
+      // if we had a successful outcome work out the outcome to return
+      if (outcome != null)
       {
-         // if we are successful in creating the topic we need to setup 
-         // the browse context for the new topic and pass an override 
-         // outcome of 'showTopic'
-         this.browseBean.clickSpace(this.createdNode);
+         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
          
-         outcome = outcome + AlfrescoNavigationHandler.DIALOG_SEPARATOR + "showTopic";
+         if (this.editMode == false)
+         {
+            // if we are successful in creating the topic we need to setup 
+            // the browse context for the new topic and pass an override 
+            // outcome of 'showTopic'
+            this.browseBean.clickSpace(this.createdNode);
+            
+            outcome = outcome + AlfrescoNavigationHandler.DIALOG_SEPARATOR + "showTopic";
+         }
       }
       
       return outcome;

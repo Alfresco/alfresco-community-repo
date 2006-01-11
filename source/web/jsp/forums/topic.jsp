@@ -87,7 +87,7 @@
                                     <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param1" />
                                  </a:actionLink>
                                  <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval2">
-                                    <a:actionLink value="#{msg.delete_topic}" image="/images/icons/delete.gif" padding="4" action="dialog:deleteTopic" actionListener="#{BrowseBean.setupDeleteAction}" id="link3">
+                                    <a:actionLink value="#{msg.delete_topic}" image="/images/icons/delete_topic.gif" padding="4" action="dialog:deleteTopic" actionListener="#{BrowseBean.setupDeleteAction}" id="link3">
                                        <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param2" />
                                     </a:actionLink>
                                  </r:permissionEvaluator>

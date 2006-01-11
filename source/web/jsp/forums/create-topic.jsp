@@ -111,7 +111,7 @@
                         <tr>
                            <td width="100%" valign="top">
                               
-                              <a:errors message="#{msg.error_create_forum_dialog}" styleClass="errorMessage" />
+                              <a:errors message="#{msg.error_create_topic_dialog}" styleClass="errorMessage" />
                               
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <table cellpadding="2" cellspacing="2" border="0" width="100%">

@@ -194,12 +194,6 @@
         </property>
     </bean>
 
-
-    <!-- Simple LDAP example config -->
-    <!--
-    <bean id="authenticationComponentImpl" class="org.alfresco.repo.security.authentication.LDAPAuthenticationComponentImpl">
-    </bean>
-    -->
     
     <!-- Simple Authentication component that rejects all authentication requests -->
     <!-- Use this defintion for Novell IChain integration.                        -->
@@ -300,7 +294,8 @@
     
     <!-- Authentication bootstrap -->
     
-<!-- WIP
+    <!-- Work in progress -->
+    <!--
     <bean id="authenticationBootstrap" class="org.alfresco.repo.security.authentication.AuthenticationBootstrap" init-method="bootstrap">
         <property name="config">
             <ref bean="authenticationBoostrapConfig"/>
@@ -329,7 +324,6 @@
          <ref bean="authenticationBoostrapConfigSource"/>
       </constructor-arg>
    </bean>
-   
--->
+   -->
     
 </beans>

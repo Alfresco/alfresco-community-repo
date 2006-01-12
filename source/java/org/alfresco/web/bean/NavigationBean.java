@@ -61,9 +61,18 @@ import org.apache.log4j.Logger;
  */
 public class NavigationBean
 {
+   /**
+    * Default constructor
+    */
+   public NavigationBean()
+   {
+      initFromClientConfig();
+   }
+   
+   
    // ------------------------------------------------------------------------------
-   // Bean property getters and setters 
-
+   // Bean property getters and setters
+   
    /**
     * @param nodeService The nodeService to set.
     */
@@ -102,14 +111,6 @@ public class NavigationBean
    public void setContentDiskDriver(ContentDiskInterface contentDiskDriver)
    {
       this.contentDiskDriver = contentDiskDriver;
-   }
-   
-   /**
-    * @param configService The ConfigService to set.
-    */
-   public void setConfigService(ConfigService configService)
-   {
-      this.configService = configService;
    }
    
    /**
@@ -177,10 +178,6 @@ public class NavigationBean
     */
    public String getHelpUrl()
    {
-      if (this.clientConfig == null)
-      {
-         initFromClientConfig();
-      }
       return this.helpUrl;
    }
 
@@ -534,6 +531,7 @@ public class NavigationBean
       return this.cifsServerPath;
    }
    
+   
    // ------------------------------------------------------------------------------
    // Private helpers
    
@@ -542,11 +540,14 @@ public class NavigationBean
     */
    private void initFromClientConfig()
    {
-      this.clientConfig = (ClientConfigElement)this.configService.getGlobalConfig().getConfigElement(
-            ClientConfigElement.CONFIG_ELEMENT_ID);
+      this.clientConfig = (ClientConfigElement)Application.getConfigService(
+            FacesContext.getCurrentInstance()).getGlobalConfig().
+            getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
       
       this.helpUrl = clientConfig.getHelpUrl();
+      this.shelfExpanded = clientConfig.isShelfVisible();
    }
+   
    
    // ------------------------------------------------------------------------------
    // Inner classes
@@ -635,9 +636,6 @@ public class NavigationBean
    
    /** CIFS content disk driver bean reference */
    private ContentDiskInterface contentDiskDriver;
-   
-   /** ConfigService bean reference */
-   private ConfigService configService;
    
    /** Client configuration object */
    private ClientConfigElement clientConfig = null;

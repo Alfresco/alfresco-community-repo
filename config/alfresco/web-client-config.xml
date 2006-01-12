@@ -100,6 +100,9 @@
          <!-- the maximum number of items to show in the recent spaces shelf component -->
          <recent-spaces-items>6</recent-spaces-items>
          
+         <!-- Shelf component default visibility, set to false to hide the shelf by default -->
+         <shelf-visible>true</shelf-visible>
+         
          <!-- the minimum number of characters required for a valid search string -->
          <search-minimum>3</search-minimum>
          

@@ -59,6 +59,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ATTRIBUTE_PROPERTY = "property";
    public static final String ATTRIBUTE_ASPECT = "aspect";
    public static final String ATTRIBUTE_DISPLAYLABEL = "displayLabelId";
+   public static final String ELEMENT_SHELFVISIBLE = "shelf-visible";
    
    private static Log logger = LogFactory.getLog(ClientElementReader.class);
    
@@ -162,6 +163,13 @@ public class ClientElementReader implements ConfigElementReader
          if (recentSpaces != null)
          {
             configElement.setRecentSpacesItems(Integer.parseInt(recentSpaces.getTextTrim()));
+         }
+         
+         // get the shelf component default visibility
+         Element shelfVisible = element.element(ELEMENT_SHELFVISIBLE);
+         if (shelfVisible != null)
+         {
+            configElement.setShelfVisible(Boolean.parseBoolean(shelfVisible.getTextTrim()));
          }
          
          // get the Help url

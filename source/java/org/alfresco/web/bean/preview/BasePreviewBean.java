@@ -26,6 +26,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.ExpiringValueCache;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -66,6 +67,9 @@ public abstract class BasePreviewBean
    protected NavigationBean navigator;
    
    protected NodeRef template;
+   
+   /** cache of templates that last 10 seconds - enough for a couple of page refreshes */
+   private ExpiringValueCache<List<SelectItem>> cachedTemplates = new ExpiringValueCache<List<SelectItem>>(1000*10);
    
    
    /**
@@ -130,40 +134,45 @@ public abstract class BasePreviewBean
    /**
     * @return the list of available Content Templates that can be applied to the current document.
     */
-   public SelectItem[] getTemplates()
+   public List<SelectItem> getTemplates()
    {
-      // TODO: could cache this last for say 1 minute before requerying
-      // get the template from the special Content Templates folder
-      FacesContext context = FacesContext.getCurrentInstance();
-      String xpath = Application.getRootPath(context) + "/" + 
-            Application.getGlossaryFolderName(context) + "/" +
-            Application.getContentTemplatesFolderName(context) + "//*";
-      NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-      NamespaceService resolver = Repository.getServiceRegistry(context).getNamespaceService();
-      List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, resolver, false);
-      
-      List<SelectItem> templates = new ArrayList<SelectItem>(results.size() + 1);
-      if (results.size() != 0)
+      List<SelectItem> templates = cachedTemplates.get();
+      if (templates == null)
       {
-         DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
-         for (NodeRef ref : results)
+         // get the template from the special Content Templates folder
+         FacesContext context = FacesContext.getCurrentInstance();
+         String xpath = Application.getRootPath(context) + "/" + 
+               Application.getGlossaryFolderName(context) + "/" +
+               Application.getContentTemplatesFolderName(context) + "//*";
+         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
+         NamespaceService resolver = Repository.getServiceRegistry(context).getNamespaceService();
+         List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, resolver, false);
+         
+         templates = new ArrayList<SelectItem>(results.size() + 1);
+         if (results.size() != 0)
          {
-            Node childNode = new Node(ref);
-            if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
+            DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
+            for (NodeRef ref : results)
             {
-               templates.add(new SelectItem(childNode.getId(), childNode.getName()));
+               Node childNode = new Node(ref);
+               if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
+               {
+                  templates.add(new SelectItem(childNode.getId(), childNode.getName()));
+               }
             }
+            
+            // make sure the list is sorted by the label
+            QuickSort sorter = new QuickSort(templates, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+            sorter.sort();
          }
          
-         // make sure the list is sorted by the label
-         QuickSort sorter = new QuickSort(templates, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
-         sorter.sort();
+         // add an entry (at the start) to instruct the user to select a template
+         templates.add(0, new SelectItem(NO_SELECTION, Application.getMessage(FacesContext.getCurrentInstance(), "select_a_template")));
+         
+         cachedTemplates.put(templates);
       }
       
-      // add an entry (at the start) to instruct the user to select a template
-      templates.add(0, new SelectItem(NO_SELECTION, Application.getMessage(FacesContext.getCurrentInstance(), "select_a_template")));
-      
-      return templates.toArray(new SelectItem[templates.size()]);
+      return templates;
    }
    
    /**
@@ -176,10 +185,10 @@ public abstract class BasePreviewBean
    /** Template Image resolver helper */
    protected TemplateImageResolver imageResolver = new TemplateImageResolver()
    {
-       public String resolveImagePathForName(String filename, boolean small)
-       {
-           return Utils.getFileTypeImage(filename, small);
-       }
+      public String resolveImagePathForName(String filename, boolean small)
+      {
+         return Utils.getFileTypeImage(filename, small);
+      }
    };
 
    /**

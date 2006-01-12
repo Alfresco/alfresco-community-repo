@@ -61,6 +61,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private List<String> descendingSorts = new ArrayList<String>(1);
    
    private int recentSpacesItems = 6;
+   private boolean shelfVisible = true;
    private int searchMinimum = 3;
    private String helpUrl = null;
    private String editLinkType = null;
@@ -260,6 +261,22 @@ public class ClientConfigElement extends ConfigElementAdapter
       this.recentSpacesItems = recentSpacesItems;
    }
    
+   /**
+    * @return Returns if the shelf component is visible by default.
+    */
+   public boolean isShelfVisible()
+   {
+      return this.shelfVisible;
+   }
+
+   /**
+    * @param shelfVisible True if the shelf component is visible by default.
+    */
+   /*package*/ void setShelfVisible(boolean shelfVisible)
+   {
+      this.shelfVisible = shelfVisible;
+   }
+
    /**
     * Add a language locale and display label to the list.
     * 

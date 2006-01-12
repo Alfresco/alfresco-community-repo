@@ -28,7 +28,6 @@ import java.util.Map;
 import javax.faces.component.UISelectBoolean;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
@@ -36,6 +35,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.ExpiringValueCache;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
@@ -866,6 +866,7 @@ public class AdvancedSearchBean
             
             tx.commit();
             
+            this.cachedSavedSearches.clear();
             this.savedSearch = null;
          }
          catch (Throwable e)
@@ -885,53 +886,57 @@ public class AdvancedSearchBean
     */
    public List<SelectItem> getSavedSearches()
    {
-      // TODO: cache for 1 minute? - dirty cache when new search is saved!
-      FacesContext fc = FacesContext.getCurrentInstance();
-      String xpath = ".//*";
-      
-      ServiceRegistry services = Repository.getServiceRegistry(fc);
-      
-      List<SelectItem> savedSearches = null;
-      NodeRef searchesRef = getSavedSearchesRef();
-      if (searchesRef != null)
+      List<SelectItem> savedSearches = cachedSavedSearches.get();
+      if (savedSearches == null)
       {
-         List<NodeRef> results = searchService.selectNodes(
-                  searchesRef,
-                  xpath,
-                  null,
-                  namespaceService,
-                  false);
-         savedSearches = new ArrayList<SelectItem>(results.size() + 1);
-         if (results.size() != 0)
+         FacesContext fc = FacesContext.getCurrentInstance();
+         String xpath = ".//*";
+         
+         ServiceRegistry services = Repository.getServiceRegistry(fc);
+         
+         NodeRef searchesRef = getSavedSearchesRef();
+         if (searchesRef != null)
          {
-            DictionaryService dd = services.getDictionaryService();
-            for (NodeRef ref : results)
+            List<NodeRef> results = searchService.selectNodes(
+                     searchesRef,
+                     xpath,
+                     null,
+                     namespaceService,
+                     false);
+            savedSearches = new ArrayList<SelectItem>(results.size() + 1);
+            if (results.size() != 0)
             {
-               Node childNode = new Node(ref);
-               if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
+               DictionaryService dd = services.getDictionaryService();
+               for (NodeRef ref : results)
                {
-                  savedSearches.add(new SelectItem(childNode.getId(), childNode.getName()));
+                  Node childNode = new Node(ref);
+                  if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
+                  {
+                     savedSearches.add(new SelectItem(childNode.getId(), childNode.getName()));
+                  }
                }
+               
+               // make sure the list is sorted by the label
+               QuickSort sorter = new QuickSort(savedSearches, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+               sorter.sort();
             }
-            
-            // make sure the list is sorted by the label
-            QuickSort sorter = new QuickSort(savedSearches, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
-            sorter.sort();
          }
+         else
+         {
+            // handle missing folder case
+            savedSearches = new ArrayList<SelectItem>(1);
+         }
+         
+         // add an entry (at the start) to instruct the user to select a saved search
+         savedSearches.add(0, new SelectItem(NO_SELECTION,
+               Application.getMessage(FacesContext.getCurrentInstance(), MSG_SELECT_SAVED_SEARCH)));
+         
+         // store in the cache (will auto-expire)
+         cachedSavedSearches.put(savedSearches);       
       }
-      else
-      {
-         // handle missing folder case
-         savedSearches = new ArrayList<SelectItem>(1);
-      }
-      
-      // add an entry (at the start) to instruct the user to select a saved search
-      savedSearches.add(0, new SelectItem(NO_SELECTION,
-            Application.getMessage(FacesContext.getCurrentInstance(), MSG_SELECT_SAVED_SEARCH)));
       
       return savedSearches;
    }
-   
    
    /**
     * Action handler called when a saved search is selected by the user
@@ -1384,4 +1389,6 @@ public class AdvancedSearchBean
    private String savedSearch = null;
    
    private String editSearchName = null;
+   
+   private ExpiringValueCache<List<SelectItem>> cachedSavedSearches = new ExpiringValueCache<List<SelectItem>>();
 }

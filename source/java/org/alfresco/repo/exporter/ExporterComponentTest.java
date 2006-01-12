@@ -28,6 +28,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.view.Exporter;
 import org.alfresco.service.cmr.view.ExporterContext;
 import org.alfresco.service.cmr.view.ExporterCrawlerParameters;
@@ -213,6 +214,21 @@ public class ExporterComponentTest extends BaseSpringTest
         public void endAssocs(NodeRef nodeRef)
         {
 //          System.out.println("TestProgress: endAssocs: " + nodeRef);
+        }
+
+        public void startACL(NodeRef nodeRef)
+        {
+//          System.out.println("TestProgress: startACL: " + nodeRef);
+        }
+
+        public void permission(NodeRef nodeRef, AccessPermission permission)
+        {
+//          System.out.println("TestProgress: permission: " + permission);
+        }
+
+        public void endACL(NodeRef nodeRef)
+        {
+//          System.out.println("TestProgress: endACL: " + nodeRef);
         }
 
     }

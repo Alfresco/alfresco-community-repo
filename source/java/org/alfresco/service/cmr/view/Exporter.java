@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.namespace.QName;
 
 
@@ -95,6 +96,15 @@ public interface Exporter
      * @param nodeRef
      */
     public void endAspects(NodeRef nodeRef);
+
+    
+    public void startACL(NodeRef nodeRef);
+
+    public void permission(NodeRef nodeRef, AccessPermission permission);
+    
+    public void endACL(NodeRef nodeRef);
+    
+    
     
     /**
      * Start export of properties

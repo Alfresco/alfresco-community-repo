@@ -38,7 +38,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.view.ExportPackageHandler;
 import org.alfresco.service.cmr.view.Exporter;
 import org.alfresco.service.cmr.view.ExporterContext;
@@ -72,6 +74,8 @@ public class ExporterComponent
     private ContentService contentService;
     private DescriptorService descriptorService;
     private AuthenticationService authenticationService;
+    private PermissionService permissionService;
+    
 
     /** Indent Size */
     private int indentSize = 2;
@@ -132,6 +136,15 @@ public class ExporterComponent
     {
         this.authenticationService = authenticationService; 
     }
+    
+    /**
+     * @param permissionService  the permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+    
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.ExporterService#exportView(java.io.OutputStream, org.alfresco.service.cmr.view.ExporterCrawlerParameters, org.alfresco.service.cmr.view.Exporter)
@@ -198,7 +211,7 @@ public class ExporterComponent
         try
         {
             XMLWriter writer = new XMLWriter(viewWriter, format);
-            return new ViewXMLExporter(namespaceService, nodeService, dictionaryService, writer);
+            return new ViewXMLExporter(namespaceService, nodeService, dictionaryService, permissionService, writer);
         }
         catch (UnsupportedEncodingException e)        
         {
@@ -318,6 +331,18 @@ public class ExporterComponent
                 }
             }
             exporter.endAspects(nodeRef);
+            
+            // Export node permissions
+            Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
+            if (permissions.size() > 0)
+            {
+                exporter.startACL(nodeRef);
+                for (AccessPermission permission : permissions)
+                {
+                    exporter.permission(nodeRef, permission);
+                }
+                exporter.endACL(nodeRef);
+            }
             
             // Export node properties
             exporter.startProperties(nodeRef);

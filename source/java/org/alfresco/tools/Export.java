@@ -26,6 +26,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.view.ExportPackageHandler;
 import org.alfresco.service.cmr.view.Exporter;
 import org.alfresco.service.cmr.view.ExporterContext;
@@ -502,6 +503,27 @@ public final class Export extends Tool
         }
 
         /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.Exporter#startACL(org.alfresco.service.cmr.repository.NodeRef)
+         */
+        public void startACL(NodeRef nodeRef)
+        {
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.Exporter#permission(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.security.AccessPermission)
+         */
+        public void permission(NodeRef nodeRef, AccessPermission permission)
+        {
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.Exporter#endACL(org.alfresco.service.cmr.repository.NodeRef)
+         */
+        public void endACL(NodeRef nodeRef)
+        {
+        }
+        
+        /* (non-Javadoc)
          * @see org.alfresco.service.cmr.view.Exporter#startProperties(org.alfresco.service.cmr.repository.NodeRef)
          */
         public void startProperties(NodeRef nodeRef)
@@ -592,6 +614,7 @@ public final class Export extends Tool
         public void end()
         {
         }
+
     }
 
 }

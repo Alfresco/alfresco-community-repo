@@ -794,6 +794,9 @@
         <property name="authenticationService">
             <ref bean="authenticationService" />
         </property>
+        <property name="permissionService">
+            <ref bean="permissionService" />
+        </property>
     </bean>
 
     <!-- Audit -->

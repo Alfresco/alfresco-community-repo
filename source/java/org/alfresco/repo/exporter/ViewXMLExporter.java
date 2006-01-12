@@ -28,6 +28,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.view.Exporter;
 import org.alfresco.service.cmr.view.ExporterContext;
 import org.alfresco.service.cmr.view.ExporterException;
@@ -61,6 +63,12 @@ import org.xml.sax.helpers.AttributesImpl;
     private static final String EXPORTEDDATE_LOCALNAME  = "exportDate";
     private static final String EXPORTERVERSION_LOCALNAME  = "exporterVersion";
     private static final String EXPORTOF_LOCALNAME  = "exportOf";
+    private static final String ACL_LOCALNAME  = "acl";
+    private static final String ACE_LOCALNAME  = "ace";
+    private static final String ACCESS_LOCALNAME  = "access";
+    private static final String AUTHORITY_LOCALNAME  = "authority";
+    private static final String PERMISSION_LOCALNAME  = "permission";
+    private static final String INHERITPERMISSIONS_LOCALNAME  = "inherit";
     private static QName VIEW_QNAME;
     private static QName VALUES_QNAME;
     private static QName VALUE_QNAME;
@@ -75,12 +83,19 @@ import org.xml.sax.helpers.AttributesImpl;
     private static QName EXPORTEDDATE_QNAME;
     private static QName EXPORTERVERSION_QNAME;
     private static QName EXPORTOF_QNAME;
+    private static QName ACL_QNAME;
+    private static QName ACE_QNAME;
+    private static QName ACCESS_QNAME;
+    private static QName AUTHORITY_QNAME;
+    private static QName PERMISSION_QNAME;
+    private static QName INHERITPERMISSIONS_QNAME;
     private static final AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
     
     // Service dependencies
     private NamespaceService namespaceService;
     private NodeService nodeService;
     private DictionaryService dictionaryService;
+    private PermissionService permissionService;
     
     // View context
     private ContentHandler contentHandler;
@@ -94,11 +109,13 @@ import org.xml.sax.helpers.AttributesImpl;
      * @param nodeService  node service
      * @param contentHandler  content handler
      */
-    ViewXMLExporter(NamespaceService namespaceService, NodeService nodeService, DictionaryService dictionaryService, ContentHandler contentHandler)
+    ViewXMLExporter(NamespaceService namespaceService, NodeService nodeService,
+            DictionaryService dictionaryService, PermissionService permissionService, ContentHandler contentHandler)
     {
         this.namespaceService = namespaceService;
         this.nodeService = nodeService;
         this.dictionaryService = dictionaryService;
+        this.permissionService = permissionService;
         this.contentHandler = contentHandler;
         
         VIEW_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, VIEW_LOCALNAME, namespaceService);
@@ -115,6 +132,12 @@ import org.xml.sax.helpers.AttributesImpl;
         EXPORTEDDATE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, EXPORTEDDATE_LOCALNAME, namespaceService);
         EXPORTERVERSION_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, EXPORTERVERSION_LOCALNAME, namespaceService);
         EXPORTOF_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, EXPORTOF_LOCALNAME, namespaceService);
+        ACL_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, ACL_LOCALNAME, namespaceService);
+        ACE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, ACE_LOCALNAME, namespaceService);
+        ACCESS_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, ACCESS_LOCALNAME, namespaceService);
+        AUTHORITY_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, AUTHORITY_LOCALNAME, namespaceService);
+        PERMISSION_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, PERMISSION_LOCALNAME, namespaceService);
+        INHERITPERMISSIONS_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, INHERITPERMISSIONS_LOCALNAME, namespaceService);
     }
     
     
@@ -299,6 +322,75 @@ import org.xml.sax.helpers.AttributesImpl;
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.Exporter#startACL(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public void startACL(NodeRef nodeRef)
+    {
+        try
+        {
+            AttributesImpl attrs = new AttributesImpl(); 
+            boolean inherit = permissionService.getInheritParentPermissions(nodeRef);
+            if (!inherit)
+            {
+                attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, INHERITPERMISSIONS_LOCALNAME, INHERITPERMISSIONS_QNAME.toPrefixString(), null, "false");
+            }
+            contentHandler.startElement(ACL_QNAME.getNamespaceURI(), ACL_QNAME.getLocalName(), toPrefixString(ACL_QNAME), attrs);
+        }
+        catch (SAXException e)
+        {
+            throw new ExporterException("Failed to process start ACL event - node ref " + nodeRef.toString());
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.Exporter#permission(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.security.AccessPermission)
+     */
+    public void permission(NodeRef nodeRef, AccessPermission permission)
+    {
+        try
+        {
+            // output access control entry
+            AttributesImpl attrs = new AttributesImpl(); 
+            attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, ACCESS_LOCALNAME, ACCESS_QNAME.toPrefixString(), null, permission.getAccessStatus().toString());
+            contentHandler.startElement(ACE_QNAME.getNamespaceURI(), ACE_QNAME.getLocalName(), toPrefixString(ACE_QNAME), attrs);
+
+            // output authority
+            contentHandler.startElement(AUTHORITY_QNAME.getNamespaceURI(), AUTHORITY_QNAME.getLocalName(), toPrefixString(AUTHORITY_QNAME), EMPTY_ATTRIBUTES);
+            String authority = permission.getAuthority();
+            contentHandler.characters(authority.toCharArray(), 0, authority.length());
+            contentHandler.endElement(AUTHORITY_QNAME.getNamespaceURI(), AUTHORITY_QNAME.getLocalName(), toPrefixString(AUTHORITY_QNAME));
+
+            // output permission
+            contentHandler.startElement(PERMISSION_QNAME.getNamespaceURI(), PERMISSION_QNAME.getLocalName(), toPrefixString(PERMISSION_QNAME), EMPTY_ATTRIBUTES);
+            String strPermission = permission.getPermission();
+            contentHandler.characters(strPermission.toCharArray(), 0, strPermission.length());
+            contentHandler.endElement(PERMISSION_QNAME.getNamespaceURI(), PERMISSION_QNAME.getLocalName(), toPrefixString(PERMISSION_QNAME));
+            
+            // end access control entry
+            contentHandler.endElement(ACE_QNAME.getNamespaceURI(), ACE_QNAME.getLocalName(), toPrefixString(ACE_QNAME));
+        }
+        catch (SAXException e)
+        {
+            throw new ExporterException("Failed to process permission event - node ref " + nodeRef.toString() + "; permission " + permission);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.Exporter#endACL(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public void endACL(NodeRef nodeRef)
+    {
+        try
+        {
+            contentHandler.endElement(ACL_QNAME.getNamespaceURI(), ACL_QNAME.getLocalName(), toPrefixString(ACL_QNAME));
+        }
+        catch (SAXException e)
+        {
+            throw new ExporterException("Failed to process end ACL event - node ref " + nodeRef.toString());
+        }
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#startProperties(org.alfresco.service.cmr.repository.NodeRef)
      */

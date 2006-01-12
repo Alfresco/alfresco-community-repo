@@ -163,6 +163,7 @@
                                  <%-- Current object actions --%>
                                  <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.actions}" id="msg14" /><br>
                                  <a:actionLink value="#{msg.new_search}" image="/images/icons/search_icon.gif" padding="4" action="advSearch" id="link20" />
+                                 <a:actionLink value="#{msg.save_search}" image="/images/icons/save_search.gif" padding="4" action="#{AdvancedSearchBean.saveSearch}" id="link20_1" />
                                  <a:actionLink value="#{msg.close_search}" image="/images/icons/action.gif" padding="4" actionListener="#{BrowseBean.closeSearch}" id="link21" />
                               </td>
                            </a:panel>
@@ -209,7 +210,7 @@
                         <%-- component to display if the list is empty --%>
                         <f:facet name="empty">
                            <%-- TODO: either build complete message in BrowseBean or have no icon... --%>
-                           <h:outputFormat value="#{msg.no_space_items}" escape="false">
+                           <h:outputFormat value="#{msg.no_space_items}" escape="false" rendered="#{NavigationBean.searchContext == null}">
                               <f:param value="#{msg.new_space}" />
                            </h:outputFormat>
                         </f:facet>
@@ -362,7 +363,7 @@
                         <%-- component to display if the list is empty --%>
                         <f:facet name="empty">
                            <%-- TODO: either build complete message in BrowseBean or have no icon... --%>
-                           <h:outputFormat value="#{msg.no_content_items}" escape="false">
+                           <h:outputFormat value="#{msg.no_content_items}" escape="false" rendered="#{NavigationBean.searchContext == null}">
                               <f:param value="#{msg.add_content}" />
                               <f:param value="#{msg.create_content}" />
                            </h:outputFormat>

@@ -104,6 +104,21 @@
                               <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.actions}" /><br>
                               <a:actionLink value="#{msg.resetall}" image="/images/icons/delete.gif" padding="4" actionListener="#{AdvancedSearchBean.reset}" />
                            </td>
+                           <td bgcolor="#465F7D" width=1></td>
+                           <td width=100 style="padding-left:2px">
+                              <%-- Available Saved Searches --%>
+                              <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.saved_searches}" />
+                              <div style="padding-top:4px;white-space:nowrap">
+                                 <%-- Saved Searches drop-down selector --%>
+                                 <%-- uses a nasty hack to execute an ActionListener for the drop-down
+                                      tried using a valueChangedListener+formsubmit but the valueChangedListener
+                                      is called too late in the lifecycle for the form controls to be managed --%>
+                                 <h:selectOneMenu id="searches" value="#{AdvancedSearchBean.savedSearch}" onchange="document.forms['advsearch']['advsearch:act'].value='advsearch:show-search'; document.forms['advsearch'].submit(); return true;">
+                                    <f:selectItems value="#{AdvancedSearchBean.savedSearches}" />
+                                 </h:selectOneMenu>
+                                 <div style="display:none"><a:actionLink id="show-search" value="Select" actionListener="#{AdvancedSearchBean.selectSearch}" /></div>
+                              </div>
+                           </td>
                         </tr>
                      </table>
                      

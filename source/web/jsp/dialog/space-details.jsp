@@ -225,7 +225,10 @@
                                           <a:actionLink value="#{msg.view_in_cifs}" href="#{SpaceDetailsBean.cifsPath}" target="new" id="link2" />
                                        </td>
                                        <td>
-                                          <a:actionLink value="#{msg.details_page_bookmark}" href="#{SpaceDetailsBean.bookmarkUrl}" target="new" id="link3" />
+                                          <a href='<h:outputText value="#{SpaceDetailsBean.bookmarkUrl}" escape="false" />' onclick="return false;"><h:outputText value="#{msg.details_page_bookmark}" /></a>
+                                       </td>
+                                       <td>
+                                          <a href='<h:outputText value="#{SpaceDetailsBean.nodeRefUrl}" escape="false" />' onclick="return false;"><h:outputText value="#{msg.noderef_link}" /></a>
                                        </td>
                                     </tr>
                                  </table>

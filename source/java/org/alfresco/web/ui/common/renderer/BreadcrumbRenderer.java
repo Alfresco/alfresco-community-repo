@@ -108,7 +108,7 @@ public class BreadcrumbRenderer extends BaseRenderer
       if (first == false)
       {
          buf.append(' ')
-            .append(bc.getSeparator())
+            .append(Utils.encode(bc.getSeparator()))
             .append(' ');
       }
       

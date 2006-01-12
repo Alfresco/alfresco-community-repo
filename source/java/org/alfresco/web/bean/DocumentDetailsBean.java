@@ -199,6 +199,16 @@ public class DocumentDetailsBean
    }
    
    /**
+    * Return the Alfresco NodeRef URL for the current document
+    * 
+    * @return the Alfresco NodeRef URL
+    */
+   public String getNodeRefUrl()
+   {
+      return getDocument().getNodeRef().toString();
+   }
+   
+   /**
     * Determines whether the current document is versionable
     * 
     * @return true if the document has the versionable aspect

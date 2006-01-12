@@ -117,7 +117,7 @@ public class SpaceDetailsBean
    }
    
    /**
-    * Returns the id of the current document
+    * Returns the id of the current space
     * 
     * @return The id
     */
@@ -127,9 +127,9 @@ public class SpaceDetailsBean
    }
    
    /**
-    * Returns the name of the current document
+    * Returns the name of the current space
     * 
-    * @return Name of the current document
+    * @return Name of the current space
     */
    public String getName()
    {
@@ -137,7 +137,7 @@ public class SpaceDetailsBean
    }
    
    /**
-    * Returns the WebDAV URL for the current document
+    * Returns the WebDAV URL for the current space
     * 
     * @return The WebDAV url
     */
@@ -147,7 +147,7 @@ public class SpaceDetailsBean
    }
 
    /**
-    * Returns the URL to access the details page for the current document
+    * Returns the URL to access the details page for the current space
     * 
     * @return The bookmark URL
     */
@@ -157,13 +157,23 @@ public class SpaceDetailsBean
    }
    
    /**
-    * Returns the CIFS path for the current document
+    * Returns the CIFS path for the current space
     * 
     * @return The CIFS path
     */
    public String getCifsPath()
    {
       return Utils.generateURL(FacesContext.getCurrentInstance(), getSpace(), URLMode.CIFS);
+   }
+   
+   /**
+    * Return the Alfresco NodeRef URL for the current space
+    * 
+    * @return the Alfresco NodeRef URL
+    */
+   public String getNodeRefUrl()
+   {
+      return getSpace().getNodeRef().toString();
    }
 
    /**

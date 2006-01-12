@@ -83,9 +83,6 @@ public class BrowseBean implements IContextListener
    // ------------------------------------------------------------------------------
    // Construction 
 
-   private static final String VIEWMODE_DASHBOARD = "dashboard";
-   private static final String PAGE_NAME_BROWSE = "browse";
-
    /**
     * Default Constructor
     */
@@ -1442,6 +1439,9 @@ public class BrowseBean implements IContextListener
    // Private data
    
    public static final String BROWSE_VIEW_ID = "/jsp/browse/browse.jsp";
+   
+   private static final String VIEWMODE_DASHBOARD = "dashboard";
+   private static final String PAGE_NAME_BROWSE = "browse";
    
    /** I18N messages */
    private static final String MSG_ERROR_DELETE_FILE  = "error_delete_file";

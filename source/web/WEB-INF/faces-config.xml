@@ -191,6 +191,10 @@
          <property-name>namespaceService</property-name>
          <value>#{NamespaceService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

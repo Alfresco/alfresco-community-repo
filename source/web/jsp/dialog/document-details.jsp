@@ -225,7 +225,10 @@
                                           <a:actionLink value="#{msg.download_content}" href="#{DocumentDetailsBean.downloadUrl}" target="new" id="link4" />
                                        </td>
                                        <td>
-                                          <a:actionLink value="#{msg.details_page_bookmark}" href="#{DocumentDetailsBean.bookmarkUrl}" target="new" id="link5" />
+                                          <a href='<h:outputText value="#{DocumentDetailsBean.bookmarkUrl}" escape="false" />' onclick="return false;"><h:outputText value="#{msg.details_page_bookmark}" /></a>
+                                       </td>
+                                       <td>
+                                          <a href='<h:outputText value="#{DocumentDetailsBean.nodeRefUrl}" escape="false" />' onclick="return false;"><h:outputText value="#{msg.noderef_link}" /></a>
                                        </td>
                                     </tr>
                                  </table>

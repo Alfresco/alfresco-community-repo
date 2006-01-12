@@ -68,6 +68,7 @@ public class Application
    private static String glossaryFolderName;
    private static String spaceTemplatesFolderName;
    private static String contentTemplatesFolderName;
+   private static String savedSearchesFolderName;
    
    /**
     * Private constructor to prevent instantiation of this class 
@@ -261,7 +262,7 @@ public class Application
    }
    
    /**
-    * @return Returns the root path for the application (retrieved from config service)
+    * @return Returns the root path for the application
     */
    public static String getRootPath(ServletContext context)
    {
@@ -269,7 +270,7 @@ public class Application
    }
    
    /**
-    * @return Returns the root path for the application (retrieved from config service)
+    * @return Returns the root path for the application
     */
    public static String getRootPath(FacesContext context)
    {
@@ -277,7 +278,7 @@ public class Application
    }
    
    /**
-    * @return Returns the glossary folder name (retrieved from config service)
+    * @return Returns the glossary folder name
     */
    public static String getGlossaryFolderName(ServletContext context)
    {
@@ -285,7 +286,7 @@ public class Application
    }
    
    /**
-    * @return Returns the glossary folder name (retrieved from config service)
+    * @return Returns the glossary folder name
     */
    public static String getGlossaryFolderName(FacesContext context)
    {
@@ -293,7 +294,7 @@ public class Application
    }
    
    /**
-    * @return Returns the Space templates folder name (retrieved from config service)
+    * @return Returns the Space templates folder name
     */
    public static String getSpaceTemplatesFolderName(ServletContext context)
    {
@@ -301,7 +302,7 @@ public class Application
    }
    
    /**
-    * @return Returns the Space templates folder name (retrieved from config service)
+    * @return Returns the Space templates folder name
     */
    public static String getSpaceTemplatesFolderName(FacesContext context)
    {
@@ -309,7 +310,7 @@ public class Application
    }
    
    /**
-    * @return Returns the Content templates folder name (retrieved from config service)
+    * @return Returns the Content templates folder name
     */
    public static String getContentTemplatesFolderName(ServletContext context)
    {
@@ -317,11 +318,27 @@ public class Application
    }
    
    /**
-    * @return Returns the Content templates folder name (retrieved from config service)
+    * @return Returns the Content templates folder name
     */
    public static String getContentTemplatesFolderName(FacesContext context)
    {
       return getContentTemplatesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return Return the Saved Searches folder name
+    */
+   public static String getSavedSearchesFolderName(ServletContext context)
+   {
+      return getSavedSearchesFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return Return the Saved Searches folder name
+    */
+   public static String getSavedSearchesFolderName(FacesContext context)
+   {
+      return getSavedSearchesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
    }
    
    /**
@@ -530,7 +547,7 @@ public class Application
    }
    
    /**
-    * Returns the repository store URL (retrieved from config service)
+    * Returns the repository store URL
     * 
     * @param context The spring context
     * @return The repository store URL to use
@@ -547,7 +564,7 @@ public class Application
    }
    
    /**
-    * Returns the root path for the application (retrieved from config service)
+    * Returns the root path for the application
     * 
     * @param context The spring context
     * @return The application root path
@@ -565,7 +582,7 @@ public class Application
    }
    
    /**
-    * Returns the glossary folder name (retrieved from config service)
+    * Returns the glossary folder name
     * 
     * @param context The spring context
     * @return The glossary folder name
@@ -583,7 +600,7 @@ public class Application
    }
    
    /**
-    * Returns the Space Templates folder name (retrieved from config service)
+    * Returns the Space Templates folder name
     * 
     * @param context The spring context
     * @return The templates folder name
@@ -601,7 +618,7 @@ public class Application
    }
    
    /**
-    * Returns the Content Templates folder name (retrieved from config service)
+    * Returns the Content Templates folder name
     * 
     * @param context The spring context
     * @return The templates folder name
@@ -616,6 +633,24 @@ public class Application
       }
       
       return contentTemplatesFolderName;
+   }
+   
+   /**
+    * Returns the Saved Searches folder name
+    * 
+    * @param context The spring context
+    * @return The saved searches folder name
+    */
+   private static String getSavedSearchesFolderName(WebApplicationContext context)
+   {
+      if (savedSearchesFolderName == null)
+      {
+         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
+         Properties configuration = bootstrap.getConfiguration();
+         savedSearchesFolderName = configuration.getProperty("spaces.savedsearches.childname");
+      }
+      
+      return savedSearchesFolderName;
    }
    
    /**

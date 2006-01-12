@@ -158,10 +158,10 @@ public class ActionLinkRenderer extends BaseRenderer
          linkBuf.append(" class=")
                 .append(attrs.get("styleClass"));
       }
-      if (attrs.get("tooltip") != null)
+      if (link.getTooltip() != null)
       {
          linkBuf.append(" title=\"")
-                .append(Utils.encode((String)attrs.get("tooltip")))
+                .append(Utils.encode(link.getTooltip()))
                 .append('"');
       }
       linkBuf.append('>');
@@ -266,10 +266,8 @@ public class ActionLinkRenderer extends BaseRenderer
       }
       buf.append(">");
       
-      Map attrs = link.getAttributes();
-      
       // render text link cell for the menu
-      if (attrs.get("href") == null)
+      if (link.getHref() == null)
       {
          buf.append("<a href='#' onclick=\"");
          buf.append(Utils.generateFormSubmit(context, link, Utils.getActionHiddenFieldName(context, link), link.getClientId(context), getParameterMap(link)));
@@ -277,7 +275,7 @@ public class ActionLinkRenderer extends BaseRenderer
       }
       else
       {
-         String href = (String)attrs.get("href");
+         String href = link.getHref();
          if (href.startsWith("http") == false)
          {
             href = context.getExternalContext().getRequestContextPath() + href;
@@ -295,6 +293,7 @@ public class ActionLinkRenderer extends BaseRenderer
          }
       }
       
+      Map attrs = link.getAttributes();
       if (attrs.get("style") != null)
       {
          buf.append(" style=\"")

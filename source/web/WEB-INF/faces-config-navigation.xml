@@ -170,6 +170,10 @@
          <from-outcome>showTopic</from-outcome>
          <to-view-id>/jsp/forums/topic.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>saveSearch</from-outcome>
+         <to-view-id>/jsp/dialog/save-search.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <!-- Admin Console rules -->

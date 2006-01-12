@@ -22,6 +22,7 @@ import java.io.StringReader;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -986,6 +987,79 @@ public final class Utils
       {
          throw new AlfrescoRuntimeException("Invalid DateTime pattern", err);
       }
+   }
+   
+   /**
+    * Parse XML format date YYYY-MM-DDTHH:MM:SS
+    * @param isoDate
+    * @return Date or null if failed to parse
+    */
+   public static Date parseXMLDateFormat(String isoDate)
+   {
+      Date parsed = null;
+      
+      try
+      {
+         int offset = 0;
+         
+         // extract year
+         int year = Integer.parseInt(isoDate.substring(offset, offset += 4));
+         if (isoDate.charAt(offset) != '-')
+         {
+            throw new IndexOutOfBoundsException("Expected - character but found " + isoDate.charAt(offset));
+         }
+         
+         // extract month
+         int month = Integer.parseInt(isoDate.substring(offset += 1, offset += 2));
+         if (isoDate.charAt(offset) != '-')
+         {
+            throw new IndexOutOfBoundsException("Expected - character but found " + isoDate.charAt(offset));
+         }
+         
+         // extract day
+         int day = Integer.parseInt(isoDate.substring(offset += 1, offset += 2));
+         if (isoDate.charAt(offset) != 'T')
+         {
+            throw new IndexOutOfBoundsException("Expected T character but found " + isoDate.charAt(offset));
+         }
+         
+         // extract hours, minutes, seconds and milliseconds
+         int hour = Integer.parseInt(isoDate.substring(offset += 1, offset += 2));
+         if (isoDate.charAt(offset) != ':')
+         {
+            throw new IndexOutOfBoundsException("Expected : character but found " + isoDate.charAt(offset));
+         }
+         int minutes = Integer.parseInt(isoDate.substring(offset += 1, offset += 2));
+         if (isoDate.charAt(offset) != ':')
+         {
+            throw new IndexOutOfBoundsException("Expected : character but found " + isoDate.charAt(offset));
+         }
+         int seconds = Integer.parseInt(isoDate.substring(offset += 1 , offset += 2));
+         
+         // initialize Calendar object
+         Calendar calendar = Calendar.getInstance();
+         calendar.setLenient(false);
+         calendar.set(Calendar.YEAR, year);
+         calendar.set(Calendar.MONTH, month - 1);
+         calendar.set(Calendar.DAY_OF_MONTH, day);
+         calendar.set(Calendar.HOUR_OF_DAY, hour);
+         calendar.set(Calendar.MINUTE, minutes);
+         calendar.set(Calendar.SECOND, seconds);
+         
+         // extract the date
+         parsed = calendar.getTime();
+      }
+      catch(IndexOutOfBoundsException e)
+      {
+      }
+      catch(NumberFormatException e)
+      {
+      }
+      catch(IllegalArgumentException e)
+      {
+      }
+      
+      return parsed;
    }
 
    /**

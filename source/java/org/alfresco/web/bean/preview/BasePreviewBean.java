@@ -133,7 +133,6 @@ public abstract class BasePreviewBean
    public SelectItem[] getTemplates()
    {
       // TODO: could cache this last for say 1 minute before requerying
-      
       // get the template from the special Content Templates folder
       FacesContext context = FacesContext.getCurrentInstance();
       String xpath = Application.getRootPath(context) + "/" + 
@@ -143,7 +142,7 @@ public abstract class BasePreviewBean
       NamespaceService resolver = Repository.getServiceRegistry(context).getNamespaceService();
       List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, resolver, false);
       
-      List<SelectItem> templates = new ArrayList<SelectItem>(results.size());
+      List<SelectItem> templates = new ArrayList<SelectItem>(results.size() + 1);
       if (results.size() != 0)
       {
          DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();

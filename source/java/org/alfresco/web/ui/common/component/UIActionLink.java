@@ -303,6 +303,7 @@ public class UIActionLink extends UICommand
       this.onclick = onclick;
    }
    
+   
    // ------------------------------------------------------------------------------
    // Private data
    

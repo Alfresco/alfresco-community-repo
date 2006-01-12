@@ -2,6 +2,8 @@
            xmlns:cm="http://www.alfresco.org/model/content/1.0"
            xmlns:app="http://www.alfresco.org/model/application/1.0">
 
+   <!-- NOTE: all replaced properties referenced from repository.properties file must also be
+              mapped in the application-context.xml importerBootstrap/configuration section -->
 	<cm:folder view:childName="${spaces.company_home.childname}">
 		<app:uifacets />
 		<cm:name>${spaces.company_home.name}</cm:name>
@@ -29,6 +31,13 @@
 						<app:icon>space-icon-default</app:icon>
 						<cm:title>${spaces.templates.content.name}</cm:title>
 						<cm:description>${spaces.templates.content.description}</cm:description>
+					</cm:folder>
+					<cm:folder view:childName="${spaces.savedsearches.childname}">
+						<app:uifacets />
+						<cm:name>${spaces.savedsearches.name}</cm:name>
+						<app:icon>space-icon-default</app:icon>
+						<cm:title>${spaces.savedsearches.name}</cm:title>
+						<cm:description>${spaces.savedsearches.description}</cm:description>
 					</cm:folder>
 				</cm:contains>
 			</cm:folder>

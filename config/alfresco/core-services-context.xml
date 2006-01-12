@@ -734,6 +734,7 @@
                 <prop key="spaces.dictionary.childname">${spaces.dictionary.childname}</prop>
                 <prop key="spaces.templates.childname">${spaces.templates.childname}</prop>
                 <prop key="spaces.templates.content.childname">${spaces.templates.content.childname}</prop>
+                <prop key="spaces.savedsearches.childname">${spaces.savedsearches.childname}</prop>
             </props>
         </property>
         <!-- To specify a locale other than the system default, uncomment the following

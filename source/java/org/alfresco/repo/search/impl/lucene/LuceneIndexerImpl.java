@@ -1395,6 +1395,9 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                             ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
                             if (index)
                             {
+                                // store mimetype in index - even if content does not index it is useful
+                                doc.add(new Field(attributeName+".mimetype", contentData.getMimetype(), false, true, false));
+                                
                                 ContentReader reader = contentService.getReader(nodeRef, propertyName);
                                 if (reader != null && reader.exists())
                                 {
@@ -1459,7 +1462,6 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                                         }  
                                         doc.add(Field.Text("TEXT", isr));
                                         
-                                        
                                         ris = reader.getReader().getContentInputStream(); 
                                         try 
                                         { 
@@ -1473,9 +1475,6 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                                         doc.add(Field.Text("@"
                                                 + QName.createQName(propertyName.getNamespaceURI(), ISO9075
                                                         .encode(propertyName.getLocalName())), isr));
-                                        
-                                        
-                                        doc.add(new Field(attributeName+".mimetype", contentData.getMimetype(), false, true, false));
                                     }
                                 }
 

@@ -117,82 +117,91 @@ public final class SearchContext implements Serializable
    /**
     * Build the search query string based on the current search context members.
     * 
+    * @param minimum       small possible textual string used for a match
+    *                      this does not effect fixed values searches (e.g. boolean, int values) or date ranges
+    * 
     * @return prepared search query string
     */
-   public String buildQuery()
+   public String buildQuery(int minimum)
    {
       String query;
+      boolean validQuery = false;
       
       // the QName for the well known "name" attribute
       String nameAttr = Repository.escapeQName(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, ELEMENT_NAME));
       
       // match against content text
       String text = this.text.trim();
-      String fullTextQuery;
-      String nameAttrQuery;
+      String fullTextQuery = null;
+      String nameAttrQuery = null;
       
-      if (text.indexOf(' ') == -1)
+      if (text.length() >= minimum)
       {
-         // simple single word text search
-         if (text.charAt(0) != '*')
+         if (text.indexOf(' ') == -1)
          {
-            // escape characters and append the wildcard character
-            String safeText = QueryParser.escape(text);
-            fullTextQuery = " TEXT:" + safeText + '*';
-            nameAttrQuery = " @" + nameAttr + ":" + safeText + '*';
-         }
-         else
-         {
-            // found a leading wildcard - prepend it again after escaping the other characters
-            String safeText = QueryParser.escape(text.substring(1));
-            fullTextQuery = " TEXT:*" + safeText + '*';
-            nameAttrQuery = " @" + nameAttr + ":*" + safeText + '*';
-         }
-      }
-      else
-      {
-         // multiple word search
-         if (text.charAt(0) == '"' && text.charAt(text.length() - 1) == '"')
-         {
-            // as quoted phrase
-            String quotedSafeText = '"' + QueryParser.escape(text.substring(1, text.length() - 1)) + '"';
-            fullTextQuery = " TEXT:" + quotedSafeText;
-            nameAttrQuery = " @" + nameAttr + ":" + quotedSafeText;
-         }
-         else
-         {
-            // as individual search terms
-            StringTokenizer t = new StringTokenizer(text, " ");
-            StringBuilder fullTextBuf = new StringBuilder(64);
-            StringBuilder nameAttrBuf = new StringBuilder(64);
-            fullTextBuf.append('(');
-            nameAttrBuf.append('(');
-            while (t.hasMoreTokens())
+            // simple single word text search
+            if (text.charAt(0) != '*')
             {
-               String term = t.nextToken();
-               if (term.charAt(0) != '*')
-               {
-                  String safeTerm = QueryParser.escape(term);
-                  fullTextBuf.append("TEXT:").append(safeTerm).append('*');
-                  nameAttrBuf.append("@").append(nameAttr).append(":").append(safeTerm).append('*');
-               }
-               else
-               {
-                  String safeTerm = QueryParser.escape(term.substring(1));
-                  fullTextBuf.append("TEXT:*").append(safeTerm).append('*');
-                  nameAttrBuf.append("@").append(nameAttr).append(":*").append(safeTerm).append('*');
-               }
-               if (t.hasMoreTokens())
-               {
-                  fullTextBuf.append(" OR ");
-                  nameAttrBuf.append(" OR ");
-               }
+               // escape characters and append the wildcard character
+               String safeText = QueryParser.escape(text);
+               fullTextQuery = " TEXT:" + safeText + '*';
+               nameAttrQuery = " @" + nameAttr + ":" + safeText + '*';
             }
-            fullTextBuf.append(')');
-            nameAttrBuf.append(')');
-            fullTextQuery = fullTextBuf.toString();
-            nameAttrQuery = nameAttrBuf.toString();
+            else
+            {
+               // found a leading wildcard - prepend it again after escaping the other characters
+               String safeText = QueryParser.escape(text.substring(1));
+               fullTextQuery = " TEXT:*" + safeText + '*';
+               nameAttrQuery = " @" + nameAttr + ":*" + safeText + '*';
+            }
          }
+         else
+         {
+            // multiple word search
+            if (text.charAt(0) == '"' && text.charAt(text.length() - 1) == '"')
+            {
+               // as quoted phrase
+               String quotedSafeText = '"' + QueryParser.escape(text.substring(1, text.length() - 1)) + '"';
+               fullTextQuery = " TEXT:" + quotedSafeText;
+               nameAttrQuery = " @" + nameAttr + ":" + quotedSafeText;
+            }
+            else
+            {
+               // as individual search terms
+               StringTokenizer t = new StringTokenizer(text, " ");
+               StringBuilder fullTextBuf = new StringBuilder(64);
+               StringBuilder nameAttrBuf = new StringBuilder(64);
+               fullTextBuf.append('(');
+               nameAttrBuf.append('(');
+               while (t.hasMoreTokens())
+               {
+                  String term = t.nextToken();
+                  if (term.charAt(0) != '*')
+                  {
+                     String safeTerm = QueryParser.escape(term);
+                     fullTextBuf.append("TEXT:").append(safeTerm).append('*');
+                     nameAttrBuf.append("@").append(nameAttr).append(":").append(safeTerm).append('*');
+                  }
+                  else
+                  {
+                     String safeTerm = QueryParser.escape(term.substring(1));
+                     fullTextBuf.append("TEXT:*").append(safeTerm).append('*');
+                     nameAttrBuf.append("@").append(nameAttr).append(":*").append(safeTerm).append('*');
+                  }
+                  if (t.hasMoreTokens())
+                  {
+                     fullTextBuf.append(" OR ");
+                     nameAttrBuf.append(" OR ");
+                  }
+               }
+               fullTextBuf.append(')');
+               nameAttrBuf.append(')');
+               fullTextQuery = fullTextBuf.toString();
+               nameAttrQuery = nameAttrBuf.toString();
+            }
+         }
+         
+         validQuery = true;
       }
       
       // match a specific PATH for space location or categories
@@ -224,10 +233,19 @@ public final class SearchContext implements Serializable
          attributeQuery = new StringBuilder(queryAttributes.size() << 6);
          for (QName qname : queryAttributes.keySet())
          {
-            String escapedName = Repository.escapeQName(qname);
-            String value = QueryParser.escape(queryAttributes.get(qname));
-            attributeQuery.append(" +@").append(escapedName)
-                          .append(":").append(value).append('*');
+            String value = queryAttributes.get(qname).trim();
+            if (value.length() >= minimum)
+            {
+               String escapedName = Repository.escapeQName(qname);
+               attributeQuery.append(" +@").append(escapedName)
+                             .append(":").append(QueryParser.escape(value)).append('*');
+            }
+         }
+         
+         // handle the case where we did not add any attributes due to minimum length restrictions
+         if (attributeQuery.length() == 0)
+         {
+            attributeQuery = null;
          }
       }
       
@@ -283,38 +301,64 @@ public final class SearchContext implements Serializable
       String fileTypeQuery;
       if (contentType != null)
       {
-         fileTypeQuery = " +TYPE:\"" + contentType + "\" ";
+         fileTypeQuery = " TYPE:\"" + contentType + "\" ";
       }
       else
       {
          // default to cm:content
-         fileTypeQuery = " +TYPE:\"{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}content\" ";
+         fileTypeQuery = " TYPE:\"{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}content\" ";
       }
       
       // match against FOLDER type
-      String folderTypeQuery = " +TYPE:\"{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}folder\" ";
+      String folderTypeQuery = " TYPE:\"{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}folder\" ";
       
-      switch (mode)
+      if (text.length() >= minimum)
       {
-         case SearchContext.SEARCH_ALL:
-            query = '(' + fileTypeQuery + " AND " + '(' + nameAttrQuery + fullTextQuery + ')' + ')' + " OR " +
-                    '(' + folderTypeQuery + " AND " + nameAttrQuery + ')';
-            break;
-         
-         case SearchContext.SEARCH_FILE_NAMES:
-            query = fileTypeQuery + " AND " + nameAttrQuery;
-            break;
-         
-         case SearchContext.SEARCH_FILE_NAMES_CONTENTS:
-            query = fileTypeQuery + " AND " + '(' + nameAttrQuery + fullTextQuery + ')';
-            break;
-         
-         case SearchContext.SEARCH_SPACE_NAMES:
-            query = folderTypeQuery + " AND " + nameAttrQuery;
-            break;
-         
-         default:
-            throw new IllegalStateException("Unknown search mode specified: " + mode);
+         // text query for name and/or full text specified
+         switch (mode)
+         {
+            case SearchContext.SEARCH_ALL:
+               query = '(' + fileTypeQuery + " AND " + '(' + nameAttrQuery + fullTextQuery + ')' + ')' + " OR " +
+                       '(' + folderTypeQuery + " AND " + nameAttrQuery + ')';
+               break;
+            
+            case SearchContext.SEARCH_FILE_NAMES:
+               query = fileTypeQuery + " AND " + nameAttrQuery;
+               break;
+            
+            case SearchContext.SEARCH_FILE_NAMES_CONTENTS:
+               query = fileTypeQuery + " AND " + '(' + nameAttrQuery + fullTextQuery + ')';
+               break;
+            
+            case SearchContext.SEARCH_SPACE_NAMES:
+               query = folderTypeQuery + " AND " + nameAttrQuery;
+               break;
+            
+            default:
+               throw new IllegalStateException("Unknown search mode specified: " + mode);
+         }
+      }
+      else
+      {
+         // no text query specified - must be an attribute/value query only
+         switch (mode)
+         {
+            case SearchContext.SEARCH_ALL:
+               query = '(' + fileTypeQuery + " OR " + folderTypeQuery + ')';
+               break;
+            
+            case SearchContext.SEARCH_FILE_NAMES:
+            case SearchContext.SEARCH_FILE_NAMES_CONTENTS:
+               query = fileTypeQuery;
+               break;
+            
+            case SearchContext.SEARCH_SPACE_NAMES:
+               query = folderTypeQuery;
+               break;
+            
+            default:
+              throw new IllegalStateException("Unknown search mode specified: " + mode);
+         }
       }
       
       // match entire query against any additional attributes specified
@@ -327,6 +371,14 @@ public final class SearchContext implements Serializable
       if (pathQuery != null)
       {
          query = "(" + pathQuery + ") AND (" + query + ')';
+      }
+      
+      // check that we have a query worth executing - if we have no attributes, paths or text/name search
+      // then we'll only have a search against files/type TYPE which does nothing by itself!
+      validQuery = validQuery | (attributeQuery != null) | (pathQuery != null);
+      if (validQuery == false)
+      {
+         query = null;
       }
       
       if (logger.isDebugEnabled())
@@ -589,7 +641,7 @@ public final class SearchContext implements Serializable
          {
             root.addElement(ELEMENT_CONTENT_TYPE).addText(this.contentType);
          }
-         if (this.mimeType != null)
+         if (this.mimeType != null && this.mimeType.length() != 0)
          {
             root.addElement(ELEMENT_MIMETYPE).addText(this.mimeType);
          }

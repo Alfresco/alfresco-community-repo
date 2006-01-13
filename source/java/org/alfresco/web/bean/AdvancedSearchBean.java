@@ -614,148 +614,145 @@ public class AdvancedSearchBean
     */
    public String search()
    {
-      if (this.text != null && this.text.length() != 0)
+      // construct the Search Context and set on the navigation bean
+      // then simply navigating to the browse screen will cause it pickup the Search Context
+      SearchContext search = new SearchContext();
+      
+      search.setText(this.text);
+      
+      if (this.mode.equals(MODE_ALL))
       {
-         // construct the Search Context and set on the navigation bean
-         // then simply navigating to the browse screen will cause it pickup the Search Context
-         SearchContext search = new SearchContext();
-         
-         search.setText(this.text);
-         
-         if (this.mode.equals(MODE_ALL))
-         {
-            search.setMode(SearchContext.SEARCH_ALL);
-         }
-         else if (this.mode.equals(MODE_FILES_TEXT))
-         {
-            search.setMode(SearchContext.SEARCH_FILE_NAMES_CONTENTS);
-         }
-         else if (this.mode.equals(MODE_FILES))
-         {
-            search.setMode(SearchContext.SEARCH_FILE_NAMES);
-         }
-         else if (this.mode.equals(MODE_FOLDERS))
-         {
-            search.setMode(SearchContext.SEARCH_SPACE_NAMES);
-         }
-         
-         // additional attributes search
-         if (this.description != null && this.description.length() != 0)
-         {
-            search.addAttributeQuery(ContentModel.PROP_DESCRIPTION, this.description);
-         }
-         if (this.title != null && this.title.length() != 0)
-         {
-            search.addAttributeQuery(ContentModel.PROP_TITLE, this.title);
-         }
-         if (this.author != null && this.author.length() != 0)
-         {
-            search.addAttributeQuery(ContentModel.PROP_AUTHOR, this.author);
-         }
-         if (this.contentFormat != null && this.contentFormat.length() != 0)
-         {
-            search.setMimeType(this.contentFormat);
-         }
-         if (this.createdDateChecked == true)
-         {
-            SimpleDateFormat df = CachingDateFormat.getDateFormat();
-            String strCreatedDate = df.format(this.createdDateFrom);
-            String strCreatedDateTo = df.format(this.createdDateTo);
-            search.addRangeQuery(ContentModel.PROP_CREATED, strCreatedDate, strCreatedDateTo, true);
-         }
-         if (this.modifiedDateChecked == true)
-         {
-            SimpleDateFormat df = CachingDateFormat.getDateFormat();
-            String strModifiedDate = df.format(this.modifiedDateFrom);
-            String strModifiedDateTo = df.format(this.modifiedDateTo);
-            search.addRangeQuery(ContentModel.PROP_MODIFIED, strModifiedDate, strModifiedDateTo, true);
-         }
-         
-         // walk each of the custom properties add add them as additional attributes
-         for (String qname : this.customProperties.keySet())
-         {
-            Object value = this.customProperties.get(qname);
-            DataTypeDefinition typeDef = getCustomPropertyLookup().get(qname);
-            if (typeDef != null)
-            {
-               QName typeName = typeDef.getName();
-               if (DataTypeDefinition.DATE.equals(typeName) || DataTypeDefinition.DATETIME.equals(typeName))
-               {
-                  // only apply date to search if the user has checked the enable checkbox
-                  if (value != null && Boolean.valueOf(value.toString()) == true)
-                  {
-                     SimpleDateFormat df = CachingDateFormat.getDateFormat();
-                     String strDateFrom = df.format(this.customProperties.get(
-                           UISearchCustomProperties.PREFIX_DATE_FROM + qname));
-                     String strDateTo = df.format(this.customProperties.get(
-                           UISearchCustomProperties.PREFIX_DATE_TO + qname));
-                     search.addRangeQuery(QName.createQName(qname), strDateFrom, strDateTo, true);
-                  }
-               }
-               else if (DataTypeDefinition.BOOLEAN.equals(typeName))
-               {
-                  if (((Boolean)value) == true)
-                  {
-                     search.addFixedValueQuery(QName.createQName(qname), value.toString());
-                  }
-               }
-               else if (DataTypeDefinition.NODE_REF.equals(typeName) || DataTypeDefinition.CATEGORY.equals(typeName))
-               {
-                  if (value != null)
-                  {
-                     search.addFixedValueQuery(QName.createQName(qname), value.toString());
-                  }
-               }
-               else if (DataTypeDefinition.INT.equals(typeName) || DataTypeDefinition.LONG.equals(typeName) ||
-                        DataTypeDefinition.FLOAT.equals(typeName) || DataTypeDefinition.DOUBLE.equals(typeName))
-               {
-                  String strVal = value.toString();
-                  if (strVal != null && strVal.length() != 0)
-                  {
-                     search.addFixedValueQuery(QName.createQName(qname), strVal);
-                  }
-               }
-               else
-               {
-                  // by default use toString() value - this is for text fields and unknown types
-                  String strVal = value.toString();
-                  if (strVal != null && strVal.length() != 0)
-                  {
-                     search.addAttributeQuery(QName.createQName(qname), strVal);
-                  }
-               }
-            }
-         }
-         
-         // location path search
-         if (this.lookin.equals(LOOKIN_OTHER) && this.location != null)
-         {
-            search.setLocation(SearchContext.getPathFromSpaceRef(this.location, this.locationChildren));
-         }
-         
-         // category path search
-         if (this.categories.size() != 0)
-         {
-            String[] paths = new String[this.categories.size()];
-            for (int i=0; i<paths.length; i++)
-            {
-               Node category = this.categories.get(i);
-               boolean includeChildren = (Boolean)category.getProperties().get(INCLUDE_CHILDREN);
-               paths[i] = SearchContext.getPathFromSpaceRef(category.getNodeRef(), includeChildren);
-            }
-            search.setCategories(paths);
-         }
-         
-         // content type restriction
-         if (this.contentType != null)
-         {
-            search.setContentType(this.contentType);
-         }
-         
-         // set the Search Context onto the top-level navigator bean
-         // this causes the browse screen to switch into search results view
-         this.navigator.setSearchContext(search);
+         search.setMode(SearchContext.SEARCH_ALL);
       }
+      else if (this.mode.equals(MODE_FILES_TEXT))
+      {
+         search.setMode(SearchContext.SEARCH_FILE_NAMES_CONTENTS);
+      }
+      else if (this.mode.equals(MODE_FILES))
+      {
+         search.setMode(SearchContext.SEARCH_FILE_NAMES);
+      }
+      else if (this.mode.equals(MODE_FOLDERS))
+      {
+         search.setMode(SearchContext.SEARCH_SPACE_NAMES);
+      }
+      
+      // additional attributes search
+      if (this.description != null && this.description.length() != 0)
+      {
+         search.addAttributeQuery(ContentModel.PROP_DESCRIPTION, this.description);
+      }
+      if (this.title != null && this.title.length() != 0)
+      {
+         search.addAttributeQuery(ContentModel.PROP_TITLE, this.title);
+      }
+      if (this.author != null && this.author.length() != 0)
+      {
+         search.addAttributeQuery(ContentModel.PROP_AUTHOR, this.author);
+      }
+      if (this.contentFormat != null && this.contentFormat.length() != 0)
+      {
+         search.setMimeType(this.contentFormat);
+      }
+      if (this.createdDateChecked == true)
+      {
+         SimpleDateFormat df = CachingDateFormat.getDateFormat();
+         String strCreatedDate = df.format(this.createdDateFrom);
+         String strCreatedDateTo = df.format(this.createdDateTo);
+         search.addRangeQuery(ContentModel.PROP_CREATED, strCreatedDate, strCreatedDateTo, true);
+      }
+      if (this.modifiedDateChecked == true)
+      {
+         SimpleDateFormat df = CachingDateFormat.getDateFormat();
+         String strModifiedDate = df.format(this.modifiedDateFrom);
+         String strModifiedDateTo = df.format(this.modifiedDateTo);
+         search.addRangeQuery(ContentModel.PROP_MODIFIED, strModifiedDate, strModifiedDateTo, true);
+      }
+      
+      // walk each of the custom properties add add them as additional attributes
+      for (String qname : this.customProperties.keySet())
+      {
+         Object value = this.customProperties.get(qname);
+         DataTypeDefinition typeDef = getCustomPropertyLookup().get(qname);
+         if (typeDef != null)
+         {
+            QName typeName = typeDef.getName();
+            if (DataTypeDefinition.DATE.equals(typeName) || DataTypeDefinition.DATETIME.equals(typeName))
+            {
+               // only apply date to search if the user has checked the enable checkbox
+               if (value != null && Boolean.valueOf(value.toString()) == true)
+               {
+                  SimpleDateFormat df = CachingDateFormat.getDateFormat();
+                  String strDateFrom = df.format(this.customProperties.get(
+                        UISearchCustomProperties.PREFIX_DATE_FROM + qname));
+                  String strDateTo = df.format(this.customProperties.get(
+                        UISearchCustomProperties.PREFIX_DATE_TO + qname));
+                  search.addRangeQuery(QName.createQName(qname), strDateFrom, strDateTo, true);
+               }
+            }
+            else if (DataTypeDefinition.BOOLEAN.equals(typeName))
+            {
+               if (((Boolean)value) == true)
+               {
+                  search.addFixedValueQuery(QName.createQName(qname), value.toString());
+               }
+            }
+            else if (DataTypeDefinition.NODE_REF.equals(typeName) || DataTypeDefinition.CATEGORY.equals(typeName))
+            {
+               if (value != null)
+               {
+                  search.addFixedValueQuery(QName.createQName(qname), value.toString());
+               }
+            }
+            else if (DataTypeDefinition.INT.equals(typeName) || DataTypeDefinition.LONG.equals(typeName) ||
+                     DataTypeDefinition.FLOAT.equals(typeName) || DataTypeDefinition.DOUBLE.equals(typeName))
+            {
+               String strVal = value.toString();
+               if (strVal != null && strVal.length() != 0)
+               {
+                  search.addFixedValueQuery(QName.createQName(qname), strVal);
+               }
+            }
+            else
+            {
+               // by default use toString() value - this is for text fields and unknown types
+               String strVal = value.toString();
+               if (strVal != null && strVal.length() != 0)
+               {
+                  search.addAttributeQuery(QName.createQName(qname), strVal);
+               }
+            }
+         }
+      }
+      
+      // location path search
+      if (this.lookin.equals(LOOKIN_OTHER) && this.location != null)
+      {
+         search.setLocation(SearchContext.getPathFromSpaceRef(this.location, this.locationChildren));
+      }
+      
+      // category path search
+      if (this.categories.size() != 0)
+      {
+         String[] paths = new String[this.categories.size()];
+         for (int i=0; i<paths.length; i++)
+         {
+            Node category = this.categories.get(i);
+            boolean includeChildren = (Boolean)category.getProperties().get(INCLUDE_CHILDREN);
+            paths[i] = SearchContext.getPathFromSpaceRef(category.getNodeRef(), includeChildren);
+         }
+         search.setCategories(paths);
+      }
+      
+      // content type restriction
+      if (this.contentType != null)
+      {
+         search.setContentType(this.contentType);
+      }
+      
+      // set the Search Context onto the top-level navigator bean
+      // this causes the browse screen to switch into search results view
+      this.navigator.setSearchContext(search);
       
       return "browse";
    }

@@ -33,19 +33,6 @@
    function pageLoaded()
    {
       document.getElementById("advsearch:search-text").focus();
-      checkButtonState();
-   }
-   
-   function checkButtonState()
-   {
-      if (document.getElementById("advsearch:search-text").value.length == 0 )
-      {
-         document.getElementById("advsearch:search-button").disabled = true;
-      }
-      else
-      {
-         document.getElementById("advsearch:search-button").disabled = false;
-      }
    }
    
 </script>
@@ -147,8 +134,7 @@
                                  <tr>
                                     <td colspan=2>
                                        <h:outputText value="#{msg.look_for}" style="font-weight:bold" />:&nbsp;
-                                       <h:inputText id="search-text" value="#{AdvancedSearchBean.text}" size="48" maxlength="1024"
-                                             onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState();" />&nbsp;*
+                                       <h:inputText id="search-text" value="#{AdvancedSearchBean.text}" size="48" maxlength="1024" />
                                     </td>
                                  </tr>
                                  

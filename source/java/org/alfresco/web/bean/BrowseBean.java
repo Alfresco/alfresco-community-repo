@@ -578,9 +578,12 @@ public class BrowseBean implements IContextListener
       if (logger.isDebugEnabled())
          startTime = System.currentTimeMillis();
       
-      // special exit case for < 3 characters in length
-      if (searchContext.getText().length() < getMinimumSearchLength())
+      // get the searcher object to build the query
+      String query = searchContext.buildQuery(getMinimumSearchLength());
+      if (query == null)
       {
+         // failed to build a valid query, the user probably did not enter the
+         // minimum text required to construct a valid search
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), MSG_SEARCH_MINIMUM),
                new Object[] {getMinimumSearchLength()}));
          this.containerNodes = Collections.<Node>emptyList();
@@ -588,9 +591,7 @@ public class BrowseBean implements IContextListener
          return;
       }
       
-      // get the searcher object and perform the search of the root node
-      String query = searchContext.buildQuery();
-      
+      // perform the search against the repo
       UserTransaction tx = null;
       ResultSet results = null;
       try

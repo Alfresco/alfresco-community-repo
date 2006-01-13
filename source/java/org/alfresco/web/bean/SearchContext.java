@@ -76,6 +76,7 @@ public final class SearchContext implements Serializable
    private static final String ELEMENT_MODE = "mode";
    private static final String ELEMENT_TEXT = "text";
    private static final String ELEMENT_SEARCH = "search";
+   private static final String ELEMENT_QUERY = "query";
    
    /** Search mode constants */
    public final static int SEARCH_ALL = 0;
@@ -135,7 +136,7 @@ public final class SearchContext implements Serializable
       String fullTextQuery = null;
       String nameAttrQuery = null;
       
-      if (text.length() >= minimum)
+      if (text.length() != 0 && text.length() >= minimum)
       {
          if (text.indexOf(' ') == -1)
          {
@@ -234,7 +235,7 @@ public final class SearchContext implements Serializable
          for (QName qname : queryAttributes.keySet())
          {
             String value = queryAttributes.get(qname).trim();
-            if (value.length() >= minimum)
+            if (value.length() != 0 && value.length() >= minimum)
             {
                String escapedName = Repository.escapeQName(qname);
                attributeQuery.append(" +@").append(escapedName)
@@ -312,7 +313,7 @@ public final class SearchContext implements Serializable
       // match against FOLDER type
       String folderTypeQuery = " TYPE:\"{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}folder\" ";
       
-      if (text.length() >= minimum)
+      if (text.length() != 0 && text.length() >= minimum)
       {
          // text query for name and/or full text specified
          switch (mode)
@@ -611,6 +612,7 @@ public final class SearchContext implements Serializable
     *    <fixed-values>
     *       <value name="String">String</value>
     *    </fixed-values>
+    *    <query>CDATA</query>
     * </search>
     * </code>
     */
@@ -671,6 +673,14 @@ public final class SearchContext implements Serializable
             values.addElement(ELEMENT_VALUE)
                   .addAttribute(ELEMENT_NAME, valueName.toPrefixString(ns))
                   .addCDATA(this.queryFixedValues.get(valueName));
+         }
+         
+         // outputing the full lucene query may be useful for some situations
+         Element query = root.addElement(ELEMENT_QUERY);
+         String queryString = buildQuery(0);
+         if (queryString != null)
+         {
+            query.addCDATA(queryString);
          }
          
          StringWriter out = new StringWriter(1024);

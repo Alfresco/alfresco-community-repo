@@ -54,8 +54,8 @@ public final class NamePathResultsMap extends BasePathResultsMap implements Clon
                 xpath.append('/');
             }
             xpath.append("*[@cm:name='")
-            .append(t.nextToken())   // TODO: escape quotes?
-            .append("']");
+                 .append(t.nextToken())   // TODO: use QueryParameterDefinition see FileFolderService.search()
+                 .append("']");
         }
         
         List<TemplateNode> nodes = getChildrenByXPath(xpath.toString(), true);

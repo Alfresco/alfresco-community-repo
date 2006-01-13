@@ -29,8 +29,7 @@ import org.apache.lucene.analysis.Tokenizer;
 /**
  * @author andyh
  * 
- * TODO To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Style - Code Templates
+ * TODO To change the template for this generated type comment go to Window - Preferences - Java - Code Style - Code Templates
  */
 public class PathTokenFilter extends Tokenizer
 {
@@ -53,6 +52,8 @@ public class PathTokenFilter extends Tokenizer
     public final static String TOKEN_TYPE_PATH_ELEMENT_NAME = "PATH_ELEMENT_NAME";
 
     public final static String TOKEN_TYPE_PATH_ELEMENT_NAMESPACE = "PATH_ELEMENT_NAMESPACE";
+    
+    public final static String TOKEN_TYPE_PATH_ELEMENT_NAMESPACE_PREFIX = "PATH_ELEMENT_NAMESPACE_PREFIX";
 
     char pathSeparator;
 
@@ -67,6 +68,8 @@ public class PathTokenFilter extends Tokenizer
     char nsEndDelimiter;
 
     int nsEndDelimiterLength;
+
+    char nsPrefixDelimiter = ':';
 
     LinkedList<Token> tokens = new LinkedList<Token>();
 
@@ -129,13 +132,14 @@ public class PathTokenFilter extends Tokenizer
         while ((t = nextToken()) != null)
         {
             String text = t.termText();
-            
-            if((text.length() == 0) || text.equals(pathSeparator))
+
+            if (text.length() == 0)
             {
-                break;
+                continue; //  Skip  if we find // or /; or ;; etc 
             }
+
             
-            if (text.charAt(text.length()-1) == pathSeparator)
+            if (text.charAt(text.length() - 1) == pathSeparator)
             {
                 text = text.substring(0, text.length() - 1);
                 pathSplitToken = new Token(separatorTokenText, t.startOffset(), t.endOffset(), TOKEN_TYPE_PATH_SEP);
@@ -144,11 +148,19 @@ public class PathTokenFilter extends Tokenizer
             }
 
             int split = -1;
+            boolean isPrefix = false;
 
             if ((text.length() > 0) && (text.charAt(0) == nsStartDelimiter))
             {
                 split = text.indexOf(nsEndDelimiter);
             }
+
+            if (split == -1)
+            {
+                split = text.indexOf(nsPrefixDelimiter);
+                isPrefix = true;
+            }
+
             if (split == -1)
             {
                 namespaceToken = new Token(noNsTokenText, t.startOffset(), t.startOffset(),
@@ -158,10 +170,21 @@ public class PathTokenFilter extends Tokenizer
             }
             else
             {
-                namespaceToken = new Token(text.substring(nsStartDelimiterLength, (split + nsEndDelimiterLength - 1)),
-                        t.startOffset(), t.startOffset() + split, TOKEN_TYPE_PATH_ELEMENT_NAMESPACE);
-                nameToken = new Token(text.substring(split + nsEndDelimiterLength), t.startOffset() + split
-                        + nsEndDelimiterLength, t.endOffset(), TOKEN_TYPE_PATH_ELEMENT_NAME);
+                if (isPrefix)
+                {
+                    namespaceToken = new Token(text.substring(0, split), t.startOffset(), t.startOffset() + split,
+                            TOKEN_TYPE_PATH_ELEMENT_NAMESPACE_PREFIX);
+                    nameToken = new Token(text.substring(split + 1), t.startOffset()
+                            + split + 1, t.endOffset(), TOKEN_TYPE_PATH_ELEMENT_NAME);
+                }
+                else
+                {
+                    namespaceToken = new Token(text.substring(nsStartDelimiterLength,
+                            (split + nsEndDelimiterLength - 1)), t.startOffset(), t.startOffset() + split,
+                            TOKEN_TYPE_PATH_ELEMENT_NAMESPACE);
+                    nameToken = new Token(text.substring(split + nsEndDelimiterLength), t.startOffset()
+                            + split + nsEndDelimiterLength, t.endOffset(), TOKEN_TYPE_PATH_ELEMENT_NAME);
+                }
             }
 
             namespaceToken.setPositionIncrement(1);
@@ -190,7 +213,6 @@ public class PathTokenFilter extends Tokenizer
 
                 pathSplitToken = null;
             }
-
         }
 
         String countString = nf.format(lengthCounter);
@@ -208,12 +230,12 @@ public class PathTokenFilter extends Tokenizer
 
         it = tokens.iterator();
     }
-    
+
     int readerPosition = 0;
-    
+
     private Token nextToken() throws IOException
     {
-        if(readerPosition == -1)
+        if (readerPosition == -1)
         {
             return null;
         }
@@ -222,34 +244,39 @@ public class PathTokenFilter extends Tokenizer
         int start = readerPosition;
         int current;
         char c;
-        while((current = input.read()) != -1)
+        while ((current = input.read()) != -1)
         {
-           c = (char)current;
-           readerPosition++;
-           if(c == nsStartDelimiter)
-           {
-               inNameSpace = true;
-           }
-           else if(c == nsEndDelimiter)
-           {
-               inNameSpace = false;
-           }
-           else if(!inNameSpace && (c == '/'))
-           {
-               return new Token(buffer.toString(), start, readerPosition-1, "QNAME");
-           }
-           buffer.append(c);
-        } 
+            c = (char) current;
+            readerPosition++;
+            if (c == nsStartDelimiter)
+            {
+                inNameSpace = true;
+            }
+            else if (c == nsEndDelimiter)
+            {
+                inNameSpace = false;
+            }
+            else if (!inNameSpace && (c == '/'))
+            {
+                return new Token(buffer.toString(), start, readerPosition - 1, "QNAME");
+            }
+            else if (!inNameSpace && (c == ';'))
+            {
+                buffer.append(c);
+                return new Token(buffer.toString(), start, readerPosition , "LASTQNAME");
+            }
+            
+            buffer.append(c);
+        }
         readerPosition = -1;
-        if(!inNameSpace)
+        if (!inNameSpace)
         {
-            return new Token(buffer.toString(), start, readerPosition-1, "QNAME");
+            return new Token(buffer.toString(), start, readerPosition - 1, "QNAME");
         }
         else
         {
-            throw new IllegalStateException("QName terminated incorrectly: "+buffer.toString());
+            throw new IllegalStateException("QName terminated incorrectly: " + buffer.toString());
         }
-        
-        
+
     }
 }

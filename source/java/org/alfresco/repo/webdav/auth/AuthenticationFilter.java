@@ -166,7 +166,7 @@ public class AuthenticationFilter implements Filter
             {
                 // No user/ticket, force the client to prompt for logon details
     
-                httpResp.setHeader("WWW-Authenticate", "BASIC");
+                httpResp.setHeader("WWW-Authenticate", "BASIC realm=\"Alfresco DAV Server\"");
                 httpResp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     
                 httpResp.flushBuffer();

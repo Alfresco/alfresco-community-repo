@@ -169,6 +169,25 @@
                                     <f:param name="id" value="#{DocumentDetailsBean.id}" />
                                  </a:actionLink>
                                  
+                                 <%-- discussion --%>
+                                 <a:booleanEvaluator value="#{DocumentDetailsBean.beingDiscussed == true}">
+                                    <a:actionLink value="#{msg.discuss}" image="/images/icons/forum.gif" actionListener="#{ForumsBean.discuss}">
+                                       <f:param name="id" value="#{DocumentDetailsBean.id}" />
+                                    </a:actionLink>
+                                 </a:booleanEvaluator>
+                                 <a:booleanEvaluator value="#{DocumentDetailsBean.beingDiscussed == false}">
+                                    <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="CreateChildren">
+   	                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
+   	                                    <f:param name="id" value="#{DocumentDetailsBean.id}" />
+   	                                 </a:actionLink>
+                                    </r:permissionEvaluator>
+                                 </a:booleanEvaluator>
+                                 
+                                 <%-- preview in template --%>
+                                 <a:actionLink value="#{msg.preview}" image="/images/icons/preview.gif" actionListener="#{BrowseBean.setupContentAction}" action="previewContent">
+                                    <f:param name="id" value="#{DocumentDetailsBean.id}" />
+                                 </a:actionLink>
+                                 
                                  <%-- custom action --%>
                                  <a:actionLink value="#{msg.other_action}" image="/images/icons/action.gif" action="createAction" actionListener="#{NewActionWizard.startWizard}" />
                               </a:menu>

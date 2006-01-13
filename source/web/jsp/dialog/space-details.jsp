@@ -84,31 +84,54 @@
                                     <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                  </a:actionLink>
                               </r:permissionEvaluator>
+                              
                               <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" padding="4" actionListener="#{ClipboardBean.copyNode}">
                                  <f:param name="id" value="#{SpaceDetailsBean.id}" />
                               </a:actionLink>
+                              
                               <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Delete">
                                  <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" padding="4" action="dialog:deleteSpace" actionListener="#{BrowseBean.setupSpaceAction}">
                                     <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                  </a:actionLink>
                               </r:permissionEvaluator>
+                              
                               <a:menu itemSpacing="4" label="#{msg.more_options}" image="/images/icons/more.gif" tooltip="#{msg.more_options_space}" menuStyleClass="moreActionsMenu" style="padding-left:20px">
                                  <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
                                     <a:actionLink value="#{msg.import}" image="/images/icons/import.gif" action="dialog:import" actionListener="#{BrowseBean.setupSpaceAction}">
                                        <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                     </a:actionLink>
                                  </r:permissionEvaluator>
+                                 
                                  <a:actionLink value="#{msg.export}" image="/images/icons/export.gif" action="dialog:export" actionListener="#{BrowseBean.setupSpaceAction}">
                                     <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                  </a:actionLink>
+                                 
                                  <a:actionLink value="#{msg.create_shortcut}" image="/images/icons/shortcut.gif" actionListener="#{UserShortcutsBean.createShortcut}">
                                     <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                  </a:actionLink>
+                                 
                                  <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="ChangePermissions">
                                     <a:actionLink value="#{msg.manage_invited_users}" image="/images/icons/invite.gif" action="manageInvitedUsers" actionListener="#{BrowseBean.setupSpaceAction}">
                                        <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                     </a:actionLink>
                                  </r:permissionEvaluator>
+                                 
+                                 <a:booleanEvaluator value="#{SpaceDetailsBean.beingDiscussed == true}">
+                                    <a:actionLink value="#{msg.discuss}" image="/images/icons/forum.gif" actionListener="#{ForumsBean.discuss}">
+                                       <f:param name="id" value="#{SpaceDetailsBean.id}" />
+                                    </a:actionLink>
+                                 </a:booleanEvaluator>
+                                 <a:booleanEvaluator value="#{SpaceDetailsBean.beingDiscussed == false}">
+                                    <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="CreateChildren">
+   	                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
+   	                                    <f:param name="id" value="#{SpaceDetailsBean.id}" />
+   	                                 </a:actionLink>
+                                    </r:permissionEvaluator>
+                                 </a:booleanEvaluator>
+                                 
+                                 <a:actionLink value="#{msg.preview}" image="/images/icons/preview.gif" actionListener="#{BrowseBean.setupSpaceAction}" action="previewSpace">
+                                    <f:param name="id" value="#{SpaceDetailsBean.id}" />
+                                 </a:actionLink>
                               </a:menu>
                            </td>
                            

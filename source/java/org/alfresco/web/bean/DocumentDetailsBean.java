@@ -32,6 +32,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -224,6 +225,14 @@ public class DocumentDetailsBean
    public boolean isInlineEditable()
    {
       return getDocument().hasAspect(ContentModel.ASPECT_INLINEEDITABLE);
+   }
+   
+   /**
+    * @return true if the Document has a discussion attached to it
+    */
+   public boolean isBeingDiscussed()
+   {
+      return getDocument().hasAspect(ForumModel.ASPECT_DISCUSSABLE);
    }
    
    /**

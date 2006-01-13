@@ -27,6 +27,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -134,6 +135,14 @@ public class SpaceDetailsBean
    public String getName()
    {
       return getSpace().getName();
+   }
+   
+   /**
+    * @return true if the Space has a discussion attached to it
+    */
+   public boolean isBeingDiscussed()
+   {
+      return getSpace().hasAspect(ForumModel.ASPECT_DISCUSSABLE);
    }
    
    /**

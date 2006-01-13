@@ -275,6 +275,14 @@
          <from-outcome>applyTemplate</from-outcome>
          <to-view-id>/jsp/dialog/apply-template.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>previewSpace</from-outcome>
+         <to-view-id>/jsp/dialog/preview-space.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>showForum</from-outcome>
+         <to-view-id>/jsp/forums/forum.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <navigation-rule>
@@ -346,6 +354,14 @@
       <navigation-case>
          <from-outcome>previousItem</from-outcome>
          <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>previewContent</from-outcome>
+         <to-view-id>/jsp/dialog/preview-file.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>showForum</from-outcome>
+         <to-view-id>/jsp/forums/forum.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

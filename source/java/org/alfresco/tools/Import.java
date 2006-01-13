@@ -24,6 +24,7 @@ import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.importer.FileImportPackageHandler;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
@@ -296,6 +297,13 @@ public class Import extends Tool
          * @see org.alfresco.service.cmr.view.ImporterProgress#propertySet(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
          */
         public void propertySet(NodeRef nodeRef, QName property, Serializable value)
+        {
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterProgress#permissionSet(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.security.AccessPermission)
+         */
+        public void permissionSet(NodeRef nodeRef, AccessPermission permission)
         {
         }
 

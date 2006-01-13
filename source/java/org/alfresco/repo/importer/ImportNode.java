@@ -17,12 +17,14 @@
 package org.alfresco.repo.importer;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.namespace.QName;
 
 
@@ -77,5 +79,15 @@ public interface ImportNode
      * @return  the aspects of this node
      */
     public Set<QName> getNodeAspects();
+    
+    /**
+     * @return  true => the node inherits permissions from its parent
+     */
+    public boolean getInheritPermissions();
+    
+    /**
+     * @return  the permissions applied to this node
+     */
+    public List<AccessPermission> getAccessControlEntries();
     
 }

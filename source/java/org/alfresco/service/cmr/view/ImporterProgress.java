@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.view;
 import java.io.Serializable;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.namespace.QName;
 
 
@@ -56,6 +57,14 @@ public interface ImporterProgress
      * @param value  the property value
      */
     public void propertySet(NodeRef nodeRef, QName property, Serializable value);
+    
+    /**
+     * Report setting of a permission
+     *
+     * @param nodeRef  the node ref
+     * @param permission  the permission
+     */
+    public void permissionSet(NodeRef nodeRef, AccessPermission permission);
     
     /**
      * Report addition of an aspect

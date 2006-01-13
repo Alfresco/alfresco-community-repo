@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.view.ImporterException;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -52,12 +53,19 @@ public class ViewParser implements Parser
     private static final String VIEW_CHILD_NAME_ATTR = "childName";    
     private static final String VIEW_DATATYPE_ATTR = "datatype";
     private static final String VIEW_ISNULL_ATTR = "isNull";
+    private static final String VIEW_INHERIT_PERMISSIONS_ATTR = "inherit";
+    private static final String VIEW_ACCESS_STATUS_ATTR = "access";
     private static final QName VIEW_METADATA = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "metadata");
     private static final QName VIEW_VALUE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "value");
     private static final QName VIEW_VALUES_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "values");
     private static final QName VIEW_ASPECTS = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "aspects");
     private static final QName VIEW_PROPERTIES = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "properties");
     private static final QName VIEW_ASSOCIATIONS = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "associations");
+    private static final QName VIEW_ACL = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "acl");
+    private static final QName VIEW_ACE = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "ace");
+    private static final QName VIEW_AUTHORITY = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "authority");
+    private static final QName VIEW_PERMISSION = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "permission");
+    
     
     // XML Pull Parser Factory
     private XmlPullParserFactory factory;
@@ -170,7 +178,7 @@ public class ViewParser implements Parser
         {
             contextStack.push(new MetaDataContext(defName, (ElementContext)context));
         }
-        else if (defName.equals(VIEW_ASPECTS) || defName.equals(VIEW_PROPERTIES) || defName.equals(VIEW_ASSOCIATIONS))
+        else if (defName.equals(VIEW_ASPECTS) || defName.equals(VIEW_PROPERTIES) || defName.equals(VIEW_ASSOCIATIONS) || defName.equals(VIEW_ACL))
         {
             if (context instanceof NodeItemContext)
             {
@@ -182,6 +190,12 @@ public class ViewParser implements Parser
             }
             NodeContext nodeContext = (NodeContext)context;
             contextStack.push(new NodeItemContext(defName, nodeContext));
+
+            // process ACL specific attributes
+            if (defName.equals(VIEW_ACL))
+            {
+                processACL(xpp, contextStack);
+            }
         }
         else
         {
@@ -258,6 +272,10 @@ public class ViewParser implements Parser
                         throw new ImporterException("Association name " + defName + " is not valid; cannot find in Repository dictionary");
                     }
                     processStartChildAssoc(xpp, def, contextStack);
+                }
+                else if (itemName.equals(VIEW_ACL))
+                {
+                    processAccessControlEntry(xpp, contextStack);
                 }
             }
         }
@@ -367,6 +385,122 @@ public class ViewParser implements Parser
         
         if (logger.isDebugEnabled())
             logger.debug(indentLog("Processed aspect " + aspectDef.getName(), contextStack.size()));
+    }
+    
+    /**
+     * Process ACL definition
+     * 
+     * @param xpp
+     * @param contextStack
+     */
+    private void processACL(XmlPullParser xpp, Stack<ElementContext> contextStack)
+    {
+        NodeContext context = peekNodeContext(contextStack);
+        
+        String strInherit = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_INHERIT_PERMISSIONS_ATTR);
+        if (strInherit != null)
+        {
+            Boolean inherit = Boolean.valueOf(strInherit);
+            if (!inherit)
+            {
+                context.setInheritPermissions(false);
+            }
+        }
+    }
+    
+    /**
+     * Process ACE definition
+     * 
+     * @param xpp
+     * @param contextStack
+     * @throws XmlPullParserException
+     * @throws IOException
+     */
+    private void processAccessControlEntry(XmlPullParser xpp, Stack<ElementContext> contextStack)
+        throws XmlPullParserException, IOException
+    {
+        NodeContext context = peekNodeContext(contextStack);
+
+        QName defName = getName(xpp);
+        if (!defName.equals(VIEW_ACE))
+        {
+            throw new ImporterException("Expected start element " + VIEW_ACE);
+        }
+
+        // extract Access Status
+        String access = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_ACCESS_STATUS_ATTR);
+        AccessStatus accessStatus = (access == null) ? AccessStatus.ALLOWED : AccessStatus.valueOf(AccessStatus.class, access);
+        if (accessStatus == null)
+        {
+            throw new ImporterException("Permission access status '" + access + "' is not recognised.");
+        }
+
+        // extract authority and permission
+        String authority = null;
+        String permission = null;
+        int eventType = xpp.next();
+        while (eventType != XmlPullParser.END_TAG)
+        {
+            if (eventType == XmlPullParser.START_TAG)
+            {
+                defName = getName(xpp);
+                if (defName.equals(VIEW_AUTHORITY))
+                {
+                    eventType = xpp.next();
+                    if (eventType != XmlPullParser.TEXT)
+                    {
+                        throw new ImporterException("Element " + VIEW_AUTHORITY + " must have a value");
+                    }
+                    authority = xpp.getText();
+                }
+                else if (defName.equals(VIEW_PERMISSION))
+                {
+                    eventType = xpp.next();
+                    if (eventType != XmlPullParser.TEXT)
+                    {
+                        throw new ImporterException("Element " + VIEW_PERMISSION + " must have a value");
+                    }
+                    permission = xpp.getText();
+                }
+                else
+                {
+                    throw new ImporterException("Expected start element " + VIEW_AUTHORITY + " or " + VIEW_PERMISSION);
+                }
+                
+                eventType = xpp.next();
+                if (eventType != XmlPullParser.END_TAG)
+                {
+                    throw new ImporterException("Expected end element " + defName);
+                }
+                QName endDefName = getName(xpp);
+                if (!defName.equals(endDefName))
+                {
+                    throw new ImporterException("Expected end element " + defName);
+                }
+            }
+            
+            eventType = xpp.next();
+        }
+
+        // validate authority and permission
+        if (authority == null || authority.length() == 0)
+        {
+            throw new ImporterException("Authority must be specified");
+        }
+        if (permission == null || permission.length() == 0)
+        {
+            throw new ImporterException("Permisssion must be specified");
+        }
+
+        // extract end of ace
+        defName = getName(xpp);
+        if (!defName.equals(VIEW_ACE))
+        {
+            throw new ImporterException("Expected end element " + VIEW_ACE);
+        }
+        
+        // update node context
+        context.addAccessControlEntry(accessStatus, authority, permission);
     }
     
     /**

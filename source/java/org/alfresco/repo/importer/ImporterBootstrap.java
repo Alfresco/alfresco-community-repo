@@ -36,6 +36,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.view.ImporterBinding;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
@@ -477,6 +478,17 @@ public class ImporterBootstrap
                 logger.debug("Property " + property + " set to value " + value + " on node " + nodeRef);
         }
 
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterProgress#permissionSet(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.security.AccessPermission)
+         */
+        public void permissionSet(NodeRef nodeRef, AccessPermission permission)
+        {
+            if (logger.isDebugEnabled())
+                logger.debug("Permission " + permission.getPermission() + " set on node " + nodeRef + " (authority=" + permission.getAuthority() + 
+                        ", accessStatus=" + permission.getAccessStatus() + ")");
+        }
+
         /* (non-Javadoc)
          * @see org.alfresco.repo.importer.Progress#aspectAdded(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
          */
@@ -485,7 +497,6 @@ public class ImporterBootstrap
             if (logger.isDebugEnabled())
                 logger.debug("Added aspect " + aspect + " to node " + nodeRef);
         }
-
     }
 
     /**

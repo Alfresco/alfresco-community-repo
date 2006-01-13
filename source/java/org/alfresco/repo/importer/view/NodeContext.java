@@ -35,6 +35,9 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.QName;
 
 
@@ -56,6 +59,10 @@ public class NodeContext extends ElementContext
     private Map<QName, ChildAssociationDefinition> nodeChildAssocs = new HashMap<QName, ChildAssociationDefinition>();
     private Map<QName, Serializable> nodeProperties = new HashMap<QName, Serializable>();
     private Map<QName, DataTypeDefinition> propertyDatatypes = new HashMap<QName, DataTypeDefinition>();
+    
+    // permissions
+    private boolean inherit = true;
+    private List<AccessPermission> accessControlEntries = new ArrayList<AccessPermission>();
     
 
     /**
@@ -148,6 +155,22 @@ public class NodeContext extends ElementContext
         this.childName = childName;
     }
 
+    /*
+     * @param  inherit  determines if node inherits permissions from parent
+     */
+    public void setInheritPermissions(boolean inherit)
+    {
+        this.inherit = inherit;
+    }
+    
+    /**
+     * @return  true => node inherits permissions from parent
+     */
+    public boolean getInheritPermissions()
+    {
+        return this.inherit;
+    }
+    
     /**
      * Adds a collection property to the node
      * 
@@ -273,6 +296,32 @@ public class NodeContext extends ElementContext
     }
 
     /**
+     * Adds an Access Control Entry
+     * 
+     * @param accessStatus
+     * @param authority
+     * @param permission
+     */
+    public void addAccessControlEntry(AccessStatus accessStatus, String authority, String permission)
+    {
+       ACE ace = new ACE();
+       ace.accessStatus = accessStatus;
+       ace.authority = authority;
+       ace.permission = permission;
+       accessControlEntries.add(ace);
+    }
+
+    /**
+     * Gets the Access Control Entries
+     * 
+     * @return  access control entries
+     */
+    public List<AccessPermission> getAccessControlEntries()
+    {
+        return accessControlEntries;
+    }
+    
+    /**
      * Determine the type of definition (aspect, property, association) from the
      * specified name
      * 
@@ -376,6 +425,52 @@ public class NodeContext extends ElementContext
     {
         return "NodeContext[childName=" + getChildName() + ",type=" + (typeDef == null ? "null" : typeDef.getName()) + ",nodeRef=" + nodeRef + 
             ",aspects=" + nodeAspects.values() + ",parentContext=" + parentContext.toString() + "]";
+    }
+ 
+    /**
+     * Access Control Entry
+     */
+    private class ACE implements AccessPermission
+    {
+        private AccessStatus accessStatus;
+        private String authority;
+        private String permission;
+
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.service.cmr.security.AccessPermission#getPermission()
+         */
+        public String getPermission()
+        {
+            return permission;
+        }
+
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.service.cmr.security.AccessPermission#getAccessStatus()
+         */
+        public AccessStatus getAccessStatus()
+        {
+            return accessStatus;
+        }
+        
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.service.cmr.security.AccessPermission#getAuthority()
+         */
+        public String getAuthority()
+        {
+            return authority;
+        }
+        
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.service.cmr.security.AccessPermission#getAuthorityType()
+         */
+        public AuthorityType getAuthorityType()
+        {
+            return null;
+        }
     }
     
 }

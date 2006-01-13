@@ -658,6 +658,9 @@
         <property name="ruleService">
             <ref bean="ruleService" />
         </property>
+        <property name="permissionService">
+        	<ref bean="permissionService" />
+        </property>
     </bean>
 
     <bean id="systemBootstrap" class="org.alfresco.repo.importer.ImporterBootstrap" init-method="bootstrap" depends-on="nodeIndexer, auditableAspect">

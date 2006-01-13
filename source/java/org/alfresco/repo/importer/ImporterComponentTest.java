@@ -25,6 +25,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
@@ -110,6 +111,11 @@ public class ImporterComponentTest extends BaseSpringTest
         public void aspectAdded(NodeRef nodeRef, QName aspect)
         {
             System.out.println("TestProgress: added aspect " + aspect + " to node ");
+        }
+
+        public void permissionSet(NodeRef nodeRef, AccessPermission permission)
+        {
+            System.out.println("TestProgress: added permission " + permission.getPermission() + " to node ");
         }
     }
     

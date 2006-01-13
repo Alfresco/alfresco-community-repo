@@ -51,6 +51,9 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterBinding;
 import org.alfresco.service.cmr.view.ImporterException;
@@ -88,6 +91,7 @@ public class ImporterComponent
     private SearchService searchService;
     private ContentService contentService;
     private RuleService ruleService;
+    private PermissionService permissionService;
 
     // binding markers    
     private static final String START_BINDING_MARKER = "${";
@@ -159,6 +163,15 @@ public class ImporterComponent
     {
         this.ruleService = ruleService;
     }
+    
+    /**
+     * @param permissionService  permissionService
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+    
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.ImporterService#importView(java.io.InputStreamReader, org.alfresco.service.cmr.view.Location, java.util.Properties, org.alfresco.service.cmr.view.ImporterProgress)
@@ -875,6 +888,23 @@ public class ImporterComponent
                 }
             }
         }
+
+        /**
+         * Helper to report permission set progress
+         * 
+         * @param nodeRef
+         * @param permissions
+         */
+        private void reportPermissionSet(NodeRef nodeRef, List<AccessPermission> permissions)
+        {
+            if (progress != null)
+            {
+                for (AccessPermission permission : permissions)
+                {
+                    progress.permissionSet(nodeRef, permission);
+                }
+            }
+        }
         
         /**
          * Import strategy where imported nodes are always created regardless of whether a
@@ -950,24 +980,37 @@ public class ImporterComponent
                 
                 // Create Node
                 ChildAssociationRef assocRef = nodeService.createNode(parentRef, assocType, childQName, nodeType.getName(), initialProperties);
+                NodeRef nodeRef = assocRef.getChildRef();
+
+                // Apply permissions
+                boolean inheritPermissions = node.getInheritPermissions();
+                if (!inheritPermissions)
+                {
+                    permissionService.setInheritParentPermissions(nodeRef, false);
+                }
+                List<AccessPermission> permissions = node.getAccessControlEntries();
+                for (AccessPermission permission : permissions)
+                {
+                    permissionService.setPermission(nodeRef, permission.getAuthority(), permission.getPermission(), permission.getAccessStatus().equals(AccessStatus.ALLOWED));
+                }
+                
+                // Disable behaviour for the node until the complete node (and its children have been imported)
                 for (QName disabledBehaviour : disabledBehaviours)
                 {
                     behaviourFilter.enableBehaviour(disabledBehaviour);
                 }
-                
-                // Report creation
-                NodeRef nodeRef = assocRef.getChildRef();
-                reportNodeCreated(assocRef);
-                reportPropertySet(nodeRef, initialProperties);
-
-                // Disable behaviour for the node until the complete node (and its children have been imported)
                 for (QName disabledBehaviour : disabledBehaviours)
                 {
                     behaviourFilter.disableBehaviour(nodeRef, disabledBehaviour);
                 }
                 // TODO: Replace this with appropriate rule/action import handling
                 ruleService.disableRules(nodeRef);
-                
+
+                // Report creation
+                reportNodeCreated(assocRef);
+                reportPropertySet(nodeRef, initialProperties);
+                reportPermissionSet(nodeRef, permissions);
+
                 // return newly created node reference
                 return nodeRef;
             }

@@ -418,6 +418,10 @@ public class ImporterComponent
             {
                 return new ReplaceExistingNodeImporterStrategy();
             }
+            else if (uuidBinding.equals(UUID_BINDING.UPDATE_EXISTING))
+            {
+                return new UpdateExistingNodeImporterStrategy();
+            }
             else if (uuidBinding.equals(UUID_BINDING.THROW_ON_COLLISION))
             {
                 return new ThrowOnCollisionNodeImporterStrategy();
@@ -1114,6 +1118,62 @@ public class ImporterComponent
                     if (nodeService.exists(existingNodeRef))
                     {
                         throw new InvalidNodeRefException("Node " + existingNodeRef + " already exists", existingNodeRef);
+                    }
+                }
+                
+                // import as if a new node
+                return createNewStrategy.importNode(node);
+            }
+        }
+        
+        /**
+         * Import strategy where imported nodes are updated if a node with the same UUID
+         * already exists in the repository.
+         * 
+         * Note: this will only allow incremental update of an existing node - it does not
+         *       delete properties or associations.
+         */
+        private class UpdateExistingNodeImporterStrategy implements NodeImporterStrategy
+        {
+            private NodeImporterStrategy createNewStrategy = new CreateNewNodeImporterStrategy(false);
+            
+            /*
+             *  (non-Javadoc)
+             * @see org.alfresco.repo.importer.ImporterComponent.NodeImporterStrategy#importNode(org.alfresco.repo.importer.ImportNode)
+             */
+            public NodeRef importNode(ImportNode node)
+            {
+                // replace existing node, if node to import has a UUID and an existing node of the same
+                // uuid already exists
+                String uuid = node.getUUID();
+                if (uuid != null && uuid.length() > 0)
+                {
+                    NodeRef existingNodeRef = new NodeRef(rootRef.getStoreRef(), uuid);
+                    if (nodeService.exists(existingNodeRef))
+                    {
+                        // do the update
+                        Map<QName, Serializable> existingProperties = nodeService.getProperties(existingNodeRef);
+                        Map<QName, Serializable> updateProperties = bindProperties(node);
+                        existingProperties.putAll(updateProperties);
+                        nodeService.setProperties(existingNodeRef, existingProperties);
+                        
+                        // Apply permissions
+                        boolean inheritPermissions = node.getInheritPermissions();
+                        if (!inheritPermissions)
+                        {
+                            permissionService.setInheritParentPermissions(existingNodeRef, false);
+                        }
+                        List<AccessPermission> permissions = node.getAccessControlEntries();
+                        for (AccessPermission permission : permissions)
+                        {
+                            permissionService.setPermission(existingNodeRef, permission.getAuthority(), permission.getPermission(), permission.getAccessStatus().equals(AccessStatus.ALLOWED));
+                        }
+
+                        // report update
+                        reportPropertySet(existingNodeRef, updateProperties);
+                        reportPermissionSet(existingNodeRef, permissions);
+                        
+                        return existingNodeRef;
                     }
                 }
                 

@@ -30,7 +30,7 @@ public interface ImporterBinding
      */
     public enum UUID_BINDING
     {
-        CREATE_NEW, REMOVE_EXISTING, REPLACE_EXISTING, THROW_ON_COLLISION
+        CREATE_NEW, REMOVE_EXISTING, REPLACE_EXISTING, UPDATE_EXISTING, THROW_ON_COLLISION
     }
 
     /**

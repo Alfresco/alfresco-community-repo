@@ -182,6 +182,48 @@
       
    </permissionSet>
    
+   <!-- ================================================ -->
+   <!-- Permissions available to all content and folders -->
+   <!-- ================================================ -->
+   
+   <permissionSet type="cm:cmobject" expose="selected">
+   	
+   	<!-- Kept for backward compatibility - the administrator permission has   -->
+      <!-- been removed to aviod confusion --> 
+      <permissionGroup name="Administrator" allowFullControl="true" expose="false" />
+      
+      <!-- A coordinator can do anything to the object or its childeren unless the     -->
+      <!-- permissions are set not to inherit or permission is denied.                 -->
+      <permissionGroup name="Coordinator" allowFullControl="true" expose="true" />
+      
+      <!-- A contributor can create content and then they have full permission on what -->
+      <!-- they have created - via the permissions assigned to the owner.              -->
+      <permissionGroup name="Contributor" allowFullControl="false" expose="true" >
+          <!-- Contributor is a guest who can add content, and then can modify via the -->
+          <!-- owner permissions.                                                      -->
+          <includePermissionGroup permissionGroup="Guest" type="cm:cmobject"/>
+          <includePermissionGroup permissionGroup="AddChildren" type="sys:base"/>
+          <!-- Check out requires write permissions so this will not apply to all      -->
+          <!-- documents.                                                              -->
+          <includePermissionGroup type="cm:lockable" permissionGroup="CheckOut"/>
+      </permissionGroup>
+      
+      <!-- An editor can read and write to the object; they can not create    -->
+      <!-- new nodes. They can cehck out content into a space to which they have       -->
+      <!-- create permission.                                                          -->
+      <permissionGroup name="Editor"  expose="true" allowFullControl="false" >
+          <includePermissionGroup type="cm:cmobject" permissionGroup="Guest"/>
+          <includePermissionGroup type="sys:base" permissionGroup="Write"/>
+          <includePermissionGroup type="cm:lockable" permissionGroup="CheckOut"/>
+      </permissionGroup>
+      
+      <!-- The guest permission allows read to everything by default.                  -->
+      <permissionGroup name="Guest" allowFullControl="false" expose="true" >
+          <includePermissionGroup permissionGroup="Read" type="sys:base" />
+      </permissionGroup>
+      
+   </permissionSet>
+   
    <!-- =============================== -->
    <!-- Permissions specific to content -->
    <!-- =============================== -->
@@ -271,49 +313,6 @@
       </permission>      
       
    </permissionSet>
-   
-   
-   <!-- ============================== -->
-   <!-- Permissions for spaces/folders -->
-   <!-- ============================== -->
-   
-   
-   <permissionSet type="cm:folder" expose="selected">
-        <!-- Kept for backward compatibility - the folder administrator permission has   -->
-        <!-- been removed to aviod confusion --> 
-        <permissionGroup name="Administrator" allowFullControl="true" expose="false" />
-        
-        <!-- A coordinator can do anything in the folder or its childeren unless the     -->
-        <!-- permissions are set not to inherit or permission is denied.                 -->
-        <permissionGroup name="Coordinator" allowFullControl="true" expose="true" />
-        
-        <!-- A contributor can create content and then they have full permission on what -->
-        <!-- they have created - via the permissions assigned to the owner.              -->
-        <permissionGroup name="Contributor" allowFullControl="false" expose="true" >
-            <!-- Contributor is a guest who can add content, and then can modify via the -->
-            <!-- owner permissions.                                                      -->
-            <includePermissionGroup permissionGroup="Guest" type="cm:folder"/>
-            <includePermissionGroup permissionGroup="AddChildren" type="sys:base"/>
-            <!-- Check out requires write permissions so this will not apply to all      -->
-            <!-- documents.                                                              -->
-            <includePermissionGroup type="cm:lockable" permissionGroup="CheckOut"/>
-        </permissionGroup> 
-        
-        <!-- An editor can read and write to anything in a space; they can not create    -->
-        <!-- new nodes. They can cehck out content into a space to which they have       -->
-        <!-- create permission.                                                          -->
-        <permissionGroup name="Editor"  expose="true" allowFullControl="false" >
-            <includePermissionGroup type="cm:folder" permissionGroup="Guest"/>
-            <includePermissionGroup type="sys:base" permissionGroup="Write"/>
-            <includePermissionGroup type="cm:lockable" permissionGroup="CheckOut"/>
-        </permissionGroup>
-        
-        <!-- The guest permission allows read to everything by default.                  -->
-        <permissionGroup name="Guest" allowFullControl="false" expose="true" >
-            <includePermissionGroup permissionGroup="Read" type="sys:base" />
-        </permissionGroup>
-   </permissionSet>
-   
    
    <!-- ================== -->
    <!-- Global permissions -->

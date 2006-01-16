@@ -49,10 +49,7 @@ public class InviteContentUsersWizard extends InviteUsersWizard
    {
       if (this.contentPermissions == null)
       {
-         // TODO: This should really request permissions from TYPE_CONTENT but there are other permissions
-         //       defined at that level at the moment that get exposed when we don't want them to, see
-         //       http://www.alfresco.org/jira/browse/AR-343
-         this.contentPermissions = this.permissionService.getSettablePermissions(ContentModel.TYPE_CMOBJECT);
+         this.contentPermissions = this.permissionService.getSettablePermissions(ContentModel.TYPE_CONTENT);
       }
        
       return this.contentPermissions;

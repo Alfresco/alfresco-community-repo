@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -97,6 +98,10 @@ public class SimpleExampleWithContent
         // get individual, required services
         NodeService nodeService = serviceRegistry.getNodeService();
         ContentService contentService = serviceRegistry.getContentService();
+
+        // authenticate
+        AuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
+        authenticationService.authenticate("admin", "admin".toCharArray());
         
         // create a store, if one doesn't exist
         StoreRef storeRef = new StoreRef(

@@ -334,7 +334,8 @@ public class ExporterComponent
             
             // Export node permissions
             Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
-            if (permissions.size() > 0)
+            boolean inheritPermissions = permissionService.getInheritParentPermissions(nodeRef);
+            if (permissions.size() > 0 || !inheritPermissions)
             {
                 exporter.startACL(nodeRef);
                 for (AccessPermission permission : permissions)

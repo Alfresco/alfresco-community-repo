@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    '-//Hibernate/Hibernate Mapping DTD 3.0//EN' 
+    'http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd'>
+
+<hibernate-mapping>
+
+   <class
+         name="org.alfresco.repo.domain.hibernate.AppliedPatchImpl"
+         proxy="org.alfresco.repo.domain.AppliedPatch"
+         table="applied_patch"
+         dynamic-update="false"
+         dynamic-insert="false"
+         select-before-update="false"
+         optimistic-lock="version" >
+      <id column="id" length="32" name="id" type="string" />
+      <property name="description" column="description" type="string" length="1024" />
+      <property name="applyAfterVersion" column="apply_after_version" type="string" length="10" />
+      <property name="succeeded" column="succeeded" type="boolean" />
+      <property name="appliedOnVersion" column="applied_on_version" type="string" length="10" />
+      <property name="appliedOnDate" column="applied_on_date" type="timestamp" />
+      <property name="report" column="report" type="string" length="1024" />
+   </class>
+
+   <query name="patch.GetAllAppliedPatches">
+      select
+         appliedPatch
+      from
+         org.alfresco.repo.domain.hibernate.AppliedPatchImpl as appliedPatch
+   </query>
+   
+</hibernate-mapping>

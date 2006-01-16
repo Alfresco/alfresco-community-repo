@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+    <bean id="PatchService" class="org.springframework.aop.framework.ProxyFactoryBean">
+    	<property name="proxyInterfaces">
+    		<value>org.alfresco.repo.admin.patch.PatchService</value>
+    	</property>
+    	<property name="target"><ref bean="patchComponent"/></property>
+    	<property name="interceptorNames">
+            <list>
+                <idref local="PatchService_transaction" />
+    		</list>
+    	</property>
+    </bean>
+
+    <bean id="PatchService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="patchDaoComponent" class="org.alfresco.repo.admin.patch.hibernate.HibernatePatchDaoServiceImpl" >
+        <property name="sessionFactory">
+            <ref bean="sessionFactory" />
+        </property>
+    </bean>
+    
+    <bean id="patchComponent" class="org.alfresco.repo.admin.patch.PatchServiceImpl" >
+        <property name="descriptorService">
+            <ref bean="descriptorComponent" />
+        </property>
+        <property name="patchDaoService">
+            <ref bean="patchDaoComponent" />
+        </property>
+        <!-- list all the patches -->
+        <property name="patches" >
+            <list>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- Example patches -->
+    <bean id="patch.sample.01" class="org.alfresco.repo.admin.patch.SamplePatch" >
+        <property name="transactionService"><ref bean="transactionComponent" /></property>
+        <property name="id"><value>Sample01</value></property>
+        <property name="description"><value>A NO-OP sample patch</value></property>
+        <property name="applyAfterVersion"><value>0.0</value></property>
+    </bean>
+    <bean id="patch.sample.02" class="org.alfresco.repo.admin.patch.SamplePatch" >
+        <property name="transactionService"><ref bean="transactionComponent" /></property>
+        <property name="id"><value>Sample02</value></property>
+        <property name="description"><value>A NO-OP sample patch</value></property>
+        <property name="applyAfterVersion"><value>0.0</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.sample.01" />
+            </list>
+        </property>
+    </bean>
+
+</beans>

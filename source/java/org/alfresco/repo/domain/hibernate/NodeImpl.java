@@ -32,7 +32,6 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.hibernate.mapping.Bag;
 
 /**
  * Bean containing all the persistence data representing a <b>node</b>.
@@ -136,6 +135,7 @@ public class NodeImpl implements Node
     /**
      * For Hibernate use
      */
+    @SuppressWarnings("unused")
     private void setAspects(Set<QName> aspects)
     {
         this.aspects = aspects;
@@ -149,6 +149,7 @@ public class NodeImpl implements Node
     /**
      * For Hibernate use
      */
+    @SuppressWarnings("unused")
     private void setSourceNodeAssocs(Collection<NodeAssoc> sourceNodeAssocs)
     {
         this.sourceNodeAssocs = sourceNodeAssocs;
@@ -162,6 +163,7 @@ public class NodeImpl implements Node
     /**
      * For Hibernate use
      */
+    @SuppressWarnings("unused")
     private void setTargetNodeAssocs(Collection<NodeAssoc> targetNodeAssocs)
     {
         this.targetNodeAssocs = targetNodeAssocs;
@@ -175,6 +177,7 @@ public class NodeImpl implements Node
     /**
      * For Hibernate use
      */
+    @SuppressWarnings("unused")
     private void setParentAssocs(Collection<ChildAssoc> parentAssocs)
     {
         this.parentAssocs = parentAssocs;
@@ -188,6 +191,7 @@ public class NodeImpl implements Node
     /**
      * For Hibernate use
      */
+    @SuppressWarnings("unused")
     private void setChildAssocs(Collection<ChildAssoc> childAssocs)
     {
         this.childAssocs = childAssocs;
@@ -201,6 +205,7 @@ public class NodeImpl implements Node
     /**
      * For Hibernate use
      */
+    @SuppressWarnings("unused")
     private void setProperties(Map<QName, PropertyValue> properties)
     {
         this.properties = properties;

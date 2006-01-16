@@ -33,6 +33,7 @@
                 <value>org/alfresco/repo/domain/hibernate/Node.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Store.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/VersionCount.hbm.xml</value>
+                <value>org/alfresco/repo/domain/hibernate/AppliedPatch.hbm.xml</value>
                 <value>org/alfresco/repo/security/permissions/impl/hibernate/Permission.hbm.xml</value>
             </list>
         </property>
@@ -45,6 +46,7 @@
                 <prop key="org.alfresco.repo.domain.hibernate.NodeAssocImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.StoreImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.VersionCountImpl">${cache.strategy}</prop>
+                <prop key="org.alfresco.repo.domain.hibernate.AppliedPatchImpl">${cache.strategy}</prop>
                 
                 <prop key="org.alfresco.repo.security.permissions.impl.hibernate.NodePermissionEntryImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntryImpl">${cache.strategy}</prop>

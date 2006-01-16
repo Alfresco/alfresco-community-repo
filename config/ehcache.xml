@@ -116,6 +116,15 @@
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         />
+    <!-- applied patches -->
+    <cache 
+        name="org.alfresco.repo.domain.hibernate.AppliedPatchImpl" 
+        maxElementsInMemory="100" 
+        eternal="false" 
+        timeToIdleSeconds="0" 
+        timeToLiveSeconds="60" 
+        overflowToDisk="false" 
+        />
     <cache 
         name="org.hibernate.cache.StandardQueryCache" 
         maxElementsInMemory="50" 

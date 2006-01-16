@@ -24,7 +24,6 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
-import org.alfresco.config.ConfigService;
 import org.alfresco.repo.template.DateCompareMethod;
 import org.alfresco.repo.template.HasAspectMethod;
 import org.alfresco.repo.template.I18NMessageMethod;
@@ -37,7 +36,6 @@ import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.apache.log4j.Logger;
@@ -112,11 +110,6 @@ public class UITemplate extends SelfRenderingComponent
       
       // get the data model to use - building default if required
       Object model = getModel();
-      
-      // get the configservice to find the appropriate processor
-      ConfigService service = Application.getConfigService(context);
-      ClientConfigElement clientConfig = (ClientConfigElement)service.getGlobalConfig().getConfigElement(
-            ClientConfigElement.CONFIG_ELEMENT_ID);
       
       // get the template to process
       String template = getTemplate();

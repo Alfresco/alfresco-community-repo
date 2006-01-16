@@ -72,8 +72,8 @@
                               <div class="mainSubTitle"><h:outputText value='#{BrowseBean.actionSpace.name}' /></div>
                               <div class="mainTitle"><h:outputText value="#{msg.manage_invited_users}" /></div>
                               <div class="mainSubText">
-                                 <h:outputFormat value="#{msg.space_owner}" rendered="#{UserMembersBean.owner != null}">
-                                    <f:param value="#{UserMembersBean.owner}" />
+                                 <h:outputFormat value="#{msg.space_owner}" rendered="#{SpaceUsersBean.owner != null}">
+                                    <f:param value="#{SpaceUsersBean.owner}" />
                                  </h:outputFormat>
                               </div>
                               <div class="mainSubText"><h:outputText value="#{msg.manage_invited_users_description}" /></div>
@@ -83,7 +83,7 @@
                               <%-- Current object actions --%>
                               <h:outputText style="padding-left:20px;" styleClass="mainSubTitle" value="#{msg.actions}" /><br/>
                               <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="ChangePermissions">
-                                 <a:actionLink value="#{msg.invite}" image="/images/icons/invite.gif" padding="4" action="inviteUsers" actionListener="#{InviteUsersWizard.startWizard}" />
+                                 <a:actionLink value="#{msg.invite}" image="/images/icons/invite.gif" padding="4" action="inviteUsers" actionListener="#{InviteSpaceUsersWizard.startWizard}" />
                               </r:permissionEvaluator>
                            </td>
                            <td bgcolor="#465F7D" width=1></td>
@@ -117,9 +117,9 @@
                               
                               <a:panel id="users-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.users_and_groups}">
                               
-                              <a:richList id="users-list" binding="#{UserMembersBean.usersRichList}" viewMode="details" pageSize="10"
+                              <a:richList id="users-list" binding="#{SpaceUsersBean.usersRichList}" viewMode="details" pageSize="10"
                                     styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
-                                    value="#{UserMembersBean.users}" var="r" initialSortColumn="userName" initialSortDescending="true">
+                                    value="#{SpaceUsersBean.users}" var="r" initialSortColumn="userName" initialSortDescending="true">
                                  
                                  <%-- Primary column with full name --%>
                                  <a:column primary="true" width="200" style="padding:2px;text-align:left">
@@ -153,10 +153,10 @@
                                     <f:facet name="header">
                                        <h:outputText value="#{msg.actions}"/>
                                     </f:facet>
-                                    <a:actionLink value="#{msg.change_roles}" image="/images/icons/edituser.gif" showLink="false" action="editRoles" actionListener="#{UserMembersBean.setupUserAction}">
+                                    <a:actionLink value="#{msg.change_roles}" image="/images/icons/edituser.gif" showLink="false" action="editRoles" actionListener="#{SpaceUsersBean.setupUserAction}">
                                        <f:param name="userName" value="#{r.userName}" />
                                     </a:actionLink>
-                                    <a:actionLink value="#{msg.remove}" image="/images/icons/delete_person.gif" showLink="false" action="removeUser" actionListener="#{UserMembersBean.setupUserAction}">
+                                    <a:actionLink value="#{msg.remove}" image="/images/icons/delete_person.gif" showLink="false" action="removeUser" actionListener="#{SpaceUsersBean.setupUserAction}">
                                        <f:param name="userName" value="#{r.userName}" />
                                     </a:actionLink>
                                  </a:column>
@@ -191,8 +191,8 @@
                      <table cellspacing="2" cellpadding="0" border="0" width="100%">
                         <tr>
                            <td>
-                              <h:selectBooleanCheckbox id="chkPermissions" value="#{UserMembersBean.inheritPermissions}" valueChangeListener="#{UserMembersBean.inheritPermissionsValueChanged}"
-                                    onchange="document.forms['users'].submit(); return true;" disabled="#{!UserMembersBean.hasChangePermissions}" />
+                              <h:selectBooleanCheckbox id="chkPermissions" value="#{SpaceUsersBean.inheritPermissions}" valueChangeListener="#{SpaceUsersBean.inheritPermissionsValueChanged}"
+                                    onchange="document.forms['users'].submit(); return true;" disabled="#{!SpaceUsersBean.hasChangePermissions}" />
                            </td>
                            <td width=100%>
                               &nbsp;<h:outputText value="#{msg.inherit_permissions}" />

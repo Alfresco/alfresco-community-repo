@@ -584,8 +584,41 @@
       <description>
          The bean that backs up the Manage Invited Users screens
       </description>
-      <managed-bean-name>UserMembersBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.users.UserMembersBean</managed-bean-class>
+      <managed-bean-name>SpaceUsersBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.users.SpaceUsersBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>ownableService</property-name>
+         <value>#{OwnableService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>personService</property-name>
+         <value>#{personService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Manage Content Users screens
+      </description>
+      <managed-bean-name>ContentUsersBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.users.ContentUsersBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -617,8 +650,53 @@
       <description>
          The bean that backs up the Invite Users Wizard
       </description>
-      <managed-bean-name>InviteUsersWizard</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.InviteUsersWizard</managed-bean-class>
+      <managed-bean-name>InviteSpaceUsersWizard</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wizard.InviteSpaceUsersWizard</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>personService</property-name>
+         <value>#{personService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>mailSender</property-name>
+         <value>#{mailService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>authorityService</property-name>
+         <value>#{AuthorityService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Invite Content Users Wizard
+      </description>
+      <managed-bean-name>InviteContentUsersWizard</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wizard.InviteContentUsersWizard</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>

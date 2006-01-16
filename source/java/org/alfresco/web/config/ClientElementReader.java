@@ -55,6 +55,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_TYPE = "type";
    public static final String ELEMENT_CUSTOMPROPS = "custom-properties";
    public static final String ELEMENT_METADATA = "meta-data";
+   public static final String ELEMENT_FROMEMAILADDRESS = "from-email-address";
    public static final String ATTRIBUTE_TYPE = "type";
    public static final String ATTRIBUTE_PROPERTY = "property";
    public static final String ATTRIBUTE_ASPECT = "aspect";
@@ -198,6 +199,13 @@ public class ClientElementReader implements ConfigElementReader
          if (permission != null)
          {
             configElement.setHomeSpacePermission(permission.getTextTrim());
+         }
+         
+         // get the from address to use when sending emails from the client
+         Element fromEmail = element.element(ELEMENT_FROMEMAILADDRESS);
+         if (fromEmail != null)
+         {
+            configElement.setFromEmailAddress(fromEmail.getTextTrim());
          }
          
          // get the Advanced Search config block

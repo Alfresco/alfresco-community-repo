@@ -136,9 +136,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
    private void createComponentsFromConfig(FacesContext context)
    {
       DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
-      ConfigService configService = Application.getConfigService(context);
-      ClientConfigElement clientConfig = (ClientConfigElement)configService.getGlobalConfig().getConfigElement(
-            ClientConfigElement.CONFIG_ELEMENT_ID);
+      ClientConfigElement clientConfig = Application.getClientConfig(context);
       
       // create an appropriate component for each custom property
       // using the DataDictionary to look-up labels and value types

@@ -44,6 +44,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private String defaultView = "details";
    private String defaultSortColumn = "name";
    private String defaultSortOrder = "ascending";
+   private String fromEmailAddress = "alfresco@alfresco.org";
    
    // list to store all the configured views
    private List<String> views = new ArrayList<String>(4);
@@ -321,6 +322,23 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setHelpUrl(String helpUrl)
    {
       this.helpUrl = helpUrl;
+   }
+   
+   /**
+    * @return Returns the from email address, if one has not been set 
+    *         alfresco@alfresco.org will be returned
+    */
+   public String getFromEmailAddress()
+   {
+      return this.fromEmailAddress;
+   }
+
+   /**
+    * @param fromEmailAddress The from email address to set
+    */
+   /*package*/ void setFromEmailAddress(String fromEmailAddress)
+   {
+      this.fromEmailAddress = fromEmailAddress;
    }
    
    /**

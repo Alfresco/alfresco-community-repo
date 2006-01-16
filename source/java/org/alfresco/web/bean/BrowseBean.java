@@ -1245,10 +1245,7 @@ public class BrowseBean implements IContextListener
     */
    private void initFromClientConfig()
    {
-      this.clientConfig = (ClientConfigElement)Application.getConfigService(
-            FacesContext.getCurrentInstance()).getGlobalConfig().
-            getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
-      
+      this.clientConfig = Application.getClientConfig(FacesContext.getCurrentInstance());
       this.browseViewMode = clientConfig.getDefaultView(PAGE_NAME_BROWSE);
       this.browsePageSize = clientConfig.getDefaultPageSize(PAGE_NAME_BROWSE, 
             this.browseViewMode);

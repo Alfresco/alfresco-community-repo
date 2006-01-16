@@ -54,19 +54,16 @@ import org.springframework.mail.javamail.JavaMailSender;
 /**
  * @author Kevin Roast
  */
-public class InviteUsersWizard extends AbstractWizardBean
+public abstract class InviteUsersWizard extends AbstractWizardBean
 {
    private static Log logger = LogFactory.getLog(InviteUsersWizard.class);
    
    /** I18N message strings */
    private static final String MSG_USERS  = "users";
    private static final String MSG_GROUPS = "groups";
-   private static final String MSG_INVITED_SPACE = "invite_space";
+   private static final String MSG_INVITED_TO = "invited_to";
    private static final String MSG_INVITED_ROLE  = "invite_role";
-   private static final String WIZARD_TITLE_ID = "invite_title";
-   private static final String WIZARD_DESC_ID = "invite_desc";
    private static final String STEP1_TITLE_ID = "invite_step1_title";
-   private static final String STEP1_DESCRIPTION_ID = "invite_step1_desc";
    private static final String STEP2_TITLE_ID = "invite_step2_title";
    private static final String STEP2_DESCRIPTION_ID = "invite_step2_desc";
    private static final String FINISH_INSTRUCTION_ID = "invite_finish_instruction";
@@ -74,28 +71,25 @@ public class InviteUsersWizard extends AbstractWizardBean
    private static final String NOTIFY_YES = "yes";
    
    /** NamespaceService bean reference */
-   private NamespaceService namespaceService;
+   protected NamespaceService namespaceService;
    
    /** JavaMailSender bean reference */
-   private JavaMailSender mailSender;
+   protected JavaMailSender mailSender;
    
    /** AuthorityService bean reference */
-   private AuthorityService authorityService;
+   protected AuthorityService authorityService;
    
    /** PermissionService bean reference */
-   private PermissionService permissionService;
+   protected PermissionService permissionService;
    
    /** personService bean reference */
-   private PersonService personService;
+   protected PersonService personService;
    
    /** datamodel for table of roles for users */
    private DataModel userRolesDataModel = null;
    
    /** list of user/group role wrapper objects */
    private List<UserGroupRole> userGroupRoles = null;
-   
-   /** Cache of available folder permissions */
-   Set<String> folderPermissions = null;
    
    /** dialog state */
    private String notify = NOTIFY_YES;
@@ -104,6 +98,20 @@ public class InviteUsersWizard extends AbstractWizardBean
    private String internalSubject = null;
    private String automaticText = null;
    
+   /**
+    * @return a cached list of available permissions for the type being dealt with
+    */
+   protected abstract Set<String> getPermissionsForType();
+   
+   /**
+    * @return Returns the node that the permissions are being applied to
+    */
+   protected abstract Node getNode();
+   
+   /**
+    * @return The text to use for the description of step 1 (depends on the type being dealt with)
+    */
+   protected abstract String getStep1DescriptionText();
    
    /**
     * @param namespaceService   The NamespaceService to set.
@@ -186,12 +194,12 @@ public class InviteUsersWizard extends AbstractWizardBean
          String from = (String)this.nodeService.getProperty(user.getPerson(), ContentModel.PROP_EMAIL);
          if (from == null || from.length() == 0)
          {
-            // TODO: get this from spring config?
-            from = "alfresco@alfresco.org";
+            // if the user does not have an email address get the default one from the config service
+            from = Application.getClientConfig(context).getFromEmailAddress();
          }
          
          // get the Space to apply changes too
-         NodeRef folderNodeRef = this.browseBean.getActionSpace().getNodeRef();
+         NodeRef nodeRef = this.getNode().getNodeRef();
          
          // set permissions for each user and send them a mail
          for (int i=0; i<this.userGroupRoles.size(); i++)
@@ -200,13 +208,13 @@ public class InviteUsersWizard extends AbstractWizardBean
             String authority = userGroupRole.getAuthority();
             
             // find the selected permission ref from it's name and apply for the specified user
-            Set<String> perms = getFolderPermissions();
+            Set<String> perms = getPermissionsForType();
             for (String permission : perms)
             {
                if (userGroupRole.getRole().equals(permission))
                {
                   this.permissionService.setPermission(
-                        folderNodeRef,
+                        nodeRef,
                         authority,
                         permission,
                         true);
@@ -223,7 +231,7 @@ public class InviteUsersWizard extends AbstractWizardBean
                {
                   if (this.personService.personExists(authority) == true)
                   {
-                     notifyUser(this.personService.getPerson(authority), folderNodeRef, from, userGroupRole.getRole());
+                     notifyUser(this.personService.getPerson(authority), nodeRef, from, userGroupRole.getRole());
                   }
                }
                else if (authType.equals(AuthorityType.GROUP))
@@ -234,7 +242,7 @@ public class InviteUsersWizard extends AbstractWizardBean
                   {
                      if (this.personService.personExists(userAuth) == true)
                      {
-                        notifyUser(this.personService.getPerson(userAuth), folderNodeRef, from, userGroupRole.getRole());
+                        notifyUser(this.personService.getPerson(userAuth), nodeRef, from, userGroupRole.getRole());
                      }
                   }
                }
@@ -262,11 +270,11 @@ public class InviteUsersWizard extends AbstractWizardBean
     * Send an email notification to the specified User authority
     * 
     * @param person     Person node representing the user
-    * @param folder     Folder node they are invited too
+    * @param node       Node they are invited too
     * @param from       From text message
     * @param roleText   The role display label for the user invite notification
     */
-   private void notifyUser(NodeRef person, NodeRef folder, String from, String roleText)
+   private void notifyUser(NodeRef person, NodeRef node, String from, String roleText)
    {
       String to = (String)this.nodeService.getProperty(person, ContentModel.PROP_EMAIL);
       
@@ -275,10 +283,10 @@ public class InviteUsersWizard extends AbstractWizardBean
          String msgRole = Application.getMessage(FacesContext.getCurrentInstance(), MSG_INVITED_ROLE);
          String roleMessage = MessageFormat.format(msgRole, new Object[] {roleText});
          
-         // TODO: include External Authentication link to the invited space
-         //String args = folder.getStoreRef().getProtocol() + '/' +
-         //   folder.getStoreRef().getIdentifier() + '/' +
-         //   folder.getId();
+         // TODO: include External Authentication link to the invited node
+         //String args = node.getStoreRef().getProtocol() + '/' +
+         //   node.getStoreRef().getIdentifier() + '/' +
+         //   node.getId();
          //String url = ExternalAccessServlet.generateExternalURL(LoginBean.OUTCOME_SPACEDETAILS, args);
          
          String body = this.internalSubject + "\r\n\r\n" + roleMessage + "\r\n\r\n";// + url + "\r\n\r\n";
@@ -513,7 +521,7 @@ public class InviteUsersWizard extends AbstractWizardBean
       ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
       
       // get available roles (grouped permissions) from the permission service
-      Set<String> perms = getFolderPermissions();
+      Set<String> perms = getPermissionsForType();
       SelectItem[] roles = new SelectItem[perms.size()];
       int index = 0;
       for (String permission : perms)
@@ -590,22 +598,6 @@ public class InviteUsersWizard extends AbstractWizardBean
    }
 
    /**
-    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#getWizardDescription()
-    */
-   public String getWizardDescription()
-   {
-      return Application.getMessage(FacesContext.getCurrentInstance(), WIZARD_DESC_ID);
-   }
-
-   /**
-    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#getWizardTitle()
-    */
-   public String getWizardTitle()
-   {
-      return Application.getMessage(FacesContext.getCurrentInstance(), WIZARD_TITLE_ID);
-   }
-
-      /**
     * @see org.alfresco.web.bean.wizard.AbstractWizardBean#getStepDescription()
     */
    public String getStepDescription()
@@ -616,7 +608,7 @@ public class InviteUsersWizard extends AbstractWizardBean
       {
          case 1:
          {
-            stepDesc = Application.getMessage(FacesContext.getCurrentInstance(), STEP1_DESCRIPTION_ID);
+            stepDesc = Application.getMessage(FacesContext.getCurrentInstance(), getStep1DescriptionText());
             break;
          }
          case 2:
@@ -699,10 +691,10 @@ public class InviteUsersWizard extends AbstractWizardBean
          StringBuilder buf = new StringBuilder(256);
          
          String personName = Application.getCurrentUser(context).getFullName(getNodeService());
-         String msgInvite = Application.getMessage(context, MSG_INVITED_SPACE);
-         Node node = this.browseBean.getActionSpace();
+         String msgInvitedTo = Application.getMessage(context, MSG_INVITED_TO);
+         Node node = this.getNode();
          String path = this.nodeService.getPath(node.getNodeRef()).toDisplayPath(this.nodeService);
-         buf.append(MessageFormat.format(msgInvite, new Object[] {
+         buf.append(MessageFormat.format(msgInvitedTo, new Object[] {
                path + '/' + node.getName(),
                personName}) );
          
@@ -756,21 +748,7 @@ public class InviteUsersWizard extends AbstractWizardBean
       }
       
       return outcome;
-   }
-   
-   /**
-    * @return a cached list of available folder permissions
-    */
-   private Set<String> getFolderPermissions()
-   {
-      if (this.folderPermissions == null)
-      {
-         this.folderPermissions = this.permissionService.getSettablePermissions(ContentModel.TYPE_FOLDER);
-      }
-      
-      return this.folderPermissions;
-   }
-   
+   }   
    
    /**
     * Simple wrapper class to represent a user/group and a role combination

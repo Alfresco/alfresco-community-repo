@@ -540,10 +540,7 @@ public class NavigationBean
     */
    private void initFromClientConfig()
    {
-      this.clientConfig = (ClientConfigElement)Application.getConfigService(
-            FacesContext.getCurrentInstance()).getGlobalConfig().
-            getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
-      
+      this.clientConfig = Application.getClientConfig(FacesContext.getCurrentInstance());
       this.helpUrl = clientConfig.getHelpUrl();
       this.shelfExpanded = clientConfig.isShelfVisible();
    }

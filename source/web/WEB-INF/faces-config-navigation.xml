@@ -147,6 +147,10 @@
          <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
+         <from-outcome>manageContentUsers</from-outcome>
+         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
          <from-outcome>manageRules</from-outcome>
          <to-view-id>/jsp/dialog/rules.jsp</to-view-id>
       </navigation-case>
@@ -363,6 +367,10 @@
          <from-outcome>showForum</from-outcome>
          <to-view-id>/jsp/forums/forum.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>manageContentUsers</from-outcome>
+         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <navigation-rule>
@@ -435,18 +443,6 @@
    
    <!-- Manage Invited Users navigation -->
    <navigation-rule>
-      <from-view-id>/jsp/roles/*</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-      
-   <navigation-rule>
       <from-view-id>/jsp/roles/manage-invited-users.jsp</from-view-id>
       <navigation-case>
          <from-outcome>inviteUsers</from-outcome>
@@ -459,6 +455,70 @@
       <navigation-case>
          <from-outcome>removeUser</from-outcome>
          <to-view-id>/jsp/roles/remove-invited-user.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
+      <from-view-id>/jsp/roles/edit-user-roles.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>cancel</from-outcome>
+         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>finish</from-outcome>
+         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
+      <from-view-id>/jsp/roles/remove-invited-user.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>cancel</from-outcome>
+         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>finish</from-outcome>
+         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
+      <from-view-id>/jsp/roles/manage-content-users.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>inviteUsers</from-outcome>
+         <to-view-id>/jsp/wizard/invite-content-users/invite.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>editRoles</from-outcome>
+         <to-view-id>/jsp/roles/edit-content-user-roles.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>removeUser</from-outcome>
+         <to-view-id>/jsp/roles/remove-content-user.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
+      <from-view-id>/jsp/roles/edit-content-user-roles.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>cancel</from-outcome>
+         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>finish</from-outcome>
+         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
+      <from-view-id>/jsp/roles/remove-content-user.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>cancel</from-outcome>
+         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>finish</from-outcome>
+         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -480,6 +540,27 @@
       <navigation-case>
          <from-outcome>finish</from-outcome>
          <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <!-- navigation rules for the Invite Content Users wizard -->
+   <navigation-rule>
+      <from-view-id>/jsp/wizard/invite-content-users/*</from-view-id>
+      <navigation-case>
+         <from-outcome>invite</from-outcome>
+         <to-view-id>/jsp/wizard/invite-content-users/invite.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>notify</from-outcome>
+         <to-view-id>/jsp/wizard/invite-content-users/notify.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>cancel</from-outcome>
+         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>finish</from-outcome>
+         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

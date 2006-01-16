@@ -952,22 +952,20 @@ public class ForumsBean implements IContextListener
     */
    private void initFromClientConfig()
    {
-      this.clientConfig = (ClientConfigElement)Application.getConfigService(
-            FacesContext.getCurrentInstance()).getGlobalConfig().
-            getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
+      this.clientConfig = Application.getClientConfig(FacesContext.getCurrentInstance());
       
       // get the defaults for the forums page
-      this.forumsViewMode = clientConfig.getDefaultView(PAGE_NAME_FORUMS);
+      this.forumsViewMode = this.clientConfig.getDefaultView(PAGE_NAME_FORUMS);
       this.forumsPageSize = this.clientConfig.getDefaultPageSize(PAGE_NAME_FORUMS,
             this.forumsViewMode);
       
       // get the default for the forum page
-      this.forumViewMode = clientConfig.getDefaultView(PAGE_NAME_FORUM);
+      this.forumViewMode = this.clientConfig.getDefaultView(PAGE_NAME_FORUM);
       this.forumPageSize = this.clientConfig.getDefaultPageSize(PAGE_NAME_FORUM, 
             this.forumViewMode);
       
       // get the default for the topic page
-      this.topicViewMode = clientConfig.getDefaultView(PAGE_NAME_TOPIC);
+      this.topicViewMode = this.clientConfig.getDefaultView(PAGE_NAME_TOPIC);
       this.topicPageSize = this.clientConfig.getDefaultPageSize(PAGE_NAME_TOPIC, 
             this.topicViewMode);
       

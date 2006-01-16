@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.bean.ErrorBean;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.config.ServerConfigElement;
 import org.apache.commons.logging.Log;
 import org.springframework.web.context.WebApplicationContext;
@@ -544,6 +545,18 @@ public class Application
    {
       return (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(context).getBean(
             Application.BEAN_CONFIG_SERVICE);
+   }
+   
+   /**
+    * Helper to get the client config element from the config service
+    * 
+    * @param context FacesContext
+    * @return The ClientConfigElement
+    */
+   public static ClientConfigElement getClientConfig(FacesContext context)
+   {
+      return (ClientConfigElement)getConfigService(context).getGlobalConfig().
+         getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
    }
    
    /**

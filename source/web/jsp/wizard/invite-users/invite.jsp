@@ -70,8 +70,8 @@
                            </td>
                            <td>
                               <div class="mainSubTitle"><h:outputText value='#{BrowseBean.actionSpace.name}' /></div>
-                              <div class="mainTitle"><h:outputText value="#{InviteUsersWizard.wizardTitle}" /></div>
-                              <div class="mainSubText"><h:outputText value="#{InviteUsersWizard.wizardDescription}" /></div>
+                              <div class="mainTitle"><h:outputText value="#{InviteSpaceUsersWizard.wizardTitle}" /></div>
+                              <div class="mainSubText"><h:outputText value="#{InviteSpaceUsersWizard.wizardDescription}" /></div>
                            </td>
                         </tr>
                      </table>
@@ -111,10 +111,10 @@
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <table cellpadding="2" cellspacing="2" border="0" width="100%">
                                  <tr>
-                                    <td class="mainSubTitle"><h:outputText value="#{InviteUsersWizard.stepTitle}" /></td>
+                                    <td class="mainSubTitle"><h:outputText value="#{InviteSpaceUsersWizard.stepTitle}" /></td>
                                  </tr>
                                  <tr>
-                                    <td class="mainSubText"><h:outputText value="#{InviteUsersWizard.stepDescription}" /></td>
+                                    <td class="mainSubText"><h:outputText value="#{InviteSpaceUsersWizard.stepDescription}" /></td>
                                  </tr>
                                  
                                  <tr><td class="paddingRow"></td></tr>
@@ -126,7 +126,7 @@
                                  </tr>
                                  <tr>
                                     <%-- Picker to select Users/Groups --%>
-                                    <td><a:genericPicker id="picker" showAddButton="false" filters="#{InviteUsersWizard.filters}" queryCallback="#{InviteUsersWizard.pickerCallback}" /></td>
+                                    <td><a:genericPicker id="picker" showAddButton="false" filters="#{InviteSpaceUsersWizard.filters}" queryCallback="#{InviteSpaceUsersWizard.pickerCallback}" /></td>
                                  </tr>
                                  <tr>
                                     <td><h:outputText value="#{msg.role}" /></td>
@@ -135,7 +135,7 @@
                                     <td>
                                        <div style="padding:4px">
                                           <h:selectOneListbox id="roles" style="width:250px" size="5">
-                                             <f:selectItems value="#{InviteUsersWizard.roles}" />
+                                             <f:selectItems value="#{InviteSpaceUsersWizard.roles}" />
                                           </h:selectOneListbox>
                                        </div>
                                     </td>
@@ -144,7 +144,7 @@
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
                                     <td class="mainSubText">
-                                       2. <h:commandButton value="#{msg.add_to_list_button}" actionListener="#{InviteUsersWizard.addSelection}" styleClass="wizardButton" />
+                                       2. <h:commandButton value="#{msg.add_to_list_button}" actionListener="#{InviteSpaceUsersWizard.addSelection}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                                  
@@ -154,11 +154,11 @@
                                  </tr>
                                  <tr>
                                     <td>
-                                       <h:dataTable value="#{InviteUsersWizard.userRolesDataModel}" var="row" 
+                                       <h:dataTable value="#{InviteSpaceUsersWizard.userRolesDataModel}" var="row" 
                                                     rowClasses="selectedItemsRow,selectedItemsRowAlt"
                                                     styleClass="selectedItems" headerClass="selectedItemsHeader"
                                                     cellspacing="0" cellpadding="4" 
-                                                    rendered="#{InviteUsersWizard.userRolesDataModel.rowCount != 0}">
+                                                    rendered="#{InviteSpaceUsersWizard.userRolesDataModel.rowCount != 0}">
                                           <h:column>
                                              <f:facet name="header">
                                                 <h:outputText value="#{msg.name}" />
@@ -166,12 +166,12 @@
                                              <h:outputText value="#{row.label}" />
                                           </h:column>
                                           <h:column>
-                                             <a:actionLink actionListener="#{InviteUsersWizard.removeSelection}" image="/images/icons/delete.gif"
+                                             <a:actionLink actionListener="#{InviteSpaceUsersWizard.removeSelection}" image="/images/icons/delete.gif"
                                                            value="#{msg.remove}" showLink="false" style="padding-left:6px" />
                                           </h:column>
                                        </h:dataTable>
                                        
-                                       <a:panel id="no-items" rendered="#{InviteUsersWizard.userRolesDataModel.rowCount == 0}">
+                                       <a:panel id="no-items" rendered="#{InviteSpaceUsersWizard.userRolesDataModel.rowCount == 0}">
                                           <table cellspacing='0' cellpadding='2' border='0' class='selectedItems'>
                                              <tr>
                                                 <td colspan='2' class='selectedItemsHeader'><h:outputText id="no-items-name" value="#{msg.name}" /></td>
@@ -186,7 +186,7 @@
                                  
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td><h:outputText value="#{InviteUsersWizard.stepInstructions}" /></td>
+                                    <td><h:outputText value="#{InviteSpaceUsersWizard.stepInstructions}" /></td>
                                  </tr> 
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
@@ -197,13 +197,13 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.next_button}" action="#{InviteUsersWizard.next}" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.next_button}" action="#{InviteSpaceUsersWizard.next}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                                  <tr><td class="wizardButtonSpacing"></td></tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel_button}" action="#{InviteUsersWizard.cancel}" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.cancel_button}" action="#{InviteSpaceUsersWizard.cancel}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

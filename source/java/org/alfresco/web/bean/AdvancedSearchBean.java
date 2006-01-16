@@ -1213,9 +1213,7 @@ public class AdvancedSearchBean
    {
       if (clientConfigElement == null)
       {
-         ConfigService configService = Application.getConfigService(FacesContext.getCurrentInstance());
-         clientConfigElement = (ClientConfigElement)configService.getGlobalConfig().getConfigElement(
-               ClientConfigElement.CONFIG_ELEMENT_ID);
+         clientConfigElement = Application.getClientConfig(FacesContext.getCurrentInstance());
       }
       return clientConfigElement;
    }

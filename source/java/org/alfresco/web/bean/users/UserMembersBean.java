@@ -45,12 +45,10 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.data.UIRichList;
@@ -59,7 +57,7 @@ import org.alfresco.web.ui.repo.WebResources;
 /**
  * @author Kevin Roast
  */
-public class UserMembersBean
+public abstract class UserMembersBean
 {
    private static final String MSG_SUCCESS_INHERIT_NOT = "success_not_inherit_permissions";
    private static final String MSG_SUCCESS_INHERIT = "success_inherit_permissions";
@@ -69,22 +67,22 @@ public class UserMembersBean
    private static final String OUTCOME_FINISH = "finish";
 
    /** NodeService bean reference */
-   private NodeService nodeService;
+   protected NodeService nodeService;
 
    /** SearchService bean reference */
-   private SearchService searchService;
+   protected SearchService searchService;
    
    /** PermissionService bean reference */
-   private PermissionService permissionService;
+   protected PermissionService permissionService;
    
    /** PersonService bean reference */
-   private PersonService personService;
+   protected PersonService personService;
    
    /** BrowseBean bean refernce */
-   private BrowseBean browseBean;
+   protected BrowseBean browseBean;
    
    /** OwnableService bean reference */
-   private OwnableService ownableService;
+   protected OwnableService ownableService;
    
    /** Component reference for Users RichList control */
    private UIRichList usersRichList;
@@ -101,6 +99,15 @@ public class UserMembersBean
    /** roles for current person */
    private List<PermissionWrapper> personRoles = null;
    
+   // ------------------------------------------------------------------------------
+   // Abstract methods
+   
+   /**
+    * Returns the node that is being acted upon
+    * 
+    * @return The node to manage permissions for
+    */
+   public abstract Node getNode();
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters
@@ -151,14 +158,6 @@ public class UserMembersBean
    public void setBrowseBean(BrowseBean browseBean)
    {
       this.browseBean = browseBean;
-   }
-   
-   /**
-    * @return The space to work against
-    */
-   public Node getSpace()
-   {
-      return this.browseBean.getActionSpace();
    }
    
    /**
@@ -234,7 +233,7 @@ public class UserMembersBean
     */
    public boolean getHasChangePermissions()
    {
-      return getSpace().hasPermission(PermissionService.CHANGE_PERMISSIONS);
+      return getNode().hasPermission(PermissionService.CHANGE_PERMISSIONS);
    }
    
    /**
@@ -242,7 +241,7 @@ public class UserMembersBean
     */
    public boolean isInheritPermissions()
    {
-      return this.permissionService.getInheritParentPermissions(getSpace().getNodeRef());
+      return this.permissionService.getInheritParentPermissions(getNode().getNodeRef());
    }
 
    /**
@@ -258,7 +257,7 @@ public class UserMembersBean
     */
    public String getOwner()
    {
-      return this.ownableService.getOwner(getSpace().getNodeRef());
+      return this.ownableService.getOwner(getNode().getNodeRef());
    }
    
    /**
@@ -279,9 +278,8 @@ public class UserMembersBean
          // Return all the permissions set against the current node
          // for any authentication instance (user).
          // Then combine them into a single list for each authentication found. 
-         User user = Application.getCurrentUser(context);
          Map<String, List<String>> permissionMap = new HashMap<String, List<String>>(13, 1.0f);
-         Set<AccessPermission> permissions = permissionService.getAllSetPermissions(getSpace().getNodeRef());
+         Set<AccessPermission> permissions = permissionService.getAllSetPermissions(getNode().getNodeRef());
          if (permissions != null)
          {
             for (AccessPermission permission : permissions)
@@ -326,8 +324,7 @@ public class UserMembersBean
                   // it is much better for performance to do this now rather than during page bind
                   Map<String, Object> props = node.getProperties(); 
                   props.put("fullName", ((String)props.get("firstName")) + ' ' + ((String)props.get("lastName")));
-                  
-                  String userName = (String)props.get("userName");
+
                   props.put("roles", listToString(context, permissionMap.get(authority)));
                   
                   props.put("icon", WebResources.IMAGE_PERSON);
@@ -426,7 +423,7 @@ public class UserMembersBean
             
             // setup roles for this Authority
             List<PermissionWrapper> userPermissions = new ArrayList<PermissionWrapper>(4);
-            Set<AccessPermission> permissions = permissionService.getAllSetPermissions(getSpace().getNodeRef());
+            Set<AccessPermission> permissions = permissionService.getAllSetPermissions(getNode().getNodeRef());
             if (permissions != null)
             {
                for (AccessPermission permission : permissions)
@@ -471,7 +468,7 @@ public class UserMembersBean
       {
          // change the value to the new selected value
          boolean inheritPermissions = (Boolean)event.getNewValue();
-         this.permissionService.setInheritParentPermissions(getSpace().getNodeRef(), inheritPermissions);
+         this.permissionService.setInheritParentPermissions(getNode().getNodeRef(), inheritPermissions);
          
          // inform the user that the change occured
          FacesContext context = FacesContext.getCurrentInstance();
@@ -542,7 +539,7 @@ public class UserMembersBean
             
             // clear the currently set permissions for this user
             // and add each of the new permissions in turn
-            NodeRef nodeRef = getSpace().getNodeRef();
+            NodeRef nodeRef = getNode().getNodeRef();
             this.permissionService.clearPermission(nodeRef, getPersonAuthority());
             for (PermissionWrapper wrapper : personRoles)
             {
@@ -585,7 +582,7 @@ public class UserMembersBean
          if (getPersonAuthority() != null)
          {
             // clear permissions for the specified Authority
-            this.permissionService.clearPermission(getSpace().getNodeRef(), getPersonAuthority());
+            this.permissionService.clearPermission(getNode().getNodeRef(), getPersonAuthority());
          }
          
          // commit the transaction

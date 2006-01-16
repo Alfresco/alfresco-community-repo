@@ -164,6 +164,12 @@
                                     <a:actionLink value="#{msg.take_ownership}" image="/images/icons/take_ownership.gif" actionListener="#{DocumentDetailsBean.takeOwnership}" id="takeOwnership" />
                                  </r:permissionEvaluator>
                                  
+                                 <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="ChangePermissions">
+                                    <a:actionLink value="#{msg.manage_content_users}" image="/images/icons/invite.gif" action="dialog:manageContentUsers" actionListener="#{BrowseBean.setupContentAction}">
+                                       <f:param name="id" value="#{DocumentDetailsBean.id}" />
+                                    </a:actionLink>
+                                 </r:permissionEvaluator>
+                              
                                  <%-- create shortcut --%>
                                  <a:actionLink value="#{msg.create_shortcut}" image="/images/icons/shortcut.gif" actionListener="#{UserShortcutsBean.createShortcut}">
                                     <f:param name="id" value="#{DocumentDetailsBean.id}" />

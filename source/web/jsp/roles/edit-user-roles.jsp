@@ -72,7 +72,7 @@
                               <div class="mainSubTitle"><h:outputText value='#{BrowseBean.actionSpace.name}' /></div>
                               <div class="mainTitle">
                                  <h:outputText value="#{msg.modify_user_roles}" />
-                                 '<h:outputText value="#{UserMembersBean.personName}" />'
+                                 '<h:outputText value="#{SpaceUsersBean.personName}" />'
                               </div>
                               <div class="mainSubText"><h:outputText value="#{msg.modify_user_roles_description}" /></div>
                            </td>
@@ -109,13 +109,13 @@
                                  <tr>
                                     <td>
                                        <h:selectOneListbox id="roles" style="width:250px" size="5">
-                                          <f:selectItems value="#{InviteUsersWizard.roles}" />
+                                          <f:selectItems value="#{InviteSpaceUsersWizard.roles}" />
                                        </h:selectOneListbox>
                                     </td>
                                  </tr>
                                  <tr>
                                     <td>
-                                       2.&nbsp;<h:commandButton value="#{msg.add_to_list_button}" actionListener="#{UserMembersBean.addRole}" />
+                                       2.&nbsp;<h:commandButton value="#{msg.add_to_list_button}" actionListener="#{SpaceUsersBean.addRole}" />
                                     </td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
@@ -124,11 +124,11 @@
                                  </tr>
                                  <tr>
                                     <td>
-                                       <h:dataTable value="#{UserMembersBean.personRolesDataModel}" var="row"
+                                       <h:dataTable value="#{SpaceUsersBean.personRolesDataModel}" var="row"
                                                     rowClasses="selectedItemsRow,selectedItemsRowAlt"
                                                     styleClass="selectedItems" headerClass="selectedItemsHeader"
                                                     cellspacing="0" cellpadding="4" 
-                                                    rendered="#{UserMembersBean.personRolesDataModel.rowCount != 0}">
+                                                    rendered="#{SpaceUsersBean.personRolesDataModel.rowCount != 0}">
                                           <h:column>
                                              <f:facet name="header">
                                                 <h:outputText value="#{msg.name}" />
@@ -136,11 +136,11 @@
                                              <h:outputText value="#{row.role}" />
                                           </h:column>
                                           <h:column>
-                                             <a:actionLink actionListener="#{UserMembersBean.removeRole}" image="/images/icons/delete.gif"
+                                             <a:actionLink actionListener="#{SpaceUsersBean.removeRole}" image="/images/icons/delete.gif"
                                                            value="#{msg.remove}" showLink="false" style="padding-left:6px" />
                                           </h:column>
                                        </h:dataTable>
-                                       <a:panel id="no-items" rendered="#{UserMembersBean.personRolesDataModel.rowCount == 0}">
+                                       <a:panel id="no-items" rendered="#{SpaceUsersBean.personRolesDataModel.rowCount == 0}">
                                           <table cellspacing='0' cellpadding='2' border='0' class='selectedItems'>
                                              <tr>
                                                 <td colspan='2' class='selectedItemsHeader'><h:outputText id="no-items-name" value="#{msg.name}" /></td>
@@ -162,7 +162,7 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.ok}" action="#{UserMembersBean.finishOK}" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.ok}" action="#{SpaceUsersBean.finishOK}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                                  <tr>

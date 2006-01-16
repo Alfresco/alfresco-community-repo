@@ -71,7 +71,7 @@
                            </td>
                            <td>
                               <div class="mainSubTitle"><h:outputText value="#{BrowseBean.actionSpace.name}" /></div>
-                              <div class="mainTitle"><h:outputText value="#{msg.remove_user}" /> '<h:outputText value="#{UserMembersBean.personName}" />'</div>
+                              <div class="mainTitle"><h:outputText value="#{msg.remove_user}" /> '<h:outputText value="#{SpaceUsersBean.personName}" />'</div>
                               <div class="mainSubText"><h:outputText value="#{msg.remove_invited_user_info}" /></div>
                            </td>
                         </tr>
@@ -101,7 +101,7 @@
                                  <tr>
                                     <td class="mainSubTitle">
                                        <h:outputFormat value="#{msg.remove_invited_user_confirm}">
-                                          <f:param value="#{UserMembersBean.personName}"/>
+                                          <f:param value="#{SpaceUsersBean.personName}"/>
                                        </h:outputFormat>
                                     </td>
                                  </tr>
@@ -121,7 +121,7 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.yes}" action="#{UserMembersBean.removeOK}" styleClass="dialogControls" />
+                                       <h:commandButton value="#{msg.yes}" action="#{SpaceUsersBean.removeOK}" styleClass="dialogControls" />
                                     </td>
                                  </tr>
                                  <tr><td class="dialogButtonSpacing"></td></tr>

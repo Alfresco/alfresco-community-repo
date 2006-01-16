@@ -70,8 +70,8 @@
                            </td>
                            <td>
                               <div class="mainSubTitle"><h:outputText value='#{BrowseBean.actionSpace.name}' /></div>
-                              <div class="mainTitle"><h:outputText value="#{InviteUsersWizard.wizardTitle}" /></div>
-                              <div class="mainSubText"><h:outputText value="#{InviteUsersWizard.wizardDescription}" /></div>
+                              <div class="mainTitle"><h:outputText value="#{InviteSpaceUsersWizard.wizardTitle}" /></div>
+                              <div class="mainSubText"><h:outputText value="#{InviteSpaceUsersWizard.wizardDescription}" /></div>
                            </td>
                         </tr>
                      </table>
@@ -111,10 +111,10 @@
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <table cellpadding="2" cellspacing="2" border="0" width="100%">
                                  <tr>
-                                    <td colspan=2 class="mainSubTitle"><h:outputText value="#{InviteUsersWizard.stepTitle}" /></td>
+                                    <td colspan=2 class="mainSubTitle"><h:outputText value="#{InviteSpaceUsersWizard.stepTitle}" /></td>
                                  </tr>
                                  <tr>
-                                    <td colspan=2 class="mainSubText"><h:outputText value="#{InviteUsersWizard.stepDescription}" /></td>
+                                    <td colspan=2 class="mainSubText"><h:outputText value="#{InviteSpaceUsersWizard.stepDescription}" /></td>
                                  </tr>
                                  
                                  <tr><td class="paddingRow"></td></tr>
@@ -123,7 +123,7 @@
                                  </tr>
                                  <tr>
                                     <td colspan=2>
-                                       <h:selectOneRadio value="#{InviteUsersWizard.notify}">
+                                       <h:selectOneRadio value="#{InviteSpaceUsersWizard.notify}">
                                           <f:selectItem itemValue="yes" itemLabel="#{msg.yes}" />
                                           <f:selectItem itemValue="no" itemLabel="#{msg.no}" />
                                        </h:selectOneRadio>
@@ -133,14 +133,14 @@
                                  <tr>
                                     <td><h:outputText value="#{msg.subject}" />:</td>
                                     <td>
-                                       <h:inputText value="#{InviteUsersWizard.subject}" size="50" maxlength="256" />
+                                       <h:inputText value="#{InviteSpaceUsersWizard.subject}" size="50" maxlength="256" />
                                     </td>
                                  </tr>
                                  
                                  <tr>
                                     <td><h:outputText value="#{msg.body}" />:</td>
                                     <td>
-                                       <h:inputTextarea value="#{InviteUsersWizard.body}" rows="2" cols="48" />
+                                       <h:inputTextarea value="#{InviteSpaceUsersWizard.body}" rows="2" cols="48" />
                                     </td>
                                  </tr>
                                  
@@ -153,7 +153,7 @@
                                                 <h:outputText value="#{msg.automatic_text}" />:
                                              </td>
                                              <td>
-                                                <h:outputText escape="false" value="#{InviteUsersWizard.automaticText}" />
+                                                <h:outputText escape="false" value="#{InviteSpaceUsersWizard.automaticText}" />
                                              </td>
                                           </tr>
                                        </table>
@@ -162,7 +162,7 @@
                                  
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td colspan=2><h:outputText value="#{InviteUsersWizard.stepInstructions}" /></td>
+                                    <td colspan=2><h:outputText value="#{InviteSpaceUsersWizard.stepInstructions}" /></td>
                                  </tr> 
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
@@ -173,18 +173,18 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.finish_button}" action="#{InviteUsersWizard.finish}" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.finish_button}" action="#{InviteSpaceUsersWizard.finish}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.back_button}" action="#{InviteUsersWizard.back}" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.back_button}" action="#{InviteSpaceUsersWizard.back}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                                  <tr><td class="wizardButtonSpacing"></td></tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel_button}" action="#{InviteUsersWizard.cancel}" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.cancel_button}" action="#{InviteSpaceUsersWizard.cancel}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

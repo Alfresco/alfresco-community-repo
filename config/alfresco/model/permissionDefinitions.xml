@@ -228,37 +228,42 @@
    <!-- Permissions specific to content -->
    <!-- =============================== -->
    
-   <permissionSet type="cm:content" expose="all">
+   <permissionSet type="cm:content" expose="selected">
 
       <!-- Extend some base permission groups to include permissoins related to content. -->
-      <permissionGroup name="Read" extends="true" expose="true"/>
-      <permissionGroup name="Write" extends="true" expose="true"/>
+      <permissionGroup name="Read" extends="true" expose="false"/>
+      <permissionGroup name="Write" extends="true" expose="false"/>
       
       <!-- Add an execute permission group.                                              -->
-      <permissionGroup name="Execute" allowFullControl="false" expose="true"/>
+      <permissionGroup name="Execute" allowFullControl="false" expose="false"/>
       
       <!-- Content specific low-level permissions.                                       -->
       
       <!-- The permission to read content.                                               -->
       
-      <permission name="ReadContent" expose="true">
+      <permission name="ReadContent" expose="false">
          <grantedToGroup permissionGroup="Read"/>
          <requiredPermission on="parent" name="ReadChildren" implies="false"/>
       </permission>
 
       <!-- The permission to write content.                                              -->
       
-      <permission name="WriteContent" expose="true">
+      <permission name="WriteContent" expose="false">
          <grantedToGroup permissionGroup="Write" />
          <requiredPermission on="parent" name="ReadChildren" implies="false"/>
       </permission>
       
       <!-- Execute permission on content.                                                -->
       
-      <permission name="ExecuteContent" expose="true">
+      <permission name="ExecuteContent" expose="false">
          <grantedToGroup permissionGroup="Execute" />
          <requiredPermission on="parent" name="ReadChildren" implies="false"/>
       </permission>
+      
+      <permissionGroup name="Coordinator" extends="true" expose="true"/>
+      <permissionGroup name="Contributor" extends="true" expose="true"/>
+      <permissionGroup name="Editor" extends="true" expose="true"/>
+      <permissionGroup name="Guest" extends="true" expose="true"/>
       
    </permissionSet>
    

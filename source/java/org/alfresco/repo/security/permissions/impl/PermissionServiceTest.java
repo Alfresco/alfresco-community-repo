@@ -308,7 +308,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(0, answer.size());
 
         answer = permissionService.getSettablePermissions(QName.createQName("cm", "content", namespacePrefixResolver));
-        assertEquals(21, answer.size());
+        assertEquals(4, answer.size());
 
         answer = permissionService.getSettablePermissions(QName.createQName("cm", "folder", namespacePrefixResolver));
         assertEquals(4, answer.size());

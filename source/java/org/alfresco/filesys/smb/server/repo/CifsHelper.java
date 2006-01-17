@@ -507,13 +507,14 @@ public class CifsHelper
                 String mimetype = mimetypeService.guessMimetype(tempName);
                 oldContentData = ContentData.setMimetype(null, mimetype);
             }
-            ContentData newContentData = fileToMoveInfo.getContentData();
-            if (newContentData == null)
-            {
-                String mimetype = mimetypeService.guessMimetype(newName);
-                newContentData = ContentData.setMimetype(null, mimetype);
-            }
             
+            ContentData newContentData = fileToMoveInfo.getContentData();
+
+            // Reset the mime type
+            
+            String mimetype = mimetypeService.guessMimetype(newName);
+            newContentData = ContentData.setMimetype(newContentData, mimetype);
+
             nodeService.setProperty(tempNodeRef, ContentModel.PROP_CONTENT, newContentData);
             nodeService.setProperty(nodeToMoveRef, ContentModel.PROP_CONTENT, oldContentData);
         }

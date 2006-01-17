@@ -33,6 +33,7 @@ public class UnoContentTransformerTest extends AbstractContentTransformerTest
     {
         transformer = new UnoContentTransformer();
         transformer.setMimetypeService(mimetypeMap);
+        transformer.init();
     }
     
     /**
@@ -65,7 +66,5 @@ public class UnoContentTransformerTest extends AbstractContentTransformerTest
         assertEquals("Mimetype should be supported", 1.0, reliability);
         reliability = transformer.getReliability(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         assertEquals("Mimetype should be supported", 1.0, reliability);
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals("Mimetype should be supported", 0.8, reliability);
     }
 }

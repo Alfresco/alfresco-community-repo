@@ -35,7 +35,11 @@ import org.alfresco.util.TempFileProvider;
 /**
  * Makes use of the OpenOffice Uno interfaces to convert the content.
  * <p>
- * The conversions are slow but reliable.
+ * The conversions are slow but reliable.  Not <b>all</b> possible combinations of transformations
+ * have been enabled because they don't necessarily work and need to be specifically tested before
+ * being made available generally.  As the conversion process is mostly automated, the introduction
+ * of faulty transformations can lead to unnecessary bugs.  Feel free to experiment and, assuming
+ * that the unit test works, report any interesting conversions that can be enabled.
  * 
  * @author Derek Hulley
  */
@@ -49,6 +53,12 @@ public class UnoContentTransformer extends AbstractContentTransformer
         // Build the map of known Uno document formats and store by conversion key
         formatsByConversion = new HashMap<ContentTransformerRegistry.TransformationKey, DocumentFormatWrapper>(17);
         
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE_WRITER, MimetypeMap.MIMETYPE_TEXT_PLAIN),
+                new DocumentFormatWrapper(DocumentFormat.TEXT, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT, MimetypeMap.MIMETYPE_TEXT_PLAIN),
+                new DocumentFormatWrapper(DocumentFormat.TEXT, 1.0));
         formatsByConversion.put(
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_HTML),
                 new DocumentFormatWrapper(DocumentFormat.HTML_WRITER, 1.0));
@@ -64,9 +74,6 @@ public class UnoContentTransformer extends AbstractContentTransformer
         formatsByConversion.put(
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_PDF),
                 new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
-        formatsByConversion.put(
-                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_TEXT_PLAIN),
-                new DocumentFormatWrapper(DocumentFormat.TEXT_CALC, 0.8));  // only first sheet extracted
         formatsByConversion.put(
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_PDF),
                 new DocumentFormatWrapper(DocumentFormat.PDF_CALC, 1.0));

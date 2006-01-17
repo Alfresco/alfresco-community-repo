@@ -50,6 +50,9 @@ import org.dom4j.io.XMLWriter;
 
 /**
  * Holds the context required to build a search query and can return the populated query.
+ * <p>
+ * Builds a lucene format search string from each of the supplied attributes and terms.
+ * Can be serialized to and from XML format for saving and restoring of previous searches.
  * 
  * @author Kevin Roast
  */
@@ -77,6 +80,11 @@ public final class SearchContext implements Serializable
    private static final String ELEMENT_TEXT = "text";
    private static final String ELEMENT_SEARCH = "search";
    private static final String ELEMENT_QUERY = "query";
+   
+   /** advanced search term operators */
+   private static final char OP_WILDCARD = '*';
+   private static final char OP_AND = '+';
+   private static final char OP_NOT = '-';
    
    /** Search mode constants */
    public final static int SEARCH_ALL = 0;
@@ -141,19 +149,19 @@ public final class SearchContext implements Serializable
          if (text.indexOf(' ') == -1 && text.charAt(0) != '"')
          {
             // simple single word text search
-            if (text.charAt(0) != '*')
+            if (text.charAt(0) != OP_WILDCARD)
             {
                // escape characters and append the wildcard character
                String safeText = QueryParser.escape(text);
-               fullTextQuery = " TEXT:" + safeText + '*';
-               nameAttrQuery = " @" + nameAttr + ":" + safeText + '*';
+               fullTextQuery = " TEXT:" + safeText + OP_WILDCARD;
+               nameAttrQuery = " @" + nameAttr + ":" + safeText + OP_WILDCARD;
             }
             else
             {
                // found a leading wildcard - prepend it again after escaping the other characters
                String safeText = QueryParser.escape(text.substring(1));
-               fullTextQuery = " TEXT:*" + safeText + '*';
-               nameAttrQuery = " @" + nameAttr + ":*" + safeText + '*';
+               fullTextQuery = " TEXT:*" + safeText + OP_WILDCARD;
+               nameAttrQuery = " @" + nameAttr + ":*" + safeText + OP_WILDCARD;
             }
          }
          else
@@ -161,7 +169,7 @@ public final class SearchContext implements Serializable
             // multiple word search
             if (text.charAt(0) == '"' && text.charAt(text.length() - 1) == '"')
             {
-               // as quoted phrase
+               // as a single quoted phrase
                String quotedSafeText = '"' + QueryParser.escape(text.substring(1, text.length() - 1)) + '"';
                fullTextQuery = " TEXT:" + quotedSafeText;
                nameAttrQuery = " @" + nameAttr + ":" + quotedSafeText;
@@ -174,25 +182,45 @@ public final class SearchContext implements Serializable
                StringBuilder nameAttrBuf = new StringBuilder(64);
                fullTextBuf.append('(');
                nameAttrBuf.append('(');
-               while (t.hasMoreTokens())
+               int tokenCount = t.countTokens();
+               for (int i=0; i<tokenCount; i++)
                {
                   String term = t.nextToken();
-                  if (term.charAt(0) != '*')
+                  
+                  // check for existance of a special operator
+                  boolean operatorAND = (term.charAt(0) == OP_AND);
+                  boolean operatorNOT = (term.charAt(0) == OP_NOT);
+                  // strip operator from term if one was found
+                  if (operatorAND || operatorNOT)
+                  {
+                     term = term.substring(1);
+                  }
+                  
+                  // operators such as AND and OR are only make sense for full text searching 
+                  if (i != 0)
+                  {
+                     fullTextBuf.append(operatorAND ? " AND " : " OR ");
+                     nameAttrBuf.append(operatorAND ? " AND " : " OR ");
+                  }
+                  
+                  // prepend NOT operator if supplied
+                  if (operatorNOT)
+                  {
+                     fullTextBuf.append(OP_NOT);
+                     nameAttrBuf.append(OP_NOT);
+                  }
+                  
+                  if (term.charAt(0) != OP_WILDCARD)
                   {
                      String safeTerm = QueryParser.escape(term);
-                     fullTextBuf.append("TEXT:").append(safeTerm).append('*');
-                     nameAttrBuf.append("@").append(nameAttr).append(":").append(safeTerm).append('*');
+                     fullTextBuf.append("TEXT:").append(safeTerm).append(OP_WILDCARD);
+                     nameAttrBuf.append("@").append(nameAttr).append(":").append(safeTerm).append(OP_WILDCARD);
                   }
                   else
                   {
                      String safeTerm = QueryParser.escape(term.substring(1));
-                     fullTextBuf.append("TEXT:*").append(safeTerm).append('*');
-                     nameAttrBuf.append("@").append(nameAttr).append(":*").append(safeTerm).append('*');
-                  }
-                  if (t.hasMoreTokens())
-                  {
-                     fullTextBuf.append(" OR ");
-                     nameAttrBuf.append(" OR ");
+                     fullTextBuf.append("TEXT:*").append(safeTerm).append(OP_WILDCARD);
+                     nameAttrBuf.append("@").append(nameAttr).append(":*").append(safeTerm).append(OP_WILDCARD);
                   }
                }
                fullTextBuf.append(')');
@@ -239,7 +267,7 @@ public final class SearchContext implements Serializable
             {
                String escapedName = Repository.escapeQName(qname);
                attributeQuery.append(" +@").append(escapedName)
-                             .append(":").append(QueryParser.escape(value)).append('*');
+                             .append(":").append(QueryParser.escape(value)).append(OP_WILDCARD);
             }
          }
          

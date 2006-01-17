@@ -17,6 +17,7 @@
 package org.alfresco.filesys.smb.server.repo;
 
 import org.alfresco.filesys.server.filesys.*;
+import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
 import org.alfresco.service.cmr.repository.*;
 
 /**
@@ -40,6 +41,10 @@ public class ContentContext extends DiskDeviceContext
     // File state table
     
     private FileStateTable m_stateTable;
+    
+    // Drag and drop pseudo file
+    
+    private PseudoFile m_dragAndDropApp;
     
     /**
      * Class constructor
@@ -133,5 +138,35 @@ public class ContentContext extends DiskDeviceContext
             m_stateTable = null;
         else if ( m_stateTable == null)
             m_stateTable = new FileStateTable();
+    }
+    
+    /**
+     * Determine if the drag and drop pseudo file has been configured
+     * 
+     * @return boolean
+     */
+    public final boolean hasDragAndDropApp()
+    {
+        return m_dragAndDropApp != null ? true : false;
+    }
+    
+    /**
+     * Return the drag and drop pseudo file
+     * 
+     * @return PseudoFile
+     */
+    public final PseudoFile getDragAndDropApp()
+    {
+        return m_dragAndDropApp;
+    }
+    
+    /**
+     * Set the drag and drop application details
+     * 
+     * @param dragDropApp PseudoFile
+     */
+    public final void setDragAndDropApp(PseudoFile dragDropApp)
+    {
+        m_dragAndDropApp = dragDropApp;
     }
 }

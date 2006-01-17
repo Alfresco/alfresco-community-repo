@@ -24,6 +24,8 @@ import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.FileOpenParams;
 import org.alfresco.filesys.server.filesys.FileStatus;
 import org.alfresco.filesys.smb.SharingMode;
+import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
+import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileList;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -81,6 +83,10 @@ public class FileState
     // Link to the new file state when a file is renamed
     
     private FileState m_newNameState;
+    
+    // Pseudo file list
+    
+    private PseudoFileList m_pseudoFiles;
     
     /**
      * Class constructor
@@ -242,13 +248,7 @@ public class FileState
      */
     public final synchronized int incrementOpenCount()
     {
-        m_openCount++;
-
-        // Debug
-
-        // if ( logger.isDebugEnabled() && m_openCount > 1)
-        // logger.debug("@@@@@ File open name=" + getPath() + ", count=" + m_openCount);
-        return m_openCount;
+        return m_openCount++;
     }
 
     /**
@@ -315,6 +315,38 @@ public class FileState
     public final FileState getRenameState()
     {
         return m_newNameState;
+    }
+
+    /**
+     * Determine if a folder has pseudo files associated with it
+     * 
+     * @return boolean
+     */
+    public final boolean hasPseudoFiles()
+    {
+        return m_pseudoFiles != null ? true : false;
+    }
+    
+    /**
+     * Return the pseudo file list
+     * 
+     * @return PseudoFileList
+     */
+    public final PseudoFileList getPseudoFileList()
+    {
+        return m_pseudoFiles;
+    }
+    
+    /**
+     * Add a pseudo file to this folder
+     * 
+     * @param pfile PseudoFile
+     */
+    public final void addPseudoFile(PseudoFile pfile)
+    {
+        if ( m_pseudoFiles == null)
+            m_pseudoFiles = new PseudoFileList();
+        m_pseudoFiles.addFile( pfile);
     }
     
     /**
@@ -612,6 +644,14 @@ public class FileState
         else
             str.append("Null");
         
+        if ( isDirectory())
+        {
+            str.append(",Pseudo=");
+            if ( hasPseudoFiles())
+                str.append(getPseudoFileList().numberOfFiles());
+            else
+                str.append(0);
+        }
         str.append("]");
 
         return str.toString();

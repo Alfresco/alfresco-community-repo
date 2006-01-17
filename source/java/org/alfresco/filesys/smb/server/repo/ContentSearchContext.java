@@ -20,7 +20,11 @@ import java.io.FileNotFoundException;
 import java.util.List;
 
 import org.alfresco.filesys.server.filesys.FileInfo;
+import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.SearchContext;
+import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
+import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileList;
+import org.alfresco.filesys.util.WildCard;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,6 +43,10 @@ public class ContentSearchContext extends SearchContext
     private CifsHelper cifsHelper;
     private List<NodeRef> results;
     private int index = -1;
+
+    // Pseudo file list blended into a wildcard folder search
+    
+    private PseudoFileList pseudoList;
     
     /**
      * Performs a search against the direct children of the given node.
@@ -51,19 +59,64 @@ public class ContentSearchContext extends SearchContext
      * @param searchRootNodeRef the node whos children are to be searched
      * @param searchStr the search string relative to the search root node
      * @param attributes the search attributes, e.g. searching for folders, etc
+     * @param searchFolderState File state of the folder being searched
      * @return Returns a search context with the results of the search
      */
     public static ContentSearchContext search(
             CifsHelper cifsHelper,
             NodeRef searchRootNodeRef,
             String searchStr,
-            int attributes)
+            int attributes,
+            FileState searchFolderState)
     {
-        // perform the search
-        List<NodeRef> results = cifsHelper.getNodeRefs(searchRootNodeRef, searchStr);
+        // Perform the search
         
-        // build the search context to store the results
-        ContentSearchContext searchCtx = new ContentSearchContext(cifsHelper, results, searchStr);
+        List<NodeRef> results = cifsHelper.getNodeRefs(searchRootNodeRef, searchStr);
+
+        // Check if there are any pseudo files for the folder being searched.
+        
+        PseudoFileList pseudoList = null;
+        
+        if ( searchFolderState != null && searchFolderState.hasPseudoFiles())
+        {
+            // If it is a wildcard search use all pseudo files
+            
+            if ( WildCard.containsWildcards(searchStr))
+            {
+                // Check if the folder has any associated pseudo files
+                
+                pseudoList = searchFolderState.getPseudoFileList();
+            }
+            else if ( results == null || results.size() == 0)
+            {
+                // Check if the required file is in the pseudo file list
+                
+                String fname = searchStr;
+                if ( fname.indexOf(FileName.DOS_SEPERATOR) != -1)
+                {
+                    String[] paths = FileName.splitPath( searchStr);
+                    fname = paths[1];
+                }
+                
+                if ( fname != null)
+                {
+                    // Search for a matching pseudo file
+                    
+                    PseudoFile pfile = searchFolderState.getPseudoFileList().findFile( fname, true);
+                    if ( pfile != null)
+                    {
+                        // Create a file list with the required file
+                        
+                        pseudoList = new PseudoFileList();
+                        pseudoList.addFile( pfile);
+                    }
+                }
+            }
+        }
+        
+        // Build the search context to store the results
+        
+        ContentSearchContext searchCtx = new ContentSearchContext(cifsHelper, results, searchStr, pseudoList);
         
         // done
         if (logger.isDebugEnabled())
@@ -81,14 +134,21 @@ public class ContentSearchContext extends SearchContext
     private ContentSearchContext(
             CifsHelper cifsHelper,
             List<NodeRef> results,
-            String searchStr)
+            String searchStr,
+            PseudoFileList pseudoList)
     {
         super();
         super.setSearchString(searchStr);
         this.cifsHelper = cifsHelper;
-        this.results = results;
+        this.results    = results;
+        this.pseudoList = pseudoList;
     }
     
+    /**
+     * Return the search as a string
+     * 
+     * @return String
+     */
     public String toString()
     {
         StringBuilder sb = new StringBuilder(60);
@@ -108,6 +168,10 @@ public class ContentSearchContext extends SearchContext
     @Override
     public synchronized boolean hasMoreFiles()
     {
+        // Pseudo files are returned first
+        
+        if ( pseudoList != null && index < (pseudoList.numberOfFiles() - 1))
+            return true;
         return index < (results.size() -1);
     }
 
@@ -115,29 +179,67 @@ public class ContentSearchContext extends SearchContext
     public synchronized boolean nextFileInfo(FileInfo info)
     {
         // check if there is anything else to return
+        
         if (!hasMoreFiles())
-        {
             return false;
-        }
-        // increment the index
-        index++;
-        // get the next file info
-        NodeRef nextNodeRef = results.get(index);
-        // get the file info
 
+        // Increment the index
+        
+        index++;
+        
+        // If the pseudo file list is valid return the pseudo files first
+        
+        if ( pseudoList != null)
+        {
+            if ( index < pseudoList.numberOfFiles())
+            {
+                PseudoFile pfile = pseudoList.getFileAt( index);
+                if ( pfile != null)
+                {
+                    // Get the file information for the pseudo file
+                    
+                    FileInfo pinfo = pfile.getFileInfo();
+                    
+                    // Copy the file information to the callers file info
+                    
+                    info.copyFrom( pinfo);
+                    return true;
+                }
+            }
+            else
+            {
+                // Switch to the main file list
+                
+                pseudoList = null;
+                index = 0;
+                
+                if ( results == null || results.size() == 0)
+                    return false;
+            }
+        }
+
+        // Get the next file info from the node search
+            
+        NodeRef nextNodeRef = results.get(index);
+        
         try
         {
+            // Get the file information and copy across to the callers file info
+            
             FileInfo nextInfo = cifsHelper.getFileInformation(nextNodeRef, "");
-            // copy to info handle
             info.copyFrom(nextInfo);
             
-            // success
+            // Indicate that the file information is valid
+            
             return true;
         }
         catch (FileNotFoundException e)
         {
-            return false;
         }
+        
+        // File information is not valid
+        
+        return false;
     }
 
     @Override

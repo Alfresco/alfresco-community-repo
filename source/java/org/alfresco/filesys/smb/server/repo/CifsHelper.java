@@ -63,6 +63,10 @@ public class CifsHelper
     private MimetypeService mimetypeService;
     private PermissionService permissionService;
     
+    // Mark locked files as offline
+    
+    private boolean lockedFilesAsOffline;
+    
     /**
      * Class constructor
      */
@@ -95,6 +99,26 @@ public class CifsHelper
         this.permissionService = permissionService;
     }
 
+    /**
+     * Enable marking of locked files as offline
+     * 
+     * @param ena boolean
+     */
+    public final void setMarkLockedFilesAsOffline(boolean ena)
+    {
+        lockedFilesAsOffline = ena;
+    }
+    
+    /**
+     * Check if locked files should be marked as offline
+     * 
+     * @return boolean
+     */
+    public final boolean hasLockedFilesAsOffline()
+    {
+        return lockedFilesAsOffline;
+    }
+    
     /**
      * @param serviceRegistry for repo connection
      * @param nodeRef
@@ -170,7 +194,9 @@ public class CifsHelper
         else
         {
             Map<QName, Serializable> nodeProperties = fileFolderInfo.getProperties();
-            // get the file size
+            
+            // Get the file size from the content
+            
             ContentData contentData = (ContentData) nodeProperties.get(ContentModel.PROP_CONTENT);
             long size = 0L;
             if (contentData != null)
@@ -180,8 +206,23 @@ public class CifsHelper
             fileInfo.setSize(size);
             
             // Set the allocation size by rounding up the size to a 512 byte block boundary
+            
             if ( size > 0)
                 fileInfo.setAllocationSize((size + 512L) & 0xFFFFFFFFFFFFFE00L);
+            
+            // Check the lock status of the file
+            
+            if ( hasLockedFilesAsOffline())
+            {
+                String lockTypeStr = (String) nodeProperties.get(ContentModel.PROP_LOCK_TYPE);
+                    
+                if ( lockTypeStr != null)
+                {
+                    // File is locked so mark it as offline
+    
+                    fileInfo.setFileAttributes(fileInfo.getFileAttributes() + FileAttribute.NTOffline);
+                }
+            }
         }
         
         // created
@@ -205,16 +246,21 @@ public class CifsHelper
             fileInfo.setFileName(name);
         }
         
-        // read/write access
+        // Read/write access
+        
         if ( permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
             fileInfo.setFileAttributes(fileInfo.getFileAttributes() + FileAttribute.ReadOnly);
+
+        // Debug
         
-        // done
         if (logger.isDebugEnabled())
         {
             logger.debug("Fetched file info: \n" +
                     "   info: " + fileInfo);
         }
+        
+        // Return the file information
+        
         return fileInfo;
     }
     

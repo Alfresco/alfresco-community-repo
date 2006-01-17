@@ -25,12 +25,10 @@ import javax.transaction.UserTransaction;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.server.SrvSession;
-import org.alfresco.filesys.server.auth.SrvAuthenticator;
 import org.alfresco.filesys.server.core.DeviceContext;
 import org.alfresco.filesys.server.core.DeviceContextException;
 import org.alfresco.filesys.server.filesys.AccessDeniedException;
 import org.alfresco.filesys.server.filesys.AccessMode;
-import org.alfresco.filesys.server.filesys.DiskDeviceContext;
 import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.FileName;
@@ -41,21 +39,21 @@ import org.alfresco.filesys.server.filesys.FileSystem;
 import org.alfresco.filesys.server.filesys.IOControlNotImplementedException;
 import org.alfresco.filesys.server.filesys.IOCtlInterface;
 import org.alfresco.filesys.server.filesys.NetworkFile;
-import org.alfresco.filesys.server.filesys.NotifyChange;
 import org.alfresco.filesys.server.filesys.SearchContext;
 import org.alfresco.filesys.server.filesys.SrvDiskInfo;
 import org.alfresco.filesys.server.filesys.TreeConnection;
-import org.alfresco.filesys.smb.NTIOCtl;
 import org.alfresco.filesys.smb.SMBException;
 import org.alfresco.filesys.smb.SMBStatus;
 import org.alfresco.filesys.smb.SharingMode;
 import org.alfresco.filesys.smb.server.repo.FileState.FileStateStatus;
+import org.alfresco.filesys.smb.server.repo.pseudo.ContentPseudoFileImpl;
+import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
+import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileInterface;
+import org.alfresco.filesys.smb.server.repo.pseudo.PseudoNetworkFile;
 import org.alfresco.filesys.util.DataBuffer;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -85,6 +83,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     
     private static final String KEY_STORE = "store";
     private static final String KEY_ROOT_PATH = "rootPath";
+    private static final String KEY_RELATIVE_PATH = "relativePath";
 
     // Services and helpers
     
@@ -101,6 +100,10 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     // I/O control handler
     
     private IOControlHandler m_ioHandler;
+    
+    // Pseudo files interface
+    
+    private PseudoFileInterface m_pseudoFiles;
     
     /**
      * Class constructor
@@ -312,6 +315,32 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 m_ioHandler = (IOControlHandler) ioctlObj;
                 m_ioHandler.initialize( this, cifsHelper, transactionService, nodeService, checkInOutService);
             }
+            
+            // Initialize the drag and drop pseudo application, if the I/O support has been enabled
+            
+            if ( m_ioHandler != null)
+            {
+                ConfigElement dragDropElem = cfg.getChild( "dragAndDrop");
+                if ( dragDropElem != null)
+                {
+                    // Get the pseudo file name and path to the actual file on the local filesystem
+                    
+                    ConfigElement pseudoName = dragDropElem.getChild( "filename");
+                    ConfigElement appPath    = dragDropElem.getChild( "path");
+                    
+                    if ( pseudoName != null && appPath != null)
+                    {
+                        // Create the pseudo file for the drag and drop application
+                        
+                        PseudoFile dragDropPseudo = new PseudoFile( pseudoName.getValue(), appPath.getValue());
+                        context.setDragAndDropApp( dragDropPseudo);
+                        
+                        // Enable pseudo file support
+                        
+                        m_pseudoFiles = new ContentPseudoFileImpl();
+                    }
+                }
+            }            
         }
         catch (Exception ex)
         {
@@ -319,11 +348,45 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 logger.debug("No I/O control handler available");
         }
         
+        // Check if locked files should be marked as offline
+        
+        ConfigElement offlineFiles = cfg.getChild( "offlineFiles");
+        if ( offlineFiles != null)
+        {
+            // Enable marking locked files as offline
+            
+            cifsHelper.setMarkLockedFilesAsOffline( true);
+            
+            // Logging
+            
+            logger.info("Locked files will be marked as offline");
+        }
+        
         // Return the context for this shared filesystem
         
         return context;
     }
 
+    /**
+     * Check if pseudo file support is enabled
+     * 
+     * @return boolean
+     */
+    public final boolean hasPseudoFileInterface()
+    {
+        return m_pseudoFiles != null ? true : false;
+    }
+    
+    /**
+     * Return the pseudo file support implementation
+     * 
+     * @return PseudoFileInterface
+     */
+    public final PseudoFileInterface getPseudoFileInterface()
+    {
+        return m_pseudoFiles;
+    }
+    
     /**
      * Determine if the disk device is read-only.
      * 
@@ -348,17 +411,39 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
      */
     public FileInfo getFileInformation(SrvSession session, TreeConnection tree, String path) throws IOException
     {
-        // get the device root
+        // Get the device root
         
         ContentContext ctx = (ContentContext) tree.getContext();
         NodeRef infoParentNodeRef = ctx.getRootNode();
+        
+        if ( path == null)
+            path = "";
+        
         String infoPath = path;
         
         try
         {
+            // Check if the path is to a pseudo file
+
+            FileInfo finfo = null;
+            
+            if ( hasPseudoFileInterface())
+            {
+                // Get the pseudo file
+                
+                PseudoFile pfile = getPseudoFileInterface().getPseudoFile( session, tree, path);
+                if ( pfile != null)
+                {
+                    // DEBUG
+                    
+                    if ( logger.isDebugEnabled())
+                        logger.debug("getInfo using pseudo file info for " + path);
+                    return pfile.getFileInfo();
+                }
+            }
+            
             // Get the node ref for the path, chances are there is a file state in the cache
             
-            FileInfo finfo = null;
             NodeRef nodeRef = getNodeForPath(tree, infoPath);
             if ( nodeRef != null)
             {
@@ -378,7 +463,8 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             if ( finfo == null)
             {
-                String[] paths = FileName.splitPath(path);
+                String[] paths = FileName.splitPath( path);
+                
                 if ( paths[0] != null && paths[0].length() > 1)
                 {
                     // Find the node ref for the folder being searched
@@ -402,6 +488,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 finfo = cifsHelper.getFileInformation(infoParentNodeRef, infoPath);
                 
                 // DEBUG
+                
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Getting file information: \n" +
@@ -411,6 +498,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             }
 
             // Return the file information
+            
             return finfo;
         }
         catch (FileNotFoundException e)
@@ -468,6 +556,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
 
             String searchFileSpec = searchPath;
             NodeRef searchRootNodeRef = ctx.getRootNode();
+            FileState searchFolderState = null;
             
             // Create the transaction
             
@@ -483,6 +572,17 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 String[] paths = FileName.splitPath(searchPath);
                 if ( paths[0] != null && paths[0].length() > 1)
                 {
+                    // Get the file state for the folder being searched
+                    
+                    searchFolderState = getStateForPath(tree, paths[0]);
+                    if ( searchFolderState == null)
+                        searchFolderState = ctx.getStateTable().findFileState( paths[0], true, true);
+                    
+                    // Add pseudo files to the folder being searched
+
+                    if ( hasPseudoFileInterface())
+                        getPseudoFileInterface().addPseudoFilesToFolder( sess, tree, paths[0]);
+                    
                     // Find the node ref for the folder being searched
                     
                     NodeRef nodeRef = getNodeForPath(tree, paths[0]);
@@ -503,7 +603,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             // Start the search
             
             SearchContext searchCtx = ContentSearchContext.search(cifsHelper, searchRootNodeRef,
-                    searchFileSpec, attributes);
+                    searchFileSpec, attributes, searchFolderState);
             
             // done
             
@@ -641,6 +741,24 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             // Get the node for the path
             
             ContentContext ctx = (ContentContext) tree.getContext();
+            
+            // Check if pseudo files are enabled
+            
+            if ( hasPseudoFileInterface())
+            {
+                // Check if the path is to a pseudo file
+                
+                PseudoFile pfile = getPseudoFileInterface().getPseudoFile( sess, tree, params.getPath());
+                if ( pfile != null)
+                {
+                    // Create a network file to access the pseudo file data
+                    
+                    return new PseudoNetworkFile( pfile.getFileName(), pfile.getFilePath(), params.getPath());
+                }
+            }
+            
+            // Not a pseudo file, try and open a normal file/folder node
+            
             NodeRef nodeRef = getNodeForPath(tree, params.getPath());
             
             // Check permissions on the file/folder node
@@ -1081,12 +1199,15 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
            
         file.closeFile();
         
-        // remove the node if necessary
-        if (file.hasDeleteOnClose())
+        // Remove the node if marked for delete
+        
+        if (file.hasDeleteOnClose() && file instanceof ContentNetworkFile)
         {
             ContentNetworkFile contentNetFile = (ContentNetworkFile) file;
             NodeRef nodeRef = contentNetFile.getNodeRef();
-            // we don't know how long the network file has had the reference, so check for existence
+            
+            // We don't know how long the network file has had the reference, so check for existence
+            
             if (nodeService.exists(nodeRef))
             {
                 try
@@ -1579,6 +1700,34 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
         // Search the repository for the node
         
         return cifsHelper.getNodeRef(ctx.getRootNode(), path);
+    }
+    
+    /**
+     * Get the file state for the specified path
+     * 
+     * @param tree TreeConnection
+     * @param path String
+     * @return FileState
+     * @exception FileNotFoundException
+     */
+    public FileState getStateForPath(TreeConnection tree, String path)
+        throws FileNotFoundException
+    {
+        // Check if there is a cached state for the path
+        
+        ContentContext ctx = (ContentContext) tree.getContext();
+        FileState fstate = null;
+        
+        if ( ctx.hasStateTable())
+        {
+            // Get the file state for a file/folder
+            
+            fstate = ctx.getStateTable().findFileState(path);
+        }
+        
+        // Return the file state
+        
+        return fstate;
     }
     
     /**

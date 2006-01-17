@@ -1,0 +1,26 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:cm="http://www.alfresco.org/model/content/1.0"
+           xmlns:sys="http://www.alfresco.org/model/system/1.0"
+           xmlns:usr="http://www.alfresco.org/model/user/1.0"
+           xmlns:app="http://www.alfresco.org/model/application/1.0">
+           
+    <sys:container view:childName="${alfresco_user_store.system_container.childname}">
+        <sys:children>
+            <sys:container view:childName="${alfresco_user_store.user_container.childname}">
+                <sys:children>
+                    <usr:user view:childName="usr:user">
+                        <usr:username>admin</usr:username>
+                        <usr:password>209c6174da490caeb422f3fa5a7ae634</usr:password>   
+                        <usr:enabled>true</usr:enabled>
+                        <usr:accountExpires>false</usr:accountExpires>
+                        <usr:credentialsExpire>false</usr:credentialsExpire>
+                        <usr:accountLocked>false</usr:accountLocked>
+                    </usr:user>
+                </sys:children>
+            </sys:container>
+            <sys:container view:childName="${alfresco_user_store.authorities_container.childname}">
+            </sys:container>
+        </sys:children>
+    </sys:container>           
+           
+</view:view>

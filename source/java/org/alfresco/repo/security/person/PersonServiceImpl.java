@@ -186,7 +186,7 @@ public class PersonServiceImpl implements PersonService
     {
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, userName);
-        properties.put(ContentModel.PROP_HOMEFOLDER, getCompanyHome());
+        properties.put(ContentModel.PROP_HOMEFOLDER, getHomeFolder());
         properties.put(ContentModel.PROP_FIRSTNAME, userName);
         properties.put(ContentModel.PROP_LASTNAME, "");
         properties.put(ContentModel.PROP_EMAIL, "");
@@ -194,6 +194,11 @@ public class PersonServiceImpl implements PersonService
         return properties;
     }
 
+    private NodeRef getHomeFolder()
+    {
+        return getCompanyHome();
+    }
+    
     public NodeRef createPerson(Map<QName, Serializable> properties)
     {
         String caseSensitiveUserName = DefaultTypeConverter.INSTANCE.convert(String.class, properties

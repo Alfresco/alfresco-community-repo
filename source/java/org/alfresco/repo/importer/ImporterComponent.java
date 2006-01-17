@@ -569,7 +569,7 @@ public class ImporterComponent
                     searchParameters.addStore(importedRef.context.getNodeRef().getStoreRef());
                     searchParameters.setLanguage(SearchService.LANGUAGE_LUCENE);
                     searchParameters.setQuery("PATH:\"" + importedRef.value + "\"");
-                    searchParameters.excludeDataInTheCurrentTransaction(true);
+                    searchParameters.excludeDataInTheCurrentTransaction(false);
                     ResultSet resultSet = searchService.query(searchParameters);
                     try
                     {

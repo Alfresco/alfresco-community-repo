@@ -1,0 +1,31 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:cm="http://www.alfresco.org/model/content/1.0"
+           xmlns:sys="http://www.alfresco.org/model/system/1.0"
+           xmlns:app="http://www.alfresco.org/model/application/1.0">
+           
+    <sys:container view:childName="${system.system_container.childname}">
+        <sys:children>
+            <sys:container view:childName="${system.people_container.childname}">
+                <sys:children>
+                    <cm:person view:childName="cm:person">
+                        <cm:userName>admin</cm:userName>
+                        <cm:firstName>Administrator</cm:firstName>
+                        <cm:lastName></cm:lastName>
+                        <cm:email></cm:email>
+                        <cm:organizationId></cm:organizationId>
+                        <cm:homeFolder>/${spaces.company_home.childname}</cm:homeFolder>
+                    </cm:person>
+                    <cm:person view:childName="cm:person">
+                        <cm:userName>Guest</cm:userName>
+                        <cm:firstName>Guest</cm:firstName>
+                        <cm:lastName></cm:lastName>
+                        <cm:email></cm:email>
+                        <cm:organizationId></cm:organizationId>
+                        <cm:homeFolder>/${spaces.company_home.childname}/${spaces.guest_home.childname}</cm:homeFolder>
+                    </cm:person>
+                </sys:children>
+            </sys:container>
+        </sys:children>
+    </sys:container>           
+           
+</view:view>

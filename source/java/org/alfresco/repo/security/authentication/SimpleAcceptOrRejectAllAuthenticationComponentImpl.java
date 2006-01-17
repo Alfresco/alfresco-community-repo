@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import net.sf.acegisecurity.Authentication;
+
 /**
  * This implementation of an AuthenticationComponent can be configured to accept or reject all attempts to login.
  * 
@@ -54,4 +56,12 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
         }
 
     }
+
+    @Override
+    protected boolean implementationAllowsGuestLogin()
+    {
+       return accept;
+    }
+    
+    
 }

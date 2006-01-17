@@ -709,7 +709,53 @@
         </property>
     </bean>
 
-    <bean id="importerBootstrap" class="org.alfresco.repo.importer.ImporterBootstrap" init-method="bootstrap" depends-on="systemBootstrap">
+
+    <bean id="alfrescoUserStoreBootstrap" class="org.alfresco.repo.importer.ImporterBootstrap" init-method="bootstrap" depends-on="systemBootstrap">
+        <property name="transactionService">
+            <ref bean="transactionComponent"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="importerService">
+            <ref bean="importerComponent"/>
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService"/>
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent" />
+        </property>
+        <property name="storeUrl">
+            <value>${alfresco_user_store.store}</value>
+        </property>
+        <property name="allowWrite">
+            <value>${server.transaction.allow-writes}</value>
+        </property>
+        <property name="configuration">
+            <props>
+                <prop key="alfresco_user_store.system_container.childname">${alfresco_user_store.system_container.childname}</prop>
+                <prop key="alfresco_user_store.user_container.childname">${alfresco_user_store.user_container.childname}</prop>
+                <prop key="alfresco_user_store.authorities_container.childname">${alfresco_user_store.authorities_container.childname}</prop>
+            </props>
+        </property>
+        <!-- To specify a locale other than the system default, uncomment the following
+        <property name="locale">
+            <value>en_GB</value>
+        </property>
+        -->
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/alfrescoUserStore.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+
+    <bean id="importerBootstrap" class="org.alfresco.repo.importer.ImporterBootstrap" init-method="bootstrap" depends-on="alfrescoUserStoreBootstrap">
         <property name="transactionService">
             <ref bean="transactionComponent"/>
         </property>
@@ -734,6 +780,9 @@
         <property name="configuration">
             <props>
                 <prop key="spaces.company_home.childname">${spaces.company_home.childname}</prop>
+                <prop key="spaces.guest_home.childname">${spaces.guest_home.childname}</prop>
+                <prop key="system.system_container.childname">${system.system_container.childname}</prop>
+                <prop key="system.people_container.childname">${system.people_container.childname}</prop>
                 <prop key="spaces.dictionary.childname">${spaces.dictionary.childname}</prop>
                 <prop key="spaces.templates.childname">${spaces.templates.childname}</prop>
                 <prop key="spaces.templates.content.childname">${spaces.templates.content.childname}</prop>
@@ -757,7 +806,11 @@
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                 </props>
                 <props>
-                    <prop key="path">/${spaces.company_home.childname}</prop>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/system.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.guest_home.childname}</prop>
                     <prop key="location">alfresco/bootstrap/tutorial.xml</prop>
                     <prop key="messages">alfresco/messages/bootstrap-tutorial</prop>
                 </props>

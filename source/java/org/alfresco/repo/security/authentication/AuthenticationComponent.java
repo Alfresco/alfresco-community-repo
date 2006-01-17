@@ -73,11 +73,27 @@ public interface AuthenticationComponent
     
     
     /**
+     * Set the guest user as the current user.
+     * 
+     * @return
+     */
+    public Authentication setGuestUserAsCurrentUser();
+    
+    
+    /**
      * Get the name of the system user
      * 
      * @return
      */
     public String getSystemUserName();
+    
+    
+    /**
+     * Get the name of the guest user
+     * 
+     * @return
+     */
+    public String getGuestUserName();
     
     /**
      * Get the current user name.

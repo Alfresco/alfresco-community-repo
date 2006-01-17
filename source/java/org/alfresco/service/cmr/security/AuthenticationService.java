@@ -91,6 +91,13 @@ public interface AuthenticationService
     public void authenticate(String userName, char[] password) throws AuthenticationException;
     
     /**
+     * Authenticate as the guest user. This may not be allowed and throw an exception.
+     * 
+     * @throws AuthenticationException
+     */
+    public void authenticateAsGuest() throws AuthenticationException;
+    
+    /**
      * Get the name of the currently authenticated user.
      * 
      * @return

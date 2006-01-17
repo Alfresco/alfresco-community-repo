@@ -1003,8 +1003,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
             // Default deny
             return false;
-
         }
+     
     }
 
     /**

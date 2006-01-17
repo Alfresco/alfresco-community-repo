@@ -17,6 +17,7 @@
 package org.alfresco.repo.security.authentication;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.security.PermissionService;
 
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.GrantedAuthority;
@@ -30,11 +31,9 @@ import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
 
 /**
- * This class abstract the support required to set up and query the Acegi
- * context for security enforcement.
+ * This class abstract the support required to set up and query the Acegi context for security enforcement.
  * 
- * There are some simple default method implementations to support simple
- * authentication.
+ * There are some simple default method implementations to support simple authentication.
  * 
  * @author Andy Hind
  */
@@ -45,11 +44,18 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     private static final String SYSTEM_USER_NAME = "System";
 
+    private Boolean allowGuestLogin = null;
+
     public AbstractAuthenticationComponent()
     {
         super();
     }
 
+    public void setAllowGuestLogin(Boolean allowGuestLogin)
+    {
+        this.allowGuestLogin = allowGuestLogin;
+    }
+    
     /**
      * Explicitly set the current user to be authenticated.
      * 
@@ -59,11 +65,11 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public Authentication setCurrentUser(String userName) throws AuthenticationException
     {
-        if(userName == null)
+        if (userName == null)
         {
             throw new AuthenticationException("Null user name");
         }
-        
+
         try
         {
             UserDetails ud = null;
@@ -72,6 +78,11 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 GrantedAuthority[] gas = new GrantedAuthority[1];
                 gas[0] = new GrantedAuthorityImpl("ROLE_SYSTEM");
                 ud = new User(SYSTEM_USER_NAME, "", true, true, true, true, gas);
+            }
+            else if (userName.equals(PermissionService.GUEST))
+            {
+                GrantedAuthority[] gas = new GrantedAuthority[0];
+                ud = new User(PermissionService.GUEST, "", true, true, true, true, gas);
             }
             else
             {
@@ -200,6 +211,46 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     }
 
     /**
+     * Get the name of the Guest User
+     */
+    public String getGuestUserName()
+    {
+        return PermissionService.GUEST;
+    }
+
+    /**
+     * Set the guest user as the current user.
+     */
+    public Authentication setGuestUserAsCurrentUser() throws AuthenticationException
+    {
+        if (allowGuestLogin == null)
+        {
+            if(implementationAllowsGuestLogin())
+            {
+                return setCurrentUser(PermissionService.GUEST);
+            }
+            else
+            {
+                throw new AuthenticationException("Guest authentication is not allowed");  
+            }
+        }
+        else
+        {
+            if(allowGuestLogin.booleanValue())
+            {
+                return setCurrentUser(PermissionService.GUEST);
+            }
+            else
+            {
+                throw new AuthenticationException("Guest authentication is not allowed"); 
+            }
+            
+        }
+    }
+
+    protected abstract boolean implementationAllowsGuestLogin();
+
+    /**
      * Remove the current security information
      */
     public void clearCurrentSecurityContext()
@@ -224,8 +275,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     }
 
     /**
-     * Get the NTML mode - none - supports MD4 hash to integrate - or it can
-     * asct as an NTLM authentication
+     * Get the NTML mode - none - supports MD4 hash to integrate - or it can asct as an NTLM authentication
      */
     public NTLMMode getNTLMMode()
     {

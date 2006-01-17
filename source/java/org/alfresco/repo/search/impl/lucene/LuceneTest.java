@@ -3128,6 +3128,7 @@ public class LuceneTest extends TestCase
         ResultSet results = test.serviceRegistry.getSearchService().query(sp);
 
         results.close();
-
+        
+        //test.dictionaryService.getType(test.nodeService.getType(test.rootNodeRef)).getDefaultAspects();
     }
 }

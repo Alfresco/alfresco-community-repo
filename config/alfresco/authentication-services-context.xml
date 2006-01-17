@@ -192,6 +192,9 @@
         <property name="authenticationManager">
             <ref bean="authenticationManager" />
         </property>
+        <property name="allowGuestLogin">
+            <value>true</value>
+        </property>
     </bean>
 
     

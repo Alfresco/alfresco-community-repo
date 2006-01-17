@@ -751,6 +751,12 @@ public class AuthenticationTest extends TestCase
         // assertNull(dao.getUserOrNull("Andy"));
     }
 
+    public void testAbstractAuthenticationComponentGuestUserSupport()
+    {
+        authenticationComponent.setGuestUserAsCurrentUser();
+        assertEquals(authenticationComponent.getCurrentUserName(), authenticationComponent.getGuestUserName());
+    }
+    
     
     public void testPassThroughLogin()
     {

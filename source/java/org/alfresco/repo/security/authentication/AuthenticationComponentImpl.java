@@ -96,5 +96,12 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
     {
         return NTLMMode.MD4_PROVIDER;
     }
+
+    @Override
+    protected boolean implementationAllowsGuestLogin()
+    {
+        return true;
+    }
+   
     
 }

@@ -147,4 +147,10 @@ public class AuthenticationServiceImpl implements AuthenticationService
         return false;
     }
 
+    public void authenticateAsGuest() throws AuthenticationException
+    {
+        authenticationComponent.setGuestUserAsCurrentUser();
+    }
+
+    
 }

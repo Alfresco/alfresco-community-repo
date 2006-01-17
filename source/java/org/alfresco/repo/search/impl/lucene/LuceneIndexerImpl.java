@@ -81,7 +81,7 @@ import org.apache.lucene.search.TermQuery;
  * behaviour if used on its own.
  * 
  * @author andyh
- * 
+ *  
  */
 public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
 {

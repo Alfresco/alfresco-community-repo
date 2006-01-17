@@ -31,6 +31,7 @@ import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
 import org.alfresco.config.ConfigService;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
@@ -154,12 +155,20 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
                {
                   QName type = Repository.resolveToQName(property.Type);
                   TypeDefinition typeDef = dd.getType(type);
+                  if (typeDef == null)
+                  {
+                     throw new AlfrescoRuntimeException("No Type Definition found for: " + property.Type + " - Was an Aspect expected?");
+                  }
                   propDef = typeDef.getProperties().get(Repository.resolveToQName(property.Property));
                }
                else if (property.Aspect != null)
                {
                   QName aspect = Repository.resolveToQName(property.Aspect);
                   AspectDefinition aspectDef = dd.getAspect(aspect);
+                  if (aspectDef == null)
+                  {
+                     throw new AlfrescoRuntimeException("No Aspect Definition found for: " + property.Aspect + " - Was a Type expected?");
+                  }
                   propDef = aspectDef.getProperties().get(Repository.resolveToQName(property.Property));
                }
                

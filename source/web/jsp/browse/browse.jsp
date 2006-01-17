@@ -159,11 +159,14 @@
                                  <%--<div style="padding-top:2px"><a:statusMessage id="status2" border="yellowInner" bgcolor="#ffffcc" binding="#{BrowseBean.statusMessage}" /></div>--%>
                               </td>
                               <td bgcolor="#465F7D" width=1></td>
-                              <td width=100 style="padding-left:2px">
+                              <td width=135 style="padding-left:2px">
                                  <%-- Current object actions --%>
                                  <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.actions}" id="msg14" /><br>
                                  <a:actionLink value="#{msg.new_search}" image="/images/icons/search_icon.gif" padding="4" action="advSearch" id="link20" />
-                                 <a:actionLink value="#{msg.save_search}" image="/images/icons/save_search.gif" padding="4" action="#{AdvancedSearchBean.saveSearch}" id="link20_1" />
+                                 <a:actionLink value="#{msg.save_new_search}" image="/images/icons/save_search.gif" padding="4" action="#{AdvancedSearchBean.saveNewSearch}" id="link20_1" />
+                                 <a:booleanEvaluator value="#{AdvancedSearchBean.allowEdit == true}" id="eval0">
+                                    <a:actionLink value="#{msg.save_edit_search}" image="/images/icons/edit_search.gif" padding="4" action="#{AdvancedSearchBean.saveEditSearch}" id="link20_2" />
+                                 </a:booleanEvaluator>
                                  <a:actionLink value="#{msg.close_search}" image="/images/icons/action.gif" padding="4" actionListener="#{BrowseBean.closeSearch}" id="link21" />
                               </td>
                            </a:panel>

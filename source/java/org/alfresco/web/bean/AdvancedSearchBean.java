@@ -55,17 +55,20 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.SearchContext.RangeProperties;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.config.ClientConfigElement.CustomProperty;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
 import org.alfresco.web.ui.repo.component.UICategorySelector;
 import org.alfresco.web.ui.repo.component.UISearchCustomProperties;
@@ -81,6 +84,8 @@ import org.alfresco.web.ui.repo.component.UISearchCustomProperties;
  */
 public class AdvancedSearchBean
 {
+   private static final String OUTCOME_BROWSE = "browse";
+
    /**
     * Default constructor
     */
@@ -207,6 +212,22 @@ public class AdvancedSearchBean
    {
       this.editSearchName = editSearchName;
    }
+   
+   /**
+    * @return Returns the searchSaveGlobal.
+    */
+   public boolean isSearchSaveGlobal()
+   {
+      return this.searchSaveGlobal;
+   }
+
+   /**
+    * @param searchSaveGlobal The searchSaveGlobal to set.
+    */
+   public void setSearchSaveGlobal(boolean searchSaveGlobal)
+   {
+      this.searchSaveGlobal = searchSaveGlobal;
+   }
 
    /**
     * @return Returns the folder to search, null for all.
@@ -254,6 +275,38 @@ public class AdvancedSearchBean
    public void setMode(String mode)
    {
       this.mode = mode;
+   }
+   
+   /**
+    * @return Returns the savedSearchMode.
+    */
+   public String getSavedSearchMode()
+   {
+      return this.savedSearchMode;
+   }
+
+   /**
+    * @param savedSearchMode The savedSearchMode to set.
+    */
+   public void setSavedSearchMode(String savedSearchMode)
+   {
+      this.savedSearchMode = savedSearchMode;
+   }
+   
+   /**
+    * @return Returns the allow Edit mode.
+    */
+   public boolean isAllowEdit()
+   {
+      return (this.savedSearch != null && NO_SELECTION.equals(this.savedSearch) == false);
+   }
+
+   /**
+    * @param allowEdit The allow Edit mode to set.
+    */
+   public void setAllowEdit(boolean allowEdit)
+   {
+      // dummy method for Bean interface compliance
    }
    
    /**
@@ -754,56 +807,74 @@ public class AdvancedSearchBean
       // this causes the browse screen to switch into search results view
       this.navigator.setSearchContext(search);
       
-      return "browse";
+      return OUTCOME_BROWSE;
    }
    
    /**
-    * Action handler called to initiate the saved search screen
+    * Action handler called to initiate the saved search screen for Create
     */
-   public String saveSearch()
+   public String saveNewSearch()
+   {
+      this.searchDescription = null;
+      this.searchName = null;
+      this.searchSaveGlobal = false;
+      
+      return "saveNewSearch";
+   }
+   
+   /**
+    * Action handler called to initiate the saved search screen for Edit
+    */
+   public String saveEditSearch()
    {
       this.searchDescription = null;
       this.searchName = null;
       this.editSearchName = null;
       
-      if (this.savedSearch != null && NO_SELECTION.equals(this.savedSearch) == false)
+      // load previously selected search for overwrite
+      try
       {
-         // load previous for overwrite
-         try
+         NodeRef searchRef = new NodeRef(Repository.getStoreRef(), this.savedSearch);
+         Node searchNode = new Node(searchRef);
+         if (this.nodeService.exists(searchRef) && searchNode.hasPermission(PermissionService.WRITE))
          {
-            NodeRef searchRef = new NodeRef(Repository.getStoreRef(), this.savedSearch);
-            Node searchNode = new Node(searchRef);
-            if (this.nodeService.exists(searchRef) && searchNode.hasPermission(PermissionService.WRITE))
-            {
-               Node node = new Node(searchRef);
-               this.searchName = node.getName();
-               this.editSearchName = this.searchName;
-               this.searchDescription = (String)node.getProperties().get(ContentModel.PROP_DESCRIPTION);
-            }
-            else
-            {
-               // unable to overwrite existing saved search
-               this.savedSearch = null;
-            }
+            Node node = new Node(searchRef);
+            this.searchName = node.getName();
+            this.editSearchName = this.searchName;
+            this.searchDescription = (String)node.getProperties().get(ContentModel.PROP_DESCRIPTION);
          }
-         catch (Throwable err)
+         else
          {
-            // unable to overwrite existing saved search for some other reason
+            // unable to overwrite existing saved search
             this.savedSearch = null;
          }
       }
+      catch (Throwable err)
+      {
+         // unable to overwrite existing saved search for some other reason
+         this.savedSearch = null;
+      }
       
-      return "saveSearch";
+      return "saveEditSearch";
    }
    
    /**
-    * Action handler called to save the current search
+    * Action handler called to save a new search
     */
-   public String saveSearchOK()
+   public String saveNewSearchOK()
    {
-      String outcome = "browse";
+      String outcome = OUTCOME_BROWSE;
       
-      NodeRef searchesRef = getSavedSearchesRef();
+      NodeRef searchesRef;
+      if (isSearchSaveGlobal() == true)
+      {
+         searchesRef = getGlobalSearchesRef();
+      }
+      else
+      {
+         searchesRef = getUserSearchesRef();
+      }
+      
       SearchContext search = this.navigator.getSearchContext();
       if (searchesRef != null && search != null)
       {
@@ -814,45 +885,19 @@ public class AdvancedSearchBean
             tx = Repository.getUserTransaction(context);
             tx.begin();
             
-            Map<QName, Serializable> props = null;
-            
-            // handle Edit e.g. Overwrite of existing search
-            // detect if was previously selected saved search (e.g. NodeRef not null)
-            boolean edit = false;
-            if (this.savedSearch != null && NO_SELECTION.equals(this.savedSearch) == false)
-            {
-               NodeRef searchRef = new NodeRef(Repository.getStoreRef(), this.savedSearch);
-               edit = (this.nodeService.exists(searchRef));
-            }
+            // create new content node as the saved search object
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
+            props.put(ContentModel.PROP_NAME, this.searchName);
+            props.put(ContentModel.PROP_DESCRIPTION, this.searchDescription);
+            ChildAssociationRef childRef = this.nodeService.createNode(
+                  searchesRef,
+                  ContentModel.ASSOC_CONTAINS,
+                  QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(this.searchName)),
+                  ContentModel.TYPE_CONTENT,
+                  props);
             
             ContentService contentService = Repository.getServiceRegistry(context).getContentService();
-            ContentWriter writer;
-            if (edit)
-            {
-               // edit existing saved search
-               NodeRef searchRef = new NodeRef(Repository.getStoreRef(), this.savedSearch);
-               props = this.nodeService.getProperties(searchRef);
-               props.put(ContentModel.PROP_NAME, this.searchName);
-               props.put(ContentModel.PROP_DESCRIPTION, this.searchDescription);
-               this.nodeService.setProperties(searchRef, props);
-               
-               writer = contentService.getWriter(searchRef, ContentModel.PROP_CONTENT, true);
-            }
-            else
-            {
-               // create new content node as the saved search object
-               props = new HashMap<QName, Serializable>(2, 1.0f);
-               props.put(ContentModel.PROP_NAME, this.searchName);
-               props.put(ContentModel.PROP_DESCRIPTION, this.searchDescription);
-               ChildAssociationRef childRef = this.nodeService.createNode(
-                     searchesRef,
-                     ContentModel.ASSOC_CONTAINS,
-                     QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(this.searchName)),
-                     ContentModel.TYPE_CONTENT,
-                     props);
-               
-               writer = contentService.getWriter(childRef.getChildRef(), ContentModel.PROP_CONTENT, true);
-            }
+            ContentWriter writer = contentService.getWriter(childRef.getChildRef(), ContentModel.PROP_CONTENT, true);
             
             // get a writer to our new node ready for XML content
             writer.setMimetype(MimetypeMap.MIMETYPE_XML);
@@ -879,6 +924,61 @@ public class AdvancedSearchBean
    }
    
    /**
+    * Action handler called to save an existing search
+    */
+   public String saveEditSearchOK()
+   {
+      String outcome = OUTCOME_BROWSE;
+      
+      SearchContext search = this.navigator.getSearchContext();
+      if (search != null)
+      {
+         UserTransaction tx = null;
+         try
+         {
+            FacesContext context = FacesContext.getCurrentInstance();
+            tx = Repository.getUserTransaction(context);
+            tx.begin();
+            
+            // handle Edit e.g. Overwrite of existing search
+            // detect if was previously selected saved search (e.g. NodeRef not null)
+            NodeRef searchRef = new NodeRef(Repository.getStoreRef(), this.savedSearch);
+            if (this.nodeService.exists(searchRef))
+            {
+               Map<QName, Serializable> props = this.nodeService.getProperties(searchRef);
+               props.put(ContentModel.PROP_NAME, this.searchName);
+               props.put(ContentModel.PROP_DESCRIPTION, this.searchDescription);
+               this.nodeService.setProperties(searchRef, props);
+               
+               ContentService contentService = Repository.getServiceRegistry(context).getContentService();
+               ContentWriter writer = contentService.getWriter(searchRef, ContentModel.PROP_CONTENT, true);
+               
+               // get a writer to our new node ready for XML content
+               writer.setMimetype(MimetypeMap.MIMETYPE_XML);
+               writer.setEncoding("UTF-8");
+               
+               // output an XML serialized version of the SearchContext object
+               writer.putContent(search.toXML());
+               
+               tx.commit();
+            }
+            
+            this.cachedSavedSearches.clear();
+            this.savedSearch = null;
+         }
+         catch (Throwable e)
+         {
+            try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                  FacesContext.getCurrentInstance(), MSG_ERROR_SAVE_SEARCH), e.getMessage()), e);
+            outcome = null;
+         }
+      }
+      
+      return outcome;
+   }
+   
+   /**
     * @return list of saved searches as SelectItem objects
     */
    public List<SelectItem> getSavedSearches()
@@ -887,26 +987,35 @@ public class AdvancedSearchBean
       if (savedSearches == null)
       {
          FacesContext fc = FacesContext.getCurrentInstance();
-         String xpath = ".//*";
-         
          ServiceRegistry services = Repository.getServiceRegistry(fc);
          
-         NodeRef searchesRef = getSavedSearchesRef();
+         // get the searches list from the current user or global searches location
+         NodeRef searchesRef = null;
+         if (SAVED_SEARCHES_USER.equals(getSavedSearchMode()) == true)
+         {
+            searchesRef = getUserSearchesRef();
+         }
+         else if (SAVED_SEARCHES_GLOBAL.equals(getSavedSearchMode()) == true)
+         {
+            searchesRef = getGlobalSearchesRef();
+         }
+         
+         // read the content nodes under the folder
          if (searchesRef != null)
          {
-            List<NodeRef> results = searchService.selectNodes(
-                     searchesRef,
-                     xpath,
-                     null,
-                     namespaceService,
-                     false);
-            savedSearches = new ArrayList<SelectItem>(results.size() + 1);
-            if (results.size() != 0)
+            DictionaryService dd = services.getDictionaryService();
+            
+            List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(
+                  searchesRef,
+                  ContentModel.ASSOC_CONTAINS,
+                  RegexQNamePattern.MATCH_ALL);
+            
+            savedSearches = new ArrayList<SelectItem>(childRefs.size() + 1);
+            if (childRefs.size() != 0)
             {
-               DictionaryService dd = services.getDictionaryService();
-               for (NodeRef ref : results)
+               for (ChildAssociationRef ref : childRefs)
                {
-                  Node childNode = new Node(ref);
+                  Node childNode = new Node(ref.getChildRef());
                   if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
                   {
                      savedSearches.add(new SelectItem(childNode.getId(), childNode.getName()));
@@ -920,7 +1029,7 @@ public class AdvancedSearchBean
          }
          else
          {
-            // handle missing folder case
+            // handle missing/access denied folder case
             savedSearches = new ArrayList<SelectItem>(1);
          }
          
@@ -933,6 +1042,25 @@ public class AdvancedSearchBean
       }
       
       return savedSearches;
+   }
+   
+   /**
+    * Change the current saved searches list mode based on user selection
+    */
+   public void savedSearchModeChanged(ActionEvent event)
+   {
+      UIModeList savedModeList = (UIModeList)event.getComponent();
+      
+      // get the saved searches list mode
+      String viewMode = savedModeList.getValue().toString();
+      
+      // persist
+      setSavedSearchMode(viewMode);
+      
+      // clear existing caches and values
+      // the values will be re-queried when the client requests the saved searches list
+      this.cachedSavedSearches.clear();
+      this.savedSearch = null;
    }
    
    /**
@@ -1142,9 +1270,66 @@ public class AdvancedSearchBean
    /**
     * @return the cached reference to the shared Saved Searches folder
     */
-   private NodeRef getSavedSearchesRef()
+   private NodeRef getUserSearchesRef()
    {
-      if (savedSearchesRef == null)
+      if (userSearchesRef == null)
+      {
+         NodeRef globalRef = getGlobalSearchesRef();
+         if (globalRef != null)
+         {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            User user = Application.getCurrentUser(fc);
+            String xpath = NamespaceService.APP_MODEL_PREFIX + ":" + QName.createValidLocalName(user.getUserName());
+            
+            List<NodeRef> results = null;
+            try
+            {
+               results = searchService.selectNodes(
+                     globalRef,
+                     xpath,
+                     null,
+                     namespaceService,
+                     false);
+            }
+            catch (AccessDeniedException err)
+            {
+               // ignore and return null
+            }
+            
+            if (results != null)
+            {
+               if (results.size() == 1)
+               {
+                  userSearchesRef = results.get(0);
+               }
+               else if (results.size() == 0)
+               {
+                  // attempt to create folder for this user for first time
+                  // create the preferences Node for this user
+                  Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
+                  props.put(ContentModel.PROP_NAME, user.getUserName());
+                  ChildAssociationRef childRef = nodeService.createNode(
+                        globalRef,
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.APP_MODEL_1_0_URI, QName.createValidLocalName(user.getUserName())),
+                        ContentModel.TYPE_FOLDER,
+                        props);
+                  
+                  userSearchesRef = childRef.getChildRef();
+               }
+            }
+         }
+      }
+      
+      return userSearchesRef;
+   }
+   
+   /**
+    * @return the cached reference to the global Saved Searches folder
+    */
+   private NodeRef getGlobalSearchesRef()
+   {
+      if (globalSearchesRef == null)
       {
          FacesContext fc = FacesContext.getCurrentInstance();
          String xpath = Application.getRootPath(fc) + "/" +
@@ -1169,11 +1354,11 @@ public class AdvancedSearchBean
          
          if (results != null && results.size() == 1)
          {
-            savedSearchesRef = results.get(0);
+            globalSearchesRef = results.get(0);
          }
       }
       
-      return savedSearchesRef;
+      return globalSearchesRef;
    }
    
    /**
@@ -1292,7 +1477,10 @@ public class AdvancedSearchBean
    private static final String LOOKIN_ALL = "all";
    private static final String LOOKIN_OTHER = "other";
    
-   private static final String NO_SELECTION = "none";
+   private static final String SAVED_SEARCHES_USER = "user";
+   private static final String SAVED_SEARCHES_GLOBAL = "global";
+   
+   private static final String NO_SELECTION = "NONE";
    
    /** The NodeService to be used by the bean */
    private NodeService nodeService;
@@ -1379,11 +1567,24 @@ public class AdvancedSearchBean
    private boolean modifiedDateChecked = false;
    private boolean createdDateChecked = false;
    
-   private NodeRef savedSearchesRef = null;
+   /** cached ref to the global saved searches folder */
+   private NodeRef globalSearchesRef = null;
    
+   /** cached ref to the current users saved searches folder */
+   private NodeRef userSearchesRef = null;
+   
+   /** ID to the last selected saved search */
    private String savedSearch = null;
    
+   /** ModeList component value for selecting user/global searches */
+   private String savedSearchMode = SAVED_SEARCHES_USER;
+   
+   /** name of the saved search to edit */
    private String editSearchName = null;
    
+   /** form field for saving search as user/global */
+   private boolean searchSaveGlobal = false;
+   
+   /** auto-expiring cache of the list of saved searches */
    private ExpiringValueCache<List<SelectItem>> cachedSavedSearches = new ExpiringValueCache<List<SelectItem>>();
 }

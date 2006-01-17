@@ -19,13 +19,10 @@ package org.alfresco.web.app.servlet;
 import java.io.IOException;
 import java.net.SocketException;
 import java.text.MessageFormat;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,22 +31,16 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.template.DateCompareMethod;
-import org.alfresco.repo.template.HasAspectMethod;
-import org.alfresco.repo.template.I18NMessageMethod;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateException;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.LoginBean;
-import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.repo.component.template.DefaultModelHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
@@ -232,47 +223,16 @@ public class TemplateContentServlet extends HttpServlet
     */
    private Object getModel(ServiceRegistry services, HttpSession session, NodeRef nodeRef)
    {
-      // create FreeMarker default model and merge
-      Map root = new HashMap(11, 1.0f);
-      
-      // supply the CompanyHome space as "companyhome"
-      NodeRef companyRootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
-      TemplateNode companyRootNode = new TemplateNode(companyRootRef, services, imageResolver);
-      root.put("companyhome", companyRootNode);
-      
-      // supply the users Home Space as "userhome"
-      User user = Application.getCurrentUser(session);
-      NodeRef userRootRef = new NodeRef(Repository.getStoreRef(), user.getHomeSpaceId());
-      TemplateNode userRootNode = new TemplateNode(userRootRef, services, imageResolver);
-      root.put("userhome", userRootNode);
+      // build FreeMarker default model and merge
+      Map root = DefaultModelHelper.buildDefaultModel(services, Application.getCurrentUser(session)); 
       
       // put the current NodeRef in as "space" and "document"
-      TemplateNode node = new TemplateNode(nodeRef, services, imageResolver);
+      TemplateNode node = new TemplateNode(nodeRef, services, DefaultModelHelper.imageResolver);
       root.put("space", node);
       root.put("document", node);
       
-      // supply the current user Node as "person"
-      root.put("person", new TemplateNode(user.getPerson(), services, imageResolver));
-      
-      // current date/time is useful to have and isn't supplied by FreeMarker by default
-      root.put("date", new Date());
-      
-      // add custom method objects
-      root.put("hasAspect", new HasAspectMethod());
-      root.put("message", new I18NMessageMethod());
-      root.put("dateCompare", new DateCompareMethod());
-      
       return root;
    }
-   
-   /** Template Image resolver helper */
-   private TemplateImageResolver imageResolver = new TemplateImageResolver()
-   {
-       public String resolveImagePathForName(String filename, boolean small)
-       {
-           return Utils.getFileTypeImage(filename, small);
-       }
-   };
    
    /**
     * Helper to generate a URL to process a template against a node.

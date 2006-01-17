@@ -191,33 +191,11 @@ public class UITemplate extends SelfRenderingComponent
          
          if (getEngine().equals(ENGINE_DEFAULT))
          {
-            // create FreeMarker default model and merge
-            Map root = new HashMap(11, 1.0f);
-            
-            FacesContext context = FacesContext.getCurrentInstance();
-            ServiceRegistry services = Repository.getServiceRegistry(context);
-            
-            // supply the CompanyHome space as "companyhome"
-            NodeRef companyRootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
-            TemplateNode companyRootNode = new TemplateNode(companyRootRef, services, imageResolver);
-            root.put("companyhome", companyRootNode);
-            
-            // supply the users Home Space as "userhome"
-            User user = Application.getCurrentUser(context);
-            NodeRef userRootRef = new NodeRef(Repository.getStoreRef(), user.getHomeSpaceId());
-            TemplateNode userRootNode = new TemplateNode(userRootRef, services, imageResolver);
-            root.put("userhome", userRootNode);
-            
-            // supply the current user Node as "person"
-            root.put("person", new TemplateNode(user.getPerson(), services, imageResolver));
-            
-            // current date/time is useful to have and isn't supplied by FreeMarker by default
-            root.put("date", new Date());
-            
-            // add custom method objects
-            root.put("hasAspect", new HasAspectMethod());
-            root.put("message", new I18NMessageMethod());
-            root.put("dateCompare", new DateCompareMethod());
+            // create an instance of the default FreeMarker template object model
+            FacesContext fc = FacesContext.getCurrentInstance();
+            ServiceRegistry services = Repository.getServiceRegistry(fc);
+            User user = Application.getCurrentUser(fc);
+            Map root = DefaultModelHelper.buildDefaultModel(services, user);
             
             // merge models
             if (model instanceof Map)

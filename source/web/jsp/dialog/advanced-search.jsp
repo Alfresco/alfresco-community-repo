@@ -92,14 +92,21 @@
                               <a:actionLink value="#{msg.resetall}" image="/images/icons/delete.gif" padding="4" actionListener="#{AdvancedSearchBean.reset}" />
                            </td>
                            <td bgcolor="#465F7D" width=1></td>
-                           <td width=100 style="padding-left:2px">
+                           <td width=200 style="padding-left:2px">
                               <%-- Available Saved Searches --%>
-                              <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.saved_searches}" />
-                              <div style="padding-top:4px;white-space:nowrap">
+                              <center><h:outputText styleClass="mainSubTitle" value="#{msg.saved_searches}" /></center>
+                              <div style="padding-top:4px">
+                                 <a:modeList itemSpacing="3" iconColumnWidth="20" style="text-align:right" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/Details.gif"
+                                       value="#{AdvancedSearchBean.savedSearchMode}" actionListener="#{AdvancedSearchBean.savedSearchModeChanged}">
+                                    <a:listItem value="user" label="#{msg.user_searches}" />
+                                    <a:listItem value="global" label="#{msg.global_searches}" />
+                                 </a:modeList>
+                              </div>
+                              <div style="white-space:nowrap">
                                  <%-- Saved Searches drop-down selector --%>
-                                 <%-- uses a nasty hack to execute an ActionListener for the drop-down
+                                 <%-- uses a nasty hack to execute an ActionListener for the drop-down.
                                       tried using a valueChangedListener+formsubmit but the valueChangedListener
-                                      is called too late in the lifecycle for the form controls to be managed --%>
+                                      is called too late in the lifecycle for the form controls to be modified --%>
                                  <h:selectOneMenu id="searches" value="#{AdvancedSearchBean.savedSearch}" onchange="document.forms['advsearch']['advsearch:act'].value='advsearch:show-search'; document.forms['advsearch'].submit(); return true;">
                                     <f:selectItems value="#{AdvancedSearchBean.savedSearches}" />
                                  </h:selectOneMenu>

@@ -175,8 +175,12 @@
          <to-view-id>/jsp/forums/topic.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>saveSearch</from-outcome>
+         <from-outcome>saveNewSearch</from-outcome>
          <to-view-id>/jsp/dialog/save-search.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>saveEditSearch</from-outcome>
+         <to-view-id>/jsp/dialog/edit-search.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

@@ -90,10 +90,10 @@
                      <table cellspacing="4" cellpadding="0" width="100%">
                         <tr valign="top">
                            <td width="32">
-                              <h:graphicImage id="wizard-logo" url="/images/icons/edit_search_large.gif" />
+                              <h:graphicImage id="wizard-logo" url="/images/icons/save_search_large.gif" />
                            </td>
                            <td>
-                              <div class="mainTitle"><h:outputText value="#{msg.save_new_search}" /></div>
+                              <div class="mainTitle"><h:outputText value="#{msg.save_edit_search}" /></div>
                               <div class="mainSubText"><h:outputText value="#{msg.save_search_description}" /></div>
                            </td>
                         </tr>
@@ -122,6 +122,25 @@
                               
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <table cellpadding="2" cellspacing="2" border="0" width="100%">
+                                 <a:panel id="edit-panel" rendered="#{AdvancedSearchBean.editSearchName != null}">
+                                 <tr>
+                                    <td width="100%" valign="top" colspan="2" style="padding-bottom:6px">
+                                       <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
+                                       <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                          <tr>
+                                             <td valign=top style="padding-top:2px" width=20><h:graphicImage url="/images/icons/info_icon.gif" width="16" height="16"/></td>
+                                             <td class="mainSubText">
+                                                <h:outputFormat value="#{msg.saved_search_warning}">
+                                                   <f:param value="#{AdvancedSearchBean.editSearchName}" />
+                                                </h:outputFormat>
+                                             </td>
+                                          </tr>
+                                       </table>
+                                       <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
+                                    </td>
+                                 </tr>
+                                 </a:panel>
+                                 
                                  <tr>
                                     <td colspan="2" class="wizardSectionHeading"><h:outputText value="#{msg.search_props}" /></td>
                                  </tr>
@@ -138,12 +157,6 @@
                                        <h:inputText value="#{AdvancedSearchBean.searchDescription}" size="35" maxlength="1024" />
                                     </td>
                                  </tr>
-                                 <tr>
-                                    <td></td>
-                                    <td>
-                                       <h:selectBooleanCheckbox value="#{AdvancedSearchBean.searchSaveGlobal}" /><span style="vertical-align:20%"><h:outputText value="#{msg.save_search_global}" /></span>
-                                    </td>
-                                 </tr>
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
                            </td>
@@ -153,7 +166,7 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton id="ok-button" value="#{msg.save}" action="#{AdvancedSearchBean.saveNewSearchOK}" 
+                                       <h:commandButton id="ok-button" value="#{msg.save}" action="#{AdvancedSearchBean.saveEditSearchOK}" 
                                                         styleClass="wizardButton" disabled="true" />
                                     </td>
                                  </tr>

@@ -148,7 +148,7 @@
                                                actionListener="#{ClipboardBean.copyNode}">
                                     <f:param name="id" value="#{DocumentDetailsBean.id}" />
                                  </a:actionLink>
-                                    
+                                 
                                  <%-- delete --%>
                                  <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Delete">
                                     <a:booleanEvaluator value="#{DocumentDetailsBean.locked == false && DocumentDetailsBean.workingCopy == false}">

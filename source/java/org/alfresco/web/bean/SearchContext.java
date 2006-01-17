@@ -138,7 +138,7 @@ public final class SearchContext implements Serializable
       
       if (text.length() != 0 && text.length() >= minimum)
       {
-         if (text.indexOf(' ') == -1)
+         if (text.indexOf(' ') == -1 && text.charAt(0) != '"')
          {
             // simple single word text search
             if (text.charAt(0) != '*')

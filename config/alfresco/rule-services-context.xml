@@ -52,7 +52,7 @@
          
    <!-- Rule types -->
    
-   <bean id="rule-type-base" init-method="init">   
+   <bean id="rule-type-base" abstract="true" init-method="init">   
 	  <property name="ruleService">
          <ref bean="ruleService"/>
 	  </property>  
@@ -81,7 +81,7 @@
       
    <!-- Rule triggers -->
    
-   <bean id="rule-trigger-base" init-method="registerRuleTrigger">
+   <bean id="rule-trigger-base" abstract="true" init-method="registerRuleTrigger">
       <property name="policyComponent">
          <ref bean="policyComponent"/>
       </property>

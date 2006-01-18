@@ -59,7 +59,7 @@
 
     <!-- Action Conditions -->
 
-    <bean id="action-condition-evaluator" init-method="init">
+    <bean id="action-condition-evaluator" abstract="true" init-method="init">
         <property name="runtimeActionService">
             <ref bean="actionService" />
         </property>
@@ -127,7 +127,7 @@
 
     <!-- Actions -->
 
-    <bean id="action-executer" init-method="init">
+    <bean id="action-executer" abstract="true" init-method="init">
         <property name="runtimeActionService">
             <ref bean="actionService" />
         </property>

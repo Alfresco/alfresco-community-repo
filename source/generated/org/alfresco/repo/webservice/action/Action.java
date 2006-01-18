@@ -9,7 +9,7 @@ package org.alfresco.repo.webservice.action;
 
 public class Action  implements java.io.Serializable {
     private java.lang.String id;
-    private org.alfresco.repo.webservice.action.ActionItemType type;
+    private java.lang.String actionName;
     private java.lang.String title;
     private java.lang.String description;
     private boolean executeAsynchronously;
@@ -24,7 +24,7 @@ public class Action  implements java.io.Serializable {
 
     public Action(
            java.lang.String id,
-           org.alfresco.repo.webservice.action.ActionItemType type,
+           java.lang.String actionName,
            java.lang.String title,
            java.lang.String description,
            boolean executeAsynchronously,
@@ -34,7 +34,7 @@ public class Action  implements java.io.Serializable {
            org.alfresco.repo.webservice.action.Action[] actions,
            org.alfresco.repo.webservice.types.Reference reference) {
            this.id = id;
-           this.type = type;
+           this.actionName = actionName;
            this.title = title;
            this.description = description;
            this.executeAsynchronously = executeAsynchronously;
@@ -67,22 +67,22 @@ public class Action  implements java.io.Serializable {
 
 
     /**
-     * Gets the type value for this Action.
+     * Gets the actionName value for this Action.
      * 
-     * @return type
+     * @return actionName
      */
-    public org.alfresco.repo.webservice.action.ActionItemType getType() {
-        return type;
+    public java.lang.String getActionName() {
+        return actionName;
     }
 
 
     /**
-     * Sets the type value for this Action.
+     * Sets the actionName value for this Action.
      * 
-     * @param type
+     * @param actionName
      */
-    public void setType(org.alfresco.repo.webservice.action.ActionItemType type) {
-        this.type = type;
+    public void setActionName(java.lang.String actionName) {
+        this.actionName = actionName;
     }
 
 
@@ -284,9 +284,9 @@ public class Action  implements java.io.Serializable {
             ((this.id==null && other.getId()==null) || 
              (this.id!=null &&
               this.id.equals(other.getId()))) &&
-            ((this.type==null && other.getType()==null) || 
-             (this.type!=null &&
-              this.type.equals(other.getType()))) &&
+            ((this.actionName==null && other.getActionName()==null) || 
+             (this.actionName!=null &&
+              this.actionName.equals(other.getActionName()))) &&
             ((this.title==null && other.getTitle()==null) || 
              (this.title!=null &&
               this.title.equals(other.getTitle()))) &&
@@ -323,8 +323,8 @@ public class Action  implements java.io.Serializable {
         if (getId() != null) {
             _hashCode += getId().hashCode();
         }
-        if (getType() != null) {
-            _hashCode += getType().hashCode();
+        if (getActionName() != null) {
+            _hashCode += getActionName().hashCode();
         }
         if (getTitle() != null) {
             _hashCode += getTitle().hashCode();
@@ -386,12 +386,12 @@ public class Action  implements java.io.Serializable {
         elemField.setFieldName("id");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "id"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setNillable(false);
+        elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("type");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "type"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "ActionItemType"));
+        elemField.setFieldName("actionName");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "actionName"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();

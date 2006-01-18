@@ -1,35 +1,35 @@
 /**
- * LockTypeEnum.java
+ * ActionItemDefinitionType.java
  *
  * This file was auto-generated from WSDL
  * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
  */
 
-package org.alfresco.example.webservice.authoring;
+package org.alfresco.repo.webservice.action;
 
-public class LockTypeEnum implements java.io.Serializable {
+public class ActionItemDefinitionType implements java.io.Serializable {
     private java.lang.String _value_;
     private static java.util.HashMap _table_ = new java.util.HashMap();
 
     // Constructor
-    protected LockTypeEnum(java.lang.String value) {
+    protected ActionItemDefinitionType(java.lang.String value) {
         _value_ = value;
         _table_.put(_value_,this);
     }
 
-    public static final java.lang.String _read = "read";
-    public static final java.lang.String _write = "write";
-    public static final LockTypeEnum read = new LockTypeEnum(_read);
-    public static final LockTypeEnum write = new LockTypeEnum(_write);
+    public static final java.lang.String _action = "action";
+    public static final java.lang.String _condition = "condition";
+    public static final ActionItemDefinitionType action = new ActionItemDefinitionType(_action);
+    public static final ActionItemDefinitionType condition = new ActionItemDefinitionType(_condition);
     public java.lang.String getValue() { return _value_;}
-    public static LockTypeEnum fromValue(java.lang.String value)
+    public static ActionItemDefinitionType fromValue(java.lang.String value)
           throws java.lang.IllegalArgumentException {
-        LockTypeEnum enumeration = (LockTypeEnum)
+        ActionItemDefinitionType enumeration = (ActionItemDefinitionType)
             _table_.get(value);
         if (enumeration==null) throw new java.lang.IllegalArgumentException();
         return enumeration;
     }
-    public static LockTypeEnum fromString(java.lang.String value)
+    public static ActionItemDefinitionType fromString(java.lang.String value)
           throws java.lang.IllegalArgumentException {
         return fromValue(value);
     }
@@ -55,10 +55,10 @@ public class LockTypeEnum implements java.io.Serializable {
     }
     // Type metadata
     private static org.apache.axis.description.TypeDesc typeDesc =
-        new org.apache.axis.description.TypeDesc(LockTypeEnum.class);
+        new org.apache.axis.description.TypeDesc(ActionItemDefinitionType.class);
 
     static {
-        typeDesc.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/authoring/1.0", "LockTypeEnum"));
+        typeDesc.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "ActionItemDefinitionType"));
     }
     /**
      * Return type metadata object

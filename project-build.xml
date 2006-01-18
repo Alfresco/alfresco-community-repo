@@ -44,25 +44,11 @@
 
     <target name="clean-all-services" depends="init">
         <delete>
-            <fileset dir="${dir.src.java.generated}/org/alfresco/example/webservice" />
             <fileset dir="${dir.src.java.generated}/org/alfresco/repo/webservice" />
         </delete>
     </target>
         
-    <target name="gen-all-services" depends="gen-auth-service, gen-repo-service, gen-content-service, gen-authoring-service, gen-classification-service, gen-action-service" />
-
-    <target name="gen-auth-service" depends="gen-auth-service-client, gen-auth-service-server" />
-
-    <target name="gen-auth-service-client" depends="init">
-        <mkdir dir="${dir.src.java.generated}/org/alfresco/example/webservice/authentication" />
-        <delete>
-            <fileset dir="${dir.src.java.generated}/org/alfresco/example/webservice/authentication" />
-        </delete>
-        <wsdl2java url="${dir.src}/wsdl/authentication-service.wsdl" output="${dir.src.java.generated}" testcase="no" all="true">
-            <mapping namespace="http://www.alfresco.org/ws/service/authentication/1.0" package="org.alfresco.example.webservice.authentication" />
-            <mapping namespace="http://www.alfresco.org/ws/model/content/1.0" package="org.alfresco.example.webservice.types" />
-        </wsdl2java>
-    </target>
+    <target name="gen-all-service-servers" depends="gen-auth-service-server, gen-repo-service-server, gen-content-service-server, gen-authoring-service-server, gen-classification-service-server, gen-action-service-server" />
 
     <target name="gen-auth-service-server" depends="init">
         <mkdir dir="${dir.src.java.generated}/org/alfresco/repo/webservice/authentication" />
@@ -76,21 +62,6 @@
         <delete>
             <fileset dir="${dir.src.java.generated}/org/alfresco/repo/webservice/authentication" includes="${files.delete.include}" />
         </delete>
-    </target>
-
-    <target name="gen-repo-service" depends="gen-repo-service-client, gen-repo-service-server" />
-
-    <target name="gen-repo-service-client" depends="init">
-        <mkdir dir="${dir.src.java.generated}/org/alfresco/example/webservice/repository" />
-        <delete>
-            <fileset dir="${dir.src.java.generated}/org/alfresco/example/webservice/repository" />
-        </delete>
-        <wsdl2java url="${dir.src}/wsdl/repository-service.wsdl" output="${dir.src.java.generated}" testcase="no" all="true">
-            <mapping namespace="http://www.alfresco.org/ws/service/repository/1.0" package="org.alfresco.example.webservice.repository" />
-            <mapping namespace="http://www.alfresco.org/ws/model/content/1.0" package="org.alfresco.example.webservice.types" />
-            <mapping namespace="http://www.alfresco.org/ws/cml/1.0" package="org.alfresco.example.webservice.types" />
-            <mapping namespace="http://www.alfresco.org/ws/headers/1.0" package="org.alfresco.example.webservice.types" />
-        </wsdl2java>
     </target>
 
     <target name="gen-repo-service-server" depends="init">
@@ -109,19 +80,6 @@
         </delete>
     </target>
    
-    <target name="gen-content-service" depends="gen-content-service-client, gen-content-service-server" />
-
-    <target name="gen-content-service-client" depends="init">
-        <mkdir dir="${dir.src.java.generated}/org/alfresco/example/webservice/content" />
-        <delete>
-            <fileset dir="${dir.src.java.generated}/org/alfresco/example/webservice/content" />
-        </delete>
-        <wsdl2java url="${dir.src}/wsdl/content-service.wsdl" output="${dir.src.java.generated}" testcase="no" all="true">
-            <mapping namespace="http://www.alfresco.org/ws/service/content/1.0" package="org.alfresco.example.webservice.content" />
-            <mapping namespace="http://www.alfresco.org/ws/model/content/1.0" package="org.alfresco.example.webservice.types" />
-        </wsdl2java>
-    </target>
-
     <target name="gen-content-service-server" depends="init">
         <mkdir dir="${dir.src.java.generated}/org/alfresco/repo/webservice/content" />
         <delete>
@@ -136,19 +94,6 @@
         </delete>
     </target>
    
-    <target name="gen-classification-service" depends="gen-classification-service-client, gen-classification-service-server" />
-
-    <target name="gen-classification-service-client" depends="init">
-        <mkdir dir="${dir.src.java.generated}/org/alfresco/example/webservice/classification" />
-        <delete>
-            <fileset dir="${dir.src.java.generated}/org/alfresco/example/webservice/classification" />
-        </delete>
-        <wsdl2java url="${dir.src}/wsdl/classification-service.wsdl" output="${dir.src.java.generated}" testcase="no" all="true">
-            <mapping namespace="http://www.alfresco.org/ws/service/classification/1.0" package="org.alfresco.example.webservice.classification" />
-            <mapping namespace="http://www.alfresco.org/ws/model/content/1.0" package="org.alfresco.example.webservice.types" />
-        </wsdl2java>
-    </target>
-
     <target name="gen-classification-service-server" depends="init">
         <mkdir dir="${dir.src.java.generated}/org/alfresco/repo/webservice/classification" />
         <delete>
@@ -163,19 +108,6 @@
         </delete>
     </target>
    
-    <target name="gen-authoring-service" depends="gen-authoring-service-client, gen-authoring-service-server" />
-
-    <target name="gen-authoring-service-client" depends="init">
-        <mkdir dir="${dir.src.java.generated}/org/alfresco/example/webservice/authoring" />
-        <delete>
-            <fileset dir="${dir.src.java.generated}/org/alfresco/example/webservice/authoring" />
-        </delete>
-        <wsdl2java url="${dir.src}/wsdl/authoring-service.wsdl" output="${dir.src.java.generated}" testcase="no" all="true">
-            <mapping namespace="http://www.alfresco.org/ws/service/authoring/1.0" package="org.alfresco.example.webservice.authoring" />
-            <mapping namespace="http://www.alfresco.org/ws/model/content/1.0" package="org.alfresco.example.webservice.types" />
-        </wsdl2java>
-    </target>
-
     <target name="gen-authoring-service-server" depends="init">
         <mkdir dir="${dir.src.java.generated}/org/alfresco/repo/webservice/authoring" />
         <delete>
@@ -190,19 +122,6 @@
         </delete>
     </target>
 	   
-    <target name="gen-action-service" depends="gen-action-service-client, gen-action-service-server" />
-
-    <target name="gen-action-service-client" depends="init">
-        <mkdir dir="${dir.src.java.generated}/org/alfresco/example/webservice/action" />
-        <delete>
-            <fileset dir="${dir.src.java.generated}/org/alfresco/example/webservice/action" />
-        </delete>
-        <wsdl2java url="${dir.src}/wsdl/action-service.wsdl" output="${dir.src.java.generated}" testcase="no" all="true">
-            <mapping namespace="http://www.alfresco.org/ws/service/action/1.0" package="org.alfresco.example.webservice.action" />
-            <mapping namespace="http://www.alfresco.org/ws/model/content/1.0" package="org.alfresco.example.webservice.types" />
-        </wsdl2java>
-    </target>
-
     <target name="gen-action-service-server" depends="init">
         <mkdir dir="${dir.src.java.generated}/org/alfresco/repo/webservice/action" />
         <delete>

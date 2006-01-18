@@ -27,6 +27,9 @@ import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
 import org.alfresco.repo.rule.RuleImpl;
+import org.alfresco.repo.transaction.TransactionComponent;
+import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.repo.webservice.AbstractWebService;
 import org.alfresco.repo.webservice.Utils;
 import org.alfresco.repo.webservice.types.NamedValue;
@@ -66,6 +69,9 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     /** The dictionary service */
     private DictionaryService dictionaryService;
     
+    /** The transaction service */
+    private TransactionComponent transactionService;
+    
     /**
      * Set the action service
      * 
@@ -97,20 +103,46 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     }
     
     /**
+     * Sets the transaction service
+     * 
+     * @param transactionService    the transaction service
+     */
+    public void setTransactionService(TransactionComponent transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+    
+    /**
      * @see org.alfresco.repo.webservice.action.ActionServiceSoapPort#getConditionDefinitions()
      */
-    public ActionItemType[] getConditionDefinitions() throws RemoteException,
+    public ActionItemDefinition[] getConditionDefinitions() throws RemoteException,
             ActionFault
+    {
+        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionItemDefinition[]>()
+        {
+            public ActionItemDefinition[] doWork() throws Exception
+            {
+                return getConditionDefintionsImpl();
+            }
+        });
+    }
+    
+    /**
+     * 
+     * @return
+     * @throws RemoteException
+     */
+    private ActionItemDefinition[] getConditionDefintionsImpl() throws RemoteException
     {
         // Get the action condition defintions from the action service
         List<ActionConditionDefinition> definitions = this.actionService.getActionConditionDefinitions();
         
         // Marshal the results into an array of action item types
-        ActionItemType[] result = new ActionItemType[definitions.size()];
+        ActionItemDefinition[] result = new ActionItemDefinition[definitions.size()];
         int index = 0;
         for (ActionConditionDefinition definition : definitions)
         {
-            result[index] = convertToActionItemType(definition);
+            result[index] = convertToActionItemDefintion(definition, ActionItemDefinitionType.condition);
             index++;
         }
         
@@ -120,29 +152,99 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     /**
      *  @see org.alfresco.repo.webservice.action.ActionServiceSoapPort#getActionDefinitions()
      */
-    public ActionItemType[] getActionDefinitions() throws RemoteException,
+    public ActionItemDefinition[] getActionDefinitions() throws RemoteException,
             ActionFault
+    {
+        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionItemDefinition[]>()
+        {
+            public ActionItemDefinition[] doWork() throws Exception
+            {
+                return getActionDefinitionsImpl();
+            }
+        });
+    }
+
+    /**
+     * 
+     * @return
+     * @throws RemoteException
+     */
+    private ActionItemDefinition[] getActionDefinitionsImpl() throws RemoteException
     {
         // Get the action defintions from the action service
         List<ActionDefinition> definitions = this.actionService.getActionDefinitions();
         
         // Marshal the results into an array of action item types
-        ActionItemType[] result = new ActionItemType[definitions.size()];
+        ActionItemDefinition[] result = new ActionItemDefinition[definitions.size()];
         int index = 0;
         for (ActionDefinition definition : definitions)
         {
-            result[index] = convertToActionItemType(definition);
+            result[index] = convertToActionItemDefintion(definition, ActionItemDefinitionType.action);
             index++;
         }
         
         return result;
     }
 
-    private ActionItemType convertToActionItemType(ParameterizedItemDefinition definition)
+    /**
+     * @see org.alfresco.repo.webservice.action.ActionServiceSoapPort#getActionItemDefinition(java.lang.String, org.alfresco.repo.webservice.action.ActionItemDefinitionType)
+     */
+    public ActionItemDefinition getActionItemDefinition(final String name, final ActionItemDefinitionType definitionType) throws RemoteException, ActionFault
     {
-        // Create action item type
-        ActionItemType actionItemType = new ActionItemType();
+        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionItemDefinition>()
+        {
+            public ActionItemDefinition doWork() throws Exception
+            {
+                return getActionItemDefinitionImpl(name, definitionType);
+            }
+        });
+    }
+    
+    /**
+     * 
+     * @param name
+     * @param definitionType
+     * @return
+     * @throws RemoteException
+     * @throws ActionFault
+     */
+    public ActionItemDefinition getActionItemDefinitionImpl(String name, ActionItemDefinitionType definitionType) throws RemoteException, ActionFault
+    {
+        ActionItemDefinition result = null;
+        
+        if (definitionType.equals(ActionItemDefinitionType.action) == true)
+        {
+            ActionDefinition actionDefinition = this.actionService.getActionDefinition(name);
+            if (actionDefinition != null)
+            {
+                result = convertToActionItemDefintion(actionDefinition, definitionType);
+            }
+        }
+        else
+        {
+            ActionConditionDefinition conditionDefinition = this.actionService.getActionConditionDefinition(name);
+            if (conditionDefinition != null)
+            {
+                result = convertToActionItemDefintion(conditionDefinition, definitionType);
+            }
+        }
+        
+        return result;
+    }
+
+    /**
+     * Marshal the parameterized item defintion into a action item defition object.
+     * 
+     * @param definition
+     * @param type
+     * @return
+     */
+    private ActionItemDefinition convertToActionItemDefintion(ParameterizedItemDefinition definition, ActionItemDefinitionType type)
+    {
+        // Create action item defintion
+        ActionItemDefinition actionItemType = new ActionItemDefinition();
         actionItemType.setName(definition.getName());
+        actionItemType.setType(type);
         actionItemType.setTitle(definition.getTitle());
         actionItemType.setDescription(definition.getDescription());
         actionItemType.setAdHocPropertiesAllowed(definition.getAdhocPropertiesAllowed());
@@ -171,6 +273,17 @@ public class ActionWebService extends AbstractWebService implements ActionServic
      */
     public org.alfresco.repo.webservice.action.RuleType[] getRuleTypes() throws RemoteException, ActionFault
     {
+        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.RuleType[]>()
+        {
+            public org.alfresco.repo.webservice.action.RuleType[] doWork() throws Exception
+            {
+                return getRuleTypesImpl();
+            }
+        });
+    }
+    
+    public org.alfresco.repo.webservice.action.RuleType[] getRuleTypesImpl() throws RemoteException, ActionFault
+    {
         // Get the list of rule types
         List<RuleType> ruleTypes = this.ruleService.getRuleTypes();
         
@@ -190,9 +303,47 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     }
 
     /**
+     * @see org.alfresco.repo.webservice.action.ActionServiceSoapPort#getRuleType(java.lang.String)
+     */
+    public org.alfresco.repo.webservice.action.RuleType getRuleType(final String name) throws RemoteException, ActionFault
+    {
+        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.RuleType>()
+        {
+            public org.alfresco.repo.webservice.action.RuleType doWork() throws Exception
+            {
+                return getRuleTypeImpl(name);
+            }
+        });
+    }
+    
+    public org.alfresco.repo.webservice.action.RuleType getRuleTypeImpl(String name) throws RemoteException, ActionFault
+    {
+        org.alfresco.repo.webservice.action.RuleType result = null;
+        
+        RuleType ruleType = this.ruleService.getRuleType(name);
+        if (ruleType != null)
+        {
+            result = new org.alfresco.repo.webservice.action.RuleType(ruleType.getName(), ruleType.getDisplayLabel());
+        }
+        
+        return result;
+    }
+
+    /**
      * @see org.alfresco.repo.webservice.action.ActionServiceSoapPort#getActions(org.alfresco.repo.webservice.types.Reference, java.lang.String[])
      */
-    public org.alfresco.repo.webservice.action.Action[] getActions(Reference reference, ActionFilter filter) throws RemoteException, ActionFault
+    public org.alfresco.repo.webservice.action.Action[] getActions(final Reference reference, final ActionFilter filter) throws RemoteException, ActionFault
+    {
+        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Action[]>()
+        {
+            public org.alfresco.repo.webservice.action.Action[] doWork() throws Exception
+            {
+                return getActionsImpl(reference, filter);
+            }
+        });
+    }
+    
+    private org.alfresco.repo.webservice.action.Action[] getActionsImpl(Reference reference, ActionFilter filter) throws RemoteException, ActionFault
     {
         // Get the actions
         NodeRef nodeRef = Utils.convertToNodeRef(reference, this.nodeService, this.searchService, this.namespaceService);        
@@ -219,10 +370,6 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     
     private org.alfresco.repo.webservice.action.Action convertToWebServiceAction(Action action)
     {
-        // Create the action item type for the action
-        ActionDefinition actionDefinition = this.actionService.getActionDefinition(action.getActionDefinitionName());
-        ActionItemType actionItemType = convertToActionItemType(actionDefinition);
-        
         // Get the parameters into a named value array
         NamedValue[] namedValues = convertParametersToNamedValues(action);
         
@@ -238,7 +385,11 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         
         // Get the compenstaing action
         Action compensatingAction = action.getCompensatingAction();
-        org.alfresco.repo.webservice.action.Action webServiceCompensatingAction = convertToWebServiceAction(compensatingAction);
+        org.alfresco.repo.webservice.action.Action webServiceCompensatingAction = null;
+        if (compensatingAction != null)
+        {
+            webServiceCompensatingAction = convertToWebServiceAction(compensatingAction);
+        }
         
         // Sort out any sub-actions
         org.alfresco.repo.webservice.action.Action[] childWebServiceActions = null;
@@ -265,7 +416,7 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         // Create the web service action object
         org.alfresco.repo.webservice.action.Action webServiceAction = new org.alfresco.repo.webservice.action.Action(
                 action.getId(),
-                actionItemType,
+                action.getActionDefinitionName(),
                 action.getTitle(),
                 action.getDescription(),
                 action.getExecuteAsychronously(),
@@ -285,22 +436,26 @@ public class ActionWebService extends AbstractWebService implements ActionServic
      */
     private NamedValue[] convertParametersToNamedValues(ParameterizedItem item)
     {
-        Map<String, Serializable> params = item.getParameterValues();
-        NamedValue[] namedValues = new NamedValue[params.size()];
-        int index = 0;
-        for (Map.Entry<String, Serializable> entry : params.entrySet())
+        NamedValue[] namedValues = null;
+        if (item != null)
         {
-            String value = null;
-            try
+            Map<String, Serializable> params = item.getParameterValues();
+            namedValues = new NamedValue[params.size()];
+            int index = 0;
+            for (Map.Entry<String, Serializable> entry : params.entrySet())
             {
-                value = DefaultTypeConverter.INSTANCE.convert(String.class, entry.getValue());
-            } 
-            catch (Throwable exception)
-            {
-                value = entry.getValue().toString();
-            } 
-            namedValues[index] = new NamedValue(entry.getKey(), value);
-            index++;
+                String value = null;
+                try
+                {
+                    value = DefaultTypeConverter.INSTANCE.convert(String.class, entry.getValue());
+                } 
+                catch (Throwable exception)
+                {
+                    value = entry.getValue().toString();
+                } 
+                namedValues[index] = new NamedValue(entry.getKey(), value);
+                index++;
+            }
         }
         return namedValues;
     }
@@ -312,16 +467,12 @@ public class ActionWebService extends AbstractWebService implements ActionServic
      */
     private Condition convertToWebServiceCondition(ActionCondition condition)
     {
-        // Create the action item type for the condition
-        ActionConditionDefinition conditionDefinition = this.actionService.getActionConditionDefinition(condition.getActionConditionDefinitionName());
-        ActionItemType actionItemType = convertToActionItemType(conditionDefinition);
-        
         // Get the parameter values as an array of names values
         NamedValue[] namedValues = convertParametersToNamedValues(condition);
         
         Condition webServiceCondition = new Condition(
                 condition.getId(),
-                actionItemType,
+                condition.getActionConditionDefinitionName(),
                 condition.getInvertCondition(),
                 namedValues);
         
@@ -332,6 +483,19 @@ public class ActionWebService extends AbstractWebService implements ActionServic
      * @see org.alfresco.repo.webservice.action.ActionServiceSoapPort#saveActions(org.alfresco.repo.webservice.types.Reference, org.alfresco.repo.webservice.action.Action[])
      */
     public org.alfresco.repo.webservice.action.Action[] saveActions(
+            final Reference reference, 
+            final org.alfresco.repo.webservice.action.Action[] webServiceActions) throws RemoteException, ActionFault
+    {
+        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Action[]>()
+        {
+            public org.alfresco.repo.webservice.action.Action[] doWork() throws Exception
+            {
+                return saveActionsImpl(reference, webServiceActions);
+            }
+        });
+    }
+    
+    private org.alfresco.repo.webservice.action.Action[] saveActionsImpl(
             Reference reference, 
             org.alfresco.repo.webservice.action.Action[] webServiceActions) throws RemoteException, ActionFault
     {
@@ -386,7 +550,7 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         
         // Create the action (or composite action)
         ActionImpl action = null;
-        String actionDefinitionName = webServiceAction.getType().getName();        
+        String actionDefinitionName = webServiceAction.getActionName();        
         if (CompositeActionExecuter.NAME.equals(actionDefinitionName) == true)
         {
             action = new CompositeActionImpl(id, owningNodeRef);
@@ -399,7 +563,10 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         // Set some of the action's details
         action.setTitle(webServiceAction.getTitle());
         action.setDescription(webServiceAction.getDescription());
-        action.setExecuteAsynchronously(webServiceAction.isExecuteAsynchronously());
+        if (webServiceAction.isExecuteAsynchronously() == true)
+        {
+            action.setExecuteAsynchronously(true);
+        }
         
         // Set the parameters
         NamedValue[] namedValues = webServiceAction.getParameters();
@@ -479,7 +646,7 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         }
         
         // Create the action condition
-        ActionCondition actionCondition = new ActionConditionImpl(id, webServiceCondition.getType().getName());
+        ActionCondition actionCondition = new ActionConditionImpl(id, webServiceCondition.getConditionName());
         
         // Set the details of the condition
         actionCondition.setInvertCondition(webServiceCondition.isInvertCondition());
@@ -518,8 +685,21 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     /**
      * @see org.alfresco.repo.webservice.action.ActionServiceSoapPort#removeActions(org.alfresco.repo.webservice.types.Reference, org.alfresco.repo.webservice.action.Action[])
      */
-    public void removeActions(Reference reference, org.alfresco.repo.webservice.action.Action[] webServiceActions)
+    public void removeActions(final Reference reference, final org.alfresco.repo.webservice.action.Action[] webServiceActions)
             throws RemoteException, ActionFault
+    {
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                removeActionsImpl(reference, webServiceActions);
+                return null;
+            }
+        });
+    }
+    
+    private void removeActionsImpl(Reference reference, org.alfresco.repo.webservice.action.Action[] webServiceActions)
+        throws RemoteException, ActionFault
     {
         // Get the node reference
         NodeRef nodeRef = Utils.convertToNodeRef(reference, this.nodeService, this.searchService, this.namespaceService);
@@ -542,7 +722,27 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     /**
      * @see org.alfresco.repo.webservice.action.ActionServiceSoapPort#executeActions(org.alfresco.repo.webservice.types.Predicate, org.alfresco.repo.webservice.action.Action[])
      */
-    public ActionExecutionResult[] executeActions(Predicate predicate, org.alfresco.repo.webservice.action.Action[] webServiceActions) throws RemoteException, ActionFault
+    public ActionExecutionResult[] executeActions(final Predicate predicate, final org.alfresco.repo.webservice.action.Action[] webServiceActions) throws RemoteException, ActionFault
+    {
+        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionExecutionResult[]>()
+        {
+            public ActionExecutionResult[] doWork() throws Exception
+            {
+                return executeActionsImpl(predicate, webServiceActions);
+            }
+        });
+    }
+    
+    /**
+     * Execute actions implementation
+     * 
+     * @param predicate
+     * @param webServiceActions
+     * @return
+     * @throws RemoteException
+     * @throws ActionFault
+     */
+    public ActionExecutionResult[] executeActionsImpl(Predicate predicate, org.alfresco.repo.webservice.action.Action[] webServiceActions) throws RemoteException, ActionFault
     {
         List<ActionExecutionResult> results = new ArrayList<ActionExecutionResult>(10);
         
@@ -583,8 +783,20 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     /**
      * @see org.alfresco.repo.webservice.action.ActionServiceSoapPort#getRules(org.alfresco.repo.webservice.types.Reference, org.alfresco.repo.webservice.action.RuleFilter)
      */
-    public org.alfresco.repo.webservice.action.Rule[] getRules(Reference reference, RuleFilter ruleFilter)
+    public org.alfresco.repo.webservice.action.Rule[] getRules(final Reference reference, final RuleFilter ruleFilter)
             throws RemoteException, ActionFault
+    {
+        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Rule[]>()
+        {
+            public org.alfresco.repo.webservice.action.Rule[] doWork() throws Exception
+            {
+                return getRulesImpl(reference, ruleFilter);
+            }
+        });
+    }
+    
+    private org.alfresco.repo.webservice.action.Rule[] getRulesImpl(Reference reference, RuleFilter ruleFilter)
+        throws RemoteException, ActionFault
     {
         // Get the node reference
         NodeRef nodeRef = Utils.convertToNodeRef(reference, this.nodeService, this.searchService, this.namespaceService);
@@ -610,12 +822,6 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     
     private org.alfresco.repo.webservice.action.Rule convertToWebServiceRule(Rule rule)
     {
-        // Get the rule type
-        RuleType ruleType = this.ruleService.getRuleType(rule.getRuleTypeName());
-        org.alfresco.repo.webservice.action.RuleType webServiceRuleType = new org.alfresco.repo.webservice.action.RuleType(
-                   ruleType.getName(),
-                   ruleType.getDisplayLabel()); 
-        
         // Get the run as user
         // TODO for now set to null since this has no effect yet
         String runAsUserName = null;
@@ -652,7 +858,7 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         // Create the web service rule object
         org.alfresco.repo.webservice.action.Rule webServiceRule = new org.alfresco.repo.webservice.action.Rule(
                 rule.getId(),
-                webServiceRuleType,
+                rule.getRuleTypeName(),
                 rule.getTitle(),
                 rule.getDescription(),
                 rule.getExecuteAsychronously(),
@@ -667,8 +873,20 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     /**
      * @see org.alfresco.repo.webservice.action.ActionServiceSoapPort#saveRules(org.alfresco.repo.webservice.types.Reference, org.alfresco.repo.webservice.action.Rule[])
      */
-    public org.alfresco.repo.webservice.action.Rule[] saveRules(Reference reference, org.alfresco.repo.webservice.action.Rule[] webServiceRules)
+    public org.alfresco.repo.webservice.action.Rule[] saveRules(final Reference reference, final org.alfresco.repo.webservice.action.Rule[] webServiceRules)
             throws RemoteException, ActionFault
+    {
+        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Rule[]>()
+        {
+            public org.alfresco.repo.webservice.action.Rule[] doWork() throws Exception
+            {
+                return saveRulesImpl(reference, webServiceRules);
+            }
+        });
+    }
+    
+    private org.alfresco.repo.webservice.action.Rule[] saveRulesImpl(Reference reference, org.alfresco.repo.webservice.action.Rule[] webServiceRules)
+        throws RemoteException, ActionFault
     {
         // Get the node reference
         NodeRef nodeRef = Utils.convertToNodeRef(reference, this.nodeService, this.searchService, this.namespaceService);
@@ -696,8 +914,21 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     /**
      * @see org.alfresco.repo.webservice.action.ActionServiceSoapPort#removeRules(org.alfresco.repo.webservice.types.Reference, org.alfresco.repo.webservice.action.Rule[])
      */
-    public void removeRules(Reference reference, org.alfresco.repo.webservice.action.Rule[] webServiceRules)
+    public void removeRules(final Reference reference, final org.alfresco.repo.webservice.action.Rule[] webServiceRules)
             throws RemoteException, ActionFault
+    {
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                removeRulesImpl(reference, webServiceRules);
+                return null;
+            }
+        });
+    }
+    
+    public void removeRulesImpl(Reference reference, org.alfresco.repo.webservice.action.Rule[] webServiceRules)
+        throws RemoteException, ActionFault
     {
         // Get the node reference
         NodeRef nodeRef = Utils.convertToNodeRef(reference, this.nodeService, this.searchService, this.namespaceService);
@@ -739,7 +970,7 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         }
         
         // Get the rule type name
-        String ruleTypeName = webServiceRule.getRuleType().getName();
+        String ruleTypeName = webServiceRule.getRuleType();
         
         // Create the rule
         RuleImpl rule = new RuleImpl(id, ruleTypeName, owningNodeRef);

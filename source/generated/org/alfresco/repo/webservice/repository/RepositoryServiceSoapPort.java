@@ -10,6 +10,11 @@ package org.alfresco.repo.webservice.repository;
 public interface RepositoryServiceSoapPort extends java.rmi.Remote {
 
     /**
+     * Creates a new repository store.
+     */
+    public org.alfresco.repo.webservice.types.Store createStore(org.alfresco.repo.webservice.types.StoreEnum scheme, java.lang.String address) throws java.rmi.RemoteException, org.alfresco.repo.webservice.repository.RepositoryFault;
+
+    /**
      * Retrieves a list of stores where content resources are held.
      */
     public org.alfresco.repo.webservice.types.Store[] getStores() throws java.rmi.RemoteException, org.alfresco.repo.webservice.repository.RepositoryFault;

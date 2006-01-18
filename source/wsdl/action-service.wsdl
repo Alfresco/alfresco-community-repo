@@ -22,26 +22,34 @@
                <element name="name" type="xsd:string"/>
                <element name="type" type="xsd:string"/>
                <element name="isMandatory" type="xsd:boolean"/>
-               <element name="displayLabel" type="xsd:string"/>
+               <element name="displayLabel" type="xsd:string" nillable="true"/>
             </sequence>
          </complexType>
          <element name="ParameterDefinition" type="action:ParameterDefinition"/>
 
-         <complexType name="ActionItemType">
+	     <xsd:simpleType name="ActionItemDefinitionType">
+	    	 <xsd:restriction base="xsd:string">
+	    		<xsd:enumeration value="action"/>
+	    	 	<xsd:enumeration value="condition"/>
+	    	 </xsd:restriction>
+	     </xsd:simpleType>
+
+         <complexType name="ActionItemDefinition">
             <sequence>
                <element name="name" type="xsd:string"/>
-               <element name="title" type="xsd:string" nillable="true"/>
+               <element name="type" type="action:ActionItemDefinitionType"/>
+               <element name="title" type="xsd:string"/>
                <element name="description" type="xsd:string" nillable="true"/>
                <element name="adHocPropertiesAllowed" type="xsd:boolean"/>
                <element name="parameterDefinition" type="action:ParameterDefinition" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
             </sequence>
          </complexType>
-         <element name="ActionItemType" type="action:ActionItemType"/>
+         <element name="ActionItemDefinition" type="action:ActionItemDefinition"/>
 
          <complexType name="Condition">
             <sequence>
                <element name="id" type="xsd:string"/>
-               <element name="type" type="action:ActionItemType"/>
+               <element name="conditionName" type="xsd:string"/>
                <element name="invertCondition" type="xsd:boolean"/>
                <element name="parameters" type="cms:NamedValue" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
             </sequence>
@@ -50,8 +58,8 @@
 
          <complexType name="Action">
             <sequence>
-               <element name="id" type="xsd:string"/>
-               <element name="type" type="action:ActionItemType"/>
+               <element name="id" type="xsd:string" nillable="true"/>
+               <element name="actionName" type="xsd:string"/>
                <element name="title" type="xsd:string" nillable="true"/>
                <element name="description" type="xsd:string" nillable="true"/>
                <element name="executeAsynchronously" type="xsd:boolean"/>
@@ -74,8 +82,8 @@
 
          <complexType name="Rule">
             <sequence>
-               <element name="id" type="xsd:string"/>
-               <element name="ruleType" type="action:RuleType"/>
+               <element name="id" type="xsd:string" nillable="true"/>
+               <element name="ruleType" type="xsd:string"/>
                <element name="title" type="xsd:string" nillable="true"/>
                <element name="description" type="xsd:string" nillable="true"/>
                <element name="executeAsynchronously" type="xsd:boolean"/>
@@ -131,7 +139,7 @@
          <element name="getConditionDefinitionsResponse">
             <complexType>
                <sequence>
-                  <element name="actionItemType" type="action:ActionItemType" maxOccurs="unbounded" minOccurs="0"/>
+                  <element name="actionItemDefinition" type="action:ActionItemDefinition" maxOccurs="unbounded" minOccurs="0"/>
                </sequence>
             </complexType>
          </element>
@@ -145,10 +153,27 @@
          <element name="getActionDefinitionsResponse">
             <complexType>
                <sequence>
-                  <element name="actionItemType" type="action:ActionItemType" maxOccurs="unbounded" minOccurs="0"/>
+                  <element name="actionItemDefinition" type="action:ActionItemDefinition" maxOccurs="unbounded" minOccurs="0"/>
                </sequence>
             </complexType>
          </element>
+         
+         <element name="getActionItemDefinition">
+            <complexType>
+               <sequence>
+                  <element name="name" type="xsd:string"/>
+                  <element name="definitionType" type="action:ActionItemDefinitionType"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="getActionItemDefinitionResponse">
+            <complexType>
+               <sequence>
+                  <element name="actionItemDefinition" type="action:ActionItemDefinition"/>
+               </sequence>
+            </complexType>
+         </element>         
 
          <element name="getRuleTypes">
             <complexType>
@@ -160,6 +185,22 @@
             <complexType>
                <sequence>
                   <element name="ruleType" type="action:RuleType" maxOccurs="unbounded" minOccurs="0"/>
+               </sequence>
+            </complexType>
+         </element>       
+
+         <element name="getRuleType">
+            <complexType>
+               <sequence>
+                  <element name="name" type="xsd:string"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="getRuleTypeResponse">
+            <complexType>
+               <sequence>
+                  <element name="ruleType" type="action:RuleType"/>
                </sequence>
             </complexType>
          </element>
@@ -297,6 +338,14 @@
    <wsdl:message name="getActionDefinitionsResponse">
       <wsdl:part element="action:getActionDefinitionsResponse" name="parameters"/>
    </wsdl:message>
+
+   <wsdl:message name="getActionItemDefinitionRequest">
+      <wsdl:part element="action:getActionItemDefinition" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="getActionItemDefinitionResponse">
+      <wsdl:part element="action:getActionItemDefinitionResponse" name="parameters"/>
+   </wsdl:message>
    
    <wsdl:message name="getRuleTypesRequest">
       <wsdl:part element="action:getRuleTypes" name="parameters"/>
@@ -304,6 +353,14 @@
 
    <wsdl:message name="getRuleTypesResponse">
       <wsdl:part element="action:getRuleTypesResponse" name="parameters"/>
+   </wsdl:message>
+   
+   <wsdl:message name="getRuleTypeRequest">
+      <wsdl:part element="action:getRuleType" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="getRuleTypeResponse">
+      <wsdl:part element="action:getRuleTypeResponse" name="parameters"/>
    </wsdl:message>
    
    <wsdl:message name="getActionsRequest">
@@ -379,10 +436,22 @@
          <wsdl:output message="action:getActionDefinitionsResponse" name="getActionDefinitionsResponse"/>
          <wsdl:fault message="action:ActionFault" name="ActionFault"/>
       </wsdl:operation>
+      <wsdl:operation name="getActionItemDefinition">
+         <wsdl:documentation>Get a named action item definition.</wsdl:documentation>
+         <wsdl:input message="action:getActionItemDefinitionRequest" name="getActionItemDefinitionRequest"/>
+         <wsdl:output message="action:getActionItemDefinitionResponse" name="getActionItemDefinitionResponse"/>
+         <wsdl:fault message="action:ActionFault" name="ActionFault"/>
+      </wsdl:operation>
       <wsdl:operation name="getRuleTypes">
          <wsdl:documentation>Gets the availble action types.</wsdl:documentation>
          <wsdl:input message="action:getRuleTypesRequest" name="getRuleTypesRequest"/>
          <wsdl:output message="action:getRuleTypesResponse" name="getRuleTypesResponse"/>
+         <wsdl:fault message="action:ActionFault" name="ActionFault"/>
+      </wsdl:operation>
+      <wsdl:operation name="getRuleType">
+         <wsdl:documentation>Get a named rule type.</wsdl:documentation>
+         <wsdl:input message="action:getRuleTypeRequest" name="getRuleTypeRequest"/>
+         <wsdl:output message="action:getRuleTypeResponse" name="getRuleTypeResponse"/>
          <wsdl:fault message="action:ActionFault" name="ActionFault"/>
       </wsdl:operation>
       <wsdl:operation name="getActions">
@@ -455,8 +524,32 @@
             <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/action/1.0" use="literal" name="ActionFault"/>
          </wsdl:fault>
       </wsdl:operation>
+      <wsdl:operation name="getActionItemDefinition">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/action/1.0/getActionItemDefinition"/>
+         <wsdl:input>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="ActionFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/action/1.0" use="literal" name="ActionFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
       <wsdl:operation name="getRuleTypes">
          <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/action/1.0/getRuleTypes"/>
+         <wsdl:input>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="ActionFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/action/1.0" use="literal" name="ActionFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="getRuleType">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/action/1.0/getRuleType"/>
          <wsdl:input>
             <wsdlsoap:body use="literal"/>
          </wsdl:input>

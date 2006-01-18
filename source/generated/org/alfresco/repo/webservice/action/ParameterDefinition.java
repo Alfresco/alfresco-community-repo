@@ -182,7 +182,7 @@ public class ParameterDefinition  implements java.io.Serializable {
         elemField.setFieldName("displayLabel");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "displayLabel"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setNillable(false);
+        elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
     }
 

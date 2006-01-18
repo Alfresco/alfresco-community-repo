@@ -9,7 +9,7 @@ package org.alfresco.repo.webservice.action;
 
 public class Rule  implements java.io.Serializable {
     private java.lang.String id;
-    private org.alfresco.repo.webservice.action.RuleType ruleType;
+    private java.lang.String ruleType;
     private java.lang.String title;
     private java.lang.String description;
     private boolean executeAsynchronously;
@@ -23,7 +23,7 @@ public class Rule  implements java.io.Serializable {
 
     public Rule(
            java.lang.String id,
-           org.alfresco.repo.webservice.action.RuleType ruleType,
+           java.lang.String ruleType,
            java.lang.String title,
            java.lang.String description,
            boolean executeAsynchronously,
@@ -68,7 +68,7 @@ public class Rule  implements java.io.Serializable {
      * 
      * @return ruleType
      */
-    public org.alfresco.repo.webservice.action.RuleType getRuleType() {
+    public java.lang.String getRuleType() {
         return ruleType;
     }
 
@@ -78,7 +78,7 @@ public class Rule  implements java.io.Serializable {
      * 
      * @param ruleType
      */
-    public void setRuleType(org.alfresco.repo.webservice.action.RuleType ruleType) {
+    public void setRuleType(java.lang.String ruleType) {
         this.ruleType = ruleType;
     }
 
@@ -341,12 +341,12 @@ public class Rule  implements java.io.Serializable {
         elemField.setFieldName("id");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "id"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setNillable(false);
+        elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("ruleType");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "ruleType"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "RuleType"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();

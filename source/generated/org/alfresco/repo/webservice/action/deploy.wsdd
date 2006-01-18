@@ -20,13 +20,22 @@
       <parameter name="className" value="org.alfresco.repo.webservice.action.ActionServiceSoapBindingImpl"/>
       <parameter name="wsdlPortType" value="ActionServiceSoapPort"/>
       <parameter name="typeMappingVersion" value="1.2"/>
-      <operation name="getConditionDefinitions" qname="operNS:getConditionDefinitions" xmlns:operNS="http://www.alfresco.org/ws/service/action/1.0" returnQName="retNS:actionItemType" xmlns:retNS="http://www.alfresco.org/ws/service/action/1.0" returnType="rtns:ActionItemType" xmlns:rtns="http://www.alfresco.org/ws/service/action/1.0" soapAction="http://www.alfresco.org/ws/service/action/1.0/getConditionDefinitions" >
+      <operation name="getConditionDefinitions" qname="operNS:getConditionDefinitions" xmlns:operNS="http://www.alfresco.org/ws/service/action/1.0" returnQName="retNS:actionItemDefinition" xmlns:retNS="http://www.alfresco.org/ws/service/action/1.0" returnType="rtns:ActionItemDefinition" xmlns:rtns="http://www.alfresco.org/ws/service/action/1.0" soapAction="http://www.alfresco.org/ws/service/action/1.0/getConditionDefinitions" >
         <fault name="ActionFault" qname="fns:ActionFault" xmlns:fns="http://www.alfresco.org/ws/service/action/1.0" class="org.alfresco.repo.webservice.action.ActionFault" type="tns:ActionFault" xmlns:tns="http://www.alfresco.org/ws/service/action/1.0"/>
       </operation>
-      <operation name="getActionDefinitions" qname="operNS:getActionDefinitions" xmlns:operNS="http://www.alfresco.org/ws/service/action/1.0" returnQName="retNS:actionItemType" xmlns:retNS="http://www.alfresco.org/ws/service/action/1.0" returnType="rtns:ActionItemType" xmlns:rtns="http://www.alfresco.org/ws/service/action/1.0" soapAction="http://www.alfresco.org/ws/service/action/1.0/getActionDefinitions" >
+      <operation name="getActionDefinitions" qname="operNS:getActionDefinitions" xmlns:operNS="http://www.alfresco.org/ws/service/action/1.0" returnQName="retNS:actionItemDefinition" xmlns:retNS="http://www.alfresco.org/ws/service/action/1.0" returnType="rtns:ActionItemDefinition" xmlns:rtns="http://www.alfresco.org/ws/service/action/1.0" soapAction="http://www.alfresco.org/ws/service/action/1.0/getActionDefinitions" >
+        <fault name="ActionFault" qname="fns:ActionFault" xmlns:fns="http://www.alfresco.org/ws/service/action/1.0" class="org.alfresco.repo.webservice.action.ActionFault" type="tns:ActionFault" xmlns:tns="http://www.alfresco.org/ws/service/action/1.0"/>
+      </operation>
+      <operation name="getActionItemDefinition" qname="operNS:getActionItemDefinition" xmlns:operNS="http://www.alfresco.org/ws/service/action/1.0" returnQName="retNS:actionItemDefinition" xmlns:retNS="http://www.alfresco.org/ws/service/action/1.0" returnType="rtns:ActionItemDefinition" xmlns:rtns="http://www.alfresco.org/ws/service/action/1.0" soapAction="http://www.alfresco.org/ws/service/action/1.0/getActionItemDefinition" >
+        <parameter qname="pns:name" xmlns:pns="http://www.alfresco.org/ws/service/action/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <parameter qname="pns:definitionType" xmlns:pns="http://www.alfresco.org/ws/service/action/1.0" type="tns:ActionItemDefinitionType" xmlns:tns="http://www.alfresco.org/ws/service/action/1.0"/>
         <fault name="ActionFault" qname="fns:ActionFault" xmlns:fns="http://www.alfresco.org/ws/service/action/1.0" class="org.alfresco.repo.webservice.action.ActionFault" type="tns:ActionFault" xmlns:tns="http://www.alfresco.org/ws/service/action/1.0"/>
       </operation>
       <operation name="getRuleTypes" qname="operNS:getRuleTypes" xmlns:operNS="http://www.alfresco.org/ws/service/action/1.0" returnQName="retNS:ruleType" xmlns:retNS="http://www.alfresco.org/ws/service/action/1.0" returnType="rtns:RuleType" xmlns:rtns="http://www.alfresco.org/ws/service/action/1.0" soapAction="http://www.alfresco.org/ws/service/action/1.0/getRuleTypes" >
+        <fault name="ActionFault" qname="fns:ActionFault" xmlns:fns="http://www.alfresco.org/ws/service/action/1.0" class="org.alfresco.repo.webservice.action.ActionFault" type="tns:ActionFault" xmlns:tns="http://www.alfresco.org/ws/service/action/1.0"/>
+      </operation>
+      <operation name="getRuleType" qname="operNS:getRuleType" xmlns:operNS="http://www.alfresco.org/ws/service/action/1.0" returnQName="retNS:ruleType" xmlns:retNS="http://www.alfresco.org/ws/service/action/1.0" returnType="rtns:RuleType" xmlns:rtns="http://www.alfresco.org/ws/service/action/1.0" soapAction="http://www.alfresco.org/ws/service/action/1.0/getRuleType" >
+        <parameter qname="pns:name" xmlns:pns="http://www.alfresco.org/ws/service/action/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
         <fault name="ActionFault" qname="fns:ActionFault" xmlns:fns="http://www.alfresco.org/ws/service/action/1.0" class="org.alfresco.repo.webservice.action.ActionFault" type="tns:ActionFault" xmlns:tns="http://www.alfresco.org/ws/service/action/1.0"/>
       </operation>
       <operation name="getActions" qname="operNS:getActions" xmlns:operNS="http://www.alfresco.org/ws/service/action/1.0" returnQName="retNS:action" xmlns:retNS="http://www.alfresco.org/ws/service/action/1.0" returnType="rtns:Action" xmlns:rtns="http://www.alfresco.org/ws/service/action/1.0" soapAction="http://www.alfresco.org/ws/service/action/1.0/getActions" >
@@ -64,7 +73,7 @@
         <parameter qname="pns:rules" xmlns:pns="http://www.alfresco.org/ws/service/action/1.0" type="tns:Rule" xmlns:tns="http://www.alfresco.org/ws/service/action/1.0"/>
         <fault name="ActionFault" qname="fns:ActionFault" xmlns:fns="http://www.alfresco.org/ws/service/action/1.0" class="org.alfresco.repo.webservice.action.ActionFault" type="tns:ActionFault" xmlns:tns="http://www.alfresco.org/ws/service/action/1.0"/>
       </operation>
-      <parameter name="allowedMethods" value="saveRules saveActions getRules getActions executeActions removeRules getActionDefinitions getConditionDefinitions removeActions getRuleTypes"/>
+      <parameter name="allowedMethods" value="saveRules saveActions getActionItemDefinition getRules getActions executeActions removeRules getActionDefinitions getConditionDefinitions removeActions getRuleTypes getRuleType"/>
 
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
@@ -180,10 +189,10 @@
       />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/service/action/1.0"
-        qname="ns:ActionItemType"
-        type="java:org.alfresco.repo.webservice.action.ActionItemType"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        qname="ns:ActionItemDefinitionType"
+        type="java:org.alfresco.repo.webservice.action.ActionItemDefinitionType"
+        serializer="org.apache.axis.encoding.ser.EnumSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory"
         encodingStyle=""
       />
       <typeMapping
@@ -227,6 +236,14 @@
         encodingStyle=""
       />
       <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/action/1.0"
+        qname="ns:ActionItemDefinition"
+        type="java:org.alfresco.repo.webservice.action.ActionItemDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
         qname="ns:>ContentFormat>mimetype"
         type="java:java.lang.String"
@@ -260,18 +277,18 @@
       />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:NamedValue"
-        type="java:org.alfresco.repo.webservice.types.NamedValue"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
         qname="ns:UUID"
         type="java:java.lang.String"
         serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:NamedValue"
+        type="java:org.alfresco.repo.webservice.types.NamedValue"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""
       />
       <typeMapping

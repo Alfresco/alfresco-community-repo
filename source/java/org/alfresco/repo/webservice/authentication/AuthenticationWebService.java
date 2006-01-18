@@ -18,7 +18,6 @@ package org.alfresco.repo.webservice.authentication;
 
 import java.rmi.RemoteException;
 
-import org.alfresco.example.webservice.TicketHolder;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.apache.commons.logging.Log;
@@ -80,11 +79,10 @@ public class AuthenticationWebService implements AuthenticationServiceSoapPort
     /**
      * @see org.alfresco.repo.webservice.authentication.AuthenticationServiceSoapPort#endSession()
      */
-    public void endSession() throws RemoteException, AuthenticationFault
+    public void endSession(String ticket) throws RemoteException, AuthenticationFault
     {
         try
         {
-            String ticket = TicketHolder.ticket;
             if (ticket != null)
             {
                 this.authenticationService.invalidateTicket(ticket);

@@ -157,6 +157,9 @@
       <property name="dictionaryService">
       	<ref bean="dictionaryService"/>
       </property>
+      <property name="transactionService">
+         <ref bean="transactionComponent"/>
+      </property>
    </bean>
  
 </beans>

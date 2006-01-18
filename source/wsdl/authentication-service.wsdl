@@ -31,7 +31,9 @@
          
          <element name="endSession">
             <complexType>
-               <sequence/>
+               <sequence>
+                  <element name="ticket" type="xsd:string"/>
+               </sequence>
             </complexType>
          </element>
          

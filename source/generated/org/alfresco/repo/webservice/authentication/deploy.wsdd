@@ -26,6 +26,7 @@
         <fault name="AuthenticationFault" qname="fns:AuthenticationFault" xmlns:fns="http://www.alfresco.org/ws/service/authentication/1.0" class="org.alfresco.repo.webservice.authentication.AuthenticationFault" type="tns:AuthenticationFault" xmlns:tns="http://www.alfresco.org/ws/service/authentication/1.0"/>
       </operation>
       <operation name="endSession" qname="operNS:endSession" xmlns:operNS="http://www.alfresco.org/ws/service/authentication/1.0" soapAction="http://www.alfresco.org/ws/service/authentication/1.0/endSession" >
+        <parameter qname="pns:ticket" xmlns:pns="http://www.alfresco.org/ws/service/authentication/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
         <fault name="AuthenticationFault" qname="fns:AuthenticationFault" xmlns:fns="http://www.alfresco.org/ws/service/authentication/1.0" class="org.alfresco.repo.webservice.authentication.AuthenticationFault" type="tns:AuthenticationFault" xmlns:tns="http://www.alfresco.org/ws/service/authentication/1.0"/>
       </operation>
       <parameter name="allowedMethods" value="startSession endSession"/>

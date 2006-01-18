@@ -12,17 +12,27 @@ public interface ActionServiceSoapPort extends java.rmi.Remote {
     /**
      * Gets the available condition definitions.
      */
-    public org.alfresco.repo.webservice.action.ActionItemType[] getConditionDefinitions() throws java.rmi.RemoteException, org.alfresco.repo.webservice.action.ActionFault;
+    public org.alfresco.repo.webservice.action.ActionItemDefinition[] getConditionDefinitions() throws java.rmi.RemoteException, org.alfresco.repo.webservice.action.ActionFault;
 
     /**
      * Gets the available action definitions.
      */
-    public org.alfresco.repo.webservice.action.ActionItemType[] getActionDefinitions() throws java.rmi.RemoteException, org.alfresco.repo.webservice.action.ActionFault;
+    public org.alfresco.repo.webservice.action.ActionItemDefinition[] getActionDefinitions() throws java.rmi.RemoteException, org.alfresco.repo.webservice.action.ActionFault;
+
+    /**
+     * Get a named action item definition.
+     */
+    public org.alfresco.repo.webservice.action.ActionItemDefinition getActionItemDefinition(java.lang.String name, org.alfresco.repo.webservice.action.ActionItemDefinitionType definitionType) throws java.rmi.RemoteException, org.alfresco.repo.webservice.action.ActionFault;
 
     /**
      * Gets the availble action types.
      */
     public org.alfresco.repo.webservice.action.RuleType[] getRuleTypes() throws java.rmi.RemoteException, org.alfresco.repo.webservice.action.ActionFault;
+
+    /**
+     * Get a named rule type.
+     */
+    public org.alfresco.repo.webservice.action.RuleType getRuleType(java.lang.String name) throws java.rmi.RemoteException, org.alfresco.repo.webservice.action.ActionFault;
 
     /**
      * Gets the actions saved against a reference.

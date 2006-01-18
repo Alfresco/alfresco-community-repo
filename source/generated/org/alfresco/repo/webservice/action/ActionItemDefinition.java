@@ -1,29 +1,32 @@
 /**
- * ActionItemType.java
+ * ActionItemDefinition.java
  *
  * This file was auto-generated from WSDL
  * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
  */
 
-package org.alfresco.example.webservice.action;
+package org.alfresco.repo.webservice.action;
 
-public class ActionItemType  implements java.io.Serializable {
+public class ActionItemDefinition  implements java.io.Serializable {
     private java.lang.String name;
+    private org.alfresco.repo.webservice.action.ActionItemDefinitionType type;
     private java.lang.String title;
     private java.lang.String description;
     private boolean adHocPropertiesAllowed;
-    private org.alfresco.example.webservice.action.ParameterDefinition[] parameterDefinition;
+    private org.alfresco.repo.webservice.action.ParameterDefinition[] parameterDefinition;
 
-    public ActionItemType() {
+    public ActionItemDefinition() {
     }
 
-    public ActionItemType(
+    public ActionItemDefinition(
            java.lang.String name,
+           org.alfresco.repo.webservice.action.ActionItemDefinitionType type,
            java.lang.String title,
            java.lang.String description,
            boolean adHocPropertiesAllowed,
-           org.alfresco.example.webservice.action.ParameterDefinition[] parameterDefinition) {
+           org.alfresco.repo.webservice.action.ParameterDefinition[] parameterDefinition) {
            this.name = name;
+           this.type = type;
            this.title = title;
            this.description = description;
            this.adHocPropertiesAllowed = adHocPropertiesAllowed;
@@ -32,7 +35,7 @@ public class ActionItemType  implements java.io.Serializable {
 
 
     /**
-     * Gets the name value for this ActionItemType.
+     * Gets the name value for this ActionItemDefinition.
      * 
      * @return name
      */
@@ -42,7 +45,7 @@ public class ActionItemType  implements java.io.Serializable {
 
 
     /**
-     * Sets the name value for this ActionItemType.
+     * Sets the name value for this ActionItemDefinition.
      * 
      * @param name
      */
@@ -52,7 +55,27 @@ public class ActionItemType  implements java.io.Serializable {
 
 
     /**
-     * Gets the title value for this ActionItemType.
+     * Gets the type value for this ActionItemDefinition.
+     * 
+     * @return type
+     */
+    public org.alfresco.repo.webservice.action.ActionItemDefinitionType getType() {
+        return type;
+    }
+
+
+    /**
+     * Sets the type value for this ActionItemDefinition.
+     * 
+     * @param type
+     */
+    public void setType(org.alfresco.repo.webservice.action.ActionItemDefinitionType type) {
+        this.type = type;
+    }
+
+
+    /**
+     * Gets the title value for this ActionItemDefinition.
      * 
      * @return title
      */
@@ -62,7 +85,7 @@ public class ActionItemType  implements java.io.Serializable {
 
 
     /**
-     * Sets the title value for this ActionItemType.
+     * Sets the title value for this ActionItemDefinition.
      * 
      * @param title
      */
@@ -72,7 +95,7 @@ public class ActionItemType  implements java.io.Serializable {
 
 
     /**
-     * Gets the description value for this ActionItemType.
+     * Gets the description value for this ActionItemDefinition.
      * 
      * @return description
      */
@@ -82,7 +105,7 @@ public class ActionItemType  implements java.io.Serializable {
 
 
     /**
-     * Sets the description value for this ActionItemType.
+     * Sets the description value for this ActionItemDefinition.
      * 
      * @param description
      */
@@ -92,7 +115,7 @@ public class ActionItemType  implements java.io.Serializable {
 
 
     /**
-     * Gets the adHocPropertiesAllowed value for this ActionItemType.
+     * Gets the adHocPropertiesAllowed value for this ActionItemDefinition.
      * 
      * @return adHocPropertiesAllowed
      */
@@ -102,7 +125,7 @@ public class ActionItemType  implements java.io.Serializable {
 
 
     /**
-     * Sets the adHocPropertiesAllowed value for this ActionItemType.
+     * Sets the adHocPropertiesAllowed value for this ActionItemDefinition.
      * 
      * @param adHocPropertiesAllowed
      */
@@ -112,36 +135,36 @@ public class ActionItemType  implements java.io.Serializable {
 
 
     /**
-     * Gets the parameterDefinition value for this ActionItemType.
+     * Gets the parameterDefinition value for this ActionItemDefinition.
      * 
      * @return parameterDefinition
      */
-    public org.alfresco.example.webservice.action.ParameterDefinition[] getParameterDefinition() {
+    public org.alfresco.repo.webservice.action.ParameterDefinition[] getParameterDefinition() {
         return parameterDefinition;
     }
 
 
     /**
-     * Sets the parameterDefinition value for this ActionItemType.
+     * Sets the parameterDefinition value for this ActionItemDefinition.
      * 
      * @param parameterDefinition
      */
-    public void setParameterDefinition(org.alfresco.example.webservice.action.ParameterDefinition[] parameterDefinition) {
+    public void setParameterDefinition(org.alfresco.repo.webservice.action.ParameterDefinition[] parameterDefinition) {
         this.parameterDefinition = parameterDefinition;
     }
 
-    public org.alfresco.example.webservice.action.ParameterDefinition getParameterDefinition(int i) {
+    public org.alfresco.repo.webservice.action.ParameterDefinition getParameterDefinition(int i) {
         return this.parameterDefinition[i];
     }
 
-    public void setParameterDefinition(int i, org.alfresco.example.webservice.action.ParameterDefinition _value) {
+    public void setParameterDefinition(int i, org.alfresco.repo.webservice.action.ParameterDefinition _value) {
         this.parameterDefinition[i] = _value;
     }
 
     private java.lang.Object __equalsCalc = null;
     public synchronized boolean equals(java.lang.Object obj) {
-        if (!(obj instanceof ActionItemType)) return false;
-        ActionItemType other = (ActionItemType) obj;
+        if (!(obj instanceof ActionItemDefinition)) return false;
+        ActionItemDefinition other = (ActionItemDefinition) obj;
         if (obj == null) return false;
         if (this == obj) return true;
         if (__equalsCalc != null) {
@@ -153,6 +176,9 @@ public class ActionItemType  implements java.io.Serializable {
             ((this.name==null && other.getName()==null) || 
              (this.name!=null &&
               this.name.equals(other.getName()))) &&
+            ((this.type==null && other.getType()==null) || 
+             (this.type!=null &&
+              this.type.equals(other.getType()))) &&
             ((this.title==null && other.getTitle()==null) || 
              (this.title!=null &&
               this.title.equals(other.getTitle()))) &&
@@ -176,6 +202,9 @@ public class ActionItemType  implements java.io.Serializable {
         int _hashCode = 1;
         if (getName() != null) {
             _hashCode += getName().hashCode();
+        }
+        if (getType() != null) {
+            _hashCode += getType().hashCode();
         }
         if (getTitle() != null) {
             _hashCode += getTitle().hashCode();
@@ -201,10 +230,10 @@ public class ActionItemType  implements java.io.Serializable {
 
     // Type metadata
     private static org.apache.axis.description.TypeDesc typeDesc =
-        new org.apache.axis.description.TypeDesc(ActionItemType.class, true);
+        new org.apache.axis.description.TypeDesc(ActionItemDefinition.class, true);
 
     static {
-        typeDesc.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "ActionItemType"));
+        typeDesc.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "ActionItemDefinition"));
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("name");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "name"));
@@ -212,10 +241,16 @@ public class ActionItemType  implements java.io.Serializable {
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("type");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "type"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "ActionItemDefinitionType"));
+        elemField.setNillable(false);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("title");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "title"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setNillable(true);
+        elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("description");

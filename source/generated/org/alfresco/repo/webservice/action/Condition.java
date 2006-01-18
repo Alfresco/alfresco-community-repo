@@ -9,7 +9,7 @@ package org.alfresco.repo.webservice.action;
 
 public class Condition  implements java.io.Serializable {
     private java.lang.String id;
-    private org.alfresco.repo.webservice.action.ActionItemType type;
+    private java.lang.String conditionName;
     private boolean invertCondition;
     private org.alfresco.repo.webservice.types.NamedValue[] parameters;
 
@@ -18,11 +18,11 @@ public class Condition  implements java.io.Serializable {
 
     public Condition(
            java.lang.String id,
-           org.alfresco.repo.webservice.action.ActionItemType type,
+           java.lang.String conditionName,
            boolean invertCondition,
            org.alfresco.repo.webservice.types.NamedValue[] parameters) {
            this.id = id;
-           this.type = type;
+           this.conditionName = conditionName;
            this.invertCondition = invertCondition;
            this.parameters = parameters;
     }
@@ -49,22 +49,22 @@ public class Condition  implements java.io.Serializable {
 
 
     /**
-     * Gets the type value for this Condition.
+     * Gets the conditionName value for this Condition.
      * 
-     * @return type
+     * @return conditionName
      */
-    public org.alfresco.repo.webservice.action.ActionItemType getType() {
-        return type;
+    public java.lang.String getConditionName() {
+        return conditionName;
     }
 
 
     /**
-     * Sets the type value for this Condition.
+     * Sets the conditionName value for this Condition.
      * 
-     * @param type
+     * @param conditionName
      */
-    public void setType(org.alfresco.repo.webservice.action.ActionItemType type) {
-        this.type = type;
+    public void setConditionName(java.lang.String conditionName) {
+        this.conditionName = conditionName;
     }
 
 
@@ -130,9 +130,9 @@ public class Condition  implements java.io.Serializable {
             ((this.id==null && other.getId()==null) || 
              (this.id!=null &&
               this.id.equals(other.getId()))) &&
-            ((this.type==null && other.getType()==null) || 
-             (this.type!=null &&
-              this.type.equals(other.getType()))) &&
+            ((this.conditionName==null && other.getConditionName()==null) || 
+             (this.conditionName!=null &&
+              this.conditionName.equals(other.getConditionName()))) &&
             this.invertCondition == other.isInvertCondition() &&
             ((this.parameters==null && other.getParameters()==null) || 
              (this.parameters!=null &&
@@ -151,8 +151,8 @@ public class Condition  implements java.io.Serializable {
         if (getId() != null) {
             _hashCode += getId().hashCode();
         }
-        if (getType() != null) {
-            _hashCode += getType().hashCode();
+        if (getConditionName() != null) {
+            _hashCode += getConditionName().hashCode();
         }
         _hashCode += (isInvertCondition() ? Boolean.TRUE : Boolean.FALSE).hashCode();
         if (getParameters() != null) {
@@ -183,9 +183,9 @@ public class Condition  implements java.io.Serializable {
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("type");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "type"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "ActionItemType"));
+        elemField.setFieldName("conditionName");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "conditionName"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();

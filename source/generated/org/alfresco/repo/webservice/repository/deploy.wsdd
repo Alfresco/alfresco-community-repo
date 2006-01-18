@@ -20,6 +20,11 @@
       <parameter name="className" value="org.alfresco.repo.webservice.repository.RepositoryServiceSoapBindingImpl"/>
       <parameter name="wsdlPortType" value="RepositoryServiceSoapPort"/>
       <parameter name="typeMappingVersion" value="1.2"/>
+      <operation name="createStore" qname="operNS:createStore" xmlns:operNS="http://www.alfresco.org/ws/service/repository/1.0" returnQName="retNS:createStoreReturn" xmlns:retNS="http://www.alfresco.org/ws/service/repository/1.0" returnType="rtns:Store" xmlns:rtns="http://www.alfresco.org/ws/model/content/1.0" soapAction="http://www.alfresco.org/ws/service/repository/1.0/createStore" >
+        <parameter qname="pns:scheme" xmlns:pns="http://www.alfresco.org/ws/service/repository/1.0" type="tns:StoreEnum" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:address" xmlns:pns="http://www.alfresco.org/ws/service/repository/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="RepositoryFault" qname="fns:RepositoryFault" xmlns:fns="http://www.alfresco.org/ws/service/repository/1.0" class="org.alfresco.repo.webservice.repository.RepositoryFault" type="tns:RepositoryFault" xmlns:tns="http://www.alfresco.org/ws/service/repository/1.0"/>
+      </operation>
       <operation name="getStores" qname="operNS:getStores" xmlns:operNS="http://www.alfresco.org/ws/service/repository/1.0" returnQName="retNS:getStoresReturn" xmlns:retNS="http://www.alfresco.org/ws/service/repository/1.0" returnType="rtns:Store" xmlns:rtns="http://www.alfresco.org/ws/model/content/1.0" soapAction="http://www.alfresco.org/ws/service/repository/1.0/getStores" >
         <fault name="RepositoryFault" qname="fns:RepositoryFault" xmlns:fns="http://www.alfresco.org/ws/service/repository/1.0" class="org.alfresco.repo.webservice.repository.RepositoryFault" type="tns:RepositoryFault" xmlns:tns="http://www.alfresco.org/ws/service/repository/1.0"/>
       </operation>
@@ -58,7 +63,7 @@
         <parameter qname="pns:where" xmlns:pns="http://www.alfresco.org/ws/service/repository/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
         <fault name="RepositoryFault" qname="fns:RepositoryFault" xmlns:fns="http://www.alfresco.org/ws/service/repository/1.0" class="org.alfresco.repo.webservice.repository.RepositoryFault" type="tns:RepositoryFault" xmlns:tns="http://www.alfresco.org/ws/service/repository/1.0"/>
       </operation>
-      <parameter name="allowedMethods" value="describe query update get queryParents queryAssociated getStores queryChildren fetchMore"/>
+      <parameter name="allowedMethods" value="describe query update get queryParents queryAssociated getStores createStore queryChildren fetchMore"/>
 
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
@@ -165,17 +170,17 @@
         encodingStyle=""
       />
       <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:Reference"
-        type="java:org.alfresco.repo.webservice.types.Reference"
+        xmlns:ns="http://www.alfresco.org/ws/service/repository/1.0"
+        qname="ns:QueryResult"
+        type="java:org.alfresco.repo.webservice.repository.QueryResult"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""
       />
       <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/service/repository/1.0"
-        qname="ns:QueryResult"
-        type="java:org.alfresco.repo.webservice.repository.QueryResult"
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Reference"
+        type="java:org.alfresco.repo.webservice.types.Reference"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""

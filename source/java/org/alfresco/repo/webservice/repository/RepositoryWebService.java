@@ -100,6 +100,19 @@ public class RepositoryWebService extends AbstractWebService implements
     {
         this.querySessionCache = querySessionCache;
     }
+    
+    /**
+     * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#createStore(org.alfresco.repo.webservice.types.StoreEnum, java.lang.String)
+     */
+    public Store createStore(StoreEnum scheme, String address) throws RemoteException, RepositoryFault
+    {
+        String protocol = scheme.getValue();
+        StoreRef storeRef = this.nodeService.createStore(protocol, address);
+        
+        StoreEnum storeEnum = StoreEnum.fromString(storeRef
+                .getProtocol());
+        return new Store(storeEnum, storeRef.getIdentifier());
+    }
 
     /**
      * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#getStores()
@@ -677,5 +690,5 @@ public class RepositoryWebService extends AbstractWebService implements
         }
         
         return nodes;
-    }
+    }    
 }

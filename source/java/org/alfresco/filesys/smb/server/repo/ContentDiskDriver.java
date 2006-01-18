@@ -16,8 +16,10 @@
  */
 package org.alfresco.filesys.smb.server.repo;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 import javax.transaction.UserTransaction;
@@ -52,6 +54,7 @@ import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileInterface;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoNetworkFile;
 import org.alfresco.filesys.util.DataBuffer;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -91,12 +94,13 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     private TransactionService transactionService;
     private NamespaceService namespaceService;
     private NodeService nodeService;
-    private NodeService unprotectedNodeService;
-    private SearchService unprotectedSearchService;
+    private SearchService searchService;
     private ContentService contentService;
     private PermissionService permissionService;
     private CheckOutCheckInService checkInOutService;
-
+    
+    private AuthenticationComponent authComponent;
+    
     // I/O control handler
     
     private IOControlHandler m_ioHandler;
@@ -140,19 +144,11 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     }
     
     /**
-     * @param nodeService the node service
-     */
-    public void setUnprotectedNodeService(NodeService nodeService)
-    {
-        this.unprotectedNodeService = nodeService;
-    }
-
-    /**
      * @param searchService the search service
      */
-    public void setUnprotectedSearchService(SearchService searchService)
+    public void setSearchService(SearchService searchService)
     {
-        this.unprotectedSearchService = searchService;
+        this.searchService = searchService;
     }
 
     
@@ -185,6 +181,16 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     }
     
     /**
+     * Set the authentication component
+     * 
+     * @param authComponent AuthenticationComponent
+     */
+    public void setAuthenticationComponent(AuthenticationComponent authComponent)
+    {
+        this.authComponent = authComponent;
+    }
+    
+    /**
      * Parse and validate the parameter string and create a device context object for this instance
      * of the shared device. The same DeviceInterface implementation may be used for multiple
      * shares.
@@ -195,6 +201,10 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
      */
     public DeviceContext createContext(ConfigElement cfg) throws DeviceContextException
     {
+        // Use the system user as the authenticated context for the filesystem initialization
+        
+        authComponent.setCurrentUser( authComponent.getSystemUserName());
+        
         // Wrap the initialization in a transaction
         
         UserTransaction tx = transactionService.getUserTransaction(true);
@@ -220,11 +230,11 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             // Connect to the repo and ensure that the store exists
             
-            if (!unprotectedNodeService.exists(storeRef))
+            if (! nodeService.exists(storeRef))
             {
                 throw new DeviceContextException("Store not created prior to application startup: " + storeRef);
             }
-            NodeRef storeRootNodeRef = unprotectedNodeService.getRootNode(storeRef);
+            NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
             
             // Get the root path
             
@@ -237,8 +247,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             // Find the root node for this device
             
-            List<NodeRef> nodeRefs = unprotectedSearchService.selectNodes(
-                    storeRootNodeRef, rootPath, null, namespaceService, false);
+            List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, rootPath, null, namespaceService, false);
             
             NodeRef rootNodeRef = null;
             
@@ -260,6 +269,27 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 rootNodeRef = nodeRefs.get(0);
             }
 
+            // Check if a relative path has been specified
+            
+            ConfigElement relativePathElement = cfg.getChild(KEY_RELATIVE_PATH);
+            
+            if ( relativePathElement != null)
+            {
+                // Make sure the path is in CIFS format
+                
+                String relPath = relativePathElement.getValue().replace( '/', FileName.DOS_SEPERATOR);
+                
+                // Find the node and validate that the relative path is to a folder
+                
+                NodeRef relPathNode = cifsHelper.getNodeRef( rootNodeRef, relPath);
+                if ( cifsHelper.isDirectory( relPathNode) == false)
+                    throw new DeviceContextException("Relative path is not a folder, " + relativePathElement.getValue());
+                
+                // Use the relative path node as the root of the filesystem
+                
+                rootNodeRef = relPathNode;
+            }
+            
             // Commit the transaction
             
             tx.commit();
@@ -330,9 +360,18 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                     
                     if ( pseudoName != null && appPath != null)
                     {
+                        // Check that the application exists on the local filesystem
+                        
+                        URL appURL = this.getClass().getClassLoader().getResource(appPath.getValue());
+                        if ( appURL == null)
+                            throw new DeviceContextException("Failed to find drag and drop application, " + appPath.getValue());
+                        File appFile = new File(appURL.getFile());
+                        if ( appFile.exists() == false)
+                            throw new DeviceContextException("Drag and drop application not found, " + appPath.getValue());
+                        
                         // Create the pseudo file for the drag and drop application
                         
-                        PseudoFile dragDropPseudo = new PseudoFile( pseudoName.getValue(), appPath.getValue());
+                        PseudoFile dragDropPseudo = new PseudoFile( pseudoName.getValue(), appFile.getAbsolutePath());
                         context.setDragAndDropApp( dragDropPseudo);
                         
                         // Enable pseudo file support

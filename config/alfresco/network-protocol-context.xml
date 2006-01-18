@@ -55,12 +55,12 @@
          </constructor-arg>
          <property name="transactionService"><ref bean="transactionComponent" /></property>
          <property name="nodeService"><ref bean="NodeService" /></property>
-         <property name="unprotectedNodeService"><ref bean="nodeService" /></property>
-         <property name="unprotectedSearchService"><ref bean="searchService" /></property>
+         <property name="searchService"><ref bean="SearchService" /></property>
          <property name="namespaceService"><ref bean="namespaceService" /></property>
          <property name="contentService"><ref bean="ContentService" /></property>
          <property name="permissionService"><ref bean="permissionService"/></property>
          <property name="checkInOutService"><ref bean="checkOutCheckInService"/></property>
+         <property name="authenticationComponent"><ref bean="authenticationComponent"/></property>
    </bean>
    
    <bean id="cifsHelper" class="org.alfresco.filesys.smb.server.repo.CifsHelper">

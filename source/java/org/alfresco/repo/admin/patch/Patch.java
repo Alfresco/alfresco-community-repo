@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.admin.PatchException;
  * Patches must not be reappliable.  It is up to the patch management systems
  * to ensure that patches are <b>never reapplied</b>.
  * 
+ * @see org.alfresco.repo.admin.patch.AbstractPatch
  * @since 1.2
  * @author Derek Hulley
  */
@@ -38,7 +39,11 @@ public interface Patch
     
     public String getDescription();
     
-    public String getApplyAfterVersion();
+    /**
+     * @see PatchService#applyOutstandingPatches()
+     * @see AbstractPatch#setApplyToVersion(String)
+     */
+    public String getApplyToVersion();
     
     /**
      * Get patches that this patch depends on

@@ -31,8 +31,8 @@ public interface AppliedPatch
     public String getDescription();
     public void setDescription(String description);
     
-    public String getApplyAfterVersion();
-    public void setApplyAfterVersion(String version);
+    public String getApplyToVersion();
+    public void setApplyToVersion(String version);
     
     public boolean getSucceeded();
     public void setSucceeded(boolean succeeded);

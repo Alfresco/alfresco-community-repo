@@ -76,11 +76,11 @@ public class AppliedPatchImpl implements AppliedPatch
         this.succeeded = succeeded;
     }
 
-    public String getApplyAfterVersion()
+    public String getApplyToVersion()
     {
         return applyAfterVersion;
     }
-    public void setApplyAfterVersion(String applyAfterVersion)
+    public void setApplyToVersion(String applyAfterVersion)
     {
         this.applyAfterVersion = applyAfterVersion;
     }

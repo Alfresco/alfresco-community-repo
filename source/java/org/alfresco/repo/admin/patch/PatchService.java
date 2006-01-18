@@ -50,6 +50,13 @@ public interface PatchService
      * Apply all outstanding patches that are relevant to the repo.
      * If there is a failure, then the patches that were applied will remain so,
      * but the process will not attempt to apply any further patches.
+     * <p>
+     * Patches have a version, e.g. <b>1.1.1</b>, which is the version of the repo
+     * after which the patch should be applied.  If the repository version is <b>1.1.2</b>
+     * then the patch will not be applied as the repository was created with a newer version
+     * of the codebase, thereby rendering the patch unecessary.  If the repository is at
+     * version <b>1.1</b> then the patch needs to be applied as the codebase of the repository
+     * is newer than the repository creation.
      * 
      * @return Returns true if all outstanding patches were applied, or false if the process
      *      was termintated before all patches could be applied.

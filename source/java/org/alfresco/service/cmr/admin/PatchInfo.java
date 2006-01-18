@@ -33,7 +33,7 @@ public class PatchInfo implements Serializable
 
     private String id;
     private String description;
-    private String applyAfterVersion;
+    private String applyToVersion;
     private boolean succeeded;
     private String appliedOnVersion;
     private Date appliedOnDate;
@@ -43,7 +43,7 @@ public class PatchInfo implements Serializable
     {
         this.id = id;
         this.description = description;
-        this.applyAfterVersion = applyAfterVersion;
+        this.applyToVersion = applyAfterVersion;
         this.succeeded = false;
     }
     
@@ -51,7 +51,7 @@ public class PatchInfo implements Serializable
     {
         this.id = appliedPatch.getId();
         this.description = appliedPatch.getDescription();
-        this.applyAfterVersion = appliedPatch.getApplyAfterVersion();
+        this.applyToVersion = appliedPatch.getApplyToVersion();
         
         this.succeeded = appliedPatch.getSucceeded();
         this.appliedOnVersion = appliedPatch.getAppliedOnVersion();
@@ -78,9 +78,9 @@ public class PatchInfo implements Serializable
     /**
      * @return Returns the version of the repository after which this patch must be applied
      */
-    public String getApplyAfterVersion()
+    public String getApplyToVersion()
     {
-        return applyAfterVersion;
+        return applyToVersion;
     }
 
     /**

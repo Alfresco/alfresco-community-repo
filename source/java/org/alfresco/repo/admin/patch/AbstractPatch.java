@@ -40,7 +40,7 @@ public abstract class AbstractPatch implements Patch
     private static Log logger = LogFactory.getLog(AbstractPatch.class);
     
     private String id;
-    private String applyAfterVersion;
+    private String applyToVersion;
     private String description;
     /** a list of patches that this one depends on */
     private List<Patch> dependsOn;
@@ -60,7 +60,7 @@ public abstract class AbstractPatch implements Patch
         StringBuilder sb = new StringBuilder(56);
         sb.append("Patch")
           .append("[id=").append(getId())
-          .append(", after=").append(getApplyAfterVersion())
+          .append(", after=").append(getApplyToVersion())
           .append(", description=").append(getDescription())
           .append("]");
         return sb.toString();
@@ -88,18 +88,18 @@ public abstract class AbstractPatch implements Patch
         this.id = id;
     }
 
-    public String getApplyAfterVersion()
+    public String getApplyToVersion()
     {
-        return applyAfterVersion;
+        return applyToVersion;
     }
 
     /**
      * 
      * @param applyAfterVersion the version of the repository after which this patch must be applied.
      */
-    public void setApplyAfterVersion(String applyAfterVersion)
+    public void setApplyToVersion(String applyAfterVersion)
     {
-        this.applyAfterVersion = applyAfterVersion;
+        this.applyToVersion = applyAfterVersion;
     }
 
     public String getDescription()
@@ -144,10 +144,10 @@ public abstract class AbstractPatch implements Patch
                     "   patch: " + this);
         }
         // check that the necessary properties have been set
-        if (id == null || applyAfterVersion == null || description == null)
+        if (id == null || applyToVersion == null || description == null)
         {
             throw new AlfrescoRuntimeException(
-                    "Patch properties 'id', 'applyAfterVersion' and 'description' have not all been set on this patch: \n" +
+                    "Patch properties 'id', 'applyToVersion' and 'description' have not all been set on this patch: \n" +
                     "   patch: " + this);
         }
         else if (transactionService == null)

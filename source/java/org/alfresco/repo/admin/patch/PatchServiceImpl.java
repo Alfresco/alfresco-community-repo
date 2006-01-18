@@ -21,7 +21,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.AppliedPatch;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.admin.PatchInfo;
@@ -184,9 +186,9 @@ public class PatchServiceImpl implements PatchService
         String report = null;
         boolean success = false;
         // first check whether the patch is relevant to the repo
-        Descriptor repo = descriptorService.getRepositoryDescriptor();
-        String versionLabel = repo.getVersionLabel();
-        if (versionLabel.compareTo(patch.getApplyAfterVersion()) >= 0)
+        Descriptor repoDescriptor = descriptorService.getRepositoryDescriptor();
+        boolean applies = applies(repoDescriptor, patch);
+        if (!applies)
         {
             // create a dummy report
             StringBuilder sb = new StringBuilder(128);
@@ -213,9 +215,9 @@ public class PatchServiceImpl implements PatchService
         appliedPatch = patchDaoService.newAppliedPatch(patch.getId());
         // fill in the record's details
         appliedPatch.setDescription(patch.getDescription());
-        appliedPatch.setApplyAfterVersion(patch.getApplyAfterVersion());
+        appliedPatch.setApplyToVersion(patch.getApplyToVersion());
         appliedPatch.setSucceeded(success);
-        appliedPatch.setAppliedOnVersion(versionLabel);
+        appliedPatch.setAppliedOnVersion(repoDescriptor.getVersion());
         appliedPatch.setAppliedOnDate(new Date());
         appliedPatch.setReport(report);
         // create the info for returning
@@ -226,5 +228,90 @@ public class PatchServiceImpl implements PatchService
             logger.debug("Applied patch: \n" + patchInfo);
         }
         return patchInfo;
+    }
+    
+    /**
+     * Check whether or not the patch should be applied to the repository, given the descriptor.
+     * This helper is required to 
+     * 
+     * @param repoDescriptor contains the version details of the repository
+     * @param patch the patch whos version must be checked
+     * @return Returns true if the patch should be applied to the repository
+     */
+    private boolean applies(Descriptor repoDescriptor, Patch patch)
+    {
+        // resolve the version numbers of the repo
+        int[] repoVersions = new int[] {0, 0, 0};
+        try
+        {
+            if (repoDescriptor.getVersionMajor() != null)
+            {
+                repoVersions[0] = Integer.parseInt(repoDescriptor.getVersionMajor());
+            }
+            if (repoDescriptor.getVersionMinor() != null)
+            {
+                repoVersions[1] = Integer.parseInt(repoDescriptor.getVersionMinor());
+            }
+            if (repoDescriptor.getVersionRevision() != null)
+            {
+                repoVersions[2] = Integer.parseInt(repoDescriptor.getVersionRevision());
+            }
+        }
+        catch (NumberFormatException e)
+        {
+            throw new AlfrescoRuntimeException("Non-numeric repository version are not allowed: " +
+                    repoDescriptor.getVersion());
+        }
+
+        // by default, the patch won't apply.  All the revision numbers will have to be greater
+        // than that of the repo to apply
+        int[] applyToVersions = new int[] {0, 0, 0};
+        try
+        {
+            // break the patch version up
+            String applyToVersion = patch.getApplyToVersion();
+            StringTokenizer tokens = new StringTokenizer(applyToVersion, ".");
+            for (int i = 0; i < 3 && tokens.hasMoreTokens(); i++)
+            {
+                String versionStr = tokens.nextToken();
+                applyToVersions[i] = Integer.parseInt(versionStr);
+            }
+        }
+        catch (NumberFormatException e)
+        {
+            throw new AlfrescoRuntimeException("Non-numeric patch apply version: " + patch);
+        }
+        
+        // compare each version number
+        // in the event of a match, we don't apply as the patch version is the 
+        boolean apply = true;
+        for (int i = 0; i < 3; i++)
+        {
+            if (repoVersions[i] < applyToVersions[i])
+            {
+                // repo is old and patch is newer - we definitely need to apply
+                apply = true;
+                break;
+            }
+            else if (repoVersions[i] > applyToVersions[i])
+            {
+                // the repo version number is high enough (repo is new enough) that patch doesn't apply
+                apply = false;
+                break;
+            }
+            else
+            {
+                // so far, the two match
+            }
+        }
+        
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Patch version number check against repo version: \n" +
+                    "   repo version: " + repoDescriptor.getVersion() + "\n" +
+                    "   patch: " + patch);
+        }
+        return apply;
     }
 }

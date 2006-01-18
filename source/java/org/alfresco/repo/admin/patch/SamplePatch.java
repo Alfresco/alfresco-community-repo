@@ -43,7 +43,7 @@ public class SamplePatch extends AbstractPatch
         setTransactionService(transactionService);
         setId("SamplePatch");
         setDescription("This is a sample patch");
-        setApplyAfterVersion("1.0.0");
+        setApplyToVersion("1.0.0");
     }
     
     /**

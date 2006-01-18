@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.webservice.content;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.rmi.RemoteException;
@@ -202,7 +204,8 @@ public class ContentWebService extends AbstractWebService implements
             }
             
             // Write the content 
-            writer.putContent(new String(content));
+            InputStream is = new ByteArrayInputStream(content);
+            writer.putContent(is);
 
             // Debug
             if (logger.isDebugEnabled())

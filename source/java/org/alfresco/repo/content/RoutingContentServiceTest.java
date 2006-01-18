@@ -104,7 +104,14 @@ public class RoutingContentServiceTest extends BaseSpringTest
     @Override
     protected void onTearDownInTransaction() throws Exception
     {
-        authenticationComponent.clearCurrentSecurityContext();
+        try
+        {
+            authenticationComponent.clearCurrentSecurityContext();
+        }
+        catch (Throwable e)
+        {
+            // ignore
+        }
         super.onTearDownInTransaction();
     }
     

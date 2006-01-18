@@ -92,14 +92,14 @@
               <property name="namespaceService">
                   <ref bean="namespaceService" />
               </property>
-              <property name="passwordEncoder">
-                  <ref bean="passwordEncoder" />
-              </property>
               <property name="searchService">
                   <ref bean="searchService" />
               </property>
               <property name="userNamesAreCaseSensitive">
                  <value>${user.name.caseSensitive}</value>
+              </property>
+              <property name="passwordEncoder">
+                  <ref bean="passwordEncoder" />
               </property>
            </bean>
         </property>
@@ -120,6 +120,19 @@
 
     <bean id="passwordEncoder" class="org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl"></bean>
 
+<!--
+    <bean id="userType" class="org.alfresco.repo.security.authentication.UserType" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="passwordEncoder">
+            <ref bean="passwordEncoder" />
+        </property>
+    </bean>
+-->
 
     <!-- A transactional wrapper around the implementation.                 -->
     <!-- TODO: This should be removed.                                      -->              
@@ -294,39 +307,5 @@
             <value>false</value>
         </property>
     </bean>
-    
-    <!-- Authentication bootstrap -->
-    
-    <!-- Work in progress -->
-    <!--
-    <bean id="authenticationBootstrap" class="org.alfresco.repo.security.authentication.AuthenticationBootstrap" init-method="bootstrap">
-        <property name="config">
-            <ref bean="authenticationBoostrapConfig"/>
-        </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponentImpl"/>
-        </property>
-        <property name="authenticationService">
-            <ref bean="authenticationService"/>
-        </property>
-        <property name="authenticationDao">
-            <ref bean="alfDaoImpl" />
-        </property>
-    </bean>
-    
-    <bean id="authenticationBoostrapConfigSource" class="org.alfresco.config.source.ClassPathConfigSource">
-      <constructor-arg>
-         <list>
-            <value>alfresco/authentication-bootstrap-config.xml</value>
-         </list>
-      </constructor-arg>
-   </bean>
-   
-   <bean id="authenticationBoostrapConfig" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
-      <constructor-arg>
-         <ref bean="authenticationBoostrapConfigSource"/>
-      </constructor-arg>
-   </bean>
-   -->
     
 </beans>

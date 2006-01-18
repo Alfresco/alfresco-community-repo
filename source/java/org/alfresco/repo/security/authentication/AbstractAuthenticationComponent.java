@@ -16,9 +16,6 @@
  */
 package org.alfresco.repo.security.authentication;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.security.PermissionService;
-
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.GrantedAuthorityImpl;
@@ -29,6 +26,9 @@ import net.sf.acegisecurity.context.security.SecureContext;
 import net.sf.acegisecurity.context.security.SecureContextImpl;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.security.PermissionService;
 
 /**
  * This class abstract the support required to set up and query the Acegi context for security enforcement.

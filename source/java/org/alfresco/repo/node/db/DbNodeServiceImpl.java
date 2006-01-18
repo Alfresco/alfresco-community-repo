@@ -333,35 +333,41 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         for (Map.Entry<QName, Serializable> entry : classDefinition.getDefaultValues().entrySet())
         {
-            if (properties.containsKey(entry.getKey()) == false)
+            if (properties.containsKey(entry.getKey()))
             {
-                Serializable value = entry.getValue();
-                
-                // TODO what other conversions are nessesary here for other types of default values ?
-                
-                // Check the type of the default property
-                PropertyDefinition prop = this.dictionaryService.getProperty(entry.getKey());
-                if (prop != null)
+                // property is present
+                continue;
+            }
+            Serializable value = entry.getValue();
+            
+            // Check the type of the default property
+            PropertyDefinition prop = this.dictionaryService.getProperty(entry.getKey());
+            if (prop == null)
+            {
+                // dictionary doesn't have a default value present
+                continue;
+            }
+
+            // TODO what other conversions are nessesary here for other types of default values ?
+            
+            // ensure that we deliver the property in the correct form
+            if (DataTypeDefinition.BOOLEAN.equals(prop.getDataType().getName()) == true)
+            {
+                if (value instanceof String)
                 {
-                    if (DataTypeDefinition.BOOLEAN.equals(prop.getDataType().getName()) == true)
+                    if (((String)value).toUpperCase().equals("TRUE") == true)
                     {
-                        if (value instanceof String)
-                        {
-                            if (((String)value).toUpperCase().equals("TRUE") == true)
-                            {
-                                value = Boolean.TRUE;
-                            }
-                            else if (((String)value).toUpperCase().equals("FALSE") == true)
-                            {
-                                value = Boolean.FALSE;
-                            }
-                        }
+                        value = Boolean.TRUE;
+                    }
+                    else if (((String)value).toUpperCase().equals("FALSE") == true)
+                    {
+                        value = Boolean.FALSE;
                     }
                 }
-                
-                // Set the default value of the property
-                properties.put(entry.getKey(), value);
             }
+            
+            // Set the default value of the property
+            properties.put(entry.getKey(), value);
         }
     }
     

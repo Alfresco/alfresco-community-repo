@@ -55,7 +55,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -158,7 +157,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     }
     
     @Override
-    protected void onTearDownInTransaction()
+    protected void onTearDownInTransaction() throws Exception
     {
         authenticationComponent.clearCurrentSecurityContext();
         super.onTearDownInTransaction();

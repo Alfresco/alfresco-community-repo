@@ -134,7 +134,7 @@ public class AbstractPermissionTest extends BaseSpringTest
         authenticationComponent.clearCurrentSecurityContext();
     }
 
-    protected void onTearDownInTransaction()
+    protected void onTearDownInTransaction() throws Exception
     {
         flushAndClear();
         super.onTearDownInTransaction();

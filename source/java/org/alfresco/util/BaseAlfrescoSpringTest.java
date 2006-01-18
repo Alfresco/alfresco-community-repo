@@ -17,7 +17,6 @@
 package org.alfresco.util;
 
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -85,7 +84,7 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
     }
 
     @Override
-    protected void onTearDownInTransaction()
+    protected void onTearDownInTransaction() throws Exception
     {
         authenticationService.clearCurrentSecurityContext();
         super.onTearDownInTransaction();

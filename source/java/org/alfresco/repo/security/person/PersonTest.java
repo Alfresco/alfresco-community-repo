@@ -59,7 +59,7 @@ public class PersonTest extends BaseSpringTest
 
     }
 
-    protected void onTearDownInTransaction()
+    protected void onTearDownInTransaction() throws Exception
     {
         super.onTearDownInTransaction();
         flushAndClear();

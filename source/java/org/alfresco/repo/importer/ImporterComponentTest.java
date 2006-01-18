@@ -61,7 +61,7 @@ public class ImporterComponentTest extends BaseSpringTest
 
     
     @Override
-    protected void onTearDownInTransaction()
+    protected void onTearDownInTransaction() throws Exception
     {
         authenticationComponent.clearCurrentSecurityContext();
         super.onTearDownInTransaction();

@@ -56,7 +56,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.BaseSpringTest;
-import org.alfresco.util.debug.NodeStoreInspector;
 
 /**
  * Node operations service unit tests
@@ -226,7 +225,7 @@ public class CopyServiceImplTest extends BaseSpringTest
 	}
 	
     @Override
-    protected void onTearDownInTransaction()
+    protected void onTearDownInTransaction() throws Exception
     {
         authenticationComponent.clearCurrentSecurityContext();
         super.onTearDownInTransaction();

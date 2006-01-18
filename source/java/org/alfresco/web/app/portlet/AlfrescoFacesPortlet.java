@@ -40,6 +40,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.bean.ErrorBean;
 import org.alfresco.web.bean.FileUploadBean;
+import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.repository.User;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -59,6 +60,7 @@ import org.springframework.web.context.WebApplicationContext;
  */
 public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
 {
+   private static final String PREF_ALF_USERNAME = "_alfUserName";
    public static final String INSTANCE_NAME = "AlfrescoClientInstance";
    public static final String MANAGED_BEAN_PREFIX = "javax.portlet.p." + INSTANCE_NAME + "?";
    
@@ -146,7 +148,6 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
          }
          else
          {
-            String viewId = request.getParameter(VIEW_ID);
             User user = (User)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
             if (user != null)
             {
@@ -157,6 +158,23 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                         WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
                   AuthenticationService auth = (AuthenticationService)ctx.getBean("authenticationService");
                   auth.validate(user.getTicket());
+                  
+                  // save last username into portlet preferences, get from LoginBean state
+                  LoginBean loginBean = (LoginBean)request.getPortletSession().getAttribute(AuthenticationHelper.LOGIN_BEAN);
+                  if (loginBean != null)
+                  {
+                     //
+                     // TODO: Need to login to JBoss Portal to get a user here to store prefs against
+                     //       so not really a suitable solution as they get thrown away at present!
+                     //       Also would need to store prefs PER user - so auto login for each...?
+                     //
+                     String oldValue = request.getPreferences().getValue(PREF_ALF_USERNAME, null);
+                     if (oldValue == null || oldValue.equals(loginBean.getUsernameInternal()) == false)
+                     {
+                        request.getPreferences().setValue(PREF_ALF_USERNAME, loginBean.getUsernameInternal());
+                        request.getPreferences().store();
+                     }
+                  }
                   
                   // do the normal JSF processing
                   super.processAction(request, response);
@@ -226,12 +244,17 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
       {
          // if we have no User object in the session then an HTTP Session timeout must have occured
          // use the viewId to check that we are not already on the login page
+         PortletSession session = request.getPortletSession();
          String viewId = request.getParameter(VIEW_ID);
          User user = (User)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
          if (user == null && (viewId == null || viewId.equals(getLoginPage()) == false))
          {
             if (logger.isDebugEnabled())
                logger.debug("No valid User login, requesting login page. ViewId: " + viewId);
+            
+            // set last used username as special session value used by the LoginBean
+            session.setAttribute(AuthenticationHelper.SESSION_USERNAME,
+                  request.getPreferences().getValue(PREF_ALF_USERNAME, null));
             
             // login page redirect
             response.setContentType("text/html");
@@ -240,6 +263,13 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
          }
          else
          {
+            if (session.getAttribute(AuthenticationHelper.SESSION_INVALIDATED) != null)
+            {
+               // remove the username preference value as explicit logout was requested by the user
+               request.getPreferences().reset(PREF_ALF_USERNAME);
+               session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
+            }
+            
             try
             {
                if (user != null)

@@ -20,8 +20,34 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
+<%@ page import="org.alfresco.web.app.servlet.AuthenticationHelper" %>
+<%@ page import="javax.servlet.http.Cookie" %>
+
 <%@ page buffer="16kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
+
+<%
+   Cookie authCookie = AuthenticationHelper.getAuthCookie(request);
+   
+   // remove the username cookie value if explicit logout was requested by the user
+   if (session.getAttribute(AuthenticationHelper.SESSION_INVALIDATED) != null)
+   {
+      if (authCookie != null)
+      {
+         authCookie.setMaxAge(0);
+         response.addCookie(authCookie);
+      }
+      session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
+   }
+   else
+   {      
+      // setup value used by JSF bean state ready for login page if we find the cookie
+      if (authCookie != null)
+      {
+         session.setAttribute(AuthenticationHelper.SESSION_USERNAME, authCookie.getValue());
+      }
+   }
+%>
 
 <body bgcolor="#ffffff" style="background-image: url(<%=request.getContextPath()%>/images/logo/AlfrescoFadedBG.png); background-repeat: no-repeat; background-attachment: fixed">
 

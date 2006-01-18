@@ -136,6 +136,23 @@ public class LoginBean
     */
    public String getUsername()
    {
+      // this value may have been set by a servlet filter via a cookie
+      // check for this by detecting a special value in the session
+      FacesContext context = FacesContext.getCurrentInstance();
+      Map session = context.getExternalContext().getSessionMap();
+      
+      String username = (String)session.get(AuthenticationHelper.SESSION_USERNAME);
+      if (username != null)
+      {
+         session.remove(AuthenticationHelper.SESSION_USERNAME);
+         this.username = username;
+      }
+      
+      return this.username;
+   }
+   
+   public String getUsernameInternal()
+   {
       return this.username;
    }
 
@@ -445,6 +462,12 @@ public class LoginBean
       {
          this.authenticationService.invalidateTicket(user.getTicket());
       }
+      
+      // Request that the username cookie state is removed - this is not
+      // possible from JSF - so instead we setup a session variable
+      // which will be detected by the login.jsp/Portlet as appropriate.
+      session = context.getExternalContext().getSessionMap();
+      session.put(AuthenticationHelper.SESSION_INVALIDATED, true);
       
       // set language to last used
       if (this.language != null && this.language.length() != 0)

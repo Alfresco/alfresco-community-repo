@@ -507,6 +507,14 @@ public class ServerConfiguration
      */
     private final void processCIFSServerConfig(Config config)
     {
+        // If the configuration section is not valid then CIFS is disabled
+        
+        if ( config == null || config.getConfigElements().isEmpty())
+        {
+            setSMBServerEnabled(false);
+            return;
+        }
+            
         // Get the network broadcast address
         //
         // Note: We need to set this first as the call to getLocalDomainName() may use a NetBIOS
@@ -1072,7 +1080,7 @@ public class ServerConfiguration
     {
         // If the configuration section is not valid then FTP is disabled
         
-        if ( config == null)
+        if ( config == null || config.getConfigElements().isEmpty())
         {
             setFTPServerEnabled(false);
             return;

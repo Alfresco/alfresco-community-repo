@@ -103,7 +103,10 @@ public class FTPServer
 
             // Start the server
             
-            ftpServer.startServer();
+            if(ftpServer != null)
+            {
+                ftpServer.startServer();
+            }
         }
         catch (Throwable e)
         {

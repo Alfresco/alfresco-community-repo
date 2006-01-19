@@ -16,7 +16,7 @@
          optimistic-lock="version" >
       <!-- composite PK -->
       <composite-id name="key" class="org.alfresco.repo.domain.StoreKey">
-         <key-property name="protocol" length="100" />
+         <key-property name="protocol" length="50" />
          <key-property name="identifier" length="100" />
       </composite-id>
       <!-- forward assoc to root node -->

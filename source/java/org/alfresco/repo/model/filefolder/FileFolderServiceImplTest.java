@@ -346,12 +346,21 @@ public class FileFolderServiceImplTest extends TestCase
     
     public void testCreateFolder() throws Exception
     {
+        // we are testing failures as well
+        txn.commit();
+        // start a new one
+        txn = transactionService.getNonPropagatingUserTransaction();
+        txn.begin();
+        
         FileInfo parentFolderInfo = getByName(NAME_L0_FOLDER_A, true);
         assertNotNull(parentFolderInfo);
         NodeRef parentFolderRef = parentFolderInfo.getNodeRef();
         // create a file that already exists
+        UserTransaction rollbackTxn = null;
         try
         {
+            rollbackTxn = transactionService.getNonPropagatingUserTransaction();
+            rollbackTxn.begin();
             fileFolderService.create(parentFolderRef, NAME_L1_FILE_A, ContentModel.TYPE_CONTENT);
             fail("Failed to detect duplicate filename");
         }
@@ -359,9 +368,15 @@ public class FileFolderServiceImplTest extends TestCase
         {
             // expected
         }
+        finally
+        {
+            rollbackTxn.rollback();
+        }
         // create folder of illegal type
         try
         {
+            rollbackTxn = transactionService.getNonPropagatingUserTransaction();
+            rollbackTxn.begin();
             fileFolderService.create(parentFolderRef, "illegal folder", ContentModel.TYPE_SYSTEM_FOLDER);
             fail("Illegal type not detected");
         }
@@ -369,11 +384,21 @@ public class FileFolderServiceImplTest extends TestCase
         {
             // expected
         }
+        finally
+        {
+            rollbackTxn.rollback();
+        }
+
         // create a file
         FileInfo fileInfo = fileFolderService.create(parentFolderRef, "newFile", ContentModel.TYPE_CONTENT);
         // check
         assertTrue("Node not created", nodeService.exists(fileInfo.getNodeRef()));
         assertFalse("File type expected", fileInfo.isFolder());
+    }
+    
+    public void testCreateFile() throws Exception
+    {
+        
     }
     
     public void testCreateInRoot() throws Exception
@@ -455,15 +480,28 @@ public class FileFolderServiceImplTest extends TestCase
     
     public void testGetReaderWriter() throws Exception
     {
+        // testing a failure
+        txn.commit();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        
         FileInfo dirInfo = getByName(NAME_L0_FOLDER_A, true);
+        
+        UserTransaction rollbackTxn = null;
         try
         {
+            rollbackTxn = transactionService.getNonPropagatingUserTransaction();
+            rollbackTxn.begin();
             fileFolderService.getWriter(dirInfo.getNodeRef());
             fail("Failed to detect content write to folder");
         }
         catch (RuntimeException e)
         {
             // expected
+        }
+        finally
+        {
+            rollbackTxn.rollback();
         }
         
         FileInfo fileInfo = getByName(NAME_L1_FILE_A, false);

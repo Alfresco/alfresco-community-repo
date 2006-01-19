@@ -2322,6 +2322,380 @@
         encodingStyle=""
       />
     </service>
+    
+    <service name="AccessControlService" provider="java:SpringRPC" style="wrapped" use="literal">
+	   <documentation>Access control web service API.</documentation>
+	   <wsdlFile>/wsdl/access-control-service.wsdl</wsdlFile>
+	   <parameter name="springBean" value="accessControlWebService"/>
+	   <requestFlow>
+	      <handler type="CreateSpringTicketCallback"/>
+      	  <handler type="WSSecurity"/>
+  		</requestFlow>
+	   <!-- generated below here -->    
+      <parameter name="wsdlTargetNamespace" value="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+      <parameter name="wsdlServiceElement" value="AccessControlService"/>
+      <parameter name="schemaQualified" value="http://www.alfresco.org/ws/model/content/1.0,http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+      <parameter name="wsdlServicePort" value="AccessControlService"/>
+      <parameter name="className" value="org.alfresco.repo.webservice.accesscontrol.AccessControlServiceSoapBindingImpl"/>
+      <parameter name="wsdlPortType" value="AccessControlServiceSoapPort"/>
+      <parameter name="typeMappingVersion" value="1.2"/>
+      <operation name="getACLs" qname="operNS:getACLs" xmlns:operNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnQName="retNS:acls" xmlns:retNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnType="rtns:ACL" xmlns:rtns="http://www.alfresco.org/ws/service/accesscontrol/1.0" soapAction="http://www.alfresco.org/ws/service/accesscontrol/1.0/getACLs" >
+        <parameter qname="pns:predicate" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:filter" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:ACE" xmlns:tns="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+        <fault name="AccessControlFault" qname="fns:AccessControlFault" xmlns:fns="http://www.alfresco.org/ws/service/accesscontrol/1.0" class="org.alfresco.repo.webservice.accesscontrol.AccessControlFault" type="tns:AccessControlFault" xmlns:tns="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+      </operation>
+      <operation name="addACEs" qname="operNS:addACEs" xmlns:operNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnQName="retNS:acls" xmlns:retNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnType="rtns:ACL" xmlns:rtns="http://www.alfresco.org/ws/service/accesscontrol/1.0" soapAction="http://www.alfresco.org/ws/service/accesscontrol/1.0/addACEs" >
+        <parameter qname="pns:predicate" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:aces" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:ACE" xmlns:tns="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+        <fault name="AccessControlFault" qname="fns:AccessControlFault" xmlns:fns="http://www.alfresco.org/ws/service/accesscontrol/1.0" class="org.alfresco.repo.webservice.accesscontrol.AccessControlFault" type="tns:AccessControlFault" xmlns:tns="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+      </operation>
+      <operation name="removeACEs" qname="operNS:removeACEs" xmlns:operNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnQName="retNS:acls" xmlns:retNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnType="rtns:ACL" xmlns:rtns="http://www.alfresco.org/ws/service/accesscontrol/1.0" soapAction="http://www.alfresco.org/ws/service/accesscontrol/1.0/removeACEs" >
+        <parameter qname="pns:predicate" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:aces" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:ACE" xmlns:tns="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+        <fault name="AccessControlFault" qname="fns:AccessControlFault" xmlns:fns="http://www.alfresco.org/ws/service/accesscontrol/1.0" class="org.alfresco.repo.webservice.accesscontrol.AccessControlFault" type="tns:AccessControlFault" xmlns:tns="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+      </operation>
+      <operation name="getPermissions" qname="operNS:getPermissions" xmlns:operNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnQName="retNS:result" xmlns:retNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnType="rtns:GetPermissionsResult" xmlns:rtns="http://www.alfresco.org/ws/service/accesscontrol/1.0" soapAction="http://www.alfresco.org/ws/service/accesscontrol/1.0/getPermissions" >
+        <parameter qname="pns:predicate" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <fault name="AccessControlFault" qname="fns:AccessControlFault" xmlns:fns="http://www.alfresco.org/ws/service/accesscontrol/1.0" class="org.alfresco.repo.webservice.accesscontrol.AccessControlFault" type="tns:AccessControlFault" xmlns:tns="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+      </operation>
+      <operation name="getClassPermissions" qname="operNS:getClassPermissions" xmlns:operNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnQName="retNS:result" xmlns:retNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnType="rtns:GetPermissionsResult" xmlns:rtns="http://www.alfresco.org/ws/service/accesscontrol/1.0" soapAction="http://www.alfresco.org/ws/service/accesscontrol/1.0/getClassPermissions" >
+        <parameter qname="pns:classNames" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="AccessControlFault" qname="fns:AccessControlFault" xmlns:fns="http://www.alfresco.org/ws/service/accesscontrol/1.0" class="org.alfresco.repo.webservice.accesscontrol.AccessControlFault" type="tns:AccessControlFault" xmlns:tns="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+      </operation>
+      <operation name="hasPermissions" qname="operNS:hasPermissions" xmlns:operNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnQName="retNS:results" xmlns:retNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnType="rtns:HasPermissionsResult" xmlns:rtns="http://www.alfresco.org/ws/service/accesscontrol/1.0" soapAction="http://www.alfresco.org/ws/service/accesscontrol/1.0/hasPermissions" >
+        <parameter qname="pns:predicate" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:permissions" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="AccessControlFault" qname="fns:AccessControlFault" xmlns:fns="http://www.alfresco.org/ws/service/accesscontrol/1.0" class="org.alfresco.repo.webservice.accesscontrol.AccessControlFault" type="tns:AccessControlFault" xmlns:tns="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+      </operation>
+      <operation name="setInheritPermission" qname="operNS:setInheritPermission" xmlns:operNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnQName="retNS:acls" xmlns:retNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnType="rtns:ACL" xmlns:rtns="http://www.alfresco.org/ws/service/accesscontrol/1.0" soapAction="http://www.alfresco.org/ws/service/accesscontrol/1.0/setInheritPermission" >
+        <parameter qname="pns:predicate" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:inheritPermission" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:boolean" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="AccessControlFault" qname="fns:AccessControlFault" xmlns:fns="http://www.alfresco.org/ws/service/accesscontrol/1.0" class="org.alfresco.repo.webservice.accesscontrol.AccessControlFault" type="tns:AccessControlFault" xmlns:tns="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+      </operation>
+      <operation name="getOwners" qname="operNS:getOwners" xmlns:operNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnQName="retNS:results" xmlns:retNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnType="rtns:OwnerResult" xmlns:rtns="http://www.alfresco.org/ws/service/accesscontrol/1.0" soapAction="http://www.alfresco.org/ws/service/accesscontrol/1.0/getOwners" >
+        <parameter qname="pns:predicate" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <fault name="AccessControlFault" qname="fns:AccessControlFault" xmlns:fns="http://www.alfresco.org/ws/service/accesscontrol/1.0" class="org.alfresco.repo.webservice.accesscontrol.AccessControlFault" type="tns:AccessControlFault" xmlns:tns="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+      </operation>
+      <operation name="setOwners" qname="operNS:setOwners" xmlns:operNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnQName="retNS:results" xmlns:retNS="http://www.alfresco.org/ws/service/accesscontrol/1.0" returnType="rtns:OwnerResult" xmlns:rtns="http://www.alfresco.org/ws/service/accesscontrol/1.0" soapAction="http://www.alfresco.org/ws/service/accesscontrol/1.0/setOwners" >
+        <parameter qname="pns:predicate" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
+        <parameter qname="pns:owner" xmlns:pns="http://www.alfresco.org/ws/service/accesscontrol/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="AccessControlFault" qname="fns:AccessControlFault" xmlns:fns="http://www.alfresco.org/ws/service/accesscontrol/1.0" class="org.alfresco.repo.webservice.accesscontrol.AccessControlFault" type="tns:AccessControlFault" xmlns:tns="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
+      </operation>
+      <parameter name="allowedMethods" value="setOwners setInheritPermission getOwners getPermissions getClassPermissions removeACEs getACLs addACEs hasPermissions"/>
+
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ParentReference"
+        type="java:org.alfresco.repo.webservice.types.ParentReference"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:QueryLanguageEnum"
+        type="java:org.alfresco.repo.webservice.types.QueryLanguageEnum"
+        serializer="org.apache.axis.encoding.ser.EnumSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Cardinality"
+        type="java:org.alfresco.repo.webservice.types.Cardinality"
+        serializer="org.apache.axis.encoding.ser.EnumSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ClassDefinition"
+        type="java:org.alfresco.repo.webservice.types.ClassDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ContentFormat"
+        type="java:org.alfresco.repo.webservice.types.ContentFormat"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/accesscontrol/1.0"
+        qname="ns:GetPermissionsResult"
+        type="java:org.alfresco.repo.webservice.accesscontrol.GetPermissionsResult"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Version"
+        type="java:org.alfresco.repo.webservice.types.Version"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Node"
+        type="java:org.alfresco.repo.webservice.types.Node"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Predicate"
+        type="java:org.alfresco.repo.webservice.types.Predicate"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ResultSetRow"
+        type="java:org.alfresco.repo.webservice.types.ResultSetRow"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Path"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ResultSet"
+        type="java:org.alfresco.repo.webservice.types.ResultSet"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ResultSetMetaData"
+        type="java:org.alfresco.repo.webservice.types.ResultSetMetaData"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/accesscontrol/1.0"
+        qname="ns:ACE"
+        type="java:org.alfresco.repo.webservice.accesscontrol.ACE"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/accesscontrol/1.0"
+        qname="ns:GetClassPermissionsResult"
+        type="java:org.alfresco.repo.webservice.accesscontrol.GetClassPermissionsResult"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:NodeDefinition"
+        type="java:org.alfresco.repo.webservice.types.NodeDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Category"
+        type="java:org.alfresco.repo.webservice.types.Category"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ValueDefinition"
+        type="java:org.alfresco.repo.webservice.types.ValueDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/accesscontrol/1.0"
+        qname="ns:OwnerResult"
+        type="java:org.alfresco.repo.webservice.accesscontrol.OwnerResult"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:>ContentFormat>mimetype"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/accesscontrol/1.0"
+        qname="ns:AccessState"
+        type="java:org.alfresco.repo.webservice.accesscontrol.AccessState"
+        serializer="org.apache.axis.encoding.ser.EnumSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Query"
+        type="java:org.alfresco.repo.webservice.types.Query"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:StoreEnum"
+        type="java:org.alfresco.repo.webservice.types.StoreEnum"
+        serializer="org.apache.axis.encoding.ser.EnumSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Reference"
+        type="java:org.alfresco.repo.webservice.types.Reference"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:NamedValue"
+        type="java:org.alfresco.repo.webservice.types.NamedValue"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:UUID"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Name"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:>ResultSetRow>node"
+        type="java:org.alfresco.repo.webservice.types.ResultSetRowNode"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:>ContentFormat>encoding"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/accesscontrol/1.0"
+        qname="ns:HasPermissionsResult"
+        type="java:org.alfresco.repo.webservice.accesscontrol.HasPermissionsResult"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Classification"
+        type="java:org.alfresco.repo.webservice.types.Classification"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/accesscontrol/1.0"
+        qname="ns:AccessControlFault"
+        type="java:org.alfresco.repo.webservice.accesscontrol.AccessControlFault"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/accesscontrol/1.0"
+        qname="ns:ACL"
+        type="java:org.alfresco.repo.webservice.accesscontrol.ACL"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Store"
+        type="java:org.alfresco.repo.webservice.types.Store"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:>Store>address"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:AssociationDefinition"
+        type="java:org.alfresco.repo.webservice.types.AssociationDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:RoleDefinition"
+        type="java:org.alfresco.repo.webservice.types.RoleDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:PropertyDefinition"
+        type="java:org.alfresco.repo.webservice.types.PropertyDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:VersionHistory"
+        type="java:org.alfresco.repo.webservice.types.VersionHistory"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+  </service>
    
 	<transport name="http">
 		<requestFlow>

@@ -30,10 +30,10 @@
          <ref bean="SearchService"/>
       </property>
       <property name="namespaceService">
-         <ref bean="namespaceService"/>
+         <ref bean="NamespaceService"/>
       </property>
       <property name="copyService">
-         <ref bean="copyService"/>
+         <ref bean="CopyService"/>
       </property>
    </bean>
    
@@ -41,7 +41,7 @@
    
    <bean id="authenticationWebService" class="org.alfresco.repo.webservice.authentication.AuthenticationWebService">
       <property name="authenticationService">
-         <ref bean="authenticationService"/>
+         <ref bean="AuthenticationService"/>
       </property>
    </bean>
    
@@ -56,10 +56,10 @@
          <ref bean="SearchService"/>
       </property>
       <property name="namespaceService">
-         <ref bean="namespaceService"/>
+         <ref bean="NamespaceService"/>
       </property>
       <property name="dictionaryService">
-         <ref bean="dictionaryService"/>
+         <ref bean="DictionaryService"/>
       </property>
       <property name="querySessionCache">
          <ref bean="querySessionCache"/>
@@ -80,7 +80,7 @@
          <ref bean="SearchService"/>
       </property>
       <property name="namespaceService">
-         <ref bean="namespaceService"/>
+         <ref bean="NamespaceService"/>
       </property>
    </bean>
    
@@ -95,16 +95,16 @@
          <ref bean="SearchService"/>
       </property>
       <property name="namespaceService">
-         <ref bean="namespaceService"/>
+         <ref bean="NamespaceService"/>
       </property>
       <property name="checkOutCheckinService">
-         <ref bean="checkOutCheckInService"/>
+         <ref bean="CheckoutCheckinService"/>
       </property>
       <property name="lockService">
-         <ref bean="lockService"/>
+         <ref bean="LockService"/>
       </property>
       <property name="versionService">
-         <ref bean="versionService"/>
+         <ref bean="VersionService"/>
       </property>
       <property name="transactionService">
          <ref bean="transactionComponent"/>
@@ -122,10 +122,10 @@
          <ref bean="SearchService"/>
       </property>
       <property name="namespaceService">
-         <ref bean="namespaceService"/>
+         <ref bean="NamespaceService"/>
       </property>
       <property name="dictionaryService">
-         <ref bean="dictionaryService"/>
+         <ref bean="DictionaryService"/>
       </property>
       <property name="categoryService">
          <ref bean="CategoryService"/>
@@ -146,16 +146,31 @@
          <ref bean="SearchService"/>
       </property>
       <property name="namespaceService">
-         <ref bean="namespaceService"/>
+         <ref bean="NamespaceService"/>
       </property>
       <property name="actionService">
-      	<ref bean="actionService"/>
+      	<ref bean="ActionService"/>
       </property>
       <property name="ruleService">
-      	<ref bean="ruleService"/>
+      	<ref bean="RuleService"/>
       </property>
       <property name="dictionaryService">
-      	<ref bean="dictionaryService"/>
+      	<ref bean="DictionaryService"/>
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionComponent"/>
+      </property>
+   </bean>
+   
+   <bean id="accessControlWebService" class="org.alfresco.repo.webservice.accesscontrol.AccessControlService">
+      <property name="nodeService">
+         <ref bean="NodeService"/>
+      </property>
+      <property name="searchService">
+         <ref bean="SearchService"/>
+      </property>
+      <property name="namespaceService">
+         <ref bean="NamespaceService"/>
       </property>
       <property name="transactionService">
          <ref bean="transactionComponent"/>

@@ -200,7 +200,7 @@ public class RoutingContentServiceTest extends BaseSpringTest
     {
         // set the property, but with a null URL
         ContentData contentData = new ContentData(null, null, 0L, null);
-        nodeService.setProperty(contentNodeRef, ContentModel.PROP_CONTENT, null);
+        nodeService.setProperty(contentNodeRef, ContentModel.PROP_CONTENT, contentData);
 
         // get the reader
         ContentReader reader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
@@ -230,12 +230,13 @@ public class RoutingContentServiceTest extends BaseSpringTest
         tempFile.delete();
         assertFalse("File not deleted", tempFile.exists());
         
+        // now attempt to get the reader for the node
+        ContentReader reader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+        assertFalse("Reader should indicate that content is missing", reader.exists());
+        
         // check the indexing doesn't spank everthing
         setComplete();
         endTransaction();
-        
-        // now attempt to get the reader for the node
-        ContentReader reader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
     }
 	
 	/**
@@ -421,8 +422,16 @@ public class RoutingContentServiceTest extends BaseSpringTest
         
         // rollback and check that the content has 'disappeared'
         txn.rollback();
+        
+        // need a new transaction
+        txn = getUserTransaction();
+        txn.begin();
+        txn.setRollbackOnly();
+
         reader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
         assertNull("Transaction was rolled back - no content should be visible", reader);
+        
+        txn.rollback();
     }
     
     public synchronized void testConcurrentWritesWithMultipleTxns() throws Exception
@@ -482,6 +491,14 @@ public class RoutingContentServiceTest extends BaseSpringTest
     
     public void testTransformation() throws Exception
     {
+        // commit node so that threads can see node
+        setComplete();
+        endTransaction();
+        
+        UserTransaction txn = getUserTransaction();
+        txn.begin();
+        txn.setRollbackOnly();
+        
         // get a regular writer
         ContentWriter writer = contentService.getTempWriter();
         writer.setMimetype("text/xml");
@@ -503,6 +520,14 @@ public class RoutingContentServiceTest extends BaseSpringTest
         {
             // expected
         }
+        
+        // at this point, the transaction is unusable
+        txn.rollback();
+        
+        txn = getUserTransaction();
+        txn.begin();
+        txn.setRollbackOnly();
+        
         writer.setMimetype("text/plain");
         contentService.transform(reader, writer);
         // get the content from the writer
@@ -511,6 +536,8 @@ public class RoutingContentServiceTest extends BaseSpringTest
                 writer.getMimetype(), reader.getMimetype());
         String contentCheck = reader.getContentString();
         assertEquals("Content check failed", content, contentCheck);
+        
+        txn.rollback();
     }
     
     /**

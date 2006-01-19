@@ -20,16 +20,13 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.evaluator.HasVersionHistoryEvaluator;
 import org.alfresco.repo.action.executer.CreateVersionActionExecuter;
 import org.alfresco.repo.policy.Behaviour;
-import org.alfresco.repo.policy.BehaviourDefinition;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.rule.RuntimeRuleService;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -136,12 +133,6 @@ public class VersionableAspect
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"),
                 ContentModel.ASPECT_VERSIONABLE,
                 new JavaBehaviour(this, "onCopy"));
-        
-        // Register the onCreateVersion behavior for the version aspect
-        //this.policyComponent.bindClassBehaviour(
-        //        QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateVersion"),
-        //        ContentModel.ASPECT_VERSIONABLE,
-        //        new JavaBehaviour(this, "onCreateVersion"));
 	}
     
     /**
@@ -200,8 +191,19 @@ public class VersionableAspect
 	{
 	    if (aspectTypeQName.equals(ContentModel.ASPECT_VERSIONABLE) == true)
         {
-	        // Queue create version action
-            queueCreateVersionAction(nodeRef);
+            boolean initialVersion = true;
+            Boolean value = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_INITIAL_VERSION);
+            if (value != null)
+            {
+                initialVersion = value.booleanValue();
+            }
+            // else this means that the default vlaue has not been set the versionable aspect we applied pre-1.2
+            
+            if (initialVersion == true)
+            {
+                // Queue create version action
+                queueCreateVersionAction(nodeRef);
+            }
         }
 	}
     
@@ -259,15 +261,13 @@ public class VersionableAspect
     {
         if (this.rule == null)
         {
+            // Create the version action rule
             this.rule = this.ruleService.createRule("inbound");
             Action action = this.actionService.createAction(CreateVersionActionExecuter.NAME);
-            ActionCondition condition = this.actionService.createActionCondition(HasVersionHistoryEvaluator.NAME);
-            condition.setInvertCondition(true);
-            // conditions are only evaluated on the parent rule - not the contained actions
-            rule.addActionCondition(condition);
             this.rule.addAction(action);
         }
         
+        // Stash the rule pending execution at the end of the transaction
         ((RuntimeRuleService)this.ruleService).addRulePendingExecution(nodeRef, nodeRef, this.rule, true);
     }    
 }

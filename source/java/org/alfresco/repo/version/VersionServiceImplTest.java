@@ -16,7 +16,9 @@
  */
 package org.alfresco.repo.version;
 
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
@@ -435,19 +437,70 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     	
     }
     
-    public void testAutoVersion()
+    public void testAutoVersionOnInitialVersionOn()
     {
         // Create a versionable node
         final NodeRef versionableNode = createNewVersionableNode();
-
-        // Add some content 
-        ContentWriter contentWriter = this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
-        assertNotNull(contentWriter);
-        contentWriter.putContent(UPDATED_CONTENT_1);
         
-        // Need to commit in order to get the auto version to fire ...
         setComplete();
         endTransaction();
+
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                // Check that the initial version has not been created
+                VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());                
+                
+                // Add some content 
+                ContentWriter contentWriter = VersionServiceImplTest.this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
+                assertNotNull(contentWriter);
+                contentWriter.putContent(UPDATED_CONTENT_1);
+                
+                return null;
+            }
+        });
+        
+        // Now lets have a look and make sure we have the correct number of entries in the version history
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(2, versionHistory.getAllVersions().size());
+                
+                return null;
+            }
+        
+        });
+    }
+    
+    public void testAutoVersionOff()
+    {
+        // Create a versionable node
+        final NodeRef versionableNode = createNewVersionableNode();
+        this.dbNodeService.setProperty(versionableNode, ContentModel.PROP_AUTO_VERSION, false);
+
+        setComplete();
+        endTransaction();
+
+        // The initial version should have been created now
+        
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                // Add some content 
+                ContentWriter contentWriter = VersionServiceImplTest.this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
+                assertNotNull(contentWriter);
+                contentWriter.putContent(UPDATED_CONTENT_1);
+                
+                return null;
+            }
+        });
         
         // Now lets have a look and make sure we have the correct number of entries in the version history
         TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
@@ -462,5 +515,38 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             }
         
         });
+    }
+    
+    public void testInitialVersionOff()
+    {
+        // Create node (this node has some content)
+        HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_INITIAL_VERSION, false);
+        HashMap<QName, Serializable> props2 = new HashMap<QName, Serializable>();
+        props2.put(ContentModel.PROP_NAME, "test.txt");
+        final NodeRef nodeRef = this.dbNodeService.createNode(
+                rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("{test}MyVersionableNode2"),
+                TEST_TYPE_QNAME,
+                props2).getChildRef();
+        this.dbNodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
+        
+        setComplete();
+        endTransaction();
+
+        // The initial version should NOT have been created
+        
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
+                assertNull(versionHistory);
+                
+                return null;
+            }
+        });
+       
     }
 }

@@ -159,7 +159,14 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     @Override
     protected void onTearDownInTransaction() throws Exception
     {
-        authenticationComponent.clearCurrentSecurityContext();
+        try
+        {
+            authenticationComponent.clearCurrentSecurityContext();
+        }
+        catch (Throwable e)
+        {
+            // do nothing
+        }
         super.onTearDownInTransaction();
     }
 
@@ -707,7 +714,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         return count;
     }
     
-    public void testAddChild() throws Exception
+    public void testAddBogusChild() throws Exception
     {
         // create a bogus reference
         NodeRef bogusChildRef = new NodeRef(rootNodeRef.getStoreRef(), "BOGUS");
@@ -720,6 +727,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         {
             // expected
         }
+    }
+    
+    public void testAddChild() throws Exception
+    {
         NodeRef childNodeRef = nodeService.createNode(
                 rootNodeRef,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
@@ -1115,7 +1126,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         return assocRef;
     }
     
-    public void testCreateAndRemoveAssociation() throws Exception
+    public void testAssociationToIncorrectNodeType() throws Exception
     {
         AssociationRef assocRef = createAssociation();
         NodeRef sourceRef = assocRef.getSourceRef();
@@ -1131,6 +1142,14 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         {
             // expected
         }
+    }
+    
+    public void testDuplicateAssociationDetection() throws Exception
+    {
+        AssociationRef assocRef = createAssociation();
+        NodeRef sourceRef = assocRef.getSourceRef();
+        NodeRef targetRef = assocRef.getTargetRef();
+        QName qname = assocRef.getTypeQName();
         try
         {
             // attempt repeat
@@ -1141,6 +1160,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         {
             // expected
         }
+    }
+    
+    public void testCreateAndRemoveAssociation() throws Exception
+    {
+        AssociationRef assocRef = createAssociation();
+        NodeRef sourceRef = assocRef.getSourceRef();
         
         // create another
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);

@@ -42,7 +42,6 @@ import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
-import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -275,14 +274,11 @@ public class ImporterBootstrap
             {
                 if (logger.isDebugEnabled())
                     logger.debug("Store exists - bootstrap ignored: " + storeRef);
-                
-                userTransaction.rollback();
             }
             else if (!allowWrite)
             {
                 // we're in read-only node
                 logger.warn("Store does not exist, but mode is read-only: " + storeRef);
-                userTransaction.rollback();
             }
             else
             {
@@ -334,9 +330,8 @@ public class ImporterBootstrap
                         importerService.importView(viewReader, importLocation, binding, new BootstrapProgress());
                     }
                 }
-                
-                userTransaction.commit();
             }
+            userTransaction.commit();
         }
         catch(Throwable e)
         {

@@ -6,7 +6,7 @@ import org.alfresco.repo.transaction.TransactionComponent;
 import org.alfresco.repo.webservice.AbstractWebService;
 import org.alfresco.repo.webservice.types.Predicate;
 
-public class AccessControlService extends AbstractWebService implements AccessControlServiceSoapPort
+public class AccessControlWebService extends AbstractWebService implements AccessControlServiceSoapPort
 {
     private TransactionComponent transactionService = null;
     

@@ -48,7 +48,7 @@
         </delete>
     </target>
         
-    <target name="gen-all-service-servers" depends="gen-auth-service-server, gen-repo-service-server, gen-content-service-server, gen-authoring-service-server, gen-classification-service-server, gen-action-service-server, gen-access-control-service-server" />
+    <target name="gen-all-service-servers" depends="gen-auth-service-server, gen-repo-service-server, gen-content-service-server, gen-authoring-service-server, gen-classification-service-server, gen-action-service-server, gen-access-control-service-server, gen-administration-service-server" />
 
     <target name="gen-auth-service-server" depends="init">
         <mkdir dir="${dir.src.java.generated}/org/alfresco/repo/webservice/authentication" />
@@ -149,5 +149,19 @@
 	         <fileset dir="${dir.src.java.generated}/org/alfresco/repo/webservice/accesscontrol" includes="${files.delete.include}" />
 	     </delete>
 	 </target>
-
+	   
+	 <target name="gen-administration-service-server" depends="init">
+	     <mkdir dir="${dir.src.java.generated}/org/alfresco/repo/webservice/administration" />
+	     <delete>
+	         <fileset dir="${dir.src.java.generated}/org/alfresco/repo/webservice/administration" />
+	     </delete>
+	     <wsdl2java url="${dir.src}/wsdl/administration-service.wsdl" output="${dir.src.java.generated}" serverSide="true" skeletondeploy="false" all="true">
+	         <mapping namespace="http://www.alfresco.org/ws/service/administration/1.0" package="org.alfresco.repo.webservice.administration" />
+	         <mapping namespace="http://www.alfresco.org/ws/model/content/1.0" package="org.alfresco.repo.webservice.types" />
+	     </wsdl2java>
+	     <delete>
+	         <fileset dir="${dir.src.java.generated}/org/alfresco/repo/webservice/administration" includes="${files.delete.include}" />
+	     </delete>
+	 </target>
+	
 </project>

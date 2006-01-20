@@ -162,7 +162,22 @@
       </property>
    </bean>
    
-   <bean id="accessControlWebService" class="org.alfresco.repo.webservice.accesscontrol.AccessControlService">
+   <bean id="accessControlWebService" class="org.alfresco.repo.webservice.accesscontrol.AccessControlWebService">
+      <property name="nodeService">
+         <ref bean="NodeService"/>
+      </property>
+      <property name="searchService">
+         <ref bean="SearchService"/>
+      </property>
+      <property name="namespaceService">
+         <ref bean="NamespaceService"/>
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionComponent"/>
+      </property>
+   </bean>
+   
+   <bean id="administrationWebService" class="org.alfresco.repo.webservice.administration.AdministrationWebService">
       <property name="nodeService">
          <ref bean="NodeService"/>
       </property>

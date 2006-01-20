@@ -188,6 +188,9 @@ public class PatchServiceImpl implements PatchService
                 success = false;
             }
         }
+
+        Descriptor serverDescriptor = descriptorService.getServerDescriptor();
+        String server = (serverDescriptor.getVersion() + " - " + serverDescriptor.getEdition());
         
         // create a record for the execution
         appliedPatch = patchDaoService.newAppliedPatch(patch.getId());
@@ -197,6 +200,7 @@ public class PatchServiceImpl implements PatchService
         appliedPatch.setFixesToSchema(patch.getFixesToSchema());
         appliedPatch.setTargetSchema(patch.getTargetSchema());       // the schema the server is expecting
         appliedPatch.setAppliedToSchema(repoDescriptor.getSchema()); // the old schema of the repo
+        appliedPatch.setAppliedToServer(server);                     // the current version and label of the server
         appliedPatch.setAppliedOnDate(new Date());                   // the date applied
         appliedPatch.setSucceeded(success);                          // whether or not the patch succeeded
         appliedPatch.setReport(report);                              // additional, human-readable, status

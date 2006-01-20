@@ -43,6 +43,9 @@ public interface AppliedPatch
     public int getAppliedToSchema();
     public void setAppliedToSchema(int version);
     
+    public String getAppliedToServer();
+    public void setAppliedToServer(String server);
+    
     public Date getAppliedOnDate();
     public void setAppliedOnDate(Date date);
     

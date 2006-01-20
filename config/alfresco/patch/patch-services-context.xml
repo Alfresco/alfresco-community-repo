@@ -2,6 +2,16 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
+
+    <!-- This component ensures that patches get applied on startup -->    
+    <bean id="patchExecuter"
+            class="org.alfresco.repo.admin.patch.PatchExecuter"
+            depends-on="importerBootstrap"
+            init-method="applyOutStandingPatches">
+        <property name="patchService">
+            <ref bean="patchComponent" />
+        </property>
+    </bean>
     
     <bean id="PatchService" class="org.springframework.aop.framework.ProxyFactoryBean">
     	<property name="proxyInterfaces">
@@ -44,7 +54,12 @@
 
     <!-- base patch definition -->
     <bean id="basePatch" abstract="true" depends-on="patchComponent" init-method="init">
-        <property name="transactionService"><ref bean="transactionComponent" /></property>
+        <property name="patchService">
+            <ref bean="patchComponent" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionComponent" />
+        </property>
     </bean>
     
     <!-- Example patches -->
@@ -65,6 +80,28 @@
             <list>
                 <ref bean="patch.sample.01" />
             </list>
+        </property>
+    </bean>
+    
+    <!-- patch definitions -->
+    <bean id="patch.savedSearchesFolder" class="org.alfresco.repo.admin.patch.impl.SavedSearchFolderPatch" parent="basePatch" >
+        <property name="id"><value>patch.savedSearchesFolder</value></property>
+        <property name="description"><value>Ensures the existence of the 'Saved Searches' folder</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>1</value></property>
+        <property name="targetSchema"><value>2</value></property>
+        <!-- helper beans for execution -->
+        <property name="importerBootstrap">
+            <ref bean="importerBootstrap" />
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="searchService">
+            <ref bean="searchService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
         </property>
     </bean>
 

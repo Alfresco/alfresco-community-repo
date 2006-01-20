@@ -134,6 +134,8 @@ public class FileContentWriter extends AbstractContentWriter implements RandomAc
             // create the channel
             RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");  // will create it
             FileChannel channel = randomAccessFile.getChannel();
+            // due to Linux dodgey behaviour, we have to set the modified date of the file ourselves
+            file.setLastModified(System.currentTimeMillis());
             // done
             if (logger.isDebugEnabled())
             {

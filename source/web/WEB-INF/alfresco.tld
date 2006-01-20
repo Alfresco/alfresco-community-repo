@@ -1617,6 +1617,12 @@
       <body-content>JSP</body-content>
       
       <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
          <name>value</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>

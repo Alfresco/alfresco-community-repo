@@ -19,6 +19,7 @@ package org.alfresco.web.ui.common;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -50,6 +51,7 @@ import org.alfresco.repo.webdav.WebDAVServlet;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -554,10 +556,18 @@ public final class Utils
                }
                url = path.toString();
             }
-            catch (Exception e)
+            catch (AccessDeniedException e)
+            {
+               // cannot build path if user don't have access all the way up
+            }
+            catch (FileNotFoundException nodeErr)
+            {
+               // cannot build path if file no longer exists
+            }
+            catch (UnsupportedEncodingException encErr)
             {
                if (logger.isWarnEnabled())
-                  logger.warn("Failed to calculate webdav url", e);
+                  logger.warn("Failed to calculate webdav url for node: " + node.getNodeRef(), encErr);
             }
             break;
          }
@@ -572,18 +582,29 @@ public final class Utils
                   getSessionMap().get("NavigationBean");
             CIFSServer cifsServer = (CIFSServer)FacesContextUtils.getRequiredWebApplicationContext(
                   context).getBean("cifsServer");
-   
+            
             if (nodeService != null && navBean != null && cifsServer != null)
             {
                DiskSharedDevice diskShare = cifsServer.getConfiguration().getPrimaryFilesystem();
                
                if (diskShare != null)
                {
-                   ContentContext contentCtx = (ContentContext) diskShare.getContext();
-                   NodeRef rootNode = contentCtx.getRootNode();
-                   Path path = nodeService.getPath(node.getNodeRef());
-                   url = Repository.getNamePath(nodeService, path, rootNode, "\\", 
-                         "file:///" + navBean.getCIFSServerPath(diskShare));
+                  ContentContext contentCtx = (ContentContext) diskShare.getContext();
+                  NodeRef rootNode = contentCtx.getRootNode();
+                  try
+                  {
+                     Path path = nodeService.getPath(node.getNodeRef());
+                     url = Repository.getNamePath(nodeService, path, rootNode, "\\", 
+                           "file:///" + navBean.getCIFSServerPath(diskShare));
+                  }
+                  catch (AccessDeniedException e)
+                  {
+                     // cannot build path if user don't have access all the way up
+                  }
+                  catch (InvalidNodeRefException nodeErr)
+                  {
+                     // cannot build path if node no longer exists
+                  }
                }
             }
             break;

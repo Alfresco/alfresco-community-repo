@@ -656,6 +656,11 @@ public class Application
     */
    private static String getSavedSearchesFolderName(WebApplicationContext context)
    {
+      /*
+       * This lookup is duplicated in a patch.  If this logic changes, investigate the changes
+       * required for the patch(es).
+       */
+       
       if (savedSearchesFolderName == null)
       {
          ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);

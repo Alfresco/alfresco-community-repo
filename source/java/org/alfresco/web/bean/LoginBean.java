@@ -278,11 +278,16 @@ public class LoginBean
       
       if (this.username != null && this.password != null)
       {
-         // Authenticate via the authentication service, then save the details of user in an object
-         // in the session - this is used by the servlet filter etc. on each page to check for login
          try
          {
+            Map session = fc.getExternalContext().getSessionMap();
+            
+            // Authenticate via the authentication service, then save the details of user in an object
+            // in the session - this is used by the servlet filter etc. on each page to check for login
             this.authenticationService.authenticate(this.username, this.password.toCharArray());
+            
+            // remove the session invalidated flag (used to remove last username cookie by AuthenticationFilter)
+            session.remove(AuthenticationHelper.SESSION_INVALIDATED);
             
             // setup User object and Home space ID
             User user = new User(this.authenticationService.getCurrentUserName(), this.authenticationService.getCurrentTicket(),
@@ -298,7 +303,6 @@ public class LoginBean
             
             // put the User object in the Session - the authentication servlet will then allow
             // the app to continue without redirecting to the login page
-            Map session = fc.getExternalContext().getSessionMap();
             session.put(AuthenticationHelper.AUTHENTICATION_USER, user);
             
             // if an external outcome has been provided then use that, else use default

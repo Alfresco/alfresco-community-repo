@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
@@ -404,6 +405,14 @@ public class NavigationBean
    public void setLocation(List<IBreadcrumbHandler> location)
    {
       this.location = location;
+   }
+   
+   /**
+    * @return true if we are currently the special Guest user
+    */
+   public boolean getIsGuest()
+   {
+      return Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName().equals(PermissionService.GUEST);
    }
    
    /**

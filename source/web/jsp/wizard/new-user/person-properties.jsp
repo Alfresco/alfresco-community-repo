@@ -151,19 +151,19 @@
                                  <tr>
                                     <td><h:outputText value="#{msg.first_name}"/>:</td>
                                     <td>
-                                       <h:inputText id="firstName" value="#{NewUserWizard.firstName}" size="35" maxlength="1024" onkeyup="updateButtonState();" />&nbsp;*
+                                       <h:inputText id="firstName" value="#{NewUserWizard.firstName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;*
                                     </td>
                                  </tr>
                                  <tr>
                                     <td><h:outputText value="#{msg.last_name}"/>:</td>
                                     <td>
-                                       <h:inputText id="lastName" value="#{NewUserWizard.lastName}" size="35" maxlength="1024" onkeyup="updateButtonState();" />&nbsp;*
+                                       <h:inputText id="lastName" value="#{NewUserWizard.lastName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;*
                                     </td>
                                  </tr>
                                  <tr>
                                     <td><h:outputText value="#{msg.email}"/>:</td>
                                     <td>
-                                       <h:inputText id="email" value="#{NewUserWizard.email}" size="35" maxlength="1024" onkeyup="updateButtonState();" />&nbsp;*
+                                       <h:inputText id="email" value="#{NewUserWizard.email}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;*
                                     </td>
                                  </tr>
                                  

@@ -110,20 +110,22 @@ public class DownloadContentServlet extends HttpServlet
             logger.debug("Processing URL: " + uri + (req.getQueryString() != null ? ("?" + req.getQueryString()) : ""));
          
          // see if a ticket has been supplied
+         AuthenticationStatus status;
          String ticket = req.getParameter(ARG_TICKET);
          if (ticket == null || ticket.length() == 0)
          {
-            if (AuthenticationHelper.authenticate(getServletContext(), req, res) == false)
-            {
-               // authentication failed - no point returning the content as we haven't logged in yet
-               // so end servlet execution and save the URL so the login page knows what to do later
-               req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, uri);
-               return;
-            }
+            status = AuthenticationHelper.authenticate(getServletContext(), req, res);
          }
          else
          {
-            AuthenticationHelper.authenticate(getServletContext(), req, res, ticket);
+            status = AuthenticationHelper.authenticate(getServletContext(), req, res, ticket);
+         }
+         if (status == AuthenticationStatus.Failure)
+         {
+            // authentication failed - no point returning the content as we haven't logged in yet
+            // so end servlet execution and save the URL so the login page knows what to do later
+            req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, uri);
+            return;
          }
          
          // TODO: add compression here?

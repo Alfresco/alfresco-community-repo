@@ -56,7 +56,7 @@ public class ExternalAccessServlet extends HttpServlet
    protected void service(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException
    {
-      boolean alreadyAuthenticated = AuthenticationHelper.authenticate(getServletContext(), req, res);
+      AuthenticationStatus status = AuthenticationHelper.authenticate(getServletContext(), req, res);
       
       // The URL contains multiple parts
       // /alfresco/navigate/<outcome>
@@ -89,7 +89,7 @@ public class ExternalAccessServlet extends HttpServlet
       // set the args if any
       req.getSession().setAttribute(LoginBean.LOGIN_OUTCOME_ARGS, tokens);
       
-      if (alreadyAuthenticated)
+      if (status == AuthenticationStatus.Success || status == AuthenticationStatus.Guest)
       {
          // clear the User object from the Session - this will force a relogin
          // we do this so the outcome from the login page can then be changed

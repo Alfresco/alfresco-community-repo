@@ -22,10 +22,20 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.transaction.UserTransaction;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.bean.LoginBean;
@@ -54,45 +64,105 @@ public final class AuthenticationHelper
     * User information is looked up in the Session. If found the ticket is retrieved and validated.
     * If no User info is found or the ticket is invalid then a redirect is performed to the login page. 
     * 
-    * @return true if authentication successful, false otherwise.
+    * @return AuthenticationStatus result.
     */
-   public static boolean authenticate(ServletContext context, HttpServletRequest httpRequest, HttpServletResponse httpResponse)
-      throws IOException
+   public static AuthenticationStatus authenticate(
+         ServletContext context, HttpServletRequest httpRequest, HttpServletResponse httpResponse)
+         throws IOException
    {
+      HttpSession session = httpRequest.getSession();
+      
       // examine the appropriate session for our User object
       User user;
       LoginBean loginBean = null;
       if (Application.inPortalServer() == false)
       {
-         user = (User)httpRequest.getSession().getAttribute(AUTHENTICATION_USER);
-         loginBean = (LoginBean)httpRequest.getSession().getAttribute(LOGIN_BEAN);
+         user = (User)session.getAttribute(AUTHENTICATION_USER);
+         loginBean = (LoginBean)session.getAttribute(LOGIN_BEAN);
       }
       else
       {
-         user = (User)httpRequest.getSession().getAttribute(AlfrescoFacesPortlet.MANAGED_BEAN_PREFIX + AUTHENTICATION_USER);
+         user = (User)session.getAttribute(AlfrescoFacesPortlet.MANAGED_BEAN_PREFIX + AUTHENTICATION_USER);
       }
+      
+      // setup the authentication context
+      WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
+      AuthenticationService auth = (AuthenticationService)ctx.getBean(AUTHENTICATION_SERVICE);
       
       if (user == null)
       {
-         // no user/ticket found - redirect to login page
+         if (session.getAttribute(AuthenticationHelper.SESSION_INVALIDATED) == null)
+         {
+            Cookie authCookie = getAuthCookie(httpRequest);
+            if (authCookie == null)
+            {
+               // TODO: "forced" guest access on URLs!
+               // no previous authentication - attempt Guest access first
+               UserTransaction tx = null;
+               try
+               {
+                  auth.authenticateAsGuest();
+                  
+                  // if we get here then Guest access was allowed and successful
+                  tx = ((TransactionService)ctx.getBean("TransactionService")).getUserTransaction();
+                  tx.begin();
+                  
+                  PersonService personService = (PersonService)ctx.getBean("personService");
+                  NodeService nodeService = (NodeService)ctx.getBean("nodeService");
+                  NodeRef guestRef = personService.getPerson(PermissionService.GUEST);
+                  user = new User(PermissionService.GUEST, auth.getCurrentTicket(), guestRef);
+                  NodeRef guestHomeRef = (NodeRef)nodeService.getProperty(guestRef, ContentModel.PROP_HOMEFOLDER);
+                  
+                  // check that the home space node exists - else Guest cannot proceed
+                  if (nodeService.exists(guestHomeRef) == false)
+                  {
+                     throw new InvalidNodeRefException(guestHomeRef);
+                  }
+                  user.setHomeSpaceId(guestHomeRef.getId());
+                  
+                  tx.commit();
+                  
+                  // store the User object in the Session - the authentication servlet will then proceed
+                  session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
+               
+                  // Set the current locale
+                  I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
+                  
+                  return AuthenticationStatus.Guest;
+                  
+                  // TODO: What now? Any redirects can be performed directly from the appropriate 
+                  //       servlet entry points, as we are now authenticated and don't
+                  //       need to go through the Login screen to gain authentication.
+               }
+               catch (AuthenticationException guestError)
+               {
+                  // Guest access not allowed - continue to login page as usual
+               }
+               catch (Throwable e)
+               {
+                  // Guest access not allowed - some other kind of serious failure to report
+                  try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+                  throw new AlfrescoRuntimeException("Failed to authenticate as Guest user.", e);
+               }
+            }
+         }
+         
+         // no user/ticket found or session invalidated by user (logout) - redirect to login page
          httpResponse.sendRedirect(httpRequest.getContextPath() + "/faces" + Application.getLoginPage(context));
          
-         return false;
+         return AuthenticationStatus.Failure;
       }
       else
       {
-         // setup the authentication context
-         WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
-         AuthenticationService auth = (AuthenticationService)ctx.getBean(AUTHENTICATION_SERVICE);
          try
          {
             auth.validate(user.getTicket());
          }
          catch (AuthenticationException authErr)
          {
-            // no user/ticket - redirect to login page
+            // expired ticket - redirect to login page
             httpResponse.sendRedirect(httpRequest.getContextPath() + "/faces" + Application.getLoginPage(context));
-            return false;
+            return AuthenticationStatus.Failure;
          }
          
          // set last authentication username cookie value
@@ -104,7 +174,7 @@ public final class AuthenticationHelper
          // Set the current locale
          I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
          
-         return true;
+         return AuthenticationStatus.Success;
       }
    }
    
@@ -113,8 +183,9 @@ public final class AuthenticationHelper
     * 
     * @return true if authentication successful, false otherwise.
     */
-   public static boolean authenticate(ServletContext context, HttpServletRequest httpRequest, HttpServletResponse httpResponse, String ticket)
-      throws IOException
+   public static AuthenticationStatus authenticate(
+         ServletContext context, HttpServletRequest httpRequest, HttpServletResponse httpResponse, String ticket)
+         throws IOException
    {
       // setup the authentication context
       WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
@@ -125,13 +196,13 @@ public final class AuthenticationHelper
       }
       catch (AuthenticationException authErr)
       {
-         return false;
+         return AuthenticationStatus.Failure;
       }
       
       // Set the current locale
       I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
       
-      return true;
+      return AuthenticationStatus.Success;
    }
    
    /**

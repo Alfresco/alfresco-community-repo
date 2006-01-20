@@ -64,7 +64,10 @@ public class AuthenticationFilter implements Filter
       // allow the login page to proceed
       if (httpReq.getRequestURI().endsWith(getLoginPage()) == false)
       {
-         if (AuthenticationHelper.authenticate(this.context, httpReq, (HttpServletResponse)res))
+         AuthenticationStatus status =
+               AuthenticationHelper.authenticate(this.context, httpReq, (HttpServletResponse)res);
+         
+         if (status == AuthenticationStatus.Success || status == AuthenticationStatus.Guest)
          {
             // continue filter chaining
             chain.doFilter(req, res);

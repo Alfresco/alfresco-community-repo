@@ -1302,7 +1302,7 @@ public class AdvancedSearchBean
                {
                   userSearchesRef = results.get(0);
                }
-               else if (results.size() == 0)
+               else if (results.size() == 0 && new Node(globalRef).hasPermission(PermissionService.ADD_CHILDREN))
                {
                   // attempt to create folder for this user for first time
                   // create the preferences Node for this user

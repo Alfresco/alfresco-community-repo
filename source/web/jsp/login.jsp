@@ -37,7 +37,6 @@
          authCookie.setMaxAge(0);
          response.addCookie(authCookie);
       }
-      session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
    }
    else
    {      

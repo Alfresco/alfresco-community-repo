@@ -250,10 +250,10 @@
                                           <a:actionLink value="#{msg.download_content}" href="#{DocumentDetailsBean.downloadUrl}" target="new" id="link4" />
                                        </td>
                                        <td>
-                                          <a href='<h:outputText value="#{DocumentDetailsBean.bookmarkUrl}" escape="false" />' onclick="return false;"><h:outputText value="#{msg.details_page_bookmark}" /></a>
+                                          <a href='<h:outputText value="#{DocumentDetailsBean.bookmarkUrl}" escape="false" id="out1" />' onclick="return false;"><h:outputText value="#{msg.details_page_bookmark}" id="out2" /></a>
                                        </td>
                                        <td>
-                                          <a href='<h:outputText value="#{DocumentDetailsBean.nodeRefUrl}" escape="false" />' onclick="return false;"><h:outputText value="#{msg.noderef_link}" /></a>
+                                          <a href='<h:outputText value="#{DocumentDetailsBean.nodeRefUrl}" escape="false" id="out3" />' onclick="return false;"><h:outputText value="#{msg.noderef_link}" id="out4" /></a>
                                        </td>
                                     </tr>
                                  </table>

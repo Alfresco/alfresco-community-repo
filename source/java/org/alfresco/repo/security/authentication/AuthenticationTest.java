@@ -455,7 +455,7 @@ public class AuthenticationTest extends TestCase
         // assertNull(dao.getUserOrNull("Andy"));
     }
 
-    public void xtestTicketExpires()
+    public void testTicketExpires()
     {
         InMemoryTicketComponentImpl tc = new InMemoryTicketComponentImpl();
         tc.setOneOff(false);
@@ -545,7 +545,7 @@ public class AuthenticationTest extends TestCase
         // assertNull(dao.getUserOrNull("Andy"));
     }
 
-    public void xtestTicketDoesNotExpire()
+    public void testTicketDoesNotExpire()
     {
         InMemoryTicketComponentImpl tc = new InMemoryTicketComponentImpl();
         tc.setOneOff(false);

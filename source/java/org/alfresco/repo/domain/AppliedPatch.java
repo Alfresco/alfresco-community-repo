@@ -31,17 +31,23 @@ public interface AppliedPatch
     public String getDescription();
     public void setDescription(String description);
     
-    public String getApplyToVersion();
-    public void setApplyToVersion(String version);
+    public int getFixesFromSchema();
+    public void setFixesFromSchema(int version);
     
-    public boolean getSucceeded();
-    public void setSucceeded(boolean succeeded);
+    public int getFixesToSchema();
+    public void setFixesToSchema(int version);
     
-    public String getAppliedOnVersion();
-    public void setAppliedOnVersion(String version);
+    public int getTargetSchema();
+    public void setTargetSchema(int version);
+    
+    public int getAppliedToSchema();
+    public void setAppliedToSchema(int version);
     
     public Date getAppliedOnDate();
     public void setAppliedOnDate(Date date);
+    
+    public boolean getSucceeded();
+    public void setSucceeded(boolean succeeded);
     
     public String getReport();
     public void setReport(String report);

@@ -33,6 +33,14 @@ public class SamplePatch extends AbstractPatch
     }
     
     /**
+     * Overrides the base class version to do nothing, i.e. it does not self-register
+     */
+    @Override
+    public void init()
+    {
+    }
+    
+    /**
      * Helper constructor for some tests.  Default properties are set automatically.
      * 
      * @param mustFail true if this instance must always fail to apply
@@ -43,7 +51,9 @@ public class SamplePatch extends AbstractPatch
         setTransactionService(transactionService);
         setId("SamplePatch");
         setDescription("This is a sample patch");
-        setApplyToVersion("1.0.0");
+        setFixesFromSchema(0);
+        setFixesToSchema(1000);
+        setTargetSchema(1001);
     }
     
     /**

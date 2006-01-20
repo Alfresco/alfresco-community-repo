@@ -26,5 +26,5 @@ import java.util.List;
  */
 public interface AdminService
 {
-    public List<PatchInfo> getPatches();
+//    public List<PatchInfo> getPatches();
 }

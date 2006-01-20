@@ -16,10 +16,12 @@
          optimistic-lock="version" >
       <id column="id" length="32" name="id" type="string" />
       <property name="description" column="description" type="string" length="1024" />
-      <property name="applyToVersion" column="apply_to_version" type="string" length="10" />
-      <property name="succeeded" column="succeeded" type="boolean" />
-      <property name="appliedOnVersion" column="applied_on_version" type="string" length="10" />
+      <property name="fixesFromSchema" column="fixes_from_schema" type="integer" />
+      <property name="fixesToSchema" column="fixes_to_schema" type="integer" />
+      <property name="appliedToSchema" column="applied_to_schema" type="integer" />
+      <property name="targetSchema" column="target_schema" type="integer" />
       <property name="appliedOnDate" column="applied_on_date" type="timestamp" />
+      <property name="succeeded" column="succeeded" type="boolean" />
       <property name="report" column="report" type="string" length="1024" />
    </class>
 

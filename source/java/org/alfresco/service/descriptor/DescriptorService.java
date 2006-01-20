@@ -30,7 +30,7 @@ public interface DescriptorService
      * 
      * @return  server descriptor
      */
-    public Descriptor getDescriptor();
+    public Descriptor getServerDescriptor();
     
     /**
      * Get descriptor for the repository

@@ -40,17 +40,34 @@ public interface Patch
     public String getDescription();
     
     /**
-     * @see PatchService#applyOutstandingPatches()
-     * @see AbstractPatch#setApplyToVersion(String)
+     * @return Returns the smallest schema number that this patch may be applied to
      */
-    public String getApplyToVersion();
+    public int getFixesFromSchema();
+
+    /**
+     * @return Returns the largest schema number that this patch may be applied to
+     */
+    public int getFixesToSchema();
     
+    /**
+     * @return Returns the schema number that this patch attempts to bring the repo up to
+     */
+    public int getTargetSchema();
+
     /**
      * Get patches that this patch depends on
      * 
      * @return Returns a list of patches
      */
     public List<Patch> getDependsOn();
+    
+    /**
+     * Check if the patch is applicable to a given schema version.
+     * 
+     * @param version a schema version number
+     * @return Returns <code>(fixesFromVersion <= version <= fixesToVersion)</code>
+     */
+    public boolean applies(int version);
     
     /**
      * Applies the patch.  Typically this will be within the bounds of a new

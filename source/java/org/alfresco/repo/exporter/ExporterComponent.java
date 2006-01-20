@@ -517,7 +517,7 @@ public class ExporterComponent
             exportOf = getNodeRef(parameters.getExportFrom());
             
             // get exporter version
-            exporterVersion = descriptorService.getDescriptor().getVersion();
+            exporterVersion = descriptorService.getServerDescriptor().getVersion();
         }
         
         /* (non-Javadoc)

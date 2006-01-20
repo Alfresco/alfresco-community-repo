@@ -16,10 +16,6 @@
  */
 package org.alfresco.repo.admin.patch;
 
-import java.util.List;
-
-import org.alfresco.service.cmr.admin.PatchInfo;
-
 /**
  * Manages patches applied against the repository.
  * <p>
@@ -32,19 +28,11 @@ import org.alfresco.service.cmr.admin.PatchInfo;
 public interface PatchService
 {
     /**
-     * Set the complete list of patches.  All patch IDs must remain static for the duration their
-     * existence.  This allows us to recognise the 
+     * Registers a patch with the service that executes them.
      * 
-     * @param patches the complete list of patches (either applied or not)
+     * @param patch the patch to register
      */
-    public void setPatches(List<Patch> patches);
-    
-    /**
-     * Get a list of all previously applied patches
-     * 
-     * @return Returns a list of patch application information
-     */
-    public List<PatchInfo> getAppliedPatches();
+    public void registerPatch(Patch patch);
     
     /**
      * Apply all outstanding patches that are relevant to the repo.

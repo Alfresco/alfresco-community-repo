@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
@@ -71,7 +72,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
      * @param descriptorResource  resource containing server descriptor meta-data
      * @throws IOException
      */
-    public void setServerDescriptor(Resource descriptorResource)
+    public void setDescriptor(Resource descriptorResource)
         throws IOException
     {
         this.serverProperties = new Properties();
@@ -121,7 +122,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     /* (non-Javadoc)
      * @see org.alfresco.service.descriptor.DescriptorService#getDescriptor()
      */
-    public Descriptor getDescriptor()
+    public Descriptor getServerDescriptor()
     {
         return serverDescriptor;
     }
@@ -187,7 +188,9 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
                     String serverEdition = serverDescriptor.getEdition();
                     String serverVersion = serverDescriptor.getVersion();
                     String repoVersion = repoDescriptor.getVersion();
-                    logger.info(String.format("Alfresco started (%s) - v%s; repository v%s", serverEdition, serverVersion, repoVersion));
+                    int schemaVersion = repoDescriptor.getSchema();
+                    logger.info(String.format("Alfresco started (%s) - v%s; repository v%s; schema %d",
+                            serverEdition, serverVersion, repoVersion, schemaVersion));
                 }
             }
         }
@@ -297,6 +300,15 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
             return "unknown";
         }
 
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.descriptor.Descriptor#getSchema()
+         */
+        public int getSchema()
+        {
+            return 0;
+        }
+
         /* (non-Javadoc)
          * @see org.alfresco.service.descriptor.Descriptor#getDescriptorKeys()
          */
@@ -386,6 +398,32 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
             return null;
         }
         
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.descriptor.Descriptor#getSchema()
+         */
+        public int getSchema()
+        {
+            String schemaStr = getDescriptor("sys:versionSchema");
+            if (schemaStr == null)
+            {
+                return 0;
+            }
+            try
+            {
+                int schema = Integer.parseInt(schemaStr);
+                if (schema < 0)
+                {
+                    throw new NumberFormatException();
+                }
+                return schema;
+            }
+            catch (NumberFormatException e)
+            {
+                throw new AlfrescoRuntimeException("'version.schema' must be a positive integer");
+            }
+        }
+
         /* (non-Javadoc)
          * @see org.alfresco.service.descriptor.Descriptor#getDescriptorKeys()
          */
@@ -470,7 +508,33 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
         {
             return serverProperties.getProperty("version.edition");
         }
-        
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.descriptor.Descriptor#getSchema()
+         */
+        public int getSchema()
+        {
+            String schemaStr = serverProperties.getProperty("version.schema");
+            if (schemaStr == null)
+            {
+                return 0;
+            }
+            try
+            {
+                int schema = Integer.parseInt(schemaStr);
+                if (schema < 0)
+                {
+                    throw new NumberFormatException();
+                }
+                return schema;
+            }
+            catch (NumberFormatException e)
+            {
+                throw new AlfrescoRuntimeException("'version.schema' must be a positive integer");
+            }
+        }
+
         /* (non-Javadoc)
          * @see org.alfresco.service.descriptor.Descriptor#getDescriptorKeys()
          */

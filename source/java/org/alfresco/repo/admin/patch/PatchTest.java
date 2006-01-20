@@ -16,14 +16,13 @@
  */
 package org.alfresco.repo.admin.patch;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.domain.AppliedPatch;
 import org.alfresco.service.cmr.admin.PatchException;
-import org.alfresco.service.cmr.admin.PatchInfo;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
@@ -41,7 +40,7 @@ public class PatchTest extends TestCase
     
     private TransactionService transactionService;
     private PatchService patchService;
-    private List<Patch> patches;
+    private PatchDaoService patchDaoComponent;
     
     public PatchTest(String name)
     {
@@ -52,18 +51,18 @@ public class PatchTest extends TestCase
     {
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         patchService = (PatchService) ctx.getBean("PatchService");
+        patchDaoComponent = (PatchDaoService) ctx.getBean("patchDaoComponent");
         
         // get the patches to play with
-        patches = new ArrayList<Patch>(2);
-        patches.add((Patch)ctx.getBean("patch.sample.02"));
-        patches.add((Patch)ctx.getBean("patch.sample.01"));
-        patchService.setPatches(patches);
+        patchService.registerPatch((Patch)ctx.getBean("patch.sample.02"));
+        patchService.registerPatch((Patch)ctx.getBean("patch.sample.01"));
     }
     
     public void testSetup() throws Exception
     {
         assertNotNull(transactionService);
         assertNotNull(patchService);
+        assertNotNull(patchDaoComponent);
     }
     
     public void testSimplePatchSuccess() throws Exception
@@ -119,21 +118,21 @@ public class PatchTest extends TestCase
         boolean success = patchService.applyOutstandingPatches();
         assertTrue(success);
         // get applied patches
-        List<PatchInfo> patchInfos = patchService.getAppliedPatches();
+        List<AppliedPatch> appliedPatches = patchDaoComponent.getAppliedPatches();
         // check that the patch application was recorded
         boolean found01 = false;
         boolean found02 = false;
-        for (PatchInfo patchInfo : patchInfos)
+        for (AppliedPatch appliedPatch : appliedPatches)
         {
-            if (patchInfo.getId().equals("Sample01"))
+            if (appliedPatch.getId().equals("Sample01"))
             {
                 found01 = true;
-                assertTrue("Patch info didn't indicate success: " + patchInfo, patchInfo.getSucceeded());
+                assertTrue("Patch info didn't indicate success: " + appliedPatch, appliedPatch.getSucceeded());
             }
-            else if (patchInfo.getId().equals("Sample02"))
+            else if (appliedPatch.getId().equals("Sample02"))
             {
                 found02 = true;
-                assertTrue("Patch info didn't indicate success: " + patchInfo, patchInfo.getSucceeded());
+                assertTrue("Patch info didn't indicate success: " + appliedPatch, appliedPatch.getSucceeded());
             } 
         }
         assertTrue("Sample 01 not in list of applied patches", found01);

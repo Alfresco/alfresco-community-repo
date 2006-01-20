@@ -7,7 +7,7 @@
 	 <!-- Descriptor Service -->
 
     <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl" init-method="init">
-       <property name="serverDescriptor">
+       <property name="descriptor">
 	       <value>classpath:alfresco/version.properties</value>
        </property>
        <property name="systemBootstrap">
@@ -696,6 +696,7 @@
                 <prop key="version.minor">${version.minor}</prop>
                 <prop key="version.revision">${version.revision}</prop>
                 <prop key="version.label">${version.label}</prop>
+                <prop key="version.schema">${version.schema}</prop>
                 <prop key="system.descriptor.childname">${system.descriptor.childname}</prop>
             </props>
         </property>

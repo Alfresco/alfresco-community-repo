@@ -25,21 +25,21 @@ package org.alfresco.service.descriptor;
 public interface Descriptor
 {
     /**
-     * Gets the major version number
+     * Gets the major version number, e.g. <u>1</u>.2.3
      * 
      * @return  major version number
      */
     public String getVersionMajor();
 
     /**
-     * Gets the minor version number
+     * Gets the minor version number, e.g. 1.<u>2</u>.3
      * 
      * @return  minor version number
      */
     public String getVersionMinor();
     
     /**
-     * Gets the version revision number
+     * Gets the version revision number, e.g. 1.2.<u>3</u>
      * 
      * @return  revision number
      */
@@ -65,6 +65,13 @@ public interface Descriptor
      * @return  the edition
      */
     public String getEdition();
+    
+    /**
+     * Gets the schema number
+     * 
+     * @return a positive integer
+     */
+    public int getSchema();
     
     /**
      * Gets the list available descriptors

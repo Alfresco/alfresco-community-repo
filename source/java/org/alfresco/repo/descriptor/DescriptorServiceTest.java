@@ -62,11 +62,11 @@ public class DescriptorServiceTest extends BaseSpringTest
     }
     
     
-    public void testDescriptor()
+    public void testServerDescriptor()
     {
         ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        DescriptorService descriptor = registry.getDescriptorService();
-        Descriptor serverDescriptor = descriptor.getDescriptor();
+        DescriptorService descriptorService = registry.getDescriptorService();
+        Descriptor serverDescriptor = descriptorService.getServerDescriptor();
         
         String major = serverDescriptor.getVersionMajor();
         String minor = serverDescriptor.getVersionMinor();
@@ -79,25 +79,31 @@ public class DescriptorServiceTest extends BaseSpringTest
         }
         
         assertEquals(version, serverDescriptor.getVersion());
+        
+        int schemaVersion = serverDescriptor.getSchema();
+        assertTrue("Server schema version must be greater than 0", schemaVersion > 0);
     }
 
     public void testRepositoryDescriptor()
     {
         ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        DescriptorService descriptor = registry.getDescriptorService();
-        Descriptor serverDescriptor = descriptor.getRepositoryDescriptor();
+        DescriptorService descriptorService = registry.getDescriptorService();
+        Descriptor repoDescriptor = descriptorService.getRepositoryDescriptor();
         
-        String major = serverDescriptor.getVersionMajor();
-        String minor = serverDescriptor.getVersionMinor();
-        String revision = serverDescriptor.getVersionRevision();
-        String label = serverDescriptor.getVersionLabel();
+        String major = repoDescriptor.getVersionMajor();
+        String minor = repoDescriptor.getVersionMinor();
+        String revision = repoDescriptor.getVersionRevision();
+        String label = repoDescriptor.getVersionLabel();
         String version = major + "." + minor + "."  + revision;
         if (label != null && label.length() > 0)
         {
             version += " (" + label + ")";
         }
         
-        assertEquals(version, serverDescriptor.getVersion());
+        assertEquals(version, repoDescriptor.getVersion());
+        
+        int schemaVersion = repoDescriptor.getSchema();
+        assertTrue("Repository schema version must be greater than -1", schemaVersion > -1);
     }
         
 }

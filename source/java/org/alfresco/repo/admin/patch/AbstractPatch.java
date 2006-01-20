@@ -40,16 +40,23 @@ public abstract class AbstractPatch implements Patch
     private static Log logger = LogFactory.getLog(AbstractPatch.class);
     
     private String id;
-    private String applyToVersion;
+    private int fixesFromSchema;
+    private int fixesToSchema;
+    private int targetSchema;
     private String description;
     /** a list of patches that this one depends on */
     private List<Patch> dependsOn;
     /** flag indicating if the patch was successfully applied */
     private boolean applied;
+    /** the service to register ourselves with */
+    private PatchService patchService;
     private TransactionService transactionService;
 
     public AbstractPatch()
     {
+        this.fixesFromSchema = -1;
+        this.fixesToSchema = -1;
+        this.targetSchema = -1;
         this.applied = false;
         this.dependsOn = Collections.emptyList();
     }
@@ -57,15 +64,25 @@ public abstract class AbstractPatch implements Patch
     @Override
     public String toString()
     {
-        StringBuilder sb = new StringBuilder(56);
+        StringBuilder sb = new StringBuilder(256);
         sb.append("Patch")
-          .append("[id=").append(getId())
-          .append(", after=").append(getApplyToVersion())
-          .append(", description=").append(getDescription())
+          .append("[ id=").append(id)
+          .append(", description=").append(description)
+          .append(", fixesFromSchema=").append(fixesFromSchema)
+          .append(", fixesToSchema=").append(fixesToSchema)
+          .append(", targetSchema=").append(targetSchema)
           .append("]");
         return sb.toString();
     }
-    
+
+    /**
+     * Set the service that this patch will register with for execution.
+     */
+    public void setPatchService(PatchService patchService)
+    {
+        this.patchService = patchService;
+    }
+
     /**
      * Set the transaction provider so that each execution can be performed within a transaction
      */
@@ -73,7 +90,19 @@ public abstract class AbstractPatch implements Patch
     {
         this.transactionService = transactionService;
     }
-    
+
+    /**
+     * This ensures that this bean gets registered with the appropriate {@link PatchService service}. 
+     */
+    public void init()
+    {
+        if (patchService == null)
+        {
+            throw new AlfrescoRuntimeException("Mandatory property not set: patchService");
+        }
+        patchService.registerPatch(this);
+    }
+
     public String getId()
     {
         return id;
@@ -88,18 +117,70 @@ public abstract class AbstractPatch implements Patch
         this.id = id;
     }
 
-    public String getApplyToVersion()
+    public int getFixesFromSchema()
     {
-        return applyToVersion;
+        return fixesFromSchema;
     }
 
     /**
+     * Set the smallest schema number that this patch may be applied to.
      * 
-     * @param applyAfterVersion the version of the repository after which this patch must be applied.
+     * @param version a schema number not smaller than 0
      */
-    public void setApplyToVersion(String applyAfterVersion)
+    public void setFixesFromSchema(int version)
     {
-        this.applyToVersion = applyAfterVersion;
+        if (version < 0)
+        {
+            throw new IllegalArgumentException("The 'fixesFromSchema' property may not be less than 0");
+        }
+        this.fixesFromSchema = version;
+        // auto-adjust the to version
+        if (fixesToSchema < fixesFromSchema)
+        {
+            setFixesToSchema(this.fixesFromSchema);
+        }
+    }
+
+    public int getFixesToSchema()
+    {
+        return fixesToSchema;
+    }
+
+    /**
+     * Set the largest schema version number that this patch may be applied to.
+     * 
+     * @param version a schema version number not smaller than the
+     *      {@link #setFixesFromSchema(int) from version} number.
+     */
+    public void setFixesToSchema(int version)
+    {
+        if (version < fixesFromSchema)
+        {
+            throw new IllegalArgumentException("'fixesToSchema' must be greater than or equal to 'fixesFromSchema'");
+        }
+        this.fixesToSchema = version;
+    }
+
+    public int getTargetSchema()
+    {
+        return targetSchema;
+    }
+
+    /**
+     * Set the schema version that this patch attempts to take the existing schema to.
+     * This is for informational purposes only, acting as an indicator of intention rather
+     * than having any specific effect.
+     * 
+     * @param version a schema version number that must be greater than the
+     *      {@link #fixesToSchema max fix schema number}
+     */
+    public void setTargetSchema(int version)
+    {
+        if (version <= fixesToSchema)
+        {
+            throw new IllegalArgumentException("'targetSchema' must be greater than 'fixesToSchema'");
+        }
+        this.targetSchema = version;
     }
 
     public String getDescription()
@@ -130,6 +211,36 @@ public abstract class AbstractPatch implements Patch
         this.dependsOn = dependsOn;
     }
 
+    public boolean applies(int version)
+    {
+        return ((this.fixesFromSchema <= version) && (version <= fixesToSchema));
+    }
+
+    /**
+     * Check that the schema version properties have been set appropriately
+     */
+    private void checkProperties()
+    {
+        // check that the necessary properties have been set
+        if (id == null || description == null)
+        {
+            throw new AlfrescoRuntimeException(
+                    "Patch properties 'id', 'fixesFromSchema' and 'description' have not all been set on this patch: \n" +
+                    "   patch: " + this);
+        }
+        else if (fixesFromSchema == -1 || fixesToSchema == -1 || targetSchema == -1)
+        {
+            throw new AlfrescoRuntimeException(
+                    "Patch properties 'fixesFromSchema', 'fixesToSchema' and 'targetSchema' have not all been set on this patch: \n" +
+                    "   patch: " + this);
+        }
+        else if (transactionService == null)
+        {
+            throw new AlfrescoRuntimeException("'transactionService' property has not been set: \n" +
+                    "   patch: " + this);
+        }
+    }
+    
     /**
      * Sets up the transaction and ensures thread-safety.
      * 
@@ -143,18 +254,8 @@ public abstract class AbstractPatch implements Patch
             throw new AlfrescoRuntimeException("The patch has already been executed: \n" +
                     "   patch: " + this);
         }
-        // check that the necessary properties have been set
-        if (id == null || applyToVersion == null || description == null)
-        {
-            throw new AlfrescoRuntimeException(
-                    "Patch properties 'id', 'applyToVersion' and 'description' have not all been set on this patch: \n" +
-                    "   patch: " + this);
-        }
-        else if (transactionService == null)
-        {
-            throw new AlfrescoRuntimeException("'transactionService' property has not been set: \n" +
-                    "   patch: " + this);
-        }
+        // check properties
+        checkProperties();
         // execute in a transaction
         try
         {

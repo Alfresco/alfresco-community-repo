@@ -29,11 +29,36 @@ public class AppliedPatchImpl implements AppliedPatch
 {
     private String id;
     private String description;
-    private String applyAfterVersion;
-    private boolean succeeded;
-    private String appliedOnVersion;
+    private int fixesFromSchema;
+    private int fixesToSchema;
+    private int targetSchema;
+
+    private int appliedToSchema;
     private Date appliedOnDate;
+    private boolean succeeded;
     private String report;
+    
+    public AppliedPatchImpl()
+    {
+    }
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(256);
+        sb.append("AppliedPatch")
+          .append("[ id=").append(id)
+          .append(", description=").append(description)
+          .append(", fixesFromSchema=").append(fixesFromSchema)
+          .append(", fixesToSchema=").append(fixesToSchema)
+          .append(", targetSchema=").append(targetSchema)
+          .append(", appliedToSchema=").append(appliedToSchema)
+          .append(", appliedOnDate=").append(appliedOnDate)
+          .append(", succeeded=").append(succeeded)
+          .append(", report=").append(report)
+          .append("]");
+        return sb.toString();
+    }
 
     public String getId()
     {
@@ -57,14 +82,50 @@ public class AppliedPatchImpl implements AppliedPatch
         }
         this.description = description;
     }
-    
-    public String getAppliedOnVersion()
+
+    public int getFixesFromSchema()
     {
-        return appliedOnVersion;
+        return fixesFromSchema;
     }
-    public void setAppliedOnVersion(String appliedOnVersion)
+    public void setFixesFromSchema(int version)
     {
-        this.appliedOnVersion = appliedOnVersion;
+        this.fixesFromSchema = version;
+    }
+
+    public int getFixesToSchema()
+    {
+        return fixesToSchema;
+    }
+    public void setFixesToSchema(int version)
+    {
+        this.fixesToSchema = version;
+    }
+
+    public int getTargetSchema()
+    {
+        return targetSchema;
+    }
+    public void setTargetSchema(int currentSchema)
+    {
+        this.targetSchema = currentSchema;
+    }
+
+    public int getAppliedToSchema()
+    {
+        return appliedToSchema;
+    }
+    public void setAppliedToSchema(int version)
+    {
+        this.appliedToSchema = version;
+    }
+
+    public Date getAppliedOnDate()
+    {
+        return appliedOnDate;
+    }
+    public void setAppliedOnDate(Date appliedOnDate)
+    {
+        this.appliedOnDate = appliedOnDate;
     }
     
     public boolean getSucceeded()
@@ -74,24 +135,6 @@ public class AppliedPatchImpl implements AppliedPatch
     public void setSucceeded(boolean succeeded)
     {
         this.succeeded = succeeded;
-    }
-
-    public String getApplyToVersion()
-    {
-        return applyAfterVersion;
-    }
-    public void setApplyToVersion(String applyAfterVersion)
-    {
-        this.applyAfterVersion = applyAfterVersion;
-    }
-    
-    public Date getAppliedOnDate()
-    {
-        return appliedOnDate;
-    }
-    public void setAppliedOnDate(Date appliedOnDate)
-    {
-        this.appliedOnDate = appliedOnDate;
     }
     
     public String getReport()

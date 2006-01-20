@@ -65,7 +65,7 @@ public class PersonTest extends BaseSpringTest
         flushAndClear();
     }
 
-    public void testCreateMissingPeople()
+    public void testCreateMissingPeople1()
     {
         personService.setCreateMissingPeople(false);
         assertFalse(personService.createMissingPeople());
@@ -77,14 +77,22 @@ public class PersonTest extends BaseSpringTest
         try
         {
             personService.getPerson("andy");
-            assertNotNull(null);
+            fail("Getting Andy should fail");
         }
         catch (PersonException pe)
         {
 
-        }
+        }    
+    }
+    
+    public void testCreateMissingPeople2()
+    {
+        personService.setCreateMissingPeople(false);
+        assertFalse(personService.createMissingPeople());
 
         personService.setCreateMissingPeople(true);
+        assertTrue(personService.createMissingPeople());
+
         NodeRef nodeRef = personService.getPerson("andy");
         assertNotNull(nodeRef);
         testProperties(nodeRef, "andy", "andy", "", "", "");
@@ -94,12 +102,26 @@ public class PersonTest extends BaseSpringTest
         {
             personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh",
                     "alfresco", rootNodeRef));
-            assertNotNull(null);
+            fail("Getting Derek should fail");
         }
         catch (PersonException pe)
         {
 
         }
+    }
+        
+    
+    public void testCreateMissingPeople()
+    {
+        personService.setCreateMissingPeople(false);
+        assertFalse(personService.createMissingPeople());
+
+        personService.setCreateMissingPeople(true);
+        assertTrue(personService.createMissingPeople());
+
+        NodeRef nodeRef = personService.getPerson("andy");
+        assertNotNull(nodeRef);
+        testProperties(nodeRef, "andy", "andy", "", "", "");
 
         personService.setCreateMissingPeople(true);
         personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh",
@@ -129,18 +151,22 @@ public class PersonTest extends BaseSpringTest
         endTransaction();
     }
 
-    public void testPersonCRUD()
+    public void testPersonCRUD1()
     {
         personService.setCreateMissingPeople(false);
         try
         {
             personService.getPerson("derek");
-            assertNotNull(null);
+            fail("Getting Derek should fail");
         }
         catch (PersonException pe)
         {
 
         }
+    }
+    
+    public void testPersonCRUD2()
+    {
         personService.setCreateMissingPeople(false);
         personService.createPerson(createDefaultProperties("derek", "Derek", "Hulley", "dh@dh",
                 "alfresco", rootNodeRef));
@@ -164,12 +190,36 @@ public class PersonTest extends BaseSpringTest
         try
         {
             personService.getPerson("derek");
-            assertNotNull(null);
+            fail("Getting Derek should fail");
         }
         catch (PersonException pe)
         {
 
         }
+    }
+    
+    public void testPersonCRUD()
+    {
+        personService.setCreateMissingPeople(false);
+        personService.createPerson(createDefaultProperties("derek", "Derek", "Hulley", "dh@dh",
+                "alfresco", rootNodeRef));
+        testProperties(personService.getPerson("derek"), "derek", "Derek", "Hulley", "dh@dh", "alfresco");
+        
+        personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek_", "Hulley_", "dh@dh_",
+        "alfresco_", rootNodeRef));
+        
+        testProperties(personService.getPerson("derek"), "derek", "Derek_", "Hulley_", "dh@dh_", "alfresco_");
+        
+        personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh",
+                "alfresco", rootNodeRef));
+        
+        testProperties(personService.getPerson("derek"), "derek", "Derek", "Hulley", "dh@dh", "alfresco");
+        
+        assertEquals(1, personService.getAllPeople().size());
+        assertTrue(personService.getAllPeople().contains(personService.getPerson("derek")));
+        
+        personService.deletePerson("derek");
+        assertEquals(0, personService.getAllPeople().size());
         
         setComplete();
         endTransaction();

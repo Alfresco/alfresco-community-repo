@@ -588,8 +588,31 @@
    <!-- =============================================== -->
    <!-- The Authentication Service security interceptor -->
    <!-- =============================================== -->
-   
-   <bean id="AuthenticationService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+ 
+   <!-- Authentication is excluded as it sets or cleas authentication -->
+   <!-- The same for validate ticaket -->
+   <bean id="AuthenticationService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+				org.alfresco.service.cmr.security.AuthenticationService.createAuthentication=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthenticationService.updateAuthentication=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthenticationService.setAuthentication=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthenticationService.deleteAuthentication=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthenticationService.setAuthenticationEnabled=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthenticationService.getAuthenticationEnabled=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthenticationService.authenticateAsGuest=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthenticationService.getCurrentUserName=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthenticationService.invalidateUserSession=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthenticationService.invalidateTicket=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthenticationService.getCurrentTicket=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthenticationService.clearCurrentSecurityContext=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthenticationService.isCurrentUserTheSystemUser=ACL_ALLOW
+            </value>
+        </property>
+    </bean>
    
     <!-- =================== -->
     <!-- The Ownable Service -->
@@ -598,7 +621,44 @@
     <!-- This service currently has no restrictions.                                     -->
     <!-- TODO: respect the permissions on the ownable service                            -->
    
-    <bean id="OwnableService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    <bean id="OwnableService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+				org.alfresco.service.cmr.security.OwnableService.getOwner=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.security.OwnableService.setOwner=ACL_NODE.0.cm:ownable.SetOwner
+                org.alfresco.service.cmr.security.OwnableService.takeOwnership=ACL_NODE.0.cm:ownable.TakeOwnership
+                org.alfresco.service.cmr.security.OwnableService.hasOwner=ACL_NODE.0.sys:base.Read
+         </value>
+        </property>
+    </bean>
+    
+    
+    <!-- Person Service -->
+    
+     <bean id="PersonService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+				org.alfresco.service.cmr.security.PersonService.getPerson=AFTER_ACL_NODE.sys:base.Read
+                org.alfresco.service.cmr.security.PersonService.personExists=ACL_ALLOW
+                org.alfresco.service.cmr.security.PersonService.createMissingPeople=ACL_ALLOW
+                org.alfresco.service.cmr.security.PersonService.setCreateMissingPeople=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.PersonService.getMutableProperties=ACL_ALLOW
+                org.alfresco.service.cmr.security.PersonService.setPersonProperties=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.PersonService.isMutable=ACL_ALLOW
+                org.alfresco.service.cmr.security.PersonService.createPerson=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.PersonService.deletePerson=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.PersonService.getAllPeople=ACL_ALLOW
+                org.alfresco.service.cmr.security.PersonService.getPeopleContainer=ACL_ALLOW
+                org.alfresco.service.cmr.security.PersonService.getUserNamesAreCaseSensitive=ACL_ALLOW
+         </value>
+        </property>
+    </bean>
     
     <!-- ==================== -->
     <!-- The Template Service -->

@@ -152,16 +152,28 @@ public class DictionaryRepositoryBootstrap
         // Register the models found in the respository
         for (RepositoryLocation repositoryLocation : this.repositoryLocations)
         {
-            ResultSet resultSet = this.searchService.query(repositoryLocation.getStoreRef(), SearchService.LANGUAGE_LUCENE, repositoryLocation.getQueryStatement());
-            for (NodeRef dictionaryModel : resultSet.getNodeRefs())
+            ResultSet resultSet = null;
+            try
             {
-                M2Model model = createM2Model(dictionaryModel);
-                if (model != null)
+                resultSet = this.searchService.query(repositoryLocation.getStoreRef(), SearchService.LANGUAGE_LUCENE, repositoryLocation.getQueryStatement());
+            
+                for (NodeRef dictionaryModel : resultSet.getNodeRefs())
                 {
-                    for (M2Namespace namespace : model.getNamespaces())
+                    M2Model model = createM2Model(dictionaryModel);
+                    if (model != null)
                     {
-                        modelMap.put(namespace.getUri(), model);
-                    } 
+                        for (M2Namespace namespace : model.getNamespaces())
+                        {
+                            modelMap.put(namespace.getUri(), model);
+                        } 
+                    }
+                }
+            }
+            finally
+            {
+                if (resultSet != null)
+                {
+                    resultSet.close();
                 }
             }
         }

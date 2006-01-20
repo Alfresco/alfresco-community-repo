@@ -28,6 +28,7 @@ import org.alfresco.filesys.server.config.ServerConfiguration;
 import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
 import org.alfresco.filesys.util.DataPacker;
+import org.alfresco.filesys.util.HexDump;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
@@ -207,6 +208,7 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
         }
 
         // Return the challenge
+        DataPacker.putIntelLong( 0L, key, 0);
         
         return key;
     }
@@ -268,6 +270,9 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
         
         if ( md4hash != null)
         {
+            if ( logger.isDebugEnabled())
+                logger.debug("Authenticate username=" + client.getUserName() + " md4=" + HexDump.hexString(md4hash));
+
             // Check if the client has supplied an NTLM hashed password, if not then do not allow access
             
             if ( client.getPassword() == null)

@@ -131,8 +131,11 @@ public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase
                         // Append the category value to the existing values
                         Serializable value = this.nodeService.getProperty(actionedUponNodeRef, categoryProperty);
                         Collection<NodeRef> categories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, value);
-                        categories.add(categoryValue);
-                        this.nodeService.setProperty(actionedUponNodeRef, categoryProperty, (Serializable)categories);
+                        if (categories.contains(categoryValue) == false)
+                        {
+                            categories.add(categoryValue);
+                            this.nodeService.setProperty(actionedUponNodeRef, categoryProperty, (Serializable)categories);
+                        }
                     }
                 }
             }			

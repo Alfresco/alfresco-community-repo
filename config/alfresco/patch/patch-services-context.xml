@@ -40,25 +40,27 @@
         <property name="patchDaoService">
             <ref bean="patchDaoComponent" />
         </property>
-        <!-- list all the patches -->
-        <property name="patches" >
-            <list>
-            </list>
-        </property>
+    </bean>
+
+    <!-- base patch definition -->
+    <bean id="basePatch" abstract="true" depends-on="patchComponent" init-method="init">
+        <property name="transactionService"><ref bean="transactionComponent" /></property>
     </bean>
     
     <!-- Example patches -->
-    <bean id="patch.sample.01" class="org.alfresco.repo.admin.patch.SamplePatch" >
-        <property name="transactionService"><ref bean="transactionComponent" /></property>
+    <bean id="patch.sample.01" class="org.alfresco.repo.admin.patch.SamplePatch" parent="basePatch" >
         <property name="id"><value>Sample01</value></property>
         <property name="description"><value>A NO-OP sample patch</value></property>
-        <property name="applyToVersion"><value>0.0</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>1000</value></property>
+        <property name="targetSchema"><value>1001</value></property>
     </bean>
-    <bean id="patch.sample.02" class="org.alfresco.repo.admin.patch.SamplePatch" >
-        <property name="transactionService"><ref bean="transactionComponent" /></property>
+    <bean id="patch.sample.02" class="org.alfresco.repo.admin.patch.SamplePatch" parent="basePatch" >
         <property name="id"><value>Sample02</value></property>
         <property name="description"><value>A NO-OP sample patch</value></property>
-        <property name="applyToVersion"><value>1.2</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>1000</value></property>
+        <property name="targetSchema"><value>1001</value></property>
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.sample.01" />

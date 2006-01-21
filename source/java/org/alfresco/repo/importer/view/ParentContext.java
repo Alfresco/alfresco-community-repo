@@ -84,18 +84,22 @@ public class ParentContext extends ElementContext
     {
         this(elementName, parent);
         
-        // Ensure association is valid for node
-        Set<QName> allAspects = new HashSet<QName>();
-        for (AspectDefinition typeAspect : parent.getTypeDefinition().getDefaultAspects())
+        TypeDefinition typeDef = parent.getTypeDefinition();
+        if (typeDef != null)
         {
-            allAspects.add(typeAspect.getName());
-        }
-        allAspects.addAll(parent.getNodeAspects());
-        TypeDefinition anonymousType = getDictionaryService().getAnonymousType(parent.getTypeDefinition().getName(), allAspects);
-        Map<QName, ChildAssociationDefinition> nodeAssociations = anonymousType.getChildAssociations();
-        if (nodeAssociations.containsKey(childDef.getName()) == false)
-        {
-            throw new ImporterException("Association " + childDef.getName() + " is not valid for node " + parent.getTypeDefinition().getName());
+            // Ensure association type is valid for node parent
+            Set<QName> allAspects = new HashSet<QName>();
+            for (AspectDefinition typeAspect : parent.getTypeDefinition().getDefaultAspects())
+            {
+                allAspects.add(typeAspect.getName());
+            }
+            allAspects.addAll(parent.getNodeAspects());
+            TypeDefinition anonymousType = getDictionaryService().getAnonymousType(parent.getTypeDefinition().getName(), allAspects);
+            Map<QName, ChildAssociationDefinition> nodeAssociations = anonymousType.getChildAssociations();
+            if (nodeAssociations.containsKey(childDef.getName()) == false)
+            {
+                throw new ImporterException("Association " + childDef.getName() + " is not valid for node " + parent.getTypeDefinition().getName());
+            }
         }
         
         parentRef = parent.getNodeRef();

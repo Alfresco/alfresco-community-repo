@@ -378,7 +378,7 @@ public class ImporterBootstrap
     /**
      * Bootstrap Binding
      */
-    private class BootstrapBinding implements ImporterBinding
+    private static class BootstrapBinding implements ImporterBinding
     {
         private Properties configuration = null;
         private ResourceBundle resourceBundle = null;
@@ -453,6 +453,16 @@ public class ImporterBootstrap
         {
             if (logger.isDebugEnabled())
                 logger.debug("Created node " + nodeRef + " (child name: " + childName + ") within parent " + parentRef + " (association type: " + assocName + ")");
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterProgress#nodeLinked(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
+         */
+        public void nodeLinked(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
+        {
+            if (logger.isDebugEnabled())
+                logger.debug("Linked node " + nodeRef + " (child name: " + childName + ") within parent " + parentRef + " (association type: " + assocName + ")");
         }
 
         /* (non-Javadoc)

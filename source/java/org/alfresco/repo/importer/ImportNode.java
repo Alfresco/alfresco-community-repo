@@ -47,6 +47,11 @@ public interface ImportNode
     public TypeDefinition getTypeDefinition();
     
     /**
+     * @return  is this a node reference
+     */
+    public boolean isReference();
+    
+    /**
      * @return  the node ref
      */
     public NodeRef getNodeRef();
@@ -55,7 +60,7 @@ public interface ImportNode
      * @return  node uuid to create node with
      */
     public String getUUID();
-    
+
     /**
      * @return  the child name
      */

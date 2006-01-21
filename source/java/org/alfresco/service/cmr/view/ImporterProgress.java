@@ -42,6 +42,16 @@ public interface ImporterProgress
     public void nodeCreated(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName);
 
     /**
+     * Report creation of a node link.
+     * 
+     * @param nodeRef  the node ref
+     * @param parentRef  the parent ref
+     * @param assocName  the child association type name
+     * @param childName  the child association name
+     */
+    public void nodeLinked(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName);
+    
+    /**
      * Report creation of content
      * 
      * @param nodeRef  the node ref

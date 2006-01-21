@@ -368,8 +368,11 @@ public class ImporterComponent
         private ImporterBinding binding;
         private ImporterProgress progress;
         private ImportPackageHandler streamHandler;
-        private List<ImportedNodeRef> nodeRefs = new ArrayList<ImportedNodeRef>();
         private NodeImporterStrategy importStrategy;
+        private UpdateExistingNodeImporterStrategy updateStrategy;
+
+        // Import tracking
+        private List<ImportedNodeRef> nodeRefs = new ArrayList<ImportedNodeRef>();
 
         // Flush threshold
         private int flushThreshold = 500;
@@ -392,6 +395,7 @@ public class ImporterComponent
             this.progress = progress;
             this.streamHandler = streamHandler;
             this.importStrategy = createNodeImporterStrategy(binding == null ? null : binding.getUUIDBinding());
+            this.updateStrategy = new UpdateExistingNodeImporterStrategy();
         }
 
         /**
@@ -472,14 +476,22 @@ public class ImporterComponent
                 }
             }
         }
-        
+
         /* (non-Javadoc)
          * @see org.alfresco.repo.importer.Importer#importNode(org.alfresco.repo.importer.ImportNode)
          */
         public NodeRef importNode(ImportNode context)
         {
             // import node
-            NodeRef nodeRef = importStrategy.importNode(context);
+            NodeRef nodeRef;
+            if (context.isReference())
+            {
+                nodeRef = linkNode(context);
+            }
+            else
+            {
+                nodeRef = importStrategy.importNode(context);
+            }
             
             // apply aspects
             for (QName aspect : context.getNodeAspects())
@@ -510,6 +522,55 @@ public class ImporterComponent
             }
             
             return nodeRef;
+        }
+
+        /**
+         * Link an existing Node
+         * 
+         * @param context  node to link in
+         * @return  node reference of child linked in
+         */
+        private NodeRef linkNode(ImportNode context)
+        {
+            ImportParent parentContext = context.getParentContext();
+            NodeRef parentRef = parentContext.getParentRef();
+            
+            // determine the child node reference
+            String uuid = context.getUUID();
+            if (uuid == null)
+            {
+                throw new ImporterException("Node reference does not resolve to a node");
+            }
+            NodeRef childRef = new NodeRef(parentRef.getStoreRef(), uuid);
+
+            // Note: do not link references that are defined in the root of the import
+            if (!parentRef.equals(getRootRef()))
+            {
+                // determine child assoc type
+                QName assocType = getAssocType(context);
+                
+                // determine child name
+                QName childQName = getChildName(context);
+                if (childQName == null)
+                {
+                    String name = (String)nodeService.getProperty(childRef, ContentModel.PROP_NAME);
+                    if (name == null || name.length() == 0)
+                    {
+                        throw new ImporterException("Cannot determine node reference child name");
+                    }
+                    String localName = QName.createValidLocalName(name);
+                    childQName = QName.createQName(assocType.getNamespaceURI(), localName);
+                }
+                
+                // create the link
+                nodeService.addChild(parentRef, childRef, assocType, childQName);
+                reportNodeLinked(childRef, parentRef, assocType, childQName);
+            }
+            
+            // second, perform any specified udpates to the node
+            updateStrategy.importNode(context);
+            
+            return childRef; 
         }
         
         /**
@@ -625,11 +686,7 @@ public class ImporterComponent
                 {
                     for (QName disabledBehaviour: disabledBehaviours)
                     {
-                        boolean alreadyDisabled = behaviourFilter.disableBehaviour(importedRef.context.getNodeRef(), disabledBehaviour);
-                        if (alreadyDisabled)
-                        {
-                            disabledBehaviours.remove(disabledBehaviour);
-                        }
+                        behaviourFilter.disableBehaviour(importedRef.context.getNodeRef(), disabledBehaviour);
                     }
                     nodeService.setProperty(importedRef.context.getNodeRef(), importedRef.property, nodeRef);
                 }
@@ -647,6 +704,40 @@ public class ImporterComponent
         public void error(Throwable e)
         {
             behaviourFilter.enableAllBehaviours();
+        }
+
+        /**
+         * Get the child name to import node under
+         * 
+         * @param context  the node
+         * @return  the child name
+         */
+        private QName getChildName(ImportNode context)
+        {
+            QName assocType = getAssocType(context);
+            QName childQName = null;
+    
+            // Determine child name
+            String childName = context.getChildName();
+            if (childName != null)
+            {
+                childName = bindPlaceHolder(childName, binding);
+                String[] qnameComponents = QName.splitPrefixedQName(childName);
+                childQName = QName.createQName(qnameComponents[0], QName.createValidLocalName(qnameComponents[1]), namespaceService); 
+            }
+            else
+            {
+                Map<QName, Serializable> typeProperties = context.getProperties();
+                String name = (String)typeProperties.get(ContentModel.PROP_NAME);
+                if (name != null && name.length() > 0)
+                {
+                    name = bindPlaceHolder(name, binding);
+                    String localName = QName.createValidLocalName(name);
+                    childQName = QName.createQName(assocType.getNamespaceURI(), localName);
+                }
+            }
+            
+            return childQName;
         }
         
         /**
@@ -830,7 +921,7 @@ public class ImporterComponent
             }
             return objValue;
         }
-        
+
         /**
          * Helper to report node created progress
          * 
@@ -842,6 +933,20 @@ public class ImporterComponent
             if (progress != null)
             {
                 progress.nodeCreated(childAssocRef.getChildRef(), childAssocRef.getParentRef(), childAssocRef.getTypeQName(), childAssocRef.getQName());
+            }
+        }
+
+        /**
+         * Helper to report node linked progress
+         * 
+         * @param progress
+         * @param childAssocRef
+         */
+        private void reportNodeLinked(NodeRef childRef, NodeRef parentRef, QName assocType, QName childName)
+        {
+            if (progress != null)
+            {
+                progress.nodeLinked(childRef, parentRef, assocType, childName);
             }
         }
 
@@ -938,30 +1043,12 @@ public class ImporterComponent
                 TypeDefinition nodeType = node.getTypeDefinition();
                 NodeRef parentRef = node.getParentContext().getParentRef();
                 QName assocType = getAssocType(node);
-                QName childQName = null;
+                QName childQName = getChildName(node);
+                if (childQName == null)
+                {
+                    throw new ImporterException("Cannot determine child name of node (type: " + nodeType.getName() + ")");
+                }
 
-                // Determine child name
-                String childName = node.getChildName();
-                if (childName != null)
-                {
-                    childName = bindPlaceHolder(childName, binding);
-                    String[] qnameComponents = QName.splitPrefixedQName(childName);
-                    childQName = QName.createQName(qnameComponents[0], QName.createValidLocalName(qnameComponents[1]), namespaceService); 
-                }
-                else
-                {
-                    Map<QName, Serializable> typeProperties = node.getProperties();
-                    String name = (String)typeProperties.get(ContentModel.PROP_NAME);
-                    if (name == null || name.length() == 0)
-                    {
-                        throw new ImporterException("Cannot import node of type " + nodeType.getName() + " - it does not have a name");
-                    }
-                    
-                    name = bindPlaceHolder(name, binding);
-                    String localName = QName.createValidLocalName(name);
-                    childQName = QName.createQName(assocType.getNamespaceURI(), localName);
-                }
-                
                 // Create initial node (but, first disable behaviour for the node to be created)
                 Set<QName> disabledBehaviours = getDisabledBehaviours(node);
                 for (QName disabledBehaviour: disabledBehaviours)
@@ -972,7 +1059,7 @@ public class ImporterComponent
                         disabledBehaviours.remove(disabledBehaviour);
                     }
                 }
-            
+                
                 // Build initial map of properties
                 Map<QName, Serializable> initialProperties = bindProperties(node);
                 
@@ -1154,8 +1241,11 @@ public class ImporterComponent
                         // do the update
                         Map<QName, Serializable> existingProperties = nodeService.getProperties(existingNodeRef);
                         Map<QName, Serializable> updateProperties = bindProperties(node);
-                        existingProperties.putAll(updateProperties);
-                        nodeService.setProperties(existingNodeRef, existingProperties);
+                        if (updateProperties != null)
+                        {
+                            existingProperties.putAll(updateProperties);
+                            nodeService.setProperties(existingNodeRef, existingProperties);
+                        }
                         
                         // Apply permissions
                         boolean inheritPermissions = node.getInheritPermissions();

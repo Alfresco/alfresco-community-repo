@@ -18,18 +18,21 @@ package org.alfresco.repo.importer.view;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 
 import org.alfresco.repo.importer.Importer;
 import org.alfresco.repo.importer.Parser;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -55,6 +58,8 @@ public class ViewParser implements Parser
     private static final String VIEW_ISNULL_ATTR = "isNull";
     private static final String VIEW_INHERIT_PERMISSIONS_ATTR = "inherit";
     private static final String VIEW_ACCESS_STATUS_ATTR = "access";
+    private static final String VIEW_ID_ATTR = "id";
+    private static final String VIEW_IDREF_ATTR = "idref";
     private static final QName VIEW_METADATA = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "metadata");
     private static final QName VIEW_VALUE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "value");
     private static final QName VIEW_VALUES_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "values");
@@ -65,6 +70,7 @@ public class ViewParser implements Parser
     private static final QName VIEW_ACE = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "ace");
     private static final QName VIEW_AUTHORITY = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "authority");
     private static final QName VIEW_PERMISSION = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "permission");
+    private static final QName VIEW_REFERENCE = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "reference");
     
     
     // XML Pull Parser Factory
@@ -73,8 +79,17 @@ public class ViewParser implements Parser
     // Supporting services
     private NamespaceService namespaceService;
     private DictionaryService dictionaryService;
+
+    // Parser Context maintained during each parse
+    private class ParserContext
+    {
+        Importer importer;
+        DictionaryService dictionaryService;
+        Stack<ElementContext> elementStack;
+        Map<String, NodeRef> importIds = new HashMap<String, NodeRef>();
+    }
     
-    
+
     /**
      * Construct
      */
@@ -91,6 +106,7 @@ public class ViewParser implements Parser
             throw new ImporterException("Failed to initialise view importer", e);
         }
     }
+    
     
     /**
      * @param namespaceService  the namespace service
@@ -117,7 +133,11 @@ public class ViewParser implements Parser
         {
             XmlPullParser xpp = factory.newPullParser();
             xpp.setInput(viewReader);
-            Stack<ElementContext> contextStack = new Stack<ElementContext>();
+            
+            ParserContext parserContext = new ParserContext();
+            parserContext.importer = importer;
+            parserContext.dictionaryService = dictionaryService;
+            parserContext.elementStack = new Stack<ElementContext>();
             
             try
             {
@@ -129,17 +149,17 @@ public class ViewParser implements Parser
                         {
                             if (xpp.getDepth() == 1)
                             {
-                                processRoot(xpp, importer, contextStack);
+                                processRoot(xpp, parserContext);
                             }
                             else
                             {
-                                processStartElement(xpp, contextStack);
+                                processStartElement(xpp, parserContext);
                             }
                             break;
                         }
                         case XmlPullParser.END_TAG:
                         {
-                            processEndElement(xpp, contextStack);
+                            processEndElement(xpp, parserContext);
                             break;
                         }
                     }
@@ -164,61 +184,69 @@ public class ViewParser implements Parser
      * @throws XmlPullParserException
      * @throws IOException
      */
-    private void processStartElement(XmlPullParser xpp, Stack<ElementContext> contextStack)
+    private void processStartElement(XmlPullParser xpp, ParserContext parserContext)
         throws XmlPullParserException, IOException
     {
         // Extract qualified name
         QName defName = getName(xpp);
 
         // Process the element
-        Object context = contextStack.peek();
+        Object element = parserContext.elementStack.peek();
 
         // Handle special view directives
         if (defName.equals(VIEW_METADATA))
         {
-            contextStack.push(new MetaDataContext(defName, (ElementContext)context));
+            parserContext.elementStack.push(new MetaDataContext(defName, (ElementContext)element));
         }
         else if (defName.equals(VIEW_ASPECTS) || defName.equals(VIEW_PROPERTIES) || defName.equals(VIEW_ASSOCIATIONS) || defName.equals(VIEW_ACL))
         {
-            if (context instanceof NodeItemContext)
+            if (element instanceof NodeItemContext)
             {
-                throw new ImporterException("Cannot nest element " + defName + " within " + ((NodeItemContext)context).getElementName());
+                throw new ImporterException("Cannot nest element " + defName + " within " + ((NodeItemContext)element).getElementName());
             }
-            if (!(context instanceof NodeContext))
+            if (!(element instanceof NodeContext))
             {
                 throw new ImporterException("Element " + defName + " can only be declared within a node");
             }
-            NodeContext nodeContext = (NodeContext)context;
-            contextStack.push(new NodeItemContext(defName, nodeContext));
+            NodeContext node = (NodeContext)element;
+            parserContext.elementStack.push(new NodeItemContext(defName, node));
 
             // process ACL specific attributes
             if (defName.equals(VIEW_ACL))
             {
-                processACL(xpp, contextStack);
+                processACL(xpp, parserContext);
             }
         }
         else
         {
-            if (context instanceof MetaDataContext)
+            if (element instanceof MetaDataContext)
             {
-                processMetaData(xpp, defName, contextStack);
+                processMetaData(xpp, defName, parserContext);
             }
-            else if (context instanceof ParentContext)
+            else if (element instanceof ParentContext)
             {
-                // Process type definition 
-                TypeDefinition typeDef = dictionaryService.getType(defName);
-                if (typeDef == null)
+                if (defName.equals(VIEW_REFERENCE))
                 {
-                    throw new ImporterException("Type " + defName + " has not been defined in the Repository dictionary");
+                    // Process reference
+                    processStartReference(xpp, defName, parserContext);
                 }
-                processStartType(xpp, typeDef, contextStack);
+                else
+                {
+                    // Process type definition 
+                    TypeDefinition typeDef = dictionaryService.getType(defName);
+                    if (typeDef == null)
+                    {
+                        throw new ImporterException("Type " + defName + " has not been defined in the Repository dictionary");
+                    }
+                    processStartType(xpp, typeDef, parserContext);
+                }
                 return;
             }
-            else if (context instanceof NodeContext)
+            else if (element instanceof NodeContext)
             {
                 // Process children of node
                 // Note: Process in the following order: aspects, properties and associations
-                Object def = ((NodeContext)context).determineDefinition(defName);
+                Object def = ((NodeContext)element).determineDefinition(defName);
                 if (def == null)
                 {
                     throw new ImporterException("Definition " + defName + " is not valid; cannot find in Repository dictionary");
@@ -226,17 +254,17 @@ public class ViewParser implements Parser
                 
                 if (def instanceof AspectDefinition)
                 {
-                    processAspect(xpp, (AspectDefinition)def, contextStack);
+                    processAspect(xpp, (AspectDefinition)def, parserContext);
                     return;
                 }
                 else if (def instanceof PropertyDefinition)
                 {
-                    processProperty(xpp, ((PropertyDefinition)def).getName(), contextStack);
+                    processProperty(xpp, ((PropertyDefinition)def).getName(), parserContext);
                     return;
                 }
                 else if (def instanceof ChildAssociationDefinition)
                 {
-                    processStartChildAssoc(xpp, (ChildAssociationDefinition)def, contextStack);
+                    processStartChildAssoc(xpp, (ChildAssociationDefinition)def, parserContext);
                     return;
                 }
                 else
@@ -244,38 +272,42 @@ public class ViewParser implements Parser
                     // TODO: general association
                 }
             }
-            else if (context instanceof NodeItemContext)
+            else if (element instanceof NodeItemContext)
             {
-                NodeItemContext nodeItemContext = (NodeItemContext)context;
-                NodeContext nodeContext = nodeItemContext.getNodeContext();
-                QName itemName = nodeItemContext.getElementName();
+                NodeItemContext nodeItem = (NodeItemContext)element;
+                NodeContext node = nodeItem.getNodeContext();
+                QName itemName = nodeItem.getElementName();
                 if (itemName.equals(VIEW_ASPECTS))
                 {
-                    AspectDefinition def = nodeContext.determineAspect(defName);
+                    AspectDefinition def = node.determineAspect(defName);
                     if (def == null)
                     {
                         throw new ImporterException("Aspect name " + defName + " is not valid; cannot find in Repository dictionary");
                     }
-                    processAspect(xpp, def, contextStack);
+                    processAspect(xpp, def, parserContext);
                 }
                 else if (itemName.equals(VIEW_PROPERTIES))
                 {
                     // Note: Allow properties which do not have a data dictionary definition
-                    processProperty(xpp, defName, contextStack);
+                    processProperty(xpp, defName, parserContext);
                 }
                 else if (itemName.equals(VIEW_ASSOCIATIONS))
                 {
-                    // TODO: Handle general associations...  
-                    ChildAssociationDefinition def = (ChildAssociationDefinition)nodeContext.determineAssociation(defName);
+                    AssociationDefinition def = (AssociationDefinition)node.determineAssociation(defName);
                     if (def == null)
                     {
                         throw new ImporterException("Association name " + defName + " is not valid; cannot find in Repository dictionary");
                     }
-                    processStartChildAssoc(xpp, def, contextStack);
+                    // TODO: Handle general associations...  
+                    if (!(def instanceof ChildAssociationDefinition))
+                    {
+                        throw new ImporterException("Unsupported operation: The association " + defName + " cannot be imported - only child associations are supported at this time");
+                    }
+                    processStartChildAssoc(xpp, (ChildAssociationDefinition)def, parserContext);
                 }
                 else if (itemName.equals(VIEW_ACL))
                 {
-                    processAccessControlEntry(xpp, contextStack);
+                    processAccessControlEntry(xpp, parserContext);
                 }
             }
         }
@@ -293,14 +325,14 @@ public class ViewParser implements Parser
      * @throws XmlPullParserException
      * @throws IOException
      */
-    private void processRoot(XmlPullParser xpp, Importer importer, Stack<ElementContext> contextStack)
+    private void processRoot(XmlPullParser xpp, ParserContext parserContext)
         throws XmlPullParserException, IOException
     {
-        ParentContext parentContext = new ParentContext(getName(xpp), dictionaryService, importer);
-        contextStack.push(parentContext);
+        ParentContext parent = new ParentContext(getName(xpp), parserContext.dictionaryService, parserContext.importer);
+        parserContext.elementStack.push(parent);
         
         if (logger.isDebugEnabled())
-            logger.debug(indentLog("Pushed " + parentContext, contextStack.size() -1));
+            logger.debug(indentLog("Pushed " + parent, parserContext.elementStack.size() -1));
     }
 
     /**
@@ -312,10 +344,10 @@ public class ViewParser implements Parser
      * @throws XmlPullParserException
      * @throws IOException
      */
-    private void processMetaData(XmlPullParser xpp, QName metaDataName, Stack<ElementContext> contextStack)
+    private void processMetaData(XmlPullParser xpp, QName metaDataName, ParserContext parserContext)
         throws XmlPullParserException, IOException
     {
-        MetaDataContext context = (MetaDataContext)contextStack.peek();
+        MetaDataContext metaData = (MetaDataContext)parserContext.elementStack.peek();
 
         String value = null;
         
@@ -331,7 +363,7 @@ public class ViewParser implements Parser
             throw new ImporterException("Meta data element " + metaDataName + " is missing end tag");
         }
 
-        context.setProperty(metaDataName, value);
+        metaData.setProperty(metaDataName, value);
     }
     
     /**
@@ -343,25 +375,88 @@ public class ViewParser implements Parser
      * @throws XmlPullParserException
      * @throws IOException
      */
-    private void processStartType(XmlPullParser xpp, TypeDefinition typeDef, Stack<ElementContext> contextStack)
+    private void processStartType(XmlPullParser xpp, TypeDefinition typeDef, ParserContext parserContext)
         throws XmlPullParserException, IOException
     {
-        ParentContext parentContext = (ParentContext)contextStack.peek();
-        NodeContext context = new NodeContext(typeDef.getName(), parentContext, typeDef);
+        ParentContext parent = (ParentContext)parserContext.elementStack.peek();
+        NodeContext node = new NodeContext(typeDef.getName(), parent, typeDef);
+
+        // Extract child name if explicitly defined
+        String childName = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_CHILD_NAME_ATTR);
+        if (childName != null && childName.length() > 0)
+        {
+            node.setChildName(childName);
+        }
+
+        // Extract import id if explicitly defined
+        String importId = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_ID_ATTR);
+        if (importId != null && importId.length() > 0)
+        {
+            node.setImportId(importId);
+        }
+        
+        parserContext.elementStack.push(node);
+        
+        if (logger.isDebugEnabled())
+            logger.debug(indentLog("Pushed " + node, parserContext.elementStack.size() -1));
+    }
+
+    /**
+     * Process start reference
+     * 
+     * @param xpp
+     * @param typeDef
+     * @param contextStack
+     * @throws XmlPullParserException
+     * @throws IOException
+     */
+    private void processStartReference(XmlPullParser xpp, QName refName, ParserContext parserContext)
+        throws XmlPullParserException, IOException
+    {
+        ParentContext parent = (ParentContext)parserContext.elementStack.peek();
+        
+        // Extract Import scoped reference Id if explicitly defined
+        String uuid = null;
+        String idRef = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_IDREF_ATTR);
+        if (idRef != null && idRef.length() > 0)
+        {
+            // retrieve uuid from previously imported node
+            NodeRef nodeRef = getImportReference(parserContext, idRef);
+            if (nodeRef == null)
+            {
+                throw new ImporterException("Cannot find node referenced by id " + idRef);
+            }
+            uuid = nodeRef.getId();
+        }
+        
+        // Create reference
+        NodeContext node = new NodeContext(refName, parent, null);
+        node.setReference(true);
+        if (uuid != null)
+        {
+            node.setUUID(uuid);
+        }
         
         // Extract child name if explicitly defined
         String childName = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_CHILD_NAME_ATTR);
         if (childName != null && childName.length() > 0)
         {
-            context.setChildName(childName);
+            node.setChildName(childName);
         }
 
-        contextStack.push(context);
+        // Extract import id if explicitly defined
+        String importId = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_ID_ATTR);
+        if (importId != null && importId.length() > 0)
+        {
+            node.setImportId(importId);
+        }
+
+        parserContext.elementStack.push(node);
         
         if (logger.isDebugEnabled())
-            logger.debug(indentLog("Pushed " + context, contextStack.size() -1));
+            logger.debug(indentLog("Pushed Reference " + node, parserContext.elementStack.size() -1));
     }
-
+    
     /**
      * Process aspect definition
      * 
@@ -371,11 +466,11 @@ public class ViewParser implements Parser
      * @throws XmlPullParserException
      * @throws IOException
      */
-    private void processAspect(XmlPullParser xpp, AspectDefinition aspectDef, Stack<ElementContext> contextStack)
+    private void processAspect(XmlPullParser xpp, AspectDefinition aspectDef, ParserContext parserContext)
         throws XmlPullParserException, IOException
     {
-        NodeContext context = peekNodeContext(contextStack);
-        context.addAspect(aspectDef);
+        NodeContext node = peekNodeContext(parserContext.elementStack);
+        node.addAspect(aspectDef);
         
         int eventType = xpp.next();
         if (eventType != XmlPullParser.END_TAG)
@@ -384,7 +479,7 @@ public class ViewParser implements Parser
         }
         
         if (logger.isDebugEnabled())
-            logger.debug(indentLog("Processed aspect " + aspectDef.getName(), contextStack.size()));
+            logger.debug(indentLog("Processed aspect " + aspectDef.getName(), parserContext.elementStack.size()));
     }
     
     /**
@@ -393,9 +488,9 @@ public class ViewParser implements Parser
      * @param xpp
      * @param contextStack
      */
-    private void processACL(XmlPullParser xpp, Stack<ElementContext> contextStack)
+    private void processACL(XmlPullParser xpp, ParserContext parserContext)
     {
-        NodeContext context = peekNodeContext(contextStack);
+        NodeContext node = peekNodeContext(parserContext.elementStack);
         
         String strInherit = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_INHERIT_PERMISSIONS_ATTR);
         if (strInherit != null)
@@ -403,7 +498,7 @@ public class ViewParser implements Parser
             Boolean inherit = Boolean.valueOf(strInherit);
             if (!inherit)
             {
-                context.setInheritPermissions(false);
+                node.setInheritPermissions(false);
             }
         }
     }
@@ -416,10 +511,10 @@ public class ViewParser implements Parser
      * @throws XmlPullParserException
      * @throws IOException
      */
-    private void processAccessControlEntry(XmlPullParser xpp, Stack<ElementContext> contextStack)
+    private void processAccessControlEntry(XmlPullParser xpp, ParserContext parserContext)
         throws XmlPullParserException, IOException
     {
-        NodeContext context = peekNodeContext(contextStack);
+        NodeContext node = peekNodeContext(parserContext.elementStack);
 
         QName defName = getName(xpp);
         if (!defName.equals(VIEW_ACE))
@@ -500,7 +595,7 @@ public class ViewParser implements Parser
         }
         
         // update node context
-        context.addAccessControlEntry(accessStatus, authority, permission);
+        node.addAccessControlEntry(accessStatus, authority, permission);
     }
     
     /**
@@ -512,10 +607,10 @@ public class ViewParser implements Parser
      * @throws XmlPullParserException
      * @throws IOException
      */
-    private void processProperty(XmlPullParser xpp, QName propertyName, Stack<ElementContext> contextStack)
+    private void processProperty(XmlPullParser xpp, QName propertyName, ParserContext parserContext)
         throws XmlPullParserException, IOException
     {
-        NodeContext context = peekNodeContext(contextStack);
+        NodeContext node = peekNodeContext(parserContext.elementStack);
 
         // Extract single value
         String value = "";
@@ -527,11 +622,10 @@ public class ViewParser implements Parser
         }            
         if (eventType == XmlPullParser.END_TAG)
         {
-            context.addProperty(propertyName, value);
+            node.addProperty(propertyName, value);
         }
         else
         {
-            
             // Extract collection, if specified
             boolean isCollection = false;
             if (eventType == XmlPullParser.START_TAG)
@@ -539,7 +633,7 @@ public class ViewParser implements Parser
                 QName name = getName(xpp);
                 if (name.equals(VIEW_VALUES_QNAME))
                 {
-                    context.addPropertyCollection(propertyName);
+                    node.addPropertyCollection(propertyName);
                     isCollection = true;
                     eventType = xpp.next();
                     if (eventType == XmlPullParser.TEXT)
@@ -568,10 +662,10 @@ public class ViewParser implements Parser
                 }
                 if (eventType == XmlPullParser.END_TAG)
                 {
-                    context.addProperty(propertyName, decoratedValue);
+                    node.addProperty(propertyName, decoratedValue);
                     if (datatype != null)
                     {
-                        context.addDatatype(propertyName, dictionaryService.getDataType(datatype));
+                        node.addDatatype(propertyName, dictionaryService.getDataType(datatype));
                     }
                 }
                 else
@@ -604,11 +698,10 @@ public class ViewParser implements Parser
                     throw new ImporterException("Invalid view structure - property " + propertyName + " definition is invalid");
                 }
             }
-
         }
         
         if (logger.isDebugEnabled())
-            logger.debug(indentLog("Processed property " + propertyName, contextStack.size()));
+            logger.debug(indentLog("Processed property " + propertyName, parserContext.elementStack.size()));
     }
 
     /**
@@ -620,54 +713,48 @@ public class ViewParser implements Parser
      * @throws XmlPullParserException
      * @throws IOException
      */
-    private void processStartChildAssoc(XmlPullParser xpp, ChildAssociationDefinition childAssocDef, Stack<ElementContext> contextStack)
+    private void processStartChildAssoc(XmlPullParser xpp, ChildAssociationDefinition childAssocDef, ParserContext parserContext)
         throws XmlPullParserException, IOException
     {
-        NodeContext context = peekNodeContext(contextStack);
+        NodeContext node = peekNodeContext(parserContext.elementStack);
+        importNode(parserContext, node);
     
-        if (context.getNodeRef() == null)
-        {
-            // Create Node
-            NodeRef nodeRef = context.getImporter().importNode(context);
-            context.setNodeRef(nodeRef);
-        }
-        
         // Construct Child Association Context
-        ParentContext parentContext = new ParentContext(childAssocDef.getName(), context, childAssocDef);
-        contextStack.push(parentContext);
+        ParentContext parent = new ParentContext(childAssocDef.getName(), node, childAssocDef);
+        parserContext.elementStack.push(parent);
         
         if (logger.isDebugEnabled())
-            logger.debug(indentLog("Pushed " + parentContext, contextStack.size() -1));
+            logger.debug(indentLog("Pushed " + parent, parserContext.elementStack.size() -1));
     }
-
+    
     /**
      * Process end of xml element
      * 
      * @param xpp
      * @param contextStack
      */
-    private void processEndElement(XmlPullParser xpp, Stack<ElementContext> contextStack)
+    private void processEndElement(XmlPullParser xpp, ParserContext parserContext)
     {
-        ElementContext context = contextStack.peek();
-        if (context.getElementName().getLocalName().equals(xpp.getName()) &&
-            context.getElementName().getNamespaceURI().equals(xpp.getNamespace()))
+        ElementContext element = parserContext.elementStack.peek();
+        if (element.getElementName().getLocalName().equals(xpp.getName()) &&
+            element.getElementName().getNamespaceURI().equals(xpp.getNamespace()))
         {
-            context = contextStack.pop();
+            element = parserContext.elementStack.pop();
             
             if (logger.isDebugEnabled())
-                logger.debug(indentLog("Popped " + context, contextStack.size()));
+                logger.debug(indentLog("Popped " + element, parserContext.elementStack.size()));
 
-            if (context instanceof NodeContext)
+            if (element instanceof NodeContext)
             {
-                processEndType((NodeContext)context);
+                processEndType(parserContext, (NodeContext)element);
             }
-            else if (context instanceof ParentContext)
+            else if (element instanceof ParentContext)
             {
-                processEndChildAssoc((ParentContext)context);
+                processEndChildAssoc(parserContext, (ParentContext)element);
             }
-            else if (context instanceof MetaDataContext)
+            else if (element instanceof MetaDataContext)
             {
-                processEndMetaData((MetaDataContext)context);
+                processEndMetaData(parserContext, (MetaDataContext)element);
             }
         }
     }
@@ -675,17 +762,13 @@ public class ViewParser implements Parser
     /**
      * Process end of the type definition
      * 
-     * @param context
+     * @param node
      */
-    private void processEndType(NodeContext context)
+    private void processEndType(ParserContext parserContext, NodeContext node)
     {
-        NodeRef nodeRef = context.getNodeRef();
-        if (nodeRef == null)
-        {
-            nodeRef = context.getImporter().importNode(context);
-            context.setNodeRef(nodeRef);
-        }
-        context.getImporter().childrenImported(nodeRef);
+        NodeRef nodeRef = node.getNodeRef();
+        importNode(parserContext, node);
+        node.getImporter().childrenImported(nodeRef);
     }
 
     /**
@@ -693,7 +776,7 @@ public class ViewParser implements Parser
      * 
      * @param context
      */
-    private void processEndChildAssoc(ParentContext context)
+    private void processEndChildAssoc(ParserContext parserContext, ParentContext parent)
     {
     }
 
@@ -702,11 +785,61 @@ public class ViewParser implements Parser
      * 
      * @param context
      */
-    private void processEndMetaData(MetaDataContext context)
+    private void processEndMetaData(ParserContext parserContext, MetaDataContext context)
     {
         context.getImporter().importMetaData(context.getProperties());
     }
     
+
+    /**
+     * Import node
+     * 
+     * @param parserContext  parser context
+     * @param node  node context
+     */
+    private void importNode(ParserContext parserContext, NodeContext node)
+    {
+        if (node.getNodeRef() == null)
+        {
+            // Import Node
+            NodeRef nodeRef = node.getImporter().importNode(node);
+            node.setNodeRef(nodeRef);
+            
+            // Maintain running list of "import" scoped ids
+            String importId = node.getImportId();
+            if (importId != null && importId.length() > 0)
+            {
+                createImportReference(parserContext, importId, nodeRef);
+            }
+        }
+    }
+    
+    /**
+     * Maps an Import Id to a Node Reference
+     * 
+     * @param importId  import Id
+     * @param nodeRef  node reference
+     */
+    private void createImportReference(ParserContext parserContext, String importId, NodeRef nodeRef)
+    {
+        if (parserContext.importIds.containsKey(importId))
+        {
+            throw new ImporterException("Import id " + importId + " already specified within import file");
+        }
+        parserContext.importIds.put(importId, nodeRef);
+    }
+
+    /**
+     * Gets the Node Reference for the specified Import Id
+     * 
+     * @param importId  the import id
+     * @return  the node reference
+     */
+    private NodeRef getImportReference(ParserContext parserContext, String importId)
+    {
+        return parserContext.importIds.get(importId);
+    }
+
     /**
      * Get parent Node Context
      * 
@@ -715,14 +848,14 @@ public class ViewParser implements Parser
      */
     private NodeContext peekNodeContext(Stack<ElementContext> contextStack)
     {
-        ElementContext context = contextStack.peek();
-        if (context instanceof NodeContext)
+        ElementContext element = contextStack.peek();
+        if (element instanceof NodeContext)
         {
-            return (NodeContext)context;
+            return (NodeContext)element;
         }
-        else if (context instanceof NodeItemContext)
+        else if (element instanceof NodeItemContext)
         {
-            return ((NodeItemContext)context).getNodeContext();
+            return ((NodeItemContext)element).getNodeContext();
         }
         throw new ImporterException("Internal error: Failed to retrieve node context");
     }

@@ -286,6 +286,14 @@ public class Import extends Tool
             logVerbose("Imported node " + nodeRef + " (parent=" + parentRef + ", childname=" + childName + ", association=" + assocName + ")");            
         }
 
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterProgress#nodeLinked(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
+         */
+        public void nodeLinked(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
+        {
+        }
+        
         /* (non-Javadoc)
          * @see org.alfresco.service.cmr.view.ImporterProgress#contentCreated(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
          */

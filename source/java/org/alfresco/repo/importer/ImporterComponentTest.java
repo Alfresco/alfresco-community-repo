@@ -58,7 +58,6 @@ public class ImporterComponentTest extends BaseSpringTest
         // Create the store
         this.storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
     }
-
     
     @Override
     protected void onTearDownInTransaction() throws Exception
@@ -98,6 +97,12 @@ public class ImporterComponentTest extends BaseSpringTest
                     " (association " + assocName + ")");
         }
 
+        public void nodeLinked(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
+        {
+            System.out.println("TestProgress: linked node " + nodeRef + " within parent " + parentRef + " named " + childName +
+                    " (association " + assocName + ")");
+        }
+        
         public void contentCreated(NodeRef nodeRef, String sourceUrl)
         {
             System.out.println("TestProgress: created content " + nodeRef + " from url " + sourceUrl);

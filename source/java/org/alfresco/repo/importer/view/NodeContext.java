@@ -51,15 +51,17 @@ public class NodeContext extends ElementContext
     implements ImportNode
 {
     private ParentContext parentContext;
+    private boolean isReference = false;
     private NodeRef nodeRef;
-    private String uuid;
+    private String importId;        // unique identifier within import (optional)
+    private String uuid;            // unique identifier within repository
     private TypeDefinition typeDef;
     private String childName;
     private Map<QName, AspectDefinition> nodeAspects = new HashMap<QName, AspectDefinition>();
     private Map<QName, ChildAssociationDefinition> nodeChildAssocs = new HashMap<QName, ChildAssociationDefinition>();
     private Map<QName, Serializable> nodeProperties = new HashMap<QName, Serializable>();
     private Map<QName, DataTypeDefinition> propertyDatatypes = new HashMap<QName, DataTypeDefinition>();
-    
+
     // permissions
     private boolean inherit = true;
     private List<AccessPermission> accessControlEntries = new ArrayList<AccessPermission>();
@@ -79,7 +81,7 @@ public class NodeContext extends ElementContext
         this.typeDef = typeDef;
         this.uuid = null;
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.importer.ImportNode#getParentContext()
      */
@@ -96,6 +98,23 @@ public class NodeContext extends ElementContext
         return typeDef;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.importer.ImportNode#isReference()
+     */
+    public boolean isReference()
+    {
+        return isReference;
+    }
+    
+    /**
+     * @param isReference  true => this is a node reference
+     */
+    public void setReference(boolean isReference)
+    {
+        this.isReference = isReference;
+    }
+    
     /**
      * Set Type Definition
      * 
@@ -137,6 +156,23 @@ public class NodeContext extends ElementContext
     public void setUUID(String uuid)
     {
         this.uuid = uuid;
+    }
+    
+    /*
+     *  (non-Javadoc)
+     * @see org.alfresco.repo.importer.ImportNode#getImportId()
+     */
+    public String getImportId()
+    {
+        return importId;
+    }
+    
+    /**
+     * @param importId  import scoped id
+     */
+    public void setImportId(String importId)
+    {
+        this.importId = importId;
     }
     
     /* (non-Javadoc)
@@ -369,11 +405,14 @@ public class NodeContext extends ElementContext
         PropertyDefinition def = null;
         if (nodeProperties.containsKey(defName) == false)
         {
-            def = getDictionaryService().getProperty(typeDef.getName(), defName);
+            def = (typeDef == null) ? null : getDictionaryService().getProperty(typeDef.getName(), defName);
             if (def == null)
             {
                 Set<AspectDefinition> allAspects = new HashSet<AspectDefinition>();
-                allAspects.addAll(typeDef.getDefaultAspects());
+                if (typeDef != null)
+                {
+                    allAspects.addAll(typeDef.getDefaultAspects());
+                }
                 allAspects.addAll(nodeAspects.values());
                 for (AspectDefinition aspectDef : allAspects)
                 {

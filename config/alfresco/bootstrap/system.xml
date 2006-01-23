@@ -15,7 +15,14 @@
                         <cm:organizationId></cm:organizationId>
                         <cm:homeFolder>/${spaces.company_home.childname}</cm:homeFolder>
                     </cm:person>
+                    <!-- Guest needs to read thier own home space -->
                     <cm:person view:childName="cm:person">
+                        <view:acl view:inherit="false">
+                           <view:ace view:access="ALLOWED">
+                               <view:authority>guest</view:authority>
+                               <view:permission>Read</view:permission>
+                           </view:ace>
+                        </view:acl>
                         <cm:userName>guest</cm:userName>
                         <cm:firstName>Guest</cm:firstName>
                         <cm:lastName></cm:lastName>

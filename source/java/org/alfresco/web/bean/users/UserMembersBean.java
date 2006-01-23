@@ -288,6 +288,7 @@ public abstract class UserMembersBean
                if (permission.getAccessStatus() == AccessStatus.ALLOWED &&
                    (permission.getAuthorityType() == AuthorityType.USER ||
                     permission.getAuthorityType() == AuthorityType.GROUP ||
+                    permission.getAuthorityType() == AuthorityType.GUEST ||
                     permission.getAuthorityType() == AuthorityType.EVERYONE))
                {
                   String authority = permission.getAuthority();

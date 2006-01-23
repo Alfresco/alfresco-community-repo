@@ -59,7 +59,7 @@ public class UploadFileServlet extends HttpServlet
       
       try
       {
-         AuthenticationHelper.authenticate(getServletContext(), request, response);
+         AuthenticationHelper.authenticate(getServletContext(), request, response, false);
          
          if (isMultipart == false)
          {

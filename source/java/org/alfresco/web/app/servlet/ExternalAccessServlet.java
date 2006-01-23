@@ -56,7 +56,13 @@ public class ExternalAccessServlet extends HttpServlet
    protected void service(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException
    {
-      AuthenticationStatus status = AuthenticationHelper.authenticate(getServletContext(), req, res);
+      boolean forceGuest = false;
+      String guest = req.getParameter(ServletHelper.ARG_GUEST);
+      if (guest != null)
+      {
+         forceGuest = Boolean.parseBoolean(guest);
+      }
+      AuthenticationStatus status = AuthenticationHelper.authenticate(getServletContext(), req, res, forceGuest);
       
       // The URL contains multiple parts
       // /alfresco/navigate/<outcome>

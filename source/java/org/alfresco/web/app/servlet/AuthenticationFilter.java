@@ -65,7 +65,7 @@ public class AuthenticationFilter implements Filter
       if (httpReq.getRequestURI().endsWith(getLoginPage()) == false)
       {
          AuthenticationStatus status =
-               AuthenticationHelper.authenticate(this.context, httpReq, (HttpServletResponse)res);
+               AuthenticationHelper.authenticate(this.context, httpReq, (HttpServletResponse)res, false);
          
          if (status == AuthenticationStatus.Success || status == AuthenticationStatus.Guest)
          {

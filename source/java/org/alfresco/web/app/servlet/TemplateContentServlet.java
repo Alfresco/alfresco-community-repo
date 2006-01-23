@@ -43,8 +43,6 @@ import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.ui.repo.component.template.DefaultModelHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Servlet responsible for streaming content from a template processed against a node directly
@@ -79,7 +77,6 @@ public class TemplateContentServlet extends HttpServlet
    
    private static final String MSG_ERROR_CONTENT_MISSING = "error_content_missing";
    
-   private static final String ARG_TICKET   = "ticket";
    private static final String ARG_MIMETYPE = "mimetype";
    
    /**
@@ -97,14 +94,20 @@ public class TemplateContentServlet extends HttpServlet
          
          // see if a ticket has been supplied
          AuthenticationStatus status;
-         String ticket = req.getParameter(ARG_TICKET);
-         if (ticket == null || ticket.length() == 0)
+         String ticket = req.getParameter(ServletHelper.ARG_TICKET);
+         if (ticket != null && ticket.length() != 0)
          {
-            status = AuthenticationHelper.authenticate(getServletContext(), req, res);
+            status = AuthenticationHelper.authenticate(getServletContext(), req, res, ticket);
          }
          else
          {
-            status = AuthenticationHelper.authenticate(getServletContext(), req, res, ticket);
+            boolean forceGuest = false;
+            String guest = req.getParameter(ServletHelper.ARG_GUEST);
+            if (guest != null)
+            {
+               forceGuest = Boolean.parseBoolean(guest);
+            }
+            status = AuthenticationHelper.authenticate(getServletContext(), req, res, forceGuest);
          }
          if (status == AuthenticationStatus.Failure)
          {
@@ -130,7 +133,7 @@ public class TemplateContentServlet extends HttpServlet
          
          // get NodeRef to the template if supplied
          NodeRef templateRef = null;
-         if (tokenCount == 8)
+         if (tokenCount >= 8)
          {
             storeRef = new StoreRef(t.nextToken(), t.nextToken());
             templateRef = new NodeRef(storeRef, t.nextToken());
@@ -144,8 +147,7 @@ public class TemplateContentServlet extends HttpServlet
          res.setContentType(mimetype);
          
          // get the services we need to retrieve the content
-         WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-         ServiceRegistry serviceRegistry = (ServiceRegistry)context.getBean(ServiceRegistry.SERVICE_REGISTRY);
+         ServiceRegistry serviceRegistry = ServletHelper.getServiceRegistry(getServletContext());
          NodeService nodeService = serviceRegistry.getNodeService();
          TemplateService templateService = serviceRegistry.getTemplateService();
          

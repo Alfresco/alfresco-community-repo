@@ -29,13 +29,13 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.bean.LoginBean;
@@ -55,7 +55,6 @@ public final class AuthenticationHelper
    public static final String SESSION_INVALIDATED = "_alfSessionInvalid";
    public static final String LOGIN_BEAN = "LoginBean";
    
-   private static final String AUTHENTICATION_SERVICE = "authenticationService";
    private static final String COOKIE_ALFUSER = "alfUser";
    
    /**
@@ -67,7 +66,7 @@ public final class AuthenticationHelper
     * @return AuthenticationStatus result.
     */
    public static AuthenticationStatus authenticate(
-         ServletContext context, HttpServletRequest httpRequest, HttpServletResponse httpResponse)
+         ServletContext context, HttpServletRequest httpRequest, HttpServletResponse httpResponse, boolean guest)
          throws IOException
    {
       HttpSession session = httpRequest.getSession();
@@ -86,29 +85,29 @@ public final class AuthenticationHelper
       }
       
       // setup the authentication context
-      WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
-      AuthenticationService auth = (AuthenticationService)ctx.getBean(AUTHENTICATION_SERVICE);
+      WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
+      AuthenticationService auth = (AuthenticationService)wc.getBean(ServletHelper.AUTHENTICATION_SERVICE);
       
-      if (user == null)
+      if (user == null || guest)
       {
          if (session.getAttribute(AuthenticationHelper.SESSION_INVALIDATED) == null)
          {
             Cookie authCookie = getAuthCookie(httpRequest);
-            if (authCookie == null)
+            if (authCookie == null || guest)
             {
-               // TODO: "forced" guest access on URLs!
-               // no previous authentication - attempt Guest access first
+               // no previous authentication or forced Guest - attempt Guest access
                UserTransaction tx = null;
                try
                {
                   auth.authenticateAsGuest();
                   
                   // if we get here then Guest access was allowed and successful
-                  tx = ((TransactionService)ctx.getBean("TransactionService")).getUserTransaction();
+                  ServiceRegistry services = ServletHelper.getServiceRegistry(context);
+                  tx = services.getTransactionService().getUserTransaction();
                   tx.begin();
                   
-                  PersonService personService = (PersonService)ctx.getBean("personService");
-                  NodeService nodeService = (NodeService)ctx.getBean("nodeService");
+                  NodeService nodeService = services.getNodeService();
+                  PersonService personService = (PersonService)wc.getBean(ServletHelper.PERSON_SERVICE);
                   NodeRef guestRef = personService.getPerson(PermissionService.GUEST);
                   user = new User(PermissionService.GUEST, auth.getCurrentTicket(), guestRef);
                   NodeRef guestHomeRef = (NodeRef)nodeService.getProperty(guestRef, ContentModel.PROP_HOMEFOLDER);
@@ -128,11 +127,8 @@ public final class AuthenticationHelper
                   // Set the current locale
                   I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
                   
+                  // it is the responsibilty of the caller to handle the Guest return status
                   return AuthenticationStatus.Guest;
-                  
-                  // TODO: What now? Any redirects can be performed directly from the appropriate 
-                  //       servlet entry points, as we are now authenticated and don't
-                  //       need to go through the Login screen to gain authentication.
                }
                catch (AuthenticationException guestError)
                {
@@ -188,8 +184,8 @@ public final class AuthenticationHelper
          throws IOException
    {
       // setup the authentication context
-      WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
-      AuthenticationService auth = (AuthenticationService)ctx.getBean(AUTHENTICATION_SERVICE);
+      WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
+      AuthenticationService auth = (AuthenticationService)wc.getBean(ServletHelper.AUTHENTICATION_SERVICE);
       try
       {
          auth.validate(ticket);

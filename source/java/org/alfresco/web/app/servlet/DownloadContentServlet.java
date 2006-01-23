@@ -45,8 +45,6 @@ import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Servlet responsible for streaming node content from the repo directly to the response stream.
@@ -87,7 +85,6 @@ public class DownloadContentServlet extends HttpServlet
    
    private static final String ARG_PROPERTY = "property";
    private static final String ARG_ATTACH   = "attach";
-   private static final String ARG_TICKET   = "ticket";
    
    /**
     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -109,16 +106,22 @@ public class DownloadContentServlet extends HttpServlet
          if (logger.isDebugEnabled())
             logger.debug("Processing URL: " + uri + (req.getQueryString() != null ? ("?" + req.getQueryString()) : ""));
          
-         // see if a ticket has been supplied
+         // see if a ticket or guest parameter has been supplied
          AuthenticationStatus status;
-         String ticket = req.getParameter(ARG_TICKET);
-         if (ticket == null || ticket.length() == 0)
+         String ticket = req.getParameter(ServletHelper.ARG_TICKET);
+         if (ticket != null && ticket.length() != 0)
          {
-            status = AuthenticationHelper.authenticate(getServletContext(), req, res);
+            status = AuthenticationHelper.authenticate(getServletContext(), req, res, ticket);
          }
          else
          {
-            status = AuthenticationHelper.authenticate(getServletContext(), req, res, ticket);
+            boolean forceGuest = false;
+            String guest = req.getParameter(ServletHelper.ARG_GUEST);
+            if (guest != null)
+            {
+               forceGuest = Boolean.parseBoolean(guest);
+            }
+            status = AuthenticationHelper.authenticate(getServletContext(), req, res, forceGuest);
          }
          if (status == AuthenticationStatus.Failure)
          {
@@ -177,8 +180,7 @@ public class DownloadContentServlet extends HttpServlet
          }
          
          // get the services we need to retrieve the content
-         WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-         ServiceRegistry serviceRegistry = (ServiceRegistry)context.getBean(ServiceRegistry.SERVICE_REGISTRY);
+         ServiceRegistry serviceRegistry = ServletHelper.getServiceRegistry(getServletContext());
          ContentService contentService = serviceRegistry.getContentService();
          
          // get the content reader

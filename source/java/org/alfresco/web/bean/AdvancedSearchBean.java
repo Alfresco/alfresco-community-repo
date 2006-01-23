@@ -84,8 +84,6 @@ import org.alfresco.web.ui.repo.component.UISearchCustomProperties;
  */
 public class AdvancedSearchBean
 {
-   private static final String OUTCOME_BROWSE = "browse";
-
    /**
     * Default constructor
     */
@@ -1336,12 +1334,11 @@ public class AdvancedSearchBean
                         Application.getGlossaryFolderName(fc) + "/" +
                         Application.getSavedSearchesFolderName(fc);
          
-         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
          List<NodeRef> results = null;
          try
          {
             results = searchService.selectNodes(
-                  rootNodeRef,
+                  nodeService.getRootNode(Repository.getStoreRef()),
                   xpath,
                   null,
                   namespaceService,
@@ -1460,6 +1457,8 @@ public class AdvancedSearchBean
    private static final String MSG_ERROR_SAVE_SEARCH = "error_save_search";
    private static final String MSG_ERROR_RESTORE_SEARCH = "error_restore_search";
    private static final String MSG_SELECT_SAVED_SEARCH = "select_saved_search";
+   
+   private static final String OUTCOME_BROWSE = "browse";
    
    private static final String PANEL_CUSTOM = "custom-panel";
    private static final String PANEL_ATTRS = "attrs-panel";

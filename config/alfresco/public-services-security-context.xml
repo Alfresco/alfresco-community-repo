@@ -603,7 +603,6 @@
                 org.alfresco.service.cmr.security.AuthenticationService.deleteAuthentication=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthenticationService.setAuthenticationEnabled=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthenticationService.getAuthenticationEnabled=ACL_METHOD.ROLE_ADMINISTRATOR
-                org.alfresco.service.cmr.security.AuthenticationService.authenticateAsGuest=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthenticationService.getCurrentUserName=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthenticationService.invalidateUserSession=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthenticationService.invalidateTicket=ACL_ALLOW

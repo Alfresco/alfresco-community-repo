@@ -87,7 +87,7 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
     {
         this.adminUsers = adminUsers;
     }
-
+ 
     public Set<String> getAuthorities()
     {
         Set<String> authorities = new HashSet<String>();
@@ -96,7 +96,10 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         {
             authorities.addAll(adminSet);
         }
-        authorities.addAll(allSet);
+        if(AuthorityType.getAuthorityType(currentUserName) != AuthorityType.GUEST)
+        {
+           authorities.addAll(allSet);
+        }
         return authorities;
     }
 

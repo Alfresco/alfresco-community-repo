@@ -145,6 +145,7 @@ public class AuthenticationTest extends TestCase
         assertNotNull(personAndyNodeRef);
 
         deleteAndy();
+        authenticationComponent.clearCurrentSecurityContext();
 
     }
 
@@ -178,6 +179,36 @@ public class AuthenticationTest extends TestCase
         return properties;
     }
 
+    
+   public void xtestScalability()
+    {
+        long create = 0;
+        long count = 0;
+       
+        long start;
+        long end;
+        authenticationComponent.authenticate("admin", "admin".toCharArray());
+        for(int i = 0; i < 10000; i++)
+        {
+            String id = "TestUser-"+i;
+            start = System.nanoTime();
+            authenticationService.createAuthentication(id, id.toCharArray());
+            end = System.nanoTime();
+            create += (end - start);
+            
+            if((i > 0) && (i % 100 == 0))
+            {
+                System.out.println("Count = "+i);
+                System.out.println("Average create : "+(create/i/1000000.0f));
+                start = System.nanoTime();
+                dao.userExists(id);
+                end = System.nanoTime();
+                System.out.println("Exists : "+((end-start)/1000000.0f));
+            }
+        }
+        authenticationComponent.clearCurrentSecurityContext();
+    }
+    
     public void testCreateAndyUserAndOtherCRUD() throws NoSuchAlgorithmException, UnsupportedEncodingException
     {
         RepositoryAuthenticationDao dao = new RepositoryAuthenticationDao();
@@ -907,6 +938,8 @@ public class AuthenticationTest extends TestCase
 
         }
     }
+    
+    
 
     public void testPubAuthenticationService3()
     {
@@ -941,6 +974,7 @@ public class AuthenticationTest extends TestCase
         // change the password
         pubAuthenticationService.setAuthentication("Andy", "auth3".toCharArray());
         authenticationComponent.clearCurrentSecurityContext();
+        assertNull(authenticationComponent.getCurrentAuthentication());
         // authenticate again to assert password changed
         pubAuthenticationService.authenticate("Andy", "auth3".toCharArray());
 
@@ -949,6 +983,9 @@ public class AuthenticationTest extends TestCase
         // get the ticket that represents the current user authentication
         // instance
         String ticket = pubAuthenticationService.getCurrentTicket();
+        authenticationComponent.clearCurrentSecurityContext();
+        assertNull(authenticationComponent.getCurrentAuthentication());
+        
         // validate our ticket is still valid
         pubAuthenticationService.validate(ticket);
 
@@ -967,11 +1004,26 @@ public class AuthenticationTest extends TestCase
     
     public void testPubAuthenticationService()
     {
+        //pubAuthenticationService.authenticateAsGuest();
+        //authenticationComponent.clearCurrentSecurityContext();
+        
+        assertNull(authenticationComponent.getCurrentAuthentication());
         authenticationComponent.setSystemUserAsCurrentUser();   
         pubAuthenticationService.createAuthentication("GUEST", "".toCharArray());
         authenticationComponent.clearCurrentSecurityContext();
         
+        assertNull(authenticationComponent.getCurrentAuthentication());
         pubAuthenticationService.authenticate("GUEST", "".toCharArray());
+        pubAuthenticationService.authenticate("GUEST", "".toCharArray());
+        authenticationComponent.clearCurrentSecurityContext();
+        assertNull(authenticationComponent.getCurrentAuthentication());
+        
+   
+      
+        pubAuthenticationService.authenticateAsGuest();
+        authenticationComponent.clearCurrentSecurityContext();
+        assertNull(authenticationComponent.getCurrentAuthentication());
+        
 
         // create an authentication object e.g. the user
         

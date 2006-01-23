@@ -50,7 +50,7 @@
             <cm:folder view:childName="${spaces.guest_home.childname}">
                 <view:acl view:inherit="false">
                     <view:ace view:access="ALLOWED">
-                        <view:authority>guest</view:authority>
+                        <view:authority>Guest</view:authority>
                         <view:permission>Read</view:permission>
                     </view:ace>
                     <view:ace view:access="ALLOWED">

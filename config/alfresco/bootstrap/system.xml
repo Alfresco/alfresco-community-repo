@@ -15,12 +15,12 @@
                         <cm:organizationId></cm:organizationId>
                         <cm:homeFolder>/${spaces.company_home.childname}</cm:homeFolder>
                     </cm:person>
-                    <!-- Guest needs to read thier own home space -->
+                    <!-- Guest needs to read their own home space -->
                     <cm:person view:childName="cm:person">
                         <view:acl view:inherit="false">
                            <view:ace view:access="ALLOWED">
-                               <view:authority>guest</view:authority>
-                               <view:permission>Read</view:permission>
+                              <view:authority>Guest</view:authority>
+                              <view:permission>Read</view:permission>
                            </view:ace>
                         </view:acl>
                         <cm:userName>guest</cm:userName>
@@ -33,6 +33,6 @@
                 </sys:children>
             </sys:container>
         </sys:children>
-    </sys:container>           
-           
+    </sys:container>
+
 </view:view>

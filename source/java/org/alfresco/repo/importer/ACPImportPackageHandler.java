@@ -122,7 +122,14 @@ public class ACPImportPackageHandler
         ZipEntry zipEntry = zipFile.getEntry(content);
         if (zipEntry == null)
         {
-            throw new ImporterException("Failed to find content " + content + " within zip package");
+            // Note: for some reason, when modifying a zip archive the path seperator changes
+            // TODO: Need to investigate further as to why and whether this workaround is enough 
+            content = content.replace('\\', '/');
+            zipEntry = zipFile.getEntry(content);
+            if (zipEntry == null)
+            {
+                throw new ImporterException("Failed to find content " + content + " within zip package");
+            }
         }
         
         try

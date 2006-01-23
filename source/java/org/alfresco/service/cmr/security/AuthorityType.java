@@ -219,7 +219,7 @@ public enum AuthorityType
         {
             authorityType = AuthorityType.OWNER;
         }
-        else if (authority.equals(PermissionService.GUEST))
+        else if (authority.equalsIgnoreCase(PermissionService.GUEST))
         {
             authorityType = AuthorityType.GUEST;
         }

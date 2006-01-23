@@ -65,6 +65,51 @@ public class PersonTest extends BaseSpringTest
         flushAndClear();
     }
 
+    public void xtestPerformance()
+    {
+        personService.setCreateMissingPeople(false);
+        
+        personService.createPerson(createDefaultProperties("derek", "Derek", "Hulley", "dh@dh",
+                "alfresco", rootNodeRef));
+        
+        
+        
+        long create = 0;
+        long count = 0;
+       
+        long start;
+        long end;
+        
+        for(int i = 0; i < 10000; i++)
+        {
+            String id = "TestUser-"+i;
+            start = System.nanoTime();
+            personService.createPerson(createDefaultProperties(id, id, id, id,
+                    id, rootNodeRef));
+            end = System.nanoTime();
+            create += (end - start);
+            
+            if((i > 0) && (i % 100 == 0))
+            {
+                System.out.println("Count = "+i);
+                System.out.println("Average create : "+(create/i/1000000.0f));
+                start = System.nanoTime();
+                personService.personExists(id);
+                end = System.nanoTime();
+                System.out.println("Exists : "+((end-start)/1000000.0f));
+                
+                start = System.nanoTime();
+                int size = personService.getAllPeople().size();
+                end = System.nanoTime();
+                System.out.println("Size ("+size+") : "+((end-start)/1000000.0f));
+            }
+        }
+       
+        
+        
+        
+    }
+    
     public void testCreateMissingPeople1()
     {
         personService.setCreateMissingPeople(false);

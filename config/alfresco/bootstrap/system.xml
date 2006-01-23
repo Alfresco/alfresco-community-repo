@@ -16,7 +16,7 @@
                         <cm:homeFolder>/${spaces.company_home.childname}</cm:homeFolder>
                     </cm:person>
                     <cm:person view:childName="cm:person">
-                        <cm:userName>Guest</cm:userName>
+                        <cm:userName>guest</cm:userName>
                         <cm:firstName>Guest</cm:firstName>
                         <cm:lastName></cm:lastName>
                         <cm:email></cm:email>

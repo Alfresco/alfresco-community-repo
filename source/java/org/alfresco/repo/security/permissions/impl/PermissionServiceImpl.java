@@ -425,7 +425,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         // TODO: Refactor and use the authentication service for this.
         User user = (User) auth.getPrincipal();
         auths.add(user.getUsername());
-        auths.add(getAllAuthorities());
         for (GrantedAuthority authority : auth.getAuthorities())
         {
             auths.add(authority.getAuthority());

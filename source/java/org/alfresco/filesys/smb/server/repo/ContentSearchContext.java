@@ -47,6 +47,11 @@ public class ContentSearchContext extends SearchContext
     // Pseudo file list blended into a wildcard folder search
     
     private PseudoFileList pseudoList;
+    private boolean donePseudoFiles = false;
+    
+    // Resume id
+    
+    private int resumeId;
     
     /**
      * Performs a search against the direct children of the given node.
@@ -159,37 +164,52 @@ public class ContentSearchContext extends SearchContext
         return sb.toString();
     }
 
-    @Override
-    public synchronized int getResumeId()
+    /**
+     * Return the resume id for the current file/directory in the search.
+     * 
+     * @return int
+     */
+    public int getResumeId()
     {
-        throw new UnsupportedOperationException();
+        return resumeId;
     }
 
-    @Override
-    public synchronized boolean hasMoreFiles()
+    /**
+     * Determine if there are more files for the active search.
+     * 
+     * @return boolean
+     */
+    public boolean hasMoreFiles()
     {
         // Pseudo files are returned first
         
-        if ( pseudoList != null && index < (pseudoList.numberOfFiles() - 1))
+        if ( donePseudoFiles == false && pseudoList != null && index < (pseudoList.numberOfFiles() - 1))
             return true;
         return index < (results.size() -1);
     }
 
-    @Override
-    public synchronized boolean nextFileInfo(FileInfo info)
+    /**
+     * Return file information for the next file in the active search. Returns false if the search
+     * is complete.
+     * 
+     * @param info FileInfo to return the file information.
+     * @return true if the file information is valid, else false
+     */
+    public boolean nextFileInfo(FileInfo info)
     {
-        // check if there is anything else to return
+        // Check if there is anything else to return
         
         if (!hasMoreFiles())
             return false;
 
-        // Increment the index
+        // Increment the index and resume id
         
         index++;
+        resumeId++;
         
         // If the pseudo file list is valid return the pseudo files first
         
-        if ( pseudoList != null)
+        if ( donePseudoFiles == false && pseudoList != null)
         {
             if ( index < pseudoList.numberOfFiles())
             {
@@ -210,7 +230,7 @@ public class ContentSearchContext extends SearchContext
             {
                 // Switch to the main file list
                 
-                pseudoList = null;
+                donePseudoFiles = true;
                 index = 0;
                 
                 if ( results == null || results.size() == 0)
@@ -242,21 +262,183 @@ public class ContentSearchContext extends SearchContext
         return false;
     }
 
-    @Override
-    public synchronized String nextFileName()
+    /**
+     * Return the file name of the next file in the active search. Returns null is the search is
+     * complete.
+     * 
+     * @return String
+     */
+    public String nextFileName()
     {
-        throw new UnsupportedOperationException();
+        // Check if there is anything else to return
+        
+        if (!hasMoreFiles())
+            return null;
+
+        // Increment the index and resume id
+        
+        index++;
+        resumeId++;
+        
+        // If the pseudo file list is valid return the pseudo files first
+        
+        if ( donePseudoFiles == false && pseudoList != null)
+        {
+            if ( index < pseudoList.numberOfFiles())
+            {
+                PseudoFile pfile = pseudoList.getFileAt( index);
+                if ( pfile != null)
+                {
+                    // Get the file information for the pseudo file
+                    
+                    FileInfo pinfo = pfile.getFileInfo();
+                    
+                    // Copy the file information to the callers file info
+                    
+                    return pinfo.getFileName();
+                }
+            }
+            else
+            {
+                // Switch to the main file list
+                
+                donePseudoFiles = true;
+                index = 0;
+                
+                if ( results == null || results.size() == 0)
+                    return null;
+            }
+        }
+
+        // Get the next file info from the node search
+            
+        NodeRef nextNodeRef = results.get(index);
+        
+        try
+        {
+            // Get the file information and copy across to the callers file info
+            
+            FileInfo nextInfo = cifsHelper.getFileInformation(nextNodeRef, "");
+            
+            // Indicate that the file information is valid
+            
+            return nextInfo.getFileName();
+        }
+        catch (FileNotFoundException e)
+        {
+        }
+        
+        // No more files
+        
+        return null;
     }
 
-    @Override
-    public synchronized boolean restartAt(FileInfo info)
+    /**
+     * Restart a search at the specified resume point.
+     * 
+     * @param resumeId Resume point id.
+     * @return true if the search can be restarted, else false.
+     */
+    public boolean restartAt(FileInfo info)
     {
-        throw new UnsupportedOperationException();
+        //  Check if the resume point is in the pseudo file list
+
+        int resId = 0;
+        
+        if (pseudoList != null)
+        {
+            while ( resId < pseudoList.numberOfFiles())
+            {
+                // Check if the current pseudo file matches the resume file name
+                
+                PseudoFile pfile = pseudoList.getFileAt(resId);
+                if ( pfile.getFileName().equals(info.getFileName()))
+                {
+                    // Found the restart point
+                    
+                    donePseudoFiles = false;
+                    index = resId - 1;
+                    
+                    return true;
+                }
+                else
+                    resId++;
+            }
+        }
+        
+        // Check if the resume file is in the main file list
+        
+        if ( results != null)
+        {
+            int idx = 0;
+            
+            while ( idx < results.size())
+            {
+                // Get the file name for the node
+                
+                String fname = cifsHelper.getFileName( results.get( idx));
+                if ( fname != null && fname.equals( info.getFileName()))
+                {
+                    index = idx - 1;
+                    resumeId = resId - 1;
+                    donePseudoFiles = true;
+                    
+                    return true;
+                }
+                else
+                {
+                    idx++;
+                    resId++;
+                }
+            }
+        }
+        
+        // Failed to find resume file
+        
+        return false;
     }
 
-    @Override
-    public synchronized boolean restartAt(int resumeId)
+    /**
+     * Restart the current search at the specified file.
+     * 
+     * @param info File to restart the search at.
+     * @return true if the search can be restarted, else false.
+     */
+    public boolean restartAt(int resumeId)
     {
-        throw new UnsupportedOperationException();
+        //  Check if the resume point is in the pseudo file list
+
+        if (pseudoList != null)
+        {
+            if ( resumeId < pseudoList.numberOfFiles())
+            {
+                // Resume at a pseudo file
+                
+                index = resumeId;
+                donePseudoFiles = false;
+                
+                return true;
+            }
+            else
+            {
+                // Adjust the resume id so that it is an index into the main file list
+                
+                resumeId -= pseudoList.numberOfFiles();
+            }
+        }
+        
+        // Check if the resume point is valid
+        
+        if ( results != null && resumeId < results.size())
+        {
+            index = resumeId;
+            donePseudoFiles = true;
+            
+            return true;
+        }
+        
+        // Invalid resume point
+        
+        return false;
     }
 }

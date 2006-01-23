@@ -35,6 +35,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -520,6 +521,14 @@ public class CifsHelper
         }
     }
     
+    /**
+     * Move a node
+     * 
+     * @param nodeToMoveRef Node to be moved
+     * @param newParentNodeRef New parent folder node
+     * @param newName New name for the moved node
+     * @throws FileExistsException
+     */
     public void move(NodeRef nodeToMoveRef, NodeRef newParentNodeRef, String newName) throws FileExistsException
     {
         try
@@ -538,5 +547,27 @@ public class CifsHelper
                     "   new name: " + newName,
                     e);
         }
+    }
+    
+    /**
+     * Return the file name for a node
+     * 
+     * @param node NodeRef
+     * @return String
+     * @throws FileNotFoundException
+     */
+    public String getFileName(NodeRef node)
+    {
+        String fname = null;
+        
+        try
+        {
+            fname = (String) nodeService.getProperty( node, ContentModel.PROP_NAME);
+        }
+        catch (InvalidNodeRefException ex)
+        {
+        }
+        
+        return fname;
     }
 }

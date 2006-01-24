@@ -71,9 +71,8 @@ public class ImporterComponentTest extends BaseSpringTest
     {
         InputStream test = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/importer/importercomponent_test.xml");
         InputStreamReader testReader = new InputStreamReader(test, "UTF-8");
-        TestProgress testProgress = new TestProgress();
         Location location = new Location(storeRef);
-        importerService.importView(testReader, location, null, testProgress);
+        importerService.importView(testReader, location, null, new ImportTimerProgress());
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
     
@@ -85,45 +84,7 @@ public class ImporterComponentTest extends BaseSpringTest
         importerBootstrap.bootstrap();
         authenticationComponent.setSystemUserAsCurrentUser();
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, bootstrapStoreRef));
-    }
-    
-    
-    
-    private static class TestProgress implements ImporterProgress
-    {
-        public void nodeCreated(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
-        {
-            System.out.println("TestProgress: created node " + nodeRef + " within parent " + parentRef + " named " + childName +
-                    " (association " + assocName + ")");
-        }
-
-        public void nodeLinked(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
-        {
-            System.out.println("TestProgress: linked node " + nodeRef + " within parent " + parentRef + " named " + childName +
-                    " (association " + assocName + ")");
-        }
-        
-        public void contentCreated(NodeRef nodeRef, String sourceUrl)
-        {
-            System.out.println("TestProgress: created content " + nodeRef + " from url " + sourceUrl);
-        }
-
-        public void propertySet(NodeRef nodeRef, QName property, Serializable value)
-        {
-            System.out.println("TestProgress: set property " + property + " on node " + nodeRef + " to value " + value);
-        }
-
-        public void aspectAdded(NodeRef nodeRef, QName aspect)
-        {
-            System.out.println("TestProgress: added aspect " + aspect + " to node ");
-        }
-
-        public void permissionSet(NodeRef nodeRef, AccessPermission permission)
-        {
-            System.out.println("TestProgress: added permission " + permission.getPermission() + " to node ");
-        }
-    }
-    
+    }    
     
 }
 

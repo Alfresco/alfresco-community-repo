@@ -31,6 +31,12 @@ import org.alfresco.service.namespace.QName;
  */
 public interface ImporterProgress
 {
+    public void started();
+    
+    public void completed();
+    
+    public void error(Throwable e);
+    
     /**
      * Report creation of a node.
      * 

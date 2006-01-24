@@ -502,6 +502,36 @@ public class ImporterBootstrap
             if (logger.isDebugEnabled())
                 logger.debug("Added aspect " + aspect + " to node " + nodeRef);
         }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterProgress#started()
+         */
+        public void started()
+        {
+            if (logger.isDebugEnabled())
+                logger.debug("Started");
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterProgress#completed()
+         */
+        public void completed()
+        {
+            if (logger.isDebugEnabled())
+                logger.debug("Completed");
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterProgress#error(java.lang.Exception)
+         */
+        public void error(Throwable e)
+        {
+            if (logger.isDebugEnabled())
+                logger.debug("Error: " + e.toString());
+        }
     }
 
     /**

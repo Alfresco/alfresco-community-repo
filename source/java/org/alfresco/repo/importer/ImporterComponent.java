@@ -315,9 +315,10 @@ public class ImporterComponent
             viewParser.parse(viewReader, nodeImporter);
             nodeImporter.end();
         }
-        finally
+        catch(RuntimeException e)
         {
-            nodeImporter.error(null);
+            nodeImporter.error(e);
+            throw e;
         }
     }
     
@@ -457,6 +458,7 @@ public class ImporterComponent
          */
         public void start()
         {
+            reportStarted();
         }
        
         /* (non-Javadoc)
@@ -695,6 +697,8 @@ public class ImporterComponent
                     behaviourFilter.enableBehaviours(importedRef.context.getNodeRef());
                 }
             }
+            
+            reportCompleted();
         }
 
         /*
@@ -704,6 +708,7 @@ public class ImporterComponent
         public void error(Throwable e)
         {
             behaviourFilter.enableAllBehaviours();
+            reportError(e);
         }
 
         /**
@@ -922,6 +927,41 @@ public class ImporterComponent
             return objValue;
         }
 
+        /**
+         * Helper to report start of import
+         */
+        private void reportStarted()
+        {
+            if (progress != null)
+            {
+                progress.started();
+            }
+        }
+        
+        /**
+         * Helper to report end of import
+         */
+        private void reportCompleted()
+        {
+            if (progress != null)
+            {
+                progress.completed();
+            }
+        }
+        
+        /**
+         * Helper to report error
+         * 
+         * @param e
+         */
+        private void reportError(Throwable e)
+        {
+            if (progress != null)
+            {
+                progress.error(e);
+            }
+        }
+        
         /**
          * Helper to report node created progress
          * 

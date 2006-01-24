@@ -17,6 +17,8 @@
 package org.alfresco.web.bean.users;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -28,12 +30,14 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.LoginBean;
+import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
@@ -58,7 +62,7 @@ public class UsersBean implements IContextListener
 
    /** SearchService bean reference */
    private SearchService searchService;
-
+   
    /** AuthenticationService bean reference */
    private AuthenticationService authenticationService;
 
@@ -68,9 +72,11 @@ public class UsersBean implements IContextListener
    /** action context */
    private Node person = null;
    
+   private List<Node> users = Collections.<Node>emptyList();
+   
    private String password = null;
    private String confirm = null;
-
+   private String searchCriteria = null;
    
    // ------------------------------------------------------------------------------
    // Construction
@@ -132,10 +138,25 @@ public class UsersBean implements IContextListener
     */
    public List<Node> getUsers()
    {
-      return Repository.getUsers(FacesContext.getCurrentInstance(), this.nodeService,
-            this.searchService);
+      return this.users;
    }
    
+   /**
+    * @return Returns the search criteria
+    */
+   public String getSearchCriteria()
+   {
+      return searchCriteria;
+   }
+
+   /**
+    * @param searchCriteria The search criteria to select
+    */
+   public void setSearchCriteria(String searchCriteria)
+   {
+      this.searchCriteria = searchCriteria;
+   }
+
    /**
     * @return Returns the confirm password.
     */
@@ -294,6 +315,103 @@ public class UsersBean implements IContextListener
       return outcome;
    }
 
+   /**
+    * Event handler called when the user wishes to search for a user
+    * 
+    * @param event The event
+    */
+   public void search(ActionEvent event)
+   {
+      this.usersRichList.setValue(null);
+      
+      if (this.searchCriteria == null || this.searchCriteria.length() == 0)
+      {
+         this.users = Collections.<Node>emptyList();
+      }
+      else
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         UserTransaction tx = null;
+         
+         try
+         {
+            tx = Repository.getUserTransaction(context, true);
+            tx.begin();
+            
+            // define the query to find people by their first or last name
+            String query = "( TYPE:\"{http://www.alfresco.org/model/content/1.0}person\") AND " + 
+                           "((@\\{http\\://www.alfresco.org/model/content/1.0\\}firstName:" + this.searchCriteria + 
+                           "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}lastName:" + this.searchCriteria + 
+                           "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}userName:" + this.searchCriteria + 
+                           "*)))";
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Query: " + query);
+   
+            // define the search parameters
+            SearchParameters params = new SearchParameters();
+            params.setLanguage(SearchService.LANGUAGE_LUCENE);
+            params.addStore(Repository.getStoreRef());
+            params.setQuery(query);
+            
+            List<NodeRef> people = this.searchService.query(params).getNodeRefs();
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Found " + people.size() + " users");
+            
+            this.users = new ArrayList<Node>(people.size());
+            
+            for (NodeRef nodeRef : people)
+            {
+               // create our Node representation
+               MapNode node = new MapNode(nodeRef);
+               
+               // set data binding properties
+               // this will also force initialisation of the props now during the UserTransaction
+               // it is much better for performance to do this now rather than during page bind
+               Map<String, Object> props = node.getProperties(); 
+               props.put("fullName", ((String)props.get("firstName")) + ' ' + ((String)props.get("lastName")));
+               NodeRef homeFolderNodeRef = (NodeRef)props.get("homeFolder");
+               if (homeFolderNodeRef != null)
+               {
+                  props.put("homeSpace", homeFolderNodeRef);
+               }
+               
+               this.users.add(node);
+            }
+   
+            // commit the transaction
+            tx.commit();
+         }
+         catch (InvalidNodeRefException refErr)
+         {
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                  context, Repository.ERROR_NODEREF), new Object[] {"root"}) );
+            this.users = Collections.<Node>emptyList();
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
+         catch (Exception err)
+         {
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                  context, Repository.ERROR_GENERIC), err.getMessage()), err );
+            this.users = Collections.<Node>emptyList();
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
+      }
+   }
+   
+   /**
+    * Action handler to show all the users currently in the system
+    * 
+    * @param event The event
+    */
+   public void showAll(ActionEvent event)
+   {
+      this.usersRichList.setValue(null);
+      
+      this.users = Repository.getUsers(FacesContext.getCurrentInstance(), 
+            this.nodeService, this.searchService);
+   }
    
    // ------------------------------------------------------------------------------
    // IContextListener implementation

@@ -111,6 +111,23 @@
                               <%-- Users List --%>
                               <a:panel id="users-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.users}">
                               
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
+                              <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                 <tr>
+                                    <td valign=top style="padding-top:2px" width=20><h:graphicImage url="/images/icons/info_icon.gif" width="16" height="16"/></td>
+                                    <td class="mainSubText">
+                                       <h:outputText value="#{msg.user_search_info}" />
+                                    </td>
+                                 </tr>
+                              </table>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
+                              
+                              <div style="padding: 6px;" />
+                              <h:inputText value="#{UsersBean.searchCriteria}" size="35" maxlength="1024" />&nbsp;
+                              <h:commandButton value="Search" actionListener="#{UsersBean.search}" />&nbsp;
+                              <h:commandButton value="Show All" actionListener="#{UsersBean.showAll}" />
+                              <div style="padding: 6px;" />
+                              
                               <a:richList id="users-list" binding="#{UsersBean.usersRichList}" viewMode="details" pageSize="10"
                                     styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
                                     value="#{UsersBean.users}" var="r" initialSortColumn="userName" initialSortDescending="true">

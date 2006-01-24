@@ -29,6 +29,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -40,6 +41,8 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.repository.User;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -56,6 +59,8 @@ public final class AuthenticationHelper
    public static final String LOGIN_BEAN = "LoginBean";
    
    private static final String COOKIE_ALFUSER = "alfUser";
+   
+   private static Log logger = LogFactory.getLog(AuthenticationHelper.class);
    
    /**
     * Helper to authenticate the current user using session based Ticket information.
@@ -132,7 +137,12 @@ public final class AuthenticationHelper
                }
                catch (AuthenticationException guestError)
                {
-                  // Guest access not allowed - continue to login page as usual
+                  // Expected if Guest access not allowed - continue to login page as usual
+               }
+               catch (AccessDeniedException accessError)
+               {
+                  // Guest is unable to access either properties on Person
+                  logger.warn("Unable to login as Guest: " + accessError.getMessage());
                }
                catch (Throwable e)
                {

@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.admin.patch.hibernate;
 
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -36,6 +38,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 public class HibernatePatchDaoServiceImpl extends HibernateDaoSupport implements PatchDaoService
 {
     public static final String QUERY_GET_ALL_APPLIED_PATCHES = "patch.GetAllAppliedPatches";
+    public static final String QUERY_GET_APPLIED_PATCHES_BY_DATE = "patch.GetAppliedPatchesByDate";
 
     public AppliedPatch newAppliedPatch(String id)
     {
@@ -62,6 +65,11 @@ public class HibernatePatchDaoServiceImpl extends HibernateDaoSupport implements
         return patch;
     }
 
+    public void detach(AppliedPatch appliedPatch)
+    {
+        getSession().evict(appliedPatch);
+    }
+
     /**
      * @see #QUERY_GET_ALL_APPLIED_PATCHES
      */
@@ -77,6 +85,37 @@ public class HibernatePatchDaoServiceImpl extends HibernateDaoSupport implements
             }
         };
         List<AppliedPatch> queryResults = (List) getHibernateTemplate().execute(callback);
+        // done
+        return queryResults;
+    }
+
+    /**
+     * @see #QUERY_GET_APPLIED_PATCHES_BY_DATE
+     */
+    @SuppressWarnings("unchecked")
+    public List<AppliedPatch> getAppliedPatches(final Date fromDate, final Date toDate)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(HibernatePatchDaoServiceImpl.QUERY_GET_ALL_APPLIED_PATCHES);
+                return query.list();
+            }
+        };
+        List<AppliedPatch> queryResults = (List) getHibernateTemplate().execute(callback);
+        // eliminate results that are out of range
+        Iterator<AppliedPatch> iterator = queryResults.iterator();
+        while (iterator.hasNext())
+        {
+            AppliedPatch appliedPatch = iterator.next();
+            Date appliedOnDate = appliedPatch.getAppliedOnDate();
+            if (fromDate.compareTo(appliedOnDate) >= 0 || toDate.compareTo(appliedOnDate) <= 0)
+            {
+                // it is out of range
+                iterator.remove();
+            }
+        }
         // done
         return queryResults;
     }

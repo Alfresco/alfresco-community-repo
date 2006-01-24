@@ -14,36 +14,34 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.repo.domain;
+package org.alfresco.repo.admin.patch;
 
 import java.util.Date;
 
-import org.alfresco.repo.admin.patch.PatchInfo;
-
 /**
- * Interface for persistent patch application information.
+ * Data on applied patches
  * 
  * @author Derek Hulley
  */
-public interface AppliedPatch extends PatchInfo
+public interface PatchInfo
 {
-    public void setId(String id);
+    public String getId();
 
-    public void setDescription(String description);
+    public String getDescription();
     
-    public void setFixesFromSchema(int version);
+    public int getFixesFromSchema();
     
-    public void setFixesToSchema(int version);
+    public int getFixesToSchema();
     
-    public void setTargetSchema(int version);
+    public int getTargetSchema();
     
-    public void setAppliedToSchema(int version);
+    public int getAppliedToSchema();
     
-    public void setAppliedToServer(String server);
+    public String getAppliedToServer();
     
-    public void setAppliedOnDate(Date date);
+    public Date getAppliedOnDate();
     
-    public void setSucceeded(boolean succeeded);
+    public boolean getSucceeded();
     
-    public void setReport(String report);
+    public String getReport();
 }

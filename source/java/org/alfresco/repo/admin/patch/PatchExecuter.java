@@ -16,6 +16,10 @@
  */
 package org.alfresco.repo.admin.patch;
 
+import java.util.Date;
+import java.util.List;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,20 +46,48 @@ public class PatchExecuter
     /**
      * Ensures that all outstanding patches are applied.
      */
-    public void applyOutStandingPatches()
+    public void applyOutstandingPatches()
     {
-        /*
-         * TODO: This is simplistic at the moment.  It must do better reporting of failures.
-         */
+        Date before = new Date(System.currentTimeMillis() - 20000L);  // 20 seconds ago
+        patchService.applyOutstandingPatches();
+        Date after = new Date(System .currentTimeMillis() + 20000L);  // 20 seconds ahead
         
-        boolean success = patchService.applyOutstandingPatches();
-        if (!success)
+        // get all the patches executed in the time
+        List<PatchInfo> appliedPatches = patchService.getPatches(before, after);
+        
+        // don't report anything if nothing was done
+        if (appliedPatches.size() == 0)
         {
-            logger.error("Not all patches could be applied");
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No patches applied");
+            }
         }
         else
         {
-            logger.info("Patches applied successfully");
+            boolean succeeded = true;
+            // list all patches applied, including failures
+            for (PatchInfo patchInfo : appliedPatches)
+            {
+                if (patchInfo.getSucceeded())
+                {
+                    logger.info("Applied patch: \n" +
+                            "   ID:     " + patchInfo.getId() + "\n" +
+                            "   RESULT: " + patchInfo.getReport());
+                }
+                else
+                {
+                    succeeded = false;
+                    logger.error("Failed to apply patch: \n" +
+                            "   ID:     " + patchInfo.getId() + "\n" +
+                            "   RESULT: " + patchInfo.getReport());
+               }
+            }
+            // generate an error if there was a failure
+            if (!succeeded)
+            {
+                throw new AlfrescoRuntimeException("Not all patches could be applied");
+            }
         }
     }
 }

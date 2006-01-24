@@ -16,6 +16,9 @@
  */
 package org.alfresco.repo.admin.patch;
 
+import java.util.Date;
+import java.util.List;
+
 /**
  * Manages patches applied against the repository.
  * <p>
@@ -43,4 +46,13 @@ public interface PatchService
      *      was termintated before all patches could be applied.
      */
     public boolean applyOutstandingPatches();
+    
+    /**
+     * Retrieves all applied patches between two specific times.
+     * 
+     * @param from the start date of the search, or null to get all patches from the start
+     * @param to the end date of the search, or null to g
+     * @return Returns all applied patches (successful or not)
+     */
+    public List<PatchInfo> getPatches(Date fromDate, Date toDate);
 }

@@ -33,4 +33,16 @@
          org.alfresco.repo.domain.hibernate.AppliedPatchImpl as appliedPatch
    </query>
    
+   <query name="patch.GetAppliedPatchesByDate">
+      <![CDATA[
+      select
+         appliedPatch
+      from
+         org.alfresco.repo.domain.hibernate.AppliedPatchImpl as appliedPatch
+      where
+         appliedPatch.appliedOnDate >= :fromDate and
+         appliedPatch.appliedOnDate <= :toDate
+      ]]>
+   </query>
+   
 </hibernate-mapping>

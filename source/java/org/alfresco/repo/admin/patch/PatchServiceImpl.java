@@ -41,6 +41,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public class PatchServiceImpl implements PatchService
 {
+    private static final Date ZERO_DATE = new Date(0L);
+    private static final Date INFINITE_DATE = new Date(Long.MAX_VALUE);
+    
     private static Log logger = LogFactory.getLog(PatchServiceImpl.class);
     
     private DescriptorService descriptorService;
@@ -169,7 +172,7 @@ public class PatchServiceImpl implements PatchService
         {
             // create a dummy report
             StringBuilder sb = new StringBuilder(128);
-            sb.append("Patch ").append(patch.getId()).append(" was not relevant.");
+            sb.append("Not relevant to schema " + repoDescriptor.getSchema());
             report = sb.toString();
             success = true;             // this succeeded because it didn't need to be applied
         }
@@ -192,8 +195,11 @@ public class PatchServiceImpl implements PatchService
         Descriptor serverDescriptor = descriptorService.getServerDescriptor();
         String server = (serverDescriptor.getVersion() + " - " + serverDescriptor.getEdition());
         
-        // create a record for the execution
-        appliedPatch = patchDaoService.newAppliedPatch(patch.getId());
+        // create or update the record of execution
+        if (appliedPatch == null)
+        {
+            appliedPatch = patchDaoService.newAppliedPatch(patch.getId());
+        }
         // fill in the record's details
         appliedPatch.setDescription(patch.getDescription());
         appliedPatch.setFixesFromSchema(patch.getFixesFromSchema());
@@ -234,5 +240,26 @@ public class PatchServiceImpl implements PatchService
                     "   patch: " + patch);
         }
         return apply;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<PatchInfo> getPatches(Date fromDate, Date toDate)
+    {
+        if (fromDate == null)
+        {
+            fromDate = ZERO_DATE;
+        }
+        if (toDate == null)
+        {
+            toDate = INFINITE_DATE;
+        }
+        List<? extends PatchInfo> appliedPatches = patchDaoService.getAppliedPatches(fromDate, toDate);
+        // disconnect each of these
+        for (PatchInfo appliedPatch : appliedPatches)
+        {
+            patchDaoService.detach((AppliedPatch)appliedPatch);
+        }
+        // done
+        return (List<PatchInfo>) appliedPatches;
     }
 }

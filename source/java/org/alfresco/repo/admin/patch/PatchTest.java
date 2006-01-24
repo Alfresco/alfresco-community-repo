@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.admin.patch;
 
+import java.util.Date;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -137,5 +138,29 @@ public class PatchTest extends TestCase
         }
         assertTrue("Sample 01 not in list of applied patches", found01);
         assertTrue("Sample 02 not in list of applied patches", found02);
+    }
+    
+    public void testGetPatchesByDate() throws Exception
+    {
+        // ensure that there are some applied patches
+        testApplyOutstandingPatches();
+        // get the number of applied patches
+        List<AppliedPatch> appliedPatches = patchDaoComponent.getAppliedPatches();
+        assertTrue("Expected at least 2 applied patches", appliedPatches.size() >= 2);
+        
+        // now requery using null dates
+        List<PatchInfo> appliedPatchesAllDates = patchService.getPatches(null, null);
+        assertEquals("Applied patches by all dates doesn't match all applied patches",
+                appliedPatches.size(), appliedPatchesAllDates.size());
+        
+        // make sure that the objects are not connected to the persistence layer
+        PatchInfo disconnectedObject = appliedPatchesAllDates.get(0);
+        AppliedPatch persistedObject = patchDaoComponent.getAppliedPatch(disconnectedObject.getId());
+        assertNotSame("Instances should not be shared between evicted and cached objects",
+                disconnectedObject, persistedObject);
+        
+        // perform another query with dates that should return no results
+        List<PatchInfo> appliedPatchesFutureDates = patchService.getPatches(new Date(), new Date());
+        assertEquals("Query returned results for dates when no patches should exist", 0, appliedPatchesFutureDates.size());
     }
 }

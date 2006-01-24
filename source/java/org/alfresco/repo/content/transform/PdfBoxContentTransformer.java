@@ -17,6 +17,7 @@
 package org.alfresco.repo.content.transform;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
@@ -57,13 +58,15 @@ public class PdfBoxContentTransformer extends AbstractContentTransformer
         }
     }
 
-    public void transformInternal(ContentReader reader, ContentWriter writer,  Map<String, Object> options)
+    protected void transformInternal(ContentReader reader, ContentWriter writer,  Map<String, Object> options)
     {
         PDDocument pdf = null;
+        InputStream is = null;
         try
         {
+            is = reader.getContentInputStream();
             // stream the document in
-            pdf = PDDocument.load(reader.getContentInputStream());
+            pdf = PDDocument.load(is);
             // strip the text out
             PDFTextStripper stripper = new PDFTextStripper();
             String text = stripper.getText(pdf);
@@ -81,6 +84,10 @@ public class PdfBoxContentTransformer extends AbstractContentTransformer
             if (pdf != null)
             {
                 try { pdf.close(); } catch (Throwable e) {e.printStackTrace(); }
+            }
+            if (is != null)
+            {
+                try { is.close(); } catch (Throwable e) {e.printStackTrace(); }
             }
         }
     }

@@ -590,7 +590,23 @@ public class ServerConfiguration
         {
             // Get the local domain/workgroup name
 
-            setDomainName(getLocalDomainName());
+            String localDomain = getLocalDomainName();
+            
+            if ( localDomain == null && getPlatformType() != PlatformType.WINDOWS)
+            {
+                // Use a default domain/workgroup name
+                
+                localDomain = "WORKGROUP";
+                
+                // Output a warning
+                
+                logger.error("Failed to get local domain/workgroup name, using default of " + localDomain);
+                logger.error("(This may be due to firewall settings or incorrect <broadcast> setting)");
+            }
+            
+            // Set the local domain/workgroup that the CIFS server belongs to
+            
+            setDomainName( localDomain);
         }
 
         // Check for a server comment
@@ -2251,12 +2267,9 @@ public class ServerConfiguration
 
                 if (nbName != null)
                     domainName = nbName.getName();
-                else
-                    throw new AlfrescoRuntimeException("Failed to find local domain/workgroup name");
             }
             catch (IOException ex)
             {
-                throw new AlfrescoRuntimeException("Failed to determine local domain/workgroup");
             }
         }
 

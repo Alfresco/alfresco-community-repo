@@ -106,7 +106,7 @@
                                     <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                  </a:actionLink>
                                  
-                                 <a:actionLink value="#{msg.create_shortcut}" image="/images/icons/shortcut.gif" actionListener="#{UserShortcutsBean.createShortcut}">
+                                 <a:actionLink value="#{msg.create_shortcut}" image="/images/icons/shortcut.gif" actionListener="#{UserShortcutsBean.createShortcut}" rendered="#{NavigationBean.isGuest == false}">
                                     <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                  </a:actionLink>
                                  

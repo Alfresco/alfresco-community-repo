@@ -163,9 +163,11 @@
                                  <%-- Current object actions --%>
                                  <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.actions}" id="msg14" /><br>
                                  <a:actionLink value="#{msg.new_search}" image="/images/icons/search_icon.gif" padding="4" action="advSearch" id="link20" />
-                                 <a:actionLink value="#{msg.save_new_search}" image="/images/icons/save_search.gif" padding="4" action="#{AdvancedSearchBean.saveNewSearch}" id="link20_1" />
-                                 <a:booleanEvaluator value="#{AdvancedSearchBean.allowEdit == true}" id="eval0">
-                                    <a:actionLink value="#{msg.save_edit_search}" image="/images/icons/edit_search.gif" padding="4" action="#{AdvancedSearchBean.saveEditSearch}" id="link20_2" />
+                                 <a:booleanEvaluator value="#{NavigationBean.isGuest == false}" id="eval0">
+                                    <a:actionLink value="#{msg.save_new_search}" image="/images/icons/save_search.gif" padding="4" action="#{AdvancedSearchBean.saveNewSearch}" id="link20_1" />
+                                    <a:booleanEvaluator value="#{AdvancedSearchBean.allowEdit == true}" id="eval0_1">
+                                       <a:actionLink value="#{msg.save_edit_search}" image="/images/icons/edit_search.gif" padding="4" action="#{AdvancedSearchBean.saveEditSearch}" id="link20_2" />
+                                    </a:booleanEvaluator>
                                  </a:booleanEvaluator>
                                  <a:actionLink value="#{msg.close_search}" image="/images/icons/action.gif" padding="4" actionListener="#{BrowseBean.closeSearch}" id="link21" />
                               </td>

@@ -32,6 +32,7 @@ import org.alfresco.filesys.server.filesys.DiskSharedDevice;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
 import org.alfresco.filesys.smb.server.repo.ContentDiskInterface;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -258,7 +259,14 @@ public class NavigationBean
       if (node.hasAspect(ContentModel.ASPECT_TEMPLATABLE))
       {
          NodeRef templateRef = (NodeRef)node.getProperties().get(ContentModel.PROP_TEMPLATE);
-         templateView = (templateRef != null && this.nodeService.exists(templateRef));
+         try
+         {
+            templateView = (templateRef != null && this.nodeService.exists(templateRef));
+         }
+         catch (AccessDeniedException err)
+         {
+            // default to false if no access to template
+         }
       }
       return templateView;
    }

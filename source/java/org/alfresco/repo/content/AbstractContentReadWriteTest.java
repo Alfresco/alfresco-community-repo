@@ -435,7 +435,6 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         
         // with the stream open, attempt to delete the content
         boolean deleted = store.delete(contentUrl);
-        assertFalse("Should not be able to delete content with open write stream", deleted);
         
         // close the stream
         os.close();
@@ -443,6 +442,9 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         // get a reader
         ContentReader reader = store.getReader(contentUrl);
         assertNotNull(reader);
+        // make sure that the underlying content still exists (the delete occured during a write)
+        assertTrue("Underlying content was deleted during a write", reader.exists());
+        
         ContentReader readerCheck = writer.getReader();
         assertNotNull(readerCheck);
         assertEquals("Store and write provided readers onto different URLs",

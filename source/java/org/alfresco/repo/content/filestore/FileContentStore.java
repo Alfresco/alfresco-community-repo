@@ -300,12 +300,15 @@ public class FileContentStore extends AbstractContentStore
     {
         // ignore files that don't exist
         File file = makeFile(contentUrl);
+        boolean deleted = false;
         if (!file.exists())
         {
-            return true;
+            deleted = true;
         }
-        // attempt to delete the file directly
-        boolean deleted = file.delete();
+        else
+        {
+            deleted = file.delete();
+        }
 
         // done
         if (logger.isDebugEnabled())

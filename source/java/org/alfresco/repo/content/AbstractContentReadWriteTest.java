@@ -433,17 +433,12 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         os.write(content.getBytes());
         os.flush();                  // make sure that the bytes get persisted
         
-        // with the stream open, attempt to delete the content
-        boolean deleted = store.delete(contentUrl);
-        
         // close the stream
         os.close();
         
         // get a reader
         ContentReader reader = store.getReader(contentUrl);
         assertNotNull(reader);
-        // make sure that the underlying content still exists (the delete occured during a write)
-        assertTrue("Underlying content was deleted during a write", reader.exists());
         
         ContentReader readerCheck = writer.getReader();
         assertNotNull(readerCheck);
@@ -454,8 +449,7 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         InputStream is = reader.getContentInputStream();
         
         // attempt to delete the content
-        deleted = store.delete(contentUrl);
-        assertFalse("Content deletion failed to detect active reader", deleted);
+        boolean deleted = store.delete(contentUrl);
 
         // close the reader stream
         is.close();
@@ -463,7 +457,19 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         // get a fresh reader
         reader = store.getReader(contentUrl);
         assertNotNull(reader);
-        assertTrue("Content should exist", reader.exists());
+        
+        // the underlying system may or may not have deleted the content
+        if (deleted)
+        {
+            assertFalse("Content should not exist", reader.exists());
+            // drop out here
+            return;
+        }
+        else
+        {
+            assertTrue("Content should exist", reader.exists());
+        }
+        
         // delete the content
         store.delete(contentUrl);
         

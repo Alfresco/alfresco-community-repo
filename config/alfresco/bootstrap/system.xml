@@ -19,7 +19,7 @@
                     <cm:person view:childName="cm:person">
                         <view:acl view:inherit="false">
                            <view:ace view:access="ALLOWED">
-                              <view:authority>Guest</view:authority>
+                              <view:authority>guest</view:authority>
                               <view:permission>Read</view:permission>
                            </view:ace>
                         </view:acl>

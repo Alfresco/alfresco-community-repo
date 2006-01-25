@@ -140,6 +140,11 @@
                 <ref local="ftsIndexerTrigger" />
                 <ref local="indexRecoveryTrigger" />
                 <ref local="indexBackupTrigger" />
+                <!--
+                <ref bean="ldapGroupTrigger" />
+                <ref bean="ldapPeopleTrigger" />
+                -->
+                
             </list>
         </property>
         <property name="waitForJobsToCompleteOnShutdown">

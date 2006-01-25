@@ -39,6 +39,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
@@ -50,7 +53,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 
     private static final String SYSTEM_FOLDER = "/sys:system";
 
-    private  static final String PEOPLE_FOLDER = SYSTEM_FOLDER + "/sys:people";
+    private static final String PEOPLE_FOLDER = SYSTEM_FOLDER + "/sys:people";
 
     private NodeService nodeService;
 
@@ -63,9 +66,9 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     private PasswordEncoder passwordEncoder;
 
     private StoreRef userStoreRef;
-    
+
     private boolean userNamesAreCaseSensitive;
-    
+
     public boolean getUserNamesAreCaseSensitive()
     {
         return userNamesAreCaseSensitive;
@@ -81,8 +84,6 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         this.dictionaryService = dictionaryService;
     }
 
-   
-    
     public void setNamespaceService(NamespacePrefixResolver namespacePrefixResolver)
     {
         this.namespacePrefixResolver = namespacePrefixResolver;
@@ -103,10 +104,11 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         this.searchService = searchService;
     }
 
-    public UserDetails loadUserByUsername(String caseSensitiveUserName) throws UsernameNotFoundException, DataAccessException
+    public UserDetails loadUserByUsername(String caseSensitiveUserName) throws UsernameNotFoundException,
+            DataAccessException
     {
-        String userName = userNamesAreCaseSensitive ? caseSensitiveUserName: caseSensitiveUserName.toLowerCase();
-        NodeRef userRef = getUserOrNull(userNamesAreCaseSensitive ? userName: userName.toLowerCase());
+        String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
+        NodeRef userRef = getUserOrNull(userNamesAreCaseSensitive ? userName : userName.toLowerCase());
         if (userRef == null)
         {
             throw new UsernameNotFoundException("Could not find user by userName: " + caseSensitiveUserName);
@@ -126,24 +128,36 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 
     public NodeRef getUserOrNull(String caseSensitiveUserName)
     {
-        String userName = userNamesAreCaseSensitive ? caseSensitiveUserName: caseSensitiveUserName.toLowerCase();
-        NodeRef rootNode = nodeService.getRootNode(getUserStoreRef());
-        QueryParameterDefinition[] defs = new QueryParameterDefinition[1];
-        DataTypeDefinition text = dictionaryService.getDataType(DataTypeDefinition.TEXT);
-        defs[0] = new QueryParameterDefImpl(QName.createQName("usr", "var", namespacePrefixResolver), text, true,
-                userName);
-        List<NodeRef> results = searchService.selectNodes(rootNode, PEOPLE_FOLDER
-                + "/usr:user[@usr:username = $usr:var ]", defs, namespacePrefixResolver, false);
-        if (results.size() != 1)
+        String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("@usr\\:username:" + userName);
+        sp.addStore(getUserStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        ResultSet rs = searchService.query(sp);
+
+        for (ResultSetRow row : rs)
         {
-            return null;
+
+            NodeRef nodeRef = row.getNodeRef();
+            if (nodeService.exists(nodeRef))
+            {
+                String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
+                        nodeRef, ContentModel.PROP_USER_USERNAME));
+                if (realUserName.equals(userName))
+                {
+                    return nodeRef;
+                }
+            }
         }
-        return results.get(0);
+
+        return null;
     }
 
     public void createUser(String caseSensitiveUserName, char[] rawPassword) throws AuthenticationException
     {
-        String userName = userNamesAreCaseSensitive ? caseSensitiveUserName: caseSensitiveUserName.toLowerCase();
+        String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
         NodeRef userRef = getUserOrNull(userName);
         if (userRef != null)
         {
@@ -167,10 +181,8 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     private NodeRef getOrCreateTypeLocation()
     {
         NodeRef rootNode = nodeService.getRootNode(getUserStoreRef());
-        List<ChildAssociationRef> results = nodeService.getChildAssocs(
-                rootNode,
-                RegexQNamePattern.MATCH_ALL,
-                QName.createQName("sys", "system", namespacePrefixResolver));
+        List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNode, RegexQNamePattern.MATCH_ALL, QName
+                .createQName("sys", "system", namespacePrefixResolver));
         NodeRef sysNode = null;
         if (results.size() == 0)
         {
@@ -182,10 +194,8 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         {
             sysNode = results.get(0).getChildRef();
         }
-        results = nodeService.getChildAssocs(
-                sysNode,
-                RegexQNamePattern.MATCH_ALL,
-                QName.createQName("sys", "people", namespacePrefixResolver));
+        results = nodeService.getChildAssocs(sysNode, RegexQNamePattern.MATCH_ALL, QName.createQName("sys", "people",
+                namespacePrefixResolver));
         NodeRef typesNode = null;
         if (results.size() == 0)
         {
@@ -306,7 +316,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     {
         return getAccountHasExpired(getUserOrNull(userName));
     }
-    
+
     private boolean getAccountHasExpired(NodeRef userNode)
     {
         if (userNode == null)
@@ -354,12 +364,12 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
             return DefaultTypeConverter.INSTANCE.booleanValue(ser);
         }
     }
-    
+
     public boolean getCredentialsExpire(String userName)
     {
         return getCredentialsExpired(getUserOrNull(userName));
     }
-    
+
     private boolean getCredentialsExpired(NodeRef userNode)
     {
         if (userNode == null)
@@ -400,7 +410,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     {
         return getCredentialsHaveExpired(getUserOrNull(userName));
     }
-    
+
     private boolean getCredentialsHaveExpired(NodeRef userNode)
     {
         if (userNode == null)
@@ -431,7 +441,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     {
         return getEnabled(getUserOrNull(userName));
     }
-    
+
     private boolean getEnabled(NodeRef userNode)
     {
         if (userNode == null)

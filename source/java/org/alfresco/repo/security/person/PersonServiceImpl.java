@@ -34,6 +34,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -125,18 +128,31 @@ public class PersonServiceImpl implements PersonService
     public NodeRef getPersonOrNull(String caseSensitiveUserName)
     {
         String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
-        NodeRef rootNode = nodeService.getRootNode(storeRef);
-        QueryParameterDefinition[] defs = new QueryParameterDefinition[1];
-        DataTypeDefinition text = dictionaryService.getDataType(DataTypeDefinition.TEXT);
-        defs[0] = new QueryParameterDefImpl(QName.createQName("cm", "var", namespacePrefixResolver), text, true,
-                userName);
-        List<NodeRef> results = searchService.selectNodes(rootNode, PEOPLE_FOLDER
-                + "/cm:person[@cm:userName = $cm:var ]", defs, namespacePrefixResolver, false);
-        if (results.size() != 1)
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("@cm\\:userName:" + userName);
+        sp.addStore(storeRef);
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        ResultSet rs = searchService.query(sp);
+
+        for (ResultSetRow row : rs)
         {
-            return null;
+
+            NodeRef nodeRef = row.getNodeRef();
+            if (nodeService.exists(nodeRef))
+            {
+                String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
+                        nodeRef, ContentModel.PROP_USERNAME));
+                realUserName = userNamesAreCaseSensitive ? realUserName : realUserName.toLowerCase();
+                if (realUserName.equals(userName))
+                {
+                    return nodeRef;
+                }
+            }
         }
-        return results.get(0);
+
+        return null;
     }
 
     public boolean createMissingPeople()
@@ -265,12 +281,26 @@ public class PersonServiceImpl implements PersonService
 
     public Set<NodeRef> getAllPeople()
     {
-        NodeRef rootNode = nodeService.getRootNode(storeRef);
-        List<NodeRef> results = searchService.selectNodes(rootNode, PEOPLE_FOLDER + "/cm:person", null,
-                namespacePrefixResolver, false);
-        HashSet<NodeRef> all = new HashSet<NodeRef>();
-        all.addAll(results);
-        return all;
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("TYPE:\"" + ContentModel.TYPE_PERSON+"\"");
+        sp.addStore(storeRef);
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        ResultSet rs = searchService.query(sp);
+
+        HashSet<NodeRef> nodes = new HashSet<NodeRef>();
+        for (ResultSetRow row : rs)
+        {
+
+            NodeRef nodeRef = row.getNodeRef();
+            if (nodeService.exists(nodeRef))
+            {
+               nodes.add(nodeRef);
+            }
+        }
+
+        return nodes;
     }
 
     public void setCreateMissingPeople(boolean createMissingPeople)

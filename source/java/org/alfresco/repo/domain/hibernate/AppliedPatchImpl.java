@@ -77,7 +77,7 @@ public class AppliedPatchImpl implements AppliedPatch
     }
     public void setDescription(String description)
     {
-        if (description.length() > 1024)
+        if (description != null && description.length() > 1024)
         {
             // truncate as necessary
             description = (description.substring(0, 1020) + "...");
@@ -155,7 +155,7 @@ public class AppliedPatchImpl implements AppliedPatch
     }
     public void setReport(String report)
     {
-        if (report.length() > 1024)
+        if (report != null && report.length() > 1024)
         {
             // truncate as necessary
             report = (report.substring(0, 1020) + "...");

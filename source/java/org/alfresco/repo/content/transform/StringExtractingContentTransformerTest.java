@@ -37,7 +37,7 @@ import org.alfresco.util.TempFileProvider;
  */
 public class StringExtractingContentTransformerTest extends AbstractContentTransformerTest
 {
-    private static final String SOME_CONTENT = "azAz10!£$%^&*()\t\r\n";
+    private static final String SOME_CONTENT = "azAz10!ï¿½$%^&*()\t\r\n";
     
     private ContentTransformer transformer;
     /** the final destination of transformations */

@@ -185,7 +185,7 @@ public class Utils
         // find out where we are starting from, either the root or the node
         // represented by the uuid
         NodeRef rootNodeRef = null;
-        if (uuid == null)
+        if (uuid == null || uuid.length() == 0)
         {
             rootNodeRef = nodeService.getRootNode(convertToStoreRef(store));
         } else
@@ -194,7 +194,7 @@ public class Utils
         }
 
         // see if we have a path to further define the node being requested
-        if (path != null)
+        if (path != null && path.length() != 0)
         {
             List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, path,
                     null, namespaceService, false);

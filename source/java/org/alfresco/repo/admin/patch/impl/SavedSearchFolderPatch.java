@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
@@ -49,8 +50,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class SavedSearchFolderPatch extends AbstractPatch
 {
-    private static final String MSG_EXISTS = "The saved searches folder already exists: %s.";
-    private static final String MSG_CREATED = "The saved searches folder successfully created: %s.";
+    private static final String MSG_EXISTS = "patch.savedSearchesFolder.result.exists";
+    private static final String MSG_CREATED = "patch.savedSearchesFolder.result.created";
     
     private static final String PROPERTY_COMPANY_HOME_CHILDNAME = "spaces.company_home.childname";
     private static final String PROPERTY_DICTIONARY_CHILDNAME = "spaces.dictionary.childname";
@@ -166,13 +167,13 @@ public class SavedSearchFolderPatch extends AbstractPatch
         if (nodeRefs.size() == 1)
         {
             // it already exists
-            msg = String.format(MSG_EXISTS, new Object[] {nodeRefs.get(0)});
+            msg = I18NUtil.getMessage(MSG_EXISTS, nodeRefs.get(0));
         }
         else
         {
             // create it
             NodeRef savedSearchesFolderNodeRef = createFolder(dictionaryNodeRef, configuration);
-            msg = String.format(MSG_CREATED, new Object[] {savedSearchesFolderNodeRef});
+            msg = I18NUtil.getMessage(MSG_CREATED, savedSearchesFolderNodeRef);
         }
         // done
         return msg;

@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.i18n.I18NUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -31,6 +32,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public class PatchExecuter
 {
+    private static final String MSG_NOT_EXECUTED = "patch.executer.not_executed";
+    private static final String MSG_EXECUTED = "patch.executer.executed";
+    private static final String MSG_FAILED = "patch.executer.failed";
+    
     private static Log logger = LogFactory.getLog(PatchExecuter.class);
     
     private PatchService patchService;
@@ -72,22 +77,16 @@ public class PatchExecuter
                 if (!patchInfo.getWasExecuted())
                 {
                     // the patch was not executed
-                    logger.debug("Applied patch (not executed): \n" +
-                            "   ID:     " + patchInfo.getId() + "\n" +
-                            "   RESULT: " + patchInfo.getReport());
+                    logger.debug(I18NUtil.getMessage(MSG_NOT_EXECUTED, patchInfo.getId(), patchInfo.getReport()));
                 }
                 else if (patchInfo.getSucceeded())
                 {
-                    logger.info("Applied patch: \n" +
-                            "   ID:     " + patchInfo.getId() + "\n" +
-                            "   RESULT: " + patchInfo.getReport());
+                    logger.info(I18NUtil.getMessage(MSG_EXECUTED, patchInfo.getId(), patchInfo.getReport()));
                 }
                 else
                 {
                     succeeded = false;
-                    logger.error("Failed to apply patch: \n" +
-                            "   ID:     " + patchInfo.getId() + "\n" +
-                            "   RESULT: " + patchInfo.getReport());
+                    logger.error(I18NUtil.getMessage(MSG_FAILED, patchInfo.getId(), patchInfo.getReport()));
                }
             }
             // generate an error if there was a failure

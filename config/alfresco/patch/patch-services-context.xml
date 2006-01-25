@@ -79,7 +79,7 @@
     <!-- patch definitions -->
     <bean id="patch.savedSearchesFolder" class="org.alfresco.repo.admin.patch.impl.SavedSearchFolderPatch" parent="basePatch" >
         <property name="id"><value>patch.savedSearchesFolder</value></property>
-        <property name="description"><value>Ensures the existence of the 'Saved Searches' folder</value></property>
+        <property name="description"><value>patch.savedSearchesFolder.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>1</value></property>
         <property name="targetSchema"><value>2</value></property>
@@ -95,6 +95,17 @@
         </property>
         <property name="nodeService">
             <ref bean="nodeService"/>
+        </property>
+    </bean>
+    <bean id="patch.updatePermissionData" class="org.alfresco.repo.admin.patch.impl.PermissionDataPatch" parent="basePatch" >
+        <property name="id"><value>patch.updatePermissionData</value></property>
+        <property name="description"><value>patch.updatePermissionData.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2</value></property>
+        <property name="targetSchema"><value>3</value></property>
+        <!-- helper beans -->
+        <property name="sessionFactory">
+            <ref bean="sessionFactory" />
         </property>
     </bean>
 

@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.domain.AppliedPatch;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.descriptor.Descriptor;
@@ -41,6 +42,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class PatchServiceImpl implements PatchService
 {
+    private static final String MSG_NOT_RELEVANT = "patch.service.not_relevant";
+    
     private static final Date ZERO_DATE = new Date(0L);
     private static final Date INFINITE_DATE = new Date(Long.MAX_VALUE);
     
@@ -171,9 +174,7 @@ public class PatchServiceImpl implements PatchService
         if (!applies)
         {
             // create a dummy report
-            StringBuilder sb = new StringBuilder(128);
-            sb.append("Not relevant to schema " + repoDescriptor.getSchema());
-            report = sb.toString();
+            report = I18NUtil.getMessage(MSG_NOT_RELEVANT, repoDescriptor.getSchema());
             success = true;             // this succeeded because it didn't need to be applied
         }
         else
@@ -201,7 +202,7 @@ public class PatchServiceImpl implements PatchService
             appliedPatch = patchDaoService.newAppliedPatch(patch.getId());
         }
         // fill in the record's details
-        appliedPatch.setDescription(patch.getDescription());
+        appliedPatch.setDescription(I18NUtil.getMessage(patch.getDescription()));
         appliedPatch.setFixesFromSchema(patch.getFixesFromSchema());
         appliedPatch.setFixesToSchema(patch.getFixesToSchema());
         appliedPatch.setTargetSchema(patch.getTargetSchema());       // the schema the server is expecting

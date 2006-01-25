@@ -92,7 +92,8 @@
     			<value>alfresco.messages.content-service</value>
     			<value>alfresco.messages.coci-service</value>
     			<value>alfresco.messages.template-service</value>
-    			<value>alfresco.messages.lock-service</value>    			
+    			<value>alfresco.messages.lock-service</value>
+    			<value>alfresco.messages.patch-service</value>
     		</list>
     	</property>
     </bean>

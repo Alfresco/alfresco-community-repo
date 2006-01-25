@@ -268,7 +268,7 @@ public abstract class AbstractPatch implements Patch
                     return report;
                 };
             };
-            String report = TransactionUtil.executeInUserTransaction(transactionService, patchWork);
+            String report = TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, patchWork);
             // the patch was successfully applied
             applied = true;
             // done

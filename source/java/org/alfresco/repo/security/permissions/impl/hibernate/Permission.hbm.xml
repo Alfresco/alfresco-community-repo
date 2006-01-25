@@ -139,5 +139,15 @@
       where
          recipient = :recipientKey 
    </query>
+   
+   <query name="permission.patch.UpdatePermissionEntryTypeName" >
+      update
+         org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntryImpl as entry
+      set
+         typeName = :typeNameNew
+      where
+         typeName = :typeNameOld and
+         name in ('Coordinator', 'Contributor', 'Editor', 'Guest')
+   </query>
     
 </hibernate-mapping>

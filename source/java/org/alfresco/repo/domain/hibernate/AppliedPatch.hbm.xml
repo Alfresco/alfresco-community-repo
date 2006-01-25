@@ -22,6 +22,7 @@
       <property name="targetSchema" column="target_schema" type="integer" />
       <property name="appliedOnDate" column="applied_on_date" type="timestamp" />
       <property name="appliedToServer" column="applied_to_server" type="string" length="64" />
+      <property name="wasExecuted" column="was_executed" type="boolean" />
       <property name="succeeded" column="succeeded" type="boolean" />
       <property name="report" column="report" type="string" length="1024" />
    </class>

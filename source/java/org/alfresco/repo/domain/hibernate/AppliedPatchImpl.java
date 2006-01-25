@@ -36,6 +36,7 @@ public class AppliedPatchImpl implements AppliedPatch
     private int appliedToSchema;
     private String appliedToServer;
     private Date appliedOnDate;
+    private boolean wasExecuted;
     private boolean succeeded;
     private String report;
     
@@ -56,6 +57,7 @@ public class AppliedPatchImpl implements AppliedPatch
           .append(", appliedToSchema=").append(appliedToSchema)
           .append(", appliedToServer=").append(appliedToServer)
           .append(", appliedOnDate=").append(appliedOnDate)
+          .append(", wasExecuted=").append(wasExecuted)
           .append(", succeeded=").append(succeeded)
           .append(", report=").append(report)
           .append("]");
@@ -140,6 +142,15 @@ public class AppliedPatchImpl implements AppliedPatch
         this.appliedOnDate = appliedOnDate;
     }
     
+    public boolean getWasExecuted()
+    {
+        return wasExecuted;
+    }
+    public void setWasExecuted(boolean wasExecuted)
+    {
+        this.wasExecuted = wasExecuted;
+    }
+    
     public boolean getSucceeded()
     {
         return succeeded;
@@ -148,7 +159,7 @@ public class AppliedPatchImpl implements AppliedPatch
     {
         this.succeeded = succeeded;
     }
-    
+
     public String getReport()
     {
         return report;

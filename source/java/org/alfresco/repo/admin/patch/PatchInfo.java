@@ -41,6 +41,8 @@ public interface PatchInfo
     
     public Date getAppliedOnDate();
     
+    public boolean getWasExecuted();
+    
     public boolean getSucceeded();
     
     public String getReport();

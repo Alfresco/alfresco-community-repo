@@ -43,6 +43,8 @@ public interface AppliedPatch extends PatchInfo
     
     public void setAppliedOnDate(Date date);
     
+    public void setWasExecuted(boolean executed);
+    
     public void setSucceeded(boolean succeeded);
     
     public void setReport(String report);

@@ -69,7 +69,14 @@ public class PatchExecuter
             // list all patches applied, including failures
             for (PatchInfo patchInfo : appliedPatches)
             {
-                if (patchInfo.getSucceeded())
+                if (!patchInfo.getWasExecuted())
+                {
+                    // the patch was not executed
+                    logger.debug("Applied patch (not executed): \n" +
+                            "   ID:     " + patchInfo.getId() + "\n" +
+                            "   RESULT: " + patchInfo.getReport());
+                }
+                else if (patchInfo.getSucceeded())
                 {
                     logger.info("Applied patch: \n" +
                             "   ID:     " + patchInfo.getId() + "\n" +

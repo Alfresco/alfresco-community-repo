@@ -209,6 +209,7 @@ public class PatchServiceImpl implements PatchService
         appliedPatch.setAppliedToServer(server);                     // the current version and label of the server
         appliedPatch.setAppliedOnDate(new Date());                   // the date applied
         appliedPatch.setSucceeded(success);                          // whether or not the patch succeeded
+        appliedPatch.setWasExecuted(applies);                        // whether or not the patch was executed
         appliedPatch.setReport(report);                              // additional, human-readable, status
 
         // done

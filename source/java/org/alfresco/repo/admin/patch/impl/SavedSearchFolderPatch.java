@@ -42,6 +42,8 @@ import org.alfresco.service.namespace.QName;
  * <p>
  * This class should be replaced with a more generic <code>ImporterPatch</code>
  * that can do conditional importing into given locations.
+ * <p>
+ * JIRA: {@link http://www.alfresco.org/jira/browse/AR-342 AR-342}
  * 
  * @author Derek Hulley
  */

@@ -197,6 +197,11 @@ public class ExportSourceImporter implements ImporterJobSPI
             return null;
         }
 
+        public boolean allowReferenceWithinTransaction()
+        {
+            return false;
+        }
+
     };
 
 }

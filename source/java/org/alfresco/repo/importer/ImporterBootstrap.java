@@ -439,6 +439,15 @@ public class ImporterBootstrap
             // always use create new strategy for bootstrap import
             return UUID_BINDING.CREATE_NEW;
         }
+
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterBinding#searchWithinTransaction()
+         */
+        public boolean allowReferenceWithinTransaction()
+        {
+            return true;
+        }
     }
     
     /**

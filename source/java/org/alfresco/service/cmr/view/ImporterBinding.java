@@ -41,7 +41,15 @@ public interface ImporterBinding
     public UUID_BINDING getUUIDBinding();
 
     /**
-     * Gets a value for the specified name - to support simple name / value binding
+     * Gets whether the search for imported node references should search within the import
+     * transaction or not.
+     * 
+     * @return true => search within import transaction;  false => only search existing committed items 
+     */
+    public boolean allowReferenceWithinTransaction();
+    
+    /**
+     * Gets a value for the specified name - to support simple name / value substitution
      * 
      * @param key   the value name
      * @return  the value

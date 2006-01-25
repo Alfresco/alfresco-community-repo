@@ -3,16 +3,9 @@
 
 <beans>
 
-    <!-- This component ensures that patches get applied on startup -->    
-    <bean id="patchExecuter"
-            class="org.alfresco.repo.admin.patch.PatchExecuter"
-            depends-on="importerBootstrap"
-            init-method="applyOutStandingPatches">
-        <property name="patchService">
-            <ref bean="patchComponent" />
-        </property>
-    </bean>
-    
+    <!-- supplementary beans -->
+    <import resource="classpath:alfresco/patch/extended-patches-context.xml" />
+
     <bean id="PatchService" class="org.springframework.aop.framework.ProxyFactoryBean">
     	<property name="proxyInterfaces">
     		<value>org.alfresco.repo.admin.patch.PatchService</value>
@@ -105,4 +98,15 @@
         </property>
     </bean>
 
+    <!-- This component ensures that patches get applied on startup -->
+    <!-- The order is important here.  All the self-registering patches must be defined before this bean -->
+    <bean id="patchExecuter"
+            class="org.alfresco.repo.admin.patch.PatchExecuter"
+            depends-on="importerBootstrap"
+            init-method="applyOutstandingPatches">
+        <property name="patchService">
+            <ref bean="patchComponent" />
+        </property>
+    </bean>
+    
 </beans>

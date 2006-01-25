@@ -18,18 +18,13 @@ package org.alfresco.repo.importer;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AccessPermission;
-import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.debug.NodeStoreInspector;
 
@@ -75,59 +70,6 @@ public class ImporterComponentTest extends BaseSpringTest
         importerService.importView(testReader, location, null, new ImportTimerProgress());
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
-    
-    /*
-     * Temporary build fix
-     */
-    private static class ImportTimerProgress implements ImporterProgress
-    {
-
-        public void aspectAdded(NodeRef nodeRef, QName aspect)
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        public void completed()
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        public void contentCreated(NodeRef nodeRef, String sourceUrl)
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        public void error(Throwable e)
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        public void nodeCreated(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        public void nodeLinked(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        public void permissionSet(NodeRef nodeRef, AccessPermission permission)
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        public void propertySet(NodeRef nodeRef, QName property, Serializable value)
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        public void started()
-        {
-            throw new UnsupportedOperationException();
-        }
-    }
-    
     
     public void testBootstrap()
     {

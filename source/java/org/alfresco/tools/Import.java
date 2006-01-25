@@ -321,14 +321,23 @@ public class Import extends Tool
         {
         }
 
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterProgress#started()
+         */
         public void started()
         {
         }
 
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterProgress#completed()
+         */
         public void completed()
         {
         }
 
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterProgress#error(java.lang.Throwable)
+         */
         public void error(Throwable e)
         {
         }

@@ -20,9 +20,11 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.Random;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -37,7 +39,19 @@ import org.alfresco.util.TempFileProvider;
  */
 public class StringExtractingContentTransformerTest extends AbstractContentTransformerTest
 {
-    private static final String SOME_CONTENT = "azAz10!�$%^&*()\t\r\n";
+    private static final String SOME_CONTENT;
+    static
+    {
+        // force the content to be encoded in a particular way, independently of the source file encoding
+        try
+        {
+            SOME_CONTENT = new String("azAz10!�$%^&*()\t\r\n".getBytes("UTF-8"), "MacDingbat");
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new AlfrescoRuntimeException("Encoding not recognised", e);
+        }
+    }
     
     private ContentTransformer transformer;
     /** the final destination of transformations */
@@ -90,7 +104,7 @@ public class StringExtractingContentTransformerTest extends AbstractContentTrans
     
     public void testDirectTransform() throws Exception
     {
-        ContentReader reader = writeContent("text/plain", "latin1");
+        ContentReader reader = writeContent("text/plain", "MacDingbat");
         
         // check reliability
         double reliability = transformer.getReliability(reader.getMimetype(), targetWriter.getMimetype());
@@ -107,7 +121,7 @@ public class StringExtractingContentTransformerTest extends AbstractContentTrans
     
     public void testInterTextTransform() throws Exception
     {
-        ContentReader reader = writeContent("text/xml", "UTF-16");
+        ContentReader reader = writeContent("text/xml", "MacDingbat");
         
         // check reliability
         double reliability = transformer.getReliability(reader.getMimetype(), targetWriter.getMimetype());

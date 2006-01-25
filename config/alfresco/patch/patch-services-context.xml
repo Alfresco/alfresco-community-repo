@@ -104,9 +104,6 @@
             class="org.alfresco.repo.admin.patch.PatchExecuter"
             depends-on="importerBootstrap"
             init-method="applyOutstandingPatches">
-        <property name="transactionService">
-            <ref bean="transactionComponent" />
-        </property>
         <property name="patchService">
             <ref bean="PatchService" />
         </property>

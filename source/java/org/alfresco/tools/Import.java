@@ -275,8 +275,7 @@ public class Import extends Tool
      * 
      * @author David Caruana
      */
-    private class ImportProgress
-        implements ImporterProgress
+    private class ImportProgress implements ImporterProgress
     {
         /* (non-Javadoc)
          * @see org.alfresco.service.cmr.view.ImporterProgress#nodeCreated(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
@@ -319,6 +318,18 @@ public class Import extends Tool
          * @see org.alfresco.service.cmr.view.ImporterProgress#aspectAdded(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
          */
         public void aspectAdded(NodeRef nodeRef, QName aspect)
+        {
+        }
+
+        public void started()
+        {
+        }
+
+        public void completed()
+        {
+        }
+
+        public void error(Throwable e)
         {
         }
     }

@@ -76,6 +76,58 @@ public class ImporterComponentTest extends BaseSpringTest
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
     
+    /*
+     * Temporary build fix
+     */
+    private static class ImportTimerProgress implements ImporterProgress
+    {
+
+        public void aspectAdded(NodeRef nodeRef, QName aspect)
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public void completed()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public void contentCreated(NodeRef nodeRef, String sourceUrl)
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public void error(Throwable e)
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public void nodeCreated(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public void nodeLinked(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public void permissionSet(NodeRef nodeRef, AccessPermission permission)
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public void propertySet(NodeRef nodeRef, QName property, Serializable value)
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public void started()
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
+    
     
     public void testBootstrap()
     {
@@ -84,7 +136,6 @@ public class ImporterComponentTest extends BaseSpringTest
         importerBootstrap.bootstrap();
         authenticationComponent.setSystemUserAsCurrentUser();
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, bootstrapStoreRef));
-    }    
-    
+    }
 }
 

@@ -53,7 +53,7 @@ public class SearcherComponentTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
-    private static String COMPLEX_LOCAL_NAME = " `¬¦!\"£$%^&*()-_=+\t\n\\\u0000[]{};'#:@~,./<>?\\|\u0123\u4567\u8900\uabcd\uefff_xT65A_";
+    private static String COMPLEX_LOCAL_NAME = " `Â¬Â¦!\"Â£$%^&*()-_=+\t\n\\\u0000[]{};'#:@~,./<>?\\|\u0123\u4567\u8900\uabcd\uefff_xT65A_";
     
     private ServiceRegistry serviceRegistry;
     private TransactionService transactionService;

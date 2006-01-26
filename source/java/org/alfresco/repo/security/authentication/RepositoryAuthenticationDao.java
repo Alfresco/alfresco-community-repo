@@ -135,20 +135,32 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         sp.addStore(getUserStoreRef());
         sp.excludeDataInTheCurrentTransaction(false);
 
-        ResultSet rs = searchService.query(sp);
+        ResultSet rs = null;
 
-        for (ResultSetRow row : rs)
+        try
         {
+            rs = searchService.query(sp);
 
-            NodeRef nodeRef = row.getNodeRef();
-            if (nodeService.exists(nodeRef))
+            for (ResultSetRow row : rs)
             {
-                String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
-                        nodeRef, ContentModel.PROP_USER_USERNAME));
-                if (realUserName.equals(userName))
+
+                NodeRef nodeRef = row.getNodeRef();
+                if (nodeService.exists(nodeRef))
                 {
-                    return nodeRef;
+                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
+                            nodeRef, ContentModel.PROP_USER_USERNAME));
+                    if (realUserName.equals(userName))
+                    {
+                        return nodeRef;
+                    }
                 }
+            }
+        }
+        finally
+        {
+            if (rs != null)
+            {
+                rs.close();
             }
         }
 

@@ -134,21 +134,33 @@ public class PersonServiceImpl implements PersonService
         sp.addStore(storeRef);
         sp.excludeDataInTheCurrentTransaction(false);
 
-        ResultSet rs = searchService.query(sp);
+        ResultSet rs = null;
 
-        for (ResultSetRow row : rs)
+        try
         {
+            rs = searchService.query(sp);
 
-            NodeRef nodeRef = row.getNodeRef();
-            if (nodeService.exists(nodeRef))
+            for (ResultSetRow row : rs)
             {
-                String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
-                        nodeRef, ContentModel.PROP_USERNAME));
-                realUserName = userNamesAreCaseSensitive ? realUserName : realUserName.toLowerCase();
-                if (realUserName.equals(userName))
+
+                NodeRef nodeRef = row.getNodeRef();
+                if (nodeService.exists(nodeRef))
                 {
-                    return nodeRef;
+                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
+                            nodeRef, ContentModel.PROP_USERNAME));
+                    realUserName = userNamesAreCaseSensitive ? realUserName : realUserName.toLowerCase();
+                    if (realUserName.equals(userName))
+                    {
+                        return nodeRef;
+                    }
                 }
+            }
+        }
+        finally
+        {
+            if (rs != null)
+            {
+                rs.close();
             }
         }
 
@@ -214,7 +226,7 @@ public class PersonServiceImpl implements PersonService
     {
         return getCompanyHome();
     }
-    
+
     public NodeRef createPerson(Map<QName, Serializable> properties)
     {
         String caseSensitiveUserName = DefaultTypeConverter.INSTANCE.convert(String.class, properties
@@ -283,23 +295,35 @@ public class PersonServiceImpl implements PersonService
     {
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("TYPE:\"" + ContentModel.TYPE_PERSON+"\"");
+        sp.setQuery("TYPE:\"" + ContentModel.TYPE_PERSON + "\"");
         sp.addStore(storeRef);
         sp.excludeDataInTheCurrentTransaction(false);
 
-        ResultSet rs = searchService.query(sp);
-
         HashSet<NodeRef> nodes = new HashSet<NodeRef>();
-        for (ResultSetRow row : rs)
-        {
+        ResultSet rs = null;
 
-            NodeRef nodeRef = row.getNodeRef();
-            if (nodeService.exists(nodeRef))
+        try
+        {
+            rs = searchService.query(sp);
+
+           
+            for (ResultSetRow row : rs)
             {
-               nodes.add(nodeRef);
+
+                NodeRef nodeRef = row.getNodeRef();
+                if (nodeService.exists(nodeRef))
+                {
+                    nodes.add(nodeRef);
+                }
             }
         }
-
+        finally
+        {
+            if (rs != null)
+            {
+                rs.close();
+            }
+        }
         return nodes;
     }
 

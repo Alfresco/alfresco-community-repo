@@ -40,6 +40,8 @@ import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.sun.star.uno.RuntimeException;
+
 /**
  * Alfresco Authenticator Class
  * 
@@ -351,7 +353,7 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
             client.setHomeFolder( homeSpaceRef);
             tx.commit();
         }
-        catch (Exception ex)
+        catch (Throwable ex)
         {
             try
             {
@@ -359,7 +361,16 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
             }
             catch (Exception ex2)
             {
-                logger.error("Failed to rollback transaction", ex);
+                logger.error("Failed to rollback transaction", ex2);
+            }
+            
+            if(ex instanceof RuntimeException)
+            {
+                throw (RuntimeException)ex;
+            }
+            else
+            {
+                throw new RuntimeException("Failed to get home folder", ex);
             }
         }
     }

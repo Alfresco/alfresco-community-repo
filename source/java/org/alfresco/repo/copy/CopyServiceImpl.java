@@ -172,7 +172,7 @@ public class CopyServiceImpl implements CopyService
         // Foreach of the newly created copies call the copy complete policy
         for (Map.Entry<NodeRef, NodeRef> entry : copiedChildren.entrySet())
 		{
-			invokeCopyComplete(entry.getKey(), entry.getValue(), copiedChildren);
+			invokeCopyComplete(entry.getKey(), entry.getValue(), true, copiedChildren);
 		}
         
         return copy;
@@ -188,16 +188,17 @@ public class CopyServiceImpl implements CopyService
     private void invokeCopyComplete(
     		NodeRef sourceNodeRef, 
     		NodeRef destinationNodeRef, 
+            boolean copyToNewNode,
     		Map<NodeRef, NodeRef> copiedNodeRefs)
 	{
     	QName sourceClassRef = this.nodeService.getType(sourceNodeRef);		
-    	invokeCopyComplete(sourceClassRef, sourceNodeRef, destinationNodeRef, copiedNodeRefs);
+    	invokeCopyComplete(sourceClassRef, sourceNodeRef, destinationNodeRef, copyToNewNode, copiedNodeRefs);
 		
 		// Get the source aspects
 		Set<QName> sourceAspects = this.nodeService.getAspects(sourceNodeRef);
 		for (QName sourceAspect : sourceAspects) 
 		{
-			invokeCopyComplete(sourceAspect, sourceNodeRef, destinationNodeRef, copiedNodeRefs);
+			invokeCopyComplete(sourceAspect, sourceNodeRef, destinationNodeRef, copyToNewNode, copiedNodeRefs);
 		}
 	}
 
@@ -212,6 +213,7 @@ public class CopyServiceImpl implements CopyService
 			QName typeQName, 
 			NodeRef sourceNodeRef, 
 			NodeRef destinationNodeRef, 
+            boolean copyToNewNode,
 			Map<NodeRef, NodeRef> copiedNodeRefs)
 	{
 		Collection<CopyServicePolicies.OnCopyCompletePolicy> policies = this.onCopyCompleteDelegate.getList(typeQName);
@@ -223,7 +225,7 @@ public class CopyServiceImpl implements CopyService
 		{
 			for (CopyServicePolicies.OnCopyCompletePolicy policy : policies) 
 			{
-				policy.onCopyComplete(typeQName, sourceNodeRef, destinationNodeRef, copiedNodeRefs);
+				policy.onCopyComplete(typeQName, sourceNodeRef, destinationNodeRef, copyToNewNode, copiedNodeRefs);
 			}
 		}		
 	}
@@ -723,6 +725,11 @@ public class CopyServiceImpl implements CopyService
 		copyProperties(destinationNodeRef, copyDetails);
 		copyAspects(destinationNodeRef, copyDetails);
 		copyAssociations(destinationNodeRef, copyDetails, false, new HashMap<NodeRef, NodeRef>());
+        
+        // invoke the copy complete policy
+        Map<NodeRef, NodeRef> copiedNodes = new HashMap<NodeRef, NodeRef>(1);
+        copiedNodes.put(sourceNodeRef, destinationNodeRef);
+        invokeCopyComplete(sourceNodeRef, destinationNodeRef, false, copiedNodes);         
     }
 	
 	/**
@@ -750,6 +757,7 @@ public class CopyServiceImpl implements CopyService
 			QName classRef,
 			NodeRef sourceNodeRef,
 			NodeRef destinationRef,
+            boolean copyToNew,
 			Map<NodeRef, NodeRef> copyMap)
 	{
 		// Do nothing since we do not want the copy from aspect to be relative to the copied nodes

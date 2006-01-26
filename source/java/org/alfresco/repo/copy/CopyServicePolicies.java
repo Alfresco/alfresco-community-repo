@@ -67,6 +67,7 @@ public interface CopyServicePolicies
 				QName classRef,
 				NodeRef sourceNodeRef,
 				NodeRef destinationRef,
+                boolean copyToNewNode,
 				Map<NodeRef, NodeRef> copyMap);
 	}
 }

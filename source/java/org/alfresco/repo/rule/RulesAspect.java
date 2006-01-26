@@ -152,6 +152,7 @@ public class RulesAspect
 			QName classRef,
 			NodeRef sourceNodeRef,
 			NodeRef destinationRef,
+            boolean copyToNew,
 			Map<NodeRef, NodeRef> copyMap)
 	{
 		this.onAddAspectBehaviour.enable();

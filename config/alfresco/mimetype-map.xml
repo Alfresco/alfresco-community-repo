@@ -329,6 +329,12 @@
          <mimetype mimetype="application/vnd.sun.xml.writer" display="OpenOffice 1.0/StarOffice6.0 Writer 6.0">
            <extension>sxw</extension>
          </mimetype>
+         <mimetype mimetype="application/vnd.sun.xml.calc" display="OpenOffice 1.0/StarOffice6.0 Calc 6.0">
+           <extension>sxc</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.stardivision.calc" display="StarCalc 5.x Spreadsheet">
+           <extension>sdc</extension>
+         </mimetype>
          <mimetype mimetype="image/x-dwg" display="AutoCAD Drawing">
             <extension>dwg</extension>
          </mimetype>

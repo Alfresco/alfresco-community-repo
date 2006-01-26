@@ -54,6 +54,7 @@ public class MimetypeMap implements MimetypeService
     public static final String MIMETYPE_IMAGE_GIF = "image/gif";
     public static final String MIMETYPE_IMAGE_JPEG = "image/jpeg";
     public static final String MIMETYPE_IMAGE_RGB = "image/x-rgb";
+    // Open Document
     public static final String MIMETYPE_OPENDOCUMENT_TEXT = "application/vnd.oasis.opendocument.text";
     public static final String MIMETYPE_OPENDOCUMENT_TEXT_TEMPLATE = "application/vnd.oasis.opendocument.text-template";
     public static final String MIMETYPE_OPENDOCUMENT_GRAPHICS = "application/vnd.oasis.opendocument.graphics";
@@ -71,8 +72,14 @@ public class MimetypeMap implements MimetypeService
     public static final String MIMETYPE_OPENDOCUMENT_TEXT_MASTER= "application/vnd.oasis.opendocument.text-master";
     public static final String MIMETYPE_OPENDOCUMENT_TEXT_WEB= "application/vnd.oasis.opendocument.text-web";
     public static final String MIMETYPE_OPENDOCUMENT_DATABASE= "application/vnd.oasis.opendocument.database";
+    // Open Office
     public static final String MIMETYPE_OPENOFFICE_WRITER = "application/vnd.sun.xml.writer";
+    public static final String MIMETYPE_OPENOFFICE_CALC = "application/vnd.sun.xml.calc";
+    // Star Office
+    public static final String MIMETYPE_STAROFFICE5_SPREADSHEET = "application/vnd.stardivision.calc";
+    // Audio
     public static final String MIMETYPE_MP3 = "audio/x-mpeg";
+    // Alfresco
     public static final String MIMETYPE_ACP = "application/acp";
     
     private static final String CONFIG_AREA = "mimetype-map";

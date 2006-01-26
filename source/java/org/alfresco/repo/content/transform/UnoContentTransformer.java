@@ -54,11 +54,26 @@ public class UnoContentTransformer extends AbstractContentTransformer
         formatsByConversion = new HashMap<ContentTransformerRegistry.TransformationKey, DocumentFormatWrapper>(17);
         
         formatsByConversion.put(
-                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE_WRITER, MimetypeMap.MIMETYPE_TEXT_PLAIN),
-                new DocumentFormatWrapper(DocumentFormat.TEXT, 1.0));
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENDOCUMENT_SPREADSHEET, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_CALC, 1.0));
         formatsByConversion.put(
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT, MimetypeMap.MIMETYPE_TEXT_PLAIN),
                 new DocumentFormatWrapper(DocumentFormat.TEXT, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE_WRITER, MimetypeMap.MIMETYPE_TEXT_PLAIN),
+                new DocumentFormatWrapper(DocumentFormat.TEXT, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE_WRITER, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE_CALC, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_STAROFFICE5_SPREADSHEET, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
         formatsByConversion.put(
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_HTML),
                 new DocumentFormatWrapper(DocumentFormat.HTML_WRITER, 1.0));

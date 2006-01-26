@@ -57,14 +57,16 @@ public interface TransactionListener
      * <p>
      * Any exceptions generated here will cause the transaction to rollback.
      * <p>
-     * All transaction resources are still available.
+     * Although all transaction resources are still available, this method should
+     * be used only for cleaning up resources after a commit has occured.
      */
     void afterCommit();
 
     /**
      * Invoked after transaction rollback.
      * <p>
-     * All transaction resources are still available.
+     * Although all transaction resources are still available, this method should
+     * be used only for cleaning up resources after a rollback has occured.
      */
     void afterRollback();
 }

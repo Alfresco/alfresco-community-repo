@@ -32,13 +32,13 @@ public interface AccessControlServiceSoapPort extends java.rmi.Remote {
     /**
      * Gets a list of the settable permissions for a list of classes.
      */
-    public org.alfresco.repo.webservice.accesscontrol.GetPermissionsResult[] getClassPermissions(java.lang.String[] classNames) throws java.rmi.RemoteException, org.alfresco.repo.webservice.accesscontrol.AccessControlFault;
+    public org.alfresco.repo.webservice.accesscontrol.GetClassPermissionsResult[] getClassPermissions(java.lang.String[] classNames) throws java.rmi.RemoteException, org.alfresco.repo.webservice.accesscontrol.AccessControlFault;
 
     /**
      * Determines whether the current authenticated user has the permissions
      * on each of the specified references.
      */
-    public org.alfresco.repo.webservice.accesscontrol.HasPermissionsResult hasPermissions(org.alfresco.repo.webservice.types.Predicate predicate, java.lang.String[] permissions) throws java.rmi.RemoteException, org.alfresco.repo.webservice.accesscontrol.AccessControlFault;
+    public org.alfresco.repo.webservice.accesscontrol.HasPermissionsResult[] hasPermissions(org.alfresco.repo.webservice.types.Predicate predicate, java.lang.String[] permissions) throws java.rmi.RemoteException, org.alfresco.repo.webservice.accesscontrol.AccessControlFault;
 
     /**
      * Set the inherit permission property of a set of references.

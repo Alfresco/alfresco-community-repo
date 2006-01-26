@@ -10,7 +10,7 @@ package org.alfresco.repo.webservice.accesscontrol;
 public class HasPermissionsResult  implements java.io.Serializable {
     private org.alfresco.repo.webservice.types.Reference reference;
     private java.lang.String permission;
-    private org.alfresco.repo.webservice.accesscontrol.AccessState accessState;
+    private org.alfresco.repo.webservice.accesscontrol.AccessStatus accessStatus;
 
     public HasPermissionsResult() {
     }
@@ -18,10 +18,10 @@ public class HasPermissionsResult  implements java.io.Serializable {
     public HasPermissionsResult(
            org.alfresco.repo.webservice.types.Reference reference,
            java.lang.String permission,
-           org.alfresco.repo.webservice.accesscontrol.AccessState accessState) {
+           org.alfresco.repo.webservice.accesscontrol.AccessStatus accessStatus) {
            this.reference = reference;
            this.permission = permission;
-           this.accessState = accessState;
+           this.accessStatus = accessStatus;
     }
 
 
@@ -66,22 +66,22 @@ public class HasPermissionsResult  implements java.io.Serializable {
 
 
     /**
-     * Gets the accessState value for this HasPermissionsResult.
+     * Gets the accessStatus value for this HasPermissionsResult.
      * 
-     * @return accessState
+     * @return accessStatus
      */
-    public org.alfresco.repo.webservice.accesscontrol.AccessState getAccessState() {
-        return accessState;
+    public org.alfresco.repo.webservice.accesscontrol.AccessStatus getAccessStatus() {
+        return accessStatus;
     }
 
 
     /**
-     * Sets the accessState value for this HasPermissionsResult.
+     * Sets the accessStatus value for this HasPermissionsResult.
      * 
-     * @param accessState
+     * @param accessStatus
      */
-    public void setAccessState(org.alfresco.repo.webservice.accesscontrol.AccessState accessState) {
-        this.accessState = accessState;
+    public void setAccessStatus(org.alfresco.repo.webservice.accesscontrol.AccessStatus accessStatus) {
+        this.accessStatus = accessStatus;
     }
 
     private java.lang.Object __equalsCalc = null;
@@ -102,9 +102,9 @@ public class HasPermissionsResult  implements java.io.Serializable {
             ((this.permission==null && other.getPermission()==null) || 
              (this.permission!=null &&
               this.permission.equals(other.getPermission()))) &&
-            ((this.accessState==null && other.getAccessState()==null) || 
-             (this.accessState!=null &&
-              this.accessState.equals(other.getAccessState())));
+            ((this.accessStatus==null && other.getAccessStatus()==null) || 
+             (this.accessStatus!=null &&
+              this.accessStatus.equals(other.getAccessStatus())));
         __equalsCalc = null;
         return _equals;
     }
@@ -122,8 +122,8 @@ public class HasPermissionsResult  implements java.io.Serializable {
         if (getPermission() != null) {
             _hashCode += getPermission().hashCode();
         }
-        if (getAccessState() != null) {
-            _hashCode += getAccessState().hashCode();
+        if (getAccessStatus() != null) {
+            _hashCode += getAccessStatus().hashCode();
         }
         __hashCodeCalc = false;
         return _hashCode;
@@ -148,9 +148,9 @@ public class HasPermissionsResult  implements java.io.Serializable {
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("accessState");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/accesscontrol/1.0", "accessState"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/accesscontrol/1.0", "AccessState"));
+        elemField.setFieldName("accessStatus");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/accesscontrol/1.0", "accessStatus"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/accesscontrol/1.0", "AccessStatus"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
     }

@@ -10,7 +10,7 @@ package org.alfresco.repo.webservice.accesscontrol;
 public class ACE  implements java.io.Serializable {
     private java.lang.String authority;
     private java.lang.String permission;
-    private boolean allow;
+    private org.alfresco.repo.webservice.accesscontrol.AccessStatus accessStatus;
 
     public ACE() {
     }
@@ -18,10 +18,10 @@ public class ACE  implements java.io.Serializable {
     public ACE(
            java.lang.String authority,
            java.lang.String permission,
-           boolean allow) {
+           org.alfresco.repo.webservice.accesscontrol.AccessStatus accessStatus) {
            this.authority = authority;
            this.permission = permission;
-           this.allow = allow;
+           this.accessStatus = accessStatus;
     }
 
 
@@ -66,22 +66,22 @@ public class ACE  implements java.io.Serializable {
 
 
     /**
-     * Gets the allow value for this ACE.
+     * Gets the accessStatus value for this ACE.
      * 
-     * @return allow
+     * @return accessStatus
      */
-    public boolean isAllow() {
-        return allow;
+    public org.alfresco.repo.webservice.accesscontrol.AccessStatus getAccessStatus() {
+        return accessStatus;
     }
 
 
     /**
-     * Sets the allow value for this ACE.
+     * Sets the accessStatus value for this ACE.
      * 
-     * @param allow
+     * @param accessStatus
      */
-    public void setAllow(boolean allow) {
-        this.allow = allow;
+    public void setAccessStatus(org.alfresco.repo.webservice.accesscontrol.AccessStatus accessStatus) {
+        this.accessStatus = accessStatus;
     }
 
     private java.lang.Object __equalsCalc = null;
@@ -102,7 +102,9 @@ public class ACE  implements java.io.Serializable {
             ((this.permission==null && other.getPermission()==null) || 
              (this.permission!=null &&
               this.permission.equals(other.getPermission()))) &&
-            this.allow == other.isAllow();
+            ((this.accessStatus==null && other.getAccessStatus()==null) || 
+             (this.accessStatus!=null &&
+              this.accessStatus.equals(other.getAccessStatus())));
         __equalsCalc = null;
         return _equals;
     }
@@ -120,7 +122,9 @@ public class ACE  implements java.io.Serializable {
         if (getPermission() != null) {
             _hashCode += getPermission().hashCode();
         }
-        _hashCode += (isAllow() ? Boolean.TRUE : Boolean.FALSE).hashCode();
+        if (getAccessStatus() != null) {
+            _hashCode += getAccessStatus().hashCode();
+        }
         __hashCodeCalc = false;
         return _hashCode;
     }
@@ -144,9 +148,9 @@ public class ACE  implements java.io.Serializable {
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("allow");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/accesscontrol/1.0", "allow"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
+        elemField.setFieldName("accessStatus");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/accesscontrol/1.0", "accessStatus"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/accesscontrol/1.0", "AccessStatus"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
     }

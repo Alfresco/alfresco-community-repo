@@ -85,6 +85,7 @@ public class AuthenticationWebService implements AuthenticationServiceSoapPort
         {
             if (ticket != null)
             {
+                this.authenticationService.validate(ticket);
                 this.authenticationService.invalidateTicket(ticket);
                 this.authenticationService.clearCurrentSecurityContext();
     
@@ -95,7 +96,7 @@ public class AuthenticationWebService implements AuthenticationServiceSoapPort
             }
         } 
         catch (Throwable e)
-        {
+        {            
             throw new AuthenticationFault(0, e.getMessage());
         }
     }

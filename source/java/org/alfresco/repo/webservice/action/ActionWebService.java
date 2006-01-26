@@ -52,6 +52,8 @@ import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.util.GUID;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Action web service implementation
@@ -60,6 +62,9 @@ import org.alfresco.util.GUID;
  */
 public class ActionWebService extends AbstractWebService implements ActionServiceSoapPort
 {
+    /** Log */
+    private static Log logger = LogFactory.getLog(ActionWebService.class);
+    
     /** The action service */
     private ActionService actionService;
     
@@ -118,13 +123,25 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     public ActionItemDefinition[] getConditionDefinitions() throws RemoteException,
             ActionFault
     {
-        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionItemDefinition[]>()
+        try
         {
-            public ActionItemDefinition[] doWork() throws Exception
+            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionItemDefinition[]>()
             {
-                return getConditionDefintionsImpl();
+                public ActionItemDefinition[] doWork() throws Exception
+                {
+                    return getConditionDefintionsImpl();
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
             }
-        });
+            
+            throw new ActionFault(0, exception.getMessage());
+        }
     }
     
     /**
@@ -155,13 +172,25 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     public ActionItemDefinition[] getActionDefinitions() throws RemoteException,
             ActionFault
     {
-        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionItemDefinition[]>()
+        try
         {
-            public ActionItemDefinition[] doWork() throws Exception
+            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionItemDefinition[]>()
             {
-                return getActionDefinitionsImpl();
+                public ActionItemDefinition[] doWork() throws Exception
+                {
+                    return getActionDefinitionsImpl();
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
             }
-        });
+            
+            throw new ActionFault(0, exception.getMessage());
+        }
     }
 
     /**
@@ -191,13 +220,25 @@ public class ActionWebService extends AbstractWebService implements ActionServic
      */
     public ActionItemDefinition getActionItemDefinition(final String name, final ActionItemDefinitionType definitionType) throws RemoteException, ActionFault
     {
-        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionItemDefinition>()
+        try
         {
-            public ActionItemDefinition doWork() throws Exception
+            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionItemDefinition>()
             {
-                return getActionItemDefinitionImpl(name, definitionType);
+                public ActionItemDefinition doWork() throws Exception
+                {
+                    return getActionItemDefinitionImpl(name, definitionType);
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
             }
-        });
+            
+            throw new ActionFault(0, exception.getMessage());
+        }
     }
     
     /**
@@ -273,13 +314,25 @@ public class ActionWebService extends AbstractWebService implements ActionServic
      */
     public org.alfresco.repo.webservice.action.RuleType[] getRuleTypes() throws RemoteException, ActionFault
     {
-        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.RuleType[]>()
+        try
         {
-            public org.alfresco.repo.webservice.action.RuleType[] doWork() throws Exception
+            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.RuleType[]>()
             {
-                return getRuleTypesImpl();
+                public org.alfresco.repo.webservice.action.RuleType[] doWork() throws Exception
+                {
+                    return getRuleTypesImpl();
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
             }
-        });
+            
+            throw new ActionFault(0, exception.getMessage());
+    }
     }
     
     public org.alfresco.repo.webservice.action.RuleType[] getRuleTypesImpl() throws RemoteException, ActionFault
@@ -307,13 +360,25 @@ public class ActionWebService extends AbstractWebService implements ActionServic
      */
     public org.alfresco.repo.webservice.action.RuleType getRuleType(final String name) throws RemoteException, ActionFault
     {
-        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.RuleType>()
+        try
         {
-            public org.alfresco.repo.webservice.action.RuleType doWork() throws Exception
+            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.RuleType>()
             {
-                return getRuleTypeImpl(name);
+                public org.alfresco.repo.webservice.action.RuleType doWork() throws Exception
+                {
+                    return getRuleTypeImpl(name);
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
             }
-        });
+            
+            throw new ActionFault(0, exception.getMessage());
+        }
     }
     
     public org.alfresco.repo.webservice.action.RuleType getRuleTypeImpl(String name) throws RemoteException, ActionFault
@@ -334,13 +399,25 @@ public class ActionWebService extends AbstractWebService implements ActionServic
      */
     public org.alfresco.repo.webservice.action.Action[] getActions(final Reference reference, final ActionFilter filter) throws RemoteException, ActionFault
     {
-        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Action[]>()
+        try
         {
-            public org.alfresco.repo.webservice.action.Action[] doWork() throws Exception
+            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Action[]>()
             {
-                return getActionsImpl(reference, filter);
+                public org.alfresco.repo.webservice.action.Action[] doWork() throws Exception
+                {
+                    return getActionsImpl(reference, filter);
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
             }
-        });
+            
+            throw new ActionFault(0, exception.getMessage());
+        }
     }
     
     private org.alfresco.repo.webservice.action.Action[] getActionsImpl(Reference reference, ActionFilter filter) throws RemoteException, ActionFault
@@ -486,15 +563,35 @@ public class ActionWebService extends AbstractWebService implements ActionServic
             final Reference reference, 
             final org.alfresco.repo.webservice.action.Action[] webServiceActions) throws RemoteException, ActionFault
     {
-        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Action[]>()
+        try
         {
-            public org.alfresco.repo.webservice.action.Action[] doWork() throws Exception
+            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Action[]>()
             {
-                return saveActionsImpl(reference, webServiceActions);
+                public org.alfresco.repo.webservice.action.Action[] doWork() throws Exception
+                {
+                    return saveActionsImpl(reference, webServiceActions);
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
             }
-        });
+            
+            throw new ActionFault(0, exception.getMessage());
+        }
     }
     
+    /**
+     * 
+     * @param reference
+     * @param webServiceActions
+     * @return
+     * @throws RemoteException
+     * @throws ActionFault
+     */
     private org.alfresco.repo.webservice.action.Action[] saveActionsImpl(
             Reference reference, 
             org.alfresco.repo.webservice.action.Action[] webServiceActions) throws RemoteException, ActionFault
@@ -688,14 +785,26 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     public void removeActions(final Reference reference, final org.alfresco.repo.webservice.action.Action[] webServiceActions)
             throws RemoteException, ActionFault
     {
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<Object>()
+        try
         {
-            public Object doWork() throws Exception
+            TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<Object>()
             {
-                removeActionsImpl(reference, webServiceActions);
-                return null;
+                public Object doWork() throws Exception
+                {
+                    removeActionsImpl(reference, webServiceActions);
+                    return null;
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
             }
-        });
+            
+            throw new ActionFault(0, exception.getMessage());
+        }
     }
     
     private void removeActionsImpl(Reference reference, org.alfresco.repo.webservice.action.Action[] webServiceActions)
@@ -724,13 +833,25 @@ public class ActionWebService extends AbstractWebService implements ActionServic
      */
     public ActionExecutionResult[] executeActions(final Predicate predicate, final org.alfresco.repo.webservice.action.Action[] webServiceActions) throws RemoteException, ActionFault
     {
-        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionExecutionResult[]>()
+        try
         {
-            public ActionExecutionResult[] doWork() throws Exception
+            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionExecutionResult[]>()
             {
-                return executeActionsImpl(predicate, webServiceActions);
+                public ActionExecutionResult[] doWork() throws Exception
+                {
+                    return executeActionsImpl(predicate, webServiceActions);
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
             }
-        });
+            
+            throw new ActionFault(0, exception.getMessage());
+        }
     }
     
     /**
@@ -786,13 +907,25 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     public org.alfresco.repo.webservice.action.Rule[] getRules(final Reference reference, final RuleFilter ruleFilter)
             throws RemoteException, ActionFault
     {
-        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Rule[]>()
+        try
         {
-            public org.alfresco.repo.webservice.action.Rule[] doWork() throws Exception
+            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Rule[]>()
             {
-                return getRulesImpl(reference, ruleFilter);
+                public org.alfresco.repo.webservice.action.Rule[] doWork() throws Exception
+                {
+                    return getRulesImpl(reference, ruleFilter);
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
             }
-        });
+            
+            throw new ActionFault(0, exception.getMessage());
+        }
     }
     
     private org.alfresco.repo.webservice.action.Rule[] getRulesImpl(Reference reference, RuleFilter ruleFilter)
@@ -876,13 +1009,25 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     public org.alfresco.repo.webservice.action.Rule[] saveRules(final Reference reference, final org.alfresco.repo.webservice.action.Rule[] webServiceRules)
             throws RemoteException, ActionFault
     {
-        return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Rule[]>()
+        try
         {
-            public org.alfresco.repo.webservice.action.Rule[] doWork() throws Exception
+            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Rule[]>()
             {
-                return saveRulesImpl(reference, webServiceRules);
+                public org.alfresco.repo.webservice.action.Rule[] doWork() throws Exception
+                {
+                    return saveRulesImpl(reference, webServiceRules);
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
             }
-        });
+            
+            throw new ActionFault(0, exception.getMessage());
+        }
     }
     
     private org.alfresco.repo.webservice.action.Rule[] saveRulesImpl(Reference reference, org.alfresco.repo.webservice.action.Rule[] webServiceRules)
@@ -917,16 +1062,35 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     public void removeRules(final Reference reference, final org.alfresco.repo.webservice.action.Rule[] webServiceRules)
             throws RemoteException, ActionFault
     {
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<Object>()
+        try
         {
-            public Object doWork() throws Exception
+            TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<Object>()
             {
-                removeRulesImpl(reference, webServiceRules);
-                return null;
+                public Object doWork() throws Exception
+                {
+                    removeRulesImpl(reference, webServiceRules);
+                    return null;
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
             }
-        });
+            
+            throw new ActionFault(0, exception.getMessage());
+        }
     }
     
+    /**
+     * 
+     * @param reference
+     * @param webServiceRules
+     * @throws RemoteException
+     * @throws ActionFault
+     */
     public void removeRulesImpl(Reference reference, org.alfresco.repo.webservice.action.Rule[] webServiceRules)
         throws RemoteException, ActionFault
     {
@@ -949,6 +1113,11 @@ public class ActionWebService extends AbstractWebService implements ActionServic
 
     }
     
+    /**
+     * 
+     * @param webServiceRule
+     * @return
+     */
     private Rule convertToRule(org.alfresco.repo.webservice.action.Rule webServiceRule)
     {
         // If the id is null then generate one

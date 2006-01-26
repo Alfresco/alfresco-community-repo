@@ -17,11 +17,18 @@
 
          <!-- Type Definitions -->
 
+	     <xsd:simpleType name="AccessStatus">
+	    	 <xsd:restriction base="xsd:string">
+	    		<xsd:enumeration value="acepted"/>
+	    	 	<xsd:enumeration value="declined"/>
+	    	 </xsd:restriction>
+	     </xsd:simpleType>
+
          <complexType name="ACE">
             <sequence>
                <element name="authority" type="xsd:string"/>
                <element name="permission" type="xsd:string"/>
-               <element name="allow" type="xsd:boolean"/>
+               <element name="accessStatus" type="acs:AccessStatus"/>
             </sequence>
          </complexType>
          <element name="ACE" type="acs:ACE"/>
@@ -38,7 +45,7 @@
          <complexType name="GetPermissionsResult">
             <sequence>
                <element name="reference" type="cms:Reference"/>
-               <element name="permissions" type="xsd:string" maxOccures="unbounded" minOccurs="0"/>
+               <element name="permissions" type="xsd:string" maxOccurs="unbounded" minOccurs="0"/>
             </sequence>
          </complexType>
          <element name="GetPermissionsResult" type="acs:GetPermissionsResult"/>
@@ -46,23 +53,16 @@
          <complexType name="GetClassPermissionsResult">
             <sequence>
                <element name="className" type="xsd:string"/>
-               <element name="permissions" type="xsd:string" maxOccures="unbounded" minOccurs="0"/>
+               <element name="permissions" type="xsd:string" maxOccurs="unbounded" minOccurs="0"/>
             </sequence>
          </complexType>
          <element name="GetClassPermissionsResult" type="acs:GetClassPermissionsResult"/>
-
-	     <xsd:simpleType name="AccessState">
-	    	 <xsd:restriction base="xsd:string">
-	    		<xsd:enumeration value="acepted"/>
-	    	 	<xsd:enumeration value="declined"/>
-	    	 </xsd:restriction>
-	     </xsd:simpleType>
 
          <complexType name="HasPermissionsResult">
             <sequence>
                <element name="reference" type="cms:Reference"/>
                <element name="permission" type="xsd:string"/>
-               <element name="accessState" type="acs:AccessState"/>
+               <element name="accessStatus" type="acs:AccessStatus"/>
             </sequence>
          </complexType>
          <element name="HasPermissionsResult" type="acs:HasPermissionsResult"/>
@@ -163,7 +163,7 @@
          <element name="getClassPermissionsResponse">
             <complexType>
                <sequence>
-                  <element name="result" type="acs:GetPermissionsResult" maxOccurs="unbounded" minOccurs="0"/>
+                  <element name="result" type="acs:GetClassPermissionsResult" maxOccurs="unbounded" minOccurs="0"/>
                </sequence>
             </complexType>
          </element>         
@@ -180,7 +180,7 @@
          <element name="hasPermissionsResponse">
             <complexType>
                <sequence>
-                  <element name="results" type="acs:HasPermissionsResult"/>
+                  <element name="results" type="acs:HasPermissionsResult" maxOccurs="unbounded" minOccurs="0"/>
                </sequence>
             </complexType>
          </element>         

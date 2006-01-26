@@ -175,6 +175,12 @@
       <property name="transactionService">
          <ref bean="transactionComponent"/>
       </property>
+      <property name="permissionService">
+         <ref bean="PermissionService"/>
+      </property>
+      <property name="ownableService">
+         <ref bean="OwnableService"/>
+      </property>
    </bean>
    
    <bean id="administrationWebService" class="org.alfresco.repo.webservice.administration.AdministrationWebService">
@@ -189,6 +195,12 @@
       </property>
       <property name="transactionService">
          <ref bean="transactionComponent"/>
+      </property>
+      <property name="authenticationService">
+         <ref bean="AuthenticationService"/>
+      </property>
+      <property name="personService">
+         <ref bean="personService"/>
       </property>
    </bean>
  

@@ -9,14 +9,14 @@ package org.alfresco.repo.webservice.accesscontrol;
 
 public class GetClassPermissionsResult  implements java.io.Serializable {
     private java.lang.String className;
-    private java.lang.String permissions;
+    private java.lang.String[] permissions;
 
     public GetClassPermissionsResult() {
     }
 
     public GetClassPermissionsResult(
            java.lang.String className,
-           java.lang.String permissions) {
+           java.lang.String[] permissions) {
            this.className = className;
            this.permissions = permissions;
     }
@@ -47,7 +47,7 @@ public class GetClassPermissionsResult  implements java.io.Serializable {
      * 
      * @return permissions
      */
-    public java.lang.String getPermissions() {
+    public java.lang.String[] getPermissions() {
         return permissions;
     }
 
@@ -57,8 +57,16 @@ public class GetClassPermissionsResult  implements java.io.Serializable {
      * 
      * @param permissions
      */
-    public void setPermissions(java.lang.String permissions) {
+    public void setPermissions(java.lang.String[] permissions) {
         this.permissions = permissions;
+    }
+
+    public java.lang.String getPermissions(int i) {
+        return this.permissions[i];
+    }
+
+    public void setPermissions(int i, java.lang.String _value) {
+        this.permissions[i] = _value;
     }
 
     private java.lang.Object __equalsCalc = null;
@@ -78,7 +86,7 @@ public class GetClassPermissionsResult  implements java.io.Serializable {
               this.className.equals(other.getClassName()))) &&
             ((this.permissions==null && other.getPermissions()==null) || 
              (this.permissions!=null &&
-              this.permissions.equals(other.getPermissions())));
+              java.util.Arrays.equals(this.permissions, other.getPermissions())));
         __equalsCalc = null;
         return _equals;
     }
@@ -94,7 +102,15 @@ public class GetClassPermissionsResult  implements java.io.Serializable {
             _hashCode += getClassName().hashCode();
         }
         if (getPermissions() != null) {
-            _hashCode += getPermissions().hashCode();
+            for (int i=0;
+                 i<java.lang.reflect.Array.getLength(getPermissions());
+                 i++) {
+                java.lang.Object obj = java.lang.reflect.Array.get(getPermissions(), i);
+                if (obj != null &&
+                    !obj.getClass().isArray()) {
+                    _hashCode += obj.hashCode();
+                }
+            }
         }
         __hashCodeCalc = false;
         return _hashCode;
@@ -118,6 +134,7 @@ public class GetClassPermissionsResult  implements java.io.Serializable {
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setMinOccurs(0);
         elemField.setNillable(false);
+        elemField.setMaxOccursUnbounded(true);
         typeDesc.addFieldDesc(elemField);
     }
 

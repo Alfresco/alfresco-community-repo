@@ -367,6 +367,7 @@ public class LoginBean
       if (user != null)
       {
          this.authenticationService.invalidateTicket(user.getTicket());
+         this.authenticationService.clearCurrentSecurityContext();
       }
       
       // Request that the username cookie state is removed - this is not

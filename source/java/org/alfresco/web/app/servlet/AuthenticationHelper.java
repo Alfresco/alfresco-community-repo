@@ -73,7 +73,7 @@ public final class AuthenticationHelper
    
    /** public service bean IDs **/
    private static final String AUTHENTICATION_SERVICE = "AuthenticationService";
-   private static final String UNPROTECTED_AUTH_SERVICE = "authenticationService";
+   private static final String UNPROTECTED_AUTH_SERVICE = "authenticationServiceImpl";
    private static final String PERSON_SERVICE = "personService";
    
    /** cookie names */
@@ -172,15 +172,17 @@ public final class AuthenticationHelper
                catch (AccessDeniedException accessError)
                {
                   // Guest is unable to access either properties on Person
-                  //AuthenticationService smallAuth = (AuthenticationService)wc.getBean(UNPROTECTED_AUTH_SERVICE);
-                  //smallAuth.invalidateTicket(smallAuth.getCurrentTicket());
+                  AuthenticationService unprotAuthService = (AuthenticationService)wc.getBean(UNPROTECTED_AUTH_SERVICE);
+                  unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket());
+                  unprotAuthService.clearCurrentSecurityContext();
                   logger.warn("Unable to login as Guest: " + accessError.getMessage());
                }
                catch (Throwable e)
                {
                   // Some other kind of serious failure to report
-                  //AuthenticationService smallAuth = (AuthenticationService)wc.getBean(UNPROTECTED_AUTH_SERVICE);
-                  //smallAuth.invalidateTicket(smallAuth.getCurrentTicket());
+                  AuthenticationService unprotAuthService = (AuthenticationService)wc.getBean(UNPROTECTED_AUTH_SERVICE);
+                  unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket());
+                  unprotAuthService.clearCurrentSecurityContext();
                   throw new AlfrescoRuntimeException("Failed to authenticate as Guest user.", e);
                }
                finally

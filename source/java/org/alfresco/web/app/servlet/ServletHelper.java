@@ -16,11 +16,38 @@
  */
 package org.alfresco.web.app.servlet;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.faces.FactoryFinder;
+import javax.faces.component.UIViewRoot;
+import javax.faces.context.FacesContext;
+import javax.faces.context.FacesContextFactory;
+import javax.faces.el.ValueBinding;
+import javax.faces.lifecycle.Lifecycle;
+import javax.faces.lifecycle.LifecycleFactory;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.LoginBean;
+import org.alfresco.web.bean.repository.Repository;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Useful constant values and common methods for Alfresco servlets.
@@ -30,14 +57,13 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 public final class ServletHelper
 {
    /** an existing Ticket can be passed to most servlet for non-session based authentication */
-   public static final String ARG_TICKET   = "ticket";
+   private static final String ARG_TICKET   = "ticket";
    
    /** forcing guess access is available on most servlets */
-   public static final String ARG_GUEST    = "guest";
+   private static final String ARG_GUEST    = "guest";
    
-   /** public service bean IDs **/
-   public static final String AUTHENTICATION_SERVICE = "authenticationService";
-   public static final String PERSON_SERVICE = "personService";
+   private static Log logger = LogFactory.getLog(ServletHelper.class);
+   
    
    /**
     * Return the ServiceRegistry helper instance
@@ -57,5 +83,153 @@ public final class ServletHelper
     */
    private ServletHelper()
    {
+   }
+   
+   /**
+    * Perform an authentication for the servlet request URI. Processing any "ticket" or
+    * "guest" URL arguments.
+    * 
+    * @return AuthenticationStatus
+    * 
+    * @throws IOException
+    */
+   public static AuthenticationStatus servletAuthenticate(HttpServletRequest req, HttpServletResponse res, ServletContext sc)
+      throws IOException
+   {
+      AuthenticationStatus status;
+      
+      // see if a ticket or a force Guest parameter has been supplied
+      String ticket = req.getParameter(ServletHelper.ARG_TICKET);
+      if (ticket != null && ticket.length() != 0)
+      {
+         status = AuthenticationHelper.authenticate(sc, req, res, ticket);
+      }
+      else
+      {
+         boolean forceGuest = false;
+         String guest = req.getParameter(ServletHelper.ARG_GUEST);
+         if (guest != null)
+         {
+            forceGuest = Boolean.parseBoolean(guest);
+         }
+         status = AuthenticationHelper.authenticate(sc, req, res, forceGuest);
+      }
+      if (status == AuthenticationStatus.Failure)
+      {
+         // authentication failed - no point returning the content as we haven't logged in yet
+         // so end servlet execution and save the URL so the login page knows what to do later
+         req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, req.getRequestURI() + (req.getQueryString() != null ? ("?" + req.getQueryString()) : ""));
+      }
+      
+      return status;
+   }
+   
+   /**
+    * Return FacesContext made available to servlets and servlet filters.
+    * {@link http://www.thoughtsabout.net/blog/archives/000033.html}
+    * 
+    * @return FacesContext
+    */
+   public static FacesContext getFacesContext(ServletRequest req, ServletResponse res, ServletContext sc)
+   {
+      FacesContext facesContext = FacesContext.getCurrentInstance();
+      if (facesContext != null) return facesContext;
+      
+      FacesContextFactory contextFactory = (FacesContextFactory)FactoryFinder.getFactory(FactoryFinder.FACES_CONTEXT_FACTORY);
+      LifecycleFactory lifecycleFactory = (LifecycleFactory)FactoryFinder.getFactory(FactoryFinder.LIFECYCLE_FACTORY);
+      Lifecycle lifecycle = lifecycleFactory.getLifecycle(LifecycleFactory.DEFAULT_LIFECYCLE);
+      
+      // Can get ServletContext here like this:
+      // ServletContext servletContext = ((HttpServletRequest)request).getSession().getServletContext();
+      
+      // Doesn't set this instance as the current instance of FacesContext.getCurrentInstance
+      facesContext = contextFactory.getFacesContext(sc, req, res, lifecycle);
+      
+      // Set using our inner class
+      InnerFacesContext.setFacesContextAsCurrent(facesContext);
+      
+      // set a new viewRoot, otherwise context.getViewRoot returns null
+      UIViewRoot view = facesContext.getApplication().getViewHandler().createView(facesContext, "/jsp/root");
+      facesContext.setViewRoot(view);
+      
+      return facesContext;
+   }
+   
+   /**
+    * We need an inner class to be able to call FacesContext.setCurrentInstance
+    * since it's a protected method
+    */
+   private abstract static class InnerFacesContext extends FacesContext
+   {
+      protected static void setFacesContextAsCurrent(FacesContext facesContext)
+      {
+         FacesContext.setCurrentInstance(facesContext);
+      }
+   }
+   
+   /**
+    * Return a JSF managed bean reference.
+    * 
+    * @param fc      FacesContext
+    * @param name    Name of the managed bean to return
+    * 
+    * @return the managed bean or null if not found
+    */
+   public static Object getManagedBean(FacesContext fc, String name)
+   {
+      ValueBinding vb = fc.getApplication().createValueBinding("#{" + name + "}");
+      return vb.getValue(fc);
+   }
+   
+   /**
+    * Resolves the given path elements to a NodeRef in the current repository
+    * 
+    * @param context Faces context
+    * @param args The elements of the path to lookup
+    */
+   public static NodeRef resolveWebDAVPath(FacesContext context, String[] args)
+   {
+      NodeRef nodeRef = null;
+
+      List<String> paths = new ArrayList<String>(args.length-1);
+      
+      FileInfo file = null;
+      try
+      {
+         // create a list of path elements (decode the URL as we go)
+         for (int x = 1; x < args.length; x++)
+         {
+            paths.add(URLDecoder.decode(args[x], "UTF-8"));
+         }
+         
+         if (logger.isDebugEnabled())
+            logger.debug("Attempting to resolve webdav path to NodeRef: " + paths);
+         
+         // get the company home node to start the search from
+         NodeRef companyHome = new NodeRef(Repository.getStoreRef(), 
+               Application.getCompanyRootId());
+         
+         WebApplicationContext wc = FacesContextUtils.getRequiredWebApplicationContext(context);
+         //WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
+         FileFolderService ffs = (FileFolderService)wc.getBean("FileFolderService");
+         file = ffs.resolveNamePath(companyHome, paths);
+         nodeRef = file.getNodeRef();
+      }
+      catch (UnsupportedEncodingException uee)
+      {
+         if (logger.isWarnEnabled())
+            logger.warn("Failed to resolve webdav path", uee);
+         
+         nodeRef = null;
+      }
+      catch (FileNotFoundException fne)
+      {
+         if (logger.isWarnEnabled())
+            logger.debug("Failed to resolve webdav path", fne);
+         
+         nodeRef = null;
+      }
+      
+      return nodeRef;
    }
 }

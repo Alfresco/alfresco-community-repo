@@ -27,7 +27,7 @@
       </managed-property>
       <managed-property>
          <property-name>authenticationService</property-name>
-         <value>#{authenticationService}</value>
+         <value>#{AuthenticationService}</value>
       </managed-property>
       <managed-property>
          <property-name>personService</property-name>
@@ -44,10 +44,6 @@
       <managed-property>
          <property-name>configService</property-name>
          <value>#{configService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>fileFolderService</property-name>
-         <value>#{FileFolderService}</value>
       </managed-property>
    </managed-bean>
    

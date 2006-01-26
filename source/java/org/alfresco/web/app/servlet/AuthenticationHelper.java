@@ -48,25 +48,47 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Helper to authenticate the current user using available Ticket information.
+ * <p>
+ * User information is looked up in the Session. If found the ticket is retrieved and validated.
+ * If the ticket is invalid then a redirect is performed to the login page.
+ * <p>
+ * If no User info is found then a search will be made for a previous username stored in a Cookie
+ * value. If the username if found then a redirect to the Login page will occur. If no username
+ * is found then Guest access login will be attempted by the system. Guest access can be forced
+ * with the appropriate method call.  
  * 
  * @author Kevin Roast
  */
 public final class AuthenticationHelper
 {
+   public static final String FACES_SERVLET = "/faces";
+   
+   /** session variables */
    public static final String AUTHENTICATION_USER = "_alfAuthTicket";
    public static final String SESSION_USERNAME = "_alfLastUser";
    public static final String SESSION_INVALIDATED = "_alfSessionInvalid";
+   
+   /** JSF bean IDs */
    public static final String LOGIN_BEAN = "LoginBean";
    
+   /** public service bean IDs **/
+   private static final String AUTHENTICATION_SERVICE = "AuthenticationService";
+   private static final String UNPROTECTED_AUTH_SERVICE = "authenticationService";
+   private static final String PERSON_SERVICE = "personService";
+   
+   /** cookie names */
    private static final String COOKIE_ALFUSER = "alfUser";
    
    private static Log logger = LogFactory.getLog(AuthenticationHelper.class);
+   
    
    /**
     * Helper to authenticate the current user using session based Ticket information.
     * <p>
     * User information is looked up in the Session. If found the ticket is retrieved and validated.
     * If no User info is found or the ticket is invalid then a redirect is performed to the login page. 
+    * 
+    * @param guest      True to force a Guest login attempt
     * 
     * @return AuthenticationStatus result.
     */
@@ -91,10 +113,14 @@ public final class AuthenticationHelper
       
       // setup the authentication context
       WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
-      AuthenticationService auth = (AuthenticationService)wc.getBean(ServletHelper.AUTHENTICATION_SERVICE);
+      AuthenticationService auth = (AuthenticationService)wc.getBean(AUTHENTICATION_SERVICE);
       
       if (user == null || guest)
       {
+         // Check for the session invalidated flag - this is set by the Logout action in the LoginBean
+         // it signals a forced Logout and means we should not immediately attempt a relogin as Guest.
+         // The attribute is removed from the session by the login.jsp page after the Cookie containing
+         // the last stored username string is cleared.
          if (session.getAttribute(AuthenticationHelper.SESSION_INVALIDATED) == null)
          {
             Cookie authCookie = getAuthCookie(httpRequest);
@@ -112,7 +138,7 @@ public final class AuthenticationHelper
                   tx.begin();
                   
                   NodeService nodeService = services.getNodeService();
-                  PersonService personService = (PersonService)wc.getBean(ServletHelper.PERSON_SERVICE);
+                  PersonService personService = (PersonService)wc.getBean(PERSON_SERVICE);
                   NodeRef guestRef = personService.getPerson(PermissionService.GUEST);
                   user = new User(PermissionService.GUEST, auth.getCurrentTicket(), guestRef);
                   NodeRef guestHomeRef = (NodeRef)nodeService.getProperty(guestRef, ContentModel.PROP_HOMEFOLDER);
@@ -125,12 +151,16 @@ public final class AuthenticationHelper
                   user.setHomeSpaceId(guestHomeRef.getId());
                   
                   tx.commit();
+                  tx = null;     // clear this so we know not to rollback 
                   
                   // store the User object in the Session - the authentication servlet will then proceed
                   session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
                
                   // Set the current locale
                   I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
+                  
+                  // remove the session invalidated flag
+                  session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
                   
                   // it is the responsibilty of the caller to handle the Guest return status
                   return AuthenticationStatus.Guest;
@@ -142,19 +172,26 @@ public final class AuthenticationHelper
                catch (AccessDeniedException accessError)
                {
                   // Guest is unable to access either properties on Person
+                  //AuthenticationService smallAuth = (AuthenticationService)wc.getBean(UNPROTECTED_AUTH_SERVICE);
+                  //smallAuth.invalidateTicket(smallAuth.getCurrentTicket());
                   logger.warn("Unable to login as Guest: " + accessError.getMessage());
                }
                catch (Throwable e)
                {
-                  // Guest access not allowed - some other kind of serious failure to report
-                  try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+                  // Some other kind of serious failure to report
+                  //AuthenticationService smallAuth = (AuthenticationService)wc.getBean(UNPROTECTED_AUTH_SERVICE);
+                  //smallAuth.invalidateTicket(smallAuth.getCurrentTicket());
                   throw new AlfrescoRuntimeException("Failed to authenticate as Guest user.", e);
+               }
+               finally
+               {
+                  try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
                }
             }
          }
          
          // no user/ticket found or session invalidated by user (logout) - redirect to login page
-         httpResponse.sendRedirect(httpRequest.getContextPath() + "/faces" + Application.getLoginPage(context));
+         httpResponse.sendRedirect(httpRequest.getContextPath() + FACES_SERVLET + Application.getLoginPage(context));
          
          return AuthenticationStatus.Failure;
       }
@@ -167,7 +204,7 @@ public final class AuthenticationHelper
          catch (AuthenticationException authErr)
          {
             // expired ticket - redirect to login page
-            httpResponse.sendRedirect(httpRequest.getContextPath() + "/faces" + Application.getLoginPage(context));
+            httpResponse.sendRedirect(httpRequest.getContextPath() + FACES_SERVLET + Application.getLoginPage(context));
             return AuthenticationStatus.Failure;
          }
          
@@ -195,7 +232,7 @@ public final class AuthenticationHelper
    {
       // setup the authentication context
       WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
-      AuthenticationService auth = (AuthenticationService)wc.getBean(ServletHelper.AUTHENTICATION_SERVICE);
+      AuthenticationService auth = (AuthenticationService)wc.getBean(AUTHENTICATION_SERVICE);
       try
       {
          auth.validate(ticket);

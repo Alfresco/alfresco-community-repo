@@ -17,10 +17,7 @@
 package org.alfresco.web.bean;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,14 +33,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.webdav.WebDAVServlet;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
@@ -113,14 +105,6 @@ public class LoginBean
    public void setConfigService(ConfigService configService)
    {
       this.configService = configService;
-   }
-   
-   /**
-    * @param fileFolderService          The FileFolderService to set.
-    */
-   public void setFileFolderService(FileFolderService fileFolderService)
-   {
-      this.fileFolderService = fileFolderService;
    }
 
    /**
@@ -276,7 +260,8 @@ public class LoginBean
       
       FacesContext fc = FacesContext.getCurrentInstance();
       
-      if (this.username != null && this.password != null)
+      if (this.username != null && this.username.length() != 0 &&
+          this.password != null && this.password.length() != 0)
       {
          try
          {
@@ -284,14 +269,18 @@ public class LoginBean
             
             // Authenticate via the authentication service, then save the details of user in an object
             // in the session - this is used by the servlet filter etc. on each page to check for login
+            //this.authenticationService = (AuthenticationService)FacesContextUtils.getRequiredWebApplicationContext(FacesContext.getCurrentInstance()).getBean("authenticationService");
             this.authenticationService.authenticate(this.username, this.password.toCharArray());
             
             // remove the session invalidated flag (used to remove last username cookie by AuthenticationFilter)
             session.remove(AuthenticationHelper.SESSION_INVALIDATED);
             
             // setup User object and Home space ID
-            User user = new User(this.authenticationService.getCurrentUserName(), this.authenticationService.getCurrentTicket(),
+            User user = new User(
+                  this.authenticationService.getCurrentUserName(),
+                  this.authenticationService.getCurrentTicket(),
                   personService.getPerson(this.username));
+            
             NodeRef homeSpaceRef = (NodeRef) this.nodeService.getProperty(personService.getPerson(this.username), ContentModel.PROP_HOMEFOLDER);
             
             // check that the home space node exists - else user cannot login
@@ -305,118 +294,31 @@ public class LoginBean
             // the app to continue without redirecting to the login page
             session.put(AuthenticationHelper.AUTHENTICATION_USER, user);
             
-            // if an external outcome has been provided then use that, else use default
-            String externalOutcome = (String)fc.getExternalContext().getSessionMap().get(LOGIN_OUTCOME_KEY);
-            if (externalOutcome != null)
+            // if a redirect URL has been provided then use that
+            // this allows servlets etc. to provide a URL to return too after a successful login
+            String redirectURL = (String)fc.getExternalContext().getSessionMap().get(LOGIN_REDIRECT_KEY);
+            if (redirectURL != null)
             {
-               // TODO: This is a quick solution. It would be better to specify the (identifier?)
-               // of a handler class that would be responsible for processing specific outcome arguments.
-               
                if (logger.isDebugEnabled())
-                  logger.debug("External outcome found: " + externalOutcome);
+                  logger.debug("Redirect URL found: " + redirectURL);
                
-               // setup is required for certain outcome requests
-               if (OUTCOME_DOCDETAILS.equals(externalOutcome))
-               {
-                  NodeRef nodeRef = null;
-                  
-                  String[] args = (String[]) fc.getExternalContext().getSessionMap().get(LOGIN_OUTCOME_ARGS);
-                  if (args[0].equals(WebDAVServlet.WEBDAV_PREFIX))
-                  {
-                     nodeRef = resolveWebDAVPath(fc, args);
-                  }
-                  else if (args.length == 3)
-                  {
-                     StoreRef storeRef = new StoreRef(args[0], args[1]);
-                     nodeRef = new NodeRef(storeRef, args[2]);
-                  }
-                  
-                  if (nodeRef != null)
-                  {
-                     // setup the Document on the browse bean
-                     // TODO: the browse bean should accept a full NodeRef - not just an ID
-                     this.browseBean.setupContentAction(nodeRef.getId(), true);
-                  }
-               }
-               else if (OUTCOME_SPACEDETAILS.equals(externalOutcome))
-               {
-                  NodeRef nodeRef = null;
-                  
-                  String[] args = (String[]) fc.getExternalContext().getSessionMap().get(LOGIN_OUTCOME_ARGS);
-                  if (args[0].equals(WebDAVServlet.WEBDAV_PREFIX))
-                  {
-                     nodeRef = resolveWebDAVPath(fc, args);
-                  }
-                  else if (args.length == 3)
-                  {
-                     StoreRef storeRef = new StoreRef(args[0], args[1]);
-                     nodeRef = new NodeRef(storeRef, args[2]);
-                  }
-                  
-                  if (nodeRef != null)
-                  {
-                     // setup the Space on the browse bean
-                     // TODO: the browse bean should accept a full NodeRef - not just an ID
-                     this.browseBean.setupSpaceAction(nodeRef.getId(), true);
-                  }
-               }
-               else if (OUTCOME_BROWSE.equals(externalOutcome))
-               {
-                  String[] args = (String[]) fc.getExternalContext().getSessionMap().get(LOGIN_OUTCOME_ARGS);
-                  if (args != null)
-                  {
-                     NodeRef nodeRef = null;
-                     int offset = 0;
-                     if (args.length >= 3)
-                     {
-                        offset = args.length - 3;
-                        StoreRef storeRef = new StoreRef(args[0+offset], args[1+offset]);
-                        nodeRef = new NodeRef(storeRef, args[2+offset]);
-                        
-                        // setup the ref as current Id in the global navigation bean
-                        this.navigator.setCurrentNodeId(nodeRef.getId());
-                        
-                        // check for view mode first argument
-                        if (args[0].equals(LOGIN_ARG_TEMPLATE))
-                        {
-                           this.browseBean.setDashboardView(true);
-                           // the above call will auto-navigate to the correct outcome - so we don't!
-                           externalOutcome = null;
-                        }
-                     }
-                  }
-               }
+               // remove redirect URL from session
+               fc.getExternalContext().getSessionMap().remove(LOGIN_REDIRECT_KEY);
                
-               fc.getExternalContext().getSessionMap().remove(LOGIN_OUTCOME_KEY);
-               return externalOutcome;
+               try
+               {
+                  fc.getExternalContext().redirect(redirectURL);
+                  fc.responseComplete();
+                  return null;
+               }
+               catch (IOException ioErr)
+               {
+                  logger.warn("Unable to redirect to url: " + redirectURL);
+               }
             }
             else
             {
-               // if a redirect URL has been provided then use that
-               String redirectURL = (String)fc.getExternalContext().getSessionMap().get(LOGIN_REDIRECT_KEY);
-               if (redirectURL != null)
-               {
-                  if (logger.isDebugEnabled())
-                     logger.debug("Redirect URL found: " + redirectURL);
-                  
-                  // remove URL from session
-                  fc.getExternalContext().getSessionMap().remove(LOGIN_REDIRECT_KEY);
-                  
-                  try
-                  {
-                     fc.getExternalContext().redirect(redirectURL);
-                     fc.responseComplete();
-                     return null;
-                  }
-                  catch (IOException ioErr)
-                  {
-                     logger.warn("Unable to redirect to url: " + redirectURL);
-                  }
-               }
-               else
-               {
-                  return "success";
-               }
+               return "success";
             }
          }
          catch (AuthenticationException aerr)
@@ -481,59 +383,6 @@ public class LoginBean
       
       return alfrescoAuth ? "logout" : "relogin";
    }
-
-   
-   // ------------------------------------------------------------------------------
-   // Private helpers
-   
-   /**
-    * Resolves the given path elements to a NodeRef in the current repository
-    * 
-    * @param context Faces context
-    * @param args The elements of the path to lookup
-    */
-   private NodeRef resolveWebDAVPath(FacesContext context, String[] args)
-   {
-      NodeRef nodeRef = null;
-
-      List<String> paths = new ArrayList<String>(args.length-1);
-      
-      FileInfo file = null;
-      try
-      {
-         // create a list of path elements (decode the URL as we go)
-         for (int x = 1; x < args.length; x++)
-         {
-            paths.add(URLDecoder.decode(args[x], "UTF-8"));
-         }
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Attempting to resolve webdav path to NodeRef: " + paths);
-         
-         // get the company home node to start the search from
-         NodeRef companyHome = new NodeRef(Repository.getStoreRef(), 
-               Application.getCompanyRootId());
-         
-         file = this.fileFolderService.resolveNamePath(companyHome, paths);
-         nodeRef = file.getNodeRef();
-      }
-      catch (UnsupportedEncodingException uee)
-      {
-         if (logger.isWarnEnabled())
-            logger.warn("Failed to resolve webdav path", uee);
-         
-         nodeRef = null;
-      }
-      catch (FileNotFoundException fne)
-      {
-         if (logger.isWarnEnabled())
-            logger.debug("Failed to resolve webdav path", fne);
-         
-         nodeRef = null;
-      }
-      
-      return nodeRef;
-   }
    
    
    // ------------------------------------------------------------------------------
@@ -550,15 +399,7 @@ public class LoginBean
    private static final String MSG_PASSWORD_LENGTH = "login_err_password_length";
 
    public static final String LOGIN_REDIRECT_KEY = "_alfRedirect";
-   public static final String LOGIN_OUTCOME_KEY  = "_alfOutcome";
-   public static final String LOGIN_OUTCOME_ARGS = "_alfOutcomeArgs";
    public static final String LOGIN_EXTERNAL_AUTH= "_alfExternalAuth";
-
-   public final static String OUTCOME_DOCDETAILS   = "showDocDetails";
-   public final static String OUTCOME_SPACEDETAILS = "showSpaceDetails";
-   public final static String OUTCOME_BROWSE       = "browse";
-   
-   private static final String LOGIN_ARG_TEMPLATE  = "template";
 
    /** user name */
    private String username = null;
@@ -586,7 +427,4 @@ public class LoginBean
 
    /** ConfigService bean reference */
    private ConfigService configService;
-   
-   /** FileFolderService bean reference */
-   private FileFolderService fileFolderService;
 }

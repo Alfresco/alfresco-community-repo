@@ -20,12 +20,18 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.StringTokenizer;
 
+import javax.faces.application.NavigationHandler;
+import javax.faces.context.FacesContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.web.bean.LoginBean;
+import org.alfresco.repo.webdav.WebDAVServlet;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.web.bean.BrowseBean;
+import org.alfresco.web.bean.NavigationBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -39,7 +45,11 @@ import org.apache.commons.logging.LogFactory;
  * <p>
  * <code>http://&lt;server&gt;/alfresco/navigate/&lt;outcome&gt;[/&lt;workspace&gt;/&lt;store&gt;/&lt;nodeId&gt;]</code> or <br/>
  * <code>http://&lt;server&gt;/alfresco/navigate/&lt;outcome&gt;[/webdav/&lt;path/to/node&gt;]</code>
- * </p>
+ * <p>
+ * Like most Alfresco servlets, the URL may be followed by a valid 'ticket' argument for authentication:
+ * ?ticket=1234567890
+ * <p>
+ * And/or also followed by the "?guest=true" argument to force guest access login for the URL.
  * 
  * @author Kevin Roast
  */
@@ -49,6 +59,11 @@ public class ExternalAccessServlet extends HttpServlet
    
    private static Log logger = LogFactory.getLog(ExternalAccessServlet.class);
    
+   private final static String OUTCOME_DOCDETAILS   = "showDocDetails";
+   private final static String OUTCOME_SPACEDETAILS = "showSpaceDetails";
+   private final static String OUTCOME_BROWSE       = "browse";
+   
+   private static final String ARG_TEMPLATE  = "template";
    
    /**
     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -56,20 +71,16 @@ public class ExternalAccessServlet extends HttpServlet
    protected void service(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException
    {
-      boolean forceGuest = false;
-      String guest = req.getParameter(ServletHelper.ARG_GUEST);
-      if (guest != null)
-      {
-         forceGuest = Boolean.parseBoolean(guest);
-      }
-      AuthenticationStatus status = AuthenticationHelper.authenticate(getServletContext(), req, res, forceGuest);
-      
-      // The URL contains multiple parts
-      // /alfresco/navigate/<outcome>
       String uri = req.getRequestURI();
       
       if (logger.isDebugEnabled())
-         logger.debug("Processing URL: " + uri);
+         logger.debug("Processing URL: " + uri + (req.getQueryString() != null ? ("?" + req.getQueryString()) : ""));
+      
+      AuthenticationStatus status = ServletHelper.servletAuthenticate(req, res, getServletContext());
+      if (status == AuthenticationStatus.Failure)
+      {
+         return;
+      }
       
       StringTokenizer t = new StringTokenizer(uri, "/");
       int count = t.countTokens();
@@ -82,31 +93,101 @@ public class ExternalAccessServlet extends HttpServlet
       
       String outcome = t.nextToken();
       
-      // get rest of the tokens
-      String[] tokens = new String[count - 3];
+      // get rest of the tokens arguments
+      String[] args = new String[count - 3];
       for (int i=0; i<count - 3; i++)
       {
-         tokens[i] = t.nextToken();
+         args[i] = t.nextToken();
       }
       
-      // set the session variable so the login bean knows which outcome to use
-      req.getSession().setAttribute(LoginBean.LOGIN_OUTCOME_KEY, outcome);
+      if (logger.isDebugEnabled())
+         logger.debug("External outcome found: " + outcome);
       
-      // set the args if any
-      req.getSession().setAttribute(LoginBean.LOGIN_OUTCOME_ARGS, tokens);
+      // we almost always need this bean reference
+      FacesContext fc = ServletHelper.getFacesContext(req, res, getServletContext());
+      BrowseBean browseBean = (BrowseBean)ServletHelper.getManagedBean(fc, "BrowseBean");
       
-      if (status == AuthenticationStatus.Success || status == AuthenticationStatus.Guest)
+      // setup is required for certain outcome requests
+      if (OUTCOME_DOCDETAILS.equals(outcome))
       {
-         // clear the User object from the Session - this will force a relogin
-         // we do this so the outcome from the login page can then be changed
-         req.getSession().removeAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+         NodeRef nodeRef = null;
          
-         if (logger.isDebugEnabled())
-           logger.debug("Removing User session - will redirect via login page...");
+         if (args[0].equals(WebDAVServlet.WEBDAV_PREFIX))
+         {
+            nodeRef = ServletHelper.resolveWebDAVPath(fc, args);
+         }
+         else if (args.length == 3)
+         {
+            StoreRef storeRef = new StoreRef(args[0], args[1]);
+            nodeRef = new NodeRef(storeRef, args[2]);
+         }
          
-         // redirect to root URL will force the login page to appear via the Authentication Filter
-         res.sendRedirect(req.getContextPath());
+         if (nodeRef != null)
+         {
+            // setup the Document on the browse bean
+            // TODO: the browse bean should accept a full NodeRef - not just an ID
+            browseBean.setupContentAction(nodeRef.getId(), true);
+         }
       }
+      else if (OUTCOME_SPACEDETAILS.equals(outcome))
+      {
+         NodeRef nodeRef = null;
+         
+         if (args[0].equals(WebDAVServlet.WEBDAV_PREFIX))
+         {
+            nodeRef = ServletHelper.resolveWebDAVPath(fc, args);
+         }
+         else if (args.length == 3)
+         {
+            StoreRef storeRef = new StoreRef(args[0], args[1]);
+            nodeRef = new NodeRef(storeRef, args[2]);
+         }
+         
+         if (nodeRef != null)
+         {
+            // setup the Space on the browse bean
+            // TODO: the browse bean should accept a full NodeRef - not just an ID
+            browseBean.setupSpaceAction(nodeRef.getId(), true);
+         }
+      }
+      else if (OUTCOME_BROWSE.equals(outcome))
+      {
+         if (args != null)
+         {
+            NodeRef nodeRef = null;
+            int offset = 0;
+            if (args.length >= 3)
+            {
+               offset = args.length - 3;
+               StoreRef storeRef = new StoreRef(args[0+offset], args[1+offset]);
+               nodeRef = new NodeRef(storeRef, args[2+offset]);
+               
+               // setup the ref as current Id in the global navigation bean
+               NavigationBean navigator = (NavigationBean)ServletHelper.getManagedBean(fc, "NavigationBean");
+               navigator.setCurrentNodeId(nodeRef.getId());
+               
+               //
+               // TODO: handle this code
+               /*
+               // check for view mode first argument
+               if (args[0].equals(ARG_TEMPLATE))
+               {
+                  browseBean.setDashboardView(true);
+                  // the above call will auto-navigate to the correct outcome - so we don't!
+                  //externalOutcome = null;
+               }
+               */
+            }
+         }
+      }
+      
+      // perform the appropriate JSF navigation outcome
+      NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
+      navigationHandler.handleNavigation(fc, null, outcome);
+      
+      // perform the forward to the page processed by the Faces servlet 
+      String viewId = fc.getViewRoot().getViewId();
+      getServletContext().getRequestDispatcher(AuthenticationHelper.FACES_SERVLET + viewId).forward(req, res);
    }
    
    /**

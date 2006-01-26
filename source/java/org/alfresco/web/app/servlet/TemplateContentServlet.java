@@ -39,7 +39,6 @@ import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.ui.repo.component.template.DefaultModelHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,10 +56,13 @@ import org.apache.commons.logging.LogFactory;
  * identify the node to execute the default template for. The second set of elements encode
  * the store and node Id of the template to used if a default is not set or not requested.
  * <p>
- * The URL may be followed by a valid 'ticket' argument for authentication: ?ticket=1234567890
- * <br>
- * And may be followed by a 'mimetype' argument specifying the mimetype to return the result as
+ * The URL may be followed by a 'mimetype' argument specifying the mimetype to return the result as
  * on the stream. Otherwise it is assumed that HTML is the default response mimetype.
+ * <p>
+ * Like most Alfresco servlets, the URL may be followed by a valid 'ticket' argument for authentication:
+ * ?ticket=1234567890
+ * <p>
+ * And/or also followed by the "?guest=true" argument to force guest access login for the URL. 
  * 
  * @author Kevin Roast
  */
@@ -85,67 +87,48 @@ public class TemplateContentServlet extends HttpServlet
    protected void doGet(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException
    {
+      String uri = req.getRequestURI();
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Processing URL: " + uri + (req.getQueryString() != null ? ("?" + req.getQueryString()) : ""));
+      
+      AuthenticationStatus status = ServletHelper.servletAuthenticate(req, res, getServletContext());
+      if (status == AuthenticationStatus.Failure)
+      {
+         return;
+      }
+      
+      StringTokenizer t = new StringTokenizer(uri, "/");
+      int tokenCount = t.countTokens();
+      if (tokenCount < 5)
+      {
+         throw new IllegalArgumentException("Download URL did not contain all required args: " + uri); 
+      }
+      
+      t.nextToken();    // skip web app name
+      t.nextToken();    // skip servlet name
+      
+      // get NodeRef to the content
+      StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
+      NodeRef nodeRef = new NodeRef(storeRef, t.nextToken());
+      
+      // get NodeRef to the template if supplied
+      NodeRef templateRef = null;
+      if (tokenCount >= 8)
+      {
+         storeRef = new StoreRef(t.nextToken(), t.nextToken());
+         templateRef = new NodeRef(storeRef, t.nextToken());
+      }
+      
+      String mimetype = MIMETYPE_HTML;
+      if (req.getParameter(ARG_MIMETYPE) != null)
+      {
+         mimetype = req.getParameter(ARG_MIMETYPE);
+      }
+      res.setContentType(mimetype);
+      
       try
       {
-         String uri = req.getRequestURI();
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Processing URL: " + uri + (req.getQueryString() != null ? ("?" + req.getQueryString()) : ""));
-         
-         // see if a ticket has been supplied
-         AuthenticationStatus status;
-         String ticket = req.getParameter(ServletHelper.ARG_TICKET);
-         if (ticket != null && ticket.length() != 0)
-         {
-            status = AuthenticationHelper.authenticate(getServletContext(), req, res, ticket);
-         }
-         else
-         {
-            boolean forceGuest = false;
-            String guest = req.getParameter(ServletHelper.ARG_GUEST);
-            if (guest != null)
-            {
-               forceGuest = Boolean.parseBoolean(guest);
-            }
-            status = AuthenticationHelper.authenticate(getServletContext(), req, res, forceGuest);
-         }
-         if (status == AuthenticationStatus.Failure)
-         {
-            // authentication failed - no point returning the content as we haven't logged in yet
-            // so end servlet execution and save the URL so the login page knows what to do later
-            req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, uri);
-            return;
-         }
-         
-         StringTokenizer t = new StringTokenizer(uri, "/");
-         int tokenCount = t.countTokens();
-         if (tokenCount < 5)
-         {
-            throw new IllegalArgumentException("Download URL did not contain all required args: " + uri); 
-         }
-         
-         t.nextToken();    // skip web app name
-         t.nextToken();    // skip servlet name
-         
-         // get NodeRef to the content
-         StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
-         NodeRef nodeRef = new NodeRef(storeRef, t.nextToken());
-         
-         // get NodeRef to the template if supplied
-         NodeRef templateRef = null;
-         if (tokenCount >= 8)
-         {
-            storeRef = new StoreRef(t.nextToken(), t.nextToken());
-            templateRef = new NodeRef(storeRef, t.nextToken());
-         }
-         
-         String mimetype = MIMETYPE_HTML;
-         if (req.getParameter(ARG_MIMETYPE) != null)
-         {
-            mimetype = req.getParameter(ARG_MIMETYPE);
-         }
-         res.setContentType(mimetype);
-         
          // get the services we need to retrieve the content
          ServiceRegistry serviceRegistry = ServletHelper.getServiceRegistry(getServletContext());
          NodeService nodeService = serviceRegistry.getNodeService();

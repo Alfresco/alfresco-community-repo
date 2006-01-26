@@ -41,7 +41,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -66,7 +65,10 @@ import org.apache.commons.logging.LogFactory;
  * To retrieve the content of a specific model property, use a 'property' arg, providing the workspace,
  * node ID AND the qualified name of the property.
  * <p>
- * The URL may be followed by a valid ticket argument for authentication: ?ticket=1234567890 
+ * Like most Alfresco servlets, the URL may be followed by a valid 'ticket' argument for authentication:
+ * ?ticket=1234567890
+ * <p>
+ * And/or also followed by the "?guest=true" argument to force guest access login for the URL. 
  * 
  * @author Kevin Roast
  */
@@ -92,93 +94,72 @@ public class DownloadContentServlet extends HttpServlet
    protected void doGet(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException
    {
-      ServletOutputStream out = res.getOutputStream();
+      // The URL contains multiple parts
+      // /alfresco/download/attach/workspace/SpacesStore/0000-0000-0000-0000/myfile.pdf
+      // the protocol, followed by the store, followed by the Id
+      // the last part is only used for mimetype and browser use
+      // may be followed by valid ticket for pre-authenticated usage: ?ticket=1234567890 
+      String uri = req.getRequestURI();
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Processing URL: " + uri + (req.getQueryString() != null ? ("?" + req.getQueryString()) : ""));
+      
+      AuthenticationStatus status = ServletHelper.servletAuthenticate(req, res, getServletContext());
+      if (status == AuthenticationStatus.Failure)
+      {
+         return;
+      }
+      
+      // TODO: add compression here?
+      //       see http://servlets.com/jservlet2/examples/ch06/ViewResourceCompress.java for example
+      //       only really needed if we don't use the built in compression of the servlet container
+      StringTokenizer t = new StringTokenizer(uri, "/");
+      if (t.countTokens() < 7)
+      {
+         throw new IllegalArgumentException("Download URL did not contain all required args: " + uri); 
+      }
+      
+      t.nextToken();    // skip web app name
+      t.nextToken();    // skip servlet name
+      
+      String attachToken = t.nextToken();
+      boolean attachment = attachToken.equals(ARG_ATTACH);
+      
+      StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
+      String id = t.nextToken();
+      String filename = t.nextToken();
+      
+      // get property qualified name
+      QName propertyQName = null;
+      String property = req.getParameter(ARG_PROPERTY);
+      if (property == null || property.length() == 0)
+      {
+          propertyQName = ContentModel.PROP_CONTENT;
+      }
+      else
+      {
+          propertyQName = QName.createQName(property);
+      }
+      
+      NodeRef nodeRef = new NodeRef(storeRef, id);
+      if (logger.isDebugEnabled())
+      {
+         logger.debug("Found NodeRef: " + nodeRef.toString());
+         logger.debug("Will use filename: " + filename);
+         logger.debug("For property: " + propertyQName);
+         logger.debug("With attachment mode: " + attachment);
+      }
+      
+      if (attachment == true)
+      {
+         // set header based on filename - will force a Save As from the browse if it doesn't recognise it
+         // this is better than the default response of the browse trying to display the contents!
+         // TODO: make this configurable - and check it does not prevent streaming of large files
+         res.setHeader("Content-Disposition", "attachment;filename=\"" + URLDecoder.decode(filename, "UTF-8") + '"');
+      }
       
       try
       {
-         // The URL contains multiple parts
-         // /alfresco/download/attach/workspace/SpacesStore/0000-0000-0000-0000/myfile.pdf
-         // the protocol, followed by the store, followed by the Id
-         // the last part is only used for mimetype and browser use
-         // may be followed by valid ticket for pre-authenticated usage: ?ticket=1234567890 
-         String uri = req.getRequestURI();
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Processing URL: " + uri + (req.getQueryString() != null ? ("?" + req.getQueryString()) : ""));
-         
-         // see if a ticket or guest parameter has been supplied
-         AuthenticationStatus status;
-         String ticket = req.getParameter(ServletHelper.ARG_TICKET);
-         if (ticket != null && ticket.length() != 0)
-         {
-            status = AuthenticationHelper.authenticate(getServletContext(), req, res, ticket);
-         }
-         else
-         {
-            boolean forceGuest = false;
-            String guest = req.getParameter(ServletHelper.ARG_GUEST);
-            if (guest != null)
-            {
-               forceGuest = Boolean.parseBoolean(guest);
-            }
-            status = AuthenticationHelper.authenticate(getServletContext(), req, res, forceGuest);
-         }
-         if (status == AuthenticationStatus.Failure)
-         {
-            // authentication failed - no point returning the content as we haven't logged in yet
-            // so end servlet execution and save the URL so the login page knows what to do later
-            req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, uri);
-            return;
-         }
-         
-         // TODO: add compression here?
-         //       see http://servlets.com/jservlet2/examples/ch06/ViewResourceCompress.java for example
-         //       only really needed if we don't use the built in compression of the servlet container
-         StringTokenizer t = new StringTokenizer(uri, "/");
-         if (t.countTokens() < 7)
-         {
-            throw new IllegalArgumentException("Download URL did not contain all required args: " + uri); 
-         }
-         
-         t.nextToken();    // skip web app name
-         t.nextToken();    // skip servlet name
-         
-         String attachToken = t.nextToken();
-         boolean attachment = attachToken.equals(ARG_ATTACH);
-         
-         StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
-         String id = t.nextToken();
-         String filename = t.nextToken();
-         
-         // get property qualified name
-         QName propertyQName = null;
-         String property = req.getParameter(ARG_PROPERTY);
-         if (property == null || property.length() == 0)
-         {
-             propertyQName = ContentModel.PROP_CONTENT;
-         }
-         else
-         {
-             propertyQName = QName.createQName(property);
-         }
-         
-         NodeRef nodeRef = new NodeRef(storeRef, id);
-         if (logger.isDebugEnabled())
-         {
-            logger.debug("Found NodeRef: " + nodeRef.toString());
-            logger.debug("Will use filename: " + filename);
-            logger.debug("For property: " + propertyQName);
-            logger.debug("With attachment mode: " + attachment);
-         }
-         
-         if (attachment == true)
-         {
-            // set header based on filename - will force a Save As from the browse if it doesn't recognise it
-            // this is better than the default response of the browse trying to display the contents!
-            // TODO: make this configurable - and check it does not prevent streaming of large files
-            res.setHeader("Content-Disposition", "attachment;filename=\"" + URLDecoder.decode(filename, "UTF-8") + '"');
-         }
-         
          // get the services we need to retrieve the content
          ServiceRegistry serviceRegistry = ServletHelper.getServiceRegistry(getServletContext());
          ContentService contentService = serviceRegistry.getContentService();
@@ -233,10 +214,6 @@ public class DownloadContentServlet extends HttpServlet
       catch (Throwable err)
       {
          throw new AlfrescoRuntimeException("Error during download content servlet processing: " + err.getMessage(), err);
-      }
-      finally
-      {
-         out.close();
       }
    }
    

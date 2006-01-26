@@ -20,7 +20,7 @@
     <import resource="classpath:alfresco/extension/extension-context.xml" />
     <import resource="classpath:alfresco/authority-services-context.xml" />
     <import resource="classpath:alfresco/authentication-services-context.xml" />
-    <import resource="classpath:alfresco/patch/patch-services-context.xml" />
+    <import resource="classpath*:alfresco/patch/*-context.xml" />
 
     <!-- Import custom and overriding bean definitions.  This must be done after the Alfresco-maintained beans. -->
     <!-- e.g.

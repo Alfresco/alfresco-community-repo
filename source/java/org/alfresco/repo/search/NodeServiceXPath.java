@@ -380,12 +380,11 @@ public class NodeServiceXPath extends BaseXPath
 
         public Object call(Context context, List args) throws FunctionCallException
         {
-            if (args.size() == 1)
+            if (args.size() != 1)
             {
-                return evaluate(context.getNodeSet(), args.get(0), context.getNavigator());
+                throw new FunctionCallException("contains() usage: contains('pattern')");
             }
-
-            throw new FunctionCallException("contains() requires one argument.");
+            return evaluate(context.getNodeSet(), args.get(0), context.getNavigator());
         }
 
         public Object evaluate(List nodes, Object pattern, Navigator nav)
@@ -403,8 +402,9 @@ public class NodeServiceXPath extends BaseXPath
             }
             else if (nav.isAttribute(nodes.get(0)))
             {
-                qname = QName.createQName(nav.getAttributeNamespaceUri(nodes.get(0)), ISO9075.decode(nav
-                        .getAttributeName(nodes.get(0))));
+                qname = QName.createQName(
+                        nav.getAttributeNamespaceUri(nodes.get(0)),
+                        ISO9075.decode(nav.getAttributeName(nodes.get(0))));
                 nodeRef = ((DocumentNavigator.Property) nodes.get(0)).parent;
             }
 
@@ -463,7 +463,9 @@ public class NodeServiceXPath extends BaseXPath
             }
             else if (nav.isAttribute(target))
             {
-                qname = QName.createQName(nav.getAttributeNamespaceUri(target), ISO9075.decode(nav.getAttributeName(target)));
+                qname = QName.createQName(
+                        nav.getAttributeNamespaceUri(target),
+                        ISO9075.decode(nav.getAttributeName(target)));
                 nodeRef = ((DocumentNavigator.Property) target).parent;
             }
 

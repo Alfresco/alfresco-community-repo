@@ -198,7 +198,7 @@
             <ref bean="copyService" />
         </property>
         <property name="mimetypeService">
-            <ref bean="mimetypeMap" />
+            <ref bean="mimetypeService" />
         </property>
     </bean>
 
@@ -292,7 +292,7 @@
             <ref bean="ExporterService"/>
         </property>
         <property name="mimetypeService">
-            <ref bean="mimetypeMap"/>
+            <ref bean="mimetypeService"/>
         </property>
         <property name="nodeService">
             <ref bean="nodeService"></ref>

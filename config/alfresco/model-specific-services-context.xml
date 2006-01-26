@@ -11,7 +11,7 @@
       <!-- NOTE: using Big SearchService until AR-279 is completed -->
       <property name="searchService"><ref bean="SearchService" /></property>
       <property name="contentService"><ref bean="ContentService" /></property>
-      <property name="mimetypeService"><ref bean="mimetypeMap" /></property>
+      <property name="mimetypeService"><ref bean="MimetypeService" /></property>
 
       <property name="systemPaths">
          <list>

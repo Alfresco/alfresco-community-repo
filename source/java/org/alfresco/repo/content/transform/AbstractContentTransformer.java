@@ -17,6 +17,7 @@
 package org.alfresco.repo.content.transform;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -42,6 +43,8 @@ public abstract class AbstractContentTransformer implements ContentTransformer
     private static final Log logger = LogFactory.getLog(AbstractContentTransformer.class);
     
     private MimetypeService mimetypeService;
+    private ContentTransformerRegistry registry;
+    private List<ContentTransformerRegistry.TransformationKey> explicitTransformations;
     private double averageTime = 0.0;
     private long count = 0L;
     
@@ -52,7 +55,17 @@ public abstract class AbstractContentTransformer implements ContentTransformer
     {
         averageTime = 0.0;
     }
-    
+
+    /**
+     * The registry to auto-register with
+     * 
+     * @param registry the transformer registry
+     */
+    public void setRegistry(ContentTransformerRegistry registry)
+    {
+        this.registry = registry;
+    }
+
     /**
      * Helper setter of the mimetype service.  This is not always required.
      * 
@@ -71,6 +84,17 @@ public abstract class AbstractContentTransformer implements ContentTransformer
         return mimetypeService;
     }
 
+    /**
+     * Set the transformations that this transformer can do regardless of what it returns
+     * via the {@link ContentTransformer#getReliability(String, String) reliability check}.
+     * 
+     * @param explicitTransformations explicit key mappings
+     */
+    public void setExplicitTransformations(List<ContentTransformerRegistry.TransformationKey> explicitTransformations)
+    {
+        this.explicitTransformations = explicitTransformations;
+    }
+
     @Override
     public String toString()
     {
@@ -79,6 +103,32 @@ public abstract class AbstractContentTransformer implements ContentTransformer
           .append("[ average=").append((long)averageTime).append("ms")
           .append("]");
         return sb.toString();
+    }
+    
+    /**
+     * Registers this instance with the {@link #setRegistry(ContentTransformerRegistry) registry}
+     * if it is present.
+     */
+    public void register()
+    {
+        if (registry == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No registry assigned.  Ignoring auto-registration.");
+            }
+            return;
+        }
+        // first register any explicit transformations
+        if (explicitTransformations != null)
+        {
+            for (ContentTransformerRegistry.TransformationKey key : explicitTransformations)
+            {
+                registry.addExplicitTransformer(key, this);
+            }
+        }
+        // register this instance for the fallback case
+        registry.addTransformer(this);
     }
     
     /**

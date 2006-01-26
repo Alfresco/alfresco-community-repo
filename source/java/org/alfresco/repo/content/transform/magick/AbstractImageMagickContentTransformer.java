@@ -44,7 +44,6 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
     
     private static final Log logger = LogFactory.getLog(AbstractImageMagickContentTransformer.class);
     
-    private MimetypeMap mimetypeMap;
     private boolean available;
     
     public AbstractImageMagickContentTransformer()
@@ -52,16 +51,6 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
         this.available = false;
     }
     
-    /**
-     * Set the mimetype map to resolve mimetypes to file extensions.
-     * 
-     * @param mimetypeMap
-     */
-    public void setMimetypeMap(MimetypeMap mimetypeMap)
-    {
-        this.mimetypeMap = mimetypeMap;
-    }
-
     /**
      * @return Returns true if the transformer is functioning otherwise false
      */
@@ -82,11 +71,13 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
     /**
      * Checks for the JMagick and ImageMagick dependencies, using the common
      * {@link #transformInternal(File, File) transformation method} to check
-     * that the sample image can be converted. 
+     * that the sample image can be converted.
+     * <p>
+     * If initialization is successful, then autoregistration takes place.
      */
     public void init()
     {
-        if (mimetypeMap == null)
+        if (getMimetypeService() == null)
         {
             throw new AlfrescoRuntimeException("MimetypeMap not present");
         }
@@ -124,6 +115,9 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
             }
             // we can be sure that it works
             setAvailable(true);
+            
+            // register
+            super.register();
         }
         catch (Throwable e)
         {
@@ -192,8 +186,8 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
         String targetMimetype = getMimetype(writer);
         
         // get the extensions to use
-        String sourceExtension = mimetypeMap.getExtension(sourceMimetype);
-        String targetExtension = mimetypeMap.getExtension(targetMimetype);
+        String sourceExtension = getMimetypeService().getExtension(sourceMimetype);
+        String targetExtension = getMimetypeService().getExtension(targetMimetype);
         if (sourceExtension == null || targetExtension == null)
         {
             throw new AlfrescoRuntimeException("Unknown extensions for mimetypes: \n" +

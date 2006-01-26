@@ -64,7 +64,7 @@ public class ContentTransformerRegistry
         Assert.notNull(mimetypeMap, "The MimetypeMap is mandatory");
         this.mimetypeMap = mimetypeMap;
         
-        this.transformers = Collections.emptyList();   // just in case it isn't set
+        this.transformers = new ArrayList<ContentTransformer>(10);
         transformationCache = new HashMap<TransformationKey, List<ContentTransformer>>(17);
         
         accessCount = 0;
@@ -75,50 +75,38 @@ public class ContentTransformerRegistry
     }
     
     /**
-     * Provides a list of explicit transformers to use.
+     * Register an individual transformer against a specific transformation.  This transformation
+     * will take precedence over any of the generally-registered transformers.
      * 
-     * @param transformations list of ( list of ( (from-mimetype)(to-mimetype)(transformer) ) )
+     * @param key the mapping from one mimetype to the next
+     * @param transformer the content transformer
      */
-    public void setExplicitTransformations(List<List<Object>> transformations)
+    public void addExplicitTransformer(TransformationKey key, ContentTransformer transformer)
     {
-        for (List<Object> list : transformations)
+        transformationCache.put(key, Collections.singletonList(transformer));
+        // done
+        if (logger.isDebugEnabled())
         {
-            if (list.size() != 3)
-            {
-                throw new AlfrescoRuntimeException(
-                        "Explicit transformation is 'from-mimetype', 'to-mimetype' and 'transformer': \n" +
-                        "   list: " + list);
-            }
-            try
-            {
-                String sourceMimetype = (String) list.get(0);
-                String targetMimetype = (String) list.get(1);
-                ContentTransformer transformer = (ContentTransformer) list.get(2);
-                // create the transformation
-                TransformationKey key = new TransformationKey(sourceMimetype, targetMimetype);
-                // bypass all discovery and plug this directly into the cache
-                transformationCache.put(key, Collections.singletonList(transformer));
-            }
-            catch (ClassCastException e)
-            {
-                throw new AlfrescoRuntimeException(
-                        "Explicit transformation is 'from-mimetype', 'to-mimetype' and 'transformer': \n" +
-                        "   list: " + list);
-            }
+            logger.debug("Registered explicit transformation: \n" +
+                    "   key: " + key + "\n" +
+                    "   transformer: " + transformer);
         }
     }
     
     /**
-     * Provides a list of self-discovering transformers that the registry will fall
-     * back on if a transformation is not available from the explicitly set
-     * transformations.
-     * 
-     * @param transformers all the available transformers that the registry can
-     *      work with
+     * Registers an individual transformer that can be queried to check for applicability.
+     *  
+     * @param transformer a content transformer
      */
-    public void setTransformers(List<ContentTransformer> transformers)
+    public void addTransformer(ContentTransformer transformer)
     {
-        this.transformers = transformers;
+        transformers.add(transformer);
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Registered general transformer: \n" +
+                    "   transformer: " + transformer);
+        }
     }
 
     /**

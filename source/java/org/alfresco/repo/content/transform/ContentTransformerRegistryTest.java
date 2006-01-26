@@ -16,9 +16,7 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
@@ -26,6 +24,7 @@ import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.util.TempFileProvider;
 
 /**
@@ -69,22 +68,20 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
         {
             bytes[i] = (byte)i;
         }
-        List<ContentTransformer> transformers = new ArrayList<ContentTransformer>(5);
-        // create some dummy transformers for reliability tests
-        transformers.add(new DummyTransformer(A, B, 0.3, 10L));
-        transformers.add(new DummyTransformer(A, B, 0.6, 10L));
-        transformers.add(new DummyTransformer(A, C, 0.5, 10L));
-        transformers.add(new DummyTransformer(A, C, 1.0, 10L));
-        transformers.add(new DummyTransformer(B, C, 0.2, 10L));
-        // create some dummy transformers for speed tests
-        transformers.add(new DummyTransformer(A, D, 1.0, 20L));
-        transformers.add(new DummyTransformer(A, D, 1.0, 20L));
-        transformers.add(new DummyTransformer(A, D, 1.0, 10L));  // the fast one
-        transformers.add(new DummyTransformer(A, D, 1.0, 20L));
-        transformers.add(new DummyTransformer(A, D, 1.0, 20L));
         // create the dummyRegistry
         dummyRegistry = new ContentTransformerRegistry(mimetypeMap);
-        dummyRegistry.setTransformers(transformers);
+        // create some dummy transformers for reliability tests
+        new DummyTransformer(mimetypeMap, dummyRegistry, A, B, 0.3, 10L);
+        new DummyTransformer(mimetypeMap, dummyRegistry, A, B, 0.6, 10L);
+        new DummyTransformer(mimetypeMap, dummyRegistry, A, C, 0.5, 10L);
+        new DummyTransformer(mimetypeMap, dummyRegistry, A, C, 1.0, 10L);
+        new DummyTransformer(mimetypeMap, dummyRegistry, B, C, 0.2, 10L);
+        // create some dummy transformers for speed tests
+        new DummyTransformer(mimetypeMap, dummyRegistry, A, D, 1.0, 20L);
+        new DummyTransformer(mimetypeMap, dummyRegistry, A, D, 1.0, 20L);
+        new DummyTransformer(mimetypeMap, dummyRegistry, A, D, 1.0, 10L);  // the fast one
+        new DummyTransformer(mimetypeMap, dummyRegistry, A, D, 1.0, 20L);
+        new DummyTransformer(mimetypeMap, dummyRegistry, A, D, 1.0, 20L);
     }
 
     /**
@@ -161,17 +158,18 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
      */
     public void testExplicitTransformation()
     {
-        ContentTransformer dummyTransformer = new DummyTransformer(
-                MimetypeMap.MIMETYPE_FLASH, MimetypeMap.MIMETYPE_EXCEL, 1.0, 12345);
-        
-        List<Object> transform = new ArrayList<Object>(3);
-        transform.add(MimetypeMap.MIMETYPE_FLASH);
-        transform.add(MimetypeMap.MIMETYPE_EXCEL);
-        transform.add(dummyTransformer);
-        
-        List<List<Object>> explicitTransformers = Collections.singletonList(transform);
-        // add it to the registry
-        dummyRegistry.setExplicitTransformations(explicitTransformers);
+        AbstractContentTransformer dummyTransformer = new DummyTransformer(
+                mimetypeMap,
+               dummyRegistry,
+                MimetypeMap.MIMETYPE_FLASH, MimetypeMap.MIMETYPE_EXCEL,
+                1.0, 12345);
+        // set an explicit transformation
+        ContentTransformerRegistry.TransformationKey key =
+                new ContentTransformerRegistry.TransformationKey(
+                        MimetypeMap.MIMETYPE_FLASH, MimetypeMap.MIMETYPE_EXCEL);
+        dummyTransformer.setExplicitTransformations(Collections.singletonList(key));
+        // register again
+        dummyTransformer.register();
         
         // get the appropriate transformer for the bizarre mapping
         ContentTransformer checkTransformer = dummyRegistry.getTransformer(
@@ -192,13 +190,20 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
         private double reliability;
         private long transformationTime;
         
-        public DummyTransformer(String sourceMimetype, String targetMimetype,
+        public DummyTransformer(
+                MimetypeService mimetypeService,
+                ContentTransformerRegistry registry,
+                String sourceMimetype, String targetMimetype,
                 double reliability, long transformationTime)
         {
+            super.setMimetypeService(mimetypeService);
+            super.setRegistry(registry);
             this.sourceMimetype = sourceMimetype;
             this.targetMimetype = targetMimetype;
             this.reliability = reliability;
             this.transformationTime = transformationTime;
+            // register
+            register();
         }
 
         public double getReliability(String sourceMimetype, String targetMimetype)

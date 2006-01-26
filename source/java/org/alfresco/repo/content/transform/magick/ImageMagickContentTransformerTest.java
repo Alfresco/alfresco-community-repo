@@ -39,7 +39,7 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
         executer.setDefaultProperties(Collections.singletonMap("options", ""));
         
         transformer = new ImageMagickContentTransformer();
-        transformer.setMimetypeMap(mimetypeMap);
+        transformer.setMimetypeService(mimetypeMap);
         transformer.setExecuter(executer);
         transformer.init();
     }

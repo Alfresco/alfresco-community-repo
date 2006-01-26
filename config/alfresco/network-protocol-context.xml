@@ -67,7 +67,7 @@
       <property name="dictionaryService"><ref bean="dictionaryService" /></property>
       <property name="nodeService"><ref bean="NodeService" /></property>
       <property name="fileFolderService"><ref bean="FileFolderService" /></property>
-      <property name="mimetypeService"><ref bean="mimetypeMap" /></property>
+      <property name="mimetypeService"><ref bean="mimetypeService" /></property>
       <property name="permissionService"><ref bean="permissionService"/></property>
    </bean>
    

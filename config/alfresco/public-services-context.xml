@@ -234,26 +234,14 @@
     	<property name="proxyInterfaces">
     		<value>org.alfresco.service.cmr.repository.MimetypeService</value>
     	</property>
-    	<property name="target"><ref bean="mimetypeMap"/></property>
+    	<property name="target"><ref bean="mimetypeService"/></property>
     	<property name="interceptorNames">
     		<list>
-    		    <idref local="MimetypeService_transaction" />
                 <idref local="exceptionTranslator" />
                 <idref bean="MimetypeService_security" />
     			<idref local="MimetypeService_descriptor" />
     		</list>
     	</property>
-    </bean>
-
-    <bean id="MimetypeService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
     </bean>
 
     <bean id="MimetypeService_descriptor" parent="AlfrescoServiceDescriptor">

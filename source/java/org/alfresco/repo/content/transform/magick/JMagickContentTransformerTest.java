@@ -36,7 +36,7 @@ public class JMagickContentTransformerTest extends AbstractContentTransformerTes
     public void onSetUpInTransaction() throws Exception
     {
         transformer = new JMagickContentTransformer();
-        transformer.setMimetypeMap(mimetypeMap);
+        transformer.setMimetypeService(mimetypeMap);
         transformer.init();
     }
     

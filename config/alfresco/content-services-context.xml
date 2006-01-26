@@ -6,132 +6,6 @@
    <!--
    <import resource="classpath:alfresco/replicating-content-services-context.xml" />
    -->
-    
-   <bean id="mimetypeMap" class="org.alfresco.repo.content.MimetypeMap" init-method="init" >
-      <constructor-arg>
-         <ref bean="repoConfigService" />
-      </constructor-arg>
-   </bean>
-   
-   <!-- Content Transformations -->
-   <bean id="transformer.StringExtracter" class="org.alfresco.repo.content.transform.StringExtractingContentTransformer" />
-   <bean id="transformer.BinaryPassThrough" class="org.alfresco.repo.content.transform.BinaryPassThroughContentTransformer" />
-   <bean id="transformer.PdfBox" class="org.alfresco.repo.content.transform.PdfBoxContentTransformer" />
-   <bean id="transformer.Poi" class="org.alfresco.repo.content.transform.PoiHssfContentTransformer" />
-   <bean id="transformer.TextMining" class="org.alfresco.repo.content.transform.TextMiningContentTransformer" />
-   <bean id="transformer.HtmlParser" class="org.alfresco.repo.content.transform.HtmlParserContentTransformer" />
-   <bean id="transformer.OpenOffice" class="org.alfresco.repo.content.transform.UnoContentTransformer" init-method="init">
-      <property name="mimetypeService">
-         <ref bean="mimetypeMap" />
-      </property>
-   </bean>
-   <bean id="transformer.complex.OpenOffice.PdfBox" class="org.alfresco.repo.content.transform.ComplexContentTransformer">
-      <property name="mimetypeService">
-         <ref bean="mimetypeMap" />
-      </property>
-      <property name="transformers">
-         <list>
-            <ref bean="transformer.OpenOffice" />
-            <ref bean="transformer.PdfBox" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>application/pdf</value>
-         </list>
-      </property>
-   </bean>
-
-   <!--
-   <bean id="transformer.JMagick" class="org.alfresco.repo.content.transform.magick.JMagickContentTransformer" init-method="init">
-      <property name="mimetypeMap">
-         <ref bean="mimetypeMap" />
-      </property>
-   </bean>
-   -->
-   <bean id="transformer.ImageMagick" class="org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer" init-method="init">
-      <property name="mimetypeMap">
-         <ref bean="mimetypeMap" />
-      </property>
-      <property name="executer">
-         <bean name="transformer.ImageMagick.Command" class="org.alfresco.util.exec.RuntimeExec">
-            <property name="commandMap">
-                <map>
-                    <entry key="Linux">
-                        <value>imconvert ${source} ${options} ${target}</value>
-                    </entry>
-                    <entry key="*">
-                        <value>imconvert "${source}" ${options} "${target}"</value>
-                    </entry>
-                </map>
-            </property>
-            <property name="defaultProperties">
-                <props>
-                    <prop key="options"></prop>
-                </props>
-            </property>
-         </bean>
-      </property>
-   </bean>
-
-   <!-- Content Transformation Regisitry -->
-   <bean id="contentTransformerRegistry" class="org.alfresco.repo.content.transform.ContentTransformerRegistry" >
-      <constructor-arg>
-         <ref bean="mimetypeMap" />
-      </constructor-arg>
-      <!-- explicit transformations to use -->
-      <property name="explicitTransformations">
-         <list>
-            <list>
-               <value>application/msword</value>   <!-- from mimetype -->
-               <value>text/plain</value>           <!-- to mimetype -->
-               <ref bean="transformer.TextMining" />
-            </list>
-            <list>
-               <value>application/pdf</value>
-               <value>text/plain</value>
-               <ref bean="transformer.PdfBox" />
-            </list>
-         </list>
-      </property>
-      <!-- transformers to fall back on in the event that an explicit transformation isn't defined -->
-      <property name="transformers">
-         <list>
-            <ref bean="transformer.StringExtracter" />
-            <ref bean="transformer.BinaryPassThrough" />
-            <ref bean="transformer.PdfBox" />
-            <ref bean="transformer.Poi" />
-            <ref bean="transformer.TextMining" />
-            <ref bean="transformer.HtmlParser" />
-            <ref bean="transformer.OpenOffice" />
-<!--            <ref bean="transformer.JMagick" /> -->
-            <ref bean="transformer.ImageMagick" />
-            <ref bean="transformer.complex.OpenOffice.PdfBox" />
-         </list>
-      </property>
-   </bean>
-
-   <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry" >
-      <constructor-arg>
-         <ref bean="mimetypeMap" />
-      </constructor-arg>
-      <!-- metadata extracters -->
-      <property name="extracters">
-         <list>
-		    <bean class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter" />
-		    <bean class="org.alfresco.repo.content.metadata.OfficeMetadataExtracter" />
-		    <bean class="org.alfresco.repo.content.metadata.HtmlMetadataExtracter" />
-		    <bean class="org.alfresco.repo.content.metadata.StringMetadataExtracter" />
-		    <bean class="org.alfresco.repo.content.metadata.MP3MetadataExtracter" />
-		    <bean class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter" />
-		    <bean class="org.alfresco.repo.content.metadata.UnoMetadataExtracter" >
-		       <constructor-arg>
-        	      <ref bean="mimetypeMap" />
-		       </constructor-arg>
-		    </bean>
-         </list>
-      </property>
-   </bean>
    
    <bean id="fileContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
       <constructor-arg>
@@ -157,6 +31,150 @@
       </property>
       <property name="policyComponent">
           <ref bean="policyComponent" />
+      </property>
+   </bean>
+    
+   <bean id="mimetypeService" class="org.alfresco.repo.content.MimetypeMap" init-method="init" >
+      <constructor-arg>
+         <ref bean="repoConfigService" />
+      </constructor-arg>
+   </bean>
+   
+   <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry" >
+      <constructor-arg>
+         <ref bean="mimetypeService" />
+      </constructor-arg>
+      <!-- metadata extracters -->
+      <property name="extracters">
+         <list>
+		    <bean class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter" />
+		    <bean class="org.alfresco.repo.content.metadata.OfficeMetadataExtracter" />
+		    <bean class="org.alfresco.repo.content.metadata.HtmlMetadataExtracter" />
+		    <bean class="org.alfresco.repo.content.metadata.StringMetadataExtracter" />
+		    <bean class="org.alfresco.repo.content.metadata.MP3MetadataExtracter" />
+		    <bean class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter" />
+		    <bean class="org.alfresco.repo.content.metadata.UnoMetadataExtracter" >
+                <constructor-arg>
+                    <ref bean="mimetypeService" />
+                </constructor-arg>
+		    </bean>
+         </list>
+      </property>
+   </bean>
+
+   <!-- Content Transformation Regisitry -->
+   <bean id="contentTransformerRegistry" class="org.alfresco.repo.content.transform.ContentTransformerRegistry" >
+      <constructor-arg>
+         <ref bean="mimetypeService" />
+      </constructor-arg>
+   </bean>
+
+   <!--
+       Abstract bean definition defining base definition for all transformers
+   -->
+   <bean id="baseContentTransformer"
+         class="org.alfresco.repo.content.transform.AbstractContentTransformer"
+         abstract="true"
+         init-method="register">
+      <property name="mimetypeService">
+         <ref bean="mimetypeService" />
+      </property>
+      <property name="registry">
+         <ref bean="contentTransformerRegistry" />
+      </property>
+   </bean>
+   
+   <!-- Content Transformations -->
+   <bean id="transformer.StringExtracter"
+         class="org.alfresco.repo.content.transform.StringExtractingContentTransformer"
+         parent="baseContentTransformer" />
+
+   <bean id="transformer.BinaryPassThrough"
+         class="org.alfresco.repo.content.transform.BinaryPassThroughContentTransformer"
+         parent="baseContentTransformer" />
+
+   <bean id="transformer.PdfBox"
+         class="org.alfresco.repo.content.transform.PdfBoxContentTransformer"
+         parent="baseContentTransformer" >
+      <property name="explicitTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.ContentTransformerRegistry$TransformationKey" >
+                <constructor-arg><value>application/pdf</value></constructor-arg>
+                <constructor-arg><value>text/plain</value></constructor-arg>
+            </bean>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="transformer.Poi"
+         class="org.alfresco.repo.content.transform.PoiHssfContentTransformer"
+         parent="baseContentTransformer" />
+
+   <bean id="transformer.TextMining"
+         class="org.alfresco.repo.content.transform.TextMiningContentTransformer"
+         parent="baseContentTransformer" >
+      <property name="explicitTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.ContentTransformerRegistry$TransformationKey" >
+                <constructor-arg><value>application/msword</value></constructor-arg>
+                <constructor-arg><value>text/plain</value></constructor-arg>
+            </bean>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="transformer.HtmlParser"
+         class="org.alfresco.repo.content.transform.HtmlParserContentTransformer"
+         parent="baseContentTransformer" />
+
+   <bean id="transformer.OpenOffice"
+         class="org.alfresco.repo.content.transform.UnoContentTransformer"
+         parent="baseContentTransformer"
+         init-method="init" />
+
+   <bean id="transformer.complex.OpenOffice.PdfBox"
+        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
+        parent="baseContentTransformer" >
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.OpenOffice" />
+            <ref bean="transformer.PdfBox" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>application/pdf</value>
+         </list>
+      </property>
+   </bean>
+
+   <!--
+   <bean id="transformer.JMagick" class="org.alfresco.repo.content.transform.magick.JMagickContentTransformer" init-method="init" />
+   </bean>
+   -->
+
+   <bean id="transformer.ImageMagick"
+        class="org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer"
+        parent="baseContentTransformer"
+        init-method="init">
+      <property name="executer">
+         <bean name="transformer.ImageMagick.Command" class="org.alfresco.util.exec.RuntimeExec">
+            <property name="commandMap">
+                <map>
+                    <entry key="Linux">
+                        <value>imconvert ${source} ${options} ${target}</value>
+                    </entry>
+                    <entry key="*">
+                        <value>imconvert "${source}" ${options} "${target}"</value>
+                    </entry>
+                </map>
+            </property>
+            <property name="defaultProperties">
+                <props>
+                    <prop key="options"></prop>
+                </props>
+            </property>
+         </bean>
       </property>
    </bean>
 

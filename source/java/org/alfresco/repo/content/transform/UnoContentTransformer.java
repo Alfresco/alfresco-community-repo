@@ -137,7 +137,8 @@ public class UnoContentTransformer extends AbstractContentTransformer
     }
 
     /**
-     * Perform bean initialization
+     * Connects to the OpenOffice server.  If successful, then
+     * {@link AbstractContentTransformer#register() auto-registers}. 
      */
     public synchronized void init()
     {
@@ -147,6 +148,8 @@ public class UnoContentTransformer extends AbstractContentTransformer
         {
             connection.connect();
             isConnected = true;
+            // register
+            super.register();
         }
         catch (ConnectException e)
         {

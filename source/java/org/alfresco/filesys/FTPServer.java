@@ -96,15 +96,14 @@ public class FTPServer
                 filesysConfig.addServer(ftpServer);
             }
 
-            // Start the FTP server
-            
-            if (logger.isInfoEnabled())
-                logger.info("Starting server " + ftpServer.getProtocolName() + " ...");
 
             // Start the server
-            
             if(ftpServer != null)
             {
+                // Start the FTP server
+                if (logger.isInfoEnabled())
+                    logger.info("Starting server " + ftpServer.getProtocolName() + " ...");
+
                 ftpServer.startServer();
             }
         }

@@ -141,7 +141,7 @@ public class WebDAVServlet extends HttpServlet
             method.execute();
             tx.commit();
         }
-        catch (Exception e)
+        catch (Throwable e)
         {
             // Whatever happened we need to rollback the transaction
             

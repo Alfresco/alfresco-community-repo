@@ -273,7 +273,7 @@ public class UsersBean implements IContextListener
          // commit the transaction
          tx.commit();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}

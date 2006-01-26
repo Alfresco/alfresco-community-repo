@@ -121,7 +121,7 @@ public class ExportBean
          // reset the bean
          reset();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}

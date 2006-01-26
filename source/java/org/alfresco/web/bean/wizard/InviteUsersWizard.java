@@ -254,7 +254,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
          
          UIContextService.getInstance(context).notifyBeans();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
@@ -407,7 +407,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
          // commit the transaction
          tx.commit();
       }
-      catch (Exception err)
+      catch (Throwable err)
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err );

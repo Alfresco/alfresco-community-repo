@@ -153,7 +153,7 @@ public class UserShortcutsBean
                tx.rollback();
             }
          }
-         catch (Exception err)
+         catch (Throwable err)
          {
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                   FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
@@ -251,7 +251,7 @@ public class UserShortcutsBean
                   if (logger.isDebugEnabled())
                      logger.debug("Added node: " + node.getName() + " to the user shortcuts list.");
                }
-               catch (Exception err)
+               catch (Throwable err)
                {
                   Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                         FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
@@ -308,7 +308,7 @@ public class UserShortcutsBean
                logger.debug("Removed node: " + node.getName() + " from the user shortcuts list.");
          }
       }
-      catch (Exception err)
+      catch (Throwable err)
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
@@ -373,7 +373,7 @@ public class UserShortcutsBean
                   logger.debug("Removed deleted node: " + node.getName() + " from the user shortcuts list.");
             }
          }
-         catch (Exception err)
+         catch (Throwable err)
          {
             try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          }

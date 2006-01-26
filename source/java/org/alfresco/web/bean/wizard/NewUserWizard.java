@@ -537,7 +537,7 @@ public class NewUserWizard extends AbstractWizardBean
          // reset the richlist component so it rebinds to the users list
          invalidateUserList();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}

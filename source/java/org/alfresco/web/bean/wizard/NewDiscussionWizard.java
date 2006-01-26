@@ -112,7 +112,7 @@ public class NewDiscussionWizard extends NewTopicWizard
          // commit the transaction
          tx.commit();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
@@ -159,7 +159,7 @@ public class NewDiscussionWizard extends NewTopicWizard
          // commit the transaction
          tx.commit();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}

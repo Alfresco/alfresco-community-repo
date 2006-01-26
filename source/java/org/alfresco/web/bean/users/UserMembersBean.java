@@ -356,7 +356,7 @@ public abstract class UserMembersBean
          personNodes = Collections.<Map>emptyList();
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
-      catch (Exception err)
+      catch (Throwable err)
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                context, Repository.ERROR_GENERIC), err.getMessage()), err );

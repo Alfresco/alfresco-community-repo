@@ -221,7 +221,7 @@ public class ClipboardBean
          // refresh UI on success
          UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
       }
-      catch (Exception err)
+      catch (Throwable err)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}

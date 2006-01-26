@@ -243,7 +243,7 @@ public abstract class BaseContentWizard extends AbstractWizardBean
          // no outcome
          outcome = null;
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}

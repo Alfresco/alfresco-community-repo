@@ -772,7 +772,7 @@ public class DocumentDetailsBean
                   approveFolder.getId());
          }
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
@@ -877,7 +877,7 @@ public class DocumentDetailsBean
                   rejectFolder.getId());
          }
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
@@ -907,7 +907,7 @@ public class DocumentDetailsBean
          // reset the state of the current document
          getDocument().reset();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
@@ -937,7 +937,7 @@ public class DocumentDetailsBean
          // reset the state of the current document
          getDocument().reset();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
@@ -985,7 +985,7 @@ public class DocumentDetailsBean
          // reset the state of the current document
          getDocument().reset();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
@@ -1100,7 +1100,7 @@ public class DocumentDetailsBean
          // commit the transaction
          tx.commit();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}

@@ -351,7 +351,7 @@ public class CategoriesBean implements IContextListener
          categories = Collections.<Node>emptyList();
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
-      catch (Exception err)
+      catch (Throwable err)
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);

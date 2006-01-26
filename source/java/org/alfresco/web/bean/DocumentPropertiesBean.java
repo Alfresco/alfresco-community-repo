@@ -261,7 +261,7 @@ public class DocumentPropertiesBean
          // this failure means the node no longer exists - we cannot show the doc properties screen
          outcome = "browse";
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}

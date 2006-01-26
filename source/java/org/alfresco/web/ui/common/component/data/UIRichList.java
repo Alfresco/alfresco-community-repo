@@ -399,7 +399,7 @@ public class UIRichList extends UIComponentBase implements IDataContainer
             tx.commit();
          }
       }
-      catch (Exception err)
+      catch (Throwable err)
       {
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }

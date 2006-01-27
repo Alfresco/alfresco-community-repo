@@ -46,6 +46,11 @@ public class ContentContext extends DiskDeviceContext
     
     private PseudoFile m_dragAndDropApp;
     
+    // URL pseudo file web path prefix (server/port/webapp) and link file name
+    
+    private String m_urlPathPrefix;
+    private String m_urlFileName;
+    
     /**
      * Class constructor
      *
@@ -159,6 +164,38 @@ public class ContentContext extends DiskDeviceContext
     {
         return m_dragAndDropApp;
     }
+
+    /**
+     * Determine if the URL pseudo file is enabled
+     * 
+     * @return boolean
+     */
+    public final boolean hasURLFile()
+    {
+        if ( m_urlPathPrefix != null && m_urlFileName != null)
+            return true;
+        return false;
+    }
+    
+    /**
+     * Return the URL pseudo file path prefix
+     * 
+     * @return String
+     */
+    public final String getURLPrefix()
+    {
+        return m_urlPathPrefix;
+    }
+    
+    /**
+     * Return the URL pseudo file name
+     * 
+     * @return String
+     */
+    public final String getURLFileName()
+    {
+        return m_urlFileName;
+    }
     
     /**
      * Set the drag and drop application details
@@ -168,5 +205,25 @@ public class ContentContext extends DiskDeviceContext
     public final void setDragAndDropApp(PseudoFile dragDropApp)
     {
         m_dragAndDropApp = dragDropApp;
+    }
+    
+    /**
+     * Set the URL path prefix
+     * 
+     * @param urlPrefix String
+     */
+    public final void setURLPrefix(String urlPrefix)
+    {
+        m_urlPathPrefix = urlPrefix;
+    }
+    
+    /**
+     * Set the URL pseudo file name
+     * 
+     * @param urlFileName String
+     */
+    public final void setURLFileName(String urlFileName)
+    {
+        m_urlFileName = urlFileName;
     }
 }

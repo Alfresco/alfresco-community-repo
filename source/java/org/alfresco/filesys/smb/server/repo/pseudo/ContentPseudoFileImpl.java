@@ -18,12 +18,10 @@
 package org.alfresco.filesys.smb.server.repo.pseudo;
 
 import org.alfresco.filesys.server.SrvSession;
-import org.alfresco.filesys.server.filesys.DiskDeviceContext;
-import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.TreeConnection;
+import org.alfresco.filesys.smb.server.SMBSrvSession;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
-import org.alfresco.filesys.smb.server.repo.ContentDiskDriver;
 import org.alfresco.filesys.smb.server.repo.FileState;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -118,12 +116,23 @@ public class ContentPseudoFileImpl implements PseudoFileInterface
 
         int pseudoCnt = 0;
         ContentContext ctx = (ContentContext) tree.getContext();
+        FileState fstate = getStateForPath( ctx, path);
+
+        // Check if pseudo files have already been added for this folder
         
-        if ( ctx.hasDragAndDropApp())
+        if ( fstate.hasPseudoFiles())
+            return 0;
+        
+        // Check if this is a CIFS session
+        
+        boolean isCIFS = sess instanceof SMBSrvSession;
+        
+        // Add the drag and drop pseudo file, if enabled
+        
+        if ( isCIFS && ctx.hasDragAndDropApp())
         {
             // If the file state is null create a file state for the path
 
-            FileState fstate = getStateForPath( ctx, path);
             if ( fstate == null)
                 ctx.getStateTable().findFileState( path, true, true);
             
@@ -148,6 +157,38 @@ public class ContentPseudoFileImpl implements PseudoFileInterface
                 if ( logger.isInfoEnabled())
                     logger.info("Added drag/drop pseudo file for " + path);
             }
+        }
+
+        // Add the URL link pseudo file, if enabled
+        
+        if ( isCIFS && ctx.hasURLFile() && fstate.getNodeRef() != null)
+        {
+            // Build the URL file data
+
+            StringBuilder urlStr = new StringBuilder();
+        
+            urlStr.append("[InternetShortcut]\r\n");
+            urlStr.append("URL=");
+            urlStr.append(ctx.getURLPrefix());
+            urlStr.append("navigate/browse/workspace/SpaceStore/");
+            urlStr.append( fstate.getNodeRef().getId());
+            urlStr.append("\r\n");
+
+            // Create the in memory pseudo file for the URL link
+            
+            byte[] urlData = urlStr.toString().getBytes();
+            
+            MemoryPseudoFile urlFile = new MemoryPseudoFile( ctx.getURLFileName(), urlData);
+            fstate.addPseudoFile( urlFile);
+            
+            // Update the count of files added
+            
+            pseudoCnt++;
+            
+            // DEBUG
+            
+            if ( logger.isInfoEnabled())
+                logger.info("Added URL link pseudo file for " + path);
         }
         
         // Return the count of pseudo files added

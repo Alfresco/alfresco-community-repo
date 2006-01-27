@@ -47,12 +47,15 @@ import org.alfresco.filesys.server.filesys.TreeConnection;
 import org.alfresco.filesys.smb.SMBException;
 import org.alfresco.filesys.smb.SMBStatus;
 import org.alfresco.filesys.smb.SharingMode;
+import org.alfresco.filesys.smb.server.SMBSrvSession;
 import org.alfresco.filesys.smb.server.repo.FileState.FileStateStatus;
 import org.alfresco.filesys.smb.server.repo.pseudo.ContentPseudoFileImpl;
+import org.alfresco.filesys.smb.server.repo.pseudo.LocalPseudoFile;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileInterface;
-import org.alfresco.filesys.smb.server.repo.pseudo.PseudoNetworkFile;
+import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileList;
 import org.alfresco.filesys.util.DataBuffer;
+import org.alfresco.filesys.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -371,12 +374,8 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                         
                         // Create the pseudo file for the drag and drop application
                         
-                        PseudoFile dragDropPseudo = new PseudoFile( pseudoName.getValue(), appFile.getAbsolutePath());
+                        PseudoFile dragDropPseudo = new LocalPseudoFile( pseudoName.getValue(), appFile.getAbsolutePath());
                         context.setDragAndDropApp( dragDropPseudo);
-                        
-                        // Enable pseudo file support
-                        
-                        m_pseudoFiles = new ContentPseudoFileImpl();
                     }
                 }
             }            
@@ -385,6 +384,45 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
         {
             if ( logger.isDebugEnabled())
                 logger.debug("No I/O control handler available");
+        }
+
+        // Check if URL link files are enabled
+        
+        ConfigElement urlFileElem = cfg.getChild( "urlFile");
+        if ( urlFileElem != null)
+        {
+            // Get the pseudo file name and web prefix path
+            
+            ConfigElement pseudoName = urlFileElem.getChild( "filename");
+            ConfigElement webPath    = urlFileElem.getChild( "webpath");
+            
+            if ( pseudoName != null && webPath != null)
+            {
+                // Make sure the web prefix has a trailing slash
+                
+                String path = webPath.getValue();
+                if ( path.endsWith("/") == false)
+                    path = path + "/";
+                
+                // URL file name must end with .url
+                
+                if ( pseudoName.getValue().endsWith(".url") == false)
+                    throw new DeviceContextException("URL link file must end with .url, " + pseudoName.getValue());
+                
+                // Set the URL link file name and web path
+                
+                context.setURLFileName( pseudoName.getValue());
+                context.setURLPrefix( path);
+            }
+        }
+        
+        // Enable pseudo file support if the drag and drop app and/or URL link files are enabled
+
+        if ( context.hasDragAndDropApp() || context.hasURLFile())
+        {
+            // Create the pseudo file handler
+            
+            m_pseudoFiles = new ContentPseudoFileImpl();
         }
         
         // Check if locked files should be marked as offline
@@ -603,12 +641,14 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             // If the state table is available see if we can speed up the search using either cached
             // file information or find the folder node to be searched without having to walk the path
-          
+
+            String[] paths = null;
+            
             if ( ctx.hasStateTable())
             {
                 // See if the folder to be searched has a file state, we can avoid having to walk the path
                 
-                String[] paths = FileName.splitPath(searchPath);
+                paths = FileName.splitPath(searchPath);
                 if ( paths[0] != null && paths[0].length() > 1)
                 {
                     // Get the file state for the folder being searched
@@ -631,6 +671,10 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                         searchRootNodeRef = nodeRef;
                         searchFileSpec    = paths[1];
                         
+                        // Make sure the node ref is stored in the file state
+                        
+                        searchFolderState.setNodeRef( nodeRef);
+                        
                         // DEBUG
                         
                         if ( logger.isDebugEnabled())
@@ -639,12 +683,51 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 }
             }
             
-            // Start the search
+            // Perform the search
             
-            SearchContext searchCtx = ContentSearchContext.search(cifsHelper, searchRootNodeRef,
-                    searchFileSpec, attributes, searchFolderState);
+            List<NodeRef> results = cifsHelper.getNodeRefs(searchRootNodeRef, searchFileSpec);
+
+            // Check if there are any pseudo files for the folder being searched, for CIFS only
             
-            // done
+            PseudoFileList pseudoList = null;
+            
+            if ( sess instanceof SMBSrvSession && searchFolderState != null && searchFolderState.hasPseudoFiles())
+            {
+                // If it is a wildcard search use all pseudo files
+                
+                if ( WildCard.containsWildcards(searchFileSpec))
+                {
+                    // Check if the folder has any associated pseudo files
+                    
+                    pseudoList = searchFolderState.getPseudoFileList();
+                }
+                else if ( results == null || results.size() == 0)
+                {
+                    // Check if the required file is in the pseudo file list
+                    
+                    String fname = paths[1];
+                    
+                    if ( fname != null)
+                    {
+                        // Search for a matching pseudo file
+                        
+                        PseudoFile pfile = searchFolderState.getPseudoFileList().findFile( fname, true);
+                        if ( pfile != null)
+                        {
+                            // Create a file list with the required file
+                            
+                            pseudoList = new PseudoFileList();
+                            pseudoList.addFile( pfile);
+                        }
+                    }
+                }
+            }
+            
+            // Build the search context to store the results
+            
+            SearchContext searchCtx = new ContentSearchContext(cifsHelper, results, searchFileSpec, pseudoList);
+            
+            // Debug
             
             if (logger.isDebugEnabled())
             {
@@ -792,7 +875,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 {
                     // Create a network file to access the pseudo file data
                     
-                    return new PseudoNetworkFile( pfile.getFileName(), pfile.getFilePath(), params.getPath());
+                    return pfile.getFile( params.getPath());
                 }
             }
             
@@ -1640,6 +1723,13 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
         // Read a block of data from the file
         
         int count = file.readFile(buffer, size, bufferPosition, fileOffset);
+        
+        if ( count == -1)
+        {
+            // Read count of -1 indicates a read past the end of file
+            
+            count = 0;
+        }
         
         // done
         if (logger.isDebugEnabled())

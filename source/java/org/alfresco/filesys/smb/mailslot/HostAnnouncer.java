@@ -19,6 +19,7 @@ package org.alfresco.filesys.smb.mailslot;
 import java.io.IOException;
 
 import org.alfresco.filesys.netbios.NetBIOSName;
+import org.alfresco.filesys.netbios.win32.WinsockNetBIOSException;
 import org.alfresco.filesys.smb.ServerType;
 import org.alfresco.filesys.smb.TransactionNames;
 import org.alfresco.filesys.util.StringList;
@@ -322,6 +323,14 @@ public abstract class HostAnnouncer extends Thread
                     if (sleepTime > sleepNormal)
                         sleepTime = sleepNormal;
                 }
+            }
+            catch (WinsockNetBIOSException ex)
+            {
+                // Debug
+
+                if (m_shutdown == false)
+                    logger.error("HostAnnouncer error", ex);
+                m_shutdown = true;
             }
             catch ( IOException ex)
             {

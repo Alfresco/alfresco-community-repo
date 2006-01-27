@@ -20,11 +20,9 @@ import java.io.FileNotFoundException;
 import java.util.List;
 
 import org.alfresco.filesys.server.filesys.FileInfo;
-import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.SearchContext;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileList;
-import org.alfresco.filesys.util.WildCard;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,89 +52,14 @@ public class ContentSearchContext extends SearchContext
     private int resumeId;
     
     /**
-     * Performs a search against the direct children of the given node.
-     * <p>
-     * Wildcard characters are acceptable, and the search may either be for
-     * a specific file or directory, or any file or directory.
+     * Class constructor
      * 
-     * @param serviceRegistry used to gain access the the repository
-     * @param cifsHelper caches path query results
-     * @param searchRootNodeRef the node whos children are to be searched
-     * @param searchStr the search string relative to the search root node
-     * @param attributes the search attributes, e.g. searching for folders, etc
-     * @param searchFolderState File state of the folder being searched
-     * @return Returns a search context with the results of the search
+     * @param cifsHelper Filesystem helper class
+     * @param results List of file/folder nodes that match the search pattern
+     * @param searchStr Search path
+     * @param pseudoList List of pseudo files to be blended into the returned list of files
      */
-    public static ContentSearchContext search(
-            CifsHelper cifsHelper,
-            NodeRef searchRootNodeRef,
-            String searchStr,
-            int attributes,
-            FileState searchFolderState)
-    {
-        // Perform the search
-        
-        List<NodeRef> results = cifsHelper.getNodeRefs(searchRootNodeRef, searchStr);
-
-        // Check if there are any pseudo files for the folder being searched.
-        
-        PseudoFileList pseudoList = null;
-        
-        if ( searchFolderState != null && searchFolderState.hasPseudoFiles())
-        {
-            // If it is a wildcard search use all pseudo files
-            
-            if ( WildCard.containsWildcards(searchStr))
-            {
-                // Check if the folder has any associated pseudo files
-                
-                pseudoList = searchFolderState.getPseudoFileList();
-            }
-            else if ( results == null || results.size() == 0)
-            {
-                // Check if the required file is in the pseudo file list
-                
-                String fname = searchStr;
-                if ( fname.indexOf(FileName.DOS_SEPERATOR) != -1)
-                {
-                    String[] paths = FileName.splitPath( searchStr);
-                    fname = paths[1];
-                }
-                
-                if ( fname != null)
-                {
-                    // Search for a matching pseudo file
-                    
-                    PseudoFile pfile = searchFolderState.getPseudoFileList().findFile( fname, true);
-                    if ( pfile != null)
-                    {
-                        // Create a file list with the required file
-                        
-                        pseudoList = new PseudoFileList();
-                        pseudoList.addFile( pfile);
-                    }
-                }
-            }
-        }
-        
-        // Build the search context to store the results
-        
-        ContentSearchContext searchCtx = new ContentSearchContext(cifsHelper, results, searchStr, pseudoList);
-        
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Search context created: \n" +
-                    "   search root: " + searchRootNodeRef + "\n" +
-                    "   search context: " + searchCtx);
-        }
-        return searchCtx;
-    }
-    
-    /**
-     * @see ContentSearchContext#search(FilePathCache, NodeRef, String, int)
-     */
-    private ContentSearchContext(
+    protected ContentSearchContext(
             CifsHelper cifsHelper,
             List<NodeRef> results,
             String searchStr,

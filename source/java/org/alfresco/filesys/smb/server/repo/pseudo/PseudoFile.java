@@ -21,6 +21,7 @@ import java.io.File;
 
 import org.alfresco.filesys.server.filesys.FileAttribute;
 import org.alfresco.filesys.server.filesys.FileInfo;
+import org.alfresco.filesys.server.filesys.NetworkFile;
 
 /**
  * Pseudo File Class
@@ -30,11 +31,11 @@ import org.alfresco.filesys.server.filesys.FileInfo;
  * 
  * @author gkspencer
  */
-public class PseudoFile
+public abstract class PseudoFile
 {
     // Dummy creation date/time to use for pseudo files
     
-    private static long _creationDateTime = System.currentTimeMillis();
+    protected static long _creationDateTime = System.currentTimeMillis();
     
     // File name for pseudo file
     
@@ -44,38 +45,29 @@ public class PseudoFile
     
     private int m_fileFlags = FileAttribute.ReadOnly;
     
-    // Path to the file data in the local filesystem
-    
-    private String m_filePath;
-    
     // File information, used for file information/folder searches
     
-    private FileInfo m_fileInfo;
+    protected FileInfo m_fileInfo;
     
     /**
      * Class constructor
      * 
      * @param name String
-     * @param path String
      */
-    public PseudoFile(String name, String path)
+    protected PseudoFile(String name)
     {
         m_fileName = name;
-        m_filePath = path;
     }
     
     /**
      * Class constructor
      * 
      * @param name String
-     * @param path String
      * @param flags int
      */
-    public PseudoFile(String name, String path, int flags)
+    protected PseudoFile(String name, int flags)
     {
         m_fileName = name;
-        m_filePath = path;
-        
         m_fileFlags = flags;
     }
     
@@ -87,16 +79,6 @@ public class PseudoFile
     public final String getFileName()
     {
         return m_fileName;
-    }
-    
-    /**
-     * Return the path to the file data on the local filesystem
-     * 
-     * @return String
-     */
-    public final String getFilePath()
-    {
-        return m_filePath;
     }
     
     /**
@@ -114,37 +96,15 @@ public class PseudoFile
      *
      * @return FileInfo
      */
-    public final FileInfo getFileInfo()
-    {
-        // Check if the file information is valid
-        
-        if ( m_fileInfo == null) {
-            
-            // Get the file details
-            
-            File localFile = new File( getFilePath());
-            if ( localFile.exists())
-            {
-                // Create the file information
-                
-                m_fileInfo = new FileInfo( getFileName(), localFile.length(), getAttributes());
-                
-                // Set the file creation/modification times
-                
-                m_fileInfo.setModifyDateTime( localFile.lastModified());
-                m_fileInfo.setCreationDateTime( _creationDateTime);
-                m_fileInfo.setChangeDateTime( _creationDateTime);
-
-                // Set the allocation size, round up the actual length
-                
-                m_fileInfo.setAllocationSize(( localFile.length() + 512L) & 0xFFFFFFFFFFFFFE00L);
-            }            
-        }
-        
-        // Return the file information
-        
-        return m_fileInfo;
-    }
+    public abstract FileInfo getFileInfo();
+    
+    /**
+     * Return a network file for reading/writing the pseudo file
+     * 
+     * @param netPath String
+     * @return NetworkFile
+     */
+    public abstract NetworkFile getFile(String netPath);
     
     /**
      * Return the pseudo file as a string
@@ -158,13 +118,7 @@ public class PseudoFile
         str.append("[");
         str.append(getFileName());
         str.append(",");
-        str.append(getFilePath());
-        str.append(":");
-        
-        if ( m_fileInfo != null)
-            str.append( m_fileInfo.toString());
-        else
-            str.append("Null");
+        str.append(getFileInfo());
         str.append("]");
         
         return str.toString();

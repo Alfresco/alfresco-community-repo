@@ -389,17 +389,24 @@ public class NavigationBean
    {
       if (this.location == null)
       {
-         // init the location from the User object for the first time
-         User user = Application.getCurrentUser(FacesContext.getCurrentInstance());
-         
-         NodeRef homeSpaceRef = new NodeRef(Repository.getStoreRef(), user.getHomeSpaceId());
-         String homeSpaceName = Repository.getNameForNode(this.nodeService, homeSpaceRef);
-         
-         // set the current node to the users Home Space Id
-         setCurrentNodeId(user.getHomeSpaceId());
-         
-         // setup the breadcrumb with the same location
+         // set the current node to the users Home Space Id if one has not already been set
+         NodeRef homeSpaceRef;
          List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
+         if (getCurrentNodeId() == null)
+         {
+            User user = Application.getCurrentUser(FacesContext.getCurrentInstance());
+            homeSpaceRef = new NodeRef(Repository.getStoreRef(), user.getHomeSpaceId());
+         }
+         else
+         {
+            homeSpaceRef = new NodeRef(Repository.getStoreRef(), getCurrentNodeId());
+         }
+         
+         // set initial node ID
+         setCurrentNodeId(homeSpaceRef.getId());
+         
+         // setup the breadcrumb with the same initial location
+         String homeSpaceName = Repository.getNameForNode(this.nodeService, homeSpaceRef);
          elements.add(new NavigationBreadcrumbHandler(homeSpaceRef, homeSpaceName));
          setLocation(elements);
       }

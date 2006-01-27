@@ -351,7 +351,9 @@ public class LoginBean
       
       boolean alfrescoAuth = (session.get(LOGIN_EXTERNAL_AUTH) == null);
       
-      // invalidate Session for this user
+      // Invalidate Session for this user.
+      // This causes the sessionDestroyed() event to be processed by ContextListener
+      // which is responsible for invalidating the ticket and clearing the security context
       if (Application.inPortalServer() == false)
       {
          HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
@@ -361,13 +363,6 @@ public class LoginBean
       {
          PortletRequest request = (PortletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
          request.getPortletSession().invalidate();
-      }
-      
-      // invalidate User ticket
-      if (user != null)
-      {
-         this.authenticationService.invalidateTicket(user.getTicket());
-         this.authenticationService.clearCurrentSecurityContext();
       }
       
       // Request that the username cookie state is removed - this is not

@@ -1257,7 +1257,7 @@ public class BrowseBean implements IContextListener
     * 
     * @param ref     NodeRef of the selected space
     */
-   /*package*/ void updateUILocation(NodeRef ref)
+   public void updateUILocation(NodeRef ref)
    {
       // get the current breadcrumb location and append a new handler to it
       // our handler know the ID of the selected node and the display label for it

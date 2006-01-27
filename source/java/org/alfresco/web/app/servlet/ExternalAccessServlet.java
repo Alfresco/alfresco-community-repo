@@ -128,6 +128,10 @@ public class ExternalAccessServlet extends HttpServlet
             // TODO: the browse bean should accept a full NodeRef - not just an ID
             browseBean.setupContentAction(nodeRef.getId(), true);
          }
+         
+         // perform the appropriate JSF navigation outcome
+         NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
+         navigationHandler.handleNavigation(fc, null, outcome);
       }
       else if (OUTCOME_SPACEDETAILS.equals(outcome))
       {
@@ -149,6 +153,10 @@ public class ExternalAccessServlet extends HttpServlet
             // TODO: the browse bean should accept a full NodeRef - not just an ID
             browseBean.setupSpaceAction(nodeRef.getId(), true);
          }
+         
+         // perform the appropriate JSF navigation outcome
+         NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
+         navigationHandler.handleNavigation(fc, null, outcome);
       }
       else if (OUTCOME_BROWSE.equals(outcome))
       {
@@ -162,28 +170,21 @@ public class ExternalAccessServlet extends HttpServlet
                StoreRef storeRef = new StoreRef(args[0+offset], args[1+offset]);
                nodeRef = new NodeRef(storeRef, args[2+offset]);
                
-               // setup the ref as current Id in the global navigation bean
-               NavigationBean navigator = (NavigationBean)ServletHelper.getManagedBean(fc, "NavigationBean");
-               navigator.setCurrentNodeId(nodeRef.getId());
+               // this call sets up the current node Id, and updates or initialises the
+               // breadcrumb component with the selected node as appropriate.
+               browseBean.updateUILocation(nodeRef);
+               browseBean.contextUpdated();
                
-               //
-               // TODO: handle this code
-               /*
                // check for view mode first argument
                if (args[0].equals(ARG_TEMPLATE))
                {
                   browseBean.setDashboardView(true);
-                  // the above call will auto-navigate to the correct outcome - so we don't!
-                  //externalOutcome = null;
                }
-               */
+               
+               // the above calls setup the NavigationHandler automatically
             }
          }
       }
-      
-      // perform the appropriate JSF navigation outcome
-      NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
-      navigationHandler.handleNavigation(fc, null, outcome);
       
       // perform the forward to the page processed by the Faces servlet 
       String viewId = fc.getViewRoot().getViewId();

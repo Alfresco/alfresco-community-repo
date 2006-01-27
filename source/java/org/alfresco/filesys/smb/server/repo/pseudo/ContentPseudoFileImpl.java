@@ -170,7 +170,7 @@ public class ContentPseudoFileImpl implements PseudoFileInterface
             urlStr.append("[InternetShortcut]\r\n");
             urlStr.append("URL=");
             urlStr.append(ctx.getURLPrefix());
-            urlStr.append("navigate/browse/workspace/SpaceStore/");
+            urlStr.append("navigate/browse/workspace/SpacesStore/");
             urlStr.append( fstate.getNodeRef().getId());
             urlStr.append("\r\n");
 

@@ -694,18 +694,16 @@ public class ForumsBean implements IContextListener
             ForumModel.ASSOC_DISCUSSION, RegexQNamePattern.MATCH_ALL);
       
       // there should only be one child, retrieve it if there is
-      if (children.size() == 1)
+      if (children.size() != 1)
       {
-         // show the forum for the discussion
-         NodeRef forumNodeRef = children.get(0).getChildRef();
-         this.browseBean.clickSpace(forumNodeRef);
-         context.getApplication().getNavigationHandler().handleNavigation(context, null, "showForum");
+         throw new IllegalStateException("Node has the discussable aspect but does not have 1 child, it has " + 
+                                         children.size() + " children!");
       }
-      else if (logger.isWarnEnabled())
-      {
-         logger.warn("Node has the discussable aspect but does not have 1 child, it has " + 
-                     children.size() + " children!");
-      }
+      
+      // show the forum for the discussion
+      NodeRef forumNodeRef = children.get(0).getChildRef();
+      this.browseBean.clickSpace(forumNodeRef);
+      context.getApplication().getNavigationHandler().handleNavigation(context, null, "showForum");
    }
       
    /**

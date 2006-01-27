@@ -34,7 +34,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -107,7 +106,7 @@ public class NewDiscussionWizard extends NewTopicWizard
          this.nodeService.addAspect(forumNodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
          
          if (logger.isDebugEnabled())
-            logger.debug("created forum for content: " + forumNodeRef.toString());
+            logger.debug("created forum for content: " + this.discussingNodeRef.toString());
          
          // commit the transaction
          tx.commit();

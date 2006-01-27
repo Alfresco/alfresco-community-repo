@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -299,7 +300,7 @@ public class PersonServiceImpl implements PersonService
         sp.addStore(storeRef);
         sp.excludeDataInTheCurrentTransaction(false);
 
-        HashSet<NodeRef> nodes = new HashSet<NodeRef>();
+        LinkedHashSet<NodeRef> nodes = new LinkedHashSet<NodeRef>();
         ResultSet rs = null;
 
         try

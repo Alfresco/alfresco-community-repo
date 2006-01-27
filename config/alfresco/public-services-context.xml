@@ -746,6 +746,44 @@
     </bean>
     
     
+    <!-- Person Service -->
+    
+    <bean id="PersonService" class="org.springframework.aop.framework.ProxyFactoryBean">
+    	<property name="proxyInterfaces">
+    		<value>org.alfresco.service.cmr.security.PersonService</value>
+    	</property>
+    	<property name="target"><ref bean="personService"/></property>
+    	<property name="interceptorNames">
+    		<list>
+    		    <idref local="PersonService_transaction" />
+                <idref local="exceptionTranslator" />
+                <idref bean="PersonService_security" />
+    			<idref local="PersonService_descriptor" />
+    		</list>
+    	</property>
+    </bean>
+
+    <bean id="PersonService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="PersonService_descriptor" parent="AlfrescoServiceDescriptor">
+    	<property name="interface">
+    		<value>org.alfresco.service.cmr.security.PersonService</value>
+    	</property>
+    	<property name="description">
+    		<value>PersonService Service</value>
+    	</property>
+    </bean>
+    
+    
     
      <!-- Authentication Service -->
     

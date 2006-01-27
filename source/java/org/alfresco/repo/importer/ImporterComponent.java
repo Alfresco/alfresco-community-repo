@@ -590,18 +590,20 @@ public class ImporterComponent
             // bind import content data description
             DataTypeDefinition dataTypeDef = dictionaryService.getDataType(DataTypeDefinition.CONTENT);
             importContentData = bindPlaceHolder(importContentData, binding);
-            ContentData contentData = (ContentData)DefaultTypeConverter.INSTANCE.convert(dataTypeDef, importContentData);
-            
-            String contentUrl = contentData.getContentUrl();
-            if (contentUrl != null && contentUrl.length() > 0)
+            if (importContentData != null && importContentData.length() > 0)
             {
-                // import the content from the url
-                InputStream contentStream = streamHandler.importStream(contentUrl);
-                ContentWriter writer = contentService.getWriter(nodeRef, propertyName, true);
-                writer.setEncoding(contentData.getEncoding());
-                writer.setMimetype(contentData.getMimetype());
-                writer.putContent(contentStream);
-                reportContentCreated(nodeRef, contentUrl);
+                ContentData contentData = (ContentData)DefaultTypeConverter.INSTANCE.convert(dataTypeDef, importContentData);
+                String contentUrl = contentData.getContentUrl();
+                if (contentUrl != null && contentUrl.length() > 0)
+                {
+                    // import the content from the url
+                    InputStream contentStream = streamHandler.importStream(contentUrl);
+                    ContentWriter writer = contentService.getWriter(nodeRef, propertyName, true);
+                    writer.setEncoding(contentData.getEncoding());
+                    writer.setMimetype(contentData.getMimetype());
+                    writer.putContent(contentStream);
+                    reportContentCreated(nodeRef, contentUrl);
+                }
             }
         }
         

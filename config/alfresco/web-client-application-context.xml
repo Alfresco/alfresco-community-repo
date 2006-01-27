@@ -25,20 +25,5 @@
          <ref bean="DictionaryService"/>
       </constructor-arg>
    </bean>
-
-   <!-- the list of standard transformation mimetypes that are exposed in the UI -->
-   <bean id="webClientTransformMimetypes" class="java.util.ArrayList" >
-      <constructor-arg>
-         <list>
-            <value>text/html</value>
-            <value>application/pdf</value>
-            <value>text/plain</value>
-            <value>text/xml</value>
-            <value>application/x-shockwave-flash</value>
-            <value>image/gif</value>
-            <value>image/jpeg</value>
-         </list>
-      </constructor-arg>
-   </bean>
    
 </beans>

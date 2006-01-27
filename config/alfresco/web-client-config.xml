@@ -304,6 +304,15 @@
          <!-- Example configuration to demonstrate how to expose aspect from exampleModel.xml -->
          <!-- <aspect name="my:imageClassification"/> -->
       </aspects>
+      <transformers>
+         <transformer name="text/html"/>
+         <transformer name="application/pdf"/>
+         <transformer name="text/plain"/>
+         <transformer name="text/xml"/>
+         <transformer name="application/x-shockwave-flash"/>
+         <transformer name="image/gif"/>
+         <transformer name="image/jpeg"/>
+      </transformers>
       <image-transformers>
          <transformer name="image/gif"/>
          <transformer name="image/jpeg"/>

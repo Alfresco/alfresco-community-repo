@@ -488,10 +488,6 @@
          <property-name>rulesBean</property-name>
          <value>#{RulesBean}</value>
       </managed-property>
-      <managed-property>
-         <property-name>transformMimetypes</property-name>
-         <value>#{webClientTransformMimetypes}</value>
-      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -528,10 +524,6 @@
       <managed-property>
          <property-name>mimetypeService</property-name>
          <value>#{MimetypeService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>transformMimetypes</property-name>
-         <value>#{webClientTransformMimetypes}</value>
       </managed-property>
    </managed-bean>
    

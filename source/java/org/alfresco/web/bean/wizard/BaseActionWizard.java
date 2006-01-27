@@ -18,7 +18,6 @@ package org.alfresco.web.bean.wizard;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +41,7 @@ import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.repo.action.executer.SpecialiseTypeActionExecuter;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -99,7 +99,6 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    protected DictionaryService dictionaryService;
    protected MimetypeService mimetypeService;
    protected List<SelectItem> actions;
-   private List<String> transformMimetypes;
    protected List<SelectItem> transformers;
    protected List<SelectItem> imageTransformers;
    protected List<SelectItem> aspects;
@@ -108,16 +107,6 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    protected Map<String, String> actionDescriptions;
    protected Map<String, Serializable> currentActionProperties;
    protected List<SelectItem> objectTypes;
-   
-   /**
-    * Set the available mimetypes to act as targets of transformations
-    * 
-    * @param mimetypes a list of valid mimetypes
-    */
-   public void setTransformMimetypes(List<String> mimetypes)
-   {
-       this.transformMimetypes = mimetypes; 
-   }
    
    /**
     * Initialises the wizard
@@ -626,40 +615,60 @@ public abstract class BaseActionWizard extends AbstractWizardBean
     */
    public List<SelectItem> getTransformers()
    {
-      if (this.transformers != null)
+      if (this.transformers == null)
       {
-         return this.transformers;
-      }
-      // check that the mimetypes are available
-      if (this.transformMimetypes == null)
-      {
-         logger.warn("'transformMimetypes' property was not set");
-         this.transformMimetypes = Collections.emptyList();
-      }
-      
-      this.transformers = new ArrayList<SelectItem>(10);
-
-      Map<String, String> displaysByMimetype = this.mimetypeService.getDisplaysByMimetype();
-      for (String mimetype : this.transformMimetypes)
-      {
-         // get the display label
-         String label = displaysByMimetype.get(mimetype);
-         if (label == null)
+         ConfigService svc = (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(
+               FacesContext.getCurrentInstance()).getBean(Application.BEAN_CONFIG_SERVICE);
+         Config wizardCfg = svc.getConfig("Action Wizards");
+         if (wizardCfg != null)
          {
-            // unrecognized mimetype
-            logger.warn("Unrecognized mimetype given to 'transformMimetypes': " + mimetype);
-            // just ignore it
-            continue;
+            ConfigElement transformersCfg = wizardCfg.getConfigElement("transformers");
+            if (transformersCfg != null)
+            {
+               FacesContext context = FacesContext.getCurrentInstance();
+               Map<String, String> mimeTypes = this.mimetypeService.getDisplaysByMimetype();
+               this.transformers = new ArrayList<SelectItem>();
+               for (ConfigElement child : transformersCfg.getChildren())
+               {
+                  String id = child.getAttribute("name");
+                  
+                  // look for a client localized string
+                  String label = null;
+                  String msgId = child.getAttribute("displayLabelId");
+                  if (msgId != null)
+                  {
+                     label = Application.getMessage(context, msgId);
+                  }
+                  
+                  // if there wasn't an externalized string look for one in the config
+                  if (label == null)
+                  {
+                     label = child.getAttribute("displayLabel");
+                  }
+
+                  // if there wasn't a client based label get it from the mime type service
+                  if (label == null)
+                  {
+                     label = mimeTypes.get(id);
+                  }
+                  
+                  this.transformers.add(new SelectItem(id, label));
+               }
+               
+               // make sure the list is sorted by the label
+               QuickSort sorter = new QuickSort(this.transformers, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+               sorter.sort();
+            }
+            else
+            {
+               logger.warn("Could not find transformers configuration element");
+            }
          }
-         // create UI object
-         SelectItem item = new SelectItem(mimetype, label);
-         // add to collection
-         this.transformers.add(item);
+         else
+         {
+            logger.warn("Could not find Action Wizards configuration section");
+         }
       }
-      
-      // sort
-      QuickSort sorter = new QuickSort(this.transformers, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
-      sorter.sort();
       
       return this.transformers;
    }

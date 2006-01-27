@@ -126,7 +126,7 @@ public class UserQueryResults  implements java.io.Serializable {
         elemField.setFieldName("querySession");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/administration/1.0", "querySession"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setNillable(false);
+        elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("userDetails");

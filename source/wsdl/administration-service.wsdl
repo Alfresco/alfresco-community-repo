@@ -34,7 +34,7 @@
 
          <complexType name="UserQueryResults">
             <sequence>
-               <element name="querySession" type="xsd:string"/>
+               <element name="querySession" type="xsd:string" nillable="true"/>
                <element name="userDetails" type="admin:UserDetails" maxOccurs="unbounded" minOccurs="0"/>
             </sequence>
          </complexType>

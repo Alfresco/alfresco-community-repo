@@ -2704,6 +2704,7 @@
 	   <requestFlow>
 	      <handler type="CreateSpringTicketCallback"/>
       	  <handler type="WSSecurity"/>
+      	  <handler type="QueryConfigHandler"/>
   		</requestFlow>
 	   <!-- generated below here -->   
       <parameter name="wsdlTargetNamespace" value="http://www.alfresco.org/ws/service/administration/1.0"/>

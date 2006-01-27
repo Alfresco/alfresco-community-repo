@@ -27,17 +27,22 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.transaction.TransactionComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.repo.webservice.AbstractWebService;
+import org.alfresco.repo.webservice.Utils;
 import org.alfresco.repo.webservice.action.ActionFault;
+import org.alfresco.repo.webservice.repository.QuerySession;
 import org.alfresco.repo.webservice.types.NamedValue;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
+import org.apache.axis.MessageContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -61,6 +66,9 @@ public class AdministrationWebService extends AbstractWebService implements
     
     /** A set of ignored properties */
     private static Set<QName> ignoredProperties = new HashSet<QName>(3);
+    
+    /** Simple cache used to store user query sessions */
+    private SimpleCache<String, UserQuerySession> querySessionCache;
     
     /**
      * Constructor
@@ -103,24 +111,116 @@ public class AdministrationWebService extends AbstractWebService implements
         this.authenticationService = authenticationService;
     }
     
-    /* (non-Javadoc)
+    /**
+     * Sets the instance of the SimpleCache to be used
+     * 
+     * @param querySessionCache
+     *            The SimpleCache
+     */
+    public void setQuerySessionCache(
+            SimpleCache<String, UserQuerySession> querySessionCache)
+    {
+        this.querySessionCache = querySessionCache;
+    }
+    
+    /**
      * @see org.alfresco.repo.webservice.administration.AdministrationServiceSoapPort#queryUsers(org.alfresco.repo.webservice.administration.UserFilter)
      */
-    public UserQueryResults queryUsers(UserFilter filter)
+    public UserQueryResults queryUsers(final UserFilter filter)
             throws RemoteException, AdministrationFault
     {
-        // TODO Auto-generated method stub
-        return null;
+        try
+        {
+            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<UserQueryResults>()
+            {
+                public UserQueryResults doWork() throws Exception
+                {
+                    return queryUsersImpl(filter);
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
+            }
+            
+            throw new ActionFault(0, exception.getMessage());
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.webservice.administration.AdministrationServiceSoapPort#fetchMoreUsers(java.lang.String)
+    /**
+     * Query users, batch by set size
+     * 
+     * @param filter    used to filter results
+     * @return          user query results, optionally batched
      */
-    public UserQueryResults fetchMoreUsers(String querySession)
+    private UserQueryResults queryUsersImpl(UserFilter filter)
+    {
+        MessageContext msgContext = MessageContext.getCurrentContext();
+        
+        // Create a user query session
+        UserQuerySession userQuerySession = new UserQuerySession(Utils.getBatchSize(msgContext), filter);
+        UserQueryResults userQueryResults = userQuerySession.getNextBatch();
+
+        // add the session to the cache if there are more results to come
+        if (userQueryResults.getQuerySession() != null)
+        {
+            // this.querySessionCache.putQuerySession(querySession);
+            this.querySessionCache.put(userQueryResults.getQuerySession(), userQuerySession);
+        }
+        
+        return userQueryResults;
+    }    
+
+    /**
+     *  @see org.alfresco.repo.webservice.administration.AdministrationServiceSoapPort#fetchMoreUsers(java.lang.String)
+     */
+    public UserQueryResults fetchMoreUsers(final String querySession)
             throws RemoteException, AdministrationFault
     {
-        // TODO Auto-generated method stub
-        return null;
+        try
+        {
+            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<UserQueryResults>()
+            {
+                public UserQueryResults doWork() throws Exception
+                {
+                    return fetchMoreUsersImpl(querySession);
+                }
+            });
+        }
+        catch (Throwable exception)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", exception);
+            }
+            
+            throw new ActionFault(0, exception.getMessage());
+        }
+    }
+
+    /**
+     * 
+     * @param querySession
+     * @return
+     */
+    private UserQueryResults fetchMoreUsersImpl(String querySession)
+    {
+        UserQueryResults queryResult = null;
+        UserQuerySession session = this.querySessionCache.get(querySession);
+        
+        if (session != null)
+        {
+            queryResult = session.getNextBatch();
+            if (queryResult.getQuerySession() == null)
+            {
+                this.querySessionCache.remove(querySession);
+            }
+        }
+        
+        return queryResult;
     }
 
     /**
@@ -412,5 +512,136 @@ public class AdministrationWebService extends AbstractWebService implements
         {
             this.personService.deletePerson(userName);
         }        
+    }
+    
+    /**
+     * User query session used to support batched user query
+     * 
+     * @author Roy Wetherall
+     */
+    private class UserQuerySession implements Serializable
+    {
+        private static final long serialVersionUID = -2960711874297744356L;
+        
+        private int batchSize = -1;        
+        private UserFilter filter;
+        protected int position = 0;        
+        private String id;
+        
+        /** 
+         * Constructor
+         * 
+         * @param batchSize
+         * @param filter
+         */
+        public UserQuerySession(int batchSize, UserFilter filter)
+        {
+            this.batchSize = batchSize;
+            this.filter = filter;
+            this.id = GUID.generate();
+        }
+                
+        /**
+         * @see org.alfresco.repo.webservice.repository.QuerySession#getId()
+         */
+        public String getId()
+        {
+           return this.id;
+        }
+      
+        /**
+         * Calculates the index of the last row to retrieve. 
+         * 
+         * @param totalRowCount The total number of rows in the results
+         * @return The index of the last row to return
+         */
+        protected int calculateLastRowIndex(int totalRowCount)
+        {
+           int lastRowIndex = totalRowCount;
+           
+           // set the last row index if there are more results available 
+           // than the batch size
+           if ((this.batchSize != -1) && ((this.position + this.batchSize) < totalRowCount))
+           {
+              lastRowIndex = this.position + this.batchSize;
+           }
+           
+           return lastRowIndex;
+        }
+        
+        /**
+         * Calculates the value of the next position.
+         * If the end of the result set is reached the position is set to -1
+         * 
+         * @param totalRowCount The total number of rows in the results
+         * @param queryResult The QueryResult object being returned to the client,
+         * if there are no more results the id is removed from the QueryResult instance
+         */
+        protected void updatePosition(int totalRowCount, UserQueryResults queryResult)
+        {
+           if (this.batchSize == -1)
+           {
+               this.position = -1;
+               queryResult.setQuerySession(null);
+           }
+           else
+           {
+               this.position += this.batchSize;
+               if (this.position >= totalRowCount)
+               {
+                  // signify that there are no more results 
+                  this.position = -1;
+                  queryResult.setQuerySession(null);
+               }
+           }
+        }
+        
+        /**
+         * Gets the next batch of user details
+         * 
+         * @return  user query results
+         */
+        public UserQueryResults getNextBatch()
+        {
+            UserQueryResults queryResult = null;
+            
+            if (this.position != -1)
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("Before getNextBatch: " + toString());
+               
+               Set<NodeRef> nodeRefs = AdministrationWebService.this.personService.getAllPeople();
+               
+               // TODO do the filter of the resulting list here ....
+               List<NodeRef> filteredNodeRefs = new ArrayList<NodeRef>(nodeRefs);
+               
+               int totalRows = filteredNodeRefs.size();
+               int lastRow = calculateLastRowIndex(totalRows);
+               int currentBatchSize = lastRow - this.position;
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("Total rows = " + totalRows + ", current batch size = " + currentBatchSize);
+               
+               List<UserDetails> userDetailsList = new ArrayList<UserDetails>(currentBatchSize);
+               
+               for (int x = this.position; x < lastRow; x++)
+               {
+                  NodeRef nodeRef = (NodeRef)filteredNodeRefs.get(x);
+                  String userName = (String)AdministrationWebService.this.nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
+                  UserDetails userDetails = AdministrationWebService.this.createUserDetails(userName, nodeRef);
+                  userDetailsList.add(userDetails);
+               }
+               
+               queryResult = new UserQueryResults(getId(), (UserDetails[])userDetailsList.toArray(new UserDetails[userDetailsList.size()]));
+               
+               // move the position on
+               updatePosition(totalRows, queryResult);
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("After getNextBatch: " + toString());
+            }
+            
+            return queryResult;
+        }
     }
 }

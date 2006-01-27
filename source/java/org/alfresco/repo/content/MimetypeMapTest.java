@@ -54,5 +54,8 @@ public class MimetypeMapTest extends BaseSpringTest
         // MS Word
         assertEquals("doc", extensionsByMimetype.get("application/msword"));
         assertEquals("application/msword", mimetypesByExtension.get("doc"));
+        
+        // Star Office
+        assertEquals("sds", extensionsByMimetype.get("application/vnd.stardivision.chart"));
     }
 }

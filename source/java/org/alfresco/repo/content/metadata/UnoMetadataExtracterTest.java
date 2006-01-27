@@ -53,7 +53,7 @@ public class UnoMetadataExtracterTest extends AbstractMetadataExtracterTest
         reliability = extracter.getReliability(MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT);
         assertEquals("OpenOffice 2.0 Writer (OpenDoc) should be supported", 1.0, reliability);
 
-        reliability = extracter.getReliability(MimetypeMap.MIMETYPE_OPENOFFICE_WRITER);
+        reliability = extracter.getReliability(MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER);
         assertEquals("OpenOffice 1.0 Writer should be supported", 1.0, reliability);
     }
 
@@ -74,6 +74,6 @@ public class UnoMetadataExtracterTest extends AbstractMetadataExtracterTest
             return;
         }
         
-        testCommonMetadata(extractFromExtension("sxw", MimetypeMap.MIMETYPE_OPENOFFICE_WRITER));
+        testCommonMetadata(extractFromExtension("sxw", MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER));
     }
 }

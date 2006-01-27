@@ -34,9 +34,22 @@
       </property>
    </bean>
     
+    <bean id="mimetypeConfigService" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
+        <constructor-arg>
+            <bean class="org.alfresco.config.source.UrlConfigSource">
+                <constructor-arg>
+                    <list>
+                        <value>alfresco/mimetype/mimetype-map.xml</value>
+                        <value>alfresco/mimetype/mimetype-map-openoffice.xml</value>
+                    </list>
+                </constructor-arg>
+            </bean>
+        </constructor-arg>
+    </bean>
+
    <bean id="mimetypeService" class="org.alfresco.repo.content.MimetypeMap" init-method="init" >
       <constructor-arg>
-         <ref bean="repoConfigService" />
+         <ref bean="mimetypeConfigService" />
       </constructor-arg>
    </bean>
    

@@ -284,57 +284,6 @@
          <mimetype mimetype="application/zip" display="ZIP">
             <extension>zip</extension>
          </mimetype>
-         <mimetype mimetype="application/vnd.oasis.opendocument.text" display="OpenDocument Text (OpenOffice 2.0)">
-            <extension>odt</extension>
-         </mimetype>
-	     <mimetype mimetype="application/vnd.oasis.opendocument.text-template" display="OpenDocument Text Template">
-	       <extension>ott</extension>
-         </mimetype>
-	     <mimetype mimetype="application/vnd.oasis.opendocument.text-web" display="HTML Document Template">
-	       <extension>oth</extension>
-         </mimetype>
-	     <mimetype mimetype="application/vnd.oasis.opendocument.text-master" display="OpenDocument Master Document">
-	       <extension>odm</extension>
-         </mimetype>
-	     <mimetype mimetype="application/vnd.oasis.opendocument.graphics" display="OpenDocument Drawing">
-	       <extension>odg</extension>
-         </mimetype>
-	     <mimetype mimetype="application/vnd.oasis.opendocument.graphics-template" display="OpenDocument Drawing Template">
-	       <extension>otg</extension>
-         </mimetype>
-	     <mimetype mimetype="application/vnd.oasis.opendocument.presentation" display="OpenDocument Presentation">
-	       <extension>odp</extension>
-         </mimetype>
-	     <mimetype mimetype="application/vnd.oasis.opendocument.presentation-template" display="OpenDocument Presentation Template">
-	       <extension>otp</extension>
-         </mimetype>
-	     <mimetype mimetype="application/vnd.oasis.opendocument.spreadsheet" display="OpenDocument Spreadsheet">
-	       <extension>ods</extension>
-         </mimetype>
-	     <mimetype mimetype="application/vnd.oasis.opendocument.spreadsheet-template" display="OpenDocument Spreadsheet Template">
-	       <extension>ots</extension>
-         </mimetype>
-	     <mimetype mimetype="application/vnd.oasis.opendocument.chart" display="OpenDocument Chart">
-	       <extension>odc</extension>
-         </mimetype>
-	     <mimetype mimetype="application/vnd.oasis.opendocument.formula" display="OpenDocument Formula">
-	       <extension>odf</extension>
-         </mimetype>
-	     <mimetype mimetype="application/vnd.oasis.opendocument.database" display="OpenDocument Database">
-	       <extension>odb</extension>
-         </mimetype>
-	     <mimetype mimetype="application/vnd.oasis.opendocument.image" display="OpenDocument Image">
-	       <extension>odi</extension>
-         </mimetype>
-         <mimetype mimetype="application/vnd.sun.xml.writer" display="OpenOffice 1.0/StarOffice6.0 Writer 6.0">
-           <extension>sxw</extension>
-         </mimetype>
-         <mimetype mimetype="application/vnd.sun.xml.calc" display="OpenOffice 1.0/StarOffice6.0 Calc 6.0">
-           <extension>sxc</extension>
-         </mimetype>
-         <mimetype mimetype="application/vnd.stardivision.calc" display="StarCalc 5.x Spreadsheet">
-           <extension>sdc</extension>
-         </mimetype>
          <mimetype mimetype="image/x-dwg" display="AutoCAD Drawing">
             <extension>dwg</extension>
          </mimetype>

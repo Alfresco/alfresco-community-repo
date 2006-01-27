@@ -54,7 +54,7 @@ public class UnoMetadataExtracter extends AbstractMetadataExtracter
 
     private static String[] mimeTypes = new String[] {
         MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT,
-        MimetypeMap.MIMETYPE_OPENOFFICE_WRITER,
+        MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER,
     // Add the other OpenOffice.org stuff here
     // In fact, other types may apply as well, but should be counted as lower
     // quality since they involve conversion.

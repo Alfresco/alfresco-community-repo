@@ -73,10 +73,18 @@ public class MimetypeMap implements MimetypeService
     public static final String MIMETYPE_OPENDOCUMENT_TEXT_WEB= "application/vnd.oasis.opendocument.text-web";
     public static final String MIMETYPE_OPENDOCUMENT_DATABASE= "application/vnd.oasis.opendocument.database";
     // Open Office
-    public static final String MIMETYPE_OPENOFFICE_WRITER = "application/vnd.sun.xml.writer";
-    public static final String MIMETYPE_OPENOFFICE_CALC = "application/vnd.sun.xml.calc";
+    public static final String MIMETYPE_OPENOFFICE1_WRITER = "application/vnd.sun.xml.writer";
+    public static final String MIMETYPE_OPENOFFICE1_CALC = "application/vnd.sun.xml.calc";
+    public static final String MIMETYPE_OPENOFFICE1_DRAW = "application/vnd.sun.xml.draw";
     // Star Office
-    public static final String MIMETYPE_STAROFFICE5_SPREADSHEET = "application/vnd.stardivision.calc";
+    public static final String MIMETYPE_STAROFFICE5_DRAW = "application/vnd.stardivision.draw";
+    public static final String MIMETYPE_STAROFFICE5_CALC = "application/vnd.stardivision.calc";
+    public static final String MIMETYPE_STAROFFICE5_IMPRESS = "application/vnd.stardivision.impress";
+    public static final String MIMETYPE_STAROFFICE5_IMPRESS_PACKED = "application/vnd.stardivision.impress-packed";
+    public static final String MIMETYPE_STAROFFICE5_CHART = "application/vnd.stardivision.chart";
+    public static final String MIMETYPE_STAROFFICE5_WRITER = "application/vnd.stardivision.writer";
+    public static final String MIMETYPE_STAROFFICE5_WRITER_GLOBAL = "application/vnd.stardivision.writer-global";
+    public static final String MIMETYPE_STAROFFICE5_MATH = "application/vnd.stardivision.math";
     // Audio
     public static final String MIMETYPE_MP3 = "audio/x-mpeg";
     // Alfresco

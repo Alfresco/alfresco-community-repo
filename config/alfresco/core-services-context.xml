@@ -118,22 +118,6 @@
         </property>
     </bean>
 
-    <!--                        -->
-    <!-- CONFIGURATION SERVICES -->
-    <!--                        -->
-
-    <bean id="repoConfigService" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
-        <constructor-arg>
-            <bean class="org.alfresco.config.source.ClassPathConfigSource">
-                <constructor-arg>
-                    <list>
-                        <value>alfresco/mimetype-map.xml</value>
-                    </list>
-                </constructor-arg>
-            </bean>
-        </constructor-arg>
-    </bean>
-
     <!--                         -->
     <!-- Indexing and Search API -->
     <!--                         -->

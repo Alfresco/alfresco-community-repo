@@ -53,9 +53,7 @@ public class UnoContentTransformer extends AbstractContentTransformer
         // Build the map of known Uno document formats and store by conversion key
         formatsByConversion = new HashMap<ContentTransformerRegistry.TransformationKey, DocumentFormatWrapper>(17);
         
-        formatsByConversion.put(
-                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENDOCUMENT_SPREADSHEET, MimetypeMap.MIMETYPE_PDF),
-                new DocumentFormatWrapper(DocumentFormat.PDF_CALC, 1.0));
+        // Open Office 2.0 / Open Document
         formatsByConversion.put(
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT, MimetypeMap.MIMETYPE_TEXT_PLAIN),
                 new DocumentFormatWrapper(DocumentFormat.TEXT, 1.0));
@@ -63,26 +61,47 @@ public class UnoContentTransformer extends AbstractContentTransformer
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT, MimetypeMap.MIMETYPE_PDF),
                 new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
         formatsByConversion.put(
-                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE_WRITER, MimetypeMap.MIMETYPE_TEXT_PLAIN),
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENDOCUMENT_SPREADSHEET, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_CALC, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENDOCUMENT_PRESENTATION, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
+        // Open Office
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER, MimetypeMap.MIMETYPE_TEXT_PLAIN),
                 new DocumentFormatWrapper(DocumentFormat.TEXT, 1.0));
         formatsByConversion.put(
-                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE_WRITER, MimetypeMap.MIMETYPE_PDF),
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER, MimetypeMap.MIMETYPE_PDF),
                 new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
         formatsByConversion.put(
-                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE_CALC, MimetypeMap.MIMETYPE_PDF),
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE1_CALC, MimetypeMap.MIMETYPE_PDF),
                 new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
         formatsByConversion.put(
-                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_STAROFFICE5_SPREADSHEET, MimetypeMap.MIMETYPE_PDF),
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE1_DRAW, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_IMPRESS, 1.0));
+        // Star Office 5.x
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_STAROFFICE5_DRAW, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_IMPRESS, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_STAROFFICE5_CALC, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_CALC, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_STAROFFICE5_CHART, MimetypeMap.MIMETYPE_PDF),
                 new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
         formatsByConversion.put(
-                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_HTML),
-                new DocumentFormatWrapper(DocumentFormat.HTML_WRITER, 1.0));
-        formatsByConversion.put(
-                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_PDF),
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_STAROFFICE5_IMPRESS, MimetypeMap.MIMETYPE_PDF),
                 new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
         formatsByConversion.put(
-                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_WORD),
-                new DocumentFormatWrapper(DocumentFormat.TEXT, 1.0));
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_STAROFFICE5_IMPRESS_PACKED, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_IMPRESS, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_STAROFFICE5_WRITER, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_STAROFFICE5_WRITER_GLOBAL, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
+        // MS Office
         formatsByConversion.put(
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_TEXT_PLAIN),
                 new DocumentFormatWrapper(DocumentFormat.TEXT, 1.0));
@@ -93,14 +112,24 @@ public class UnoContentTransformer extends AbstractContentTransformer
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_PDF),
                 new DocumentFormatWrapper(DocumentFormat.PDF_CALC, 1.0));
         formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_HTML),
+                new DocumentFormatWrapper(DocumentFormat.HTML_WRITER, 1.0));
+        formatsByConversion.put(
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_PPT, MimetypeMap.MIMETYPE_FLASH),
                 new DocumentFormatWrapper(DocumentFormat.FLASH_IMPRESS, 1.0));
         formatsByConversion.put(
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_PPT, MimetypeMap.MIMETYPE_PDF),
                 new DocumentFormatWrapper(DocumentFormat.PDF_IMPRESS, 1.0));
+        // Other
         formatsByConversion.put(
-                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_HTML),
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_HTML),
                 new DocumentFormatWrapper(DocumentFormat.HTML_WRITER, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_WRITER, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_WORD),
+                new DocumentFormatWrapper(DocumentFormat.TEXT, 1.0));
         formatsByConversion.put(
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_HTML, MimetypeMap.MIMETYPE_PDF),
                 new DocumentFormatWrapper(DocumentFormat.PDF_WRITER_WEB, 1.0));

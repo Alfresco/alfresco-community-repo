@@ -62,7 +62,6 @@ public class PersonTest extends BaseSpringTest
     protected void onTearDownInTransaction() throws Exception
     {
         super.onTearDownInTransaction();
-        flushAndClear();
     }
 
     public void xtestPerformance()

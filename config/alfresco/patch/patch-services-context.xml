@@ -94,6 +94,7 @@
             <ref bean="nodeService"/>
         </property>
     </bean>
+
     <bean id="patch.updatePermissionData" class="org.alfresco.repo.admin.patch.impl.PermissionDataPatch" parent="basePatch" >
         <property name="id"><value>patch.updatePermissionData</value></property>
         <property name="description"><value>patch.updatePermissionData.description</value></property>
@@ -104,6 +105,34 @@
         <property name="sessionFactory">
             <ref bean="sessionFactory" />
         </property>
+    </bean>
+
+    <bean id="patch.guestUser" class="org.alfresco.repo.admin.patch.impl.GuestUserPatch" parent="basePatch" >
+        <property name="id"><value>patch.guestUser</value></property>
+        <property name="description"><value>patch.guestUser.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2</value></property>
+        <property name="targetSchema"><value>3</value></property>
+        <!-- helper beans -->
+        <property name="searchService">
+            <ref bean="searchService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="personService">
+            <ref bean="personService"/>
+        </property>
+        <property name="permissionService">
+            <ref bean="permissionService"/>
+        </property>
+        <property name="importerBootstrap">
+            <ref bean="importerBootstrap" />
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
+        </property>
+      
     </bean>
 
     <!-- This component ensures that patches get applied on startup -->

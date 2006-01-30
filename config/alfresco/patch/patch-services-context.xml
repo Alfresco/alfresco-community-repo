@@ -106,7 +106,6 @@
             <ref bean="sessionFactory" />
         </property>
     </bean>
-
     <bean id="patch.guestUser" class="org.alfresco.repo.admin.patch.impl.GuestUserPatch" parent="basePatch" >
         <property name="id"><value>patch.guestUser</value></property>
         <property name="description"><value>patch.guestUser.description</value></property>
@@ -132,7 +131,17 @@
         <property name="namespaceService">
             <ref bean="namespaceService" />
         </property>
-      
+    </bean>
+    <bean id="patch.fixNodeSerializableValues" class="org.alfresco.repo.admin.patch.impl.NodePropertySerializablePatch" parent="basePatch" >
+        <property name="id"><value>patch.fixNodeSerializableValues</value></property>
+        <property name="description"><value>patch.fixNodeSerializableValues.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>3</value></property>
+        <property name="targetSchema"><value>4</value></property>
+        <!-- helper beans -->
+        <property name="sessionFactory">
+            <ref bean="sessionFactory" />
+        </property>
     </bean>
 
     <!-- This component ensures that patches get applied on startup -->

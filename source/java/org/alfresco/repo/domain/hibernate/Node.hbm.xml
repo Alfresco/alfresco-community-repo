@@ -330,4 +330,14 @@
          status.changeTxnId = :changeTxnId
    </query>
 
+   <query name="node.patch.GetNodesWithPersistedSerializableProperties">
+      select distinct
+         node
+      from
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
+      where
+         node.properties.serializableValue is not null and
+         node.properties.multiValued = false
+   </query>
+
 </hibernate-mapping>

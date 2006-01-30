@@ -69,7 +69,7 @@ public class PropertyValue implements Cloneable, Serializable
         INTEGER
         {
             @Override
-            protected ValueType getPersistedType()
+            protected ValueType getPersistedType(Serializable value)
             {
                 return ValueType.LONG;
             }
@@ -106,6 +106,23 @@ public class PropertyValue implements Cloneable, Serializable
         },
         STRING
         {
+            /**
+             * Strings longer than the maximum of 1024 characters will be serialized.
+             */
+            @Override
+            protected ValueType getPersistedType(Serializable value)
+            {
+                if (value instanceof String)
+                {
+                    String valueStr = (String) value;
+                    if (valueStr.length() > 1024)
+                    {
+                        return ValueType.SERIALIZABLE;
+                    }
+                }
+                return ValueType.STRING;
+            }
+
             @Override
             Serializable convert(Serializable value)
             {
@@ -115,7 +132,7 @@ public class PropertyValue implements Cloneable, Serializable
         DATE
         {
             @Override
-            protected ValueType getPersistedType()
+            protected ValueType getPersistedType(Serializable value)
             {
                 return ValueType.STRING;
             }
@@ -128,6 +145,66 @@ public class PropertyValue implements Cloneable, Serializable
         },
         SERIALIZABLE
         {
+            /**
+             * As <code>Serializable</code> persistence is the last resort, being both
+             * more verbose as well as unusable in queries, the value is used to
+             * determine a more appropriate persistent type.  This method defers to
+             * the other, more basic types' version of this method to fulfill the request.
+             */
+            @Override
+            protected ValueType getPersistedType(Serializable value)
+            {
+                if (value == null)
+                {
+                    throw new IllegalArgumentException("Persisted type cannot be determined by null value");
+                }
+                // check the value to determine the most appropriate type to defer to
+                if (value instanceof Boolean)
+                {
+                    return ValueType.BOOLEAN.getPersistedType(value);
+                }
+                else if ((value instanceof Integer) || (value instanceof Long))
+                {
+                    return ValueType.LONG.getPersistedType(value);
+                }
+                else if (value instanceof Float)
+                {
+                    return ValueType.FLOAT.getPersistedType(value);
+                }
+                else if (value instanceof Double)
+                {
+                    return ValueType.DOUBLE.getPersistedType(value);
+                }
+                else if (value instanceof String)
+                {
+                    return ValueType.STRING.getPersistedType(value);
+                }
+                else if (value instanceof Date)
+                {
+                    return ValueType.DATE.getPersistedType(value);
+                }
+                else if (value instanceof ContentData)
+                {
+                    return ValueType.CONTENT.getPersistedType(value);
+                }
+                else if (value instanceof NodeRef)
+                {
+                    return ValueType.NODEREF.getPersistedType(value);
+                }
+                else if (value instanceof QName)
+                {
+                    return ValueType.QNAME.getPersistedType(value);
+                }
+                else if (value instanceof Path)
+                {
+                    return ValueType.PATH.getPersistedType(value);
+                }
+                else
+                {
+                    return this;
+                }
+            }
+
             @Override
             Serializable convert(Serializable value)
             {
@@ -137,7 +214,7 @@ public class PropertyValue implements Cloneable, Serializable
         CONTENT
         {
             @Override
-            protected ValueType getPersistedType()
+            protected ValueType getPersistedType(Serializable value)
             {
                 return ValueType.STRING;
             }
@@ -151,7 +228,7 @@ public class PropertyValue implements Cloneable, Serializable
         NODEREF
         {
             @Override
-            protected ValueType getPersistedType()
+            protected ValueType getPersistedType(Serializable value)
             {
                 return ValueType.STRING;
             }
@@ -165,7 +242,7 @@ public class PropertyValue implements Cloneable, Serializable
         QNAME
         {
             @Override
-            protected ValueType getPersistedType()
+            protected ValueType getPersistedType(Serializable value)
             {
                 return ValueType.STRING;
             }
@@ -179,7 +256,7 @@ public class PropertyValue implements Cloneable, Serializable
         PATH
         {
             @Override
-            protected ValueType getPersistedType()
+            protected ValueType getPersistedType(Serializable value)
             {
                 return ValueType.SERIALIZABLE;
             }
@@ -191,8 +268,12 @@ public class PropertyValue implements Cloneable, Serializable
             }
         };
         
-        /** override if the type gets persisted in a different format */
-        protected ValueType getPersistedType()
+        /**
+         * Override if the type gets persisted in a different format
+         * 
+         * @param value the actual value that is to be persisted.  May not be null.
+         */
+        protected ValueType getPersistedType(Serializable value)
         {
             return this;
         }
@@ -302,7 +383,7 @@ public class PropertyValue implements Cloneable, Serializable
         {
             // get the persisted type
             ValueType valueType = makeValueType(typeQName);
-            ValueType persistedValueType = valueType.getPersistedType();
+            ValueType persistedValueType = valueType.getPersistedType(value);
             // convert to the persistent type
             value = persistedValueType.convert(value);
             setPersistedValue(persistedValueType, value);

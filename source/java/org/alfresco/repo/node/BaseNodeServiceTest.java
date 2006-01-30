@@ -927,7 +927,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 rootNodeRef,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("pathA"),
-                ContentModel.TYPE_CONTAINER,
+                TYPE_QNAME_TEST_MANY_PROPERTIES,
                 properties).getChildRef();
         
         // persist

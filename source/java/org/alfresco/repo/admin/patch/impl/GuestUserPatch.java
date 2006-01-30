@@ -36,6 +36,13 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
+/**
+ * Ensures that the <b>guest</b> user homespace exists.<br/>
+ * A guest user homespace is now created during bootstrap.  It is required for guest user
+ * access, but in older databases will not exist.
+ * 
+ * @author Andy Hind
+ */
 public class GuestUserPatch extends AbstractPatch
 {
     private static final String MSG_SUCCESS = "patch.guestUser.result";

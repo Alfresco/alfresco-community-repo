@@ -290,6 +290,9 @@
          <mimetype mimetype="image/x-dwt" display="AutoCAD Template">
             <extension>dwt</extension>
          </mimetype>
+         <mimetype mimetype="message/rfc822" display="EMail">
+            <extension>msg</extension>
+         </mimetype>
       </mimetypes>
    </config>
    

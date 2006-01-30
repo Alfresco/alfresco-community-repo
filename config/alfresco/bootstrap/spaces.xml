@@ -8,7 +8,7 @@
         <view:acl view:inherit="false">
             <view:ace view:access="ALLOWED">
                 <view:authority>GROUP_EVERYONE</view:authority>
-                <view:permission>Read</view:permission>
+                <view:permission>Guest</view:permission>
             </view:ace>
         </view:acl>
 		<app:uifacets />
@@ -51,11 +51,11 @@
                 <view:acl view:inherit="false">
                     <view:ace view:access="ALLOWED">
                         <view:authority>guest</view:authority>
-                        <view:permission>Read</view:permission>
+                        <view:permission>Guest</view:permission>
                     </view:ace>
                     <view:ace view:access="ALLOWED">
                         <view:authority>GROUP_EVERYONE</view:authority>
-                        <view:permission>Read</view:permission>
+                        <view:permission>Guest</view:permission>
                     </view:ace>
                 </view:acl>
                 <app:uifacets />

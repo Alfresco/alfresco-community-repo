@@ -131,6 +131,9 @@
         <property name="namespaceService">
             <ref bean="namespaceService" />
         </property>
+        <property name="messageSource">
+            <ref bean="guestMessageSource" />
+        </property>   
     </bean>
     <bean id="patch.fixNodeSerializableValues" class="org.alfresco.repo.admin.patch.impl.NodePropertySerializablePatch" parent="basePatch" >
         <property name="id"><value>patch.fixNodeSerializableValues</value></property>
@@ -141,6 +144,14 @@
         <!-- helper beans -->
         <property name="sessionFactory">
             <ref bean="sessionFactory" />
+        </property>
+    </bean>
+
+    <bean id="guestMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>alfresco/messages/bootstrap-spaces</value> 
+            </list>
         </property>
     </bean>
 

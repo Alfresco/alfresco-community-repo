@@ -35,6 +35,8 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.ResourceBundleMessageSource;
 
 /**
  * Ensures that the <b>guest</b> user homespace exists.<br/>
@@ -68,6 +70,8 @@ public class GuestUserPatch extends AbstractPatch
     private NamespaceService namespaceService;
 
     private String guestId = "guest";
+    
+    private MessageSource messageSource;
 
     public GuestUserPatch()
     {
@@ -107,6 +111,11 @@ public class GuestUserPatch extends AbstractPatch
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
+    }
+    
+    public void setMessageSource(MessageSource messageSource)
+    {
+        this.messageSource = messageSource;
     }
 
     @Override
@@ -181,13 +190,13 @@ public class GuestUserPatch extends AbstractPatch
         {
             // create
 
-            String guestHomeName = configuration.getProperty(GUEST_HOME_NAME);
+            String guestHomeName = messageSource.getMessage(GUEST_HOME_NAME, null, I18NUtil.getLocale());
             if (guestHomeName == null || guestHomeName.length() == 0)
             {
                 throw new PatchException("Bootstrap property '" + GUEST_HOME_NAME + "' is not present");
             }
 
-            String guestHomeDescription = configuration.getProperty(GUEST_HOME_DESCRIPTION);
+            String guestHomeDescription = messageSource.getMessage(GUEST_HOME_DESCRIPTION, null, I18NUtil.getLocale()); 
             if (guestHomeDescription == null || guestHomeDescription.length() == 0)
             {
                 throw new PatchException("Bootstrap property '" + GUEST_HOME_DESCRIPTION + "' is not present");
@@ -228,8 +237,8 @@ public class GuestUserPatch extends AbstractPatch
     private void setGuestHomePermissions(NodeRef nodeRef)
     {
         permissionService.setInheritParentPermissions(nodeRef, false);
-        permissionService.setPermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
-        permissionService.setPermission(nodeRef, guestId, PermissionService.READ, true);
+        permissionService.setPermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.GUEST, true);
+        permissionService.setPermission(nodeRef, guestId, PermissionService.GUEST, true);
     }
 
     private NodeRef setCompanyHomeSpacePermissions(NodeRef storeRootNodeRef, String companyHomeChildName)
@@ -251,7 +260,7 @@ public class GuestUserPatch extends AbstractPatch
 
         permissionService.setInheritParentPermissions(companyHomeRef, false);
         permissionService
-                .setPermission(companyHomeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+                .setPermission(companyHomeRef, PermissionService.ALL_AUTHORITIES, PermissionService.GUEST, true);
         return companyHomeRef;
     }
 

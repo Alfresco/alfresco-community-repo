@@ -5678,9 +5678,21 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
         prms.reset(outPkt.getBuffer(), SMBSrvPacket.PARAMWORDS + 4);
 
+        // Fake the oplock for certain file types
+        
+        boolean fakeOpLocks = false;
+        String fname = params.getPath().toUpperCase();
+        
+        if ( fname.endsWith( ".URL")){
+        
+            // Fake the oplock
+            
+            fakeOpLocks = true;
+        }
+        
         // Check if oplocks should be faked
 
-        if (FakeOpLocks)
+        if (fakeOpLocks == true)
         {
 
             // If an oplock was requested indicate it was granted, for now

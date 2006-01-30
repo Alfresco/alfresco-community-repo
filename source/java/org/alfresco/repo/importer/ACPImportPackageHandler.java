@@ -80,27 +80,39 @@ public class ACPImportPackageHandler
     {
         try
         {
-            // find data file
-            InputStream dataStream = null;
+            // find xml meta-data file
+            ZipEntry xmlMetaDataEntry = null;
+            
+            // TODO: First, locate xml meta-data file by name
+            
+            // Scan the zip entries one by one (the slow approach)
             Enumeration entries = zipFile.entries();
             while(entries.hasMoreElements())
             {
                 ZipEntry entry = (ZipEntry)entries.nextElement();
                 if (!entry.isDirectory())
                 {
-                    if (entry.getName().endsWith(".xml"))
+                    // Locate xml file in root of .acp
+                    String entryName = entry.getName();
+                    if (entryName.endsWith(".xml") && entryName.indexOf('/') == -1 && entryName.indexOf('\\') == -1)
                     {
-                        dataStream = zipFile.getInputStream(entry);
+                        if (xmlMetaDataEntry != null)
+                        {
+                            throw new ImporterException("Failed to find unique xml meta-data file within .acp package - multiple xml meta-data files exist.");
+                        }
+                        xmlMetaDataEntry = entry;
                     }
                 }
             }
 
             // oh dear, there's no data file
-            if (dataStream == null)
+            if (xmlMetaDataEntry == null)
             {
-                throw new ImporterException("Failed to find data file within zip package");
+                throw new ImporterException("Failed to find xml meta-data file within .acp package");
             }
             
+            // open the meta-data xml file
+            InputStream dataStream = zipFile.getInputStream(xmlMetaDataEntry);
             Reader inputReader = (dataFileEncoding == null) ? new InputStreamReader(dataStream) : new InputStreamReader(dataStream, dataFileEncoding);
             return new BufferedReader(inputReader);
         }
@@ -110,7 +122,7 @@ public class ACPImportPackageHandler
         }
         catch(IOException e)
         {
-            throw new ImporterException("Failed to open data file within zip package due to " + e.getMessage());
+            throw new ImporterException("Failed to open xml meta-data file within .acp package due to " + e.getMessage());
         }
     }
     

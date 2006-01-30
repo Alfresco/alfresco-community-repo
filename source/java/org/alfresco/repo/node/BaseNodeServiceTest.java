@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import junit.framework.TestCase;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -891,6 +893,36 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         {
             fail("Null property values are allowed in the map");
         }
+    }
+    
+    /**
+     * Ensures that the type you get out of a <b>d:any</b> property is the type that you
+     * put in.
+     */
+    public void testSerializableProperties() throws Exception
+    {
+        ContentData contentData = new ContentData(null, null, 0L, null);
+        QName qname = PROP_QNAME_CONTENT_VALUE;
+        
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(17);
+        properties.put(PROP_QNAME_CONTENT_VALUE, contentData);
+        properties.put(PROP_QNAME_SERIALIZABLE_VALUE, qname);
+        // create node
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                ContentModel.TYPE_CONTAINER,
+                properties).getChildRef();
+        // persist
+        flushAndClear();
+        
+        // get the properties back
+        Map<QName, Serializable> checkProperties = nodeService.getProperties(nodeRef);
+        Serializable checkPropertyContentData = checkProperties.get(PROP_QNAME_CONTENT_VALUE);
+        Serializable checkPropertyQname = checkProperties.get(PROP_QNAME_SERIALIZABLE_VALUE);
+        assertTrue("Serialization/deserialization of ContentData failed", checkPropertyContentData instanceof ContentData);
+        assertTrue("Serialization/deserialization failed", checkPropertyQname instanceof QName);
     }
     
     /**

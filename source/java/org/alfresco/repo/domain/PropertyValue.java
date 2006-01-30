@@ -145,66 +145,6 @@ public class PropertyValue implements Cloneable, Serializable
         },
         SERIALIZABLE
         {
-            /**
-             * As <code>Serializable</code> persistence is the last resort, being both
-             * more verbose as well as unusable in queries, the value is used to
-             * determine a more appropriate persistent type.  This method defers to
-             * the other, more basic types' version of this method to fulfill the request.
-             */
-            @Override
-            protected ValueType getPersistedType(Serializable value)
-            {
-                if (value == null)
-                {
-                    throw new IllegalArgumentException("Persisted type cannot be determined by null value");
-                }
-                // check the value to determine the most appropriate type to defer to
-                if (value instanceof Boolean)
-                {
-                    return ValueType.BOOLEAN.getPersistedType(value);
-                }
-                else if ((value instanceof Integer) || (value instanceof Long))
-                {
-                    return ValueType.LONG.getPersistedType(value);
-                }
-                else if (value instanceof Float)
-                {
-                    return ValueType.FLOAT.getPersistedType(value);
-                }
-                else if (value instanceof Double)
-                {
-                    return ValueType.DOUBLE.getPersistedType(value);
-                }
-                else if (value instanceof String)
-                {
-                    return ValueType.STRING.getPersistedType(value);
-                }
-                else if (value instanceof Date)
-                {
-                    return ValueType.DATE.getPersistedType(value);
-                }
-                else if (value instanceof ContentData)
-                {
-                    return ValueType.CONTENT.getPersistedType(value);
-                }
-                else if (value instanceof NodeRef)
-                {
-                    return ValueType.NODEREF.getPersistedType(value);
-                }
-                else if (value instanceof QName)
-                {
-                    return ValueType.QNAME.getPersistedType(value);
-                }
-                else if (value instanceof Path)
-                {
-                    return ValueType.PATH.getPersistedType(value);
-                }
-                else
-                {
-                    return this;
-                }
-            }
-
             @Override
             Serializable convert(Serializable value)
             {
@@ -269,7 +209,7 @@ public class PropertyValue implements Cloneable, Serializable
         };
         
         /**
-         * Override if the type gets persisted in a different format
+         * Override if the type gets persisted in a different format.
          * 
          * @param value the actual value that is to be persisted.  May not be null.
          */
@@ -305,6 +245,65 @@ public class PropertyValue implements Cloneable, Serializable
             }
             // done
             return arrayList;
+        }
+    }
+    
+    /**
+     * Determine the actual value type to aid in more concise persistence.
+     * 
+     * @param value the value that is to be persisted
+     * @return Returns the value type equivalent of the 
+     */
+    private static ValueType getActualType(Serializable value)
+    {
+        if (value == null)
+        {
+            return ValueType.NULL;
+        }
+        else if (value instanceof Boolean)
+        {
+            return ValueType.BOOLEAN;
+        }
+        else if ((value instanceof Integer) || (value instanceof Long))
+        {
+            return ValueType.LONG;
+        }
+        else if (value instanceof Float)
+        {
+            return ValueType.FLOAT;
+        }
+        else if (value instanceof Double)
+        {
+            return ValueType.DOUBLE;
+        }
+        else if (value instanceof String)
+        {
+            return ValueType.STRING;
+        }
+        else if (value instanceof Date)
+        {
+            return ValueType.DATE;
+        }
+        else if (value instanceof ContentData)
+        {
+            return ValueType.CONTENT;
+        }
+        else if (value instanceof NodeRef)
+        {
+            return ValueType.NODEREF;
+        }
+        else if (value instanceof QName)
+        {
+            return ValueType.QNAME;
+        }
+        else if (value instanceof Path)
+        {
+            return ValueType.PATH;
+        }
+        else
+        {
+            // type is not recognised as belonging to any particular slot
+            return ValueType.SERIALIZABLE;
         }
     }
     
@@ -362,7 +361,8 @@ public class PropertyValue implements Cloneable, Serializable
      */
     public PropertyValue(QName typeQName, Serializable value)
     {
-        this.actualType = makeValueType(typeQName);
+        this.actualType = PropertyValue.getActualType(value);
+//        this.actualType = makeValueType(typeQName);
         if (value == null)
         {
             setPersistedValue(ValueType.NULL, null);
@@ -382,8 +382,8 @@ public class PropertyValue implements Cloneable, Serializable
         else
         {
             // get the persisted type
-            ValueType valueType = makeValueType(typeQName);
-            ValueType persistedValueType = valueType.getPersistedType(value);
+//            ValueType valueType = makeValueType(typeQName);
+            ValueType persistedValueType = this.actualType.getPersistedType(value);
             // convert to the persistent type
             value = persistedValueType.convert(value);
             setPersistedValue(persistedValueType, value);
@@ -586,6 +586,11 @@ public class PropertyValue implements Cloneable, Serializable
         // first check for null
         
         ValueType requiredType = makeValueType(typeQName);
+        if (requiredType == ValueType.SERIALIZABLE)
+        {
+            // the required type must be the actual type
+            requiredType = this.actualType;
+        }
         
         // we need to convert
         Serializable ret = null;

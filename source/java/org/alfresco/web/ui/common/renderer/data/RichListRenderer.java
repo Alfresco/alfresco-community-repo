@@ -203,7 +203,10 @@ public class RichListRenderer extends BaseRenderer
                if (header != null)
                {
                   header.encodeBegin(context);
-                  header.encodeChildren(context);
+                  if (header.getRendersChildren())
+                  {
+                     header.encodeChildren(context);
+                  }
                   header.encodeEnd(context);
                }
                
@@ -266,7 +269,10 @@ public class RichListRenderer extends BaseRenderer
                   if (smallIcon != null)
                   {
                      smallIcon.encodeBegin(context);
-                     smallIcon.encodeChildren(context);
+                     if (smallIcon.getRendersChildren())
+                     {
+                        smallIcon.encodeChildren(context);
+                     }
                      smallIcon.encodeEnd(context);
                      out.write("&nbsp;");
                   }
@@ -349,7 +355,7 @@ public class RichListRenderer extends BaseRenderer
       public void renderListBefore(FacesContext context, UIRichList richList, UIColumn[] columns)
             throws IOException
       {
-         ResponseWriter out = context.getResponseWriter();
+//         ResponseWriter out = context.getResponseWriter();
          
          // render column headers as labels
          // TODO: add "showHeaders" to RichList to allow hiding of header facets for some view modes
@@ -446,7 +452,10 @@ public class RichListRenderer extends BaseRenderer
                if (icon != null)
                {
                   icon.encodeBegin(context);
-                  icon.encodeChildren(context);
+                  if (icon.getRendersChildren())
+                  {
+                     icon.encodeChildren(context);
+                  }
                   icon.encodeEnd(context);
                }
                out.write("</td>");
@@ -646,7 +655,10 @@ public class RichListRenderer extends BaseRenderer
                if (largeIcon != null)
                {
                   largeIcon.encodeBegin(context);
-                  largeIcon.encodeChildren(context);
+                  if (largeIcon.getRendersChildren())
+                  {
+                     largeIcon.encodeChildren(context);
+                  }
                   largeIcon.encodeEnd(context);
                }
                out.write("</td>");

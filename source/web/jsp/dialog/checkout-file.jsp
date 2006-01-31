@@ -148,7 +148,7 @@
                                  <tr>
                                     <td style="padding-left:26px">
                                        <%-- Space selector to allow user to pick a Space --%>
-                                       <r:spaceSelector label="#{msg.select_space_prompt}"
+                                       <r:spaceSelector id="space-selector" label="#{msg.select_space_prompt}"
                                                 value="#{CheckinCheckoutBean.selectedSpaceId}"
                                                 initialSelection="#{NavigationBean.currentNodeId}"
                                                 styleClass="selector"/>

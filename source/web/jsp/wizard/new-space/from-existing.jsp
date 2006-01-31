@@ -125,7 +125,7 @@
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
                                     <td>
-                                       <r:spaceSelector label="#{msg.select_existing_space_prompt}" 
+                                       <r:spaceSelector id="space-selector" label="#{msg.select_existing_space_prompt}" 
                                                         value="#{NewSpaceWizard.existingSpaceId}" 
                                                         initialSelection="#{NavigationBean.currentNodeId}"
                                                         styleClass="selector" />

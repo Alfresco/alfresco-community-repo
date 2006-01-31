@@ -118,7 +118,7 @@
                                  <tr>
                                     <td><h:outputText value="#{msg.destination}"/>:</td>
                                     <td width="90%">
-                                       <r:spaceSelector label="#{msg.select_destination_prompt}" 
+                                       <r:spaceSelector id="space-selector" label="#{msg.select_destination_prompt}" 
                                                         value="#{NewActionWizard.actionProperties.destinationLocation}" 
                                                         initialSelection="#{NavigationBean.currentNodeId}"
                                                         styleClass="selector"/>

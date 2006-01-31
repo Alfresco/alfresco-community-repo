@@ -106,7 +106,8 @@
                                  <tr>
                                     <td><h:outputText value="#{msg.import_to}"/>:</td>
                                     <td width="90%">
-                                       <r:spaceSelector label="#{msg.select_destination_prompt}" 
+                                       <r:spaceSelector id="category-selector"
+                                                        label="#{msg.select_destination_prompt}" 
                                                         value="#{NewRuleWizard.actionProperties.destinationLocation}" 
                                                         initialSelection="#{NavigationBean.currentNodeId}"
                                                         style="border: 1px dashed #cccccc; padding: 6px;"/>

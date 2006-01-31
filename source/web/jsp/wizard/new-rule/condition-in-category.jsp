@@ -106,7 +106,7 @@
                                  <tr>
                                     <td valign="top"><h:outputText value="#{msg.category}"/>:</td>
                                     <td width="90%">
-                                       <r:categorySelector label="#{msg.select_category_prompt}" 
+                                       <r:categorySelector id="category-selector" label="#{msg.select_category_prompt}" 
                                                         value="#{NewRuleWizard.conditionProperties.category}" 
                                                         styleClass="selector"/>
                                     </td>

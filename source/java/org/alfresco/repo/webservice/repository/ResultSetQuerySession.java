@@ -27,6 +27,7 @@ import org.alfresco.repo.webservice.types.Store;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
@@ -114,10 +115,13 @@ public class ResultSetQuerySession extends AbstractQuerySession
                for (Path path : values.keySet())
                {
                   String value = null;
-                  Serializable valueObj = values.get(path);
-                  if (valueObj != null)
+                  try
                   {
-                     value = valueObj.toString();
+                      value = DefaultTypeConverter.INSTANCE.convert(String.class, values.get(path));
+                  } 
+                  catch (Throwable exception)
+                  {
+                      value = values.get(path).toString();
                   }
                
                   // Get the attribute QName from the result path

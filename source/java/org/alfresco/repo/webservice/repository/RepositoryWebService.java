@@ -264,6 +264,11 @@ public class RepositoryWebService extends AbstractWebService implements
                 this.querySessionCache.put(queryResult.getQuerySession(),
                         querySession);
             }
+            
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Method end ... queryChildren");
+            }
 
             // commit the transaction
             tx.commit();

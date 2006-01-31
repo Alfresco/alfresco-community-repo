@@ -125,13 +125,16 @@ public class InCategoryEvaluator extends ActionConditionEvaluatorAbstractBase
 				{
 					// Check to see if the category value is in the list of currently set category values
 					Serializable value = this.nodeService.getProperty(actionedUponNodeRef, categoryProperty);
-                    Collection<NodeRef> actualCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, value);
-					for (NodeRef nodeRef : actualCategories)
+                    if (value != null)
                     {
-                        if (nodeRef.equals(categoryValue) == true)
+                        Collection<NodeRef> actualCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, value);
+    					for (NodeRef nodeRef : actualCategories)
                         {
-                            result = true;
-                            break;
+                            if (nodeRef != null && nodeRef.equals(categoryValue) == true)
+                            {
+                                result = true;
+                                break;
+                            }
                         }
                     }
 				}

@@ -26,10 +26,10 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -140,16 +140,35 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     }
     
     /**
+     * Generate a callback instance of the {@link FileChannel FileChannel}.
+     *  
+     * @param directChannel the delegate that to perform the actual operations
+     * @param listeners the listeners to call
+     * @return Returns a new channel that functions just like the original, except
+     *      that it issues callbacks to the listeners
+     * @throws ContentIOException
+     */
+    protected FileChannel getCallbackFileChannel(
+            FileChannel directChannel,
+            List<ContentStreamListener> listeners)
+            throws ContentIOException
+    {
+        FileChannel ret = new CallbackFileChannel(directChannel, listeners);
+        // done
+        return ret;
+    }
+
+    /**
      * Advise that listens for the completion of specific methods on the
      * {@link java.nio.channels.ByteChannel} interface.
      * 
      * @author Derek Hulley
      */
-    protected class ByteChannelCallbackAdvise implements AfterReturningAdvice
+    protected class ChannelCloseCallbackAdvise implements AfterReturningAdvice
     {
         private List<ContentStreamListener> listeners;
 
-        public ByteChannelCallbackAdvise(List<ContentStreamListener> listeners)
+        public ChannelCloseCallbackAdvise(List<ContentStreamListener> listeners)
         {
             this.listeners = listeners;
         }
@@ -173,11 +192,6 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                 // nothing to do
                 return;
             }
-            // ensure that we are in a transaction
-            if (transactionService == null)
-            {
-                throw new AlfrescoRuntimeException("A transaction service is required when there are listeners present");
-            }
             TransactionUtil.TransactionWork<Object> work = new TransactionUtil.TransactionWork<Object>()
                     {
                         public Object doWork()
@@ -190,11 +204,26 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                             return null;
                         }
                     };
-            TransactionUtil.executeInUserTransaction(transactionService, work);
+            if (transactionService != null)
+            {
+                // just create a transaction
+                TransactionUtil.executeInUserTransaction(transactionService, work);
+            }
+            else
+            {
+                try
+                {
+                    work.doWork();
+                }
+                catch (Exception e)
+                {
+                    throw new ContentIOException("Failed to executed channel close callbacks", e);
+                }
+            }
             // done
             if (logger.isDebugEnabled())
             {
-                logger.debug("Content listeners called: close");
+                logger.debug("" + listeners.size() + " content listeners called: close");
             }
         }
     }
@@ -202,6 +231,10 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     /**
      * Wraps a <code>FileChannel</code> to provide callbacks to listeners when the
      * channel is {@link java.nio.channels.Channel#close() closed}.
+     * <p>
+     * This class is unfortunately necessary as the {@link FileChannel} doesn't have
+     * an single interface defining its methods, making it difficult to put an
+     * advice around the methods that require overriding.
      * 
      * @author Derek Hulley
      */
@@ -253,7 +286,6 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                 // nothing to do
                 return;
             }
-            // create the work to update the listeners
             TransactionUtil.TransactionWork<Object> work = new TransactionUtil.TransactionWork<Object>()
                     {
                         public Object doWork()
@@ -266,14 +298,29 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                             return null;
                         }
                     };
-            TransactionUtil.executeInUserTransaction(transactionService, work);
+            if (transactionService != null)
+            {
+                // just create a transaction
+                TransactionUtil.executeInUserTransaction(transactionService, work);
+            }
+            else
+            {
+                try
+                {
+                    work.doWork();
+                }
+                catch (Exception e)
+                {
+                    throw new ContentIOException("Failed to executed channel close callbacks", e);
+                }
+            }
             // done
             if (logger.isDebugEnabled())
             {
-                logger.debug("Content listeners called: close");
+                logger.debug("" + listeners.size() + " content listeners called: close");
             }
         }
-
+            
         @Override
         public void force(boolean metaData) throws IOException
         {

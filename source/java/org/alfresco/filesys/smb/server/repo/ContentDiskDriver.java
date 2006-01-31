@@ -930,7 +930,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             // Create the network file
             
-            NetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, cifsHelper, nodeRef, params);
+            NetworkFile netFile = ContentNetworkFile.createFile(transactionService, nodeService, contentService, cifsHelper, nodeRef, params);
             
             // Create a file state for the open file
             
@@ -1039,7 +1039,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             NodeRef nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, true);
             
             // create the network file
-            NetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, cifsHelper, nodeRef, params);
+            NetworkFile netFile = ContentNetworkFile.createFile(transactionService, nodeService, contentService, cifsHelper, nodeRef, params);
             
             // Add a file state for the new file/folder
             

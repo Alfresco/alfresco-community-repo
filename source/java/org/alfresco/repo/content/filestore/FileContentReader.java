@@ -17,20 +17,18 @@
 package org.alfresco.repo.content.filestore;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.text.MessageFormat;
-import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.RandomAccessContent;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
@@ -43,11 +41,12 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class FileContentReader extends AbstractContentReader implements RandomAccessContent
+public class FileContentReader extends AbstractContentReader
 {
     private static final Log logger = LogFactory.getLog(FileContentReader.class);
     
     private File file;
+    private boolean allowRandomAccess;
     
     /**
      * Checks the existing reader provided and replaces it with a reader onto some
@@ -118,6 +117,12 @@ public class FileContentReader extends AbstractContentReader implements RandomAc
         super(url);
         
         this.file = file;
+        allowRandomAccess = true;
+    }
+    
+    /* package */ void setAllowRandomAccess(boolean allow)
+    {
+        this.allowRandomAccess = allow;
     }
     
     /**
@@ -170,7 +175,9 @@ public class FileContentReader extends AbstractContentReader implements RandomAc
     @Override
     protected ContentReader createReader() throws ContentIOException
     {
-        return new FileContentReader(this.file, getContentUrl());
+        FileContentReader reader = new FileContentReader(this.file, getContentUrl());
+        reader.setAllowRandomAccess(this.allowRandomAccess);
+        return reader;
     }
     
     @Override
@@ -184,12 +191,23 @@ public class FileContentReader extends AbstractContentReader implements RandomAc
                 throw new IOException("File does not exist");
             }
             // create the channel
-            RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");  // won't create it
-            FileChannel channel = randomAccessFile.getChannel();
+            ReadableByteChannel channel = null;
+            if (allowRandomAccess)
+            {
+                RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");  // won't create it
+                channel = randomAccessFile.getChannel();
+            }
+            else
+            {
+                InputStream is = new FileInputStream(file);
+                channel = Channels.newChannel(is);
+            }
             // done
             if (logger.isDebugEnabled())
             {
-                logger.debug("Opened channel to file: " + file);
+                logger.debug("Opened write channel to file: \n" +
+                        "   file: " + file + "\n" +
+                        "   random-access: " + allowRandomAccess);
             }
             return channel;
         }
@@ -200,36 +218,10 @@ public class FileContentReader extends AbstractContentReader implements RandomAc
     }
 
     /**
-     * @param directChannel a file channel
-     */
-    @Override
-    protected ReadableByteChannel getCallbackReadableChannel(
-            ReadableByteChannel directChannel,
-            List<ContentStreamListener> listeners) throws ContentIOException
-    {
-        if (!(directChannel instanceof FileChannel))
-        {
-            throw new AlfrescoRuntimeException("Expected read channel to be a file channel");
-        }
-        FileChannel fileChannel = (FileChannel) directChannel;
-        // wrap it
-        FileChannel callbackChannel = new CallbackFileChannel(fileChannel, listeners);
-        // done
-        return callbackChannel;
-    }
-
-    /**
      * @return Returns false as this is a reader
      */
     public boolean canWrite()
     {
         return false;   // we only allow reading
-    }
-
-    public FileChannel getChannel() throws ContentIOException
-    {
-        // go through the super classes to ensure that all concurrency conditions
-        // and listeners are satisfied
-        return (FileChannel) super.getReadableChannel();
     }
 }

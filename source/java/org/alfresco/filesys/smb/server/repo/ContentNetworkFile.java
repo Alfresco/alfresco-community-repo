@@ -29,14 +29,17 @@ import org.alfresco.filesys.server.filesys.FileOpenParams;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.RandomAccessContent;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -52,6 +55,7 @@ public class ContentNetworkFile extends NetworkFile
 {
     private static final Log logger = LogFactory.getLog(ContentNetworkFile.class);
     
+    private TransactionService transactionService;
     private NodeService nodeService;
     private ContentService contentService;
     private NodeRef nodeRef;
@@ -65,17 +69,12 @@ public class ContentNetworkFile extends NetworkFile
     // Flag to indicate if the file channel is writable
     
     private boolean writableChannel;
-    
+
     /**
      * Helper method to create a {@link NetworkFile network file} given a node reference.
-     * 
-     * @param serviceRegistry
-     * @param filePathCache used to speed up repeated searches
-     * @param nodeRef the node representing the file or directory
-     * @param params the parameters dictating the path and other attributes with which the file is being accessed
-     * @return Returns a new instance of the network file
      */
     public static ContentNetworkFile createFile(
+            TransactionService transactionService,
             NodeService nodeService,
             ContentService contentService,
             CifsHelper cifsHelper,
@@ -88,7 +87,7 @@ public class ContentNetworkFile extends NetworkFile
         // TODO: Check access writes and compare to write requirements
         
         // create the file
-        ContentNetworkFile netFile = new ContentNetworkFile(nodeService, contentService, nodeRef, path);
+        ContentNetworkFile netFile = new ContentNetworkFile(transactionService, nodeService, contentService, nodeRef, path);
         // set relevant parameters
         if (params.isReadOnlyAccess())
         {
@@ -151,10 +150,16 @@ public class ContentNetworkFile extends NetworkFile
         return netFile;
     }
 
-    private ContentNetworkFile(NodeService nodeService, ContentService contentService, NodeRef nodeRef, String name)
+    private ContentNetworkFile(
+            TransactionService transactionService,
+            NodeService nodeService,
+            ContentService contentService,
+            NodeRef nodeRef,
+            String name)
     {
         super(name);
         setFullName(name);
+        this.transactionService = transactionService;
         this.nodeService = nodeService;
         this.contentService = contentService;
         this.nodeRef = nodeRef;
@@ -259,6 +264,10 @@ public class ContentNetworkFile extends NetworkFile
             // Indicate that we have a writable channel to the file
             
             writableChannel = true;
+            
+            // get the writable channel
+            // TODO: Decide on truncation strategy
+            channel = ((ContentWriter) content).getFileChannel(false);
         }
         else
         {
@@ -272,17 +281,10 @@ public class ContentNetworkFile extends NetworkFile
             // Indicate that we only have a read-only channel to the data
             
             writableChannel = false;
+            
+            // get the read-only channel
+            channel = ((ContentReader) content).getFileChannel();
         }
-        // wrap the channel accessor, if required
-        if (!(content instanceof RandomAccessContent))
-        {
-            // TODO: create a temp, random access file and put a FileContentWriter on it
-            //       barf for now
-            throw new AlfrescoRuntimeException("Can only use a store that supplies randomly accessible channel");
-        }
-        RandomAccessContent randAccessContent = (RandomAccessContent) content;
-        // get the channel - we can only make this call once
-        channel = randAccessContent.getChannel();
     }
 
     @Override
@@ -296,20 +298,38 @@ public class ContentNetworkFile extends NetworkFile
         {
             return;
         }
-        else if (modified)              // file was modified
+        
+        
+        if (modified)              // file was modified
         {
-            // close it
-            channel.close();
-            channel = null;
-            // write properties
-            ContentData contentData = content.getContentData();
-            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, contentData);
+            // execute the close (with possible replication listeners, etc) and the
+            // node update in the same transaction.  A transaction will be started
+            // by the nodeService anyway, so it is merely widening the transaction
+            // boundaries.
+            TransactionWork<Object> closeWork = new TransactionWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    // close the channel
+                    // close it
+                    channel.close();
+                    channel = null;
+                    // update node properties
+                    ContentData contentData = content.getContentData();
+                    nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, contentData);
+                    // done
+                    return null;
+                }
+            };
+            TransactionUtil.executeInUserTransaction(transactionService, closeWork);
         }
         else
         {
             // close it - it was not modified
             channel.close();
             channel = null;
+            // no transaction used here.  Any listener operations against this (now unused) content
+            // are irrelevant.
         }
     }
 

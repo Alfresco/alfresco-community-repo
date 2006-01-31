@@ -45,6 +45,10 @@ public interface ContentAccessor
     
     /**
      * Set the transaction provider that will be used when stream listeners are called.
+     * No transactions are started unless there are listeners present to be executed.
+     * For consistency, the execution of listeners <b>will not</b> be allowed to proceed
+     * unless this property has been set OR the channel close operations are executed
+     * within the context of a live transaction.
      * 
      * @param transactionService a transaction provider
      */

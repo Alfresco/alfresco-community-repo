@@ -43,6 +43,7 @@ public class FileContentStore extends AbstractContentStore
     
     private File rootDirectory;
     private String rootAbsolutePath;
+    private boolean allowRandomAccess;
 
     /**
      * @param rootDirectory the root under which files will be stored.  The
@@ -60,6 +61,7 @@ public class FileContentStore extends AbstractContentStore
         }
         rootDirectory = rootDirectory.getAbsoluteFile();
         rootAbsolutePath = rootDirectory.getAbsolutePath();
+        allowRandomAccess = true;
     }
 
     public String toString()
@@ -70,7 +72,23 @@ public class FileContentStore extends AbstractContentStore
           .append("]");
         return sb.toString();
     }
-    
+
+    /**
+     * Stores may optionally produce readers and writers that support random access.
+     * Switch this off for this store by setting this to <tt>false</tt>.
+     * <p>
+     * This switch is primarily used during testing to ensure that the system has the
+     * ability to spoof random access in cases where the store is unable to produce
+     * readers and writers that allow random access.  Typically, stream-based access
+     * would be an example.
+     * 
+     * @param allowRandomAccess true to allow random access, false to have it faked
+     */
+    public void setAllowRandomAccess(boolean allowRandomAccess)
+    {
+        this.allowRandomAccess = allowRandomAccess;
+    }
+
     /**
      * Generates a new URL and file appropriate to it.
      * 
@@ -193,6 +211,7 @@ public class FileContentStore extends AbstractContentStore
         {
             File file = makeFile(contentUrl);
             FileContentReader reader = new FileContentReader(file, contentUrl);
+            reader.setAllowRandomAccess(allowRandomAccess);
             
             // done
             if (logger.isDebugEnabled())
@@ -233,6 +252,7 @@ public class FileContentStore extends AbstractContentStore
             }
             // create the writer
             FileContentWriter writer = new FileContentWriter(file, contentUrl, existingContentReader);
+            writer.setAllowRandomAccess(allowRandomAccess);
             
             // done
             if (logger.isDebugEnabled())

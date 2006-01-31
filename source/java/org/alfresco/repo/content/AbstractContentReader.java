@@ -26,15 +26,18 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aop.framework.ProxyFactory;
@@ -152,24 +155,38 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
     protected abstract ReadableByteChannel getDirectReadableChannel() throws ContentIOException;
 
     /**
-     * Optionally override to supply an alternate callback channel.
+     * Create a channel that performs callbacks to the given listeners.
      *  
      * @param directChannel the result of {@link #getDirectReadableChannel()}
      * @param listeners the listeners to call
      * @return Returns a channel
      * @throws ContentIOException
      */
-    protected ReadableByteChannel getCallbackReadableChannel(
+    private ReadableByteChannel getCallbackReadableChannel(
             ReadableByteChannel directChannel,
             List<ContentStreamListener> listeners)
             throws ContentIOException
     {
-        // introduce an advistor to handle the callbacks to the listeners
-        ByteChannelCallbackAdvise advise = new ByteChannelCallbackAdvise(listeners);
-        ProxyFactory proxyFactory = new ProxyFactory(directChannel);
-        proxyFactory.addAdvice(advise);
-        ReadableByteChannel callbackChannel = (ReadableByteChannel) proxyFactory.getProxy();
+        ReadableByteChannel callbackChannel = null;
+        if (directChannel instanceof FileChannel)
+        {
+            callbackChannel = getCallbackFileChannel((FileChannel) directChannel, listeners);
+        }
+        else
+        {
+            // introduce an advistor to handle the callbacks to the listeners
+            ChannelCloseCallbackAdvise advise = new ChannelCloseCallbackAdvise(listeners);
+            ProxyFactory proxyFactory = new ProxyFactory(directChannel);
+            proxyFactory.addAdvice(advise);
+            callbackChannel = (ReadableByteChannel) proxyFactory.getProxy();
+        }
         // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Created callback byte channel: \n" +
+                    "   original: " + directChannel + "\n" +
+                    "   new: " + callbackChannel);
+        }
         return callbackChannel;
     }
 
@@ -195,6 +212,90 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
         return channel;
     }
     
+    
+    /**
+     * @inheritDoc
+     */
+    public FileChannel getFileChannel() throws ContentIOException
+    {
+        /*
+         * Where the underlying support is not present for this method, a temporary
+         * file will be used as a substitute.  When the write is complete, the
+         * results are copied directly to the underlying channel.
+         */
+        
+        // get the underlying implementation's best readable channel
+        channel = getReadableChannel();
+        // now use this channel if it can provide the random access, otherwise spoof it
+        FileChannel clientFileChannel = null;
+        if (channel instanceof FileChannel)
+        {
+            // all the support is provided by the underlying implementation
+            clientFileChannel = (FileChannel) channel;
+            // debug
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Content reader provided direct support for FileChannel: \n" +
+                        "   reader: " + this);
+            }
+        }
+        else
+        {
+            // No random access support is provided by the implementation.
+            // Spoof it by providing a 2-stage read from a temp file
+            File tempFile = TempFileProvider.createTempFile("random_read_spoof_", ".bin");
+            FileContentWriter spoofWriter = new FileContentWriter(tempFile);
+            // pull the content in from the underlying channel
+            FileChannel spoofWriterChannel = spoofWriter.getFileChannel(false);
+            try
+            {
+                long spoofFileSize = this.getSize();
+                spoofWriterChannel.transferFrom(channel, 0, spoofFileSize);
+            }
+            catch (IOException e)
+            {
+                throw new ContentIOException("Failed to copy from permanent channel to spoofed temporary channel: \n" +
+                        "   reader: " + this + "\n" +
+                        "   temp: " + spoofWriter,
+                        e);
+            }
+            finally
+            {
+                try { spoofWriterChannel.close(); } catch (IOException e) {}
+            }
+            // get a reader onto the spoofed content
+            final ContentReader spoofReader = spoofWriter.getReader();
+            // Attach a listener
+            // - ensure that the close call gets propogated to the underlying channel
+            ContentStreamListener spoofListener = new ContentStreamListener()
+                    {
+                        public void contentStreamClosed() throws ContentIOException
+                        {
+                            try
+                            {
+                                channel.close();
+                            }
+                            catch (IOException e)
+                            {
+                                throw new ContentIOException("Failed to close underlying channel", e);
+                            }
+                        }
+                    };
+            spoofReader.addListener(spoofListener);
+            // we now have the spoofed up channel that the client can work with
+            clientFileChannel = spoofReader.getFileChannel();
+            // debug
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Content writer provided indirect support for FileChannel: \n" +
+                        "   writer: " + this + "\n" +
+                        "   temp writer: " + spoofWriter);
+            }
+        }
+        // the file is now available for random access
+        return clientFileChannel;
+    }
+
     /**
      * @see Channels#newInputStream(java.nio.channels.ReadableByteChannel)
      */

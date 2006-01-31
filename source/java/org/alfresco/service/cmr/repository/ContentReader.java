@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.repository;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 
 /**
@@ -86,6 +87,19 @@ public interface ContentReader extends ContentAccessor
      */
     public ReadableByteChannel getReadableChannel() throws ContentIOException;
     
+    /**
+     * Provides read-only, random-access to the underlying content.  In general, this method
+     * should be considered more expensive than the sequential-access method,
+     * {@link #getReadableChannel()}.
+     * 
+     * @return Returns a random-access channel onto the content
+     * @throws ContentIOException
+     *
+     * @see #getReadableChannel()
+     * @see java.io.RandomAccessFile#getChannel()
+     */
+    public FileChannel getFileChannel() throws ContentIOException;
+
     /**
      * Get a stream to read from the underlying channel
      * 

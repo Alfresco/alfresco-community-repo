@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.repository;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
 
@@ -76,6 +77,23 @@ public interface ContentWriter extends ContentAccessor
      * @throws ContentIOException
      */
     public WritableByteChannel getWritableChannel() throws ContentIOException;
+
+    /**
+     * Provides read-write, random-access to the underlying content.  In general, this method
+     * should be considered more expensive than the sequential-access method,
+     * {@link #getWritableChannel()}.
+     * <p>
+     * Underlying implementations use the <code>truncate</code> parameter to determine the
+     * most effective means of providing access to the content.
+     * 
+     * @param truncate true to start with zero length content
+     * @return Returns a random-access channel onto the content
+     * @throws ContentIOException
+     *
+     * @see #getWritableChannel()
+     * @see java.io.RandomAccessFile#getChannel()
+     */
+    public FileChannel getFileChannel(boolean truncate) throws ContentIOException;
 
     /**
      * Get a stream to write to the underlying channel.

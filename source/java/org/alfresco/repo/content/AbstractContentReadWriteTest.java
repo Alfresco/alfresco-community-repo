@@ -28,6 +28,8 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Set;
 
+import javax.transaction.UserTransaction;
+
 import junit.framework.TestCase;
 
 import org.alfresco.repo.transaction.DummyTransactionService;
@@ -35,6 +37,9 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Abstract base class that provides a set of tests for implementations
@@ -47,7 +52,11 @@ import org.alfresco.service.cmr.repository.ContentWriter;
  */
 public abstract class AbstractContentReadWriteTest extends TestCase
 {
+    private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    
+    protected TransactionService transactionService;
     private String contentUrl;
+    private UserTransaction txn;
     
     public AbstractContentReadWriteTest()
     {
@@ -58,6 +67,14 @@ public abstract class AbstractContentReadWriteTest extends TestCase
     public void setUp() throws Exception
     {
         contentUrl = AbstractContentStore.createNewUrl();
+        transactionService = (TransactionService) ctx.getBean("TransactionService");
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+    }
+    
+    public void tearDown() throws Exception
+    {
+        txn.rollback();
     }
     
     /**
@@ -539,16 +556,8 @@ public abstract class AbstractContentReadWriteTest extends TestCase
     public void testRandomAccessWrite() throws Exception
     {
         ContentWriter writer = getWriter();
-        if (!(writer instanceof RandomAccessContent))
-        {
-            // not much to do here
-            return;
-        }
-        RandomAccessContent randomWriter = (RandomAccessContent) writer;
-        // check that we are allowed to write
-        assertTrue("Expected random access writing", randomWriter.canWrite());
         
-        FileChannel fileChannel = randomWriter.getChannel();
+        FileChannel fileChannel = writer.getFileChannel(true);
         assertNotNull("No channel given", fileChannel);
         
         // check that no other content access is allowed
@@ -584,6 +593,22 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         {
             assertEquals("Content doesn't match", content[i], buffer.get(i));
         }
+        
+        // get a new writer from the store, using the existing content and perform a truncation check
+        ContentWriter writerTruncate = getStore().getWriter(writer.getReader(), AbstractContentStore.createNewUrl());
+        assertEquals("Content size incorrect", 0, writerTruncate.getSize());
+        // get the channel with truncation
+        FileChannel fcTruncate = writerTruncate.getFileChannel(true);
+        fcTruncate.close();
+        assertEquals("Content not truncated", 0, writerTruncate.getSize());
+        
+        // get a new writer from the store, using the existing content and perform a non-truncation check
+        ContentWriter writerNoTruncate = getStore().getWriter(writer.getReader(), AbstractContentStore.createNewUrl());
+        assertEquals("Content size incorrect", 0, writerNoTruncate.getSize());
+        // get the channel without truncation
+        FileChannel fcNoTruncate = writerNoTruncate.getFileChannel(false);
+        fcNoTruncate.close();
+        assertEquals("Content was truncated", writer.getSize(), writerNoTruncate.getSize());
     }
     
     /**
@@ -599,16 +624,8 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         byte[] bytes = content.getBytes();
         writer.putContent(content);
         ContentReader reader = writer.getReader();
-        if (!(reader instanceof RandomAccessContent))
-        {
-            // not much to do here
-            return;
-        }
-        RandomAccessContent randomReader = (RandomAccessContent) reader;
-        // check that we are NOT allowed to write
-        assertFalse("Expected read-only random access", randomReader.canWrite());
         
-        FileChannel fileChannel = randomReader.getChannel();
+        FileChannel fileChannel = reader.getFileChannel();
         assertNotNull("No channel given", fileChannel);
         
         // check that no other content access is allowed
@@ -631,5 +648,6 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         buffer.get(bytes);
         String checkContent = new String(bytes);
         assertEquals("Content read failure", content, checkContent);
+        fileChannel.close();
     }
 }

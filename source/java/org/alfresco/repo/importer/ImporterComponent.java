@@ -644,64 +644,34 @@ public class ImporterComponent
             // Bind all node references to destination space
             for (ImportedNodeRef importedRef : nodeRefs)
             {
-                // Resolve path to node reference
-                NodeRef nodeRef = null;
-
-                if (importedRef.value.startsWith("/"))
+                Serializable refProperty = null;
+                if (importedRef.value != null)
                 {
-                    // resolve absolute path
-                    SearchParameters searchParameters = new SearchParameters();
-                    searchParameters.addStore(importedRef.context.getNodeRef().getStoreRef());
-                    searchParameters.setLanguage(SearchService.LANGUAGE_LUCENE);
-                    searchParameters.setQuery("PATH:\"" + importedRef.value + "\"");
-                    searchParameters.excludeDataInTheCurrentTransaction((binding == null) ? true : !binding.allowReferenceWithinTransaction());
-                    ResultSet resultSet = searchService.query(searchParameters);
-                    try
+                    if (importedRef.value instanceof Collection)
                     {
-                        if (resultSet.length() > 0)
+                        Collection<String> unresolvedRefs = (Collection<String>)importedRef.value;
+                        List<NodeRef> resolvedRefs = new ArrayList<NodeRef>(unresolvedRefs.size());
+                        for (String unresolvedRef : unresolvedRefs)
                         {
-                            nodeRef = resultSet.getNodeRef(0);
-                        }
-                    }
-                    finally
-                    {
-                        resultSet.close();
-                    }
-                }
-                else
-                {
-                    // resolve relative path
-                    try
-                    {
-                        List<NodeRef> nodeRefs = searchService.selectNodes(importedRef.context.getNodeRef(), importedRef.value, null, namespaceService, false);
-                        if (nodeRefs.size() > 0)
-                        {
-                            nodeRef = nodeRefs.get(0);
-                        }
-                    }
-                    catch(XPathException e)
-                    {
-                        // attempt to resolve as a node reference
-                        try
-                        {
-                            NodeRef directRef = new NodeRef(importedRef.value);
-                            if (nodeService.exists(directRef))
+                            NodeRef nodeRef = resolveImportedNodeRef(importedRef.context.getNodeRef(), unresolvedRef);
+                            if (nodeRef == null)
                             {
-                                nodeRef = directRef;
+                                // TODO: Probably need an alternative mechanism here e.g. report warning
+                                throw new ImporterException("Failed to find item referenced (in property " + importedRef.property + ") as " + importedRef.value);
                             }
+                            resolvedRefs.add(nodeRef); 
                         }
-                        catch(AlfrescoRuntimeException e1)
+                        refProperty = (Serializable)resolvedRefs;
+                    }
+                    else
+                    {
+                        refProperty = resolveImportedNodeRef(importedRef.context.getNodeRef(), (String)importedRef.value);
+                        if (refProperty == null)
                         {
-                            // Note: Invalid reference format
+                            // TODO: Probably need an alternative mechanism here e.g. report warning
+                            throw new ImporterException("Failed to find item referenced (in property " + importedRef.property + ") as " + importedRef.value);
                         }
                     }
-                }
-                
-                // check that reference could be bound
-                if (nodeRef == null)
-                {
-                    // TODO: Probably need an alternative mechanism here e.g. report warning
-                    throw new ImporterException("Failed to find item referenced as " + importedRef.value);
                 }
                 
                 // Set node reference on source node
@@ -712,7 +682,11 @@ public class ImporterComponent
                     {
                         behaviourFilter.disableBehaviour(importedRef.context.getNodeRef(), disabledBehaviour);
                     }
-                    nodeService.setProperty(importedRef.context.getNodeRef(), importedRef.property, nodeRef);
+                    nodeService.setProperty(importedRef.context.getNodeRef(), importedRef.property, refProperty);
+                    if (progress != null)
+                    {
+                        progress.propertySet(importedRef.context.getNodeRef(), importedRef.property, refProperty);
+                    }
                 }
                 finally
                 {
@@ -912,7 +886,19 @@ public class ImporterComponent
                 {
                     value = bindValue(context, property, valueDataType, (String)value);
                 }
-                boundProperties.put(property, value);
+
+                // choose to provide property on node creation or at end of import for lazy binding
+                if (valueDataType != null && (valueDataType.getName().equals(DataTypeDefinition.NODE_REF) || valueDataType.getName().equals(DataTypeDefinition.CATEGORY)))
+                {
+                    // record node reference for end-of-import binding
+                    ImportedNodeRef importedRef = new ImportedNodeRef(context, property, value);
+                    nodeRefs.add(importedRef);
+                }
+                else
+                {
+                    // property ready to be set on Node creation / update
+                    boundProperties.put(property, value);
+                }
             }
             
             return boundProperties;
@@ -931,24 +917,84 @@ public class ImporterComponent
             if (value != null && valueType != null)
             {
                 String strValue = bindPlaceHolder(value, binding);
-                if (valueType.getName().equals(DataTypeDefinition.NODE_REF) || valueType.getName().equals(DataTypeDefinition.CATEGORY))
+                if ((valueType.getName().equals(DataTypeDefinition.NODE_REF) || valueType.getName().equals(DataTypeDefinition.CATEGORY)))
                 {
-                    if (value.length() > 0)
-                    {
-                        // record node reference for end-of-import binding
-                        ImportedNodeRef importedRef = new ImportedNodeRef(context, property, strValue);
-                        nodeRefs.add(importedRef);
-                        objValue = new NodeRef(rootRef.getStoreRef(), "unresolved reference");
-                    }
+                    objValue = strValue;
                 }
                 else
                 {
                     objValue = (Serializable)DefaultTypeConverter.INSTANCE.convert(valueType, strValue);
                 }
+                
             }
             return objValue;
         }
 
+        /**
+         * Resolve imported reference relative to specified node
+         *  
+         * @param sourceNodeRef  context to resolve within
+         * @param importedRef  reference to resolve
+         * @return
+         */
+        private NodeRef resolveImportedNodeRef(NodeRef sourceNodeRef, String importedRef)
+        {
+            // Resolve path to node reference
+            NodeRef nodeRef = null;
+
+            if (importedRef.startsWith("/"))
+            {
+                // resolve absolute path
+                SearchParameters searchParameters = new SearchParameters();
+                searchParameters.addStore(sourceNodeRef.getStoreRef());
+                searchParameters.setLanguage(SearchService.LANGUAGE_LUCENE);
+                searchParameters.setQuery("PATH:\"" + importedRef + "\"");
+                searchParameters.excludeDataInTheCurrentTransaction((binding == null) ? true : !binding.allowReferenceWithinTransaction());
+                ResultSet resultSet = searchService.query(searchParameters);
+                try
+                {
+                    if (resultSet.length() > 0)
+                    {
+                        nodeRef = resultSet.getNodeRef(0);
+                    }
+                }
+                finally
+                {
+                    resultSet.close();
+                }
+            }
+            else
+            {
+                // resolve relative path
+                try
+                {
+                    List<NodeRef> nodeRefs = searchService.selectNodes(sourceNodeRef, importedRef, null, namespaceService, false);
+                    if (nodeRefs.size() > 0)
+                    {
+                        nodeRef = nodeRefs.get(0);
+                    }
+                }
+                catch(XPathException e)
+                {
+                    // attempt to resolve as a node reference
+                    try
+                    {
+                        NodeRef directRef = new NodeRef(importedRef);
+                        if (nodeService.exists(directRef))
+                        {
+                            nodeRef = directRef;
+                        }
+                    }
+                    catch(AlfrescoRuntimeException e1)
+                    {
+                        // Note: Invalid reference format
+                    }
+                }
+            }
+            
+            return nodeRef;
+        }
+        
         /**
          * Helper to report start of import
          */
@@ -1366,7 +1412,7 @@ public class ImporterComponent
          * @param property
          * @param value
          */
-        private ImportedNodeRef(ImportNode context, QName property, String value)
+        private ImportedNodeRef(ImportNode context, QName property, Serializable value)
         {
             this.context = context;
             this.property = property;
@@ -1375,7 +1421,7 @@ public class ImporterComponent
         
         private ImportNode context;
         private QName property;
-        private String value;
+        private Serializable value;
     }
 
     /**

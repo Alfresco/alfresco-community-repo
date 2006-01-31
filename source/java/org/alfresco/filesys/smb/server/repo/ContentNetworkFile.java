@@ -150,6 +150,15 @@ public class ContentNetworkFile extends NetworkFile
         return netFile;
     }
 
+    /**
+     * Class constructor
+     * 
+     * @param transactionService TransactionService
+     * @param nodeService NodeService
+     * @param contentService ContentService
+     * @param nodeRef NodeRef
+     * @param name String
+     */
     private ContentNetworkFile(
             TransactionService transactionService,
             NodeService nodeService,
@@ -164,7 +173,12 @@ public class ContentNetworkFile extends NetworkFile
         this.contentService = contentService;
         this.nodeRef = nodeRef;
     }
-    
+
+    /**
+     * Return the file details as a string
+     * 
+     * @return String
+     */
     public String toString()
     {
         StringBuilder sb = new StringBuilder(50);
@@ -201,6 +215,16 @@ public class ContentNetworkFile extends NetworkFile
         int access = getGrantedAccess();
         return (access == NetworkFile.READWRITE || access == NetworkFile.WRITEONLY);
     }
+
+    /**
+     * Determine if the file content data has been opened
+     * 
+     * @return boolean
+     */
+    public final boolean hasContent()
+    {
+        return content != null ? true : false;
+    }
     
     /**
      * Opens the channel for reading or writing depending on the access mode.
@@ -208,6 +232,7 @@ public class ContentNetworkFile extends NetworkFile
      * If the channel is already open, it is left.
      * 
      * @param write true if the channel must be writable
+     * @param trunc true if the writable channel does not require the previous content data
      * @throws AccessDeniedException if this network file is read only
      * @throws AlfrescoRuntimeException if this network file represents a directory
      *
@@ -216,7 +241,7 @@ public class ContentNetworkFile extends NetworkFile
      * @see NetworkFile#WRITEONLY
      * @see NetworkFile#READWRITE
      */
-    private synchronized void openContent(boolean write) throws AccessDeniedException, AlfrescoRuntimeException
+    private synchronized void openContent(boolean write, boolean trunc) throws AccessDeniedException, AlfrescoRuntimeException
     {
         if (isDirectory())
         {
@@ -265,9 +290,9 @@ public class ContentNetworkFile extends NetworkFile
             
             writableChannel = true;
             
-            // get the writable channel
-            // TODO: Decide on truncation strategy
-            channel = ((ContentWriter) content).getFileChannel(false);
+            // Get the writable channel, do not copy existing content data if the file is to be truncated
+            
+            channel = ((ContentWriter) content).getFileChannel( trunc);
         }
         else
         {
@@ -287,7 +312,11 @@ public class ContentNetworkFile extends NetworkFile
         }
     }
 
-    @Override
+    /**
+     * Close the file
+     * 
+     * @exception IOException
+     */
     public synchronized void closeFile() throws IOException
     {
         if (isDirectory())              // ignore if this is a directory
@@ -333,16 +362,40 @@ public class ContentNetworkFile extends NetworkFile
         }
     }
 
-    @Override
+    /**
+     * Truncate or extend the file to the specified length
+     * 
+     * @param size long
+     * @exception IOException
+     */
     public synchronized void truncateFile(long size) throws IOException
     {
-        // open the channel for writing
-        openContent(true);
-        // truncate the channel
-        channel.truncate(size);
-        // set modification flag
+        // If the content data channel has not been opened yet and the requested size is zero
+        // then this is an open for overwrite so the existing content data is not copied
+        
+        if ( hasContent() == false && size == 0L)
+        {
+            // Open content for overwrite, no need to copy existing content data
+            
+            openContent(true, true);
+        }
+        else
+        {
+            // Normal open for write
+            
+            openContent(true, false);
+
+            // Truncate or extend the channel
+            
+            channel.truncate(size);
+        }
+        
+        // Set modification flag
+        
         modified = true;
-        // done
+        
+        // Debug
+        
         if (logger.isDebugEnabled())
         {
             logger.debug("Truncated channel: " +
@@ -364,7 +417,7 @@ public class ContentNetworkFile extends NetworkFile
     {
         // Open the channel for writing
         
-        openContent(true);
+        openContent(true, false);
         
         // Write to the channel
         
@@ -401,8 +454,9 @@ public class ContentNetworkFile extends NetworkFile
      */
     public synchronized int readFile(byte[] buffer, int length, int position, long fileOffset) throws IOException
     {
-        // open the channel for reading
-        openContent(false);
+        // Open the channel for reading
+        
+        openContent(false, false);
         
         // read from the channel
         ByteBuffer byteBuffer = ByteBuffer.wrap(buffer, position, length);
@@ -437,7 +491,7 @@ public class ContentNetworkFile extends NetworkFile
     public synchronized void flushFile() throws IOException
     {
         // open the channel for writing
-        openContent(true);
+        openContent(true, false);
         // flush the channel - metadata flushing is not important
         channel.force(false);
         // done

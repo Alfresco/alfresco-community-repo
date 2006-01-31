@@ -39,9 +39,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
 /**
- * Ensures that the <b>guest</b> user homespace exists.<br/>
- * A guest user homespace is now created during bootstrap.  It is required for guest user
- * access, but in older databases will not exist.
+ * Ensures that the <b>guest</b> user homespace exists.<br/> A guest user homespace is now created during bootstrap. It is required for guest user access, but in older databases
+ * will not exist.
  * 
  * @author Andy Hind
  */
@@ -70,7 +69,7 @@ public class GuestUserPatch extends AbstractPatch
     private NamespaceService namespaceService;
 
     private String guestId = "guest";
-    
+
     private MessageSource messageSource;
 
     public GuestUserPatch()
@@ -112,7 +111,7 @@ public class GuestUserPatch extends AbstractPatch
     {
         this.searchService = searchService;
     }
-    
+
     public void setMessageSource(MessageSource messageSource)
     {
         this.messageSource = messageSource;
@@ -174,11 +173,13 @@ public class GuestUserPatch extends AbstractPatch
 
             personService.createPerson(properties);
 
-            NodeRef personRef = personService.getPerson(guestId);
-
-            permissionService.setInheritParentPermissions(personRef, false);
-            permissionService.setPermission(personRef, guestId, PermissionService.READ, true);
         }
+
+        NodeRef personRef = personService.getPerson(guestId);
+
+        permissionService.setInheritParentPermissions(personRef, false);
+        permissionService.setPermission(personRef, guestId, PermissionService.READ, true);
+
     }
 
     private NodeRef addGuestHomeSpace(NodeRef storeRootNodeRef, Properties configuration, String companyHomeChildName,
@@ -196,7 +197,7 @@ public class GuestUserPatch extends AbstractPatch
                 throw new PatchException("Bootstrap property '" + GUEST_HOME_NAME + "' is not present");
             }
 
-            String guestHomeDescription = messageSource.getMessage(GUEST_HOME_DESCRIPTION, null, I18NUtil.getLocale()); 
+            String guestHomeDescription = messageSource.getMessage(GUEST_HOME_DESCRIPTION, null, I18NUtil.getLocale());
             if (guestHomeDescription == null || guestHomeDescription.length() == 0)
             {
                 throw new PatchException("Bootstrap property '" + GUEST_HOME_DESCRIPTION + "' is not present");
@@ -259,8 +260,8 @@ public class GuestUserPatch extends AbstractPatch
         NodeRef companyHomeRef = nodeRefs.get(0);
 
         permissionService.setInheritParentPermissions(companyHomeRef, false);
-        permissionService
-                .setPermission(companyHomeRef, PermissionService.ALL_AUTHORITIES, PermissionService.GUEST, true);
+        permissionService.setPermission(companyHomeRef, PermissionService.ALL_AUTHORITIES, PermissionService.GUEST,
+                true);
         return companyHomeRef;
     }
 

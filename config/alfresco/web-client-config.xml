@@ -113,7 +113,7 @@
          <home-space-permission>Guest</home-space-permission>
          
          <!-- the URL to the client Help file -->
-         <help-url>http://www.alfresco.org/mediawiki/index.php/Client_Help</help-url>
+         <help-url>http://www.alfresco.org/help/webclient</help-url>
          
          <!-- the type of edit link to use, NOTE: inline editable will always take precedence -->
          <!-- can be: http|webdav|cifs -->

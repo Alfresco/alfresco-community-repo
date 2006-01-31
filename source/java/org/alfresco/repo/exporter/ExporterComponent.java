@@ -249,7 +249,7 @@ public class ExporterComponent
                 walkNode(nodeRef, parameters, exporter);
                 walkEndNamespaces(parameters, exporter);
             }
-            else
+            else if (parameters.isCrawlChildNodes())
             {
                 // export child nodes only
                 List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef);

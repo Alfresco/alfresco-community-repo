@@ -110,6 +110,11 @@
                                     <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                  </a:actionLink>
                                  
+                                 <%-- Take Ownership --%>
+                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="TakeOwnership">
+                                    <a:actionLink value="#{msg.take_ownership}" image="/images/icons/take_ownership.gif" actionListener="#{SpaceDetailsBean.takeOwnership}" id="takeOwnership" />
+                                 </r:permissionEvaluator>
+                                 
                                  <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="ChangePermissions">
                                     <a:actionLink value="#{msg.manage_invited_users}" image="/images/icons/invite.gif" action="manageInvitedUsers" actionListener="#{BrowseBean.setupSpaceAction}">
                                        <f:param name="id" value="#{SpaceDetailsBean.id}" />
@@ -231,6 +236,7 @@
                                                          columns="1" mode="view" labelStyleClass="propertiesLabel" 
                                                          externalConfig="true" />
                                           <h:messages globalOnly="true" styleClass="errorMessage" layout="table" />
+                                          <h:message for="takeOwnership" styleClass="statusMessage" />
                                        </td>
                                     </tr>
                                  </table>

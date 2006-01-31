@@ -22,9 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
@@ -33,6 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
@@ -52,6 +55,8 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  */
 public class SpaceDetailsBean
 {
+   private static final String MSG_SUCCESS_OWNERSHIP = "success_ownership";
+   
    private static final String OUTCOME_RETURN = "showSpaceDetails";
 
    /** BrowseBean instance */
@@ -62,6 +67,9 @@ public class SpaceDetailsBean
    
    /** PermissionService bean reference */
    private PermissionService permissionService;
+   
+   /** OwnableService bean reference */
+   private OwnableService ownableService;
    
    /** NodeServuce bean reference */
    private NodeService nodeService;
@@ -105,6 +113,16 @@ public class SpaceDetailsBean
    public void setPermissionService(PermissionService permissionService)
    {
       this.permissionService = permissionService;
+   }
+   
+   /**
+    * Sets the ownable service instance the bean should use
+    * 
+    * @param ownableService The OwnableService
+    */
+   public void setOwnableService(OwnableService ownableService)
+   {
+      this.ownableService = ownableService;
    }
    
    /**
@@ -335,6 +353,37 @@ public class SpaceDetailsBean
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
       }
       return OUTCOME_RETURN;
+   }
+   
+   /**
+    * Action Handler to take Ownership of the current Space
+    */
+   public void takeOwnership(ActionEvent event)
+   {
+      UserTransaction tx = null;
+      
+      try
+      {
+         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
+         tx.begin();
+         
+         this.ownableService.takeOwnership(getSpace().getNodeRef());
+         
+         FacesContext context = FacesContext.getCurrentInstance();
+         String msg = Application.getMessage(context, MSG_SUCCESS_OWNERSHIP);
+         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+         context.addMessage(event.getComponent().getClientId(context), facesMsg);
+         
+         // commit the transaction
+         tx.commit();
+      }
+      catch (Throwable e)
+      {
+         // rollback the transaction
+         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
+      }
    }
    
    /**

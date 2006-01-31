@@ -945,6 +945,16 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 fstate.setNodeRef(nodeRef);
             }
             
+            // If the file has been opened for overwrite then truncate the file to zero length, this will
+            // also prevent the existing content data from being copied to the new version of the file
+            
+            if ( params.isOverwrite() && netFile != null)
+            {
+                // Truncate the file to zero length
+                
+                netFile.truncateFile( 0L);
+            }
+            
             // Debug
             
             if (logger.isDebugEnabled())

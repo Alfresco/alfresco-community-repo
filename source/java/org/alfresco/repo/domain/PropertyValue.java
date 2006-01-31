@@ -362,7 +362,6 @@ public class PropertyValue implements Cloneable, Serializable
     public PropertyValue(QName typeQName, Serializable value)
     {
         this.actualType = PropertyValue.getActualType(value);
-//        this.actualType = makeValueType(typeQName);
         if (value == null)
         {
             setPersistedValue(ValueType.NULL, null);
@@ -382,7 +381,6 @@ public class PropertyValue implements Cloneable, Serializable
         else
         {
             // get the persisted type
-//            ValueType valueType = makeValueType(typeQName);
             ValueType persistedValueType = this.actualType.getPersistedType(value);
             // convert to the persistent type
             value = persistedValueType.convert(value);

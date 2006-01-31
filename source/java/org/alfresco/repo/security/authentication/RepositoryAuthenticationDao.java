@@ -227,7 +227,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         NodeRef userRef = getUserOrNull(userName);
         if (userRef == null)
         {
-            throw new AuthenticationException("User does not exist: " + userName);
+            throw new AuthenticationException("User name does not exist: " + userName);
         }
         Map<QName, Serializable> properties = nodeService.getProperties(userRef);
         String salt = null; // GUID.generate();
@@ -243,7 +243,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         NodeRef userRef = getUserOrNull(userName);
         if (userRef == null)
         {
-            throw new AuthenticationException("User does not exist: " + userName);
+            throw new AuthenticationException("User name does not exist: " + userName);
         }
         nodeService.deleteNode(userRef);
     }

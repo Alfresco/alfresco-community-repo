@@ -53,6 +53,8 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterBinding;
@@ -92,6 +94,8 @@ public class ImporterComponent
     private ContentService contentService;
     private RuleService ruleService;
     private PermissionService permissionService;
+    private AuthorityService authorityService;
+    private OwnableService ownableService;
 
     // binding markers    
     private static final String START_BINDING_MARKER = "${";
@@ -172,7 +176,23 @@ public class ImporterComponent
         this.permissionService = permissionService;
     }
     
+    /**
+     * @param authorityService  authorityService
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
 
+    /**
+     * @param ownableService  ownableService
+     */
+    public void setOwnableService(OwnableService ownableService)
+    {
+        this.ownableService = ownableService;
+    }
+
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.ImporterService#importView(java.io.InputStreamReader, org.alfresco.service.cmr.view.Location, java.util.Properties, org.alfresco.service.cmr.view.ImporterProgress)
      */
@@ -1031,7 +1051,7 @@ public class ImporterComponent
          */
         private void reportPropertySet(NodeRef nodeRef, Map<QName, Serializable> properties)
         {
-            if (progress != null)
+            if (progress != null && properties != null)
             {
                 for (QName property : properties.keySet())
                 {
@@ -1048,7 +1068,7 @@ public class ImporterComponent
          */
         private void reportPermissionSet(NodeRef nodeRef, List<AccessPermission> permissions)
         {
-            if (progress != null)
+            if (progress != null && permissions != null)
             {
                 for (AccessPermission permission : permissions)
                 {
@@ -1115,16 +1135,28 @@ public class ImporterComponent
                 ChildAssociationRef assocRef = nodeService.createNode(parentRef, assocType, childQName, nodeType.getName(), initialProperties);
                 NodeRef nodeRef = assocRef.getChildRef();
 
-                // Apply permissions
-                boolean inheritPermissions = node.getInheritPermissions();
-                if (!inheritPermissions)
+                // Note: non-admin authorities take ownership of new nodes
+                if (!authorityService.hasAdminAuthority())
                 {
-                    permissionService.setInheritParentPermissions(nodeRef, false);
+                    ownableService.takeOwnership(nodeRef);
                 }
-                List<AccessPermission> permissions = node.getAccessControlEntries();
-                for (AccessPermission permission : permissions)
+
+                // apply permissions
+                List<AccessPermission> permissions = null;
+                AccessStatus writePermission = permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS);
+                if (writePermission.equals(AccessStatus.ALLOWED))
                 {
-                    permissionService.setPermission(nodeRef, permission.getAuthority(), permission.getPermission(), permission.getAccessStatus().equals(AccessStatus.ALLOWED));
+                    permissions = node.getAccessControlEntries();
+                    for (AccessPermission permission : permissions)
+                    {
+                        permissionService.setPermission(nodeRef, permission.getAuthority(), permission.getPermission(), permission.getAccessStatus().equals(AccessStatus.ALLOWED));
+                    }
+                    // note: apply inheritance after setting permissions as this may affect whether you can apply permissions
+                    boolean inheritPermissions = node.getInheritPermissions();
+                    if (!inheritPermissions)
+                    {
+                        permissionService.setInheritParentPermissions(nodeRef, false);
+                    }
                 }
                 
                 // Disable behaviour for the node until the complete node (and its children have been imported)
@@ -1290,15 +1322,20 @@ public class ImporterComponent
                         }
                         
                         // Apply permissions
-                        boolean inheritPermissions = node.getInheritPermissions();
-                        if (!inheritPermissions)
+                        List<AccessPermission> permissions = null;
+                        AccessStatus writePermission = permissionService.hasPermission(existingNodeRef, PermissionService.CHANGE_PERMISSIONS);
+                        if (writePermission.equals(AccessStatus.ALLOWED))
                         {
-                            permissionService.setInheritParentPermissions(existingNodeRef, false);
-                        }
-                        List<AccessPermission> permissions = node.getAccessControlEntries();
-                        for (AccessPermission permission : permissions)
-                        {
-                            permissionService.setPermission(existingNodeRef, permission.getAuthority(), permission.getPermission(), permission.getAccessStatus().equals(AccessStatus.ALLOWED));
+                            boolean inheritPermissions = node.getInheritPermissions();
+                            if (!inheritPermissions)
+                            {
+                                permissionService.setInheritParentPermissions(existingNodeRef, false);
+                            }
+                            permissions = node.getAccessControlEntries();
+                            for (AccessPermission permission : permissions)
+                            {
+                                permissionService.setPermission(existingNodeRef, permission.getAuthority(), permission.getPermission(), permission.getAccessStatus().equals(AccessStatus.ALLOWED));
+                            }
                         }
 
                         // report update

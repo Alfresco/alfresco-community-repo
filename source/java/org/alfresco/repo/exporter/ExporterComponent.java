@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.view.ExportPackageHandler;
 import org.alfresco.service.cmr.view.Exporter;
 import org.alfresco.service.cmr.view.ExporterContext;
@@ -333,16 +334,20 @@ public class ExporterComponent
             exporter.endAspects(nodeRef);
             
             // Export node permissions
-            Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
-            boolean inheritPermissions = permissionService.getInheritParentPermissions(nodeRef);
-            if (permissions.size() > 0 || !inheritPermissions)
+            AccessStatus readPermission = permissionService.hasPermission(nodeRef, PermissionService.READ_PERMISSIONS);
+            if (readPermission.equals(AccessStatus.ALLOWED))
             {
-                exporter.startACL(nodeRef);
-                for (AccessPermission permission : permissions)
+                Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
+                boolean inheritPermissions = permissionService.getInheritParentPermissions(nodeRef);
+                if (permissions.size() > 0 || !inheritPermissions)
                 {
-                    exporter.permission(nodeRef, permission);
+                    exporter.startACL(nodeRef);
+                    for (AccessPermission permission : permissions)
+                    {
+                        exporter.permission(nodeRef, permission);
+                    }
+                    exporter.endACL(nodeRef);
                 }
-                exporter.endACL(nodeRef);
             }
             
             // Export node properties

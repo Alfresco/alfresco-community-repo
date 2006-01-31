@@ -631,17 +631,11 @@
 
     <bean id="importerComponent" class="org.alfresco.repo.importer.ImporterComponent">
         <!-- For now, hard-wire the view parser -->
-        <property name="viewParser">
-            <ref bean="viewParser" />
-        </property>
         <property name="namespaceService">
-            <ref bean="namespaceService" />
+            <ref bean="NamespaceService" />
         </property>
         <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="behaviourFilter">
-            <ref bean="policyBehaviourFilter" />
+            <ref bean="DictionaryService" />
         </property>
         <property name="nodeService">
             <ref bean="NodeService" />
@@ -653,10 +647,22 @@
             <ref bean="ContentService" />
         </property>
         <property name="ruleService">
-            <ref bean="ruleService" />
+            <ref bean="RuleService" />
         </property>
         <property name="permissionService">
-        	<ref bean="permissionService" />
+        	<ref bean="PermissionService" />
+        </property>
+        <property name="authorityService">
+        	<ref bean="AuthorityService" />
+        </property>
+        <property name="viewParser">
+            <ref bean="viewParser" />
+        </property>
+        <property name="behaviourFilter">
+            <ref bean="policyBehaviourFilter" />
+        </property>
+        <property name="ownableService">
+        	<ref bean="ownableService" />
         </property>
     </bean>
 
@@ -828,28 +834,28 @@
     <!-- Exporter -->
     <bean id="exporterComponent" class="org.alfresco.repo.exporter.ExporterComponent">
         <property name="namespaceService">
-            <ref bean="namespaceService" />
+            <ref bean="NamespaceService" />
         </property>
         <property name="dictionaryService">
-            <ref bean="dictionaryService" />
+            <ref bean="DictionaryService" />
         </property>
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="NodeService" />
         </property>
         <property name="searchService">
-            <ref bean="searchService" />
+            <ref bean="SearchService" />
         </property>
         <property name="contentService">
-            <ref bean="contentService" />
+            <ref bean="ContentService" />
         </property>
         <property name="descriptorService">
             <ref bean="DescriptorService" />
         </property>
         <property name="authenticationService">
-            <ref bean="authenticationService" />
+            <ref bean="AuthenticationService" />
         </property>
         <property name="permissionService">
-            <ref bean="permissionService" />
+            <ref bean="PermissionService" />
         </property>
     </bean>
 

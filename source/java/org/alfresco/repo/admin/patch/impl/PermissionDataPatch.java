@@ -93,7 +93,7 @@ public class PermissionDataPatch extends AbstractPatch
                     getHibernateTemplate().save(ref);
                     createdNames.add(name);
                 }
-            }
+            }            
             return createdNames;
         }
         
@@ -103,6 +103,9 @@ public class PermissionDataPatch extends AbstractPatch
             {
                 public Object doInHibernate(Session session)
                 {
+                    // flush any outstanding entities
+                    session.flush();
+                    
                     Query query = session.getNamedQuery(HibernateHelper.QUERY_UPDATE_PERM_ENTRY_TYPENAME);
                     query.setString("typeNameNew", TYPE_NAME_NEW)
                          .setString("typeNameOld", TYPE_NAME_OLD);

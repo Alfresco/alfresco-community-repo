@@ -12,13 +12,13 @@
         </property>
     </bean>
     <!-- load hibernate entity cache strategies -->    
-    <bean id="hibernateConfigPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <bean id="cacheStrategiesPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="ignoreUnresolvablePlaceholders">
             <value>true</value>
         </property>
         <property name="locations">
             <list>
-                <value>classpath:alfresco/domain/hibernate-cfg.properties</value>
+                <value>classpath:alfresco/domain/cache-strategies.properties</value>
             </list>
         </property>
     </bean>

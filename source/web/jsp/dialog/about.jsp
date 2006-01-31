@@ -220,6 +220,7 @@
                                  Betty Mai,
                                  Fabian Mandelbaum,
                                  Theodoros Papageorgiou,
+                                 Helio Silvio Piccinatto,
                                  Gian Luca Farina Perseu,
                                  Alex Revesz,
                                  Christian Roy,

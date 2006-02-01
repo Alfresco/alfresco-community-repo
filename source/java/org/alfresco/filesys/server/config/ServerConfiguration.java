@@ -1096,7 +1096,7 @@ public class ServerConfiguration
     {
         // If the configuration section is not valid then FTP is disabled
         
-        if ( config == null || config.getConfigElements().isEmpty())
+        if ( config == null)
         {
             setFTPServerEnabled(false);
             return;

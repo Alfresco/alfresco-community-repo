@@ -32,6 +32,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class PatchExecuter
 {
+    private static final String MSG_CHECKING = "patch.executer.checking";
+    private static final String MSG_NO_PATCHES_REQUIRED = "patch.executer.no_patches_required";
     private static final String MSG_NOT_EXECUTED = "patch.executer.not_executed";
     private static final String MSG_EXECUTED = "patch.executer.executed";
     private static final String MSG_FAILED = "patch.executer.failed";
@@ -53,6 +55,8 @@ public class PatchExecuter
      */
     public void applyOutstandingPatches()
     {
+        logger.info(I18NUtil.getMessage(MSG_CHECKING));
+        
         Date before = new Date(System.currentTimeMillis() - 20000L);  // 20 seconds ago
         patchService.applyOutstandingPatches();
         Date after = new Date(System .currentTimeMillis() + 20000L);  // 20 seconds ahead
@@ -63,10 +67,7 @@ public class PatchExecuter
         // don't report anything if nothing was done
         if (appliedPatches.size() == 0)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("No patches applied");
-            }
+            logger.info(I18NUtil.getMessage(MSG_NO_PATCHES_REQUIRED));
         }
         else
         {

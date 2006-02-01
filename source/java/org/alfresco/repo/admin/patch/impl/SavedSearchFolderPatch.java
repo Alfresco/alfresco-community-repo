@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.context.MessageSource;
 
 /**
  * Ensures that the <b>savedsearches</b> folder is present.
@@ -53,9 +54,9 @@ public class SavedSearchFolderPatch extends AbstractPatch
     private static final String MSG_EXISTS = "patch.savedSearchesFolder.result.exists";
     private static final String MSG_CREATED = "patch.savedSearchesFolder.result.created";
     
-    private static final String PROPERTY_COMPANY_HOME_CHILDNAME = "spaces.company_home.childname";
-    private static final String PROPERTY_DICTIONARY_CHILDNAME = "spaces.dictionary.childname";
-    private static final String PROPERTY_SAVED_SEARCHES_FOLDER_CHILDNAME = "spaces.savedsearches.childname";
+    public static final String PROPERTY_COMPANY_HOME_CHILDNAME = "spaces.company_home.childname";
+    public static final String PROPERTY_DICTIONARY_CHILDNAME = "spaces.dictionary.childname";
+    public static final String PROPERTY_SAVED_SEARCHES_FOLDER_CHILDNAME = "spaces.savedsearches.childname";
     private static final String PROPERTY_SAVED_SEARCHES_FOLDER_NAME = "spaces.savedsearches.name";
     private static final String PROPERTY_SAVED_SEARCHES_FOLDER_DESCRIPTION = "spaces.savedsearches.description";
     private static final String PROPERTY_ICON = "space-icon-default";
@@ -64,6 +65,11 @@ public class SavedSearchFolderPatch extends AbstractPatch
     private NamespaceService namespaceService;
     private SearchService searchService;
     private NodeService nodeService;
+    private MessageSource messageSource;
+    
+    protected NodeRef dictionaryNodeRef;
+    protected Properties configuration;
+    protected NodeRef savedSearchesFolderNodeRef;
     
     public void setImporterBootstrap(ImporterBootstrap importerBootstrap)
     {
@@ -85,8 +91,15 @@ public class SavedSearchFolderPatch extends AbstractPatch
         this.nodeService = nodeService;
     }
 
-    @Override
-    protected String applyInternal() throws Exception
+    public void setMessageSource(MessageSource messageSource)
+    {
+        this.messageSource = messageSource;
+    }
+
+    /**
+     * Ensure that required common properties have been set
+     */
+    protected void checkCommonProperties() throws Exception
     {
         if (importerBootstrap == null)
         {
@@ -104,7 +117,14 @@ public class SavedSearchFolderPatch extends AbstractPatch
         {
             throw new PatchException("'nodeService' property has not been set");
         }
-        
+    }
+    
+    /**
+     * Extracts pertinent references and properties that are common to execution
+     * of this and derived patches.
+     */
+    protected void setUp() throws Exception
+    {
         // get the node store that we must work against
         StoreRef storeRef = importerBootstrap.getStoreRef();
         if (storeRef == null)
@@ -113,7 +133,7 @@ public class SavedSearchFolderPatch extends AbstractPatch
         }
         NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
 
-        Properties configuration = importerBootstrap.getConfiguration();
+        this.configuration = importerBootstrap.getConfiguration();
         // get the association names that form the path
         String companyHomeChildName = configuration.getProperty(PROPERTY_COMPANY_HOME_CHILDNAME);
         if (companyHomeChildName == null || companyHomeChildName.length() == 0)
@@ -151,7 +171,7 @@ public class SavedSearchFolderPatch extends AbstractPatch
                     "   xpath: " + xpath + "\n" +
                     "   results: " + nodeRefs);
         }
-        NodeRef dictionaryNodeRef = nodeRefs.get(0);
+        this.dictionaryNodeRef = nodeRefs.get(0);
         
         // Now we have the optional part.  Check for the existence of the saved searches folder
         xpath = savedSearchesChildName;
@@ -163,34 +183,74 @@ public class SavedSearchFolderPatch extends AbstractPatch
                     "   xpath: " + xpath + "\n" +
                     "   results: " + nodeRefs);
         }
-        String msg = null;
-        if (nodeRefs.size() == 1)
+        else if (nodeRefs.size() == 0)
         {
-            // it already exists
-            msg = I18NUtil.getMessage(MSG_EXISTS, nodeRefs.get(0));
+            // the node does not exist
+            this.savedSearchesFolderNodeRef = null;
         }
         else
         {
+            // we have the saved searches folder noderef
+            this.savedSearchesFolderNodeRef = nodeRefs.get(0);
+        }
+    }
+    
+    @Override
+    protected String applyInternal() throws Exception
+    {
+        // properties must be set
+        checkCommonProperties();
+        if (messageSource == null)
+        {
+            throw new PatchException("'messageSource' property has not been set");
+        }
+        
+        // get useful values
+        setUp();
+        
+        String msg = null;
+        if (savedSearchesFolderNodeRef == null)
+        {
             // create it
-            NodeRef savedSearchesFolderNodeRef = createFolder(dictionaryNodeRef, configuration);
+            createFolder();
             msg = I18NUtil.getMessage(MSG_CREATED, savedSearchesFolderNodeRef);
+        }
+        else
+        {
+            // it already exists
+            msg = I18NUtil.getMessage(MSG_EXISTS, savedSearchesFolderNodeRef);
         }
         // done
         return msg;
     }
     
-    private NodeRef createFolder(NodeRef dictionaryNodeRef, Properties configuration)
+    private void createFolder()
     {
         // get required properties
-        String savedSearchesChildName = configuration.getProperty(
-                PROPERTY_SAVED_SEARCHES_FOLDER_CHILDNAME,
-                "app:saved_searches");
-        String savedSearchesName = configuration.getProperty(
+        String savedSearchesChildName = configuration.getProperty(PROPERTY_SAVED_SEARCHES_FOLDER_CHILDNAME);
+        if (savedSearchesChildName == null)
+        {
+            throw new PatchException("Bootstrap property '" + PROPERTY_SAVED_SEARCHES_FOLDER_CHILDNAME + "' is not present");
+        }
+        
+        String savedSearchesName = messageSource.getMessage(
                 PROPERTY_SAVED_SEARCHES_FOLDER_NAME,
-                "Saved Searches");
-        String savedSearchesDescription = configuration.getProperty(
+                null,
+                I18NUtil.getLocale());
+        if (savedSearchesName == null || savedSearchesName.length() == 0)
+        {
+            throw new PatchException("Bootstrap property '" + PROPERTY_SAVED_SEARCHES_FOLDER_NAME + "' is not present");
+        }
+
+        String savedSearchesDescription = messageSource.getMessage(
                 PROPERTY_SAVED_SEARCHES_FOLDER_DESCRIPTION,
-                "Saved searches");
+                null,
+                I18NUtil.getLocale());
+        if (savedSearchesDescription == null || savedSearchesDescription.length() == 0)
+        {
+            throw new PatchException("Bootstrap property '" + PROPERTY_SAVED_SEARCHES_FOLDER_DESCRIPTION + "' is not present");
+        }
+
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(7);
         properties.put(ContentModel.PROP_NAME, savedSearchesName);
         properties.put(ContentModel.PROP_TITLE, savedSearchesName);
@@ -203,11 +263,10 @@ public class SavedSearchFolderPatch extends AbstractPatch
                 QName.resolveToQName(namespaceService, savedSearchesChildName),
                 ContentModel.TYPE_FOLDER,
                 properties);
-        NodeRef nodeRef = childAssocRef.getChildRef();
+        savedSearchesFolderNodeRef = childAssocRef.getChildRef();
         // add the required aspects
-        nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, null);
+        nodeService.addAspect(savedSearchesFolderNodeRef, ContentModel.ASPECT_UIFACETS, null);
         
         // done
-        return nodeRef;
     }
 }

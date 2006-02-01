@@ -36,7 +36,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.context.MessageSource;
-import org.springframework.context.support.ResourceBundleMessageSource;
 
 /**
  * Ensures that the <b>guest</b> user homespace exists.<br/> A guest user homespace is now created during bootstrap. It is required for guest user access, but in older databases

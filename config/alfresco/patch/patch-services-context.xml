@@ -72,14 +72,12 @@
             </list>
         </property>
     </bean>
+
+    <!--              -->
+    <!-- Helper beans -->
+    <!--              -->
     
-    <!-- patch definitions -->
-    <bean id="patch.savedSearchesFolder" class="org.alfresco.repo.admin.patch.impl.SavedSearchFolderPatch" parent="basePatch" >
-        <property name="id"><value>patch.savedSearchesFolder</value></property>
-        <property name="description"><value>patch.savedSearchesFolder.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>1</value></property>
-        <property name="targetSchema"><value>2</value></property>
+    <bean id="patch.savedSearches.Base" abstract="true" parent="basePatch" >
         <!-- helper beans for execution -->
         <property name="importerBootstrap">
             <ref bean="importerBootstrap" />
@@ -95,6 +93,46 @@
         </property>
     </bean>
 
+    <bean id="bootstrapSpacesMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>alfresco/messages/bootstrap-spaces</value> 
+            </list>
+        </property>
+    </bean>
+    
+    <!--                   -->
+    <!-- Patch definitions -->
+    <!--                   -->
+    
+    <bean id="patch.savedSearchesFolder" class="org.alfresco.repo.admin.patch.impl.SavedSearchFolderPatch" parent="patch.savedSearches.Base" >
+        <property name="id"><value>patch.savedSearchesFolder</value></property>
+        <property name="description"><value>patch.savedSearchesFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>1</value></property>
+        <property name="targetSchema"><value>2</value></property>
+        <!-- helper beans for execution -->
+        <property name="messageSource">
+            <ref bean="bootstrapSpacesMessageSource" />
+        </property>   
+    </bean>
+    <bean id="patch.savedSearchesPermission" class="org.alfresco.repo.admin.patch.impl.SavedSearchPermissionPatch" parent="patch.savedSearches.Base" >
+        <property name="id"><value>patch.savedSearchesPermission</value></property>
+        <property name="description"><value>patch.savedSearchesPermission.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4</value></property>
+        <property name="targetSchema"><value>5</value></property>
+        <!-- helper beans for execution -->
+        <property name="permissionService">
+            <ref bean="permissionService"/>
+        </property>
+        <!-- dependent on presence of saved searches folder -->
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.savedSearchesFolder" />
+            </list>
+        </property>
+    </bean>
     <bean id="patch.updatePermissionData" class="org.alfresco.repo.admin.patch.impl.PermissionDataPatch" parent="basePatch" >
         <property name="id"><value>patch.updatePermissionData</value></property>
         <property name="description"><value>patch.updatePermissionData.description</value></property>
@@ -132,7 +170,7 @@
             <ref bean="namespaceService" />
         </property>
         <property name="messageSource">
-            <ref bean="guestMessageSource" />
+            <ref bean="bootstrapSpacesMessageSource" />
         </property>   
     </bean>
     <bean id="patch.fixNodeSerializableValues" class="org.alfresco.repo.admin.patch.impl.NodePropertySerializablePatch" parent="basePatch" >
@@ -144,14 +182,6 @@
         <!-- helper beans -->
         <property name="sessionFactory">
             <ref bean="sessionFactory" />
-        </property>
-    </bean>
-
-    <bean id="guestMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
-        <property name="basenames">
-            <list>
-                <value>alfresco/messages/bootstrap-spaces</value> 
-            </list>
         </property>
     </bean>
 

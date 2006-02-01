@@ -41,6 +41,7 @@ public class RuleTriggerTest extends BaseSpringTest
 	private static final String ON_CREATE_ASSOCIATION_TRIGGER = "on-create-association-trigger";
 	private static final String ON_DELETE_ASSOCIATION_TRIGGER = "on-delete-association-trigger";
 	private static final String ON_CONTENT_UPDATE_TRIGGER = "on-content-update-trigger";
+    private static final String ON_CONTENT_CREATE_TRIGGER = "on-content-create-trigger";
 
 	private NodeService nodeService;
 	private ContentService contentService;
@@ -212,6 +213,27 @@ public class RuleTriggerTest extends BaseSpringTest
         assertTrue(ruleType.rulesTriggered);		
 	}
 	
+    public void testOnContentCreateTrigger()
+    {
+        NodeRef nodeRef = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTENT).getChildRef();
+        
+        TestRuleType contentCreate = createTestRuleType(ON_CONTENT_CREATE_TRIGGER);
+        assertFalse(contentCreate.rulesTriggered);
+        
+        // Try and trigger the type
+        ContentWriter contentWriter = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.putContent("some content");
+        
+        // Check to see if the rule type has been triggered
+        assertTrue(contentCreate.rulesTriggered);
+    }
+    
 	public void testOnContentUpdateTrigger()
 	{
 		NodeRef nodeRef = this.nodeService.createNode(
@@ -220,8 +242,8 @@ public class RuleTriggerTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTENT).getChildRef();
 		
-		TestRuleType ruleType = createTestRuleType(ON_CONTENT_UPDATE_TRIGGER);
-		assertFalse(ruleType.rulesTriggered);
+		TestRuleType contentUpdate = createTestRuleType(ON_CONTENT_UPDATE_TRIGGER);
+        assertFalse(contentUpdate.rulesTriggered);
 		
 		// Try and trigger the type
 		ContentWriter contentWriter = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
@@ -230,7 +252,16 @@ public class RuleTriggerTest extends BaseSpringTest
 		contentWriter.putContent("some content");
 		
 		// Check to see if the rule type has been triggered
-        assertTrue(ruleType.rulesTriggered);		
+        assertFalse(contentUpdate.rulesTriggered);
+        
+        // Try and trigger the type
+        ContentWriter contentWriter2 = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        contentWriter2.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        contentWriter2.setEncoding("UTF-8");
+        contentWriter2.putContent("more content some content");
+        
+        // Check to see if the rule type has been triggered
+        assertTrue(contentUpdate.rulesTriggered);
 	}
 	
 	private TestRuleType createTestRuleType(String ruleTriggerName)

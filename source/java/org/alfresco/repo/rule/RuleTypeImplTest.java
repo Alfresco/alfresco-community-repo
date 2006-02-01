@@ -93,6 +93,7 @@ public class RuleTypeImplTest extends BaseSpringTest
                 ContentModel.TYPE_CONTAINER).getChildRef();
     	
     	List<RuleTrigger> triggers = new ArrayList<RuleTrigger>(2);
+        triggers.add((RuleTrigger)this.applicationContext.getBean("on-content-create-trigger"));
     	triggers.add((RuleTrigger)this.applicationContext.getBean("on-content-update-trigger"));
     	triggers.add((RuleTrigger)this.applicationContext.getBean("on-create-child-association-trigger"));
     	

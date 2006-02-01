@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.CreateVersionActionExecuter;
+import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -41,7 +42,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
-public class VersionableAspect
+public class VersionableAspect implements ContentServicePolicies.OnContentUpdatePolicy
 {
     /**
      * The policy component
@@ -124,7 +125,7 @@ public class VersionableAspect
                 new JavaBehaviour(this, "onAddAspect"));
         autoVersionBehaviour = new JavaBehaviour(this, "onContentUpdate");
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onContentUpdate"),
+                ContentServicePolicies.ON_CONTENT_UPDATE,
                 ContentModel.ASPECT_VERSIONABLE,
                 autoVersionBehaviour);
         
@@ -212,7 +213,7 @@ public class VersionableAspect
      * 
      * @param nodeRef   the node reference
      */
-    public void onContentUpdate(NodeRef nodeRef)
+    public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
         {

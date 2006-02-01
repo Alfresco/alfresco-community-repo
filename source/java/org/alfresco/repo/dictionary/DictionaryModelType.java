@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.ContentServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -40,7 +42,9 @@ import org.alfresco.util.GUID;
  * 
  * @author Roy Wetherall
  */
-public class DictionaryModelType
+public class DictionaryModelType implements ContentServicePolicies.OnContentUpdatePolicy,
+                                            NodeServicePolicies.OnUpdatePropertiesPolicy,
+                                            NodeServicePolicies.BeforeDeleteNodePolicy
 {
     /** Key to the pending models */
     private static final String KEY_PENDING_MODELS = "dictionaryModelType.pendingModels";
@@ -120,7 +124,7 @@ public class DictionaryModelType
     {
         // Register interest in the onContentUpdate policy for the dictionary model type
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onContentUpdate"), 
+                ContentServicePolicies.ON_CONTENT_UPDATE, 
                 ContentModel.TYPE_DICTIONARY_MODEL, 
                 new JavaBehaviour(this, "onContentUpdate"));
         
@@ -145,7 +149,7 @@ public class DictionaryModelType
      * 
      * @param nodeRef   the node reference whose content has been updated
      */
-    public void onContentUpdate(NodeRef nodeRef)
+    public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
         queueModel(nodeRef);
     }

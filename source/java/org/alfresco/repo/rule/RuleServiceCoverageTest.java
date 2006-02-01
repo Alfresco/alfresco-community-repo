@@ -85,7 +85,7 @@ import org.springframework.util.StopWatch;
  */
 public class RuleServiceCoverageTest extends TestCase
 {
-    private static final ContentData CONTENT_DATA_TEXT = new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, "UTF-8");
+    //private static final ContentData CONTENT_DATA_TEXT = new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, "UTF-8");
     
 	/**
 	 * Application context used during the test
@@ -455,9 +455,9 @@ public class RuleServiceCoverageTest extends TestCase
 	
 	private Map<QName, Serializable> getContentProperties()
     {
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
-        properties.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
-        return properties;
+   //     Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+     //   properties.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
+        return null;
     }
 
     /**
@@ -1105,6 +1105,8 @@ public class RuleServiceCoverageTest extends TestCase
     private void addContentToNode(NodeRef nodeRef)
     {
     	ContentWriter contentWriter = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        contentWriter.setEncoding("UTF-8");
     	assertNotNull(contentWriter);
     	contentWriter.putContent(STANDARD_TEXT_CONTENT + System.currentTimeMillis());
     }
@@ -1179,7 +1181,7 @@ public class RuleServiceCoverageTest extends TestCase
 		// Test condition failure
 		Map<QName, Serializable> props1 = new HashMap<QName, Serializable>();
 		props1.put(ContentModel.PROP_NAME, "bobbins.txt");
-        props1.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
+       // props1.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
 		NodeRef newNodeRef = this.nodeService.createNode(
                 this.nodeRef,
                 ContentModel.ASSOC_CHILDREN,                
@@ -1196,7 +1198,7 @@ public class RuleServiceCoverageTest extends TestCase
 		// Test condition success
 		Map<QName, Serializable> props2 = new HashMap<QName, Serializable>();
 		props2.put(ContentModel.PROP_NAME, "bobbins.doc");
-        props2.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
+        //props2.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
 		NodeRef newNodeRef2 = this.nodeService.createNode(
                 this.nodeRef,
                 ContentModel.ASSOC_CHILDREN,                
@@ -1233,7 +1235,7 @@ public class RuleServiceCoverageTest extends TestCase
         this.ruleService.saveRule(this.nodeRef, rule);
         Map<QName, Serializable> propsx = new HashMap<QName, Serializable>();
         propsx.put(ContentModel.PROP_NAME, "mybobbins.doc");
-        propsx.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
+        //propsx.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
         NodeRef newNodeRefx = this.nodeService.createNode(
                 this.nodeRef,
                 ContentModel.ASSOC_CHILDREN,                
@@ -1244,7 +1246,7 @@ public class RuleServiceCoverageTest extends TestCase
         assertFalse(this.nodeService.hasAspect(newNodeRefx, ContentModel.ASPECT_VERSIONABLE));  
         Map<QName, Serializable> propsy = new HashMap<QName, Serializable>();
         propsy.put(ContentModel.PROP_NAME, "bobbins.doc");
-        propsy.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
+        //propsy.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
         NodeRef newNodeRefy = this.nodeService.createNode(
                 this.nodeRef,
                 ContentModel.ASSOC_CHILDREN,                
@@ -1265,7 +1267,7 @@ public class RuleServiceCoverageTest extends TestCase
         this.ruleService.saveRule(this.nodeRef, rule);
         Map<QName, Serializable> propsa = new HashMap<QName, Serializable>();
         propsa.put(ContentModel.PROP_NAME, "bobbins.document");
-        propsa.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
+       // propsa.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
         NodeRef newNodeRefa = this.nodeService.createNode(
                 this.nodeRef,
                 ContentModel.ASSOC_CHILDREN,                
@@ -1276,7 +1278,7 @@ public class RuleServiceCoverageTest extends TestCase
         assertFalse(this.nodeService.hasAspect(newNodeRefa, ContentModel.ASPECT_VERSIONABLE));  
         Map<QName, Serializable> propsb = new HashMap<QName, Serializable>();
         propsb.put(ContentModel.PROP_NAME, "bobbins.doc");
-        propsb.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
+        //propsb.put(ContentModel.PROP_CONTENT, CONTENT_DATA_TEXT);
         NodeRef newNodeRefb = this.nodeService.createNode(
                 this.nodeRef,
                 ContentModel.ASSOC_CHILDREN,                

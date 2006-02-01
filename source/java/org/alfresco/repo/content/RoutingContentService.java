@@ -147,6 +147,7 @@ public class RoutingContentService implements ContentService
             Map<QName, Serializable> after)
     {
         boolean fire = false;
+        boolean newContent = false;
         // check if any of the content properties have changed
         for (QName propertyQName : after.keySet())
         {
@@ -173,6 +174,38 @@ public class RoutingContentService implements ContentService
                 }
                 else if (!EqualsHelper.nullSafeEquals(beforeValue, afterValue))
                 {
+                    // So debug ...
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        String beforeString = "";
+                        if (beforeValue != null)
+                        {
+                            beforeString = beforeValue.toString();
+                        }
+                        String afterString = "";
+                        if (afterValue != null)
+                        {
+                            afterString = afterValue.toString();
+                        }
+                        logger.debug("onContentUpate: before = " + beforeString + "; after = " + afterString);
+                    }
+                    
+                    // Figure out if the content is new or not
+                    String beforeContentUrl = null;
+                    if (beforeValue != null)
+                    {
+                        beforeContentUrl = beforeValue.getContentUrl();
+                    }
+                    String afterContentUrl = null;
+                    if (afterValue != null)
+                    {
+                        afterContentUrl = afterValue.getContentUrl();
+                    }
+                    if (beforeContentUrl == null && afterContentUrl != null)
+                    {
+                        newContent = true;
+                    }
+                    
                     // the content changed
                     // at the moment, we are only interested in this one change
                     fire = true;
@@ -192,7 +225,7 @@ public class RoutingContentService implements ContentService
             Set<QName> types = new HashSet<QName>(this.nodeService.getAspects(nodeRef));
             types.add(this.nodeService.getType(nodeRef));
             OnContentUpdatePolicy policy = this.onContentUpdateDelegate.get(types);
-            policy.onContentUpdate(nodeRef);
+            policy.onContentUpdate(nodeRef, newContent);
         }
     }
     

@@ -66,10 +66,42 @@
          <list>
             <ref bean="on-create-node-trigger"/>
          	<ref bean="on-create-child-association-trigger"/>
+         	<ref bean="on-content-create-trigger"/>
+         	<!-- NOTE: if you do not want hte inbound rule to rile on content update -->
+         	<!--       remove the following line -->
          	<ref bean="on-content-update-trigger"/>
          </list>
       </constructor-arg>
    </bean>
+   
+   <!-- NOTE:  		Adding the following will provide an update policy.  This will cause -->
+   <!--        		rules to be fired on content or meta-data update.  -->
+   <!-- WARNING:  	This is at present working but not fully QA'ed. -->
+   <!--
+   <bean id="update" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">
+      <constructor-arg>
+         <list>
+            <ref bean="on-property-update-trigger"/>
+         </list>
+      </constructor-arg>
+   </bean>
+   -->
+   
+   <!-- NOTE: Multiple rule types are not currently support so if you require inbound and update -->
+   <!-- 	  behaviour then add the following rule type -->
+   <!--
+   <bean id="inboundAndUpdate" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">
+      <constructor-arg>
+         <list>
+            <ref bean="on-create-node-trigger"/>
+         	<ref bean="on-create-child-association-trigger"/>
+         	<ref bean="on-content-create-trigger"/>
+            <ref bean="on-update-node-trigger"/>
+            <ref bean="on-content-update-trigger"/>
+         </list>
+      </constructor-arg>
+   </bean>
+   -->
    
    <bean id="outbound" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">
       <constructor-arg>
@@ -111,6 +143,9 @@
       </property>
    </bean>
    
+   <bean id="on-property-update-trigger" class="org.alfresco.repo.rule.ruletrigger.OnPropertyUpdateRuleTrigger" parent="rule-trigger-base">
+   </bean>
+   
    <bean id="on-delete-node-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleChildAssocRefPolicyRuleTrigger" parent="rule-trigger-base">
       <property name="policyName">
          <value>onDeleteNode</value>
@@ -144,9 +179,15 @@
       </property>
    </bean>
    
-   <bean id="on-content-update-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleNodeRefPolicyRuleTrigger" parent="rule-trigger-base">
-      <property name="policyName">
-         <value>onContentUpdate</value>
+   <bean id="on-content-update-trigger" class="org.alfresco.repo.rule.ruletrigger.OnContentUpdateRuleTrigger" parent="rule-trigger-base">
+      <property name="onNewContent">
+         <value>false</value>
+      </property>
+   </bean>
+   
+   <bean id="on-content-create-trigger" class="org.alfresco.repo.rule.ruletrigger.OnContentUpdateRuleTrigger" parent="rule-trigger-base">
+      <property name="onNewContent">
+         <value>true</value>
       </property>
    </bean>
    

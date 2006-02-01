@@ -18,6 +18,8 @@ package org.alfresco.repo.content;
 
 import org.alfresco.repo.policy.ClassPolicy;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Content service policies interface
@@ -26,6 +28,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface ContentServicePolicies
 {
+    /** The QName's of the policies */
+    public static final QName ON_CONTENT_UPDATE = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentUpdate");
+    
 	/**
 	 * On content update policy interface
 	 */
@@ -34,6 +39,6 @@ public interface ContentServicePolicies
 		/**
 		 * @param nodeRef	the node reference
 		 */
-		public void onContentUpdate(NodeRef nodeRef);
+		public void onContentUpdate(NodeRef nodeRef, boolean newContent);
 	}
 }

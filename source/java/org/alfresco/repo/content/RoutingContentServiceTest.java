@@ -257,6 +257,7 @@ public class RoutingContentServiceTest extends BaseSpringTest
 	}
 	
 	private boolean policyFired = false;
+    private boolean newContent = true;
 	
 	/**
 	 * Tests that the content update policy firs correctly
@@ -273,6 +274,8 @@ public class RoutingContentServiceTest extends BaseSpringTest
 		ContentWriter contentWriter = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
 		contentWriter.putContent("content update one");
 		assertFalse(this.policyFired);
+        
+        this.newContent = false;
 		
 		// Now check that the policy is fired when the versionable aspect is present
 		this.nodeService.addAspect(this.contentNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
@@ -287,9 +290,10 @@ public class RoutingContentServiceTest extends BaseSpringTest
 		assertFalse(this.policyFired);
 	}
 	
-	public void onContentUpdateBehaviourTest(NodeRef nodeRef)
+	public void onContentUpdateBehaviourTest(NodeRef nodeRef, boolean newContent)
 	{
 		assertEquals(this.contentNodeRef, nodeRef);
+        assertEquals(this.newContent, newContent);
 		assertTrue(this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE));
 		this.policyFired = true;
 	}

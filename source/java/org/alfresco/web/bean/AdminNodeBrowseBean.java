@@ -40,6 +40,9 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -83,12 +86,15 @@ public class AdminNodeBrowseBean
     private DataModel properties = null;
     private DataModel children = null;
     private DataModel assocs = null;
+    private Boolean inheritPermissions = null;
+    private DataModel permissions = null;
     
     // supporting repository services
     private NodeService nodeService;
     private DictionaryService dictionaryService;
     private SearchService searchService;
     private NamespaceService namespaceService;
+    private PermissionService permissionService;
     
     /**
      * @param nodeService  node service
@@ -120,6 +126,14 @@ public class AdminNodeBrowseBean
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
+    }
+
+    /**
+     * @param permissionService   permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
 
     /**
@@ -168,6 +182,8 @@ public class AdminNodeBrowseBean
         properties = null;        
         children = null;
         assocs = null;
+        inheritPermissions = null;
+        permissions = null;
     }
     
     /**
@@ -259,6 +275,45 @@ public class AdminNodeBrowseBean
             properties = new ListDataModel(nodeProperties);
         }
         return properties;
+    }
+
+    /**
+     * Gets whether the current node inherits its permissions from a parent node
+     * 
+     * @return  true => inherits permissions
+     */
+    public boolean getInheritPermissions()
+    {
+        if (inheritPermissions == null)
+        {
+            inheritPermissions = permissionService.getInheritParentPermissions(nodeRef);
+        }
+        return inheritPermissions.booleanValue();
+    }
+    
+    /**
+     * Gets the current node permissions
+     * 
+     * @return  the permissions
+     */
+    public DataModel getPermissions()
+    {
+        if (permissions == null)
+        {
+            AccessStatus readPermissions = permissionService.hasPermission(nodeRef, PermissionService.READ_PERMISSIONS);
+            if (readPermissions.equals(AccessStatus.ALLOWED))
+            {
+                List<AccessPermission> nodePermissions = new ArrayList<AccessPermission>(permissionService.getAllSetPermissions(nodeRef));
+                permissions = new ListDataModel(nodePermissions);
+            }
+            else
+            {
+                List<NoReadPermissionGranted> noReadPermissions = new ArrayList<NoReadPermissionGranted>(1);
+                noReadPermissions.add(new NoReadPermissionGranted());
+                permissions = new ListDataModel(noReadPermissions);
+            }
+        }
+        return permissions;
     }
     
     /**
@@ -710,6 +765,27 @@ public class AdminNodeBrowseBean
         }
     }
 
+    /**
+     * Permission representing the fact that "Read Permissions" has not been granted
+     */
+    public class NoReadPermissionGranted
+    {
+        public String getPermission()
+        {
+            return PermissionService.READ_PERMISSIONS;
+        }
+        
+        public String getAuthority()
+        {
+            return "[Current Authority]";
+        }
+        
+        public String getAccessStatus()
+        {
+            return "Not Granted";
+        }
+    }
+    
     /**
      * Wrapper class for Search Results
      */

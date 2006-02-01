@@ -94,7 +94,7 @@
    </table>
 
    <br>
-   <h:outputText styleClass="mainTitle" value="Propertes"/>
+   <h:outputText styleClass="mainTitle" value="Properties"/>
    
    <h:dataTable id="properties" border="1" value="#{AdminNodeBrowseBean.properties}" var="property">
        <h:column>
@@ -151,6 +151,37 @@
    <h:dataTable id="aspects" value="#{AdminNodeBrowseBean.aspects}" var="aspect">
        <h:column>
            <h:outputText value="#{aspect}"/>
+       </h:column>
+   </h:dataTable>
+
+   <br>
+   <h:outputText styleClass="mainTitle" value="Permissions"/>
+   
+   <table>
+   <tr>
+      <td><b>Inherit:</b></td><td><h:outputText id="inheritPermissions" value="#{AdminNodeBrowseBean.inheritPermissions}"/></td>
+   </tr>
+   </table>
+   
+   <br>
+   <h:dataTable id="permissions" border="1" value="#{AdminNodeBrowseBean.permissions}" var="permission">
+       <h:column>
+           <f:facet name="header">
+               <h:outputText value="Assigned Permission"/>
+           </f:facet>
+           <h:outputText value="#{permission.permission}"/>
+       </h:column>
+       <h:column>
+           <f:facet name="header">
+               <h:outputText value="To Authority"/>
+           </f:facet>
+           <h:outputText value="#{permission.authority}"/>
+       </h:column>
+       <h:column>
+           <f:facet name="header">
+               <h:outputText value="Access"/>
+           </f:facet>
+           <h:outputText value="#{permission.accessStatus}"/>
        </h:column>
    </h:dataTable>
 

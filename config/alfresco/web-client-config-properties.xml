@@ -1,0 +1,119 @@
+<alfresco-config>
+   
+   <config evaluator="node-type" condition="content">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="mimetype" displayLabelId="mimetype" converter="org.alfresco.faces.MimeTypeConverter"/>
+         <show-property name="title"/>
+         <show-property name="description"/>
+         <show-property name="size" displayLabelId="size" converter="org.alfresco.faces.ByteSizeConverter"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="folder">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="description"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="fm:forums">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="description"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="fm:forum">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="description"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="fm:topic">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="description"/>
+      </property-sheet>
+   </config>
+
+   <config evaluator="node-type" condition="dictionaryModel">
+      <property-sheet>      
+	     <show-property name="modelActive"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="complianceable">
+      <property-sheet>
+         <show-property name="removeAfter"/>
+      </property-sheet>
+   </config>
+
+   <config evaluator="aspect-name" condition="dublincore">
+      <property-sheet>
+         <show-property name="publisher"/>
+         <show-property name="contributor"/>
+         <show-property name="type"/>
+         <show-property name="identifier"/>
+         <show-property name="dcsource"/>
+         <show-property name="coverage"/>
+         <show-property name="rights"/>
+         <show-property name="subject"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="effectivity">
+      <property-sheet>
+         <show-property name="from"/>
+         <show-property name="to"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="summarizable">
+      <property-sheet>
+         <show-property name="summary"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="versionable">
+      <property-sheet>
+         <show-property name="versionLabel"/>
+         <show-property name="autoVersion" converter="org.alfresco.faces.BooleanLabelConverter"/>         
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="translatable">
+      <property-sheet>
+         <show-association name="translations"/>
+      </property-sheet>
+   </config>
+
+   <config evaluator="aspect-name" condition="localizable">
+      <property-sheet>
+         <show-property name="locale"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="author">
+      <property-sheet>
+         <show-property name="author"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="auditable">
+      <property-sheet>
+         <show-property name="creator" readOnly="true"/>
+         <show-property name="created" readOnly="true"/>
+         <show-property name="modifier" readOnly="true"/>
+         <show-property name="modified" readOnly="true"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="app:inlineeditable">
+      <property-sheet>
+         <show-property name="app:editInline" converter="org.alfresco.faces.BooleanLabelConverter" />
+      </property-sheet>
+   </config>
+      
+</alfresco-config>

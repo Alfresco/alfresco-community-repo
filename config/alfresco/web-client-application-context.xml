@@ -3,26 +3,28 @@
 
 <beans>
    
-   <bean id="configSource" class="org.alfresco.config.source.UrlConfigSource">
+   <bean id="webClientConfigSource" class="org.alfresco.config.source.UrlConfigSource">
       <constructor-arg>
-         <list>
+        <list>
             <value>classpath:alfresco/web-client-config.xml</value>
+            <value>classpath:alfresco/web-client-config-properties.xml</value>
             <value>classpath:alfresco/web-client-config-edit-properties.xml</value>
-            <value>classpath:alfresco/web-client-config-icons.xml</value>
+            <value>classpath:alfresco/web-client-config-navigation.xml</value>
+            <value>classpath:alfresco/extension/web-client-config-custom.xml</value>
          </list>
       </constructor-arg>
    </bean>
-   
-   <bean id="configService" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
+
+   <bean id="webClientConfigService" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
       <constructor-arg>
-         <ref bean="configSource"/>
+         <ref bean="webClientConfigSource" />
       </constructor-arg>
    </bean>
    
    <!-- NOTE: This references a bean in the repository Spring configuration -->
    <bean id="dataDictionary" class="org.alfresco.web.bean.repository.DataDictionary">
       <constructor-arg>
-         <ref bean="DictionaryService"/>
+         <ref bean="DictionaryService" />
       </constructor-arg>
    </bean>
    

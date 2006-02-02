@@ -23,7 +23,6 @@ import java.util.List;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
-import org.alfresco.config.ConfigService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
@@ -53,9 +52,6 @@ public class RecentSpacesBean implements IContextListener
    
    /** The BrowseBean reference */
    private BrowseBean browseBean;
-   
-   /** ConfigService bean reference */
-   private ConfigService configService;
    
    /** Maximum number of recent spaces to show */
    private Integer maxRecentSpaces = null;
@@ -93,14 +89,6 @@ public class RecentSpacesBean implements IContextListener
    public void setBrowseBean(BrowseBean browseBean)
    {
       this.browseBean = browseBean;
-   }
-   
-   /**
-    * @param configService The ConfigService to set.
-    */
-   public void setConfigService(ConfigService configService)
-   {
-      this.configService = configService;
    }
    
    /**
@@ -194,8 +182,7 @@ public class RecentSpacesBean implements IContextListener
    {
       if (maxRecentSpaces == null)
       {
-         ClientConfigElement config = (ClientConfigElement)this.configService.getGlobalConfig().getConfigElement(
-               ClientConfigElement.CONFIG_ELEMENT_ID);
+         ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
          maxRecentSpaces = Integer.valueOf(config.getRecentSpacesItems());
       }
       

@@ -32,10 +32,8 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.ui.common.renderer.data.IRichListRenderer;
-import org.alfresco.web.ui.common.renderer.data.RichListRenderer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * @author Kevin Roast
@@ -51,13 +49,9 @@ public class UIRichList extends UIComponentBase implements IDataContainer
    public UIRichList()
    {
       setRendererType("org.alfresco.faces.RichListRenderer");
-
-      
-      IRichListRenderer test = new RichListRenderer.IconViewRenderer();
       
       // get the list of views from the client configuration
-      ConfigService configSvc = (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(
-            FacesContext.getCurrentInstance()).getBean(Application.BEAN_CONFIG_SERVICE);
+      ConfigService configSvc = Application.getConfigService(FacesContext.getCurrentInstance());
       ClientConfigElement clientConfig = (ClientConfigElement)configSvc.getGlobalConfig().
             getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
       List<String> views = clientConfig.getViews();

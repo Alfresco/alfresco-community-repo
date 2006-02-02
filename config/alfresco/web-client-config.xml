@@ -123,169 +123,19 @@
          <from-email-address>alfresco@alfresco.org</from-email-address>
       </client>
    </config>
-   
-   <config evaluator="node-type" condition="content">
-      <property-sheet>
-         <show-property name="name"/>
-         <show-property name="mimetype" displayLabelId="mimetype" converter="org.alfresco.faces.MimeTypeConverter"/>
-         <show-property name="title"/>
-         <show-property name="description"/>
-         <show-property name="size" displayLabelId="size" converter="org.alfresco.faces.ByteSizeConverter"/>
-      </property-sheet>
-   </config>
-   
-   <config evaluator="node-type" condition="folder">
-      <property-sheet>
-         <show-property name="name"/>
-         <show-property name="description"/>
-      </property-sheet>
-   </config>
-   
-   <config evaluator="node-type" condition="fm:forums">
-      <property-sheet>
-         <show-property name="name"/>
-         <show-property name="description"/>
-      </property-sheet>
 
-      <navigation>
-         <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/forums/forums.jsp" />
-         <override from-outcome="browse" to-view-id="/jsp/forums/forums.jsp" />
-         <override from-outcome="showSpaceDetails" to-view-id="/jsp/forums/forums-details.jsp" />
-         <override from-outcome="deleteSpace" to-view-id="/jsp/forums/delete-forums.jsp" />
-      </navigation>
+   <config evaluator="string-compare" condition="Custom Content Types">
+      <content-types>
+         <type name="cm:dictionaryModel"/>
+      </content-types>
    </config>
    
-   <config evaluator="node-type" condition="fm:forum">
-      <property-sheet>
-         <show-property name="name"/>
-         <show-property name="description"/>
-      </property-sheet>
-
-      <navigation>
-         <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/forums/forum.jsp" />
-         <override from-outcome="browse" to-view-id="/jsp/forums/forum.jsp" />
-         <override from-outcome="showSpaceDetails" to-view-id="/jsp/forums/forum-details.jsp" />
-         <override from-outcome="deleteSpace" to-view-id="/jsp/forums/delete-forum.jsp" />
-      </navigation>
+   <config evaluator="string-compare" condition="Custom Folder Types">
+      <folder-types>
+         <type name="fm:forums" icon="/images/icons/forums_large.gif" descriptionMsgId="forums_desc" />
+      </folder-types>
    </config>
    
-   <config evaluator="node-type" condition="fm:topic">
-      <property-sheet>
-         <show-property name="name" displayLabelId="subject" />
-      </property-sheet>
-
-      <navigation>
-         <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/forums/topic.jsp" />
-         <override from-outcome="browse" to-view-id="/jsp/forums/topic.jsp" />
-         <override from-outcome="showSpaceDetails" to-view-id="/jsp/forums/topic-details.jsp" />
-         <override from-outcome="deleteSpace" to-view-id="/jsp/forums/delete-topic.jsp" />
-      </navigation>
-   </config>
-
-   <config evaluator="node-type" condition="dictionaryModel">
-      <property-sheet>      
-	     <show-property name="modelActive"/>
-      </property-sheet>
-   </config>
-
-   <!-- Example client config for type defined in exampleModel.xml -->   
-   <config evaluator="node-type" condition="my:sop">
-      <property-sheet>
-         <show-property name="name"/>
-         <show-property name="mimetype" displayLabelId="mimetype" converter="org.alfresco.faces.MimeTypeConverter"/>
-         <show-property name="title"/>
-         <show-property name="description"/>
-         <show-property name="size" displayLabelId="size" converter="org.alfresco.faces.ByteSizeConverter"/>
-         <show-property name="my:publishedDate"/>
-         <show-association name="my:signOff"/>
-         <show-property name="my:authorisedBy"/>
-         <show-child-association name="my:processSteps"/>
-      </property-sheet>
-   </config>
-   <!-- End Example -->   
-   
-   <config evaluator="aspect-name" condition="complianceable">
-      <property-sheet>
-         <show-property name="removeAfter"/>
-      </property-sheet>
-   </config>
-
-   <config evaluator="aspect-name" condition="dublincore">
-      <property-sheet>
-         <show-property name="publisher"/>
-         <show-property name="contributor"/>
-         <show-property name="type"/>
-         <show-property name="identifier"/>
-         <show-property name="dcsource"/>
-         <show-property name="coverage"/>
-         <show-property name="rights"/>
-         <show-property name="subject"/>
-      </property-sheet>
-   </config>
-   
-   <config evaluator="aspect-name" condition="effectivity">
-      <property-sheet>
-         <show-property name="from"/>
-         <show-property name="to"/>
-      </property-sheet>
-   </config>
-   
-   <config evaluator="aspect-name" condition="summarizable">
-      <property-sheet>
-         <show-property name="summary"/>
-      </property-sheet>
-   </config>
-   
-   <config evaluator="aspect-name" condition="versionable">
-      <property-sheet>
-         <show-property name="versionLabel"/>
-         <show-property name="autoVersion" converter="org.alfresco.faces.BooleanLabelConverter"/>         
-      </property-sheet>
-   </config>
-   
-   <config evaluator="aspect-name" condition="translatable">
-      <property-sheet>
-         <show-association name="translations"/>
-      </property-sheet>
-   </config>
-
-   <config evaluator="aspect-name" condition="localizable">
-      <property-sheet>
-         <show-property name="locale"/>
-      </property-sheet>
-   </config>
-   
-   <config evaluator="aspect-name" condition="author">
-      <property-sheet>
-         <show-property name="author"/>
-      </property-sheet>
-   </config>
-   
-   <config evaluator="aspect-name" condition="auditable">
-      <property-sheet>
-         <show-property name="creator" readOnly="true"/>
-         <show-property name="created" readOnly="true"/>
-         <show-property name="modifier" readOnly="true"/>
-         <show-property name="modified" readOnly="true"/>
-      </property-sheet>
-   </config>
-   
-   <config evaluator="aspect-name" condition="app:inlineeditable">
-      <property-sheet>
-         <show-property name="app:editInline" converter="org.alfresco.faces.BooleanLabelConverter" />
-      </property-sheet>
-   </config>
-   
-   <!-- Example Client Configuration for exposing aspects defined in exampleModel.xml -->
-   <config evaluator="aspect-name" condition="my:imageClassification">
-      <property-sheet>
-         <show-property name="my:width"/>
-         <show-property name="my:height"/>
-         <show-property name="my:resolution"/>
-      </property-sheet>
-   </config>
-   <!-- End Example -->
-
    <config evaluator="string-compare" condition="Action Wizards">
       <types>
          <type name="folder" displayLabelId="space"/>
@@ -301,8 +151,6 @@
          <aspect name="templatable"/>
          <aspect name="translatable"/>
          <aspect name="localizable"/>
-         <!-- Example configuration to demonstrate how to expose aspect from exampleModel.xml -->
-         <!-- <aspect name="my:imageClassification"/> -->
       </aspects>
       <transformers>
          <transformer name="text/html"/>
@@ -320,17 +168,49 @@
       </image-transformers>
    </config>
    
-   <config evaluator="string-compare" condition="Custom Content Types">
-      <content-types>
-         <!-- <type name="my:sop" /> -->
-      	<type name="cm:dictionaryModel"/>
-      </content-types>
+   <!-- TODO: Move the languages, advanced search and views config -->
+   <!--       out to separate config blocks, this means users can -->
+   <!--       replace just those sections independently of the client -->
+   <!--       section -->
+   
+   
+   <!-- This config sections below hold all the icons choices -->
+   <!-- displayed to users when creating various types of spaces -->
+   <!-- in the client. --> 
+
+   <!-- NOTE: The conditions below are all string based and -->
+   <!-- will therefore not be found when using Node based -->
+   <!-- lookups, this also means the cm: can not be presumed. -->
+
+   <config evaluator="string-compare" condition="cm:folder icons">
+      <icons>
+         <icon name="space-icon-default" path="/images/icons/space-icon-default.gif" />
+         <icon name="space-icon-star" path="/images/icons/space-icon-star.gif" />
+         <icon name="space-icon-doc" path="/images/icons/space-icon-doc.gif" />
+         <icon name="space-icon-pen" path="/images/icons/space-icon-pen.gif" />
+         <icon name="space-icon-cd" path="/images/icons/space-icon-cd.gif" />
+         <icon name="space-icon-image" path="/images/icons/space-icon-image.gif" />
+      </icons>
+   </config>
+
+   <config evaluator="string-compare" condition="fm:forums icons">
+      <icons>
+         <icon name="forums_large" path="/images/icons/forums_large.gif" />
+      </icons>
    </config>
    
-   <config evaluator="string-compare" condition="Custom Folder Types">
-      <folder-types>
-         <type name="fm:forums" icon="/images/icons/forums_large.gif" descriptionMsgId="forums_desc" />
-      </folder-types>
+   <config evaluator="string-compare" condition="fm:forum icons">
+      <icons>
+         <icon name="forum_large" path="/images/icons/forum_large.gif" />
+      </icons>
+   </config>
+   
+   <config evaluator="string-compare" condition="fm:topic icons">
+      <icons>
+         <icon name="topic_large" path="/images/icons/topic_large.gif" />
+         <icon name="topic_exclamation_large" path="/images/icons/topic_exclamation_large.gif" />
+         <icon name="topic_question_large" path="/images/icons/topic_question_large.gif" />
+      </icons>
    </config>
       
 </alfresco-config>

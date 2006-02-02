@@ -29,7 +29,6 @@ import javax.faces.el.ValueBinding;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigLookupContext;
 import org.alfresco.config.ConfigService;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
@@ -40,7 +39,6 @@ import org.alfresco.web.config.PropertySheetConfigElement.ItemConfig;
 import org.alfresco.web.config.PropertySheetConfigElement.PropertyConfig;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Component that represents the properties of a Node
@@ -84,7 +82,6 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
     */
    public void encodeBegin(FacesContext context) throws IOException
    {
-      String var = null;
       int howManyKids = getChildren().size();
       Boolean externalConfig = (Boolean)getAttributes().get("externalConfig");
       
@@ -106,8 +103,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
                logger.debug("Configuring property sheet using ConfigService");
 
             // get the properties to display
-            ConfigService configSvc = (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(
-                  context).getBean(Application.BEAN_CONFIG_SERVICE);
+            ConfigService configSvc = Application.getConfigService(FacesContext.getCurrentInstance());
             Config configProps = null;
             if (getConfigArea() == null)
             {

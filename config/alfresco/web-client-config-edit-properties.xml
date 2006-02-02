@@ -1,15 +1,4 @@
-<alfresco-config area="edit-properties">
-   
-   <!-- Example Client Configuration for exposing Types in exampleModel.xml -->
-   <config evaluator="node-type" condition="my:sop">
-      <property-sheet>
-         <show-property name="my:publishedDate"/>
-         <show-association name="my:signOff"/>
-         <show-property name="my:authorisedBy"/>
-         <show-child-association name="my:processSteps"/>
-      </property-sheet>
-   </config>
-   <!-- End Example -->
+<alfresco-config area="edit-properties">  
    
    <config evaluator="node-type" condition="dictionaryModel">
       <property-sheet>      
@@ -72,15 +61,5 @@
          <show-property name="app:editInline"/>
       </property-sheet>
    </config>
-
-   <!-- Example Client Configuration for exposing Aspects in exampleModel.xml -->
-   <config evaluator="aspect-name" condition="my:imageClassification">
-      <property-sheet>
-         <show-property name="my:width"/>
-         <show-property name="my:height"/>
-         <show-property name="my:resolution"/>
-      </property-sheet>
-   </config>   
-   <!-- End Example -->
       
 </alfresco-config>

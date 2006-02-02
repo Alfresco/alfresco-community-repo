@@ -63,7 +63,6 @@ import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Handler class used by the New Space Wizard 
@@ -948,8 +947,7 @@ public class NewRuleWizard extends BaseActionWizard
    {
       if (this.modelTypes == null)
       {
-         ConfigService svc = (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean(Application.BEAN_CONFIG_SERVICE);
+         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Action Wizards");
          if (wizardCfg != null)
          {

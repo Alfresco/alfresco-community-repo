@@ -33,8 +33,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Repository;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Handler class used by the Add Content Wizard 
@@ -43,8 +41,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AddContentWizard extends BaseContentWizard
 {
-   private static Log logger = LogFactory.getLog(AddContentWizard.class);
-
    // TODO: retrieve these from the config service
    private static final String WIZARD_TITLE_ID = "add_content_title";
    private static final String WIZARD_DESC_ID = "add_content_desc";

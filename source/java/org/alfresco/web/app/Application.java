@@ -55,7 +55,7 @@ public class Application
 {
    private static final String LOCALE = "locale";
    
-   public static final String BEAN_CONFIG_SERVICE = "configService";
+   public static final String BEAN_CONFIG_SERVICE = "webClientConfigService";
    public static final String BEAN_DATA_DICTIONARY = "dataDictionary";
    public static final String BEAN_IMPORTER_BOOTSTRAP = "importerBootstrap";
    
@@ -65,7 +65,6 @@ public class Application
    private static StoreRef repoStoreRef;
    private static String rootPath;
    private static String companyRootId;
-   private static String companyRootDescription;
    private static String glossaryFolderName;
    private static String spaceTemplatesFolderName;
    private static String contentTemplatesFolderName;

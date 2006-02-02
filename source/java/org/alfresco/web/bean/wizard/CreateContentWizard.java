@@ -23,8 +23,6 @@ import javax.faces.event.ValueChangeEvent;
 
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Handler class used by the Create In-line Content Wizard 
@@ -35,8 +33,6 @@ public class CreateContentWizard extends BaseContentWizard
 {
    protected static final String CONTENT_TEXT = "txt";
    protected static final String CONTENT_HTML = "html";
-
-   private static Log logger = LogFactory.getLog(CreateContentWizard.class);
 
    // TODO: retrieve these from the config service
    private static final String WIZARD_TITLE_ID = "create_content_title";

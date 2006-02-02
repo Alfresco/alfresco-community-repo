@@ -30,7 +30,6 @@ import javax.faces.validator.ValidatorException;
 import javax.portlet.PortletRequest;
 import javax.servlet.http.HttpServletRequest;
 
-import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -100,14 +99,6 @@ public class LoginBean
    }
 
    /**
-    * @param configService              The ConfigService to set.
-    */
-   public void setConfigService(ConfigService configService)
-   {
-      this.configService = configService;
-   }
-
-   /**
     * @param val        Username from login dialog
     */
    public void setUsername(String val)
@@ -161,8 +152,8 @@ public class LoginBean
     */
    public SelectItem[] getLanguages()
    {
-      ClientConfigElement config = (ClientConfigElement) this.configService.getGlobalConfig()
-            .getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
+      ClientConfigElement config = Application.getClientConfig(
+            FacesContext.getCurrentInstance());
       
       List<String> languages = config.getLanguages();
       SelectItem[] items = new SelectItem[languages.size()];
@@ -420,7 +411,4 @@ public class LoginBean
    
    /** The NavigationBean bean reference */
    private NavigationBean navigator;
-
-   /** ConfigService bean reference */
-   private ConfigService configService;
 }

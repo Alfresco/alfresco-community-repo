@@ -30,13 +30,11 @@ import javax.faces.event.ActionEvent;
 import javax.faces.validator.ValidatorException;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -44,7 +42,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.app.ContextListener;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -97,9 +94,6 @@ public class NewUserWizard extends AbstractWizardBean
 
    /** OwnableService bean reference */
    private OwnableService ownableService;
-   
-   /** ConfigService bean reference */
-   private ConfigService configService;
 
    /** action context */
    private Node person = null;
@@ -149,14 +143,6 @@ public class NewUserWizard extends AbstractWizardBean
    public void setOwnableService(OwnableService ownableService)
    {
       this.ownableService = ownableService;
-   }
-   
-   /**
-    * @param configService The ConfigService to set.
-    */
-   public void setConfigService(ConfigService configService)
-   {
-      this.configService = configService;
    }
 
    /**
@@ -968,9 +954,7 @@ public class NewUserWizard extends AbstractWizardBean
     */
    private String getDefaultPermission()
    {
-      ClientConfigElement config = (ClientConfigElement)this.configService.getGlobalConfig().getConfigElement(
-            ClientConfigElement.CONFIG_ELEMENT_ID);
-      
+      ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
       return config.getHomeSpacePermission();
    }
 

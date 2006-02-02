@@ -181,9 +181,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
                             "' in dispatch context");
    
             // see if there is any navigation config for the node type
-            ConfigService configSvc = (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(
-                  context).getBean(Application.BEAN_CONFIG_SERVICE);
-            
+            ConfigService configSvc = Application.getConfigService(context);
             Config nodeConfig = configSvc.getConfig(node);
             NavigationConfigElement navigationCfg = (NavigationConfigElement)nodeConfig.
                   getConfigElement(NavigationElementReader.ELEMENT_NAVIGATION);

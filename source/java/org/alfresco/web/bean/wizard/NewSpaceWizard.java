@@ -31,7 +31,6 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -52,7 +51,6 @@ import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.component.description.UIDescription;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Handler class used by the New Space Wizard 
@@ -78,12 +76,12 @@ public class NewSpaceWizard extends AbstractWizardBean
    
    private static final String ERROR = "error_space";
    private static final String DEFAULT_SPACE_TYPE_ICON = "/images/icons/space.gif";
+   private static final String ICONS_LOOKUP_KEY = " icons";
 
    // new space wizard specific properties
    protected SearchService searchService;
    protected NamespaceService namespaceService;
    protected DictionaryService dictionaryService;
-   protected ConfigService configService;
    
    protected String spaceType;
    protected String icon;
@@ -559,9 +557,8 @@ public class NewSpaceWizard extends AbstractWizardBean
          this.folderTypeDescriptions.add(defaultDesc);
          
          // add any configured content sub-types to the list
-         ConfigService svc = (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean(Application.BEAN_CONFIG_SERVICE);
-         Config wizardCfg = svc.getConfig("Custom Folder Types");
+         Config wizardCfg = Application.getConfigService(FacesContext.getCurrentInstance()).
+               getConfig("Custom Folder Types");
          if (wizardCfg != null)
          {
             ConfigElement typesCfg = wizardCfg.getConfigElement("folder-types");
@@ -689,7 +686,8 @@ public class NewSpaceWizard extends AbstractWizardBean
       QName type = QName.createQName(this.spaceType);
       String typePrefixForm = type.toPrefixString(this.namespaceService);
       
-      Config config = this.configService.getConfig(typePrefixForm);
+      Config config = Application.getConfigService(FacesContext.getCurrentInstance()).
+            getConfig(typePrefixForm + ICONS_LOOKUP_KEY);
       if (config != null)
       {
          ConfigElement iconsCfg = config.getConfigElement("icons");
@@ -773,16 +771,6 @@ public class NewSpaceWizard extends AbstractWizardBean
    public void setDictionaryService(DictionaryService dictionaryService)
    {
       this.dictionaryService = dictionaryService;
-   }
-   
-   /**
-    * Sets the config service
-    * 
-    * @param configService The ConfigService
-    */
-   public void setConfigService(ConfigService configService)
-   {
-      this.configService = configService;
    }
 
    /**

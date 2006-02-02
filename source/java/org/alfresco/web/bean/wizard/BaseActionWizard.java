@@ -41,7 +41,6 @@ import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.repo.action.executer.SpecialiseTypeActionExecuter;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -58,7 +57,6 @@ import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Base handler class containing common code used by the New Space Wizard and New Action Wizard
@@ -559,8 +557,7 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    {
       if (this.encodings == null)
       {
-         ConfigService svc = (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean(Application.BEAN_CONFIG_SERVICE);
+         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Action Wizards");
          if (wizardCfg != null)
          {
@@ -617,8 +614,7 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    {
       if (this.transformers == null)
       {
-         ConfigService svc = (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean(Application.BEAN_CONFIG_SERVICE);
+         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Action Wizards");
          if (wizardCfg != null)
          {
@@ -682,8 +678,7 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    {
       if (this.imageTransformers == null)
       {
-         ConfigService svc = (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean(Application.BEAN_CONFIG_SERVICE);
+         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Action Wizards");
          if (wizardCfg != null)
          {
@@ -747,8 +742,7 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    {
       if (this.aspects == null)
       {
-         ConfigService svc = (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean(Application.BEAN_CONFIG_SERVICE);
+         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Action Wizards");
          if (wizardCfg != null)
          {
@@ -825,8 +819,7 @@ public abstract class BaseActionWizard extends AbstractWizardBean
                Application.getMessage(context, "content")));
          
          // add any configured content sub-types to the list
-         ConfigService svc = (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean(Application.BEAN_CONFIG_SERVICE);
+         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Custom Content Types");
          if (wizardCfg != null)
          {

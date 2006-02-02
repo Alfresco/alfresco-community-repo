@@ -35,7 +35,6 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -53,7 +52,6 @@ import org.alfresco.web.config.PropertySheetConfigElement;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
-import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Backing bean for the edit document properties dialog
@@ -180,8 +178,6 @@ public class DocumentPropertiesBean
             
             // make sure the property is represented correctly
             Serializable propValue = (Serializable)props.get(propName);
-            PropertyDefinition propDef = this.dictionaryService.getProperty(qname);
-            
             properties.put(qname, propValue);
          }
          
@@ -315,8 +311,7 @@ public class DocumentPropertiesBean
       {
          // we need to use the config service to see whether there are any
          // editable properties configured for this document.
-         ConfigService configSvc = (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean(Application.BEAN_CONFIG_SERVICE);
+         ConfigService configSvc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config configProps = configSvc.getConfig(this.editableNode, new ConfigLookupContext("edit-properties"));
          PropertySheetConfigElement propsToDisplay = (PropertySheetConfigElement)configProps.
                getConfigElement("property-sheet");

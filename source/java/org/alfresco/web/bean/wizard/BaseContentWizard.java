@@ -51,7 +51,6 @@ import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Base Handler class used by the Content Wizards 
@@ -499,8 +498,7 @@ public abstract class BaseContentWizard extends AbstractWizardBean
                Application.getMessage(context, "content")));
          
          // add any configured content sub-types to the list
-         ConfigService svc = (ConfigService)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean(Application.BEAN_CONFIG_SERVICE);
+         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Custom Content Types");
          if (wizardCfg != null)
          {

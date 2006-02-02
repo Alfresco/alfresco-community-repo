@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.transform.ContentTransformer;
@@ -77,9 +78,10 @@ public class RoutingContentService implements ContentService
     private PolicyComponent policyComponent;
     
     /**
-     * The onContentService policy delegate
+     * Policies delegate
      */
     ClassPolicyDelegate<ContentServicePolicies.OnContentUpdatePolicy> onContentUpdateDelegate;
+    ClassPolicyDelegate<ContentServicePolicies.OnContentReadPolicy> onContentReadDelegate;
     
     /**
      * Default constructor sets up a temporary store 
@@ -132,6 +134,7 @@ public class RoutingContentService implements ContentService
     	
     	// Register on content update policy
     	this.onContentUpdateDelegate = this.policyComponent.registerClassPolicy(OnContentUpdatePolicy.class);
+        this.onContentReadDelegate = this.policyComponent.registerClassPolicy(OnContentReadPolicy.class);
     }
     
     /**
@@ -258,6 +261,16 @@ public class RoutingContentService implements ContentService
         // set extra data on the reader
         reader.setMimetype(contentData.getMimetype());
         reader.setEncoding(contentData.getEncoding());
+        
+        // Fire the content read policy
+        if (reader != null)
+        {
+            // Fire the content update policy
+            Set<QName> types = new HashSet<QName>(this.nodeService.getAspects(nodeRef));
+            types.add(this.nodeService.getType(nodeRef));
+            OnContentReadPolicy policy = this.onContentReadDelegate.get(types);
+            policy.onContentRead(nodeRef);
+        }
         
         // we don't listen for anything
         // result may be null - but interface contract says we may return null

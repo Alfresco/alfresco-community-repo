@@ -30,6 +30,7 @@ public interface ContentServicePolicies
 {
     /** The QName's of the policies */
     public static final QName ON_CONTENT_UPDATE = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentUpdate");
+    public static final QName ON_CONTENT_READ = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentRead");
     
 	/**
 	 * On content update policy interface
@@ -41,4 +42,17 @@ public interface ContentServicePolicies
 		 */
 		public void onContentUpdate(NodeRef nodeRef, boolean newContent);
 	}
+    
+    /**
+     * On content read policy interface.
+     * 
+     * This policy is fired when a content reader is requested for a node that has content.
+     */
+    public interface OnContentReadPolicy extends ClassPolicy
+    {
+        /**
+         * @param nodeRef   the node reference
+         */
+        public void onContentRead(NodeRef nodeRef);
+    }
 }

@@ -257,6 +257,7 @@ public class RoutingContentServiceTest extends BaseSpringTest
 	}
 	
 	private boolean policyFired = false;
+    private boolean readPolicyFired = false;
     private boolean newContent = true;
 	
 	/**
@@ -297,6 +298,35 @@ public class RoutingContentServiceTest extends BaseSpringTest
 		assertTrue(this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE));
 		this.policyFired = true;
 	}
+    
+    public void testOnContentReadPolicy()
+    {
+        // Register interest in the content read event for a versionable node
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onContentRead"),
+                ContentModel.ASPECT_VERSIONABLE,
+                new JavaBehaviour(this, "onContentReadBehaviourTest"));
+        
+        // First check that the policy is not fired when the versionable aspect is not present
+        this.contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+        assertFalse(this.readPolicyFired);
+        
+        // Write some content and check that the policy is still not fired
+        ContentWriter contentWriter2 = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+        contentWriter2.putContent("content update two");
+        this.contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+        assertFalse(this.readPolicyFired);
+        
+        // Now check that the policy is fired when the versionable aspect is present
+        this.nodeService.addAspect(this.contentNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+        this.contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+        assertTrue(this.readPolicyFired);
+    }
+    
+    public void onContentReadBehaviourTest(NodeRef nodeRef)
+    {
+        this.readPolicyFired = true;
+    }
     
     public void testTempWrite() throws Exception
     {

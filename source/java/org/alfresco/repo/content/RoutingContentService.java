@@ -234,6 +234,11 @@ public class RoutingContentService implements ContentService
     
     public ContentReader getReader(NodeRef nodeRef, QName propertyQName)
     {
+        return getReader(nodeRef, propertyQName, true);
+    }
+    
+    private ContentReader getReader(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy)
+    {
         // ensure that the node property is of type content
         PropertyDefinition contentPropDef = dictionaryService.getProperty(propertyQName);
         if (contentPropDef == null || !contentPropDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
@@ -263,7 +268,7 @@ public class RoutingContentService implements ContentService
         reader.setEncoding(contentData.getEncoding());
         
         // Fire the content read policy
-        if (reader != null)
+        if (reader != null && fireContentReadPolicy == true)
         {
             // Fire the content update policy
             Set<QName> types = new HashSet<QName>(this.nodeService.getAspects(nodeRef));
@@ -280,7 +285,7 @@ public class RoutingContentService implements ContentService
     public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update)
     {
         // check for an existing URL - the get of the reader will perform type checking
-        ContentReader existingContentReader = getReader(nodeRef, propertyQName);
+        ContentReader existingContentReader = getReader(nodeRef, propertyQName, false);
         
         // TODO: Choose the store to write to at runtime
         

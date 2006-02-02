@@ -34,7 +34,11 @@ public class StoreEnum implements java.io.Serializable {
           throws java.lang.IllegalArgumentException {
         StoreEnum enumeration = (StoreEnum)
             _table_.get(value);
-        if (enumeration==null) throw new java.lang.IllegalArgumentException();
+        if (enumeration==null)
+        {
+            enumeration = workspace;
+            //throw new java.lang.IllegalArgumentException();        
+        }
         return enumeration;
     }
     public static StoreEnum fromString(java.lang.String value)

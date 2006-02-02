@@ -28,7 +28,11 @@ public class QueryLanguageEnum implements java.io.Serializable {
           throws java.lang.IllegalArgumentException {
         QueryLanguageEnum enumeration = (QueryLanguageEnum)
             _table_.get(value);
-        if (enumeration==null) throw new java.lang.IllegalArgumentException();
+        if (enumeration==null)
+        {
+            enumeration = lucene;
+            //throw new java.lang.IllegalArgumentException();
+        }
         return enumeration;
     }
     public static QueryLanguageEnum fromString(java.lang.String value)

@@ -22,16 +22,9 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.faces.FactoryFinder;
-import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
-import javax.faces.context.FacesContextFactory;
 import javax.faces.el.ValueBinding;
-import javax.faces.lifecycle.Lifecycle;
-import javax.faces.lifecycle.LifecycleFactory;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -125,49 +118,6 @@ public final class ServletHelper
    }
    
    /**
-    * Return FacesContext made available to servlets and servlet filters.
-    * {@link http://www.thoughtsabout.net/blog/archives/000033.html}
-    * 
-    * @return FacesContext
-    */
-   public static FacesContext getFacesContext(ServletRequest req, ServletResponse res, ServletContext sc)
-   {
-      FacesContext facesContext = FacesContext.getCurrentInstance();
-      if (facesContext != null) return facesContext;
-      
-      FacesContextFactory contextFactory = (FacesContextFactory)FactoryFinder.getFactory(FactoryFinder.FACES_CONTEXT_FACTORY);
-      LifecycleFactory lifecycleFactory = (LifecycleFactory)FactoryFinder.getFactory(FactoryFinder.LIFECYCLE_FACTORY);
-      Lifecycle lifecycle = lifecycleFactory.getLifecycle(LifecycleFactory.DEFAULT_LIFECYCLE);
-      
-      // Can get ServletContext here like this:
-      // ServletContext servletContext = ((HttpServletRequest)request).getSession().getServletContext();
-      
-      // Doesn't set this instance as the current instance of FacesContext.getCurrentInstance
-      facesContext = contextFactory.getFacesContext(sc, req, res, lifecycle);
-      
-      // Set using our inner class
-      InnerFacesContext.setFacesContextAsCurrent(facesContext);
-      
-      // set a new viewRoot, otherwise context.getViewRoot returns null
-      UIViewRoot view = facesContext.getApplication().getViewHandler().createView(facesContext, "/jsp/root");
-      facesContext.setViewRoot(view);
-      
-      return facesContext;
-   }
-   
-   /**
-    * We need an inner class to be able to call FacesContext.setCurrentInstance
-    * since it's a protected method
-    */
-   private abstract static class InnerFacesContext extends FacesContext
-   {
-      protected static void setFacesContextAsCurrent(FacesContext facesContext)
-      {
-         FacesContext.setCurrentInstance(facesContext);
-      }
-   }
-   
-   /**
     * Return a JSF managed bean reference.
     * 
     * @param fc      FacesContext
@@ -210,7 +160,6 @@ public final class ServletHelper
                Application.getCompanyRootId());
          
          WebApplicationContext wc = FacesContextUtils.getRequiredWebApplicationContext(context);
-         //WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
          FileFolderService ffs = (FileFolderService)wc.getBean("FileFolderService");
          file = ffs.resolveNamePath(companyHome, paths);
          nodeRef = file.getNodeRef();

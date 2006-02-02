@@ -18,6 +18,7 @@ package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
 
+import javax.portlet.PortletSession;
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -37,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.bean.LoginBean;
@@ -248,6 +250,80 @@ public final class AuthenticationHelper
       I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
       
       return AuthenticationStatus.Success;
+   }
+   
+   /**
+    * For no previous authentication or forced Guest - attempt Guest access
+    * 
+    * @param ctx        WebApplicationContext
+    * @param auth       AuthenticationService
+    */
+   public static AuthenticationStatus portalGuestAuthenticate(WebApplicationContext ctx, PortletSession session, AuthenticationService auth)
+   {
+      UserTransaction tx = null;
+      try
+      {
+         auth.authenticateAsGuest();
+         
+         // if we get here then Guest access was allowed and successful
+         ServiceRegistry services = (ServiceRegistry)ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+         tx = services.getTransactionService().getUserTransaction();
+         tx.begin();
+         
+         NodeService nodeService = services.getNodeService();
+         PersonService personService = (PersonService)ctx.getBean(PERSON_SERVICE);
+         NodeRef guestRef = personService.getPerson(PermissionService.GUEST);
+         User user = new User(PermissionService.GUEST, auth.getCurrentTicket(), guestRef);
+         NodeRef guestHomeRef = (NodeRef)nodeService.getProperty(guestRef, ContentModel.PROP_HOMEFOLDER);
+         
+         // check that the home space node exists - else Guest cannot proceed
+         if (nodeService.exists(guestHomeRef) == false)
+         {
+            throw new InvalidNodeRefException(guestHomeRef);
+         }
+         user.setHomeSpaceId(guestHomeRef.getId());
+         
+         tx.commit();
+         tx = null;     // clear this so we know not to rollback 
+         
+         // store the User object in the Session - the authentication servlet will then proceed
+         session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
+      
+         // Set the current locale
+         I18NUtil.setLocale(Application.getLanguage(session));
+         
+         // remove the session invalidated flag
+         session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
+         
+         // it is the responsibilty of the caller to handle the Guest return status
+         return AuthenticationStatus.Guest;
+      }
+      catch (AuthenticationException guestError)
+      {
+         // Expected if Guest access not allowed - continue to login page as usual
+      }
+      catch (AccessDeniedException accessError)
+      {
+         // Guest is unable to access either properties on Person
+         AuthenticationService unprotAuthService = (AuthenticationService)ctx.getBean(UNPROTECTED_AUTH_SERVICE);
+         unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket());
+         unprotAuthService.clearCurrentSecurityContext();
+         logger.warn("Unable to login as Guest: " + accessError.getMessage());
+      }
+      catch (Throwable e)
+      {
+         // Some other kind of serious failure to report
+         AuthenticationService unprotAuthService = (AuthenticationService)ctx.getBean(UNPROTECTED_AUTH_SERVICE);
+         unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket());
+         unprotAuthService.clearCurrentSecurityContext();
+         throw new AlfrescoRuntimeException("Failed to authenticate as Guest user.", e);
+      }
+      finally
+      {
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
+      
+      return AuthenticationStatus.Failure;
    }
    
    /**

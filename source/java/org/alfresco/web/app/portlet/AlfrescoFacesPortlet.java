@@ -31,6 +31,7 @@ import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.PortletSession;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.UnavailableException;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -38,6 +39,7 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
+import org.alfresco.web.app.servlet.AuthenticationStatus;
 import org.alfresco.web.bean.ErrorBean;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.LoginBean;
@@ -242,6 +244,10 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
       }
       else
       {
+         WebApplicationContext ctx = (WebApplicationContext)getPortletContext().getAttribute(
+               WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+         AuthenticationService auth = (AuthenticationService)ctx.getBean("AuthenticationService");
+         
          // if we have no User object in the session then an HTTP Session timeout must have occured
          // use the viewId to check that we are not already on the login page
          PortletSession session = request.getPortletSession();
@@ -249,17 +255,30 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
          User user = (User)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
          if (user == null && (viewId == null || viewId.equals(getLoginPage()) == false))
          {
-            if (logger.isDebugEnabled())
-               logger.debug("No valid User login, requesting login page. ViewId: " + viewId);
-            
-            // set last used username as special session value used by the LoginBean
-            session.setAttribute(AuthenticationHelper.SESSION_USERNAME,
-                  request.getPreferences().getValue(PREF_ALF_USERNAME, null));
-            
-            // login page redirect
-            response.setContentType("text/html");
-            request.getPortletSession().setAttribute(PortletUtil.PORTLET_REQUEST_FLAG, "true");
-            nonFacesRequest(request, response);
+            if (AuthenticationHelper.portalGuestAuthenticate(ctx, session, auth) == AuthenticationStatus.Guest)
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("Guest access successful.");
+               
+               // perform the forward to the page processed by the Faces servlet
+               response.setContentType("text/html");
+               request.getPortletSession().setAttribute(PortletUtil.PORTLET_REQUEST_FLAG, "true");
+               nonFacesRequest(request, response, "/jsp/browse/browse.jsp");
+            }
+            else
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("No valid User login, requesting login page. ViewId: " + viewId);
+               
+               // set last used username as special session value used by the LoginBean
+               session.setAttribute(AuthenticationHelper.SESSION_USERNAME,
+                     request.getPreferences().getValue(PREF_ALF_USERNAME, null));
+               
+               // login page is the default portal page
+               response.setContentType("text/html");
+               request.getPortletSession().setAttribute(PortletUtil.PORTLET_REQUEST_FLAG, "true");
+               nonFacesRequest(request, response);
+            }
          }
          else
          {
@@ -278,9 +297,6 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                      logger.debug("Validating ticket: " + user.getTicket());
                   
                   // setup the authentication context
-                  WebApplicationContext ctx = (WebApplicationContext)getPortletContext().getAttribute(
-                        WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
-                  AuthenticationService auth = (AuthenticationService)ctx.getBean("authenticationService");
                   auth.validate(user.getTicket());
                }
                
@@ -296,7 +312,7 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                // remove User object as it's now useless
                request.getPortletSession().removeAttribute(AuthenticationHelper.AUTHENTICATION_USER);
                
-               // login page redirect
+               // login page is the default portal page
                response.setContentType("text/html");
                request.getPortletSession().setAttribute(PortletUtil.PORTLET_REQUEST_FLAG, "true");
                nonFacesRequest(request, response);
@@ -390,6 +406,18 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
       dispatcher.include(request, response);
    }
    
+   /**
+    * @see org.apache.myfaces.portlet.MyFacesGenericPortlet#setDefaultViewSelector()
+    */
+   protected void setDefaultViewSelector() throws UnavailableException
+   {
+      super.setDefaultViewSelector();
+      if (this.defaultViewSelector == null)
+      {
+         this.defaultViewSelector = new AlfrescoDefaultViewSelector();
+      }
+   }
+
    /**
     * @return Retrieves the configured login page
     */

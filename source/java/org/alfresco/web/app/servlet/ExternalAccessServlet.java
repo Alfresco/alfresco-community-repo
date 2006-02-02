@@ -31,7 +31,6 @@ import org.alfresco.repo.webdav.WebDAVServlet;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.bean.BrowseBean;
-import org.alfresco.web.bean.NavigationBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -104,7 +103,7 @@ public class ExternalAccessServlet extends HttpServlet
          logger.debug("External outcome found: " + outcome);
       
       // we almost always need this bean reference
-      FacesContext fc = ServletHelper.getFacesContext(req, res, getServletContext());
+      FacesContext fc = FacesHelper.getFacesContext(req, res, getServletContext());
       BrowseBean browseBean = (BrowseBean)ServletHelper.getManagedBean(fc, "BrowseBean");
       
       // setup is required for certain outcome requests

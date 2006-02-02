@@ -135,11 +135,11 @@
     <bean id="schedulerFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
             <list>
-                <ref local="tempFileCleanerTrigger" />
+                <ref bean="tempFileCleanerTrigger" />
                 <!-- <ref local="fileContentStoreCleanerTrigger"/> -->
-                <ref local="ftsIndexerTrigger" />
-                <ref local="indexRecoveryTrigger" />
-                <ref local="indexBackupTrigger" />
+                <ref bean="ftsIndexerTrigger" />
+                <ref bean="indexRecoveryTrigger" />
+                <ref bean="indexBackupTrigger" />
                 <!--
                 <ref bean="ldapGroupTrigger" />
                 <ref bean="ldapPeopleTrigger" />

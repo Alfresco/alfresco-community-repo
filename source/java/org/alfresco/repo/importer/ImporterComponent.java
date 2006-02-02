@@ -31,7 +31,6 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -395,11 +394,6 @@ public class ImporterComponent
         // Import tracking
         private List<ImportedNodeRef> nodeRefs = new ArrayList<ImportedNodeRef>();
 
-        // Flush threshold
-        private int flushThreshold = 500;
-        private int flushCount = 0;
-        
-        
         /**
          * Construct
          * 
@@ -533,14 +527,6 @@ public class ImporterComponent
                 {
                     importContent(nodeRef, property.getKey(), (String)property.getValue());
                 }
-            }
-            
-            // do we need to flush?
-            flushCount++;
-            if (flushCount > flushThreshold)
-            {
-                AlfrescoTransactionSupport.flush();
-                flushCount = 0;
             }
             
             return nodeRef;

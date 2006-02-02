@@ -178,7 +178,7 @@ public abstract class Tool
     private void login()
     {
         // TODO: Replace with call to ServiceRegistry
-        AuthenticationService auth = (AuthenticationService)appContext.getBean("authenticationService");
+        AuthenticationService auth = (AuthenticationService) serviceRegistry.getAuthenticationService();
         auth.authenticate(toolContext.getUsername(), toolContext.getPassword().toCharArray());
         log("Connected as " + toolContext.getUsername());
     }

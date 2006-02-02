@@ -24,7 +24,7 @@
       </javadoc>  
    </target>
    
-   <target name="build-single-jar" depends="common.compile-java" >
+   <target name="build-single-jar" depends="common.compile-java" description="Build an self-contained executable jar" >
       <property name="dir.one-jar" value="${dir.build}/one-jar" />
       <!-- extract the one-jar file -->
       <unjar src="${dir.common.lib}/one-jar/one-jar-boot-0.95.jar" dest="${dir.one-jar}" overwrite="true" />
@@ -36,10 +36,10 @@
          </fileset>
       </delete>
       <!-- copy required jars into lib folder -->
-      <copy todir="${dir.one-jar}/lib" flatten="true">
+      <copy todir="${dir.one-jar}/lib" flatten="false">
          <fileset dir="${dir.common.lib}" includes="**/*.jar" />
          <fileset dir="${dir.project.core}/build/dist" includes="${dir.name.core}.jar" />
-         <fileset dir="${dir.project.core}/build" includes="**/*log4j.properties" />
+         <fileset dir="${dir.project.core}/source/java" includes="**/*log4j.properties" />
          <fileset dir="${dir.project.repository}/build/dist" includes="${dir.name.repository}.jar" />
       </copy>
       <!-- delete target one-jar -->

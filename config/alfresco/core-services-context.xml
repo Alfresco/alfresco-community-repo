@@ -395,7 +395,7 @@
         </constructor-arg>
     </bean>
 
-    <bean id="dictionaryService" class="org.alfresco.repo.dictionary.DictionaryComponent" depends-on="extension.dictionaryBootstrap">
+    <bean id="dictionaryService" class="org.alfresco.repo.dictionary.DictionaryComponent" depends-on="dictionaryBootstrap">
         <property name="dictionaryDAO">
             <ref bean="dictionaryDAO" />
         </property>

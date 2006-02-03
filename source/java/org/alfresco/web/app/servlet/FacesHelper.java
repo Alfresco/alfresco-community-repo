@@ -45,7 +45,7 @@ public final class FacesHelper
     * 
     * @return FacesContext
     */
-   public static FacesContext getFacesContext(Object context, Object request, Object response)
+   public static FacesContext getFacesContext(Object request, Object response, Object context)
    {
       FacesContext facesContext = FacesContext.getCurrentInstance();
       if (facesContext != null) return facesContext;

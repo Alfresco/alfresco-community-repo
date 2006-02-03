@@ -36,7 +36,7 @@ public class UnableToReleaseLockException extends RuntimeException
     /**
      * Error message
      */
-    private static final String ERROR_MESSAGE = I18NUtil.getMessage("lock_service.insufficent_preveleges");
+    private static final String ERROR_MESSAGE = I18NUtil.getMessage("lock_service.insufficent_privileges");
 
     /**
      * Constructor

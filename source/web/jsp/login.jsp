@@ -21,6 +21,7 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
 <%@ page import="org.alfresco.web.app.servlet.AuthenticationHelper" %>
+<%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 <%@ page import="javax.servlet.http.Cookie" %>
 
 <%@ page buffer="16kb" contentType="text/html;charset=UTF-8" %>
@@ -122,10 +123,14 @@
                      <h:commandButton id="submit" action="#{LoginBean.login}" value="#{msg.login}" />
                   </td>
                </tr>
+               
+               <tr>
+                  <td colspan=2>
+                     <%-- messages tag to show messages not handled by other specific message tags --%>
+                     <h:messages style="padding-top:8px; color:red; font-size:10px" layout="table" />
+                  </td>
+               </tr>
             </table>
-            
-            <%-- messages tag to show messages not handled by other specific message tags --%>
-            <h:messages style="padding-top:8px; color:red; font-size:10px" layout="table" />
             
             </td><td background='<%=request.getContextPath()%>/images/parts/white_06.gif'>
             <img src='<%=request.getContextPath()%>/images/parts/white_06.gif' width=7 height=7 alt=''></td></tr>
@@ -135,8 +140,36 @@
             <td width=7><img src='<%=request.getContextPath()%>/images/parts/white_09.gif' width=7 height=7 alt=''></td></tr>
             </table>
             
+            <div id="no-cookies" style="display:none">
+               <table cellpadding="0" cellspacing="0" border="0" style="padding-top:16px;">
+                  <tr>
+                     <td>
+                        <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
+                        <table cellpadding="0" cellspacing="0" border="0">
+                           <tr>
+                              <td valign=top style="padding-top:2px" width=20><h:graphicImage url="/images/icons/info_icon.gif" width="16" height="16"/></td>
+                              <td class="mainSubText">
+                                 <h:outputText value="#{msg.no_cookies}" />
+                              </td>
+                           </tr>
+                        </table>
+                        <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
+                     </td>
+                  </tr>
+               </table>
+            </div>
+            <script>
+               document.cookie="_alfTest"
+               var cookieEnabled = (document.cookie.indexOf("_alfTest") != -1);
+               if (cookieEnabled == false)
+               {
+                  document.getElementById("no-cookies").style.display = 'inline';
+               }
+            </script>
+            
          </td>
       </tr>
+      
    </table>
       
    </h:form>

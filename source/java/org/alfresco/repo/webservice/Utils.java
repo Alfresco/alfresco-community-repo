@@ -55,6 +55,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.axis.MessageContext;
 import org.apache.axis.transport.http.HTTPConstants;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -66,6 +68,9 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 public class Utils
 {
     public static final String REPOSITORY_SERVICE_NAMESPACE = "http://www.alfresco.org/ws/service/repository/1.0";
+    
+    /** Get the logger for this class */
+    private static Log logger = LogFactory.getLog(Utils.class);
 
     private Utils()
     {
@@ -188,7 +193,8 @@ public class Utils
         if (uuid == null || uuid.length() == 0)
         {
             rootNodeRef = nodeService.getRootNode(convertToStoreRef(store));
-        } else
+        } 
+        else
         {
             rootNodeRef = new NodeRef(convertToStoreRef(store), uuid);
         }
@@ -196,6 +202,11 @@ public class Utils
         // see if we have a path to further define the node being requested
         if (path != null && path.length() != 0)
         {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Resolving path: " + path);
+            }
+            
             List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, path,
                     null, namespaceService, false);
 
@@ -213,8 +224,14 @@ public class Utils
             }
 
             nodeRef = nodes.get(0);
-        } else
+        } 
+        else
         {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("There was no path to resolve so using root or specified node");
+            }
+            
             // if there is no path just use whatever the rootNodeRef currently
             // is
             nodeRef = rootNodeRef;

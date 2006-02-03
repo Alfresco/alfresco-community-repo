@@ -38,7 +38,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.bean.LoginBean;
@@ -63,8 +62,6 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public final class AuthenticationHelper
 {
-   public static final String FACES_SERVLET = "/faces";
-   
    /** session variables */
    public static final String AUTHENTICATION_USER = "_alfAuthTicket";
    public static final String SESSION_USERNAME = "_alfLastUser";
@@ -194,9 +191,7 @@ public final class AuthenticationHelper
             }
          }
          
-         // no user/ticket found or session invalidated by user (logout) - redirect to login page
-         httpResponse.sendRedirect(httpRequest.getContextPath() + FACES_SERVLET + Application.getLoginPage(context));
-         
+         // session invalidated - return to login screen
          return AuthenticationStatus.Failure;
       }
       else
@@ -207,8 +202,7 @@ public final class AuthenticationHelper
          }
          catch (AuthenticationException authErr)
          {
-            // expired ticket - redirect to login page
-            httpResponse.sendRedirect(httpRequest.getContextPath() + FACES_SERVLET + Application.getLoginPage(context));
+            // expired ticket
             return AuthenticationStatus.Failure;
          }
          

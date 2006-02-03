@@ -49,6 +49,8 @@ import org.springframework.web.jsf.FacesContextUtils;
  */
 public final class ServletHelper
 {
+   public static final String FACES_SERVLET = "/faces";
+   
    /** an existing Ticket can be passed to most servlet for non-session based authentication */
    private static final String ARG_TICKET   = "ticket";
    
@@ -57,6 +59,13 @@ public final class ServletHelper
    
    private static Log logger = LogFactory.getLog(ServletHelper.class);
    
+   
+   /**
+    * Private constructor
+    */
+   private ServletHelper()
+   {
+   }
    
    /**
     * Return the ServiceRegistry helper instance
@@ -69,13 +78,6 @@ public final class ServletHelper
    {
       WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
       return (ServiceRegistry)wc.getBean(ServiceRegistry.SERVICE_REGISTRY);
-   }
-   
-   /**
-    * Private constructor
-    */
-   private ServletHelper()
-   {
    }
    
    /**
@@ -109,12 +111,24 @@ public final class ServletHelper
       }
       if (status == AuthenticationStatus.Failure)
       {
-         // authentication failed - no point returning the content as we haven't logged in yet
-         // so end servlet execution and save the URL so the login page knows what to do later
-         req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, req.getRequestURI() + (req.getQueryString() != null ? ("?" + req.getQueryString()) : ""));
+         // authentication failed - now need to display the login page to the user
+         redirectToLoginPage(req, res, sc);
       }
       
       return status;
+   }
+   
+   /**
+    * Redirect to the Login page - saving the current URL which can be redirected back later
+    * once the user has successfully completed the authentication process.
+    */
+   public static void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res, ServletContext sc)
+      throws IOException
+   {
+      // authentication failed - so end servlet execution and redirect to login page
+      // also save the requested URL so the login page knows where to redirect too later
+      res.sendRedirect(req.getContextPath() + FACES_SERVLET + Application.getLoginPage(sc));
+      req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, req.getRequestURI());
    }
    
    /**
@@ -153,7 +167,7 @@ public final class ServletHelper
          }
          
          if (logger.isDebugEnabled())
-            logger.debug("Attempting to resolve webdav path to NodeRef: " + paths);
+            logger.debug("Attempting to resolve webdav path: " + paths);
          
          // get the company home node to start the search from
          NodeRef companyHome = new NodeRef(Repository.getStoreRef(), 
@@ -163,6 +177,9 @@ public final class ServletHelper
          FileFolderService ffs = (FileFolderService)wc.getBean("FileFolderService");
          file = ffs.resolveNamePath(companyHome, paths);
          nodeRef = file.getNodeRef();
+         
+         if (logger.isDebugEnabled())
+            logger.debug("Resolved webdav path to NodeRef: " + nodeRef);
       }
       catch (UnsupportedEncodingException uee)
       {
@@ -174,7 +191,7 @@ public final class ServletHelper
       catch (FileNotFoundException fne)
       {
          if (logger.isWarnEnabled())
-            logger.debug("Failed to resolve webdav path", fne);
+            logger.warn("Failed to resolve webdav path", fne);
          
          nodeRef = null;
       }

@@ -59,13 +59,14 @@ public class AuthenticationFilter implements Filter
    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
          throws IOException, ServletException
    {
-      HttpServletRequest httpReq = (HttpServletRequest)req;
+      HttpServletRequest httpReq  = (HttpServletRequest)req;
+      HttpServletResponse httpRes = (HttpServletResponse)res;
       
       // allow the login page to proceed
       if (httpReq.getRequestURI().endsWith(getLoginPage()) == false)
       {
          AuthenticationStatus status =
-               AuthenticationHelper.authenticate(this.context, httpReq, (HttpServletResponse)res, false);
+               AuthenticationHelper.authenticate(this.context, httpReq, httpRes, false);
          
          if (status == AuthenticationStatus.Success || status == AuthenticationStatus.Guest)
          {
@@ -74,7 +75,9 @@ public class AuthenticationFilter implements Filter
          }
          else
          {
-            // failed to authenticate - save redirect URL for after login process
+            // authentication failed - so end servlet execution and redirect to login page
+            // also save the requested URL so the login page knows where to redirect too later
+            httpRes.sendRedirect(httpReq.getContextPath() + ServletHelper.FACES_SERVLET + Application.getLoginPage(context));
             httpReq.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, httpReq.getRequestURI());
          }
       }

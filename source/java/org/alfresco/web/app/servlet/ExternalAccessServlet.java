@@ -28,8 +28,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.webdav.WebDAVServlet;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.bean.BrowseBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -106,6 +109,10 @@ public class ExternalAccessServlet extends HttpServlet
       FacesContext fc = FacesHelper.getFacesContext(req, res, getServletContext());
       BrowseBean browseBean = (BrowseBean)ServletHelper.getManagedBean(fc, "BrowseBean");
       
+      // get services we need
+      ServiceRegistry serviceRegistry = ServletHelper.getServiceRegistry(getServletContext());
+      PermissionService permissionService = serviceRegistry.getPermissionService();
+      
       // setup is required for certain outcome requests
       if (OUTCOME_DOCDETAILS.equals(outcome))
       {
@@ -123,8 +130,16 @@ public class ExternalAccessServlet extends HttpServlet
          
          if (nodeRef != null)
          {
+            // check that the user has at least READ access - else redirect to the login page
+            if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
+               ServletHelper.redirectToLoginPage(req, res, getServletContext());
+               return;
+            }
+            
             // setup the Document on the browse bean
-            // TODO: the browse bean should accept a full NodeRef - not just an ID
             browseBean.setupContentAction(nodeRef.getId(), true);
          }
          
@@ -148,8 +163,16 @@ public class ExternalAccessServlet extends HttpServlet
          
          if (nodeRef != null)
          {
+            // check that the user has at least READ access - else redirect to the login page
+            if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
+               ServletHelper.redirectToLoginPage(req, res, getServletContext());
+               return;
+            }
+            
             // setup the Space on the browse bean
-            // TODO: the browse bean should accept a full NodeRef - not just an ID
             browseBean.setupSpaceAction(nodeRef.getId(), true);
          }
          
@@ -169,6 +192,15 @@ public class ExternalAccessServlet extends HttpServlet
                StoreRef storeRef = new StoreRef(args[0+offset], args[1+offset]);
                nodeRef = new NodeRef(storeRef, args[2+offset]);
                
+               // check that the user has at least READ access - else redirect to the login page
+               if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
+               {
+                  if (logger.isDebugEnabled())
+                     logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
+                  ServletHelper.redirectToLoginPage(req, res, getServletContext());
+                  return;
+               }
+               
                // this call sets up the current node Id, and updates or initialises the
                // breadcrumb component with the selected node as appropriate.
                browseBean.updateUILocation(nodeRef);
@@ -187,7 +219,7 @@ public class ExternalAccessServlet extends HttpServlet
       
       // perform the forward to the page processed by the Faces servlet 
       String viewId = fc.getViewRoot().getViewId();
-      getServletContext().getRequestDispatcher(AuthenticationHelper.FACES_SERVLET + viewId).forward(req, res);
+      getServletContext().getRequestDispatcher(ServletHelper.FACES_SERVLET + viewId).forward(req, res);
    }
    
    /**

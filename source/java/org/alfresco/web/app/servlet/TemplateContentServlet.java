@@ -38,6 +38,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.ui.repo.component.template.DefaultModelHelper;
 import org.apache.commons.logging.Log;
@@ -120,6 +122,20 @@ public class TemplateContentServlet extends HttpServlet
          templateRef = new NodeRef(storeRef, t.nextToken());
       }
       
+      // get the services we need to retrieve the content
+      ServiceRegistry serviceRegistry = ServletHelper.getServiceRegistry(getServletContext());
+      NodeService nodeService = serviceRegistry.getNodeService();
+      TemplateService templateService = serviceRegistry.getTemplateService();
+      PermissionService permissionService = serviceRegistry.getPermissionService();
+      
+      // check that the user has at least READ access on any nodes - else redirect to the login page
+      if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED ||
+          (templateRef != null && permissionService.hasPermission(templateRef, PermissionService.READ) == AccessStatus.DENIED))
+      {
+         ServletHelper.redirectToLoginPage(req, res, getServletContext());
+         return;
+      }
+      
       String mimetype = MIMETYPE_HTML;
       if (req.getParameter(ARG_MIMETYPE) != null)
       {
@@ -129,11 +145,6 @@ public class TemplateContentServlet extends HttpServlet
       
       try
       {
-         // get the services we need to retrieve the content
-         ServiceRegistry serviceRegistry = ServletHelper.getServiceRegistry(getServletContext());
-         NodeService nodeService = serviceRegistry.getNodeService();
-         TemplateService templateService = serviceRegistry.getTemplateService();
-         
          UserTransaction txn = null;
          try
          {

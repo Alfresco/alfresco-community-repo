@@ -25,7 +25,6 @@ import java.text.MessageFormat;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,6 +38,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.ui.common.Utils;
@@ -141,13 +142,29 @@ public class DownloadContentServlet extends HttpServlet
           propertyQName = QName.createQName(property);
       }
       
+      // build noderef from the appropriate URL elements
       NodeRef nodeRef = new NodeRef(storeRef, id);
+      
       if (logger.isDebugEnabled())
       {
          logger.debug("Found NodeRef: " + nodeRef.toString());
          logger.debug("Will use filename: " + filename);
          logger.debug("For property: " + propertyQName);
          logger.debug("With attachment mode: " + attachment);
+      }
+      
+      // get the services we need to retrieve the content
+      ServiceRegistry serviceRegistry = ServletHelper.getServiceRegistry(getServletContext());
+      ContentService contentService = serviceRegistry.getContentService();
+      PermissionService permissionService = serviceRegistry.getPermissionService();
+      
+      // check that the user has at least READ_CONTENT access - else redirect to the login page
+      if (permissionService.hasPermission(nodeRef, PermissionService.READ_CONTENT) == AccessStatus.DENIED)
+      {
+         if (logger.isDebugEnabled())
+            logger.debug("User does not have permissions to read content for NodeRef: " + nodeRef.toString());
+         ServletHelper.redirectToLoginPage(req, res, getServletContext());
+         return;
       }
       
       if (attachment == true)
@@ -160,10 +177,6 @@ public class DownloadContentServlet extends HttpServlet
       
       try
       {
-         // get the services we need to retrieve the content
-         ServiceRegistry serviceRegistry = ServletHelper.getServiceRegistry(getServletContext());
-         ContentService contentService = serviceRegistry.getContentService();
-         
          // get the content reader
          ContentReader reader = contentService.getReader(nodeRef, propertyQName);
          // ensure that it is safe to use

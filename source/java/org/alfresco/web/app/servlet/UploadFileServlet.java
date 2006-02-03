@@ -59,7 +59,11 @@ public class UploadFileServlet extends HttpServlet
       
       try
       {
-         AuthenticationHelper.authenticate(getServletContext(), request, response, false);
+         AuthenticationStatus status = ServletHelper.servletAuthenticate(request, response, getServletContext());
+         if (status == AuthenticationStatus.Failure)
+         {
+            return;
+         }
          
          if (isMultipart == false)
          {

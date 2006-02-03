@@ -27,6 +27,7 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -54,6 +55,7 @@ public class UsersBean implements IContextListener
 
    public static final String ERROR_PASSWORD_MATCH = "error_password_match";
    private static final String ERROR_DELETE = "error_delete_user";
+   private static final String ERROR_USER_DELETE = "error_delete_user_object";
    
    private static final String DEFAULT_OUTCOME = "manageUsers";
 
@@ -77,6 +79,7 @@ public class UsersBean implements IContextListener
    private String password = null;
    private String confirm = null;
    private String searchCriteria = null;
+   
    
    // ------------------------------------------------------------------------------
    // Construction
@@ -264,7 +267,14 @@ public class UsersBean implements IContextListener
          if (session.get(LoginBean.LOGIN_EXTERNAL_AUTH) == null)
          {
             // delete the User authentication
-            authenticationService.deleteAuthentication((String) getPerson().getProperties().get("userName"));
+            try
+            {
+               authenticationService.deleteAuthentication((String) getPerson().getProperties().get("userName"));
+            }
+            catch (AuthenticationException authErr)
+            {
+               Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(), ERROR_USER_DELETE));
+            }
          }
          
          // delete the associated Person

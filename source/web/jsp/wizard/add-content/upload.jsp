@@ -132,7 +132,7 @@
                                  <r:uploadForm>
                                  <tr>
                                     <td>
-                                       <h:outputText value="#{msg.location}"/>:<input style="margin-left:12px;" type="file" size="50" name="alfFileInput"/>
+                                       <h:outputText value="#{msg.content_location}"/>:<input style="margin-left:12px;" type="file" size="50" name="alfFileInput"/>
                                     </td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>

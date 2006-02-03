@@ -259,7 +259,7 @@
          
          // also check to see if the 'no-condition' option has been selected, if it has, change
          // the explanation text and the button label
-         var short_text = "<a:outputText value='#{msg.click_add}'/>";
+         var short_text = "<a:outputText value='#{msg.click_add_to_list}'/>";
          var long_text = "<a:outputText value='#{msg.click_set_and_add}'/>";
          var short_label = "<a:outputText value='#{msg.add_to_list_button}'/>";
          var long_label = "<a:outputText value='#{msg.set_and_add_button}'/>";

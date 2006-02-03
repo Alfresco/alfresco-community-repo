@@ -145,7 +145,7 @@
                                     <td>
                                        <h:selectOneRadio value="#{ExportDialog.mode}" layout="pageDirection">
                                           <f:selectItem itemValue="current" itemLabel="#{msg.current_space}" />
-                                          <f:selectItem itemValue="all" itemLabel="#{msg.all_spaces}" />
+                                          <f:selectItem itemValue="all" itemLabel="#{msg.all_spaces_root}" />
                                        </h:selectOneRadio>
                                     </td>
                                  </tr>

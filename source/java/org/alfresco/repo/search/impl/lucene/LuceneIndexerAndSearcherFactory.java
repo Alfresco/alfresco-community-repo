@@ -50,7 +50,9 @@ import org.alfresco.util.GUID;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.store.Lock;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -853,6 +855,21 @@ public class LuceneIndexerAndSearcherFactory implements LuceneIndexerAndSearcher
         BooleanQuery.setMaxClauseCount(this.queryMaxClauses);
     }
 
+    public void setWriteLockTimeout(long timeout)
+    {
+        IndexWriter.WRITE_LOCK_TIMEOUT = timeout;
+    }
+    
+    public void setCommitLockTimeout(long timeout)
+    {
+        IndexWriter.COMMIT_LOCK_TIMEOUT = timeout;
+    }
+    
+    public void setLockPollInterval(long time)
+    {
+        Lock.LOCK_POLL_INTERVAL = time;
+    }
+    
     public int getIndexerMaxFieldLength()
     {
         return indexerMaxFieldLength;

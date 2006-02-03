@@ -35,12 +35,10 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 /**
- * Common support for abstracting the lucene indexer from its configuration and
- * management requirements.
+ * Common support for abstracting the lucene indexer from its configuration and management requirements.
  * 
  * <p>
- * This class defines where the indexes are stored. This should be via a
- * configurable Bean property in Spring.
+ * This class defines where the indexes are stored. This should be via a configurable Bean property in Spring.
  * 
  * <p>
  * The default file structure is
@@ -51,13 +49,10 @@ import org.apache.lucene.store.FSDirectory;
  * </ol>
  * 
  * <p>
- * The IndexWriter and IndexReader for a given index are toggled (one should be
- * used for delete and the other for write). These are reused/closed/initialised
- * as required.
+ * The IndexWriter and IndexReader for a given index are toggled (one should be used for delete and the other for write). These are reused/closed/initialised as required.
  * 
  * <p>
- * The index deltas are buffered to memory and persisted in the file system as
- * required.
+ * The index deltas are buffered to memory and persisted in the file system as required.
  * 
  * @author Andy Hind
  * 
@@ -86,15 +81,13 @@ public abstract class LuceneBase implements Lockable
     private File undoDir;
 
     /**
-     * The index reader for the on file delta. (This should no coexist with the
-     * writer)
+     * The index reader for the on file delta. (This should no coexist with the writer)
      */
 
     private IndexReader deltaReader;
 
     /**
-     * The writer for the delta to file. (This should no coexist with the
-     * reader)
+     * The writer for the delta to file. (This should no coexist with the reader)
      */
 
     private IndexWriter deltaWriter;
@@ -134,8 +127,7 @@ public abstract class LuceneBase implements Lockable
     // "lucene-indexes";
 
     /**
-     * Initialise the configuration elements of the lucene store indexers and
-     * searchers.
+     * Initialise the configuration elements of the lucene store indexers and searchers.
      * 
      * @param store
      * @param deltaId
@@ -192,8 +184,7 @@ public abstract class LuceneBase implements Lockable
     }
 
     /**
-     * Utility method to find the path to the transactional store for this index
-     * delta
+     * Utility method to find the path to the transactional store for this index delta
      * 
      * @return
      */
@@ -226,8 +217,7 @@ public abstract class LuceneBase implements Lockable
     }
 
     /**
-     * Utility method to initiliase a lucene FSDirectorya at a given location.
-     * We may try and delete the directory when the JVM exits.
+     * Utility method to initiliase a lucene FSDirectorya at a given location. We may try and delete the directory when the JVM exits.
      * 
      * @param path
      * @param temp
@@ -267,9 +257,7 @@ public abstract class LuceneBase implements Lockable
     }
 
     /**
-     * Get a searcher for the main index TODO: Split out support for the main
-     * index. We really only need this if we want to search over the changing
-     * index before it is committed
+     * Get a searcher for the main index TODO: Split out support for the main index. We really only need this if we want to search over the changing index before it is committed
      * 
      * @return
      * @throws IOException
@@ -511,8 +499,7 @@ public abstract class LuceneBase implements Lockable
     }
 
     /**
-     * Save the in memory delta to the disk, make sure there is nothing held in
-     * memory
+     * Save the in memory delta to the disk, make sure there is nothing held in memory
      * 
      * @throws IOException
      */
@@ -527,9 +514,7 @@ public abstract class LuceneBase implements Lockable
     /**
      * Get all the locks so we can expect a merge to succeed
      * 
-     * The delta should be thread local so we do not have to worry about
-     * contentention TODO: Worry about main index contentention of readers and
-     * writers @
+     * The delta should be thread local so we do not have to worry about contentention TODO: Worry about main index contentention of readers and writers @
      * @throws IOException
      */
     protected void prepareToMergeIntoMain() throws LuceneIndexException
@@ -569,8 +554,7 @@ public abstract class LuceneBase implements Lockable
      * Merge the delta in the main index. The delta still exists on disk.
      * 
      * @param terms
-     *            A list of terms that identifiy documents to be deleted from
-     *            the main index before the delta os merged in.
+     *            A list of terms that identifiy documents to be deleted from the main index before the delta os merged in.
      * 
      * @throws IOException
      */
@@ -581,43 +565,44 @@ public abstract class LuceneBase implements Lockable
             throw new LuceneIndexException("Must hold the write lock to merge");
         }
 
-        if (!indexExists(baseDir))
+        try
         {
-            if (s_logger.isDebugEnabled())
+            if (!indexExists(baseDir))
             {
-                s_logger.debug("Creating base index " + baseDir);
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug("Creating base index " + baseDir);
+                }
+                try
+                {
+                    mainWriter = new IndexWriter(baseDir, new LuceneAnalyser(dictionaryService), true);
+                    mainWriter.setUseCompoundFile(true);
+                    mainWriter.close();
+                    if (s_logger.isDebugEnabled())
+                    {
+                        s_logger.debug("Created base index " + baseDir);
+                    }
+                }
+                catch (IOException e)
+                {
+                    s_logger.error("Error", e);
+                    throw new LuceneIndexException("Failed to create empty base index at " + baseDir, e);
+                }
             }
             try
             {
-                mainWriter = new IndexWriter(baseDir, new LuceneAnalyser(dictionaryService), true);
-                mainWriter.setUseCompoundFile(true);
-                mainWriter.close();
+                mainReader = IndexReader.open(baseDir);
                 if (s_logger.isDebugEnabled())
                 {
-                    s_logger.debug("Created base index " + baseDir);
+                    s_logger.debug("Opened base index for deletes " + baseDir);
                 }
             }
             catch (IOException e)
             {
                 s_logger.error("Error", e);
-                throw new LuceneIndexException("Failed to create empty base index at " + baseDir, e);
+                throw new LuceneIndexException("Failed to create base index reader at " + baseDir, e);
             }
-        }
-        try
-        {
-            mainReader = IndexReader.open(baseDir);
-            if (s_logger.isDebugEnabled())
-            {
-                s_logger.debug("Opened base index for deletes " + baseDir);
-            }
-        }
-        catch (IOException e)
-        {
-            s_logger.error("Error", e);
-            throw new LuceneIndexException("Failed to create base index reader at " + baseDir, e);
-        }
-        try
-        {
+
             // Do the deletions
             try
             {
@@ -740,11 +725,9 @@ public abstract class LuceneBase implements Lockable
     /**
      * Delete the delta and make this instance unusable
      * 
-     * This tries to tidy up all it can. It is possible some stuff will remain
-     * if errors are throws else where
+     * This tries to tidy up all it can. It is possible some stuff will remain if errors are throws else where
      * 
-     * TODO: Support for cleaning up transactions - need to support recovery and
-     * knowing of we are prepared
+     * TODO: Support for cleaning up transactions - need to support recovery and knowing of we are prepared
      * 
      */
     protected void deleteDelta() throws LuceneIndexException

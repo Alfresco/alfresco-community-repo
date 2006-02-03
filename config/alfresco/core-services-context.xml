@@ -246,6 +246,16 @@
         <property name="indexerMaxFieldLength">
             <value>${lucene.indexer.maxFieldLength}</value>
         </property>
+        <property name="writeLockTimeout">
+            <value>${lucene.write.lock.timeout}</value>
+        </property>
+        <property name="commitLockTimeout">
+            <value>${lucene.commit.lock.timeout}</value>
+        </property>
+        <property name="lockPollInterval">
+            <value>${lucene.lock.poll.interval}</value>
+        </property>
+        
     </bean>
 
     <!-- Indexer and searchers for lucene -->

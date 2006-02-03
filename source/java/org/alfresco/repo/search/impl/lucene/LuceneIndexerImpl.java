@@ -77,11 +77,10 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TermQuery;
 
 /**
- * The implementation of the lucene based indexer. Supports basic transactional
- * behaviour if used on its own.
+ * The implementation of the lucene based indexer. Supports basic transactional behaviour if used on its own.
  * 
  * @author andyh
- *  
+ * 
  */
 public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
 {
@@ -112,8 +111,7 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
     private ContentService contentService;
 
     /**
-     * A list of all deletions we have made - at merge these deletions need to
-     * be made against the main index.
+     * A list of all deletions we have made - at merge these deletions need to be made against the main index.
      * 
      * TODO: Consider if this information needs to be persisted for recovery
      */
@@ -133,9 +131,8 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
     private boolean isModified = false;
 
     /**
-     * Flag to indicte if we are doing an in transactional delta or a batch
-     * update to the index. If true, we are just fixing up non atomically
-     * indexed things from one or more other updates.
+     * Flag to indicte if we are doing an in transactional delta or a batch update to the index. If true, we are just fixing up non atomically indexed things from one or more other
+     * updates.
      */
 
     private Boolean isFTSUpdate = null;
@@ -199,13 +196,12 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
         this.contentService = contentService;
     }
 
-    /***************************************************************************
+    /*******************************************************************************************************************************************************************************
      * * Indexer Implementation * **************************
      */
 
     /**
-     * Utility method to check we are in the correct state to do work Also keeps
-     * track of the dirty flag.
+     * Utility method to check we are in the correct state to do work Also keeps track of the dirty flag.
      * 
      */
 
@@ -557,91 +553,105 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
 
         try
         {
-            mainReader = getReader();
-            deltaReader = getDeltaReader();
-            mainSearcher = new IndexSearcher(mainReader);
-            deltaSearcher = new IndexSearcher(deltaReader);
-
-            for (Helper helper : toFTSIndex)
+            try
             {
-                BooleanQuery query = new BooleanQuery();
-                query.add(new TermQuery(new Term("ID", helper.nodeRef.toString())), true, false);
-                query.add(new TermQuery(new Term("TX", helper.tx)), true, false);
-                query.add(new TermQuery(new Term("ISNODE", "T")), false, false);
+                mainReader = getReader();
+                deltaReader = getDeltaReader();
+                mainSearcher = new IndexSearcher(mainReader);
+                deltaSearcher = new IndexSearcher(deltaReader);
 
-                try
+                for (Helper helper : toFTSIndex)
                 {
-                    Hits hits = mainSearcher.search(query);
-                    if (hits.length() > 0)
+                    BooleanQuery query = new BooleanQuery();
+                    query.add(new TermQuery(new Term("ID", helper.nodeRef.toString())), true, false);
+                    query.add(new TermQuery(new Term("TX", helper.tx)), true, false);
+                    query.add(new TermQuery(new Term("ISNODE", "T")), false, false);
+
+                    try
                     {
-                        // No change
-                        for (int i = 0; i < hits.length(); i++)
+                        Hits hits = mainSearcher.search(query);
+                        if (hits.length() > 0)
                         {
-                            mainReader.delete(hits.id(i));
+                            // No change
+                            for (int i = 0; i < hits.length(); i++)
+                            {
+                                mainReader.delete(hits.id(i));
+                            }
+                        }
+                        else
+                        {
+                            hits = deltaSearcher.search(query);
+                            for (int i = 0; i < hits.length(); i++)
+                            {
+                                deltaReader.delete(hits.id(i));
+                            }
                         }
                     }
-                    else
+                    catch (IOException e)
                     {
-                        hits = deltaSearcher.search(query);
-                        for (int i = 0; i < hits.length(); i++)
-                        {
-                            deltaReader.delete(hits.id(i));
-                        }
+                        throw new LuceneIndexException("Failed to delete an FTS update from the original index", e);
                     }
                 }
-                catch (IOException e)
+
+            }
+            finally
+            {
+                if (deltaSearcher != null)
                 {
-                    throw new LuceneIndexException("Failed to delete an FTS update from the original index", e);
+                    try
+                    {
+                        deltaSearcher.close();
+                    }
+                    catch (IOException e)
+                    {
+                        s_logger.warn("Failed to close delta searcher", e);
+                    }
+                }
+                if (mainSearcher != null)
+                {
+                    try
+                    {
+                        mainSearcher.close();
+                    }
+                    catch (IOException e)
+                    {
+                        s_logger.warn("Failed to close main searcher", e);
+                    }
+                }
+                try
+                {
+                    closeDeltaReader();
+                }
+                catch (LuceneIndexException e)
+                {
+                    s_logger.warn("Failed to close delta reader", e);
+                }
+                if (mainReader != null)
+                {
+                    try
+                    {
+                        mainReader.close();
+                    }
+                    catch (IOException e)
+                    {
+                        s_logger.warn("Failed to close main reader", e);
+                    }
                 }
             }
 
+            mergeDeltaIntoMain(new LinkedHashSet<Term>());
+        }
+        catch (LuceneIndexException e)
+        {
+            // If anything goes wrong we try and do a roll back
+            rollback();
+            throw new LuceneIndexException("Commit failed", e);
         }
         finally
         {
-            if (deltaSearcher != null)
-            {
-                try
-                {
-                    deltaSearcher.close();
-                }
-                catch (IOException e)
-                {
-                    s_logger.warn("Failed to close delta searcher", e);
-                }
-            }
-            if (mainSearcher != null)
-            {
-                try
-                {
-                    mainSearcher.close();
-                }
-                catch (IOException e)
-                {
-                    s_logger.warn("Failed to close main searcher", e);
-                }
-            }
-            try
-            {
-                closeDeltaReader();
-            }
-            catch (LuceneIndexException e)
-            {
-                s_logger.warn("Failed to close delta reader", e);
-            }
-            if (mainReader != null)
-            {
-                try
-                {
-                    mainReader.close();
-                }
-                catch (IOException e)
-                {
-                    s_logger.warn("Failed to close main reader", e);
-                }
-            }
+            // Make sure we tidy up
+            deleteDelta();
         }
-
-        mergeDeltaIntoMain(new LinkedHashSet<Term>());
 
     }
 
@@ -650,8 +660,7 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
      * 
      * At the moment this makes sure we have all the locks
      * 
-     * TODO: This is not doing proper serialisation against the index as would a
-     * data base transaction.
+     * TODO: This is not doing proper serialisation against the index as would a data base transaction.
      * 
      * @return
      */
@@ -749,8 +758,7 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
     }
 
     /**
-     * Mark this index for roll back only. This action can not be reversed. It
-     * will reject all other work and only allow roll back.
+     * Mark this index for roll back only. This action can not be reversed. It will reject all other work and only allow roll back.
      * 
      */
 
@@ -1072,8 +1080,7 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                 try
                 {
                     writer.addDocument(doc /*
-                                             * TODO: Select the language based
-                                             * analyser
+                                             * TODO: Select the language based analyser
                                              */);
                 }
                 catch (IOException e)
@@ -1396,8 +1403,9 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                             if (index)
                             {
                                 // store mimetype in index - even if content does not index it is useful
-                                doc.add(new Field(attributeName+".mimetype", contentData.getMimetype(), false, true, false));
-                                
+                                doc.add(new Field(attributeName + ".mimetype", contentData.getMimetype(), false, true,
+                                        false));
+
                                 ContentReader reader = contentService.getReader(nodeRef, propertyName);
                                 if (reader != null && reader.exists())
                                 {
@@ -1450,28 +1458,28 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                                     // reader, but only if the reader is valid
                                     if (readerReady)
                                     {
-                                        InputStreamReader isr = null; 
-                                        InputStream ris = reader.getContentInputStream(); 
-                                        try 
-                                        { 
-                                            isr = new InputStreamReader(ris,"UTF-8"); 
-                                        } 
-                                        catch (UnsupportedEncodingException e) 
-                                        { 
-                                            isr = new InputStreamReader(ris); 
-                                        }  
+                                        InputStreamReader isr = null;
+                                        InputStream ris = reader.getContentInputStream();
+                                        try
+                                        {
+                                            isr = new InputStreamReader(ris, "UTF-8");
+                                        }
+                                        catch (UnsupportedEncodingException e)
+                                        {
+                                            isr = new InputStreamReader(ris);
+                                        }
                                         doc.add(Field.Text("TEXT", isr));
-                                        
-                                        ris = reader.getReader().getContentInputStream(); 
-                                        try 
-                                        { 
-                                            isr = new InputStreamReader(ris,"UTF-8"); 
-                                        } 
-                                        catch (UnsupportedEncodingException e) 
-                                        { 
-                                            isr = new InputStreamReader(ris); 
-                                        } 
-                                        
+
+                                        ris = reader.getReader().getContentInputStream();
+                                        try
+                                        {
+                                            isr = new InputStreamReader(ris, "UTF-8");
+                                        }
+                                        catch (UnsupportedEncodingException e)
+                                        {
+                                            isr = new InputStreamReader(ris);
+                                        }
+
                                         doc.add(Field.Text("@"
                                                 + QName.createQName(propertyName.getNamespaceURI(), ISO9075
                                                         .encode(propertyName.getLocalName())), isr));
@@ -1726,9 +1734,7 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                             try
                             {
                                 writer.addDocument(doc /*
-                                                         * TODO: Select the
-                                                         * language based
-                                                         * analyser
+                                                         * TODO: Select the language based analyser
                                                          */);
                             }
                             catch (IOException e)

@@ -6,57 +6,70 @@
          <evaluator id="aspect-name" class="org.alfresco.web.config.AspectEvaluator" />
       </evaluators>
       <element-readers>
-         <element-reader element-name="server" class="org.alfresco.web.config.ServerElementReader"/>
          <element-reader element-name="client" class="org.alfresco.web.config.ClientElementReader"/>
          <element-reader element-name="property-sheet" class="org.alfresco.web.config.PropertySheetElementReader"/>
          <element-reader element-name="navigation" class="org.alfresco.web.config.NavigationElementReader" />
+         <element-reader element-name="languages" class="org.alfresco.web.config.LanguagesElementReader" />
+         <element-reader element-name="advanced-search" class="org.alfresco.web.config.AdvancedSearchElementReader" />
+         <element-reader element-name="views" class="org.alfresco.web.config.ViewsElementReader" />
       </element-readers>
    </plug-ins>
    
    <config>
-      <server>
-         <error-page>/jsp/error.jsp</error-page>
-         <error-pages>
-            <error-page>/jsp/error.jsp</error-page>
-            <error-page type="org.alfresco.service.cmr.repository.InvalidNodeRefException">
-               /jsp/error_missing.jsp
-            </error-page>
-         </error-pages>
-         <login-page>/jsp/login.jsp</login-page>
-      </server>
       <admin>
          <initial-password>admin</initial-password>
       </admin>
       <client>
-         <!-- the list of available language files -->
-         <languages>
-            <language locale="en_US">English</language>
-            <!-- <language locale="fr_FR">French</language> -->
-            <!-- <language locale="de_DE">German</language> -->
-            <!-- <language locale="ja_JP">Japanese</language> -->
-         </languages>
+         <!-- the error page the client will use -->
+         <error-page>/jsp/error.jsp</error-page>
          
-         <!-- advanced search custom attribute config -->
-         <advanced-search>
-            <!-- type constraint drop-down -->
-            <content-types>
-               <!-- cm:content type is implicit in this list -->
-               <!-- types must extend cm:content for the Alfresco web-client -->
-               <type name="cm:dictionaryModel" />
-               <type name="fm:post" />
-            </content-types>
-            <!-- custom properties to be shown in the More Options panel -->
-            <custom-properties>
-            </custom-properties>
-         </advanced-search>
+         <!-- the login page the client will use -->
+         <login-page>/jsp/login.jsp</login-page>   
          
-         <!-- the views available in the client -->
-         <views>
-            <view>org.alfresco.web.ui.common.renderer.data.RichListRenderer$DetailsViewRenderer</view>
-            <view>org.alfresco.web.ui.common.renderer.data.RichListRenderer$IconViewRenderer</view>
-            <view>org.alfresco.web.ui.common.renderer.data.RichListRenderer$ListViewRenderer</view>
-            <view>org.alfresco.web.bean.ForumsBean$TopicBubbleViewRenderer</view>
-         </views>
+         <!-- the maximum number of items to show in the recent spaces shelf component -->
+         <recent-spaces-items>6</recent-spaces-items>
+         
+         <!-- Shelf component default visibility, set to false to hide the shelf by default -->
+         <shelf-visible>true</shelf-visible>
+         
+         <!-- the minimum number of characters required for a valid search string -->
+         <search-minimum>3</search-minimum>
+         
+         <!-- The default permissions to apply to a new users Home Space when first created -->
+         <!-- this permission is for other users attempting to access that Home Space -->
+         <!-- generally set to "Guest" or empty value to indicate a private hidden space. -->
+         <!-- see org.alfresco.service.cmr.security.PermissionService for allowed values -->
+         <home-space-permission>Guest</home-space-permission>
+         
+         <!-- the URL to the client Help file -->
+         <help-url>http://www.alfresco.org/help/webclient</help-url>
+         
+         <!-- the type of edit link to use, NOTE: inline editable will always take precedence -->
+         <!-- can be: http|webdav|cifs -->
+         <edit-link-type>http</edit-link-type>
+         
+         <!-- the from address to use when sending emails from the client -->
+         <from-email-address>alfresco@alfresco.org</from-email-address>
+      </client>
+   </config>
+
+   <config evaluator="string-compare" condition="Languages">
+      <!-- the list of available language files -->
+      <languages>
+         <language locale="en_US">English</language>
+         <!-- <language locale="fr_FR">French</language> -->
+         <!-- <language locale="de_DE">German</language> -->
+         <!-- <language locale="ja_JP">Japanese</language> -->
+      </languages>
+   </config>
+   
+   <config evaluator="string-compare" condition="Views">
+      <!-- the views available in the client -->
+      <views>
+         <view-impl>org.alfresco.web.ui.common.renderer.data.RichListRenderer$DetailsViewRenderer</view-impl>
+         <view-impl>org.alfresco.web.ui.common.renderer.data.RichListRenderer$IconViewRenderer</view-impl>
+         <view-impl>org.alfresco.web.ui.common.renderer.data.RichListRenderer$ListViewRenderer</view-impl>
+         <view-impl>org.alfresco.web.bean.ForumsBean$TopicBubbleViewRenderer</view-impl>
          
          <!-- default values for the views available in the client -->
          <view-defaults>
@@ -96,32 +109,23 @@
                </page-size>
             </topic>
          </view-defaults>
-         
-         <!-- the maximum number of items to show in the recent spaces shelf component -->
-         <recent-spaces-items>6</recent-spaces-items>
-         
-         <!-- Shelf component default visibility, set to false to hide the shelf by default -->
-         <shelf-visible>true</shelf-visible>
-         
-         <!-- the minimum number of characters required for a valid search string -->
-         <search-minimum>3</search-minimum>
-         
-         <!-- The default permissions to apply to a new users Home Space when first created -->
-         <!-- this permission is for other users attempting to access that Home Space -->
-         <!-- generally set to "Guest" or empty value to indicate a private hidden space. -->
-         <!-- see org.alfresco.service.cmr.security.PermissionService for allowed values -->
-         <home-space-permission>Guest</home-space-permission>
-         
-         <!-- the URL to the client Help file -->
-         <help-url>http://www.alfresco.org/help/webclient</help-url>
-         
-         <!-- the type of edit link to use, NOTE: inline editable will always take precedence -->
-         <!-- can be: http|webdav|cifs -->
-         <edit-link-type>http</edit-link-type>
-         
-         <!-- the from address to use when sending emails from the client -->
-         <from-email-address>alfresco@alfresco.org</from-email-address>
-      </client>
+      </views>
+   </config>
+   
+   <config evaluator="string-compare" condition="Advanced Search">
+      <!-- advanced search custom attribute config -->
+      <advanced-search>
+         <!-- type constraint drop-down -->
+         <content-types>
+            <!-- cm:content type is implicit in this list -->
+            <!-- types must extend cm:content for the Alfresco web-client -->
+            <type name="cm:dictionaryModel" />
+            <type name="fm:post" />
+         </content-types>
+         <!-- custom properties to be shown in the More Options panel -->
+         <custom-properties>
+         </custom-properties>
+      </advanced-search>
    </config>
 
    <config evaluator="string-compare" condition="Custom Content Types">

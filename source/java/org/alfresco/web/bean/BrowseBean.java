@@ -56,7 +56,7 @@ import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.QNameNodeMap;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.NewSpaceWizard;
-import org.alfresco.web.config.ClientConfigElement;
+import org.alfresco.web.config.ViewsConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
@@ -207,7 +207,8 @@ public class BrowseBean implements IContextListener
     */
    public int getMinimumSearchLength()
    {
-      return this.clientConfig.getSearchMinimum();
+      return Application.getClientConfig(FacesContext.getCurrentInstance()).
+            getSearchMinimum();
    }
    
    /**
@@ -251,9 +252,9 @@ public class BrowseBean implements IContextListener
       if (this.contentRichList != null)
       {
          this.contentRichList.setInitialSortColumn(
-               this.clientConfig.getDefaultSortColumn(PAGE_NAME_BROWSE));
+               this.viewsConfig.getDefaultSortColumn(PAGE_NAME_BROWSE));
          this.contentRichList.setInitialSortDescending(
-               this.clientConfig.hasDescendingSort(PAGE_NAME_BROWSE));
+               this.viewsConfig.hasDescendingSort(PAGE_NAME_BROWSE));
       }
    }
    
@@ -275,9 +276,9 @@ public class BrowseBean implements IContextListener
       {
          // set the initial sort column and direction
          this.spacesRichList.setInitialSortColumn(
-               this.clientConfig.getDefaultSortColumn(PAGE_NAME_BROWSE));
+               this.viewsConfig.getDefaultSortColumn(PAGE_NAME_BROWSE));
          this.spacesRichList.setInitialSortDescending(
-               this.clientConfig.hasDescendingSort(PAGE_NAME_BROWSE));
+               this.viewsConfig.hasDescendingSort(PAGE_NAME_BROWSE));
       }
    }
    
@@ -436,7 +437,7 @@ public class BrowseBean implements IContextListener
       if (VIEWMODE_DASHBOARD.equals(viewMode) == false)
       { 
          // set the page size based on the style of display
-         setBrowsePageSize(this.clientConfig.getDefaultPageSize(PAGE_NAME_BROWSE, 
+         setBrowsePageSize(this.viewsConfig.getDefaultPageSize(PAGE_NAME_BROWSE, 
                viewMode));
          
          if (logger.isDebugEnabled())
@@ -824,7 +825,8 @@ public class BrowseBean implements IContextListener
          // always be used otherwise the configured approach is used
          if (node.hasAspect(ContentModel.ASPECT_INLINEEDITABLE) == false)
          {
-            editLinkType = clientConfig.getEditLinkType();
+            editLinkType = Application.getClientConfig(
+                  FacesContext.getCurrentInstance()).getEditLinkType();
             if (editLinkType == null)
             {
                editLinkType = "http";
@@ -1245,9 +1247,12 @@ public class BrowseBean implements IContextListener
     */
    private void initFromClientConfig()
    {
-      this.clientConfig = Application.getClientConfig(FacesContext.getCurrentInstance());
-      this.browseViewMode = clientConfig.getDefaultView(PAGE_NAME_BROWSE);
-      this.browsePageSize = clientConfig.getDefaultPageSize(PAGE_NAME_BROWSE, 
+      this.viewsConfig = (ViewsConfigElement)Application.getConfigService(
+            FacesContext.getCurrentInstance()).getConfig("Views").
+            getConfigElement(ViewsConfigElement.CONFIG_ELEMENT_ID);
+      
+      this.browseViewMode = this.viewsConfig.getDefaultView(PAGE_NAME_BROWSE);
+      this.browsePageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_BROWSE, 
             this.browseViewMode);
    }
    
@@ -1467,8 +1472,8 @@ public class BrowseBean implements IContextListener
    /** The file folder service */
    private FileFolderService fileFolderService;
 
-   /** Client configuration object */
-   private ClientConfigElement clientConfig = null;
+   /** Views configuration object */
+   private ViewsConfigElement viewsConfig = null;
    
    /** Component references */
    private UIRichList spacesRichList;

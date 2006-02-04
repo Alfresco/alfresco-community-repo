@@ -1,0 +1,82 @@
+<alfresco-config>   
+
+   <config>
+      <client>
+         <!-- the error page the client will use -->
+         <error-page>/jsp/error-override.jsp</error-page>
+         
+         <!-- the login page the client will use -->
+         <login-page>/jsp/login-override.jsp</login-page>
+         
+         <!-- the maximum number of items to show in the recent spaces shelf component -->
+         <recent-spaces-items>1</recent-spaces-items>
+         
+         <!-- Shelf component default visibility, set to false to hide the shelf by default -->
+         <shelf-visible>false</shelf-visible>
+         
+         <!-- the minimum number of characters required for a valid search string -->
+         <search-minimum>10</search-minimum>
+         
+         <!-- The default permissions to apply to a new users Home Space when first created -->
+         <!-- this permission is for other users attempting to access that Home Space -->
+         <!-- generally set to "Guest" or empty value to indicate a private hidden space. -->
+         <!-- see org.alfresco.service.cmr.security.PermissionService for allowed values -->
+         <home-space-permission>Editor</home-space-permission>
+         
+         <!-- the URL to the client Help file -->
+         <help-url>http://www.somewhere.com/help</help-url>
+         
+         <!-- the type of edit link to use, NOTE: inline editable will always take precedence -->
+         <!-- can be: http|webdav|cifs -->
+         <edit-link-type>webdav</edit-link-type>
+         
+         <!-- the from address to use when sending emails from the client -->
+         <from-email-address>me@somewhere.com</from-email-address>
+      </client>
+   </config>
+   
+   <config evaluator="string-compare" condition="Languages">
+      <languages>
+         <language locale="ja_JP">Japanese</language>
+         <!-- this shouldn't appear in the list twice! -->
+         <language locale="fr_FR">French</language>
+      </languages>
+   </config>
+   
+   <config evaluator="string-compare" condition="Advanced Search">
+      <!-- advanced search custom attribute config -->
+      <advanced-search>
+         <!-- custom properties to be shown in the More Options panel -->
+         <custom-properties>
+            <meta-data aspect="app:simpleworkflow" property="app:rejectStep" displayLabelId="reject_step" />
+         </custom-properties>
+      </advanced-search>
+   </config>
+   
+   <config evaluator="string-compare" condition="Views">
+      <views>
+         <view-impl>org.alfresco.web.bean.ForumsBean$TopicBubbleViewRenderer</view-impl>
+         <view-defaults>
+            <browse>
+               <!-- change the default view for browse page -->
+               <view>details</view>
+            </browse>
+            <forum>
+               <!-- define a sort column to the forum page -->
+               <sort-column>modified</sort-column>
+               <!-- turn on descending sorting for the forum page -->
+               <sort-descending>true</sort-descending>
+               <page-size>
+                  <!-- change the details page size to 50 -->
+                  <details>50</details>
+               </page-size>
+            </forum>
+            <topic>
+               <!-- reset the descending sort for the topic view -->
+               <sort-descending>false</sort-descending>
+            </topic>
+         </view-defaults>
+      </views>
+   </config>
+   
+</alfresco-config>

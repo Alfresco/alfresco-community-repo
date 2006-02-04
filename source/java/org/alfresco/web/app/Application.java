@@ -40,7 +40,6 @@ import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.bean.ErrorBean;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.config.ClientConfigElement;
-import org.alfresco.web.config.ServerConfigElement;
 import org.apache.commons.logging.Log;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -681,11 +680,12 @@ public class Application
       String errorPage = null;
       
       ConfigService svc = (ConfigService)context.getBean(BEAN_CONFIG_SERVICE);
-      ServerConfigElement serverConfig = (ServerConfigElement)svc.getGlobalConfig().getConfigElement("server");
+      ClientConfigElement clientConfig = (ClientConfigElement)svc.getGlobalConfig().
+            getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
       
-      if (serverConfig != null)
+      if (clientConfig != null)
       {
-         errorPage = serverConfig.getErrorPage();
+         errorPage = clientConfig.getErrorPage();
       }
       
       return errorPage;
@@ -702,11 +702,12 @@ public class Application
       String loginPage = null;
       
       ConfigService svc = (ConfigService)context.getBean(BEAN_CONFIG_SERVICE);
-      ServerConfigElement serverConfig = (ServerConfigElement)svc.getGlobalConfig().getConfigElement("server");
+      ClientConfigElement clientConfig = (ClientConfigElement)svc.getGlobalConfig().
+            getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
       
-      if (serverConfig != null)
+      if (clientConfig != null)
       {
-         loginPage = serverConfig.getLoginPage();
+         loginPage = clientConfig.getLoginPage();
       }
       
       return loginPage;

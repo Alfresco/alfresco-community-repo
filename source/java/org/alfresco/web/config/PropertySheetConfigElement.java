@@ -137,7 +137,7 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     * 
     * @param itemConfig A pre-configured property or association config object
     */
-   public void addItem(ItemConfig itemConfig)
+   /*package*/ void addItem(ItemConfig itemConfig)
    {
       if (this.itemsMap.containsKey(itemConfig.getName()) == false)
       {
@@ -156,7 +156,7 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     * @param readOnly Sets whether the property should be rendered as read only
     * @param converter The name of a converter to apply to the property control
     */
-   public void addProperty(String name, String displayLabel, String displayLabelId, String readOnly, String converter)
+   /*package*/ void addProperty(String name, String displayLabel, String displayLabelId, String readOnly, String converter)
    {
       addItem(new PropertyConfig(name, displayLabel, displayLabelId, Boolean.parseBoolean(readOnly), converter));
    }
@@ -170,7 +170,7 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     * @param readOnly Sets whether the association should be rendered as read only
     * @param converter The name of a converter to apply to the association control
     */
-   public void addAssociation(String name, String displayLabel, String displayLabelId, String readOnly, String converter)
+   /*package*/ void addAssociation(String name, String displayLabel, String displayLabelId, String readOnly, String converter)
    {
       addItem(new AssociationConfig(name, displayLabel, displayLabelId, Boolean.parseBoolean(readOnly), converter));
    }
@@ -184,7 +184,7 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     * @param readOnly Sets whether the association should be rendered as read only
     * @param converter The name of a converter to apply to the association control
     */
-   public void addChildAssociation(String name, String displayLabel, String displayLabelId, String readOnly, String converter)
+   /*package*/ void addChildAssociation(String name, String displayLabel, String displayLabelId, String readOnly, String converter)
    {
       addItem(new ChildAssociationConfig(name, displayLabel, displayLabelId, Boolean.parseBoolean(readOnly), converter));
    }

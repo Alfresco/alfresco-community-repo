@@ -30,6 +30,8 @@ import javax.faces.validator.ValidatorException;
 import javax.portlet.PortletRequest;
 import javax.servlet.http.HttpServletRequest;
 
+import org.alfresco.config.Config;
+import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -41,7 +43,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.config.ClientConfigElement;
+import org.alfresco.web.config.LanguagesConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -152,16 +154,17 @@ public class LoginBean
     */
    public SelectItem[] getLanguages()
    {
-      ClientConfigElement config = Application.getClientConfig(
-            FacesContext.getCurrentInstance());
+      Config config = Application.getConfigService(FacesContext.getCurrentInstance()).getConfig("Languages");
+      LanguagesConfigElement langConfig = (LanguagesConfigElement)config.getConfigElement(
+            LanguagesConfigElement.CONFIG_ELEMENT_ID);
       
-      List<String> languages = config.getLanguages();
+      List<String> languages = langConfig.getLanguages();
       SelectItem[] items = new SelectItem[languages.size()];
       int count = 0;
       for (String locale : languages)
       {
          // get label associated to the locale
-         String label = config.getLabelForLanguage(locale);
+         String label = langConfig.getLabelForLanguage(locale);
 
          // set default selection
          if (count == 0 && this.language == null)

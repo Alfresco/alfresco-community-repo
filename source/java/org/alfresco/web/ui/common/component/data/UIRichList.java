@@ -26,10 +26,9 @@ import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.config.ConfigService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.config.ClientConfigElement;
+import org.alfresco.web.config.ViewsConfigElement;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.ui.common.renderer.data.IRichListRenderer;
 import org.apache.commons.logging.Log;
@@ -51,10 +50,10 @@ public class UIRichList extends UIComponentBase implements IDataContainer
       setRendererType("org.alfresco.faces.RichListRenderer");
       
       // get the list of views from the client configuration
-      ConfigService configSvc = Application.getConfigService(FacesContext.getCurrentInstance());
-      ClientConfigElement clientConfig = (ClientConfigElement)configSvc.getGlobalConfig().
-            getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
-      List<String> views = clientConfig.getViews();
+      ViewsConfigElement viewsConfig = (ViewsConfigElement)Application.getConfigService(
+            FacesContext.getCurrentInstance()).getConfig("Views").
+            getConfigElement(ViewsConfigElement.CONFIG_ELEMENT_ID);
+      List<String> views = viewsConfig.getViews();
       
       // instantiate each renderer and add to the list
       for (String view : views)

@@ -18,7 +18,6 @@ package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import javax.faces.component.NamingContainer;
 import javax.faces.component.UIComponent;
@@ -30,7 +29,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
-import org.alfresco.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -41,15 +39,14 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.config.ClientConfigElement;
-import org.alfresco.web.config.ClientConfigElement.CustomProperty;
+import org.alfresco.web.config.AdvancedSearchConfigElement;
+import org.alfresco.web.config.AdvancedSearchConfigElement.CustomProperty;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.alfresco.web.ui.repo.RepoConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * @author Kevin Roast
@@ -137,12 +134,13 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
    private void createComponentsFromConfig(FacesContext context)
    {
       DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
-      ClientConfigElement clientConfig = Application.getClientConfig(context);
+      AdvancedSearchConfigElement config = (AdvancedSearchConfigElement)Application.getConfigService(
+            context).getConfig("Advanced Search").getConfigElement(AdvancedSearchConfigElement.CONFIG_ELEMENT_ID);
       
       // create an appropriate component for each custom property
       // using the DataDictionary to look-up labels and value types
       String beanBinding = (String)getAttributes().get("bean") + '.' + (String)getAttributes().get("var");
-      List<CustomProperty> props = clientConfig.getCustomProperties();
+      List<CustomProperty> props = config.getCustomProperties();
       if (props != null)
       {
          for (CustomProperty property : props)

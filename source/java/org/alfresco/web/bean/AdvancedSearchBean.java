@@ -33,7 +33,6 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.ExpiringValueCache;
 import org.alfresco.repo.content.MimetypeMap;
@@ -63,8 +62,8 @@ import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.config.ClientConfigElement;
-import org.alfresco.web.config.ClientConfigElement.CustomProperty;
+import org.alfresco.web.config.AdvancedSearchConfigElement;
+import org.alfresco.web.config.AdvancedSearchConfigElement.CustomProperty;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
@@ -563,7 +562,7 @@ public class AdvancedSearchBean
                Application.getMessage(context, MSG_CONTENT)));
          
          // add any configured content sub-types to the list
-         List<String> types = getClientConfig().getContentTypes();
+         List<String> types = getSearchConfig().getContentTypes();
          if (types != null)
          {
             DictionaryService dictionaryService = Repository.getServiceRegistry(context).getDictionaryService();
@@ -1391,13 +1390,16 @@ public class AdvancedSearchBean
    /**
     * @return ClientConfigElement
     */
-   private ClientConfigElement getClientConfig()
+   private AdvancedSearchConfigElement getSearchConfig()
    {
-      if (clientConfigElement == null)
+      if (searchConfigElement == null)
       {
-         clientConfigElement = Application.getClientConfig(FacesContext.getCurrentInstance());
+         searchConfigElement = (AdvancedSearchConfigElement)Application.getConfigService(
+               FacesContext.getCurrentInstance()).getConfig("Advanced Search").
+               getConfigElement(AdvancedSearchConfigElement.CONFIG_ELEMENT_ID);
       }
-      return clientConfigElement;
+      
+      return searchConfigElement;
    }
    
    /**
@@ -1410,7 +1412,7 @@ public class AdvancedSearchBean
       if (customPropertyLookup == null)
       {
          customPropertyLookup = new HashMap<String, DataTypeDefinition>(7, 1.0f);
-         List<CustomProperty> customProps = getClientConfig().getCustomProperties();
+         List<CustomProperty> customProps = getSearchConfig().getCustomProperties();
          if (customProps != null)
          {
             DictionaryService dd = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDictionaryService();
@@ -1494,7 +1496,7 @@ public class AdvancedSearchBean
    private SearchService searchService;
    
    /** Client Config reference */
-   private ClientConfigElement clientConfigElement = null;
+   private AdvancedSearchConfigElement searchConfigElement = null;
    
    /** Progressive panel UI state */
    private Map<String, Boolean> panels = new HashMap(5, 1.0f);

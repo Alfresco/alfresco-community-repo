@@ -59,7 +59,7 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.QNameNodeMap;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.config.ClientConfigElement;
+import org.alfresco.web.config.ViewsConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIModeList;
@@ -103,8 +103,8 @@ public class ForumsBean implements IContextListener
    /** The NavigationBean bean reference */
    private NavigationBean navigator;
    
-   /** Client configuration object */
-   private ClientConfigElement clientConfig = null;
+   /** Views configuration object */
+   private ViewsConfigElement viewsConfig = null;
    
    /** Component references */
    private UIRichList forumsRichList;
@@ -220,9 +220,9 @@ public class ForumsBean implements IContextListener
       {
          // set the initial sort column and direction
          this.forumsRichList.setInitialSortColumn(
-               clientConfig.getDefaultSortColumn(PAGE_NAME_FORUMS));
+               this.viewsConfig.getDefaultSortColumn(PAGE_NAME_FORUMS));
          this.forumsRichList.setInitialSortDescending(
-               clientConfig.hasDescendingSort(PAGE_NAME_FORUMS));
+               this.viewsConfig.hasDescendingSort(PAGE_NAME_FORUMS));
       }
    }
    
@@ -277,9 +277,9 @@ public class ForumsBean implements IContextListener
       {
          // set the initial sort column and direction
          this.topicRichList.setInitialSortColumn(
-               clientConfig.getDefaultSortColumn(PAGE_NAME_TOPIC));
+               this.viewsConfig.getDefaultSortColumn(PAGE_NAME_TOPIC));
          this.topicRichList.setInitialSortDescending(
-               clientConfig.hasDescendingSort(PAGE_NAME_TOPIC));
+               this.viewsConfig.hasDescendingSort(PAGE_NAME_TOPIC));
       }
    }
    
@@ -334,9 +334,9 @@ public class ForumsBean implements IContextListener
       {
          // set the initial sort column and direction
          this.forumRichList.setInitialSortColumn(
-               clientConfig.getDefaultSortColumn(PAGE_NAME_FORUM));
+               this.viewsConfig.getDefaultSortColumn(PAGE_NAME_FORUM));
          this.forumRichList.setInitialSortDescending(
-               clientConfig.hasDescendingSort(PAGE_NAME_FORUM));
+               this.viewsConfig.hasDescendingSort(PAGE_NAME_FORUM));
       }
    }
    
@@ -554,9 +554,9 @@ public class ForumsBean implements IContextListener
          {
             // set the initial sort column and direction
             this.forumsRichList.setInitialSortColumn(
-                  clientConfig.getDefaultSortColumn(PAGE_NAME_FORUMS));
+                  this.viewsConfig.getDefaultSortColumn(PAGE_NAME_FORUMS));
             this.forumsRichList.setInitialSortDescending(
-                  clientConfig.hasDescendingSort(PAGE_NAME_FORUMS));
+                  this.viewsConfig.hasDescendingSort(PAGE_NAME_FORUMS));
          }
       }
       
@@ -567,9 +567,9 @@ public class ForumsBean implements IContextListener
          {
             // set the initial sort column and direction
             this.forumRichList.setInitialSortColumn(
-                  clientConfig.getDefaultSortColumn(PAGE_NAME_FORUM));
+                  this.viewsConfig.getDefaultSortColumn(PAGE_NAME_FORUM));
             this.forumRichList.setInitialSortDescending(
-                  clientConfig.hasDescendingSort(PAGE_NAME_FORUM));
+                  this.viewsConfig.hasDescendingSort(PAGE_NAME_FORUM));
          }
       }
       
@@ -580,9 +580,9 @@ public class ForumsBean implements IContextListener
          {
             // set the initial sort column and direction
             this.topicRichList.setInitialSortColumn(
-                  clientConfig.getDefaultSortColumn(PAGE_NAME_TOPIC));
+                  this.viewsConfig.getDefaultSortColumn(PAGE_NAME_TOPIC));
             this.topicRichList.setInitialSortDescending(
-                  clientConfig.hasDescendingSort(PAGE_NAME_TOPIC));
+                  this.viewsConfig.hasDescendingSort(PAGE_NAME_TOPIC));
          }
       }
       
@@ -611,7 +611,7 @@ public class ForumsBean implements IContextListener
       setForumsViewMode(viewMode);
       
       // get the default for the forum page
-      this.forumsPageSize = this.clientConfig.getDefaultPageSize(PAGE_NAME_FORUMS, 
+      this.forumsPageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_FORUMS, 
             this.forumsViewMode);
       
       if (logger.isDebugEnabled())
@@ -634,7 +634,7 @@ public class ForumsBean implements IContextListener
       setForumViewMode(viewMode);
       
       // get the default for the forum page
-      this.forumPageSize = this.clientConfig.getDefaultPageSize(PAGE_NAME_FORUM, 
+      this.forumPageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_FORUM, 
             this.forumViewMode);
       
       if (logger.isDebugEnabled())
@@ -657,7 +657,7 @@ public class ForumsBean implements IContextListener
       setTopicViewMode(viewMode);
       
       // change the default page size if necessary
-      this.topicPageSize = this.clientConfig.getDefaultPageSize(PAGE_NAME_TOPIC, 
+      this.topicPageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_TOPIC, 
             this.topicViewMode);
       
       if (logger.isDebugEnabled())
@@ -950,21 +950,23 @@ public class ForumsBean implements IContextListener
     */
    private void initFromClientConfig()
    {
-      this.clientConfig = Application.getClientConfig(FacesContext.getCurrentInstance());
+      this.viewsConfig = (ViewsConfigElement)Application.getConfigService(
+            FacesContext.getCurrentInstance()).getConfig("Views").
+            getConfigElement(ViewsConfigElement.CONFIG_ELEMENT_ID);
       
       // get the defaults for the forums page
-      this.forumsViewMode = this.clientConfig.getDefaultView(PAGE_NAME_FORUMS);
-      this.forumsPageSize = this.clientConfig.getDefaultPageSize(PAGE_NAME_FORUMS,
+      this.forumsViewMode = this.viewsConfig.getDefaultView(PAGE_NAME_FORUMS);
+      this.forumsPageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_FORUMS,
             this.forumsViewMode);
       
       // get the default for the forum page
-      this.forumViewMode = this.clientConfig.getDefaultView(PAGE_NAME_FORUM);
-      this.forumPageSize = this.clientConfig.getDefaultPageSize(PAGE_NAME_FORUM, 
+      this.forumViewMode = this.viewsConfig.getDefaultView(PAGE_NAME_FORUM);
+      this.forumPageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_FORUM, 
             this.forumViewMode);
       
       // get the default for the topic page
-      this.topicViewMode = this.clientConfig.getDefaultView(PAGE_NAME_TOPIC);
-      this.topicPageSize = this.clientConfig.getDefaultPageSize(PAGE_NAME_TOPIC, 
+      this.topicViewMode = this.viewsConfig.getDefaultView(PAGE_NAME_TOPIC);
+      this.topicPageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_TOPIC, 
             this.topicViewMode);
       
       if (logger.isDebugEnabled())

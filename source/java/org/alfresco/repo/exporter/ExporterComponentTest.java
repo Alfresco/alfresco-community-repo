@@ -231,6 +231,16 @@ public class ExporterComponentTest extends BaseSpringTest
 //          System.out.println("TestProgress: endACL: " + nodeRef);
         }
 
+        public void startReference(NodeRef nodeRef, QName childName)
+        {
+//          System.out.println("TestProgress: startReference: " + nodeRef);
+        }
+
+        public void endReference(NodeRef nodeRef)
+        {
+//          System.out.println("TestProgress: endReference: " + nodeRef);
+        }
+
     }
     
 }

@@ -15,4 +15,6 @@ public interface ExporterContext
     
     public NodeRef getExportOf();
     
+    public NodeRef getExportParent();
+    
 }

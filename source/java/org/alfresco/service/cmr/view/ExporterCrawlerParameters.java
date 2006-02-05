@@ -32,6 +32,7 @@ public class ExporterCrawlerParameters
     private Location exportFrom = null;
     private boolean crawlSelf = false;
     private boolean crawlChildNodes = true;
+    private boolean crawlAssociations = true;
     private boolean crawlContent = true;
     private boolean crawlNullProperties = true;
     private String[] excludeNamespaceURIs = new String[] { NamespaceService.REPOSITORY_VIEW_1_0_URI };
@@ -57,6 +58,26 @@ public class ExporterCrawlerParameters
         this.crawlChildNodes = crawlChildNodes;
     }
 
+    /**
+     * Crawl and export associations
+     * 
+     * @return  true => crawl associations
+     */
+    public boolean isCrawlAssociations()
+    {
+        return crawlAssociations;
+    }
+    
+    /**
+     * Sets whether to crawl associations
+     * 
+     * @param crawlAssociations
+     */
+    public void setCrawlAssociations(boolean crawlAssociations)
+    {
+        this.crawlAssociations = crawlAssociations;
+    }
+    
     /**
      * Crawl and export content properties
      * 

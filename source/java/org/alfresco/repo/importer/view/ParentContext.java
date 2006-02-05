@@ -23,7 +23,7 @@ import java.util.Set;
 import org.alfresco.repo.importer.ImportParent;
 import org.alfresco.repo.importer.Importer;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -80,14 +80,18 @@ public class ParentContext extends ElementContext
      * @param parent
      * @param childDef
      */
-    public ParentContext(QName elementName, NodeContext parent, ChildAssociationDefinition childDef)
+    public ParentContext(QName elementName, NodeContext parent, AssociationDefinition assocDef)
     {
         this(elementName, parent);
         
         TypeDefinition typeDef = parent.getTypeDefinition();
         if (typeDef != null)
         {
+            //
             // Ensure association type is valid for node parent
+            //
+            
+            // Build complete Type Definition
             Set<QName> allAspects = new HashSet<QName>();
             for (AspectDefinition typeAspect : parent.getTypeDefinition().getDefaultAspects())
             {
@@ -95,15 +99,17 @@ public class ParentContext extends ElementContext
             }
             allAspects.addAll(parent.getNodeAspects());
             TypeDefinition anonymousType = getDictionaryService().getAnonymousType(parent.getTypeDefinition().getName(), allAspects);
-            Map<QName, ChildAssociationDefinition> nodeAssociations = anonymousType.getChildAssociations();
-            if (nodeAssociations.containsKey(childDef.getName()) == false)
+            
+            // Determine if Association is valid for Type Definition
+            Map<QName, AssociationDefinition> nodeAssociations = anonymousType.getAssociations();
+            if (nodeAssociations.containsKey(assocDef.getName()) == false)
             {
-                throw new ImporterException("Association " + childDef.getName() + " is not valid for node " + parent.getTypeDefinition().getName());
+                throw new ImporterException("Association " + assocDef.getName() + " is not valid for node " + parent.getTypeDefinition().getName());
             }
         }
         
         parentRef = parent.getNodeRef();
-        assocType = childDef.getName();
+        assocType = assocDef.getName();
     }
     
     /* (non-Javadoc)

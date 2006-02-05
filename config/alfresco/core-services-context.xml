@@ -418,8 +418,11 @@
         </property>
     </bean>
 
-    <bean id="dictionaryBootstrap" class="org.alfresco.repo.dictionary.DictionaryBootstrap" init-method="bootstrap">
-        <property name="dictionaryDAO"><ref local="dictionaryDAO"/></property>
+    <bean id="dictionaryModelBootstrap" class="org.alfresco.repo.dictionary.DictionaryBootstrap" init-method="bootstrap" abstract="true">
+    	<property name="dictionaryDAO"><ref local="dictionaryDAO"/></property>
+    </bean>
+    
+    <bean id="dictionaryBootstrap" parent="dictionaryModelBootstrap">
         <property name="models">
             <list>
                 <value>alfresco/model/dictionaryModel.xml</value>

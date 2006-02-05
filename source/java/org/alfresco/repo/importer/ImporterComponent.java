@@ -31,6 +31,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -543,42 +544,49 @@ public class ImporterComponent
             ImportParent parentContext = context.getParentContext();
             NodeRef parentRef = parentContext.getParentRef();
             
-            // determine the child node reference
+            // determine the node reference to link to
             String uuid = context.getUUID();
-            if (uuid == null)
+            if (uuid == null || uuid.length() == 0)
             {
-                throw new ImporterException("Node reference does not resolve to a node");
+                throw new ImporterException("Node reference does not specify a reference to follow.");
             }
-            NodeRef childRef = new NodeRef(parentRef.getStoreRef(), uuid);
+            NodeRef referencedRef = new NodeRef(rootRef.getStoreRef(), uuid);
 
             // Note: do not link references that are defined in the root of the import
             if (!parentRef.equals(getRootRef()))
             {
                 // determine child assoc type
                 QName assocType = getAssocType(context);
-                
-                // determine child name
-                QName childQName = getChildName(context);
-                if (childQName == null)
+                AssociationDefinition assocDef = dictionaryService.getAssociation(assocType);
+                if (assocDef.isChild())
                 {
-                    String name = (String)nodeService.getProperty(childRef, ContentModel.PROP_NAME);
-                    if (name == null || name.length() == 0)
+                    // determine child name
+                    QName childQName = getChildName(context);
+                    if (childQName == null)
                     {
-                        throw new ImporterException("Cannot determine node reference child name");
+                        String name = (String)nodeService.getProperty(referencedRef, ContentModel.PROP_NAME);
+                        if (name == null || name.length() == 0)
+                        {
+                            throw new ImporterException("Cannot determine node reference child name");
+                        }
+                        String localName = QName.createValidLocalName(name);
+                        childQName = QName.createQName(assocType.getNamespaceURI(), localName);
                     }
-                    String localName = QName.createValidLocalName(name);
-                    childQName = QName.createQName(assocType.getNamespaceURI(), localName);
-                }
                 
-                // create the link
-                nodeService.addChild(parentRef, childRef, assocType, childQName);
-                reportNodeLinked(childRef, parentRef, assocType, childQName);
+                    // create the secondary link
+                    nodeService.addChild(parentRef, referencedRef, assocType, childQName);
+                    reportNodeLinked(referencedRef, parentRef, assocType, childQName);
+                }
+                else
+                {
+                    nodeService.createAssociation(parentRef, referencedRef, assocType);
+                    reportNodeLinked(parentRef, referencedRef, assocType, null);
+                }
             }
             
             // second, perform any specified udpates to the node
             updateStrategy.importNode(context);
-            
-            return childRef; 
+            return referencedRef; 
         }
         
         /**
@@ -620,6 +628,19 @@ public class ImporterComponent
         {
             behaviourFilter.enableBehaviours(nodeRef);
             ruleService.enableRules(nodeRef);
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.importer.Importer#resolvePath(java.lang.String)
+         */
+        public NodeRef resolvePath(String path)
+        {
+            NodeRef referencedRef = null;
+            if (path != null && path.length() > 0)
+            {
+                referencedRef = resolveImportedNodeRef(rootRef, path);
+            }
+            return referencedRef;
         }
         
         /* (non-Javadoc)
@@ -800,7 +821,7 @@ public class ImporterComponent
             
             return closestAssocType;
         }
-
+        
         /**
          * For the given import node, return the behaviours to disable during import
          * 
@@ -1347,7 +1368,7 @@ public class ImporterComponent
                         // do the update
                         Map<QName, Serializable> existingProperties = nodeService.getProperties(existingNodeRef);
                         Map<QName, Serializable> updateProperties = bindProperties(node);
-                        if (updateProperties != null)
+                        if (updateProperties != null && updateProperties.size() > 0)
                         {
                             existingProperties.putAll(updateProperties);
                             nodeService.setProperties(existingNodeRef, existingProperties);
@@ -1382,6 +1403,7 @@ public class ImporterComponent
                 return createNewStrategy.importNode(node);
             }
         }
+
     }
 
     /**

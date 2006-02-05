@@ -69,6 +69,8 @@ import org.xml.sax.helpers.AttributesImpl;
     private static final String AUTHORITY_LOCALNAME  = "authority";
     private static final String PERMISSION_LOCALNAME  = "permission";
     private static final String INHERITPERMISSIONS_LOCALNAME  = "inherit";
+    private static final String REFERENCE_LOCALNAME = "reference";
+    private static final String PATHREF_LOCALNAME = "pathref";
     private static QName VIEW_QNAME;
     private static QName VALUES_QNAME;
     private static QName VALUE_QNAME;
@@ -89,6 +91,8 @@ import org.xml.sax.helpers.AttributesImpl;
     private static QName AUTHORITY_QNAME;
     private static QName PERMISSION_QNAME;
     private static QName INHERITPERMISSIONS_QNAME;
+    private static QName REFERENCE_QNAME;
+    private static QName PATHREF_QNAME;
     private static final AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
     
     // Service dependencies
@@ -99,7 +103,7 @@ import org.xml.sax.helpers.AttributesImpl;
     
     // View context
     private ContentHandler contentHandler;
-    private Path exportNodePath;
+    private ExporterContext context;
     
 
     /**
@@ -138,6 +142,8 @@ import org.xml.sax.helpers.AttributesImpl;
         AUTHORITY_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, AUTHORITY_LOCALNAME, namespaceService);
         PERMISSION_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, PERMISSION_LOCALNAME, namespaceService);
         INHERITPERMISSIONS_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, INHERITPERMISSIONS_LOCALNAME, namespaceService);
+        REFERENCE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, REFERENCE_LOCALNAME, namespaceService);
+        PATHREF_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, PATHREF_LOCALNAME, namespaceService);
     }
     
     
@@ -148,7 +154,7 @@ import org.xml.sax.helpers.AttributesImpl;
     {
         try
         {
-            exportNodePath = nodeService.getPath(context.getExportOf());
+            this.context = context;
             contentHandler.startDocument();
             contentHandler.startPrefixMapping(NamespaceService.REPOSITORY_VIEW_PREFIX, NamespaceService.REPOSITORY_VIEW_1_0_URI);
             contentHandler.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, VIEW_LOCALNAME, VIEW_QNAME.toPrefixString(), EMPTY_ATTRIBUTES);
@@ -176,7 +182,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
             // export of
             contentHandler.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, EXPORTOF_LOCALNAME, EXPORTOF_QNAME.toPrefixString(), EMPTY_ATTRIBUTES);
-            String path = exportNodePath.toPrefixString(namespaceService);
+            String path = nodeService.getPath(context.getExportOf()).toPrefixString(namespaceService);
             contentHandler.characters(path.toCharArray(), 0, path.length());
             contentHandler.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, EXPORTOF_LOCALNAME, EXPORTOF_QNAME.toPrefixString());
             
@@ -474,7 +480,7 @@ import org.xml.sax.helpers.AttributesImpl;
             // convert node references to paths
             if (value instanceof NodeRef)
             {
-                Path nodeRefPath = createRelativePath(nodeRef, (NodeRef)value);
+                Path nodeRefPath = createRelativePath(context.getExportOf(), nodeRef, (NodeRef)value);
                 value = (nodeRefPath == null) ? null : nodeRefPath.toPrefixString(namespaceService);
             }
             
@@ -553,7 +559,7 @@ import org.xml.sax.helpers.AttributesImpl;
                 // convert node references to paths
                 if (value instanceof NodeRef)
                 {
-                    value = createRelativePath(nodeRef, (NodeRef)value).toPrefixString(namespaceService);
+                    value = createRelativePath(context.getExportOf(), nodeRef, (NodeRef)value).toPrefixString(namespaceService);
                 }
                 
                 // output value
@@ -643,6 +649,44 @@ import org.xml.sax.helpers.AttributesImpl;
             throw new ExporterException("Failed to process end associations", e);
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.Exporter#startReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    public void startReference(NodeRef nodeRef, QName childName)
+    {
+        try
+        {
+            Path path = createRelativePath(context.getExportParent(), context.getExportParent(), nodeRef);            
+            AttributesImpl attrs = new AttributesImpl(); 
+            attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, PATHREF_LOCALNAME, PATHREF_QNAME.toPrefixString(), null, path.toPrefixString(namespaceService));
+            if (childName != null)
+            {
+                attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, CHILDNAME_LOCALNAME, CHILDNAME_QNAME.toPrefixString(), null, childName.toPrefixString(namespaceService));
+            }
+            contentHandler.startElement(REFERENCE_QNAME.getNamespaceURI(), REFERENCE_LOCALNAME, toPrefixString(REFERENCE_QNAME), attrs);
+        }
+        catch (SAXException e)
+        {
+            throw new ExporterException("Failed to process start reference", e);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.Exporter#endReference(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public void endReference(NodeRef nodeRef)
+    {
+        try
+        {
+            contentHandler.endElement(REFERENCE_QNAME.getNamespaceURI(), REFERENCE_LOCALNAME, toPrefixString(REFERENCE_QNAME));
+        }
+        catch (SAXException e)
+        {
+            throw new ExporterException("Failed to process end reference", e);
+        }
+    }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#warning(java.lang.String)
@@ -685,7 +729,7 @@ import org.xml.sax.helpers.AttributesImpl;
      * @param toRef  to reference
      * @return  path
      */    
-    private Path createRelativePath(NodeRef fromRef, NodeRef toRef)
+    private Path createRelativePath(NodeRef rootRef, NodeRef fromRef, NodeRef toRef)
     {
         // Check that item exists first
         if (!nodeService.exists(toRef))
@@ -694,6 +738,7 @@ import org.xml.sax.helpers.AttributesImpl;
             return null;
         }
         
+        Path rootPath = nodeService.getPath(rootRef);
         Path fromPath = nodeService.getPath(fromRef);
         Path toPath = nodeService.getPath(toRef);
         Path relativePath = null;
@@ -720,19 +765,19 @@ import org.xml.sax.helpers.AttributesImpl;
             {
                 // Determine if from node is relative to export tree
                 int i = 0;
-                while (i < exportNodePath.size() && i < fromPath.size() && exportNodePath.get(i).equals(fromPath.get(i)))
+                while (i < rootPath.size() && i < fromPath.size() && rootPath.get(i).equals(fromPath.get(i)))
                 {
                     i++;
                 }
-                if (i == exportNodePath.size())
+                if (i == rootPath.size())
                 {
                     // Determine if to node is relative to export tree
                     i = 0;
-                    while (i < exportNodePath.size() && i < toPath.size() && exportNodePath.get(i).equals(toPath.get(i)))
+                    while (i < rootPath.size() && i < toPath.size() && rootPath.get(i).equals(toPath.get(i)))
                     {
                         i++;
                     }
-                    if (i == exportNodePath.size())
+                    if (i == rootPath.size())
                     {
                         // build relative path between from and to
                         relativePath = new Path();
@@ -756,11 +801,11 @@ import org.xml.sax.helpers.AttributesImpl;
         }
         catch(Throwable e)
         {
-            String msg = "Failed to determine relative path: export path=" + exportNodePath + "; from path=" + fromPath + "; to path=" + toPath;
+            String msg = "Failed to determine relative path: root path=" + rootPath + "; from path=" + fromPath + "; to path=" + toPath;
             throw new ExporterException(msg, e);
         }
         
         return relativePath;
     }
-    
+
 }

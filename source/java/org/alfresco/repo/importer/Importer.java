@@ -68,6 +68,14 @@ public interface Importer
     public NodeRef importNode(ImportNode node);
 
     /**
+     * Resolve path within context of root reference
+     * 
+     * @param path  the path to resolve
+     * @return  node reference
+     */
+    public NodeRef resolvePath(String path);
+    
+    /**
      * Signal completion of node import
      * 
      * @param nodeRef  the node ref of the imported node

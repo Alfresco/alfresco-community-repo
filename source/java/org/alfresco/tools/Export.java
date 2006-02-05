@@ -615,6 +615,22 @@ public final class Export extends Tool
         {
         }
 
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.Exporter#startReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+         */
+        public void startReference(NodeRef nodeRef, QName childName)
+        {
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.Exporter#endReference(org.alfresco.service.cmr.repository.NodeRef)
+         */
+        public void endReference(NodeRef nodeRef)
+        {
+            // TODO Auto-generated method stub
+            
+        }
+
     }
 
 }

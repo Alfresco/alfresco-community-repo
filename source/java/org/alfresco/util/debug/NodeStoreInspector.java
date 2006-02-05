@@ -62,6 +62,32 @@ public class NodeStoreInspector
         
         return builder.toString();
     }
+
+    /**
+     * Dumps the contents of a node 
+     * 
+     * @param nodeService
+     * @param nodeRef
+     * @return
+     */
+    public static String dumpNode(NodeService nodeService, NodeRef nodeRef)
+    {
+        StringBuilder builder = new StringBuilder();
+        
+        if (nodeService.exists(nodeRef) == true)
+        {
+            builder.append(outputNode(0, nodeService, nodeRef));            
+        }
+        else
+        {
+            builder.
+                append("The node ").
+                append(nodeRef.toString()).
+                append(" does not exist.");
+        }
+        
+        return builder.toString();
+    }
     
     /**
      * Output the node 

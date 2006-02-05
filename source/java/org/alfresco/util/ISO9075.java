@@ -64,7 +64,7 @@ public class ISO9075
         {
             return toEncode;
         }
-        else if (XMLChar.isValidName(toEncode) && (toEncode.indexOf("_x") == -1))
+        else if (XMLChar.isValidName(toEncode) && (toEncode.indexOf("_x") == -1) && (toEncode.indexOf(':') == -1))
         {
             return toEncode;
         }

@@ -68,6 +68,20 @@ public interface Exporter
     public void endNode(NodeRef nodeRef);
     
     /**
+     * Start export of node reference
+     * 
+     * @param nodeRef  the node reference
+     */
+    public void startReference(NodeRef nodeRef, QName childName);
+    
+    /**
+     * End export of node reference
+     * 
+     * @param nodeRef  the node reference
+     */
+    public void endReference(NodeRef nodeRef);
+    
+    /**
      * Start export of aspects
      * 
      * @param nodeRef
@@ -97,14 +111,27 @@ public interface Exporter
      */
     public void endAspects(NodeRef nodeRef);
 
-    
+    /**
+     * Start export of ACL
+     * 
+     * @param nodeRef  for node reference
+     */
     public void startACL(NodeRef nodeRef);
 
+    /**
+     * Export permission
+     * 
+     * @param nodeRef  for node reference
+     * @param permission  the permission
+     */
     public void permission(NodeRef nodeRef, AccessPermission permission);
     
+    /**
+     * End export of ACL
+     * 
+     * @param nodeRef  for node reference
+     */
     public void endACL(NodeRef nodeRef);
-    
-    
     
     /**
      * Start export of properties

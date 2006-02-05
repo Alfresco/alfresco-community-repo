@@ -310,6 +310,28 @@ import org.alfresco.service.namespace.QName;
             exporter.endAssocs(nodeRef);
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.Exporter#startReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    public void startReference(NodeRef nodeRef, QName childName)
+    {
+        for (Exporter exporter : exporters)
+        {
+            exporter.startReference(nodeRef, childName);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.Exporter#endReference(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public void endReference(NodeRef nodeRef)
+    {
+        for (Exporter exporter : exporters)
+        {
+            exporter.endReference(nodeRef);
+        }
+    }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#warning(java.lang.String)

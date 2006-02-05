@@ -26,7 +26,6 @@ import org.alfresco.repo.importer.Importer;
 import org.alfresco.repo.importer.Parser;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -60,6 +59,7 @@ public class ViewParser implements Parser
     private static final String VIEW_ACCESS_STATUS_ATTR = "access";
     private static final String VIEW_ID_ATTR = "id";
     private static final String VIEW_IDREF_ATTR = "idref";
+    private static final String VIEW_PATHREF_ATTR = "pathref";
     private static final QName VIEW_METADATA = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "metadata");
     private static final QName VIEW_VALUE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "value");
     private static final QName VIEW_VALUES_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "values");
@@ -262,14 +262,10 @@ public class ViewParser implements Parser
                     processProperty(xpp, ((PropertyDefinition)def).getName(), parserContext);
                     return;
                 }
-                else if (def instanceof ChildAssociationDefinition)
+                else if (def instanceof AssociationDefinition)
                 {
-                    processStartChildAssoc(xpp, (ChildAssociationDefinition)def, parserContext);
+                    processStartAssoc(xpp, (AssociationDefinition)def, parserContext);
                     return;
-                }
-                else
-                {
-                    // TODO: general association
                 }
             }
             else if (element instanceof NodeItemContext)
@@ -298,12 +294,7 @@ public class ViewParser implements Parser
                     {
                         throw new ImporterException("Association name " + defName + " is not valid; cannot find in Repository dictionary");
                     }
-                    // TODO: Handle general associations...  
-                    if (!(def instanceof ChildAssociationDefinition))
-                    {
-                        throw new ImporterException("Unsupported operation: The association " + defName + " cannot be imported - only child associations are supported at this time");
-                    }
-                    processStartChildAssoc(xpp, (ChildAssociationDefinition)def, parserContext);
+                    processStartAssoc(xpp, (AssociationDefinition)def, parserContext);
                 }
                 else if (itemName.equals(VIEW_ACL))
                 {
@@ -414,10 +405,18 @@ public class ViewParser implements Parser
         throws XmlPullParserException, IOException
     {
         ParentContext parent = (ParentContext)parserContext.elementStack.peek();
+        NodeContext node = new NodeContext(refName, parent, null);
+        node.setReference(true);
         
         // Extract Import scoped reference Id if explicitly defined
-        String uuid = null;
         String idRef = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_IDREF_ATTR);
+        String pathRef = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_PATHREF_ATTR);
+
+        if ((idRef != null && idRef.length() > 0) && (pathRef != null && pathRef.length() > 0))
+        {
+            // Do not support both IDREF and PATHREF
+            throw new ImporterException("Only one of " + VIEW_IDREF_ATTR + " or " + VIEW_PATHREF_ATTR + " can be specified.");
+        }
         if (idRef != null && idRef.length() > 0)
         {
             // retrieve uuid from previously imported node
@@ -426,15 +425,16 @@ public class ViewParser implements Parser
             {
                 throw new ImporterException("Cannot find node referenced by id " + idRef);
             }
-            uuid = nodeRef.getId();
+            node.setUUID(nodeRef.getId());
         }
-        
-        // Create reference
-        NodeContext node = new NodeContext(refName, parent, null);
-        node.setReference(true);
-        if (uuid != null)
+        else if (pathRef != null && pathRef.length() > 0)
         {
-            node.setUUID(uuid);
+            NodeRef referencedRef = parserContext.importer.resolvePath(pathRef);
+            if (referencedRef == null)
+            {
+                throw new ImporterException("Cannot find node referenced by path " + pathRef);
+            }
+            node.setUUID(referencedRef.getId());
         }
         
         // Extract child name if explicitly defined
@@ -705,22 +705,22 @@ public class ViewParser implements Parser
     }
 
     /**
-     * Process start of child association definition
+     * Process start of association definition
      * 
      * @param xpp
-     * @param childAssocDef
+     * @param AssocDef
      * @param contextStack
      * @throws XmlPullParserException
      * @throws IOException
      */
-    private void processStartChildAssoc(XmlPullParser xpp, ChildAssociationDefinition childAssocDef, ParserContext parserContext)
+    private void processStartAssoc(XmlPullParser xpp, AssociationDefinition assocDef, ParserContext parserContext)
         throws XmlPullParserException, IOException
     {
         NodeContext node = peekNodeContext(parserContext.elementStack);
         importNode(parserContext, node);
     
         // Construct Child Association Context
-        ParentContext parent = new ParentContext(childAssocDef.getName(), node, childAssocDef);
+        ParentContext parent = new ParentContext(assocDef.getName(), node, assocDef);
         parserContext.elementStack.push(parent);
         
         if (logger.isDebugEnabled())
@@ -750,7 +750,7 @@ public class ViewParser implements Parser
             }
             else if (element instanceof ParentContext)
             {
-                processEndChildAssoc(parserContext, (ParentContext)element);
+                processEndAssoc(parserContext, (ParentContext)element);
             }
             else if (element instanceof MetaDataContext)
             {
@@ -776,7 +776,7 @@ public class ViewParser implements Parser
      * 
      * @param context
      */
-    private void processEndChildAssoc(ParserContext parserContext, ParentContext parent)
+    private void processEndAssoc(ParserContext parserContext, ParentContext parent)
     {
     }
 

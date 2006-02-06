@@ -130,6 +130,24 @@ public class ClientInfo
     }
 
     /**
+     * Return the password as a character array
+     * 
+     * @return char[]
+     */
+    public final char[] getPasswordAsCharArray()
+    {
+        char[] cpwd = null;
+
+        if (m_password != null)
+        {
+            String pwd = new String(m_password);
+            cpwd = new char[pwd.length()];
+            pwd.getChars(0, pwd.length(), cpwd, 0);
+        }
+        return cpwd;
+    }
+
+    /**
      * Determine if the client has specified an ANSI password
      * 
      * @return boolean

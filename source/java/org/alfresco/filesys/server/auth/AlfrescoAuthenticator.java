@@ -21,6 +21,8 @@ import java.util.Random;
 
 import javax.transaction.UserTransaction;
 
+import net.sf.acegisecurity.Authentication;
+
 import org.alfresco.config.ConfigElement;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.config.InvalidConfigurationException;
@@ -139,7 +141,10 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
         {
             // Use the existing authentication token
             
-            m_authComponent.setCurrentUser(client.getUserName());
+            if ( client.isGuest())
+                m_authComponent.setGuestUserAsCurrentUser();
+            else
+                m_authComponent.setCurrentUser(client.getUserName());
 
             // Debug
             
@@ -151,11 +156,36 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
             return client.getLogonType() != ClientInfo.LogonGuest ? AUTH_ALLOW : AUTH_GUEST; 
         }
         
-        // Check if MD4 or passthru mode is configured
+        // Check if this is a guest logon
         
         int authSts = AUTH_DISALLOW;
         
-        if ( m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
+        if ( client.isGuest())
+        {
+            // Check if guest logons are allowed
+            
+            if ( allowGuest() == false)
+                return AUTH_DISALLOW;
+            
+            //  Get a guest authentication token
+            
+            m_authComponent.setGuestUserAsCurrentUser();
+            Authentication authToken = m_authComponent.getCurrentAuthentication();
+            
+            client.setAuthenticationToken( authToken);
+            
+            // Set the home folder for the guest user
+            
+            getHomeFolderForUser( client);
+            
+            // Indicate logged on as guest
+            
+            authSts = AUTH_GUEST;
+        }
+        
+        // Check if MD4 or passthru mode is configured
+        
+        else if ( m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
         {
             // Perform local MD4 password check
             

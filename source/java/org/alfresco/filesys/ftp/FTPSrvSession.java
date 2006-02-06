@@ -31,15 +31,16 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.auth.ClientInfo;
-import org.alfresco.filesys.server.auth.SrvAuthenticator;
 import org.alfresco.filesys.server.auth.acl.AccessControl;
 import org.alfresco.filesys.server.auth.acl.AccessControlManager;
 import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.server.core.SharedDeviceList;
+import org.alfresco.filesys.server.filesys.AccessDeniedException;
 import org.alfresco.filesys.server.filesys.AccessMode;
 import org.alfresco.filesys.server.filesys.DiskDeviceContext;
 import org.alfresco.filesys.server.filesys.DiskFullException;
@@ -53,10 +54,21 @@ import org.alfresco.filesys.server.filesys.FileStatus;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.server.filesys.NotifyChange;
 import org.alfresco.filesys.server.filesys.SearchContext;
+import org.alfresco.filesys.server.filesys.SrvDiskInfo;
 import org.alfresco.filesys.server.filesys.TreeConnection;
 import org.alfresco.filesys.server.filesys.TreeConnectionHash;
+import org.alfresco.filesys.smb.server.repo.ContentContext;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import com.sun.star.uno.RuntimeException;
 
 /**
  * FTP Server Session Class
@@ -333,7 +345,10 @@ public class FTPSrvSession extends SrvSession implements Runnable
         // Initialize the current working directory using the root path
 
         m_cwd = new FTPPath(rootPath);
-        m_cwd.setSharedDevice(getShareList(), this);
+        if ( rootPath.hasSharedDevice())
+            m_cwd.setSharedDevice( rootPath.getSharedDevice());
+        else
+            m_cwd.setSharedDevice(getShareList(), this);
     }
 
     /**
@@ -363,7 +378,15 @@ public class FTPSrvSession extends SrvSession implements Runnable
      */
     protected final FTPPath generatePathForRequest(FTPRequest req, boolean filePath, boolean checkExists)
     {
-
+        // Use the global share list for normal connections and the per session list for guest access
+        
+        SharedDeviceList shareList = null;
+        
+        if ( getClientInformation().isGuest())
+            shareList = getDynamicShareList();
+        else
+            shareList = getShareList();
+        
         // Convert the path to an FTP format path
 
         String path = convertToFTPSeperators(req.getArgument());
@@ -412,7 +435,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
             // Find the associated shared device
 
-            if (ftpPath.setSharedDevice(getShareList(), this) == false)
+            if (ftpPath.setSharedDevice( shareList, this) == false)
                 return null;
         }
         else
@@ -439,7 +462,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
                     // Remove the last directory from the path
 
                     m_cwd.removeDirectory();
-                    m_cwd.setSharedDevice(getShareList(), this);
+                    m_cwd.setSharedDevice( shareList, this);
                     return m_cwd;
                 }
                 else
@@ -477,7 +500,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
             // Find the associated shared device, if not already set
 
-            if (ftpPath.hasSharedDevice() == false && ftpPath.setSharedDevice(getShareList(), this) == false)
+            if (ftpPath.hasSharedDevice() == false && ftpPath.setSharedDevice( shareList, this) == false)
                 return null;
         }
 
@@ -544,6 +567,11 @@ public class FTPSrvSession extends SrvSession implements Runnable
             }
             catch (Exception ex)
             {
+                // DEBUG
+                
+                if ( logger.isErrorEnabled())
+                    logger.error("Error generating FTP path", ex);
+                
                 ftpPath = null;
             }
         }
@@ -731,8 +759,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     {
 
         // Check if the client information has been set, this indicates a user
-        // command has been
-        // received
+        // command has been received
 
         if (hasClientInformation() == false)
         {
@@ -743,76 +770,141 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
         // Check for an anonymous login, accept any password string
 
-        if (getClientInformation().isGuest())
+        ClientInfo cInfo = getClientInformation();
+        
+        if (cInfo.isGuest())
         {
-
-            // Save the anonymous login password string
-
-            getClientInformation().setPassword(req.getArgument());
-
-            // Accept the login
-
-            setLoggedOn(true);
-            sendFTPResponse(230, "User logged in, proceed");
-
-            // DEBUG
-
-            if (logger.isDebugEnabled() && hasDebug(DBG_STATE))
-                logger.debug("Anonymous login, info=" + req.getArgument());
-        }
-
-        // Validate the user
-
-        else
-        {
-
-            // Get the client information and store the received plain text
-            // password
-
-            getClientInformation().setPassword(req.getArgument());
-
-            // Authenticate the user
-
-            SrvAuthenticator auth = getServer().getConfiguration().getAuthenticator();
-
-            int access = auth.authenticateUserPlainText(getClientInformation(), this);
-
-            if (access == SrvAuthenticator.AUTH_ALLOW)
+            if ( getFTPServer().allowAnonymous() == true)
             {
-
-                // User successfully logged on
-
-                sendFTPResponse(230, "User logged in, proceed");
-                setLoggedOn(true);
-
-                // DEBUG
-
-                if (logger.isDebugEnabled() && hasDebug(DBG_STATE))
-                    logger.debug("User " + getClientInformation().getUserName() + ", logon successful");
+                // Authenticate as the guest user
+                
+                AuthenticationComponent authComponent = getServer().getConfiguration().getAuthenticationComponent();
+                cInfo.setUserName( authComponent.getGuestUserName());
             }
             else
             {
-
                 // Return an access denied error
-
+    
                 sendFTPResponse(530, "Access denied");
-
+    
                 // DEBUG
-
+    
                 if (logger.isDebugEnabled() && hasDebug(DBG_STATE))
-                    logger.debug("User " + getClientInformation().getUserName() + ", logon failed");
-
+                    logger.debug("Anonymous logon not allowed");
+    
                 // Close the connection
-
+    
                 closeSession();
             }
         }
 
-        // If the user has successfully logged on to the FTP server then inform
-        // listeners
+        // Get the client information and store the received plain text password
+    
+        cInfo.setPassword(req.getArgument());
 
-        if (isLoggedOn())
+        // Use the normal authentication service as we have the plaintext password
+        
+        AuthenticationService authService = getServer().getConfiguration().getAuthenticationService();
+        
+        try
+        {
+            // Authenticate the user
+
+            if ( cInfo.isGuest())
+            {
+                // Authenticate as the guest user
+                
+                authService.authenticateAsGuest();
+            }
+            else
+            {
+                // Authenticate as a normal user
+
+                authService.authenticate( cInfo.getUserName(), cInfo.getPasswordAsCharArray());
+            }
+
+            // User successfully logged on
+
+            sendFTPResponse(230, "User logged in, proceed");
+            setLoggedOn(true);
+
+            // DEBUG
+
+            if (logger.isDebugEnabled() && hasDebug(DBG_STATE))
+                logger.debug("User " + getClientInformation().getUserName() + ", logon successful");
+        }
+        catch (org.alfresco.repo.security.authentication.AuthenticationException ex)
+        {
+            // DEBUG
+            
+            if ( logger.isDebugEnabled())
+                logger.debug("Logon failed", ex);
+        }
+
+        // Check if the logon was successful
+        
+        if ( isLoggedOn() == true)
+        {
+            // If the user has successfully logged on to the FTP server then inform listeners
+
             getFTPServer().sessionLoggedOn(this);
+            
+            // If this is a guest logon then we need to set the root folder to the guest user home folder
+            // as guest is not allowed access to other areas
+            
+            if ( cInfo.isGuest())
+            {
+                // Generate a dynamic share with the guest users home folder as the root
+                
+                DiskSharedDevice guestShare = createHomeDiskShare( cInfo);
+                addDynamicShare( guestShare);
+                
+                // Set the root path for the guest logon to the guest share
+                
+                StringBuilder rootPath = new StringBuilder();
+                
+                rootPath.append(FTP_SEPERATOR);
+                rootPath.append( guestShare.getName());
+                rootPath.append(FTP_SEPERATOR);
+                
+                FTPPath guestRoot = null;
+                
+                try 
+                {
+                    // Set the root path for this FTP session
+
+                    guestRoot = new FTPPath( rootPath.toString());
+                    guestRoot.setSharedDevice( guestShare);
+                    setRootPath( guestRoot);
+                }
+                catch ( InvalidPathException ex)
+                {
+                    if ( logger.isErrorEnabled())
+                        logger.error("Error setting guest FTP root path", ex);
+                }
+                
+                // DEBUG
+
+                if (logger.isDebugEnabled() && hasDebug(DBG_STATE))
+                    logger.debug("  Using root path " + guestRoot);
+            }
+        }
+        else
+        {
+
+            // Return an access denied error
+
+            sendFTPResponse(530, "Access denied");
+
+            // DEBUG
+
+            if (logger.isDebugEnabled() && hasDebug(DBG_STATE))
+                logger.debug("User " + getClientInformation().getUserName() + ", logon failed");
+
+            // Close the connection
+
+            closeSession();
+        }
     }
 
     /**
@@ -2045,9 +2137,19 @@ public class FTPSrvSession extends SrvSession implements Runnable
             if (logger.isDebugEnabled() && hasDebug(DBG_FILEIO))
                 logger.debug(" Transfer complete, file closed");
         }
+        catch( AccessDeniedException ex)
+        {
+            // DEBUG
+
+            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
+                logger.debug(" Access denied", ex);
+
+            // Session does not have write access to the filesystem
+
+            sendFTPResponse(550, "Access denied");
+        }
         catch (SocketException ex)
         {
-
             // DEBUG
 
             if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
@@ -2093,13 +2195,13 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
             if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
                 logger.debug(" Error during transfer", ex);
-            ex.printStackTrace();
 
             // Indicate that there was an error during transmission of the file
             // data
 
             sendFTPResponse(426, "Error during transmission");
-        } finally
+        }
+        finally
         {
 
             // Close the network file
@@ -2215,6 +2317,17 @@ public class FTPSrvSession extends SrvSession implements Runnable
                         + req.getArgument() + (sts == FileStatus.NotExist ? " not available" : " is a directory"));
                 return;
             }
+        }
+        catch (AccessDeniedException ex)
+        {
+            // DEBUG
+
+            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
+                logger.debug(" Access denied", ex);
+
+            // Session does not have write access to the filesystem
+
+            sendFTPResponse(550, "Access denied");
         }
         catch (Exception ex)
         {
@@ -2444,7 +2557,8 @@ public class FTPSrvSession extends SrvSession implements Runnable
         {
             sendFTPResponse(450, "File action not taken");
             return;
-        } finally
+        }
+        finally
         {
 
             // Clear the rename details
@@ -2859,8 +2973,14 @@ public class FTPSrvSession extends SrvSession implements Runnable
         {
 
             // The first level of directories are mapped to the available shares
+            // Guest users only see their own list of shares
 
-            SharedDeviceList shares = getShareList();
+            SharedDeviceList shares = null;
+            if ( getClientInformation().isGuest())
+                shares = getDynamicShareList();
+            else
+                getShareList();
+            
             if (shares != null)
             {
 
@@ -3043,10 +3163,11 @@ public class FTPSrvSession extends SrvSession implements Runnable
         if (tree == null)
         {
 
-            // Create a new tree connection
+            // Create a new tree connection, do not add dynamic shares to the connection cache
 
             tree = new TreeConnection(share);
-            m_connections.addConnection(tree);
+            if ( share.isTemporary() == false)
+                m_connections.addConnection(tree);
 
             // Set the access permission for the shared filesystem
 
@@ -3068,6 +3189,73 @@ public class FTPSrvSession extends SrvSession implements Runnable
         return tree;
     }
 
+    /**
+     * Create a disk share for the home folder
+     * 
+     * @param client ClientInfo
+     * @return DiskSharedDevice
+     */
+    private final DiskSharedDevice createHomeDiskShare(ClientInfo client)
+    {
+        // Check if the home folder has been set for the user
+        
+        if ( client.hasHomeFolder() == false)
+        {
+            // Get the required services
+            
+            NodeService nodeService = getServer().getConfiguration().getNodeService();
+            PersonService personService = getServer().getConfiguration().getPersonService();
+            TransactionService transService = getServer().getConfiguration().getTransactionService();
+            
+            // Get the home folder for the user
+            
+            UserTransaction tx = transService.getUserTransaction();
+            NodeRef homeSpaceRef = null;
+            
+            try
+            {
+                tx.begin();
+                homeSpaceRef = (NodeRef) nodeService.getProperty( personService.getPerson(client.getUserName()),
+                        ContentModel.PROP_HOMEFOLDER);
+                client.setHomeFolder( homeSpaceRef);
+                tx.commit();
+            }
+            catch (Throwable ex)
+            {
+                try
+                {
+                    tx.rollback();
+                }
+                catch (Exception ex2)
+                {
+                    logger.error("Failed to rollback transaction", ex2);
+                }
+                
+                if(ex instanceof RuntimeException)
+                {
+                    throw (RuntimeException)ex;
+                }
+                else
+                {
+                    throw new RuntimeException("Failed to get home folder", ex);
+                }
+            }
+        }
+        
+        //  Create the disk driver and context
+        
+        DiskInterface diskDrv = getServer().getConfiguration().getDiskInterface();
+        DiskDeviceContext diskCtx = new ContentContext("", "", client.getHomeFolder());
+
+        //  Default the filesystem to look like an 80Gb sized disk with 90% free space
+
+        diskCtx.setDiskInformation(new SrvDiskInfo(2560, 64, 512, 2304));
+        
+        //  Create a temporary shared device for the users home directory
+        
+        return new DiskSharedDevice( client.getUserName(), diskDrv, diskCtx, SharedDevice.Temporary);
+    }
+    
     /**
      * Start the FTP session in a seperate thread
      */
@@ -3351,24 +3539,20 @@ public class FTPSrvSession extends SrvSession implements Runnable
                                 + FTPCommand.getCommandName(ftpReq.isCommand()) + " in " + duration + "ms");
                 }
 
-                // Check for an active transaction, and commit it
+                // Commit, or rollback, any active user transaction
                 
-                if ( hasUserTransaction())
+                try
                 {
-                    try
-                    {
-                        // Commit the transaction
+                    // Commit or rollback the transaction
 
-                        UserTransaction trans = getUserTransaction();
-                        trans.commit();
-                    }
-                    catch ( Exception ex)
-                    {
-                        // Debug
-                        
-                        if ( logger.isDebugEnabled())
-                            logger.debug("Error committing transaction", ex);
-                    }
+                    endTransaction();
+                }
+                catch ( Exception ex)
+                {
+                    // Debug
+                    
+                    if ( logger.isDebugEnabled())
+                        logger.debug("Error committing transaction", ex);
                 }
                 
             } // end while state

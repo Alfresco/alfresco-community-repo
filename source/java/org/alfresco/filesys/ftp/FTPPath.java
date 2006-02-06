@@ -345,6 +345,18 @@ public class FTPPath
     }
 
     /**
+     * Set the shared device
+     * 
+     * @param share DiskSharedDevice
+     * @return boolean
+     */
+    public final boolean setSharedDevice(DiskSharedDevice share)
+    {
+        m_shareDev = share;
+        return true;
+    }
+    
+    /**
      * Build an FTP path to the specified file
      * 
      * @param fname String

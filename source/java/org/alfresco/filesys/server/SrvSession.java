@@ -18,6 +18,8 @@ package org.alfresco.filesys.server;
 
 import java.net.InetAddress;
 
+import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -479,9 +481,27 @@ public abstract class SrvSession
         boolean created = false;
         
         // If there is an active transaction check that it is the required type
-        
+
         if ( m_transaction != null)
         {
+            // Check if the current transaction is marked for rollback
+            
+            try
+            {
+                
+                if ( m_transaction.getStatus() == Status.STATUS_MARKED_ROLLBACK ||
+                     m_transaction.getStatus() == Status.STATUS_ROLLEDBACK ||
+                     m_transaction.getStatus() == Status.STATUS_ROLLING_BACK)
+                {
+                    //  Rollback the current transaction
+                    
+                    m_transaction.rollback();
+                }
+            }
+            catch ( SystemException ex)
+            {
+            }
+            
             // Check if the transaction is a write transaction, if write has been requested
             
             if ( readOnly == false && m_readOnlyTrans == true)
@@ -530,6 +550,48 @@ public abstract class SrvSession
         return created;
     }
     
+    /**
+     * End a transaction by either committing or rolling back
+     * 
+     * @exception AlfrescoRuntimeException
+     */
+    public final void endTransaction()
+        throws AlfrescoRuntimeException
+    {
+        // Check if there is an active transaction
+        
+        if ( m_transaction != null)
+        {
+            try
+            {
+                // Commit or rollback the transaction
+                
+                if ( m_transaction.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+                {
+                    // Transaction is marked for rollback
+                    
+                    m_transaction.rollback();
+                }
+                else
+                {
+                    // Commit the transaction
+                    
+                    m_transaction.commit();
+                }
+            }
+            catch ( Exception ex)
+            {
+                throw new AlfrescoRuntimeException("Failed to end transaction", ex);
+            }
+            finally
+            {
+                // Clear the current transaction
+                
+                m_transaction = null;
+        }
+    }
+    
+    }
     /**
      * Determine if the session has an active transaction
      * 

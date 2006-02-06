@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -68,7 +67,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Kevin Roast
  */
-public class TemplateContentServlet extends HttpServlet
+public class TemplateContentServlet extends BaseServlet
 {
    private static final String MIMETYPE_HTML = "text/html";
 
@@ -94,7 +93,7 @@ public class TemplateContentServlet extends HttpServlet
       if (logger.isDebugEnabled())
          logger.debug("Processing URL: " + uri + (req.getQueryString() != null ? ("?" + req.getQueryString()) : ""));
       
-      AuthenticationStatus status = ServletHelper.servletAuthenticate(req, res, getServletContext());
+      AuthenticationStatus status = servletAuthenticate(req, res);
       if (status == AuthenticationStatus.Failure)
       {
          return;
@@ -123,7 +122,7 @@ public class TemplateContentServlet extends HttpServlet
       }
       
       // get the services we need to retrieve the content
-      ServiceRegistry serviceRegistry = ServletHelper.getServiceRegistry(getServletContext());
+      ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
       NodeService nodeService = serviceRegistry.getNodeService();
       TemplateService templateService = serviceRegistry.getTemplateService();
       PermissionService permissionService = serviceRegistry.getPermissionService();
@@ -132,7 +131,7 @@ public class TemplateContentServlet extends HttpServlet
       if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED ||
           (templateRef != null && permissionService.hasPermission(templateRef, PermissionService.READ) == AccessStatus.DENIED))
       {
-         ServletHelper.redirectToLoginPage(req, res, getServletContext());
+         redirectToLoginPage(req, res);
          return;
       }
       

@@ -73,7 +73,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Kevin Roast
  */
-public class DownloadContentServlet extends HttpServlet
+public class DownloadContentServlet extends BaseServlet
 {
    private static final long serialVersionUID = -4558907921887235966L;
    
@@ -105,7 +105,7 @@ public class DownloadContentServlet extends HttpServlet
       if (logger.isDebugEnabled())
          logger.debug("Processing URL: " + uri + (req.getQueryString() != null ? ("?" + req.getQueryString()) : ""));
       
-      AuthenticationStatus status = ServletHelper.servletAuthenticate(req, res, getServletContext());
+      AuthenticationStatus status = servletAuthenticate(req, res);
       if (status == AuthenticationStatus.Failure)
       {
          return;
@@ -154,7 +154,7 @@ public class DownloadContentServlet extends HttpServlet
       }
       
       // get the services we need to retrieve the content
-      ServiceRegistry serviceRegistry = ServletHelper.getServiceRegistry(getServletContext());
+      ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
       ContentService contentService = serviceRegistry.getContentService();
       PermissionService permissionService = serviceRegistry.getPermissionService();
       
@@ -163,7 +163,7 @@ public class DownloadContentServlet extends HttpServlet
       {
          if (logger.isDebugEnabled())
             logger.debug("User does not have permissions to read content for NodeRef: " + nodeRef.toString());
-         ServletHelper.redirectToLoginPage(req, res, getServletContext());
+         redirectToLoginPage(req, res);
          return;
       }
       

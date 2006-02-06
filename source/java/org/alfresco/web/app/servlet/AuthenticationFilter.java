@@ -77,7 +77,7 @@ public class AuthenticationFilter implements Filter
          {
             // authentication failed - so end servlet execution and redirect to login page
             // also save the requested URL so the login page knows where to redirect too later
-            httpRes.sendRedirect(httpReq.getContextPath() + ServletHelper.FACES_SERVLET + Application.getLoginPage(context));
+            httpRes.sendRedirect(httpReq.getContextPath() + BaseServlet.FACES_SERVLET + Application.getLoginPage(context));
             httpReq.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, httpReq.getRequestURI());
          }
       }

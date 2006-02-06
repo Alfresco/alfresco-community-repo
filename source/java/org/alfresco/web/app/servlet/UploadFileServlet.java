@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-public class UploadFileServlet extends HttpServlet
+public class UploadFileServlet extends BaseServlet
 {
    private static final long serialVersionUID = -5482538466491052873L;
    private static Log logger = LogFactory.getLog(UploadFileServlet.class); 
@@ -59,7 +59,7 @@ public class UploadFileServlet extends HttpServlet
       
       try
       {
-         AuthenticationStatus status = ServletHelper.servletAuthenticate(request, response, getServletContext());
+         AuthenticationStatus status = servletAuthenticate(request, response);
          if (status == AuthenticationStatus.Failure)
          {
             return;

@@ -132,7 +132,7 @@ public final class AuthenticationHelper
                   auth.authenticateAsGuest();
                   
                   // if we get here then Guest access was allowed and successful
-                  ServiceRegistry services = ServletHelper.getServiceRegistry(context);
+                  ServiceRegistry services = BaseServlet.getServiceRegistry(context);
                   tx = services.getTransactionService().getUserTransaction();
                   tx.begin();
                   

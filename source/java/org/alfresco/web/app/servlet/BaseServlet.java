@@ -25,6 +25,7 @@ import java.util.List;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -43,11 +44,11 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.jsf.FacesContextUtils;
 
 /**
- * Useful constant values and common methods for Alfresco servlets.
+ * Base servlet class containing useful constant values and common methods for Alfresco servlets.
  * 
  * @author Kevin Roast
  */
-public final class ServletHelper
+public abstract class BaseServlet extends HttpServlet
 {
    public static final String FACES_SERVLET = "/faces";
    
@@ -57,15 +58,8 @@ public final class ServletHelper
    /** forcing guess access is available on most servlets */
    private static final String ARG_GUEST    = "guest";
    
-   private static Log logger = LogFactory.getLog(ServletHelper.class);
+   private static Log logger = LogFactory.getLog(BaseServlet.class);
    
-   
-   /**
-    * Private constructor
-    */
-   private ServletHelper()
-   {
-   }
    
    /**
     * Return the ServiceRegistry helper instance
@@ -88,31 +82,31 @@ public final class ServletHelper
     * 
     * @throws IOException
     */
-   public static AuthenticationStatus servletAuthenticate(HttpServletRequest req, HttpServletResponse res, ServletContext sc)
+   public AuthenticationStatus servletAuthenticate(HttpServletRequest req, HttpServletResponse res)
       throws IOException
    {
       AuthenticationStatus status;
       
       // see if a ticket or a force Guest parameter has been supplied
-      String ticket = req.getParameter(ServletHelper.ARG_TICKET);
+      String ticket = req.getParameter(ARG_TICKET);
       if (ticket != null && ticket.length() != 0)
       {
-         status = AuthenticationHelper.authenticate(sc, req, res, ticket);
+         status = AuthenticationHelper.authenticate(getServletContext(), req, res, ticket);
       }
       else
       {
          boolean forceGuest = false;
-         String guest = req.getParameter(ServletHelper.ARG_GUEST);
+         String guest = req.getParameter(ARG_GUEST);
          if (guest != null)
          {
             forceGuest = Boolean.parseBoolean(guest);
          }
-         status = AuthenticationHelper.authenticate(sc, req, res, forceGuest);
+         status = AuthenticationHelper.authenticate(getServletContext(), req, res, forceGuest);
       }
       if (status == AuthenticationStatus.Failure)
       {
          // authentication failed - now need to display the login page to the user
-         redirectToLoginPage(req, res, sc);
+         redirectToLoginPage(req, res);
       }
       
       return status;
@@ -122,12 +116,12 @@ public final class ServletHelper
     * Redirect to the Login page - saving the current URL which can be redirected back later
     * once the user has successfully completed the authentication process.
     */
-   public static void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res, ServletContext sc)
+   public void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res)
       throws IOException
    {
       // authentication failed - so end servlet execution and redirect to login page
       // also save the requested URL so the login page knows where to redirect too later
-      res.sendRedirect(req.getContextPath() + FACES_SERVLET + Application.getLoginPage(sc));
+      res.sendRedirect(req.getContextPath() + FACES_SERVLET + Application.getLoginPage(getServletContext()));
       req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, req.getRequestURI());
    }
    

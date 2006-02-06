@@ -23,7 +23,6 @@ import java.util.StringTokenizer;
 import javax.faces.application.NavigationHandler;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -55,7 +54,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Kevin Roast
  */
-public class ExternalAccessServlet extends HttpServlet
+public class ExternalAccessServlet extends BaseServlet
 {
    private static final long serialVersionUID = -4118907921337237802L;
    
@@ -78,7 +77,7 @@ public class ExternalAccessServlet extends HttpServlet
       if (logger.isDebugEnabled())
          logger.debug("Processing URL: " + uri + (req.getQueryString() != null ? ("?" + req.getQueryString()) : ""));
       
-      AuthenticationStatus status = ServletHelper.servletAuthenticate(req, res, getServletContext());
+      AuthenticationStatus status = servletAuthenticate(req, res);
       if (status == AuthenticationStatus.Failure)
       {
          return;
@@ -107,10 +106,10 @@ public class ExternalAccessServlet extends HttpServlet
       
       // we almost always need this bean reference
       FacesContext fc = FacesHelper.getFacesContext(req, res, getServletContext());
-      BrowseBean browseBean = (BrowseBean)ServletHelper.getManagedBean(fc, "BrowseBean");
+      BrowseBean browseBean = (BrowseBean)getManagedBean(fc, "BrowseBean");
       
       // get services we need
-      ServiceRegistry serviceRegistry = ServletHelper.getServiceRegistry(getServletContext());
+      ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
       PermissionService permissionService = serviceRegistry.getPermissionService();
       
       // setup is required for certain outcome requests
@@ -120,7 +119,7 @@ public class ExternalAccessServlet extends HttpServlet
          
          if (args[0].equals(WebDAVServlet.WEBDAV_PREFIX))
          {
-            nodeRef = ServletHelper.resolveWebDAVPath(fc, args);
+            nodeRef = resolveWebDAVPath(fc, args);
          }
          else if (args.length == 3)
          {
@@ -135,7 +134,7 @@ public class ExternalAccessServlet extends HttpServlet
             {
                if (logger.isDebugEnabled())
                   logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
-               ServletHelper.redirectToLoginPage(req, res, getServletContext());
+               redirectToLoginPage(req, res);
                return;
             }
             
@@ -153,7 +152,7 @@ public class ExternalAccessServlet extends HttpServlet
          
          if (args[0].equals(WebDAVServlet.WEBDAV_PREFIX))
          {
-            nodeRef = ServletHelper.resolveWebDAVPath(fc, args);
+            nodeRef = resolveWebDAVPath(fc, args);
          }
          else if (args.length == 3)
          {
@@ -168,7 +167,7 @@ public class ExternalAccessServlet extends HttpServlet
             {
                if (logger.isDebugEnabled())
                   logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
-               ServletHelper.redirectToLoginPage(req, res, getServletContext());
+               redirectToLoginPage(req, res);
                return;
             }
             
@@ -197,14 +196,16 @@ public class ExternalAccessServlet extends HttpServlet
                {
                   if (logger.isDebugEnabled())
                      logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
-                  ServletHelper.redirectToLoginPage(req, res, getServletContext());
+                  redirectToLoginPage(req, res);
                   return;
                }
                
                // this call sets up the current node Id, and updates or initialises the
                // breadcrumb component with the selected node as appropriate.
                browseBean.updateUILocation(nodeRef);
-               browseBean.contextUpdated();
+               
+               // force a "late" refresh of the BrowseBean to handle external servlet access URL
+               browseBean.externalAccessRefresh();
                
                // check for view mode first argument
                if (args[0].equals(ARG_TEMPLATE))
@@ -219,7 +220,7 @@ public class ExternalAccessServlet extends HttpServlet
       
       // perform the forward to the page processed by the Faces servlet 
       String viewId = fc.getViewRoot().getViewId();
-      getServletContext().getRequestDispatcher(ServletHelper.FACES_SERVLET + viewId).forward(req, res);
+      getServletContext().getRequestDispatcher(FACES_SERVLET + viewId).forward(req, res);
    }
    
    /**

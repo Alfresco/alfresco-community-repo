@@ -256,6 +256,14 @@ public class BrowseBean implements IContextListener
          this.contentRichList.setInitialSortDescending(
                this.viewsConfig.hasDescendingSort(PAGE_NAME_BROWSE));
       }
+      // special case to handle an External Access URL
+      // these URLs restart the JSF lifecycle but an old UIRichList is restored from
+      // the component tree - which needs clearing "late" in the lifecycle process
+      if (externalForceRefresh)
+      {
+         this.contentRichList.setValue(null);
+         externalForceRefresh = false;
+      }
    }
    
    /**
@@ -279,6 +287,10 @@ public class BrowseBean implements IContextListener
                this.viewsConfig.getDefaultSortColumn(PAGE_NAME_BROWSE));
          this.spacesRichList.setInitialSortDescending(
                this.viewsConfig.hasDescendingSort(PAGE_NAME_BROWSE));
+      }
+      if (externalForceRefresh)
+      {
+         this.spacesRichList.setValue(null);
       }
    }
    
@@ -1238,6 +1250,16 @@ public class BrowseBean implements IContextListener
       return outcome;
    }
    
+   /**
+    * Support for refresh of lists via special case for an External Access URL.
+    * these URLs restart the JSF lifecycle but an old UIRichList is restored from
+    * the component tree - which needs clearing "late" in the lifecycle process.
+    */
+   public void externalAccessRefresh()
+   {
+      this.externalForceRefresh = true;
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Private helpers
@@ -1501,4 +1523,6 @@ public class BrowseBean implements IContextListener
    
    /** True if current space has a dashboard (template) view available */
    private boolean dashboardView;
+   
+   private boolean externalForceRefresh = false;
 }

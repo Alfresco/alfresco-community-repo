@@ -1400,7 +1400,7 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                         if (isContent)
                         {
                             ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
-                            if (index)
+                            if (contentData.getMimetype() != null && index)
                             {
                                 // store mimetype in index - even if content does not index it is useful
                                 doc.add(new Field(attributeName + ".mimetype", contentData.getMimetype(), false, true,

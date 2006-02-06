@@ -108,7 +108,7 @@ public class ContentSearchContext extends SearchContext
         
         if ( donePseudoFiles == false && pseudoList != null && index < (pseudoList.numberOfFiles() - 1))
             return true;
-        return index < (results.size() -1);
+        return index < (results.size() - 1);
     }
 
     /**
@@ -146,18 +146,21 @@ public class ContentSearchContext extends SearchContext
                     // Copy the file information to the callers file info
                     
                     info.copyFrom( pinfo);
+                    
+                    // Check if we have finished with the pseudo file list, switch to the normal file list
+                    
+                    if ( index == (pseudoList.numberOfFiles() - 1))
+                    {
+                        // Switch to the main file list
+                        
+                        donePseudoFiles = true;
+                        index = -1;
+                    }
+                    
+                    // Indicate that the file information is valid
+                    
                     return true;
                 }
-            }
-            else
-            {
-                // Switch to the main file list
-                
-                donePseudoFiles = true;
-                index = 0;
-                
-                if ( results == null || results.size() == 0)
-                    return false;
             }
         }
 
@@ -226,7 +229,7 @@ public class ContentSearchContext extends SearchContext
                 // Switch to the main file list
                 
                 donePseudoFiles = true;
-                index = 0;
+                index = -1;
                 
                 if ( results == null || results.size() == 0)
                     return null;

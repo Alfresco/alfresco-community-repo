@@ -1570,9 +1570,7 @@ public class SMBSrvSession extends SrvSession implements Runnable
                     catch ( Exception ex)
                     {
                         // Debug
-                        
-                        if ( logger.isDebugEnabled())
-                            logger.debug("Error committing transaction", ex);
+                        logger.error("Error committing transaction", ex);
                     }
                 }
 

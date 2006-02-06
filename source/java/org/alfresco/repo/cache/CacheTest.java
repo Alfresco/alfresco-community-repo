@@ -57,6 +57,15 @@ public class CacheTest extends TestCase
         transactionalCache = (SimpleCache<String, Serializable>) ctx.getBean("transactionalCache");
     }
     
+    @Override
+    public void tearDown()
+    {
+        serviceRegistry = null;
+        standaloneCache = null;
+        backingCache = null;
+        transactionalCache = null;
+    }
+    
     public void testSetUp() throws Exception
     {
         CacheManager cacheManager = (CacheManager) ctx.getBean("ehCacheManager");
@@ -116,11 +125,11 @@ public class CacheTest extends TestCase
         
         TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction();
-        // begin a transaction
-        txn.begin();
-        
         try
         {
+            // begin a transaction
+            txn.begin();
+            
             // remove 1 from the cache
             transactionalCache.remove(newGlobalOne);
             assertFalse("Item was not removed from txn cache", transactionalCache.contains(newGlobalOne));

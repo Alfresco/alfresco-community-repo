@@ -23,8 +23,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.transaction.UserTransaction;
-
 import org.alfresco.filesys.netbios.NetBIOSException;
 import org.alfresco.filesys.netbios.NetBIOSName;
 import org.alfresco.filesys.netbios.NetBIOSPacket;
@@ -53,7 +51,6 @@ import org.alfresco.filesys.smb.server.notify.NotifyRequest;
 import org.alfresco.filesys.smb.server.notify.NotifyRequestList;
 import org.alfresco.filesys.util.DataPacker;
 import org.alfresco.filesys.util.StringList;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -1556,22 +1553,20 @@ public class SMBSrvSession extends SrvSession implements Runnable
 
                 } // end switch session state
 
-                // Check for an active transaction, and commit it
+                // Commit, or rollback, any active user transaction
                 
-                if ( hasUserTransaction())
+                try
                 {
-                    try
-                    {
-                        // Commit the transaction
+                    // Commit or rollback the transaction
 
-                        UserTransaction trans = getUserTransaction();
-                        trans.commit();
-                    }
-                    catch ( Exception ex)
-                    {
-                        // Debug
-                        logger.error("Error committing transaction", ex);
-                    }
+                    endTransaction();
+                }
+                catch ( Exception ex)
+                {
+                    // Debug
+                    
+                    if ( logger.isDebugEnabled())
+                        logger.debug("Error committing transaction", ex);
                 }
 
                 // Give up the CPU

@@ -201,6 +201,12 @@ public class TransactionalCache<K extends Serializable, V extends Serializable>
             {
                 throw new AlfrescoRuntimeException("Failed to add txn caches to manager", e);
             }
+            finally
+            {
+                // ensure that we get the transaction callbacks as we have bound the unique
+                // transactional caches to a common manager
+                AlfrescoTransactionSupport.bindListener(this);
+            }
             AlfrescoTransactionSupport.bindResource(resourceKeyTxnData, data);
         }
         return data;
@@ -324,12 +330,6 @@ public class TransactionalCache<K extends Serializable, V extends Serializable>
         else  // transaction present
         {
             TransactionData txnData = getTransactionData();
-            // register for callbacks
-            if (!txnData.listenerBound)
-            {
-                AlfrescoTransactionSupport.bindListener(this);
-                txnData.listenerBound = true;
-            }
             // we have a transaction - add the item into the updated cache for this transaction
             // are we in an overflow condition?
             if (txnData.updatedItemsCache.getMemoryStoreSize() >= maxCacheSize)
@@ -378,12 +378,6 @@ public class TransactionalCache<K extends Serializable, V extends Serializable>
         else  // transaction present
         {
             TransactionData txnData = getTransactionData();
-            // register for callbacks
-            if (!txnData.listenerBound)
-            {
-                AlfrescoTransactionSupport.bindListener(this);
-                txnData.listenerBound = true;
-            }
             // is the shared cache going to be cleared?
             if (txnData.isClearOn)
             {
@@ -440,12 +434,6 @@ public class TransactionalCache<K extends Serializable, V extends Serializable>
             }
             
             TransactionData txnData = getTransactionData();
-            // register for callbacks
-            if (!txnData.listenerBound)
-            {
-                AlfrescoTransactionSupport.bindListener(this);
-                txnData.listenerBound = true;
-            }
             // the shared cache must be cleared at the end of the transaction
             // and also serves to ensure that the shared cache will be ignored
             // for the remainder of the transaction
@@ -498,34 +486,34 @@ public class TransactionalCache<K extends Serializable, V extends Serializable>
         }
         
         TransactionData txnData = getTransactionData();
-
-        if (txnData.isClearOn)
-        {
-            // clear shared cache
-            sharedCache.clear();
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Clear notification recieved at end of transaction - clearing shared cache");
-            }
-        }
-        else
-        {
-            // transfer any removed items
-            // any removed items will have also been removed from the in-transaction updates
-            // propogate the deletes to the shared cache
-            List<Serializable> keys = txnData.removedItemsCache.getKeys();
-            for (Serializable key : keys)
-            {
-                sharedCache.remove(key);
-            }
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Removed " + keys.size() + " values from shared cache");
-            }
-        }
-        // transfer updates
         try
         {
+            if (txnData.isClearOn)
+            {
+                // clear shared cache
+                sharedCache.clear();
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Clear notification recieved at end of transaction - clearing shared cache");
+                }
+            }
+            else
+            {
+                // transfer any removed items
+                // any removed items will have also been removed from the in-transaction updates
+                // propogate the deletes to the shared cache
+                List<Serializable> keys = txnData.removedItemsCache.getKeys();
+                for (Serializable key : keys)
+                {
+                    sharedCache.remove(key);
+                }
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Removed " + keys.size() + " values from shared cache");
+                }
+            }
+
+            // transfer updates
             List<Serializable> keys = txnData.updatedItemsCache.getKeys();
             for (Serializable key : keys)
             {
@@ -541,10 +529,10 @@ public class TransactionalCache<K extends Serializable, V extends Serializable>
         {
             throw new AlfrescoRuntimeException("Failed to transfer updates to shared cache", e);
         }
-
-        // drop caches from cachemanager
-        cacheManager.removeCache(txnData.updatedItemsCache.getName());
-        cacheManager.removeCache(txnData.removedItemsCache.getName());
+        finally
+        {
+            removeCaches(txnData);
+        }
     }
 
     /**
@@ -553,8 +541,17 @@ public class TransactionalCache<K extends Serializable, V extends Serializable>
     public void afterRollback()
     {
         TransactionData txnData = getTransactionData();
-
         // drop caches from cachemanager
+        removeCaches(txnData);
+    }
+    
+    /**
+     * Ensures that the transactional caches are removed from the common cache manager.
+     * 
+     * @param txnData the data with references to the the transactional caches
+     */
+    private void removeCaches(TransactionData txnData)
+    {
         cacheManager.removeCache(txnData.updatedItemsCache.getName());
         cacheManager.removeCache(txnData.removedItemsCache.getName());
     }
@@ -565,6 +562,5 @@ public class TransactionalCache<K extends Serializable, V extends Serializable>
         public Cache updatedItemsCache;
         public Cache removedItemsCache;
         public boolean isClearOn;
-        public boolean listenerBound; 
     }
 }

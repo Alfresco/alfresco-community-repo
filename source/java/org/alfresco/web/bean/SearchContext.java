@@ -241,16 +241,20 @@ public final class SearchContext implements Serializable
          if (location != null)
          {
             pathQuery.append(" PATH:\"").append(location).append("\" ");
+            if (categories != null && categories.length != 0)
+            {
+               pathQuery.append("AND");
+            }
          }
          if (categories != null && categories.length != 0)
          {
             for (int i=0; i<categories.length; i++)
             {
-               if (pathQuery.length() != 0)
+               if (i > 0)
                {
                   pathQuery.append("OR");
                }
-               pathQuery.append(" PATH:\"").append(categories[i]).append("\" "); 
+               pathQuery.append(" PATH:\"").append(categories[i]).append("\" ");
             }
          }
       }

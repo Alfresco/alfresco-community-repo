@@ -3,10 +3,6 @@
  
 <beans>
    
-   <!--
-   <import resource="classpath:alfresco/replicating-content-services-context.xml" />
-   -->
-   
    <bean id="fileContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
       <constructor-arg>
          <value>${dir.contentstore}</value>

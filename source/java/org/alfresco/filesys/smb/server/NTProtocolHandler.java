@@ -4241,6 +4241,14 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
             m_sess.sendResponseSMB(outPkt);
         }
+        catch (AccessDeniedException ex)
+        {
+
+            // Not allowed to access the file/folder
+
+            m_sess.sendErrorResponseSMB(SMBStatus.NTAccessDenied, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            return;
+        }
         catch (FileNotFoundException ex)
         {
 
@@ -4438,6 +4446,14 @@ public class NTProtocolHandler extends CoreProtocolHandler
             // Send the transact reply
 
             m_sess.sendResponseSMB(outPkt);
+        }
+        catch (AccessDeniedException ex)
+        {
+
+            // Not allowed to access the file/folder
+
+            m_sess.sendErrorResponseSMB(SMBStatus.NTAccessDenied, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            return;
         }
         catch (FileNotFoundException ex)
         {

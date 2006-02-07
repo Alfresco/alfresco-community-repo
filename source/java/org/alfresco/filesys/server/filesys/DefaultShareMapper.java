@@ -16,6 +16,8 @@
  */
 package org.alfresco.filesys.server.filesys;
 
+import java.util.Enumeration;
+
 import org.alfresco.config.ConfigElement;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.auth.InvalidUserException;
@@ -99,20 +101,33 @@ public class DefaultShareMapper implements ShareMapper
 
         SharedDevice share = null;
 
-        // Find the required share by name/type. Use a case sensitive search first, if that fails
-        // use a case
-        // insensitive search.
+        // Search the sessions dynamic share list first
 
-        share = m_config.getShares().findShare(name, typ, false);
-
-        if (share == null)
-        {
-
-            // Try a case insensitive search for the required share
-
-            share = m_config.getShares().findShare(name, typ, true);
+        if ( sess.hasDynamicShares()) {
+            
+            //  Check if the required share exists in the sessions dynamic share list
+            
+            share = sess.getDynamicShareList().findShare(name, typ, true);
         }
 
+        // If we did not find a share then search the global share list
+        
+        if ( share == null)
+        {
+            // Find the required share by name/type. Use a case sensitive search first, if that fails
+            // use a case insensitive search.
+    
+            share = m_config.getShares().findShare(name, typ, false);
+    
+            if (share == null)
+            {
+    
+                // Try a case insensitive search for the required share
+    
+                share = m_config.getShares().findShare(name, typ, true);
+            }
+        }
+        
         // Check if the share is available
 
         if (share != null && share.getContext() != null && share.getContext().isAvailable() == false)
@@ -130,6 +145,30 @@ public class DefaultShareMapper implements ShareMapper
      */
     public void deleteShares(SrvSession sess)
     {
+        //  Check if the session has any dynamic shares
+        
+        if ( sess.hasDynamicShares() == false)
+            return;
+            
+        //  Delete the dynamic shares
+        
+        SharedDeviceList shares = sess.getDynamicShareList();
+        Enumeration<SharedDevice> enm = shares.enumerateShares();
+        
+        while ( enm.hasMoreElements()) {
+
+            //  Get the current share from the list
+            
+            SharedDevice shr = (SharedDevice) enm.nextElement();
+            
+            //  Close the shared device
+            
+            shr.getContext().CloseContext();
+        }
+        
+        // Clear the dynamic share list
+        
+        shares.removeAllShares();
     }
 
     /**
@@ -148,6 +187,13 @@ public class DefaultShareMapper implements ShareMapper
         // Make a copy of the global share list and add the per session dynamic shares
 
         SharedDeviceList shrList = new SharedDeviceList(m_config.getShares());
+
+        if ( sess != null && sess.hasDynamicShares()) {
+            
+            // Add the per session dynamic shares
+            
+            shrList.addShares(sess.getDynamicShareList());
+        }
 
         // Remove unavailable shares from the list and return the list
 

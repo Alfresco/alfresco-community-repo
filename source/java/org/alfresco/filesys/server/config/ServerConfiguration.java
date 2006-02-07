@@ -1451,13 +1451,15 @@ public class ServerConfiguration
             else
                 throw new AlfrescoRuntimeException("Invalid authenticator type, " + authType);
 
-            // Get the allow guest setting
+            // Get the allow guest and map unknown user to guest settings
 
             boolean allowGuest = authElem.getChild("allowGuest") != null ? true : false;
+            boolean mapGuest   = authElem.getChild("mapUnknownUserToGuest") != null ? true : false;
 
             // Initialize and set the authenticator class
 
             setAuthenticator(auth, authElem, allowGuest);
+            auth.setMapToGuest( mapGuest);
         }
 
         // Add the users

@@ -17,32 +17,11 @@
 package org.alfresco.filesys.server.auth;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.Random;
 
-import javax.transaction.UserTransaction;
-
-import net.sf.acegisecurity.Authentication;
-
-import org.alfresco.config.ConfigElement;
 import org.alfresco.filesys.server.SrvSession;
-import org.alfresco.filesys.server.config.InvalidConfigurationException;
-import org.alfresco.filesys.server.config.ServerConfiguration;
-import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
 import org.alfresco.filesys.util.DataPacker;
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
-import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 import org.alfresco.repo.security.authentication.NTLMMode;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.sun.star.uno.RuntimeException;
 
 /**
  * Alfresco Authenticator Class
@@ -57,32 +36,6 @@ import com.sun.star.uno.RuntimeException;
  */
 public class AlfrescoAuthenticator extends SrvAuthenticator
 {
-    // Logging
-    
-    private static final Log logger = LogFactory.getLog("org.alfresco.smb.protocol.auth");
-
-    // Random number generator used to generate challenge keys
-
-    private Random m_random = new Random(System.currentTimeMillis());
-
-    // Server configuration
-
-    private ServerConfiguration m_config;
-    
-    // Authentication component, used to access internal authentication functions
-    
-    private AuthenticationComponent m_authComponent;
-
-    // MD4 hash decoder
-    
-    private MD4PasswordEncoder m_md4Encoder = new MD4PasswordEncoderImpl();
-    
-    // Various services required to get user information
-    
-    private NodeService m_nodeService;
-    private PersonService m_personService;
-    private TransactionService m_transactionService;
-    
     /**
      * Default Constructor
      * 
@@ -92,24 +45,6 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
     {
         setAccessMode(SrvAuthenticator.USER_MODE);
         setEncryptedPasswords(true);
-    }
-
-    /**
-     * Authenticate the connection to a share
-     * 
-     * @param client ClienInfo
-     * @param share SharedDevice
-     * @param pwd Share level password.
-     * @param sess Server session
-     * @return Authentication status.
-     */
-    public int authenticateShareConnect(ClientInfo client, SharedDevice share, String pwd, SrvSession sess)
-    {
-        // Allow write access
-        //
-        // Main authentication is handled by authenticateUser()
-        
-        return SrvAuthenticator.Writeable;
     }
 
     /**
@@ -160,7 +95,7 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
         
         int authSts = AUTH_DISALLOW;
         
-        if ( client.isGuest())
+        if ( client.isGuest() || client.getUserName().equalsIgnoreCase(GUEST_USERNAME))
         {
             // Check if guest logons are allowed
             
@@ -169,18 +104,20 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
             
             //  Get a guest authentication token
             
-            m_authComponent.setGuestUserAsCurrentUser();
-            Authentication authToken = m_authComponent.getCurrentAuthentication();
-            
-            client.setAuthenticationToken( authToken);
-            
-            // Set the home folder for the guest user
-            
-            getHomeFolderForUser( client);
+            doGuestLogon( client, sess);
             
             // Indicate logged on as guest
             
             authSts = AUTH_GUEST;
+            
+            // DEBUG
+            
+            if ( logger.isDebugEnabled())
+                logger.debug("Authenticated user " + client.getUserName() + " sts=" + getStatusAsString(authSts));
+            
+            // Return the guest status
+            
+            return authSts;
         }
         
         // Check if MD4 or passthru mode is configured
@@ -190,6 +127,26 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
             // Perform local MD4 password check
             
             authSts = doMD4UserAuthentication(client, sess, alg);
+        }
+
+        // Check if the logon status indicates a guest logon
+        
+        if ( authSts == AUTH_GUEST)
+        {
+            // Only allow the guest logon if user mapping is enabled
+            
+            if ( mapUnknownUserToGuest())
+            {
+                // Logon as guest, setup the security context
+            
+                doGuestLogon( client, sess);
+            }
+            else
+            {
+                // Do not allow the guest logon
+                
+                authSts = AUTH_DISALLOW;
+            }
         }
         
         // DEBUG
@@ -243,47 +200,6 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
         return key;
     }
 
-    /**
-     * Search for the required user account details in the defined user list
-     * 
-     * @param user String
-     * @return UserAccount
-     */
-    public UserAccount getUserDetails(String user)
-    {
-        return null;
-    }
-
-    /**
-     * Initialize the authenticator
-     * 
-     * @param config ServerConfiguration
-     * @param params ConfigElement
-     * @exception InvalidConfigurationException
-     */
-    public void initialize(ServerConfiguration config, ConfigElement params) throws InvalidConfigurationException
-    {
-        // Save the server configuration so we can access the authentication component
-
-        m_config = config;
-        
-        // Check that the required authentication classes are available
-
-        m_authComponent = m_config.getAuthenticationComponent();
-        
-        if ( m_authComponent == null)
-            throw new InvalidConfigurationException("Authentication component not available");
-        
-        if ( m_authComponent.getNTLMMode() != NTLMMode.MD4_PROVIDER)
-            throw new InvalidConfigurationException("Required authentication mode not available");
-        
-        // Get hold of various services
-        
-        m_nodeService = config.getNodeService();
-        m_personService = config.getPersonService();
-        m_transactionService = config.getTransactionService();
-    }
-    
     /**
      * Perform MD4 user authentication
      * 
@@ -361,47 +277,5 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
         // User does not exist, check if guest access is allowed
             
         return allowGuest() ? SrvAuthenticator.AUTH_GUEST : SrvAuthenticator.AUTH_DISALLOW;
-    }
-
-    /**
-     * Get the home folder for the user
-     * 
-     * @param client ClientInfo
-     */
-    private final void getHomeFolderForUser(ClientInfo client)
-    {
-        // Get the home folder for the user
-        
-        UserTransaction tx = m_transactionService.getUserTransaction();
-        NodeRef homeSpaceRef = null;
-        
-        try
-        {
-            tx.begin();
-            homeSpaceRef = (NodeRef) m_nodeService.getProperty(m_personService.getPerson(client.getUserName()),
-                    ContentModel.PROP_HOMEFOLDER);
-            client.setHomeFolder( homeSpaceRef);
-            tx.commit();
-        }
-        catch (Throwable ex)
-        {
-            try
-            {
-                tx.rollback();
-            }
-            catch (Exception ex2)
-            {
-                logger.error("Failed to rollback transaction", ex2);
-            }
-            
-            if(ex instanceof RuntimeException)
-            {
-                throw (RuntimeException)ex;
-            }
-            else
-            {
-                throw new RuntimeException("Failed to get home folder", ex);
-            }
-        }
     }
 }

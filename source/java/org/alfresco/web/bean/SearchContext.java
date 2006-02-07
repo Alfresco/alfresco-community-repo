@@ -243,7 +243,7 @@ public final class SearchContext implements Serializable
             pathQuery.append(" PATH:\"").append(location).append("\" ");
             if (categories != null && categories.length != 0)
             {
-               pathQuery.append("AND");
+               pathQuery.append("AND (");
             }
          }
          if (categories != null && categories.length != 0)
@@ -255,6 +255,10 @@ public final class SearchContext implements Serializable
                   pathQuery.append("OR");
                }
                pathQuery.append(" PATH:\"").append(categories[i]).append("\" ");
+            }
+            if (location != null)
+            {
+               pathQuery.append(") ");
             }
          }
       }

@@ -236,6 +236,19 @@ public class DefaultTypeConverter
 
         
         //
+        // From enum
+        //
+
+        INSTANCE.addConverter(Enum.class, String.class, new TypeConverter.Converter<Enum, String>()
+        {
+            public String convert(Enum source)
+            {
+                return source.toString();
+            }
+        });
+
+        
+        //
         // Number to Subtypes and Date
         //
 

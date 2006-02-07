@@ -16,9 +16,11 @@
  */
 package org.alfresco.repo.transaction;
 
+import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
@@ -136,6 +138,13 @@ public class TransactionUtil
                 // transaction should still commit
                 txn.commit();
             }
+        }
+        catch (RollbackException exception)
+        {
+            // commit failed
+            throw new AlfrescoRuntimeException(
+                    "Unexpected rollback of exception: \n" + exception.getMessage(),
+                    exception);
         }
         catch (Throwable exception)
         {

@@ -37,8 +37,11 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
    //       in the future it will also deal with properties and associations to hide.
    
    private List<ItemConfig> items = new ArrayList<ItemConfig>();
+   private List<ItemConfig> editableItems = new ArrayList<ItemConfig>();
    private Map<String, ItemConfig> itemsMap = new HashMap<String, ItemConfig>();
+   private Map<String, ItemConfig> editableItemsMap = new HashMap<String, ItemConfig>();
    private List<String> itemNames = new ArrayList<String>();
+   private List<String> editableItemNames = new ArrayList<String>();
    private boolean kidsPopulated = false;
    
    /**
@@ -96,6 +99,7 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
                ce.addAttribute(PropertySheetElementReader.ATTR_DISPLAY_LABEL_ID, pc.getDisplayLabelId());
                ce.addAttribute(PropertySheetElementReader.ATTR_READ_ONLY, Boolean.toString(pc.isReadOnly()));
                ce.addAttribute(PropertySheetElementReader.ATTR_CONVERTER, pc.getConverter());
+               ce.addAttribute(PropertySheetElementReader.ATTR_SHOW_IN_EDIT_MODE, Boolean.toString(pc.isShownInEditMode()));
                this.children.add(ce);
             }
             
@@ -144,6 +148,14 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
          this.items.add(itemConfig);
          this.itemsMap.put(itemConfig.getName(), itemConfig);
          this.itemNames.add(itemConfig.getName());
+         
+         // also add to the edit items collections if necessary
+         if (itemConfig.isShownInEditMode())
+         {
+            this.editableItems.add(itemConfig);
+            this.editableItemsMap.put(itemConfig.getName(), itemConfig);
+            this.editableItemNames.add(itemConfig.getName());
+         }
       }
    }
    
@@ -155,10 +167,14 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     * @param displayLabelId Display label message id to use for the property
     * @param readOnly Sets whether the property should be rendered as read only
     * @param converter The name of a converter to apply to the property control
+    * @param inEdit Sets whether the property should be shown when the property 
+    *        sheet is in edit mode
     */
-   /*package*/ void addProperty(String name, String displayLabel, String displayLabelId, String readOnly, String converter)
+   /*package*/ void addProperty(String name, String displayLabel, String displayLabelId, String readOnly, 
+                                String converter, String inEdit)
    {
-      addItem(new PropertyConfig(name, displayLabel, displayLabelId, Boolean.parseBoolean(readOnly), converter));
+      addItem(new PropertyConfig(name, displayLabel, displayLabelId, Boolean.parseBoolean(readOnly), 
+            converter, inEdit));
    }
    
    /**
@@ -169,10 +185,14 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     * @param displayLabelId Display label message id to use for the property
     * @param readOnly Sets whether the association should be rendered as read only
     * @param converter The name of a converter to apply to the association control
+    * @param inEdit Sets whether the property should be shown when the property 
+    *        sheet is in edit mode
     */
-   /*package*/ void addAssociation(String name, String displayLabel, String displayLabelId, String readOnly, String converter)
+   /*package*/ void addAssociation(String name, String displayLabel, String displayLabelId, String readOnly, 
+                                   String converter, String inEdit)
    {
-      addItem(new AssociationConfig(name, displayLabel, displayLabelId, Boolean.parseBoolean(readOnly), converter));
+      addItem(new AssociationConfig(name, displayLabel, displayLabelId, Boolean.parseBoolean(readOnly), 
+            converter, inEdit));
    }
    
    /**
@@ -184,9 +204,11 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     * @param readOnly Sets whether the association should be rendered as read only
     * @param converter The name of a converter to apply to the association control
     */
-   /*package*/ void addChildAssociation(String name, String displayLabel, String displayLabelId, String readOnly, String converter)
+   /*package*/ void addChildAssociation(String name, String displayLabel, String displayLabelId, String readOnly, 
+                                        String converter, String inEdit)
    {
-      addItem(new ChildAssociationConfig(name, displayLabel, displayLabelId, Boolean.parseBoolean(readOnly), converter));
+      addItem(new ChildAssociationConfig(name, displayLabel, displayLabelId, Boolean.parseBoolean(readOnly), 
+            converter, inEdit));
    }
    
    /**
@@ -214,6 +236,30 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
    }
    
    /**
+    * @return Returns a list of item names to display
+    */
+   public List<String> getEditableItemNamesToShow()
+   {
+      return this.editableItemNames;
+   }
+   
+   /**
+    * @return Returns the list of item config objects that represent those to display
+    */
+   public List<ItemConfig> getEditableItemsToShow()
+   {
+      return this.editableItems;
+   }
+   
+   /**
+    * @return Returns a map of the item names to show
+    */
+   public Map<String, ItemConfig> getEditableItemsMapToShow()
+   {
+      return this.editableItemsMap;
+   }
+   
+   /**
     * Inner class to represent a configured property sheet item
     */
    public abstract class ItemConfig
@@ -223,15 +269,21 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
       private String displayLabelId;
       private String converter;
       private boolean readOnly;
+      private boolean showInEditMode = true;
       
       public ItemConfig(String name, String displayLabel, String displayLabelId, 
-            boolean readOnly, String converter)
+            boolean readOnly, String converter, String inEdit)
       {
          this.name = name;
          this.displayLabel = displayLabel;
          this.displayLabelId = displayLabelId;
          this.readOnly = readOnly;
          this.converter = converter;
+         
+         if (inEdit != null)
+         {
+            this.showInEditMode = Boolean.parseBoolean(inEdit);
+         }
       }
       
       /**
@@ -271,6 +323,11 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
          return this.converter;
       }
       
+      public boolean isShownInEditMode()
+      {
+         return this.showInEditMode;
+      }
+      
       /**
        * @see java.lang.Object#toString()
        */
@@ -281,7 +338,8 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
          buffer.append(" displaylabel=").append(this.displayLabel);
          buffer.append(" displaylabelId=").append(this.displayLabelId);
          buffer.append(" converter=").append(this.converter);
-         buffer.append(" readonly=").append(this.readOnly).append(")");
+         buffer.append(" readonly=").append(this.readOnly);
+         buffer.append(" showInEditMode=").append(this.showInEditMode).append(")");
          return buffer.toString();
       }
    }
@@ -292,9 +350,9 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
    public class PropertyConfig extends ItemConfig
    {
       public PropertyConfig(String name, String displayLabel, String displayLabelId, 
-            boolean readOnly, String converter)
+            boolean readOnly, String converter, String inEdit)
       {
-         super(name, displayLabel, displayLabelId, readOnly, converter);
+         super(name, displayLabel, displayLabelId, readOnly, converter, inEdit);
       }
    }
    
@@ -304,9 +362,9 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
    public class AssociationConfig extends ItemConfig
    {
       public AssociationConfig(String name, String displayLabel, String displayLabelId, 
-            boolean readOnly, String converter)
+            boolean readOnly, String converter, String inEdit)
       {
-         super(name, displayLabel, displayLabelId, readOnly, converter);
+         super(name, displayLabel, displayLabelId, readOnly, converter, inEdit);
       }
    }
    
@@ -316,9 +374,9 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
    public class ChildAssociationConfig extends ItemConfig
    {
       public ChildAssociationConfig(String name, String displayLabel, String displayLabelId, 
-            boolean readOnly, String converter)
+            boolean readOnly, String converter, String inEdit)
       {
-         super(name, displayLabel, displayLabelId, readOnly, converter);
+         super(name, displayLabel, displayLabelId, readOnly, converter, inEdit);
       }
    }
 }

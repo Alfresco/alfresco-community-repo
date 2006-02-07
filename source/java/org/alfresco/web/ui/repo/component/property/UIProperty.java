@@ -253,6 +253,14 @@ public class UIProperty extends PropertySheetItem
             control.getAttributes().put("disabled", Boolean.TRUE);
          }
          
+         // for now we can not handle multi valued properties in the client so if the property
+         // is defined as such make sure it is rendered as disabled
+         if (propDef.isMultiValued())
+         {
+            logger.warn("Setting property " + propDef.getName().toString() + " to read-only, it can not be edited as it is defined as multi-valued");
+            control.getAttributes().put("disabled", Boolean.TRUE);
+         }
+         
          // add a validator if the field is required
 //         if (propDef.isMandatory())
 //         {

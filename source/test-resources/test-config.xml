@@ -132,6 +132,7 @@
          <show-property name="modifieddate" readOnly="true" />
          <show-property name="description" displayLabel="Description" readOnly="false" />
          <show-property name="icon" />
+         <show-property name="size" readOnly="true" showInEditMode="false" />
       </property-sheet>
    </config>
    
@@ -165,7 +166,6 @@
    
    <config evaluator="string-compare" condition="Property Editing">
       <property-sheet>
-         <show-property name="name" showInEditMode="false" />
          <show-property name="description" showInEditMode="true" />
          <show-property name="icon" readOnly="true" />
          <show-property name="size" readOnly="true" showInEditMode="false" />

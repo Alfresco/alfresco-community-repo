@@ -30,7 +30,6 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.config.Config;
-import org.alfresco.config.ConfigLookupContext;
 import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
@@ -312,10 +311,18 @@ public class DocumentPropertiesBean
          // we need to use the config service to see whether there are any
          // editable properties configured for this document.
          ConfigService configSvc = Application.getConfigService(FacesContext.getCurrentInstance());
-         Config configProps = configSvc.getConfig(this.editableNode, new ConfigLookupContext("edit-properties"));
+         Config configProps = configSvc.getConfig(this.editableNode);
          PropertySheetConfigElement propsToDisplay = (PropertySheetConfigElement)configProps.
                getConfigElement("property-sheet");
-         this.hasOtherProperties = Boolean.valueOf(propsToDisplay != null);
+         
+         if (propsToDisplay != null && propsToDisplay.getEditableItemNamesToShow().size() > 0)
+         {
+            this.hasOtherProperties = Boolean.TRUE;
+         }
+         else
+         {
+            this.hasOtherProperties = Boolean.FALSE;
+         }
       }
       
       return this.hasOtherProperties.booleanValue();

@@ -5,10 +5,9 @@
    
    <bean id="webClientConfigSource" class="org.alfresco.config.source.UrlConfigSource">
       <constructor-arg>
-        <list>
+         <list>
             <value>classpath:alfresco/web-client-config.xml</value>
             <value>classpath:alfresco/web-client-config-properties.xml</value>
-            <value>classpath:alfresco/web-client-config-edit-properties.xml</value>
             <value>classpath:alfresco/web-client-config-navigation.xml</value>
             <value>classpath:alfresco/extension/web-client-config-custom.xml</value>
          </list>

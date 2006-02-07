@@ -39,6 +39,7 @@ public class PropertySheetElementReader implements ConfigElementReader
    public static final String ATTR_DISPLAY_LABEL_ID = "displayLabelId";
    public static final String ATTR_READ_ONLY = "readOnly";
    public static final String ATTR_CONVERTER = "converter";
+   public static final String ATTR_SHOW_IN_EDIT_MODE = "showInEditMode";
    
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
@@ -69,19 +70,20 @@ public class PropertySheetElementReader implements ConfigElementReader
             String labelId = item.attributeValue(ATTR_DISPLAY_LABEL_ID);
             String readOnly = item.attributeValue(ATTR_READ_ONLY);
             String converter = item.attributeValue(ATTR_CONVERTER);
+            String inEdit = item.attributeValue(ATTR_SHOW_IN_EDIT_MODE);
             
             if (ELEMENT_SHOW_PROPERTY.equals(item.getName()))
             {
                // add the property to show to the custom config element
-               configElement.addProperty(propName, label, labelId, readOnly, converter);
+               configElement.addProperty(propName, label, labelId, readOnly, converter, inEdit);
             }
             else if (ELEMENT_SHOW_ASSOC.equals(item.getName()))
             {
-               configElement.addAssociation(propName, label, labelId, readOnly, converter);
+               configElement.addAssociation(propName, label, labelId, readOnly, converter, inEdit);
             }
             else if (ELEMENT_SHOW_CHILD_ASSOC.equals(item.getName()))
             {
-               configElement.addChildAssociation(propName, label, labelId, readOnly, converter);
+               configElement.addChildAssociation(propName, label, labelId, readOnly, converter, inEdit);
             }
          }
       }

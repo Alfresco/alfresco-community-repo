@@ -2,11 +2,11 @@
    
    <config evaluator="node-type" condition="content">
       <property-sheet>
-         <show-property name="name"/>
-         <show-property name="mimetype" displayLabelId="mimetype" converter="org.alfresco.faces.MimeTypeConverter"/>
-         <show-property name="title"/>
-         <show-property name="description"/>
-         <show-property name="size" displayLabelId="size" converter="org.alfresco.faces.ByteSizeConverter"/>
+         <show-property name="name" showInEditMode="false" />
+         <show-property name="mimetype" displayLabelId="mimetype" converter="org.alfresco.faces.MimeTypeConverter" showInEditMode="false" />
+         <show-property name="title" showInEditMode="false" />
+         <show-property name="description" showInEditMode="false" />
+         <show-property name="size" displayLabelId="size" converter="org.alfresco.faces.ByteSizeConverter" showInEditMode="false" />
       </property-sheet>
    </config>
    
@@ -78,8 +78,8 @@
    
    <config evaluator="aspect-name" condition="versionable">
       <property-sheet>
-         <show-property name="versionLabel"/>
-         <show-property name="autoVersion" converter="org.alfresco.faces.BooleanLabelConverter"/>         
+         <show-property name="versionLabel" showInEditMode="false" />
+         <show-property name="autoVersion" converter="org.alfresco.faces.BooleanLabelConverter"/>
       </property-sheet>
    </config>
    
@@ -97,16 +97,16 @@
    
    <config evaluator="aspect-name" condition="author">
       <property-sheet>
-         <show-property name="author"/>
+         <show-property name="author" showInEditMode="false" />
       </property-sheet>
    </config>
    
    <config evaluator="aspect-name" condition="auditable">
       <property-sheet>
-         <show-property name="creator" readOnly="true"/>
-         <show-property name="created" readOnly="true"/>
-         <show-property name="modifier" readOnly="true"/>
-         <show-property name="modified" readOnly="true"/>
+         <show-property name="creator" readOnly="true" showInEditMode="false" />
+         <show-property name="created" readOnly="true" showInEditMode="false" />
+         <show-property name="modifier" readOnly="true" showInEditMode="false" />
+         <show-property name="modified" readOnly="true" showInEditMode="false" />
       </property-sheet>
    </config>
    

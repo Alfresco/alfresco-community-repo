@@ -120,10 +120,22 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
             
             if (itemsToDisplay != null)
             {
-               List<ItemConfig> itemsToRender = itemsToDisplay.getItemsToShow();
-            
-               if (logger.isDebugEnabled())
-                  logger.debug("Items to render: " + itemsToDisplay.getItemNamesToShow());
+               List<ItemConfig> itemsToRender = null;
+               
+               if (this.getMode().equalsIgnoreCase(EDIT_MODE))
+               {
+                  itemsToRender = itemsToDisplay.getEditableItemsToShow();
+                  
+                  if (logger.isDebugEnabled())
+                     logger.debug("Items to render: " + itemsToDisplay.getEditableItemNamesToShow());
+               }
+               else
+               {
+                  itemsToRender = itemsToDisplay.getItemsToShow();
+                  
+                  if (logger.isDebugEnabled())
+                     logger.debug("Items to render: " + itemsToDisplay.getItemNamesToShow());
+               }
             
                createComponentsFromConfig(context, itemsToRender);
             }

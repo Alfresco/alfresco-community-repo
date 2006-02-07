@@ -157,7 +157,7 @@
                                        <r:propertySheetGrid id="document-props" value="#{EditDocPropsDialog.editableNode}" 
                                                             var="editDocProps" columns="1" 
                                                             rendered="#{EditDocPropsDialog.otherPropertiesPresent}"
-                                                            externalConfig="true" configArea="edit-properties" />
+                                                            externalConfig="true" />
                                        <h:outputText value="#{msg.no_other_properties}" 
                                                      rendered="#{EditDocPropsDialog.otherPropertiesPresent == false}" />
                                     </td>

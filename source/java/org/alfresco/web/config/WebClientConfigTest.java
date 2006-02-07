@@ -28,8 +28,6 @@ import org.alfresco.config.xml.XMLConfigService;
 import org.alfresco.util.BaseTest;
 import org.alfresco.web.config.AdvancedSearchConfigElement.CustomProperty;
 import org.alfresco.web.config.PropertySheetConfigElement.ItemConfig;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * JUnit tests to exercise the capabilities added to the web client config
@@ -78,7 +76,7 @@ public class WebClientConfigTest extends BaseTest
             .getConfigElement("property-sheet");
       assertNotNull("Space aspect property config should not be null", spacePropConfig);
       propNames = spacePropConfig.getItemNamesToShow();
-      assertTrue("There should be 5 properties in the list", propNames.size() == 5);
+      assertTrue("There should be 6 properties in the list", propNames.size() == 6);
 
       // make sure the property sheet config has come back with the correct data
       Map<String, ItemConfig> props = spacePropConfig.getItemsMapToShow();
@@ -98,7 +96,7 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("display label for icon should be null", null, iconProp.getDisplayLabel());
       assertFalse("read only for icon should be 'false'", iconProp.isReadOnly());
    }
-
+   
    /**
     * Tests the config service by retrieving property sheet configuration using
     * the generic interfaces
@@ -126,8 +124,12 @@ public class WebClientConfigTest extends BaseTest
          propNames.add(propName);
       }
 
-      assertTrue("There should be 5 properties", propNames.size() == 5);
+      assertTrue("There should be 6 properties", propNames.size() == 6);
       assertFalse("The id attribute should not be present", propsToDisplay.hasAttribute("id"));
+      
+      // make sure the inEditMode and readOnly flags are set correctly on the last property
+      assertEquals("showInEditMode", "false", kids.get(5).getAttribute("showInEditMode"));
+      assertEquals("readOnly", "true", kids.get(5).getAttribute("readOnly"));
    }
 
    /**
@@ -155,8 +157,52 @@ public class WebClientConfigTest extends BaseTest
       assertNotNull("kids should not be null", kids);
       assertTrue("There should be more than one child", kids.size() > 1);
       
-      assertEquals("There should be 5 properties", propNames.size() == 5, true);
+      assertEquals("There should be 6 properties", propNames.size() == 6, true);
       assertFalse("The id attribute should not be present", propsToDisplay.hasAttribute("id"));
+   }
+   
+   public void testPropertyEditing()
+   {
+      // setup the config service
+      String configFiles = getResourcesDir() + "test-config.xml";
+      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
+      svc.init();
+      
+      Config propEditConfig = svc.getConfig("Property Editing");
+      assertNotNull("Property Editing section should not be null", propEditConfig);
+      
+      PropertySheetConfigElement propSheet = (PropertySheetConfigElement)propEditConfig.
+            getConfigElement("property-sheet");
+      assertNotNull("property-sheet config should not be null", propSheet);
+      
+      // make sure the list of names method works correctly
+      List<String> itemNamesToEdit = propSheet.getEditableItemNamesToShow();
+      assertNotNull("itemNamesToEdit should not be null", itemNamesToEdit);
+      assertEquals("Number of properties", 3, itemNamesToEdit.size());
+      
+      // make sure the property names are correct
+      assertEquals("first property name", "name", itemNamesToEdit.get(0));
+      assertEquals("second property name", "description", itemNamesToEdit.get(1));
+      assertEquals("third property name", "icon", itemNamesToEdit.get(2));
+      
+      // make sure the map has the correct number of items
+      Map<String, ItemConfig> itemsToEditMap = propSheet.getEditableItemsMapToShow();
+      assertNotNull("itemsToEditMap should not be null", itemsToEditMap);
+      assertEquals("Number of properties", 3, itemsToEditMap.size());
+      
+      // make sure the icon property is set as read only
+      ItemConfig item = itemsToEditMap.get("icon");
+      assertNotNull("icon should not be null", item);
+      assertTrue("icon property readOnly status should be true", item.isReadOnly());
+      
+      // make the size property is unavailable
+      item = itemsToEditMap.get("size");
+      assertNull("size should be null", item);
+      
+      // make sure the list has the correct numbe of items
+      List<ItemConfig> itemsToEdit = propSheet.getEditableItemsToShow();
+      assertNotNull("itemsToEdit should not be null", itemsToEdit);
+      assertEquals("Number of properties", 3, itemsToEdit.size());
    }
    
    /**

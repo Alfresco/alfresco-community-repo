@@ -249,7 +249,8 @@ public class WebClientConfigTest extends BaseTest
             getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
       assertNotNull("client config", clientConfig);
       
-      assertEquals("error page", "/jsp/error-override.jsp", clientConfig.getErrorPage());
+      // make sure the error page is still set as the default
+      assertEquals("error page", "/jsp/error.jsp", clientConfig.getErrorPage());
       assertEquals("login page", "/jsp/login-override.jsp", clientConfig.getLoginPage());
       assertEquals("home space permission", "Editor", clientConfig.getHomeSpacePermission());
       assertEquals("help url", "http://www.somewhere.com/help", clientConfig.getHelpUrl());

@@ -64,16 +64,73 @@ public class ClientConfigElement extends ConfigElementAdapter
       ClientConfigElement existingElement = (ClientConfigElement)configElement;
       ClientConfigElement newElement = new ClientConfigElement();
       
-      // just overwrite all the simple values
-      newElement.setEditLinkType(existingElement.getEditLinkType());
-      newElement.setFromEmailAddress(existingElement.getFromEmailAddress());
-      newElement.setHelpUrl(existingElement.getHelpUrl());
-      newElement.setHomeSpacePermission(existingElement.getHomeSpacePermission());
-      newElement.setRecentSpacesItems(existingElement.getRecentSpacesItems());
-      newElement.setSearchMinimum(existingElement.getSearchMinimum());
-      newElement.setShelfVisible(existingElement.isShelfVisible());
-      newElement.setErrorPage(existingElement.getErrorPage());
-      newElement.setLoginPage(existingElement.getLoginPage());
+      // set those values that have changed
+      if (existingElement.getEditLinkType() == null)
+      {
+         newElement.setEditLinkType(this.editLinkType);
+      }
+      else
+      {
+         newElement.setEditLinkType(existingElement.getEditLinkType());
+      }
+      
+      if (existingElement.getErrorPage() == null)
+      {
+         newElement.setErrorPage(this.errorPage);
+      }
+      else
+      {     
+         newElement.setErrorPage(existingElement.getErrorPage());
+      }
+      
+      if (existingElement.getLoginPage() == null)
+      {
+         newElement.setLoginPage(this.loginPage);
+      }
+      else
+      {
+         newElement.setLoginPage(existingElement.getLoginPage());
+      }
+      
+      if (existingElement.getHelpUrl() == null )
+      {
+         newElement.setHelpUrl(this.helpUrl);
+      }
+      else
+      {
+         newElement.setHelpUrl(existingElement.getHelpUrl());
+      }
+      
+      if (existingElement.getHomeSpacePermission() == null)
+      {
+         newElement.setHomeSpacePermission(this.homeSpacePermission);
+      }
+      else
+      {
+         newElement.setHomeSpacePermission(existingElement.getHomeSpacePermission());
+      }
+      
+      // override default values if they have changed
+      if (existingElement.getRecentSpacesItems() != newElement.getRecentSpacesItems())
+      {
+         newElement.setRecentSpacesItems(existingElement.getRecentSpacesItems());
+      }
+      
+      if (existingElement.getSearchMinimum() != newElement.getSearchMinimum())
+      {
+         newElement.setSearchMinimum(existingElement.getSearchMinimum());
+      }
+      
+      if (existingElement.isShelfVisible() != newElement.isShelfVisible())
+      {
+         newElement.setShelfVisible(existingElement.isShelfVisible());
+      }
+      
+      if (existingElement.getFromEmailAddress() != null && 
+          (existingElement.getFromEmailAddress().equals(newElement.getFromEmailAddress()) == false))
+      {
+         newElement.setFromEmailAddress(existingElement.getFromEmailAddress());
+      }
       
       return newElement;
    }

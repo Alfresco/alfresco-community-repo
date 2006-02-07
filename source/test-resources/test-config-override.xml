@@ -2,9 +2,6 @@
 
    <config>
       <client>
-         <!-- the error page the client will use -->
-         <error-page>/jsp/error-override.jsp</error-page>
-         
          <!-- the login page the client will use -->
          <login-page>/jsp/login-override.jsp</login-page>
          

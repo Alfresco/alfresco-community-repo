@@ -772,7 +772,7 @@
     </bean>
 
 
-    <bean id="importerBootstrap" class="org.alfresco.repo.importer.ImporterBootstrap" init-method="bootstrap" depends-on="alfrescoUserStoreBootstrap">
+    <bean id="importerBootstrap" class="org.alfresco.repo.importer.ImporterBootstrap" init-method="bootstrap" depends-on="alfrescoUserStoreBootstrap, versionBootstrap">
         <property name="transactionService">
             <ref bean="transactionComponent"/>
         </property>

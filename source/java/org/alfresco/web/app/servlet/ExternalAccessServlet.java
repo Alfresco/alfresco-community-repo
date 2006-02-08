@@ -32,7 +32,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.BrowseBean;
+import org.alfresco.web.bean.LoginBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -63,6 +65,7 @@ public class ExternalAccessServlet extends BaseServlet
    private final static String OUTCOME_DOCDETAILS   = "showDocDetails";
    private final static String OUTCOME_SPACEDETAILS = "showSpaceDetails";
    private final static String OUTCOME_BROWSE       = "browse";
+   private final static String OUTCOME_LOGOUT       = "logout";
    
    private static final String ARG_TEMPLATE  = "template";
    
@@ -181,44 +184,55 @@ public class ExternalAccessServlet extends BaseServlet
       }
       else if (OUTCOME_BROWSE.equals(outcome))
       {
-         if (args != null)
+         if (args != null && args.length >= 3)
          {
             NodeRef nodeRef = null;
             int offset = 0;
-            if (args.length >= 3)
+
+            offset = args.length - 3;
+            StoreRef storeRef = new StoreRef(args[0+offset], args[1+offset]);
+            nodeRef = new NodeRef(storeRef, args[2+offset]);
+            
+            // check that the user has at least READ access - else redirect to the login page
+            if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
             {
-               offset = args.length - 3;
-               StoreRef storeRef = new StoreRef(args[0+offset], args[1+offset]);
-               nodeRef = new NodeRef(storeRef, args[2+offset]);
-               
-               // check that the user has at least READ access - else redirect to the login page
-               if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
-               {
-                  if (logger.isDebugEnabled())
-                     logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
-                  redirectToLoginPage(req, res);
-                  return;
-               }
-               
-               // this call sets up the current node Id, and updates or initialises the
-               // breadcrumb component with the selected node as appropriate.
-               browseBean.updateUILocation(nodeRef);
-               
-               // force a "late" refresh of the BrowseBean to handle external servlet access URL
-               browseBean.externalAccessRefresh();
-               
-               // check for view mode first argument
-               if (args[0].equals(ARG_TEMPLATE))
-               {
-                  browseBean.setDashboardView(true);
-               }
-               
-               // the above calls setup the NavigationHandler automatically
+               if (logger.isDebugEnabled())
+                  logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
+               redirectToLoginPage(req, res);
+               return;
             }
+            
+            // this call sets up the current node Id, and updates or initialises the
+            // breadcrumb component with the selected node as appropriate.
+            browseBean.updateUILocation(nodeRef);
+            
+            // force a "late" refresh of the BrowseBean to handle external servlet access URL
+            browseBean.externalAccessRefresh();
+            
+            // check for view mode first argument
+            if (args[0].equals(ARG_TEMPLATE))
+            {
+               browseBean.setDashboardView(true);
+            }
+            
+            // the above calls into BrowseBean setup the NavigationHandler automatically
+         }
+         else
+         {
+            // perform the appropriate JSF navigation outcome
+            NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
+            navigationHandler.handleNavigation(fc, null, outcome);
          }
       }
+      else if (OUTCOME_LOGOUT.equals(outcome))
+      {
+         // special case for logout
+         req.getSession().invalidate();
+         res.sendRedirect(req.getContextPath() + FACES_SERVLET + Application.getLoginPage(getServletContext()));
+         return;
+      }
       
-      // perform the forward to the page processed by the Faces servlet 
+      // perform the forward to the page processed by the Faces servlet
       String viewId = fc.getViewRoot().getViewId();
       getServletContext().getRequestDispatcher(FACES_SERVLET + viewId).forward(req, res);
    }

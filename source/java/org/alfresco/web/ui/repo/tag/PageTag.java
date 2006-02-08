@@ -41,7 +41,7 @@ public class PageTag extends TagSupport
    private final static String SCRIPTS_WEBDAV = "/scripts/webdav.js\"></script>\n";
    private final static String STYLES_START  = "<link rel=\"stylesheet\" href=\"";
    private final static String STYLES_MAIN  = "/css/main.css\" TYPE=\"text/css\">\n";
-   private final static String ALF_URL   = "http://www.alfrescosoftware.com";
+   private final static String ALF_URL   = "http://www.alfresco.com";
    private final static String ALF_LOGO  = "/images/logo/alfresco_logo.gif";
    private final static String ALF_TEXT  = "Content managed by Alfresco";
    private final static String ALF_COPY  = "Alfresco Software Inc. © 2005 All rights reserved.";

@@ -244,7 +244,7 @@ public class SystemErrorTag extends TagSupport
          {
             out.write("\n<div style='padding-top:16px;'><a href='");
             out.write(((HttpServletRequest)pageContext.getRequest()).getContextPath());
-            out.write(ExternalAccessServlet.generateExternalURL("browse", null));
+            out.write(ExternalAccessServlet.generateExternalURL("logout", null));
             out.write("'>");
             out.write(bundle.getString(MSG_LOGOUT));
             out.write("</a></div>");

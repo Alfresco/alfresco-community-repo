@@ -141,27 +141,44 @@ public final class SearchContext implements Serializable
       
       // match against content text
       String text = this.text.trim();
-      String fullTextQuery = null;
-      String nameAttrQuery = null;
+      
+      StringBuilder fullTextBuf = new StringBuilder(64);
+      StringBuilder nameAttrBuf = new StringBuilder(64);
       
       if (text.length() != 0 && text.length() >= minimum)
       {
          if (text.indexOf(' ') == -1 && text.charAt(0) != '"')
          {
+            // check for existance of a special operator
+            boolean operatorAND = (text.charAt(0) == OP_AND);
+            boolean operatorNOT = (text.charAt(0) == OP_NOT);
+            // strip operator from term if one was found
+            if (operatorAND || operatorNOT)
+            {
+               text = text.substring(1);
+            }
+            
+            // prepend NOT operator if supplied
+            if (operatorNOT)
+            {
+               fullTextBuf.append(OP_NOT);
+               nameAttrBuf.append(OP_NOT);
+            }
+            
             // simple single word text search
             if (text.charAt(0) != OP_WILDCARD)
             {
                // escape characters and append the wildcard character
                String safeText = QueryParser.escape(text);
-               fullTextQuery = " TEXT:" + safeText + OP_WILDCARD;
-               nameAttrQuery = " @" + nameAttr + ":" + safeText + OP_WILDCARD;
+               fullTextBuf.append("TEXT:").append(safeText).append(OP_WILDCARD);
+               nameAttrBuf.append("@").append(nameAttr).append(":").append(safeText).append(OP_WILDCARD);
             }
             else
             {
                // found a leading wildcard - prepend it again after escaping the other characters
                String safeText = QueryParser.escape(text.substring(1));
-               fullTextQuery = " TEXT:*" + safeText + OP_WILDCARD;
-               nameAttrQuery = " @" + nameAttr + ":*" + safeText + OP_WILDCARD;
+               fullTextBuf.append("TEXT:*").append(safeText).append(OP_WILDCARD);
+               nameAttrBuf.append("@").append(nameAttr).append(":*").append(safeText).append(OP_WILDCARD);
             }
          }
          else
@@ -171,15 +188,14 @@ public final class SearchContext implements Serializable
             {
                // as a single quoted phrase
                String quotedSafeText = '"' + QueryParser.escape(text.substring(1, text.length() - 1)) + '"';
-               fullTextQuery = " TEXT:" + quotedSafeText;
-               nameAttrQuery = " @" + nameAttr + ":" + quotedSafeText;
+               fullTextBuf.append("TEXT:").append(quotedSafeText);
+               nameAttrBuf.append("@").append(nameAttr).append(":").append(quotedSafeText);
             }
             else
             {
                // as individual search terms
                StringTokenizer t = new StringTokenizer(text, " ");
-               StringBuilder fullTextBuf = new StringBuilder(64);
-               StringBuilder nameAttrBuf = new StringBuilder(64);
+               
                fullTextBuf.append('(');
                nameAttrBuf.append('(');
                int tokenCount = t.countTokens();
@@ -196,37 +212,46 @@ public final class SearchContext implements Serializable
                      term = term.substring(1);
                   }
                   
-                  // operators such as AND and OR are only make sense for full text searching 
-                  if (i != 0)
+                  if (term.length() != 0)
                   {
-                     fullTextBuf.append(operatorAND ? " AND " : " OR ");
-                     nameAttrBuf.append(operatorAND ? " AND " : " OR ");
-                  }
-                  
-                  // prepend NOT operator if supplied
-                  if (operatorNOT)
-                  {
-                     fullTextBuf.append(OP_NOT);
-                     nameAttrBuf.append(OP_NOT);
-                  }
-                  
-                  if (term.charAt(0) != OP_WILDCARD)
-                  {
-                     String safeTerm = QueryParser.escape(term);
-                     fullTextBuf.append("TEXT:").append(safeTerm).append(OP_WILDCARD);
-                     nameAttrBuf.append("@").append(nameAttr).append(":").append(safeTerm).append(OP_WILDCARD);
-                  }
-                  else
-                  {
-                     String safeTerm = QueryParser.escape(term.substring(1));
-                     fullTextBuf.append("TEXT:*").append(safeTerm).append(OP_WILDCARD);
-                     nameAttrBuf.append("@").append(nameAttr).append(":*").append(safeTerm).append(OP_WILDCARD);
+                     // operators such as AND and OR are only make sense for full text searching 
+                     if (i != 0 && !operatorAND)
+                     {
+                        fullTextBuf.append("OR ");
+                        nameAttrBuf.append("OR ");
+                     }
+                     
+                     // prepend NOT operator if supplied
+                     if (operatorNOT)
+                     {
+                        fullTextBuf.append(OP_NOT);
+                        nameAttrBuf.append(OP_NOT);
+                     }
+                     // prepend AND operator if supplied
+                     if (operatorAND)
+                     {
+                        fullTextBuf.append(OP_AND);
+                        nameAttrBuf.append(OP_AND);
+                     }
+                     
+                     if (term.charAt(0) != OP_WILDCARD)
+                     {
+                        String safeTerm = QueryParser.escape(term);
+                        fullTextBuf.append("TEXT:").append(safeTerm).append(OP_WILDCARD);
+                        nameAttrBuf.append("@").append(nameAttr).append(":").append(safeTerm).append(OP_WILDCARD);
+                     }
+                     else
+                     {
+                        String safeTerm = QueryParser.escape(term.substring(1));
+                        fullTextBuf.append("TEXT:*").append(safeTerm).append(OP_WILDCARD);
+                        nameAttrBuf.append("@").append(nameAttr).append(":*").append(safeTerm).append(OP_WILDCARD);
+                     }
+                     fullTextBuf.append(' ');
+                     nameAttrBuf.append(' ');
                   }
                }
                fullTextBuf.append(')');
                nameAttrBuf.append(')');
-               fullTextQuery = fullTextBuf.toString();
-               nameAttrQuery = nameAttrBuf.toString();
             }
          }
          
@@ -349,13 +374,15 @@ public final class SearchContext implements Serializable
       // match against FOLDER type
       String folderTypeQuery = " TYPE:\"{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}folder\" ";
       
+      String fullTextQuery = fullTextBuf.toString();
+      String nameAttrQuery = nameAttrBuf.toString();
       if (text.length() != 0 && text.length() >= minimum)
       {
          // text query for name and/or full text specified
          switch (mode)
          {
             case SearchContext.SEARCH_ALL:
-               query = '(' + fileTypeQuery + " AND " + '(' + nameAttrQuery + fullTextQuery + ')' + ')' + " OR " +
+               query = '(' + fileTypeQuery + " AND " + '(' + nameAttrQuery + ' ' + fullTextQuery + ')' + ')' + " OR " +
                        '(' + folderTypeQuery + " AND " + nameAttrQuery + ')';
                break;
             
@@ -364,7 +391,7 @@ public final class SearchContext implements Serializable
                break;
             
             case SearchContext.SEARCH_FILE_NAMES_CONTENTS:
-               query = fileTypeQuery + " AND " + '(' + nameAttrQuery + fullTextQuery + ')';
+               query = fileTypeQuery + " AND " + '(' + nameAttrQuery + ' ' + fullTextQuery + ')';
                break;
             
             case SearchContext.SEARCH_SPACE_NAMES:

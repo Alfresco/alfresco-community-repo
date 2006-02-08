@@ -3,16 +3,6 @@
                               "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
 <faces-config>
 
-   <!-- ==================== APPLICATION ==================== -->
-   <application>
-      <navigation-handler>org.alfresco.web.app.AlfrescoNavigationHandler</navigation-handler>
-      <variable-resolver>org.springframework.web.jsf.DelegatingVariableResolver</variable-resolver>
-      <locale-config>
-         <default-locale>en</default-locale>
-      </locale-config>
-   </application>
-   
-   
    <!-- ==================== MANAGED BEANS ==================== -->
    <managed-bean>
       <description>
@@ -1351,13 +1341,5 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-
-   <!-- ==================== LIFECYCLE ==================== -->
-
-   <!-- 
-   <lifecycle>
-      <phase-listener>org.alfresco.web.app.DebugPhaseListener</phase-listener>
-   </lifecycle>
-   -->
    
 </faces-config>

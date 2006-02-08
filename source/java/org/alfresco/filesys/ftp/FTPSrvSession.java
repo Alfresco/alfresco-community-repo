@@ -1219,7 +1219,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
         // Create the path for the file listing
 
         FTPPath ftpPath = m_cwd;
-        if (req.hasArgument())
+        if ( req.hasArgument())
             ftpPath = generatePathForRequest(req, true);
 
         if (ftpPath == null)
@@ -2979,7 +2979,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
             if ( getClientInformation().isGuest())
                 shares = getDynamicShareList();
             else
-                getShareList();
+                shares = getShareList();
             
             if (shares != null)
             {

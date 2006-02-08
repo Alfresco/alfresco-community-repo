@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -95,6 +94,9 @@ public class UploadFileServlet extends BaseServlet
                String filename = item.getName();
                if (filename != null && filename.length() != 0)
                {
+                  // ensure that the encoding is handled correctly
+                  filename = new String(filename.getBytes(), "UTF8").toString();
+
                   if (logger.isDebugEnabled())
                      logger.debug("Processing uploaded file: " + filename);
                   

@@ -71,6 +71,7 @@ import org.alfresco.web.ui.repo.component.UINodePath;
 import org.alfresco.web.ui.repo.component.UISimpleSearch;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
+import org.springframework.util.StringUtils;
 
 /**
  * Bean providing properties and behaviour for the main folder/document browse screen and
@@ -531,6 +532,7 @@ public class BrowseBean implements IContextListener
                      // create our Node representation
                      MapNode node = new MapNode(nodeRef, this.nodeService, true);
                      node.addPropertyResolver("icon", this.resolverSpaceIcon);
+                     node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                      node.addPropertyResolver("beingDiscussed", this.resolverBeingDiscussed);
                      
                      this.containerNodes.add(node);
@@ -648,6 +650,7 @@ public class BrowseBean implements IContextListener
                         node.addPropertyResolver("path", this.resolverPath);
                         node.addPropertyResolver("displayPath", this.resolverDisplayPath);
                         node.addPropertyResolver("icon", this.resolverSpaceIcon);
+                        node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                         node.addPropertyResolver("beingDiscussed", this.resolverBeingDiscussed);
                         
                         this.containerNodes.add(node);
@@ -811,6 +814,29 @@ public class BrowseBean implements IContextListener
          QNameNodeMap props = (QNameNodeMap)node.getProperties();
          String icon = (String)props.getRaw("app:icon");
          return (icon != null ? icon : NewSpaceWizard.SPACE_ICON_DEFAULT);
+      }
+   };
+   
+   public NodePropertyResolver resolverSmallIcon = new NodePropertyResolver() {
+      public Object get(Node node) {
+         QNameNodeMap props = (QNameNodeMap)node.getProperties();
+         
+         String icon = "space_small";
+         
+         // we know we have small versions of the forum space types so use them!
+         QName nodeType = node.getType();
+         if (nodeType.equals(ForumModel.TYPE_FORUMS) || nodeType.equals(ForumModel.TYPE_FORUM) ||
+             nodeType.equals(ForumModel.TYPE_TOPIC))
+         {
+            String storedIcon = (String)props.getRaw("app:icon");
+         
+            if (storedIcon != null)
+            {
+               icon = StringUtils.replace(storedIcon, "_large", "");
+            }
+         }
+         
+         return icon;
       }
    };
    

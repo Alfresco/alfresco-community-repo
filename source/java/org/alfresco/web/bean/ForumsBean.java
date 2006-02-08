@@ -800,6 +800,21 @@ public class ForumsBean implements IContextListener
     */
    public String deleteTopicOK()
    {
+      String outcomeOverride = "browse";
+      
+      // find out what the parent type of the node being deleted 
+      Node node = this.browseBean.getActionSpace();
+      ChildAssociationRef assoc = this.nodeService.getPrimaryParent(node.getNodeRef());
+      if (assoc != null)
+      {
+         NodeRef parent = assoc.getParentRef();
+         QName parentType = this.nodeService.getType(parent);
+         if (parentType.equals(ForumModel.TYPE_FORUM))
+         {
+            outcomeOverride = "topicDeleted";
+         }
+      }
+      
       // call the generic handler
       String outcome = this.browseBean.deleteSpaceOK();
       
@@ -807,7 +822,7 @@ public class ForumsBean implements IContextListener
       if (outcome != null)
       {
          outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
-                   AlfrescoNavigationHandler.DIALOG_SEPARATOR + "topicDeleted";
+                   AlfrescoNavigationHandler.DIALOG_SEPARATOR + outcomeOverride;
       }
       
       return outcome;

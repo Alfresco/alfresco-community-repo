@@ -45,7 +45,7 @@ public class FileState
     // File state constants
 
     public final static long NoTimeout      = -1L;
-    public final static long DefTimeout     = 5 * 60000L;   // 5 minutes
+    public final static long DefTimeout     = 2 * 60000L;   // 2 minutes
     public final static long RenameTimeout  = 1 * 60000L;   // 1 minute
     
     // File status
@@ -324,7 +324,9 @@ public class FileState
      */
     public final boolean hasPseudoFiles()
     {
-        return m_pseudoFiles != null ? true : false;
+        if ( m_pseudoFiles != null)
+            return m_pseudoFiles.numberOfFiles() > 0;
+        return false;
     }
     
     /**

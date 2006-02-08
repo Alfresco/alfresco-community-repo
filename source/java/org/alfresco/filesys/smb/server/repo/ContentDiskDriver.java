@@ -51,9 +51,11 @@ import org.alfresco.filesys.smb.server.SMBSrvSession;
 import org.alfresco.filesys.smb.server.repo.FileState.FileStateStatus;
 import org.alfresco.filesys.smb.server.repo.pseudo.ContentPseudoFileImpl;
 import org.alfresco.filesys.smb.server.repo.pseudo.LocalPseudoFile;
+import org.alfresco.filesys.smb.server.repo.pseudo.MemoryNetworkFile;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileInterface;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileList;
+import org.alfresco.filesys.smb.server.repo.pseudo.PseudoNetworkFile;
 import org.alfresco.filesys.util.DataBuffer;
 import org.alfresco.filesys.util.WildCard;
 import org.alfresco.model.ContentModel;
@@ -1333,40 +1335,59 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
         
         // Remove the node if marked for delete
         
-        if (file.hasDeleteOnClose() && file instanceof ContentNetworkFile)
+        if (file.hasDeleteOnClose())
         {
-            ContentNetworkFile contentNetFile = (ContentNetworkFile) file;
-            NodeRef nodeRef = contentNetFile.getNodeRef();
+            // Check if the file is a content file
             
-            // We don't know how long the network file has had the reference, so check for existence
-            
-            if (nodeService.exists(nodeRef))
+            if ( file instanceof ContentNetworkFile)
             {
-                try
+                ContentNetworkFile contentNetFile = (ContentNetworkFile) file;
+                NodeRef nodeRef = contentNetFile.getNodeRef();
+                
+                // We don't know how long the network file has had the reference, so check for existence
+                
+                if (nodeService.exists(nodeRef))
                 {
-                    // Delete the file
-                    
-                    nodeService.deleteNode(nodeRef);
-
-                    // Remove the file state
-                    
-                    if ( ctx.hasStateTable())
-                        ctx.getStateTable().removeFileState(file.getFullName());
+                    try
+                    {
+                        // Delete the file
+                        
+                        nodeService.deleteNode(nodeRef);
+    
+                        // Remove the file state
+                        
+                        if ( ctx.hasStateTable())
+                            ctx.getStateTable().removeFileState(file.getFullName());
+                    }
+                    catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
+                    {
+                        // Debug
+                        
+                        if ( logger.isDebugEnabled())
+                            logger.debug("Delete on close - access denied, " + file.getFullName());
+                        
+                        // Convert to a filesystem access denied exception
+                        
+                        throw new AccessDeniedException("Delete on close " + file.getFullName());
+                    }
                 }
-                catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
+            }
+            else if ( file instanceof PseudoNetworkFile ||
+                      file instanceof MemoryNetworkFile)
+            {
+                // Delete the pseudo file
+                
+                if ( hasPseudoFileInterface())
                 {
-                    // Debug
+                    // Delete the pseudo file
                     
-                    if ( logger.isDebugEnabled())
-                        logger.debug("Delete on close - access denied, " + file.getFullName());
-                    
-                    // Convert to a filesystem access denied exception
-                    
-                    throw new AccessDeniedException("Delete on close " + file.getFullName());
+                    getPseudoFileInterface().deletePseudoFile( sess, tree, file.getFullName());
                 }
             }
         }
-        // done
+        
+        // DEBUG
+        
         if (logger.isDebugEnabled())
         {
             logger.debug("Closed file: \n" +
@@ -1634,6 +1655,16 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     {
         try
         {
+            // Check if pseudo files are enabled
+            
+            if ( hasPseudoFileInterface() &&
+                    getPseudoFileInterface().isPseudoFile( sess, tree, name))
+            {
+                // Allow the file information to be changed
+                
+                return;
+            }
+            
             // Get the file/folder node
             
             NodeRef nodeRef = getNodeForPath(tree, name);

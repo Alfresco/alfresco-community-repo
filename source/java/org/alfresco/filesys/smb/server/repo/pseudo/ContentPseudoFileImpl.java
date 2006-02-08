@@ -195,6 +195,34 @@ public class ContentPseudoFileImpl implements PseudoFileInterface
         
         return pseudoCnt;
     }
+
+    /**
+     * Delete a pseudo file
+     * 
+     * @param sess SrvSession
+     * @param tree TreeConnection
+     * @param path String
+     */
+    public void deletePseudoFile(SrvSession sess, TreeConnection tree, String path)
+    {
+        // Access the device context
+
+        ContentContext ctx = (ContentContext) tree.getContext();
+        
+        // Get the file state for the parent folder
+        
+        String[] paths = FileName.splitPath( path);
+        FileState fstate = getStateForPath( ctx, paths[0]);
+
+        // Check if the folder has any pseudo files
+        
+        if ( fstate == null || fstate.hasPseudoFiles() == false)
+            return;
+
+        // Remove the pseudo file from the list
+        
+        fstate.getPseudoFileList().removeFile( paths[1], false);
+    }
     
     /**
      * Return the file state for the specified path

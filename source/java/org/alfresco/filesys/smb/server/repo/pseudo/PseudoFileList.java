@@ -102,4 +102,46 @@ public class PseudoFileList
         
         return null;
     }
+    
+    /**
+     * Remove the specified pseudo file from the list
+     * 
+     * @param fname String
+     * @param caseSensitive boolean
+     * @return PseudoFile
+     */
+    public final PseudoFile removeFile( String fname, boolean caseSensitive)
+    {
+        // Check if there are any entries in the list
+        
+        if ( m_list == null || m_list.size() == 0)
+            return null;
+        
+        // Search for the name match
+        
+        for ( int idx = 0; idx < m_list.size(); idx++)
+        {
+            // Get the current pseudo file
+            
+            PseudoFile pfile = m_list.get( idx);
+            boolean match = false;
+            
+            if ( caseSensitive && pfile.getFileName().equals( fname))
+                match = true;
+            else if ( pfile.getFileName().equalsIgnoreCase( fname))
+                match = true;
+            
+            // If we found the matching pseudo file remove it from the list
+            
+            if ( match)
+            {
+                m_list.remove( idx);
+                return pfile;
+            }
+        }
+        
+        // File not found
+        
+        return null;
+    }
 }

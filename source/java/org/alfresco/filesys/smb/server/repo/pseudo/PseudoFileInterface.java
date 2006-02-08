@@ -18,8 +18,6 @@
 package org.alfresco.filesys.smb.server.repo.pseudo;
 
 import org.alfresco.filesys.server.SrvSession;
-import org.alfresco.filesys.server.filesys.DiskDeviceContext;
-import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.TreeConnection;
 
 /**
@@ -60,4 +58,13 @@ public interface PseudoFileInterface
      * @return int
      */
     public int addPseudoFilesToFolder(SrvSession sess, TreeConnection tree, String path);
+    
+    /**
+     * Delete a pseudo file
+     * 
+     * @param sess SrvSession
+     * @param tree TreeConnection
+     * @param path String
+     */
+    public void deletePseudoFile(SrvSession sess, TreeConnection tree, String path);
 }

@@ -17,9 +17,7 @@
 
 package org.alfresco.filesys.smb.server.repo.pseudo;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 
 import org.alfresco.filesys.server.filesys.AccessDeniedException;
 import org.alfresco.filesys.server.filesys.FileInfo;

@@ -474,9 +474,20 @@ public final class Repository
          return false;
       }
       
-      // we have a transformer, so do it
-      extracter.extract(reader, destination);
-      return true;
+      try
+      {
+          // we have a transformer, so do it
+          extracter.extract(reader, destination);
+          return true;
+      }
+      catch (Throwable e)
+      {
+          // it failed
+          logger.warn("Metadata extraction failed: \n" +
+                  "   reader: " + reader + "\n" +
+                  "   extracter: " + extracter);
+          return false;
+      }
    }
 
    /**

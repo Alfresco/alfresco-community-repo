@@ -56,8 +56,9 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class PermissionServiceImpl implements PermissionServiceSPI, InitializingBean
 {
-    static SimplePermissionReference OLD_ALL_PERMISSIONS_REFERENCE = new SimplePermissionReference(QName.createQName(
-            NamespaceService.SECURITY_MODEL_1_0_URI, PermissionService.ALL_PERMISSIONS), PermissionService.ALL_PERMISSIONS);
+    static SimplePermissionReference OLD_ALL_PERMISSIONS_REFERENCE = new SimplePermissionReference(
+            QName.createQName(NamespaceService.SECURITY_MODEL_1_0_URI, PermissionService.ALL_PERMISSIONS),
+            PermissionService.ALL_PERMISSIONS);
     
     private static Log log = LogFactory.getLog(PermissionServiceImpl.class);
     
@@ -381,7 +382,11 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         QName typeQname = nodeService.getType(nodeRef);
         Set<QName> aspectQNames = nodeService.getAspects(nodeRef);
 
-        NodeTest nt = new NodeTest(perm.equals(OLD_ALL_PERMISSIONS_REFERENCE) ? getAllPermissionReference() : perm, typeQname, aspectQNames);
+        if (perm.equals(OLD_ALL_PERMISSIONS_REFERENCE))
+        {
+            perm = getAllPermissionReference();
+        }
+        NodeTest nt = new NodeTest(perm, typeQname, aspectQNames);
         boolean result = nt.evaluate(authorisations, nodeRef);
         if (log.isDebugEnabled())
         {

@@ -85,7 +85,9 @@ public class PermissionDataPatch extends AbstractPatch
                 ref.setName(name);
 
                 // it acts as its own key
-                PermissionReference found = (PermissionReference) getHibernateTemplate().get(PermissionReferenceImpl.class, ref);
+                PermissionReference found = (PermissionReference) getHibernateTemplate().get(
+                        PermissionReferenceImpl.class,
+                        ref);
 
                 if (found == null)
                 {

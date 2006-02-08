@@ -141,6 +141,11 @@ public class UsersBean implements IContextListener
     */
    public List<Node> getUsers()
    {
+      if (this.users == null)
+      {
+         search();
+      }
+      
       return this.users;
    }
    
@@ -282,6 +287,9 @@ public class UsersBean implements IContextListener
          
          // commit the transaction
          tx.commit();
+         
+         // re-do the search to refresh the list
+         search();
       }
       catch (Throwable e)
       {
@@ -328,9 +336,9 @@ public class UsersBean implements IContextListener
    /**
     * Event handler called when the user wishes to search for a user
     * 
-    * @param event The event
+    * @return The outcome
     */
-   public void search(ActionEvent event)
+   public String search()
    {
       this.usersRichList.setValue(null);
       
@@ -408,19 +416,25 @@ public class UsersBean implements IContextListener
             try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          }
       }
+      
+      // return null to stay on the same page
+      return null;
    }
    
    /**
     * Action handler to show all the users currently in the system
     * 
-    * @param event The event
+    * @return The outcome
     */
-   public void showAll(ActionEvent event)
+   public String showAll()
    {
       this.usersRichList.setValue(null);
       
       this.users = Repository.getUsers(FacesContext.getCurrentInstance(), 
             this.nodeService, this.searchService);
+      
+      // return null to stay on the same page
+      return null;
    }
    
    // ------------------------------------------------------------------------------
@@ -434,6 +448,7 @@ public class UsersBean implements IContextListener
       if (this.usersRichList != null)
       {
          this.usersRichList.setValue(null);
+         this.users = null;
       }
    }
 }

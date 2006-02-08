@@ -79,6 +79,9 @@ public class UnoContentTransformer extends AbstractContentTransformer
         formatsByConversion.put(
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE1_DRAW, MimetypeMap.MIMETYPE_PDF),
                 new DocumentFormatWrapper(DocumentFormat.PDF_IMPRESS, 1.0));
+        formatsByConversion.put(
+                new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_OPENOFFICE1_IMPRESS, MimetypeMap.MIMETYPE_PDF),
+                new DocumentFormatWrapper(DocumentFormat.PDF_IMPRESS, 1.0));
         // Star Office 5.x
         formatsByConversion.put(
                 new ContentTransformerRegistry.TransformationKey(MimetypeMap.MIMETYPE_STAROFFICE5_DRAW, MimetypeMap.MIMETYPE_PDF),

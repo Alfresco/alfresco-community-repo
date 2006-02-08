@@ -54,6 +54,9 @@
          <mimetype mimetype="application/vnd.sun.xml.draw" display="OpenOffice 1.0/StarOffice6.0 Draw 6.0">
            <extension>sxd</extension>
          </mimetype>
+         <mimetype mimetype="application/vnd.sun.xml.impress" display="OpenOffice 1.0/StarOffice6.0 Impress 6.0">
+           <extension>sxi</extension>
+         </mimetype>
          <mimetype mimetype="application/vnd.sun.xml.writer" display="OpenOffice 1.0/StarOffice6.0 Writer 6.0">
            <extension>sxw</extension>
          </mimetype>

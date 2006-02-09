@@ -76,6 +76,7 @@ public class MimetypeMap implements MimetypeService
     public static final String MIMETYPE_OPENOFFICE1_WRITER = "application/vnd.sun.xml.writer";
     public static final String MIMETYPE_OPENOFFICE1_CALC = "application/vnd.sun.xml.calc";
     public static final String MIMETYPE_OPENOFFICE1_DRAW = "application/vnd.sun.xml.draw";
+    public static final String MIMETYPE_OPENOFFICE1_IMPRESS = "application/vnd.sun.xml.impress";
     // Star Office
     public static final String MIMETYPE_STAROFFICE5_DRAW = "application/vnd.stardivision.draw";
     public static final String MIMETYPE_STAROFFICE5_CALC = "application/vnd.stardivision.calc";

@@ -17,7 +17,7 @@
 package org.alfresco.repo.template;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.service.ServiceRegistry;
@@ -32,11 +32,9 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Kevin Roast
  */
-public abstract class BasePathResultsMap extends HashMap implements Cloneable
+public abstract class BasePathResultsMap extends BaseTemplateMap
 {
     protected static Log logger = LogFactory.getLog(BasePathResultsMap.class);
-    protected TemplateNode parent;
-    protected ServiceRegistry services = null;
     
     /**
      * Constructor
@@ -46,16 +44,17 @@ public abstract class BasePathResultsMap extends HashMap implements Cloneable
      */
     public BasePathResultsMap(TemplateNode parent, ServiceRegistry services)
     {
-        super(1, 1.0f);
-        this.services = services;
-        this.parent = parent;
+        super(parent, services);
     }
     
     /**
-     * @see java.util.Map#get(java.lang.Object)
+     * Return a list or a single Node from executing an xpath against the parent Node.
+     * 
+     * @param xpath        XPath to execute
+     * @param firstOnly    True to return the first result only
+     * 
+     * @return List<TemplateNode>
      */
-    public abstract Object get(Object key);
-    
     protected List<TemplateNode> getChildrenByXPath(String xpath, boolean firstOnly)
     {
         List<TemplateNode> result = null;
@@ -92,6 +91,6 @@ public abstract class BasePathResultsMap extends HashMap implements Cloneable
             }
         }
         
-        return result != null ? result : new ArrayList<TemplateNode>(0);
+        return result != null ? result : (List)Collections.emptyList();
     }
 }

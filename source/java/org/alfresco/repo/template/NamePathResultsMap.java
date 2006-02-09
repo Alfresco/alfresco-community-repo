@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.TemplateNode;
  * 
  * @author Kevin Roast
  */
-public final class NamePathResultsMap extends BasePathResultsMap implements Cloneable
+public final class NamePathResultsMap extends BasePathResultsMap
 {
     /**
      * Constructor

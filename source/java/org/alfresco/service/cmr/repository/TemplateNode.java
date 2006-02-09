@@ -26,10 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.template.LuceneSearchResultsMap;
 import org.alfresco.repo.template.NamePathResultsMap;
+import org.alfresco.repo.template.SavedSearchResultsMap;
 import org.alfresco.repo.template.XPathResultsMap;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -39,6 +40,7 @@ import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StringUtils;
 import org.xml.sax.InputSource;
 
 import freemarker.ext.dom.NodeModel;
@@ -209,6 +211,24 @@ public final class TemplateNode implements Serializable
     public Map getChildrenByXPath()
     {
         return new XPathResultsMap(this, this.services);
+    }
+    
+    /**
+     * @return A map capable of returning a List of TemplateNode objects from an NodeRef to a Saved Search
+     *         object. The Saved Search is executed and the resulting nodes supplied as a sequence.
+     */
+    public Map getChildrenBySavedSearch()
+    {
+        return new SavedSearchResultsMap(this, this.services);
+    }
+    
+    /**
+     * @return A map capable of returning a List of TemplateNode objects from an NodeRef to a Lucene search
+     *         string. The Saved Search is executed and the resulting nodes supplied as a sequence.
+     */
+    public Map getChildrenByLuceneSearch()
+    {
+        return new LuceneSearchResultsMap(this, this.services);
     }
     
     /**
@@ -493,7 +513,7 @@ public final class TemplateNode implements Serializable
                     nodeRef.getStoreRef().getProtocol(),
                     nodeRef.getStoreRef().getIdentifier(),
                     nodeRef.getId(),
-                    URLEncoder.encode(getName(), "US-ASCII") } );
+                    StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") } );
         }
         catch (UnsupportedEncodingException err)
         {
@@ -602,8 +622,8 @@ public final class TemplateNode implements Serializable
                        nodeRef.getStoreRef().getProtocol(),
                        nodeRef.getStoreRef().getIdentifier(),
                        nodeRef.getId(),
-                       URLEncoder.encode(getName(), "US-ASCII"),
-                       URLEncoder.encode(property.toString(), "US-ASCII") } );
+                       StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20"),
+                       StringUtils.replace(URLEncoder.encode(property.toString(), "UTF-8"), "+", "%20") } );
             }
             catch (UnsupportedEncodingException err)
             {

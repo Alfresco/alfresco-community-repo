@@ -169,6 +169,7 @@ public class UnoContentTransformer extends AbstractContentTransformer
      */
     public UnoContentTransformer()
     {
+        isConnected = false;
     }
 
     /**

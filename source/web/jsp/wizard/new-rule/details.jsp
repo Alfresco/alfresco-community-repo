@@ -127,7 +127,7 @@
                                  <tr>
                                     <td><h:outputText value="#{msg.type}"/>:</td>
                                     <td width="90%">
-                                       <h:selectOneMenu value="#{NewRuleWizard.type}">
+                                       <h:selectOneMenu value="#{NewRuleWizard.type}" disabled="#{NewRuleWizard.inEditMode}">
                                           <f:selectItems value="#{NewRuleWizard.types}" />
                                        </h:selectOneMenu>
                                     </td>

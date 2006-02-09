@@ -37,7 +37,7 @@ public class ViewsElementReader implements ConfigElementReader
    public static final String ELEMENT_VIEWDEFAULTS = "view-defaults";
    public static final String ELEMENT_PAGESIZE = "page-size";
    public static final String ELEMENT_SORTCOLUMN = "sort-column";
-   public static final String ELEMENT_SORTDESCENDING = "sort-descending";
+   public static final String ELEMENT_SORTDIRECTION = "sort-direction";
    
    private static Log logger = LogFactory.getLog(ViewsElementReader.class);
    
@@ -95,15 +95,11 @@ public class ViewsElementReader implements ConfigElementReader
                   configElement.addDefaultSortColumn(pageName, column);
                }
                
-               // get the sort descending option
-               Element sortDesc = page.element(ELEMENT_SORTDESCENDING);
-               if (sortDesc != null)
+               // get the sort direction option
+               Element sortDir = page.element(ELEMENT_SORTDIRECTION);
+               if (sortDir != null)
                {
-                  Boolean descending = new Boolean(sortDesc.getTextTrim());
-                  if (descending.booleanValue() == true)
-                  { 
-                     configElement.addDescendingSort(pageName);
-                  }
+                  configElement.addSortDirection(pageName, sortDir.getTextTrim());
                }
                
                // process the page-size element

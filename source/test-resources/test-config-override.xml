@@ -62,7 +62,7 @@
                <!-- define a sort column to the forum page -->
                <sort-column>modified</sort-column>
                <!-- turn on descending sorting for the forum page -->
-               <sort-descending>true</sort-descending>
+               <sort-direction>descending</sort-direction>
                <page-size>
                   <!-- change the details page size to 50 -->
                   <details>50</details>
@@ -70,7 +70,7 @@
             </forum>
             <topic>
                <!-- reset the descending sort for the topic view -->
-               <sort-descending>false</sort-descending>
+               <sort-direction>ascending</sort-direction>
             </topic>
          </view-defaults>
       </views>

@@ -140,6 +140,16 @@ public abstract class AbstractWizardBean
    }
  
    /**
+    * Determines whether the wizard is in edit mode
+    * 
+    * @return true if the wizard is in edit mode, false if it is in creation mode
+    */
+   public boolean isInEditMode()
+   {
+      return this.editMode;
+   }
+   
+   /**
     * Deals with the next button being pressed
     * 
     * @return

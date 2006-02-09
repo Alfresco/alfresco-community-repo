@@ -33,10 +33,13 @@ import org.alfresco.config.element.ConfigElementAdapter;
 public class ViewsConfigElement extends ConfigElementAdapter
 {
    public static final String CONFIG_ELEMENT_ID = "views";
+
    public static final String VIEW_DETAILS = "details";
    public static final String VIEW_ICONS = "icons";
    public static final String VIEW_LIST = "list";
    public static final String VIEW_BUBBLE = "bubble";
+   public static final String SORT_ASCENDING = "ascending";
+   public static final String SORT_DESCENDING = "descending";
    
    private static final String SEPARATOR = ":";
    
@@ -58,7 +61,7 @@ public class ViewsConfigElement extends ConfigElementAdapter
    private Map<String, String> sortColumns = new HashMap<String, String>(4);
    
    // list of pages that have been configured to have ascending sorts
-   private List<String> descendingSorts = new ArrayList<String>(1);
+   private Map<String, String> sortDirections = new HashMap<String, String>(1);
    
    /**
     * Default Constructor
@@ -127,9 +130,9 @@ public class ViewsConfigElement extends ConfigElementAdapter
          newElement.addDefaultSortColumn(page, this.sortColumns.get(page));
       }
       
-      for (String page : this.descendingSorts)
+      for (String page : this.sortDirections.keySet())
       {
-         newElement.addDescendingSort(page);
+         newElement.addSortDirection(page, this.sortDirections.get(page));
       }
       
       // copy all the config from the element to be combined into the new one
@@ -161,11 +164,10 @@ public class ViewsConfigElement extends ConfigElementAdapter
          newElement.addDefaultSortColumn(page, existingSortColumns.get(page));
       }
       
-      // TODO: There is a potential problem here - how would you remove the
-      //       descending sort for a page
-      for (String page : existingElement.getDescendingSorts())
+      Map<String, String> existingSortDirs = existingElement.getSortDirections();
+      for (String page : existingSortDirs.keySet())
       {
-         newElement.addDescendingSort(page);
+         newElement.addSortDirection(page, existingSortDirs.get(page));
       }
       
       return newElement;
@@ -322,13 +324,14 @@ public class ViewsConfigElement extends ConfigElementAdapter
    }
    
    /**
-    * Sets the given page as using descending sorts
+    * Sets the given page as using the given sort direction
     * 
     * @param page The name of the page i.e. browse, forums etc.
+    * @param dir The sort direction
     */
-   /*package*/ void addDescendingSort(String page)
+   /*package*/ void addSortDirection(String page, String dir)
    {
-      this.descendingSorts.add(page);
+      this.sortDirections.put(page, dir);
    }
    
    /**
@@ -340,16 +343,24 @@ public class ViewsConfigElement extends ConfigElementAdapter
     */
    public boolean hasDescendingSort(String page)
    {
-      return this.descendingSorts.contains(page);
+      boolean usesDescendingSort = false;
+      
+      String sortDir = this.sortDirections.get(page);
+      if (sortDir != null && sortDir.equalsIgnoreCase(SORT_DESCENDING))
+      {
+         usesDescendingSort = true;
+      }
+      
+      return usesDescendingSort;
    }
    
    /**
-    * Returns a list of pages that use a descending sort
+    * Returns a map of the sort directions
     * 
-    * @return List of pages that use a descending sort
+    * @return Map of sort directions
     */
-   /*package*/ List<String> getDescendingSorts()
+   /*package*/ Map<String, String> getSortDirections()
    {
-      return this.descendingSorts;
+      return this.sortDirections;
    }
 }

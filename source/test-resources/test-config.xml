@@ -86,7 +86,8 @@
             <browse>
                <!-- allowable values: list|details|icons -->
                <view>icons</view>
-               <sort-descending>false</sort-descending>
+               <!-- allowable values: ascending|descending -->
+               <sort-direction>ascending</sort-direction>
                <page-size>
                   <list>10</list>
                   <details>10</details>
@@ -113,7 +114,7 @@
                <!-- allowable values: details|bubble -->
                <view>bubble</view>
                <sort-column>created</sort-column>
-               <sort-descending>true</sort-descending>
+               <sort-direction>descending</sort-direction>
                <page-size>
                   <bubble>5</bubble>
                   <details>20</details>

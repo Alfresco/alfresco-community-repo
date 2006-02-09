@@ -295,10 +295,6 @@
          <value>#{FileFolderService}</value>
       </managed-property>
       <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
          <property-name>navigator</property-name>
          <value>#{NavigationBean}</value>
       </managed-property>
@@ -992,10 +988,6 @@
          <value>#{BrowseBean}</value>
       </managed-property>
       <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
          <property-name>namespaceService</property-name>
          <value>#{NamespaceService}</value>
       </managed-property>
@@ -1029,10 +1021,6 @@
          <value>#{BrowseBean}</value>
       </managed-property>
       <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
          <property-name>namespaceService</property-name>
          <value>#{NamespaceService}</value>
       </managed-property>
@@ -1052,10 +1040,6 @@
       <managed-property>
          <property-name>fileFolderService</property-name>
          <value>#{FileFolderService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
       </managed-property>
       <managed-property>
          <property-name>navigator</property-name>
@@ -1103,10 +1087,6 @@
          <value>#{BrowseBean}</value>
       </managed-property>
       <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
          <property-name>namespaceService</property-name>
          <value>#{NamespaceService}</value>
       </managed-property>
@@ -1138,10 +1118,6 @@
       <managed-property>
          <property-name>browseBean</property-name>
          <value>#{BrowseBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
       </managed-property>
       <managed-property>
          <property-name>contentService</property-name>
@@ -1179,10 +1155,6 @@
       <managed-property>
          <property-name>browseBean</property-name>
          <value>#{BrowseBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
       </managed-property>
       <managed-property>
          <property-name>namespaceService</property-name>
@@ -1327,10 +1299,6 @@
       <managed-property>
          <property-name>browseBean</property-name>
          <value>#{BrowseBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
       </managed-property>
       <managed-property>
          <property-name>contentService</property-name>

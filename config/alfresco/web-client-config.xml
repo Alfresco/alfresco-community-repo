@@ -102,7 +102,8 @@
                <!-- allowable values: details|bubble -->
                <view>bubble</view>
                <sort-column>created</sort-column>
-               <sort-descending>true</sort-descending>
+               <!-- allowable values: ascending|descending -->
+               <sort-direction>descending</sort-direction>
                <page-size>
                   <bubble>5</bubble>
                   <details>20</details>

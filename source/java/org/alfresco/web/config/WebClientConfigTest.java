@@ -529,9 +529,7 @@ public class WebClientConfigTest extends BaseTest
       assertFalse("default sort direction should be ascending", config.hasDescendingSort("not-there"));
       assertFalse("browse screen should use an ascending sort", config.hasDescendingSort("browse"));
       assertTrue("topic screen should use a descending sort", config.hasDescendingSort("forum"));
-      
-      // TODO: uncomment this test once the override of descending sorts is fixed
-//      assertFalse("topic screen should use a ascending sort", config.hasDescendingSort("topic"));
+      assertFalse("topic screen should use an ascending sort", config.hasDescendingSort("topic"));
       
       // make sure the getChildren method throws an exception
       try

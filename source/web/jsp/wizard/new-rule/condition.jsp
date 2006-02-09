@@ -245,7 +245,7 @@
        </tr>
     </table>
     
-    <script language="JavaScript1.2">
+    <script language="JavaScript1.5">
       function itemSelected(inputField)
       {
          if (inputField.selectedIndex == 0)
@@ -259,19 +259,19 @@
          
          // also check to see if the 'no-condition' option has been selected, if it has, change
          // the explanation text and the button label
-         var short_text = "<a:outputText value='#{msg.click_add_to_list}'/>";
-         var long_text = "<a:outputText value='#{msg.click_set_and_add}'/>";
-         var short_label = "<a:outputText value='#{msg.add_to_list_button}'/>";
-         var long_label = "<a:outputText value='#{msg.set_and_add_button}'/>";
+         var short_text = "<a:outputText value='#{msg.click_add_to_list}' />";
+         var long_text = "<a:outputText value='#{msg.click_set_and_add}' />";
+         var short_label = "<a:outputText value='#{msg.add_to_list_button}' encodeForJavaScript='true' />";
+         var long_label = "<a:outputText value='#{msg.set_and_add_button}' encodeForJavaScript='true' />";
          
          if (inputField.value == "no-condition")
          {
-            document.getElementById("new-rule-condition:set-add-button").value = short_label;
+            document.getElementById("new-rule-condition:set-add-button").value = decodeURI(short_label);
             document.getElementById("new-rule-condition:instruction-text").innerHTML = short_text;
          }
          else
          {
-            document.getElementById("new-rule-condition:set-add-button").value = long_label;
+            document.getElementById("new-rule-condition:set-add-button").value = decodeURI(long_label);
             document.getElementById("new-rule-condition:instruction-text").innerHTML = long_text;
          }
       }

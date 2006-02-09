@@ -26,6 +26,7 @@ import javax.faces.component.UIComponent;
 public class OutputTextTag extends HtmlComponentTag
 {
    private String value;
+   private String encodeForJavaScript;
    
    /**
     * @see javax.faces.webapp.UIComponentTag#getComponentType()
@@ -51,6 +52,7 @@ public class OutputTextTag extends HtmlComponentTag
    {
       super.setProperties(component);
       setStringProperty(component, "value", this.value);
+      setBooleanProperty(component, "encodeForJavaScript", this.encodeForJavaScript);
    }
    
    /**
@@ -60,6 +62,7 @@ public class OutputTextTag extends HtmlComponentTag
    {
       super.release();
       this.value = null;
+      this.encodeForJavaScript = null;
    }
    
    /**
@@ -70,5 +73,15 @@ public class OutputTextTag extends HtmlComponentTag
    public void setValue(String value)
    {
       this.value = value;
+   }
+   
+   /**
+    * Set the encodeForJavaScript flag
+    * 
+    * @param encodeForJavaScript true to encode the text for use in JavaScript
+    */
+   public void setEncodeForJavaScript(String encodeForJavaScript)
+   {
+      this.encodeForJavaScript = encodeForJavaScript;
    }
 }

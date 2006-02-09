@@ -18,10 +18,12 @@
 package org.alfresco.web.ui.common.component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 
 import javax.faces.component.UIOutput;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
+import javax.faces.el.ValueBinding;
 
 /**
  * Component that simply renders text
@@ -30,6 +32,8 @@ import javax.faces.context.ResponseWriter;
  */
 public class UIOutputText extends UIOutput
 {
+   private Boolean encodeForJavaScript = null;
+   
    /**
     * Default constructor
     */
@@ -45,6 +49,40 @@ public class UIOutputText extends UIOutput
    {
       return "org.alfresco.faces.OutputText";
    }
+   
+   /**
+    * Sets whether the text should be encoded for JavaScript consumption
+    * 
+    * @param encodeForJavaScript true to escape text
+    */
+   public void setEncodeForJavaScript(boolean encodeForJavaScript)
+   {
+      this.encodeForJavaScript = Boolean.valueOf(encodeForJavaScript);
+   }
+
+   /**
+    * Returns whether the text is going to be encoded or not
+    * 
+    * @return true if the text is going to be encoded
+    */
+   public boolean isEncodeForJavaScript()
+   {
+      if (this.encodeForJavaScript == null)
+      {
+         ValueBinding vb = getValueBinding("encodeForJavaScript");
+         if (vb != null)
+         {
+            this.encodeForJavaScript = (Boolean)vb.getValue(getFacesContext());
+         }
+         
+         if (this.encodeForJavaScript == null)
+         {
+            this.encodeForJavaScript = Boolean.FALSE;
+         }
+      }
+      
+      return this.encodeForJavaScript.booleanValue();
+   }
 
    /**
     * @see javax.faces.component.UIComponentBase#encodeBegin(javax.faces.context.FacesContext)
@@ -57,6 +95,18 @@ public class UIOutputText extends UIOutput
       }
       
       ResponseWriter out = context.getResponseWriter();
-      out.write((String)getValue());
+      
+      String output = null;
+      
+      if (isEncodeForJavaScript())
+      {
+         output = URLEncoder.encode((String)getValue(), "UTF-8").replace('+', ' ');
+      }
+      else
+      {
+         output = (String)getValue();
+      }
+
+      out.write(output);
    }
 }

@@ -192,7 +192,7 @@
                         <tr>
                            <td>
                               <h:selectBooleanCheckbox id="chkPermissions" value="#{SpaceUsersBean.inheritPermissions}" valueChangeListener="#{SpaceUsersBean.inheritPermissionsValueChanged}"
-                                    onchange="document.forms['users'].submit(); return true;" disabled="#{!SpaceUsersBean.hasChangePermissions}" />
+                                    onclick="document.forms['users'].submit(); return true;" disabled="#{!SpaceUsersBean.hasChangePermissions}" />
                            </td>
                            <td width=100%>
                               &nbsp;<h:outputText value="#{msg.inherit_permissions}" />

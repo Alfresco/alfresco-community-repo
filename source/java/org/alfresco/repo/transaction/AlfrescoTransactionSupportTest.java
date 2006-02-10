@@ -23,6 +23,7 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -42,10 +43,12 @@ public class AlfrescoTransactionSupportTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     private ServiceRegistry serviceRegistry;
+    TransactionService transactionService;
     
     public void setUp() throws Exception
     {
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        transactionService = serviceRegistry.getTransactionService();
     }
     
     public void testTransactionId() throws Exception
@@ -59,16 +62,6 @@ public class AlfrescoTransactionSupportTest extends TestCase
         txn.begin();
         String txnId = AlfrescoTransactionSupport.getTransactionId();
         assertNotNull("Expected thread to have a txn id", txnId);
-        
-        // check that it is threadlocal
-        Thread thread = new Thread(new Runnable()
-                {
-                    public void run()
-                    {
-                        String txnId = AlfrescoTransactionSupport.getTransactionId();
-                        assertNull("New thread seeing txn id");
-                    }
-                });
         
         // check that the txn id doesn't change
         String txnIdCheck = AlfrescoTransactionSupport.getTransactionId();
@@ -138,7 +131,6 @@ public class AlfrescoTransactionSupportTest extends TestCase
         };
         
         // begin a transaction
-        TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
         
@@ -154,5 +146,78 @@ public class AlfrescoTransactionSupportTest extends TestCase
         assertTrue("beforeCommit not called on listener", strings.contains("beforeCommit"));
         assertTrue("beforeCompletion not called on listener", strings.contains("beforeCompletion"));
         assertTrue("afterCommit not called on listener", strings.contains("afterCommit"));
+    }
+    
+    /**
+     * Tests the condition whereby a listener can cause failure by attempting to bind itself to
+     * the transaction in the pre-commit callback.  This is caused by the listener set being
+     * modified during calls to the listeners.
+     */
+    public void testPreCommitListenerBinding() throws Exception
+    {
+        final String beforeCommit = "beforeCommit";
+        final String afterCommitInner = "afterCommit - inner";
+        final String afterCommitOuter = "afterCommit = outer";
+        
+        // the listeners will play with this
+        final List<String> testList = new ArrayList<String>(1);
+        testList.add(beforeCommit);
+        testList.add(afterCommitInner);
+        testList.add(afterCommitOuter);
+        
+        final TransactionListener listener = new TransactionListenerAdapter()
+        {
+            @Override
+            public int hashCode()
+            {
+                // force this listener to be first in the bound set
+                return 100;
+            }
+            @Override
+            public void beforeCommit(boolean readOnly)
+            {
+                testList.remove(beforeCommit);
+                TransactionListener postCommitListener = new TransactionListenerAdapter()
+                {
+                    @Override
+                    public void afterCommit()
+                    {
+                        testList.remove(afterCommitInner);
+                    }
+                };
+                // register bogus on the transaction
+                AlfrescoTransactionSupport.bindListener(postCommitListener);
+            }
+            @Override
+            public void afterCommit()
+            {
+                testList.remove(afterCommitOuter);
+            }
+        };
+        final TransactionListener dummyListener = new TransactionListenerAdapter()
+        {
+            @Override
+            public int hashCode()
+            {
+                // force the dummy listener to be AFTER the binding listener
+                return 200;
+            }
+        };
+        // start a transaction
+        TransactionWork<Object> bindWork = new TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                // just bind the listener to the transaction
+                AlfrescoTransactionSupport.bindListener(dummyListener);
+                AlfrescoTransactionSupport.bindListener(listener);
+                return null;
+            }
+        };
+        // kick it all off
+        TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, bindWork);
+        
+        // make sure that the binding all worked
+        assertTrue("Expected callbacks not all processed: " + testList, testList.size() == 0);
     }
 }

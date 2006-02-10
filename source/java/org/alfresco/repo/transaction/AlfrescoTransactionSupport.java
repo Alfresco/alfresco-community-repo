@@ -16,8 +16,10 @@
  */
 package org.alfresco.repo.transaction;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -485,6 +487,14 @@ public abstract class AlfrescoTransactionSupport
         {
             return listeners;
         }
+        
+        /**
+         * @return Returns the listeners in a list disconnected from the original set
+         */
+        private List<TransactionListener> getListenersIterable()
+        {
+            return new ArrayList<TransactionListener>(listeners);
+        }
 
         public String toString()
         {
@@ -511,7 +521,7 @@ public abstract class AlfrescoTransactionSupport
                 integrityChecker.checkIntegrity();
             }
             // flush listeners
-            for (TransactionListener listener : listeners)
+            for (TransactionListener listener : getListenersIterable())
             {
                 listener.flush();
             }
@@ -568,7 +578,7 @@ public abstract class AlfrescoTransactionSupport
             }
 
             // These are still considered part of the transaction so are executed here
-            for (TransactionListener listener : listeners)
+            for (TransactionListener listener : getListenersIterable())
             {
                 listener.beforeCommit(readOnly);
             }
@@ -590,7 +600,7 @@ public abstract class AlfrescoTransactionSupport
                 logger.debug("Before completion: " + this);
             }
             // notify listeners
-            for (TransactionListener listener : listeners)
+            for (TransactionListener listener : getListenersIterable())
             {
                 listener.beforeCompletion();
             }
@@ -636,10 +646,11 @@ public abstract class AlfrescoTransactionSupport
                 }
             }
             
+            List<TransactionListener> iterableListeners = getListenersIterable();
             // notify listeners
             if (status  == TransactionSynchronization.STATUS_COMMITTED)
             {
-                for (TransactionListener listener : listeners)
+                for (TransactionListener listener : iterableListeners)
                 {
                     try
                     {
@@ -655,7 +666,7 @@ public abstract class AlfrescoTransactionSupport
             }
             else
             {
-                for (TransactionListener listener : listeners)
+                for (TransactionListener listener : iterableListeners)
                 {
                     try
                     {

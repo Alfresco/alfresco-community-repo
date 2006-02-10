@@ -17,24 +17,21 @@
 package org.alfresco.web.bean.preview;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.ExpiringValueCache;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
-import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
@@ -43,7 +40,6 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.UIActionLink;
 
 /**
  * Backing bean for the Preview Document in Template action page
@@ -144,29 +140,43 @@ public abstract class BasePreviewBean
          String xpath = Application.getRootPath(context) + "/" + 
                Application.getGlossaryFolderName(context) + "/" +
                Application.getContentTemplatesFolderName(context) + "//*";
-         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-         NamespaceService resolver = Repository.getServiceRegistry(context).getNamespaceService();
-         List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, resolver, false);
-         
-         templates = new ArrayList<SelectItem>(results.size() + 1);
-         if (results.size() != 0)
+         try
          {
-            DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
-            for (NodeRef ref : results)
-            {
-               Node childNode = new Node(ref);
-               if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
-               {
-                  templates.add(new SelectItem(childNode.getId(), childNode.getName()));
-               }
-            }
+            NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
+            NamespaceService resolver = Repository.getServiceRegistry(context).getNamespaceService();
+            List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, resolver, false);
             
-            // make sure the list is sorted by the label
-            QuickSort sorter = new QuickSort(templates, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
-            sorter.sort();
+            templates = new ArrayList<SelectItem>(results.size() + 1);
+            if (results.size() != 0)
+            {
+               DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
+               for (NodeRef ref : results)
+               {
+                  if (nodeService.exists(ref) == true)
+                  {
+                     Node childNode = new Node(ref);
+                     if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
+                     {
+                        templates.add(new SelectItem(childNode.getId(), childNode.getName()));
+                     }
+                  }
+               }
+               
+               // make sure the list is sorted by the label
+               QuickSort sorter = new QuickSort(templates, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+               sorter.sort();
+            }
+         }
+         catch (AccessDeniedException accessErr)
+         {
+            // ignore the result if we cannot access the root
          }
          
          // add an entry (at the start) to instruct the user to select a template
+         if (templates == null)
+         {
+            templates = new ArrayList<SelectItem>(1);
+         }
          templates.add(0, new SelectItem(NO_SELECTION, Application.getMessage(FacesContext.getCurrentInstance(), "select_a_template")));
          
          cachedTemplates.put(templates);

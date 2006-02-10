@@ -12,7 +12,7 @@
       <lastBuildDate>${date?string(datetimeformat)}</lastBuildDate>
       <pubDate>${date?string(datetimeformat)}</pubDate>
       <ttl>120</ttl>
-      <generator>Alfresco 1.1</generator>
+      <generator>Alfresco 1.2</generator>
       <image>
          <title>${space.name}</title>
          <width>32</width>

@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Locale;
@@ -33,10 +32,8 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.view.ImporterBinding;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
@@ -47,6 +44,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.core.io.ClassPathResource;
 
 /**
  * Bootstrap Repository store.
@@ -293,14 +291,25 @@ public class ImporterBootstrap
                 {
                     for (Properties bootstrapView : bootstrapViews)
                     {
-                        // Create input stream reader onto view file
                         String view = bootstrapView.getProperty(VIEW_LOCATION_VIEW);
                         if (view == null || view.length() == 0)
                         {
                             throw new ImporterException("View file location must be provided");
                         }
                         String encoding = bootstrapView.getProperty(VIEW_ENCODING);
-                        Reader viewReader = getReader(view, encoding);
+                        
+                        // Create appropriate view reader
+                        Reader viewReader = null;
+                        ACPImportPackageHandler acpHandler = null; 
+                        if (view.endsWith(".acp"))
+                        {
+                            ClassPathResource acpResource = new ClassPathResource(view);
+                            acpHandler = new ACPImportPackageHandler(acpResource.getFile(), encoding);
+                        }
+                        else
+                        {
+                            viewReader = getReader(view, encoding);
+                        }
                         
                         // Create import location
                         Location importLocation = new Location(storeRef);
@@ -325,9 +334,23 @@ public class ImporterBootstrap
                             ResourceBundle bundle = ResourceBundle.getBundle(messages, bindingLocale);
                             binding.setResourceBundle(bundle);
                         }
-            
+
                         // Now import...
-                        importerService.importView(viewReader, importLocation, binding, new BootstrapProgress());
+                        ImporterProgress importProgress = null;
+                        if (logger.isDebugEnabled())
+                        {
+                            importProgress = new ImportTimerProgress();
+                            logger.debug("Importing " + view);
+                        }
+                        
+                        if (viewReader != null)
+                        {
+                            importerService.importView(viewReader, importLocation, binding, importProgress);
+                        }
+                        else
+                        {
+                            importerService.importView(acpHandler, importLocation, binding, importProgress);
+                        }
                     }
                 }
             }
@@ -447,99 +470,6 @@ public class ImporterBootstrap
         public boolean allowReferenceWithinTransaction()
         {
             return true;
-        }
-    }
-    
-    /**
-     * Bootstrap Progress (debug logging)
-     */
-    private class BootstrapProgress implements ImporterProgress
-    {
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.importer.Progress#nodeCreated(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
-         */
-        public void nodeCreated(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Created node " + nodeRef + " (child name: " + childName + ") within parent " + parentRef + " (association type: " + assocName + ")");
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#nodeLinked(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
-         */
-        public void nodeLinked(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Linked node " + nodeRef + " (child name: " + childName + ") within parent " + parentRef + " (association type: " + assocName + ")");
-        }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.importer.Progress#contentCreated(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-         */
-        public void contentCreated(NodeRef nodeRef, String sourceUrl)
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Imported content from " + sourceUrl + " into node " + nodeRef);
-        }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.importer.Progress#propertySet(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
-         */
-        public void propertySet(NodeRef nodeRef, QName property, Serializable value)
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Property " + property + " set to value " + value + " on node " + nodeRef);
-        }
-
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#permissionSet(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.security.AccessPermission)
-         */
-        public void permissionSet(NodeRef nodeRef, AccessPermission permission)
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Permission " + permission.getPermission() + " set on node " + nodeRef + " (authority=" + permission.getAuthority() + 
-                        ", accessStatus=" + permission.getAccessStatus() + ")");
-        }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.importer.Progress#aspectAdded(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-         */
-        public void aspectAdded(NodeRef nodeRef, QName aspect)
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Added aspect " + aspect + " to node " + nodeRef);
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#started()
-         */
-        public void started()
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Started");
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#completed()
-         */
-        public void completed()
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Completed");
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#error(java.lang.Exception)
-         */
-        public void error(Throwable e)
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Error: " + e.toString());
         }
     }
 

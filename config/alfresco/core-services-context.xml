@@ -679,7 +679,7 @@
         </property>
     </bean>
 
-    <bean id="systemBootstrap" class="org.alfresco.repo.importer.ImporterBootstrap" init-method="bootstrap" depends-on="nodeIndexer, auditableAspect">
+    <bean id="systemStoreImporter" class="org.alfresco.repo.importer.ImporterBootstrap" abstract="true" init-method="bootstrap">
         <property name="transactionService">
             <ref bean="transactionComponent"/>
         </property>
@@ -716,6 +716,14 @@
                 <prop key="system.descriptor.childname">${system.descriptor.childname}</prop>
             </props>
         </property>
+    </bean>
+
+    <bean id="systemBootstrap" parent="systemStoreImporter" depends-on="nodeIndexer, auditableAspect">
+        <!-- To specify a locale other than the system default, uncomment the following
+        <property name="locale">
+            <value>en_GB</value>
+        </property>
+        -->
         <property name="bootstrapViews">
             <list>
                 <props>
@@ -726,8 +734,7 @@
         </property>
     </bean>
 
-
-    <bean id="alfrescoUserStoreBootstrap" class="org.alfresco.repo.importer.ImporterBootstrap" init-method="bootstrap" depends-on="systemBootstrap">
+    <bean id="userStoreImporter" class="org.alfresco.repo.importer.ImporterBootstrap" abstract="true" init-method="bootstrap">
         <property name="transactionService">
             <ref bean="transactionComponent"/>
         </property>
@@ -756,6 +763,9 @@
                 <prop key="alfresco_user_store.authorities_container.childname">${alfresco_user_store.authorities_container.childname}</prop>
             </props>
         </property>
+    </bean>
+
+    <bean id="userBootstrap" parent="userStoreImporter" depends-on="systemBootstrap">
         <!-- To specify a locale other than the system default, uncomment the following
         <property name="locale">
             <value>en_GB</value>
@@ -771,8 +781,7 @@
         </property>
     </bean>
 
-
-    <bean id="importerBootstrap" class="org.alfresco.repo.importer.ImporterBootstrap" init-method="bootstrap" depends-on="alfrescoUserStoreBootstrap, versionBootstrap">
+    <bean id="spacesStoreImporter" class="org.alfresco.repo.importer.ImporterBootstrap" abstract="true" init-method="bootstrap">
         <property name="transactionService">
             <ref bean="transactionComponent"/>
         </property>
@@ -806,6 +815,9 @@
                 <prop key="spaces.savedsearches.childname">${spaces.savedsearches.childname}</prop>
             </props>
         </property>
+    </bean>
+
+    <bean id="importerBootstrap" parent="spacesStoreImporter" depends-on="userBootstrap, versionBootstrap">
         <!-- To specify a locale other than the system default, uncomment the following
         <property name="locale">
             <value>en_GB</value>

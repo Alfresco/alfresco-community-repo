@@ -405,11 +405,12 @@ public class Application
     * 
     * @param context        FacesContext for the current user
     * 
-    * @return Current language Locale set or null if none set 
+    * @return Current language Locale set or the VM default if none set
     */
    public static Locale getLanguage(FacesContext context)
    {
-      return (Locale)context.getExternalContext().getSessionMap().get(LOCALE);
+      Locale locale = (Locale)context.getExternalContext().getSessionMap().get(LOCALE);
+      return locale != null ? locale : Locale.getDefault();
    }
    
    /**
@@ -417,11 +418,12 @@ public class Application
     * 
     * @param session        HttpSession for the current user
     * 
-    * @return Current language Locale set or null if none set 
+    * @return Current language Locale set or the VM default if none set
     */
    public static Locale getLanguage(HttpSession session)
    {
-      return (Locale)session.getAttribute(LOCALE);
+      Locale locale = (Locale)session.getAttribute(LOCALE);
+      return locale != null ? locale : Locale.getDefault();
    }
    
    /**
@@ -429,11 +431,12 @@ public class Application
     * 
     * @param session        PortletSession for the current user
     * 
-    * @return Current language Locale set or null if none set 
+    * @return Current language Locale set or the VM default if none set
     */
    public static Locale getLanguage(PortletSession session)
    {
-      return (Locale)session.getAttribute(LOCALE);
+      Locale locale = (Locale)session.getAttribute(LOCALE);
+      return locale != null ? locale : Locale.getDefault();
    }
    
    /**

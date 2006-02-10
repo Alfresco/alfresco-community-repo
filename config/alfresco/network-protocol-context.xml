@@ -2,36 +2,56 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
  
 <beans>
+
+   <bean id="fileServersConfigSource" class="org.alfresco.config.source.UrlConfigSource">
+      <constructor-arg>
+         <list>
+            <value>classpath:alfresco/file-servers.xml</value>
+         </list>
+      </constructor-arg>
+   </bean>
+
+   <bean id="fileServersConfigService" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
+      <constructor-arg>
+         <ref bean="fileServersConfigSource" />
+      </constructor-arg>
+   </bean>
+
    <!-- File Server Configuration -->
-   <bean id="fileServerConfiguration"
-         class="org.alfresco.filesys.server.config.ServerConfiguration"
+   <bean id="fileServerConfigurationBase"
+         abstract="true"
          init-method="init"
          destroy-method="closeConfiguration"
          depends-on="importerBootstrap">
-      <constructor-arg>
+      <property name="authenticationManager">
          <ref bean="authenticationManager"/>
-      </constructor-arg>
-      <constructor-arg>
+      </property>
+      <property name="authenticationService">
          <ref bean="authenticationService"/>
-      </constructor-arg>
-      <constructor-arg>
+      </property>
+      <property name="authenticationComponent">
          <ref bean="authenticationComponent"/>
-      </constructor-arg>
-      <constructor-arg>
+      </property>
+      <property name="nodeService">
          <ref bean="nodeService"/>
-      </constructor-arg>
-      <constructor-arg>
+      </property>
+      <property name="personService">
          <ref bean="personService"/>
-      </constructor-arg>
-      <constructor-arg>
+      </property>
+      <property name="transactionService">
          <ref bean="transactionComponent"/>
-      </constructor-arg>
-      <constructor-arg>
-         <value>classpath:alfresco/file-servers.xml</value>
-      </constructor-arg>
-      <constructor-arg>
-         <ref bean="contentDiskDriver" />
-      </constructor-arg>
+      </property>
+      <property name="diskInterface">
+         <ref bean="contentDiskDriver"/>
+      </property>
+   </bean>
+   
+   <bean id="fileServerConfiguration"
+         class="org.alfresco.filesys.server.config.ServerConfiguration"
+         parent="fileServerConfigurationBase" >
+      <property name="configService">
+         <ref bean="fileServersConfigService"/>
+      </property>
    </bean>
    
    <!-- CIFS Server -->

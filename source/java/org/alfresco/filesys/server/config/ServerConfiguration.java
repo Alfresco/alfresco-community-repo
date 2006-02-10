@@ -34,9 +34,7 @@ import net.sf.acegisecurity.AuthenticationManager;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigLookupContext;
-import org.alfresco.config.ConfigSource;
-import org.alfresco.config.source.UrlConfigSource;
-import org.alfresco.config.xml.XMLConfigService;
+import org.alfresco.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.ftp.FTPPath;
 import org.alfresco.filesys.ftp.InvalidPathException;
@@ -137,10 +135,10 @@ public class ServerConfiguration
     private static final String TokenLocalName = "${localname}";
 
     // Acegi authentication manager
-    private AuthenticationManager acegiAuthMgr;
+    private AuthenticationManager authenticationManager;
 
-    // Path to configuration file
-    private String configLocation;
+    // Configuration service
+    private ConfigService configService;
 
     /** the device to connect use */
     private DiskInterface diskInterface;
@@ -293,43 +291,19 @@ public class ServerConfiguration
 
     // Authentication component, for internal functions
     
-    private AuthenticationComponent m_authComponent;
+    private AuthenticationComponent m_authenticationComponent;
     
     // Various services
     
     private NodeService m_nodeService;
     private PersonService m_personService;
     private TransactionService m_transactionService;
-    
+
     /**
      * Class constructor
-     * 
-     * @param authMgr AuthenticationManager
-     * @param authenticationService AuthenticationService
-     * @param authenticationComponent AuthenticationComponent
-     * @param nodeService NodeService
-     * @param personServce PersonService
-     * @param transactionService TransactionService
-     * @param configPath String
-     * @param diskInterface DiskInterface 
      */
-    public ServerConfiguration(AuthenticationManager authMgr, AuthenticationService authenticationService,
-            AuthenticationComponent authComponent, NodeService nodeService, PersonService personService,
-            TransactionService transactionService, String configPath, DiskInterface diskInterface)
+    public ServerConfiguration()
     {
-        // Save details
-
-        this.diskInterface = diskInterface;
-        this.acegiAuthMgr = authMgr;
-        this.authenticationService = authenticationService;
-        this.configLocation = configPath;
-
-        m_authComponent = authComponent;
-        
-        m_nodeService = nodeService;
-        m_personService = personService;
-        m_transactionService = transactionService;
-        
         // Allocate the shared device list
 
         m_shareList = new SharedDeviceList();
@@ -384,6 +358,46 @@ public class ServerConfiguration
 
         m_serverList = new NetworkServerList();
     }
+    
+    public void setAuthenticationManager(AuthenticationManager authenticationManager)
+    {
+        this.authenticationManager = authenticationManager;
+    }
+
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
+    }
+
+    public void setConfigService(ConfigService configService)
+    {
+        this.configService = configService;
+    }
+
+    public void setDiskInterface(DiskInterface diskInterface)
+    {
+        this.diskInterface = diskInterface;
+    }
+
+    public void setAuthenticationComponent(AuthenticationComponent component)
+    {
+        m_authenticationComponent = component;
+    }
+
+    public void setNodeService(NodeService service)
+    {
+        m_nodeService = service;
+    }
+
+    public void setPersonService(PersonService service)
+    {
+        m_personService = service;
+    }
+
+    public void setTransactionService(TransactionService service)
+    {
+        m_transactionService = service;
+    }
 
     /**
      * @return Returns true if the configuration was fully initialised
@@ -398,13 +412,41 @@ public class ServerConfiguration
      */
     public void init()
     {
+        // check that all required properties have been set
+        if (authenticationManager == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'authenticationManager' not set");
+        }
+        else if (m_authenticationComponent == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'authenticationComponent' not set");
+        }
+        else if (authenticationService == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'authenticationService' not set");
+        }
+        else if (m_nodeService == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'nodeService' not set");
+        }
+        else if (m_personService == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'personService' not set");
+        }
+        else if (m_transactionService == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'transactionService' not set");
+        }
+        else if (diskInterface == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'diskInterface' not set");
+        }
+        else if (configService == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'configService' not set");
+        }
+        
         initialised = false;
-
-        // Create the configuration source
-
-        ConfigSource configSource = new UrlConfigSource(configLocation);
-        XMLConfigService xmlConfigService = new XMLConfigService(configSource);
-        xmlConfigService.init();
 
         // Create the configuration context
 
@@ -419,26 +461,25 @@ public class ServerConfiguration
 
             // Process the CIFS server configuration
 
-            Config config = xmlConfigService.getConfig(ConfigCIFS, configCtx);
+            Config config = configService.getConfig(ConfigCIFS, configCtx);
             processCIFSServerConfig(config);
 
             // Process the FTP server configuration
 
-            config = xmlConfigService.getConfig(ConfigFTP, configCtx);
+            config = configService.getConfig(ConfigFTP, configCtx);
             processFTPServerConfig(config);
 
             // Process the security configuration
 
-            config = xmlConfigService.getConfig(ConfigSecurity, configCtx);
+            config = configService.getConfig(ConfigSecurity, configCtx);
             processSecurityConfig(config);
 
             // Process the filesystems configuration
 
-            config = xmlConfigService.getConfig(ConfigFilesystems, configCtx);
+            config = configService.getConfig(ConfigFilesystems, configCtx);
             processFilesystemsConfig(config);
 
             // Successful initialisation
-            
             initialised = true;
         }
         catch (UnsatisfiedLinkError ex)
@@ -1769,7 +1810,7 @@ public class ServerConfiguration
      */
     public final AuthenticationManager getAuthenticationManager()
     {
-        return acegiAuthMgr;
+        return authenticationManager;
     }
 
     /**
@@ -1820,7 +1861,7 @@ public class ServerConfiguration
      */
     public final AuthenticationComponent getAuthenticationComponent()
     {
-        return m_authComponent;
+        return m_authenticationComponent;
     }
     
     /**

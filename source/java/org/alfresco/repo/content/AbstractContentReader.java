@@ -192,7 +192,7 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
 
     /**
      * @see #getDirectReadableChannel()
-     * @see #getCallbackReadableChannel()
+     * @see #getCallbackReadableChannel(ReadableByteChannel, List)
      */
     public synchronized final ReadableByteChannel getReadableChannel() throws ContentIOException
     {

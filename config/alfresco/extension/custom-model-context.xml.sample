@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<beans>
+
+    <!-- Registration of new models -->	
+    <bean id="extension.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/extension/customModel.xml</value>
+            </list>
+        </property>
+    </bean>
+          
+</beans>

@@ -51,6 +51,17 @@
          <fileset dir="${dir.project.remoteapi}/build/dist" includes="${dir.name.remoteapi}.jar" />
       </copy>
       
+      <!-- add config files to WEB-INF/classes -->
+      <copy todir="${dir.assemble}/WEB-INF/classes">
+         <fileset dir="${dir.config.repository}" excludes="**/*.sample" />
+         <fileset dir="${dir.config.webclient}" excludes="**/*.sample" />
+      </copy>
+      
+      <copy todir="${dir.assemble}/WEB-INF/classes/alfresco/messages">
+         <fileset dir="${dir.assemble}/WEB-INF/classes/alfresco/messages"/>
+         <mapper type="glob" from="*.properties" to="*_en_US.properties"/>
+      </copy>
+      
       <copy todir="${dir.assemble}/wsdl">
          <fileset dir="${dir.project.remoteapi}/source/wsdl" />
       </copy>
@@ -62,17 +73,6 @@
          <fileset dir="${dir.assemble}/WEB-INF" includes="${webinf.delete.tomcat}" />
       </delete>
       
-      <!-- add config files to WEB-INF/classes -->
-      <copy todir="${dir.assemble}/WEB-INF/classes">
-         <fileset dir="${dir.config.repository}"/>
-         <fileset dir="${dir.config.webclient}"/>
-      </copy>
-      
-      <copy todir="${dir.assemble}/WEB-INF/classes/alfresco/messages">
-         <fileset dir="${dir.assemble}/WEB-INF/classes/alfresco/messages"/>
-         <mapper type="glob" from="*.properties" to="*_en_US.properties"/>
-      </copy>
-      
       <copy todir="${dir.assemble}/WEB-INF/classes" file="${dir.project.core}/source/java/log4j.properties" />
    </target>
    
@@ -81,20 +81,6 @@
       <delete>
          <fileset dir="${dir.assemble}/WEB-INF/lib" includes="${webinf.lib.delete.jboss}" />
       </delete>
-
-      <!-- remove existing config files -->
-      <delete dir="${dir.deploy.jboss}/../conf/alfresco" quiet="yes"/>
-         
-      <!-- push externally visible config files into conf directory -->
-      <copy todir="${dir.deploy.jboss}/../conf" >
-         <fileset dir="${dir.config.repository}"/>
-         <fileset dir="${dir.config.webclient}"/>
-      </copy>
-      
-      <copy todir="${dir.deploy.jboss}/../conf/alfresco/messages">
-         <fileset dir="${dir.deploy.jboss}/../conf/alfresco/messages"/>
-         <mapper type="glob" from="*.properties" to="*_en_US.properties"/>
-      </copy>
    </target>
    
    <target name="clean" depends="common.clean" description="Cleans all the normal files plus web.xml">

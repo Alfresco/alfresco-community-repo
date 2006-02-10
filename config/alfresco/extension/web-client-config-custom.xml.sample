@@ -1,0 +1,41 @@
+<alfresco-config>
+
+   <!-- The config below shows how to incorporate the -->
+   <!-- example model into the web client             -->
+   <!--
+   <config evaluator="string-compare" condition="Custom Content Types">
+      <content-types>
+         <type name="my:sop" />
+      </content-types>
+   </config>
+
+   <config evaluator="node-type" condition="my:sop">
+      <property-sheet>
+         <show-property name="name" showInEditMode="false" />
+         <show-property name="mimetype" displayLabelId="mimetype" converter="org.alfresco.faces.MimeTypeConverter" showInEditMode="false" />
+         <show-property name="title" showInEditMode="false" />
+         <show-property name="description" showInEditMode="false" />
+         <show-property name="size" displayLabelId="size" converter="org.alfresco.faces.ByteSizeConverter" showInEditMode="false" />
+         <show-property name="my:publishedDate" />
+         <show-association name="my:signOff" />
+         <show-property name="my:authorisedBy" />
+         <show-child-association name="my:processSteps" />
+      </property-sheet>
+   </config>
+
+   <config evaluator="aspect-name" condition="my:imageClassification">
+      <property-sheet>
+         <show-property name="my:width"/>
+         <show-property name="my:height"/>
+         <show-property name="my:resolution"/>
+      </property-sheet>
+   </config>
+
+   <config evaluator="string-compare" condition="Action Wizards">
+      <aspects>
+         <aspect name="my:imageClassification"/>
+      </aspects>
+   </config>
+   -->
+
+</alfresco-config>

@@ -161,34 +161,39 @@ public class ContentPseudoFileImpl implements PseudoFileInterface
 
         // Add the URL link pseudo file, if enabled
         
-        if ( isCIFS && ctx.hasURLFile() && fstate.getNodeRef() != null)
+        if ( isCIFS && ctx.hasURLFile())
         {
-            // Build the URL file data
-
-            StringBuilder urlStr = new StringBuilder();
-        
-            urlStr.append("[InternetShortcut]\r\n");
-            urlStr.append("URL=");
-            urlStr.append(ctx.getURLPrefix());
-            urlStr.append("navigate/browse/workspace/SpacesStore/");
-            urlStr.append( fstate.getNodeRef().getId());
-            urlStr.append("\r\n");
-
-            // Create the in memory pseudo file for the URL link
+            // Make sure the state has the associated node details
             
-            byte[] urlData = urlStr.toString().getBytes();
+            if ( fstate.getNodeRef() != null)
+            {
+                // Build the URL file data
+    
+                StringBuilder urlStr = new StringBuilder();
             
-            MemoryPseudoFile urlFile = new MemoryPseudoFile( ctx.getURLFileName(), urlData);
-            fstate.addPseudoFile( urlFile);
-            
-            // Update the count of files added
-            
-            pseudoCnt++;
-            
-            // DEBUG
-            
-            if ( logger.isInfoEnabled())
-                logger.info("Added URL link pseudo file for " + path);
+                urlStr.append("[InternetShortcut]\r\n");
+                urlStr.append("URL=");
+                urlStr.append(ctx.getURLPrefix());
+                urlStr.append("navigate/browse/workspace/SpacesStore/");
+                urlStr.append( fstate.getNodeRef().getId());
+                urlStr.append("\r\n");
+    
+                // Create the in memory pseudo file for the URL link
+                
+                byte[] urlData = urlStr.toString().getBytes();
+                
+                MemoryPseudoFile urlFile = new MemoryPseudoFile( ctx.getURLFileName(), urlData);
+                fstate.addPseudoFile( urlFile);
+                
+                // Update the count of files added
+                
+                pseudoCnt++;
+                
+                // DEBUG
+                
+                if ( logger.isInfoEnabled())
+                    logger.info("Added URL link pseudo file for " + path);
+            }
         }
         
         // Return the count of pseudo files added

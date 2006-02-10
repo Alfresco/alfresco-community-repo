@@ -653,29 +653,40 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 paths = FileName.splitPath(searchPath);
                 if ( paths[0] != null && paths[0].length() > 1)
                 {
+                    // Find the node ref for the folder being searched
+                    
+                    NodeRef nodeRef = getNodeForPath(tree, paths[0]);
+                    
                     // Get the file state for the folder being searched
                     
                     searchFolderState = getStateForPath(tree, paths[0]);
                     if ( searchFolderState == null)
+                    {
+                        // Create a file state for the folder
+
                         searchFolderState = ctx.getStateTable().findFileState( paths[0], true, true);
+                    }
+                    
+                    // Make sure the associated node is set
+                    
+                    if ( searchFolderState.hasNodeRef() == false)
+                    {
+                        // Set the associated node for the folder
+                        
+                        searchFolderState.setNodeRef( nodeRef);
+                    }
                     
                     // Add pseudo files to the folder being searched
 
                     if ( hasPseudoFileInterface())
                         getPseudoFileInterface().addPseudoFilesToFolder( sess, tree, paths[0]);
-                    
-                    // Find the node ref for the folder being searched
-                    
-                    NodeRef nodeRef = getNodeForPath(tree, paths[0]);
+
+                    // Set the search node and file spec
                     
                     if ( nodeRef != null)
                     {
                         searchRootNodeRef = nodeRef;
                         searchFileSpec    = paths[1];
-                        
-                        // Make sure the node ref is stored in the file state
-                        
-                        searchFolderState.setNodeRef( nodeRef);
                         
                         // DEBUG
                         

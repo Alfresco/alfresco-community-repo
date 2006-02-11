@@ -103,22 +103,9 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
      */
     protected void triggerRules(NodeRef nodeRef, NodeRef actionedUponNodeRef)
     {
-        String userName = authenticationComponent.getCurrentUserName();
-        authenticationComponent.setSystemUserAsCurrentUser();
-        try
+        for (RuleType ruleType : this.ruleTypes)
         {
-            for (RuleType ruleType : this.ruleTypes)
-            {
-                ruleType.triggerRuleType(nodeRef, actionedUponNodeRef);
-            }
-        } 
-        finally
-        {
-            authenticationComponent.clearCurrentSecurityContext();
-            if(userName != null)
-            {
-                authenticationComponent.setCurrentUser(userName);
-            }
+            ruleType.triggerRuleType(nodeRef, actionedUponNodeRef);
         }
     }
 }

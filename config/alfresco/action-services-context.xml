@@ -5,19 +5,16 @@
 
     <!-- Action Service -->
 
-    <bean id="actionService" class="org.alfresco.repo.action.ActionServiceImpl" init-method="initialise">
+    <bean id="actionService" class="org.alfresco.repo.action.ActionServiceImpl">
         <property name="nodeService">
             <ref bean="NodeService" />
-        </property>
-        <property name="policyComponent">
-            <ref bean="policyComponent"/>
-        </property>	  	   
+        </property>  	   
         <property name="searchService">
             <ref bean="SearchService" />
-        </property>  
-    	<property name="transactionService">
-    		<ref bean="transactionComponent"/>
-    	</property>
+        </property>  	   
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent" />
+        </property> 
 		<property name="asynchronousActionExecutionQueue">
 	       <ref bean="asynchronousActionExecutionQueue"/>
 		</property> 

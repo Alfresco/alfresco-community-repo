@@ -24,8 +24,11 @@ import java.util.concurrent.TimeUnit;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
+
+import freemarker.log.Logger;
 
 /**
  * The asynchronous action execution queue implementation
@@ -261,32 +264,37 @@ public class AsynchronousActionExecutionQueueImpl extends ThreadPoolExecutor imp
         {
             try
             {
-
-                // For now run all actions in the background as the system user
-                ActionExecutionWrapper.this.authenticationComponent
-                        .setCurrentUser(ActionExecutionWrapper.this.authenticationComponent.getSystemUserName());
-                try
+                // Get the run as user name
+                final String userName = ((ActionImpl)ActionExecutionWrapper.this.action).getRunAsUser();
+                if (userName == null)
                 {
-                    TransactionUtil.executeInNonPropagatingUserTransaction(this.transactionService,
-                            new TransactionUtil.TransactionWork()
-                            {
-                                public Object doWork()
+                    throw new ActionServiceException("Cannot execute action asynchronously since run as user is 'null'");              
+                }
+                
+                TransactionUtil.executeInNonPropagatingUserTransaction(this.transactionService,
+                        new TransactionUtil.TransactionWork()
+                        {
+                            public Object doWork()
+                            {                                
+                                ActionExecutionWrapper.this.authenticationComponent
+                                        .setCurrentUser(userName);
+                                
+                                try
                                 {
-
                                     ActionExecutionWrapper.this.actionService.executeActionImpl(
-                                            ActionExecutionWrapper.this.action,
-                                            ActionExecutionWrapper.this.actionedUponNodeRef,
-                                            ActionExecutionWrapper.this.checkConditions, true,
-                                            ActionExecutionWrapper.this.actionChain);
-
-                                    return null;
+                                        ActionExecutionWrapper.this.action,
+                                        ActionExecutionWrapper.this.actionedUponNodeRef,
+                                        ActionExecutionWrapper.this.checkConditions, true,
+                                        ActionExecutionWrapper.this.actionChain);
                                 }
-                            });
-                }
-                finally
-                {
-                    ActionExecutionWrapper.this.authenticationComponent.clearCurrentSecurityContext();
-                }
+                                finally
+                                {
+                                    ActionExecutionWrapper.this.authenticationComponent.clearCurrentSecurityContext();
+                                }
+
+                                return null;
+                            }
+                        });
             }
             catch (Throwable exception)
             {

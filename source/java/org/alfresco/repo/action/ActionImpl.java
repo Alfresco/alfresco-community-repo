@@ -86,6 +86,11 @@ public class ActionImpl extends ParameterizedItemImpl
     private String actionDefinitionName;
     
     /**
+     * The run as user name
+     */
+    private String runAsUserName;
+    
+    /**
      * The owning node reference
      */
     private NodeRef owningNodeRef;
@@ -376,5 +381,15 @@ public class ActionImpl extends ParameterizedItemImpl
     public Set<String> getActionChain()
     {
         return actionChain;
+    }
+
+    public String getRunAsUser()
+    {
+        return this.runAsUserName;
+    }
+
+    public void setRunAsUser(String runAsUserName)
+    {
+        this.runAsUserName = runAsUserName;
     }
 }

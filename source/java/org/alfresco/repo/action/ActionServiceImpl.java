@@ -28,7 +28,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.repo.action.executer.ActionExecuter;
-import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -46,7 +46,6 @@ import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -88,16 +87,6 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 	 * The application context
 	 */
 	private ApplicationContext applicationContext;
-	
-	/**
-	 * The transacton service
-	 */
-	private TransactionService transactionService;
-	
-    /**
-     * The policy component
-     */
-    private PolicyComponent policyComponent;
 
     /**
 	 * The node service
@@ -108,6 +97,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 	 * The search service
 	 */
 	private SearchService searchService;
+    
+    /** The authentication component */
+    private AuthenticationComponent authenticationComponent;
 	
 	/**
 	 * The asynchronous action execution queue
@@ -138,16 +130,6 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 	{
 		this.applicationContext = applicationContext;
 	}
-	
-    /**
-     * Set the policy component
-     * 
-     * @param policyComponent the policy component to register with
-     */
-	public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
 
     /**
 	 * Set the node service
@@ -168,17 +150,17 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 	{
 		this.searchService = searchService;
 	}
-	
-	/**
-	 * Set the transaction service
-	 * 
-	 * @param transactionService	the transaction service
-	 */
-	public void setTransactionService(TransactionService transactionService)
-	{
-		this.transactionService = transactionService;
-	}
-	
+    
+    /**
+     * Set the authentication component
+     * 
+     * @param authenticationComponent   the authentication component
+     */
+    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    {
+        this.authenticationComponent = authenticationComponent;
+    }
+    
 	/**
 	 * Set the asynchronous action execution queue
 	 * 
@@ -199,13 +181,6 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 	{
 		return asynchronousActionExecutionQueue;
 	}
-	
-    /**
-     * Initialise methods called by Spring framework
-     */
-    public void initialise()
-    {
-    }
     
     /**
 	 * Gets the saved action folder reference
@@ -399,7 +374,6 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             
     		try
     		{
-                //Set<String> currentActionChain = this.currentActionChain.get();
                 Set<String> origActionChain = null;
                 
                 if (actionChain == null)
@@ -457,7 +431,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     				Action compensatingAction = action.getCompensatingAction();
     				if (compensatingAction != null)
     				{					
-    					// Queue the compensating action ready for execution
+                        // Set the current user
+                        ((ActionImpl)compensatingAction).setRunAsUser(this.authenticationComponent.getCurrentUserName());
+                        
+    					// Queue the compensating action ready for execution                        
     					this.asynchronousActionExecutionQueue.executeAction(this, compensatingAction, actionedUponNodeRef, false, null);
     				}
     			}
@@ -481,6 +458,12 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 	 */
 	public void directActionExecution(Action action, NodeRef actionedUponNodeRef)
 	{
+        // Debug output
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("The action is being executed as the user: " + this.authenticationComponent.getCurrentUserName());
+        }
+        
 		// Get the action executer and execute
 		ActionExecuter executer = (ActionExecuter)this.applicationContext.getBean(action.getActionDefinitionName());
 		executer.execute(action, actionedUponNodeRef);
@@ -1096,6 +1079,13 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             {
                 logger.debug("Doing addPostTransactionPendingAction");
             }
+            
+            // Set the run as user to the current user
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("The current user is: " + this.authenticationComponent.getCurrentUserName());
+            }
+            ((ActionImpl)action).setRunAsUser(this.authenticationComponent.getCurrentUserName());
             
     		// Ensure that the transaction listener is bound to the transaction
     		AlfrescoTransactionSupport.bindListener(this.transactionListener);

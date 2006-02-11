@@ -135,7 +135,15 @@ public class CopyServiceImpl implements CopyService
 		this.policyComponent.bindClassBehaviour(
 				QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"),
 				ContentModel.ASPECT_COPIEDFROM,
-				new JavaBehaviour(this, "copyAspectOnCopy"));		
+				new JavaBehaviour(this, "copyAspectOnCopy"));	
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"),
+                ContentModel.ASPECT_OWNABLE,
+                new JavaBehaviour(this, "onCopyOwnable"));
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"),
+                ContentModel.ASPECT_AUTHOR,
+                new JavaBehaviour(this, "onCopyAuthor"));	
 		this.policyComponent.bindClassBehaviour(
 				QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
 				ContentModel.ASPECT_COPIEDFROM,
@@ -752,6 +760,26 @@ public class CopyServiceImpl implements CopyService
 		// Do nothing.  This will ensure that copy aspect on the source node does not get copied onto
 		// the destination node.
 	}	
+    
+    public void onCopyOwnable(
+            QName classRef,
+            NodeRef sourceNodeRef,
+            StoreRef destinationStoreRef,
+            boolean copyToNewNode,
+            PolicyScope copyDetails)
+    {
+        // Do nothing since the ownable aspect should not be copied
+    }   
+    
+    public void onCopyAuthor(
+            QName classRef,
+            NodeRef sourceNodeRef,
+            StoreRef destinationStoreRef,
+            boolean copyToNewNode,
+            PolicyScope copyDetails)
+    {
+        // Do nothing since the author aspect should not be copied
+    }
 	
 	public void onCopyComplete(
 			QName classRef,

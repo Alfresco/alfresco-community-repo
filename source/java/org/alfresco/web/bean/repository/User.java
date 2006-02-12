@@ -84,8 +84,9 @@ public final class User
    {
       if (this.fullName == null)
       {
-         this.fullName = service.getProperty(this.person, ContentModel.PROP_FIRSTNAME) + " " +
-               service.getProperty(this.person, ContentModel.PROP_LASTNAME);
+         String lastName = (String)service.getProperty(this.person, ContentModel.PROP_LASTNAME);
+         this.fullName = service.getProperty(this.person, ContentModel.PROP_FIRSTNAME) +
+                         (lastName != null ? (" " + lastName) : "");
       }
       
       return this.fullName;

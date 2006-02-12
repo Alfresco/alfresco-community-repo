@@ -312,7 +312,8 @@ public abstract class UserMembersBean
          for (String authority : permissionMap.keySet())
          {
             // check if we are dealing with a person (User Authority)
-            if (personService.personExists(authority))
+            if (AuthorityType.getAuthorityType(authority) == AuthorityType.GUEST ||
+                personService.personExists(authority))
             {
                NodeRef nodeRef = personService.getPerson(authority);
                if (nodeRef != null)
@@ -325,9 +326,7 @@ public abstract class UserMembersBean
                   // it is much better for performance to do this now rather than during page bind
                   Map<String, Object> props = node.getProperties(); 
                   props.put("fullName", ((String)props.get("firstName")) + ' ' + ((String)props.get("lastName")));
-
                   props.put("roles", listToString(context, permissionMap.get(authority)));
-                  
                   props.put("icon", WebResources.IMAGE_PERSON);
                   
                   personNodes.add(node);
@@ -337,7 +336,14 @@ public abstract class UserMembersBean
             {
                // need a map (dummy node) to represent props for this Group Authority
                Map<String, Object> node = new HashMap<String, Object>(5, 1.0f);
-               node.put("fullName", authority.substring(PermissionService.GROUP_PREFIX.length()));
+               if (authority.startsWith(PermissionService.GROUP_PREFIX) == true)
+               {
+                  node.put("fullName", authority.substring(PermissionService.GROUP_PREFIX.length()));
+               }
+               else
+               {
+                  node.put("fullName", authority);
+               }
                node.put("userName", authority);
                node.put("id", authority);
                node.put("roles", listToString(context, permissionMap.get(authority)));

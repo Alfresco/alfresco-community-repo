@@ -457,9 +457,9 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
                   
                   // build a display label showing the user and their role for the space
                   AuthorityType authType = AuthorityType.getAuthorityType(authority);
-                  if (authType.equals(AuthorityType.USER) || authType.equals(AuthorityType.GUEST))
+                  if (authType == AuthorityType.GUEST || authType == AuthorityType.USER)
                   {
-                     if (this.personService.personExists(authority) == true)
+                     if (authType == AuthorityType.GUEST || this.personService.personExists(authority) == true)
                      {
                         // found a User authority
                         NodeRef ref = this.personService.getPerson(authority);
@@ -468,7 +468,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
                         
                         label.append(firstName)
                              .append(" ")
-                             .append(lastName)
+                             .append(lastName != null ? lastName : "")
                              .append(" (")
                              .append(Application.getMessage(FacesContext.getCurrentInstance(), role))
                              .append(")");

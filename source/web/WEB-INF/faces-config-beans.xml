@@ -169,6 +169,10 @@
          <property-name>searchService</property-name>
          <value>#{SearchService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -128,6 +129,14 @@ public class AdvancedSearchBean
    public void setSearchService(SearchService searchService)
    {
       this.searchService = searchService;
+   }
+   
+   /**
+    * @param permissionService      The PermissionService to set.
+    */
+   public void setPermissionService(PermissionService permissionService)
+   {
+      this.permissionService = permissionService;
    }
    
    /**
@@ -295,7 +304,13 @@ public class AdvancedSearchBean
     */
    public boolean isAllowEdit()
    {
-      return (this.savedSearch != null && NO_SELECTION.equals(this.savedSearch) == false);
+      boolean allow = (this.savedSearch != null && NO_SELECTION.equals(this.savedSearch) == false);
+      if (allow)  
+      {
+         NodeRef savedSearchRef = new NodeRef(Repository.getStoreRef(), this.savedSearch);
+         allow = (permissionService.hasPermission(savedSearchRef, PermissionService.WRITE) == AccessStatus.ALLOWED);
+      }
+      return allow;
    }
 
    /**
@@ -1494,6 +1509,9 @@ public class AdvancedSearchBean
    
    /** SearchService bean reference */
    private SearchService searchService;
+   
+   /** PermissionService */
+   private PermissionService permissionService;
    
    /** Client Config reference */
    private AdvancedSearchConfigElement searchConfigElement = null;

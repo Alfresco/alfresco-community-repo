@@ -20,7 +20,7 @@
                         <view:acl view:inherit="false">
                            <view:ace view:access="ALLOWED">
                               <view:authority>guest</view:authority>
-                              <view:permission>Read</view:permission>
+                              <view:permission>Guest</view:permission>
                            </view:ace>
                         </view:acl>
                         <cm:userName>guest</cm:userName>

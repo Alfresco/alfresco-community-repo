@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.lock.LockType;
@@ -71,7 +72,10 @@ public class LockServiceImplTest extends BaseSpringTest
         this.nodeService = (NodeService)applicationContext.getBean("dbNodeService");
         this.lockService = (LockService)applicationContext.getBean("lockService");
         this.authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
-        authenticationService.clearCurrentSecurityContext();
+        
+        // Set the authentication
+        AuthenticationComponent authComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
+        authComponent.setSystemUserAsCurrentUser();        
         
         // Create the node properties
         HashMap<QName, Serializable> nodeProperties = new HashMap<QName, Serializable>();

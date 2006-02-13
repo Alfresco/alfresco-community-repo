@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -107,7 +108,10 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         this.lockService = (LockService)this.applicationContext.getBean("lockService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
         this.permissionService = (PermissionService)this.applicationContext.getBean("permissionService");
-        authenticationService.clearCurrentSecurityContext();
+
+        // Authenticate as system to create initial test data set
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
+        authenticationComponent.setSystemUserAsCurrentUser();
 	
 		// Create the store and get the root node reference
 		this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
@@ -142,7 +146,6 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         
         permissionService.setPermission(this.rootNodeRef, this.userName.toLowerCase(), PermissionService.ALL_PERMISSIONS, true);
         permissionService.setPermission(this.nodeRef, this.userName.toLowerCase(), PermissionService.ALL_PERMISSIONS, true);
-        
 	}
 	
 	/**

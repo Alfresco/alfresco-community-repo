@@ -25,7 +25,7 @@ import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.providers.dao.User;
 
-import org.alfresco.repo.cache.AutoExpireCache;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
@@ -62,8 +62,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     
     private static Log log = LogFactory.getLog(PermissionServiceImpl.class);
     
-    private static AutoExpireCache<Serializable, AccessStatus> accessCache = new AutoExpireCache<Serializable, AccessStatus>(4096, 0.75f);
-    
+    /** a transactionally-safe cache to be injected */
+    private SimpleCache<Serializable, AccessStatus> accessCache;
     
     /*
      * Access to the model
@@ -147,33 +147,46 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         this.dynamicAuthorities = dynamicAuthorities;
     }
 
+    /**
+     * Set the permissions access cache.
+     * 
+     * @param accessCache a transactionally safe cache
+     */
+    public void setAccessCache(SimpleCache<Serializable, AccessStatus> accessCache)
+    {
+        this.accessCache = accessCache;
+    }
+
     public void afterPropertiesSet() throws Exception
     {
         if (dictionaryService == null)
         {
-            throw new IllegalArgumentException("There must be a dictionary service");
+            throw new IllegalArgumentException("Property 'dictionaryService' has not been set");
         }
         if (modelDAO == null)
         {
-            throw new IllegalArgumentException("There must be a permission model service");
+            throw new IllegalArgumentException("Property 'modelDAO' has not been set");
         }
         if (nodeService == null)
         {
-            throw new IllegalArgumentException("There must be a node service");
+            throw new IllegalArgumentException("Property 'nodeService' has not been set");
         }
         if (permissionsDAO == null)
         {
-            throw new IllegalArgumentException("There must be a permission dao");
+            throw new IllegalArgumentException("Property 'permissionsDAO' has not been set");
         }
         if (authenticationComponent == null)
         {
-            throw new IllegalArgumentException("There must be an authentication component");
+            throw new IllegalArgumentException("Property 'authenticationComponent' has not been set");
         }
         if(authorityService == null)
         {
-            throw new IllegalArgumentException("There must be an authority service"); 
+            throw new IllegalArgumentException("Property 'authorityService' has not been set"); 
         }
-
+        if (accessCache == null)
+        {
+            throw new IllegalArgumentException("Property 'accessCache' has not been set");
+        }
     }
 
     //
@@ -405,9 +418,9 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
      * dynamically so they must all be used) the NodeRef ID and the permission reference itself.
      * This gives a unique key for each permission test.
      */
-    static Serializable generateKey(Set auths, NodeRef ref, PermissionReference perm)
+    static Serializable generateKey(Set<String> auths, NodeRef ref, PermissionReference perm)
     {
-        HashSet key = new HashSet(auths);
+        HashSet<Serializable> key = new HashSet<Serializable>(auths);
         key.add(ref.getId());
         key.add(perm.toString());
         return key;

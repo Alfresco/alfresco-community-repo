@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.cache.AutoExpireCache;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -40,7 +40,7 @@ public class OwnableServiceImpl implements OwnableService, InitializingBean
     
     private AuthenticationService authenticationService;
     
-    private static AutoExpireCache<NodeRef, String> ownerCache = new AutoExpireCache<NodeRef, String>(1024, 0.75f);
+    private SimpleCache<NodeRef, String> nodeOwnerCache;
 
     public OwnableServiceImpl()
     {
@@ -59,16 +59,27 @@ public class OwnableServiceImpl implements OwnableService, InitializingBean
         this.authenticationService = authenticationService;
     }
     
+    /**
+     * @param ownerCache a transactionally-safe cache of node owners
+     */
+    public void setNodeOwnerCache(SimpleCache<NodeRef, String> ownerCache)
+    {
+        this.nodeOwnerCache = ownerCache;
+    }
 
     public void afterPropertiesSet() throws Exception
     {
         if (nodeService == null)
         {
-            throw new IllegalArgumentException("A node service must be set");
+            throw new IllegalArgumentException("Property 'nodeService' has not been set");
         }
         if (authenticationService == null)
         {
-            throw new IllegalArgumentException("An authentication service must be set");
+            throw new IllegalArgumentException("Property 'authenticationService' has not been set");
+        }
+        if (nodeOwnerCache == null)
+        {
+            throw new IllegalArgumentException("Property 'nodeOwnerCache' has not been set");
         }
     }
     
@@ -76,7 +87,7 @@ public class OwnableServiceImpl implements OwnableService, InitializingBean
     
     public String getOwner(NodeRef nodeRef)
     {
-        String userName = ownerCache.get(nodeRef);
+        String userName = nodeOwnerCache.get(nodeRef);
         
         if (userName == null)
         {
@@ -89,7 +100,7 @@ public class OwnableServiceImpl implements OwnableService, InitializingBean
             {
                 userName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_CREATOR));
             }
-            ownerCache.put(nodeRef, userName);
+            nodeOwnerCache.put(nodeRef, userName);
         }
         
         return userName;
@@ -97,8 +108,6 @@ public class OwnableServiceImpl implements OwnableService, InitializingBean
 
     public void setOwner(NodeRef nodeRef, String userName)
     {
-        ownerCache.remove(nodeRef);
-        
         if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
         {
             HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>(1, 1.0f);
@@ -109,6 +118,7 @@ public class OwnableServiceImpl implements OwnableService, InitializingBean
         {
             nodeService.setProperty(nodeRef, ContentModel.PROP_OWNER, userName);
         }
+        nodeOwnerCache.put(nodeRef, userName);
     }
 
     public void takeOwnership(NodeRef nodeRef)

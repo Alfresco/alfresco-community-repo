@@ -3,7 +3,7 @@
         path="java.io.tmpdir"/>
     <defaultCache 
         maxElementsInMemory="5000" 
-        eternal="false" 
+        eternal="true" 
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 

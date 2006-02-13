@@ -9,5 +9,8 @@
         <property name="authenticationService">
             <ref bean="authenticationServiceImpl"/>
         </property>
+        <property name="nodeOwnerCache">
+            <ref bean="nodeOwnerCache"/>
+        </property>
     </bean>
 </beans>

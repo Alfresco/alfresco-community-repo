@@ -609,6 +609,8 @@ public class RoutingContentServiceTest extends BaseSpringTest
 
         public void run()
         {
+            authenticationComponent.setSystemUserAsCurrentUser();
+            
             isWaiting = false;
             isDone = false;
             UserTransaction txn = getUserTransaction();

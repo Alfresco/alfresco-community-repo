@@ -346,9 +346,7 @@ public abstract class AlfrescoTransactionSupport
     private static TransactionSynchronizationImpl getSynchronization()
     {
         // ensure synchronizations
-        registerSynchronizations();
-        // get the txn synch instances
-        return (TransactionSynchronizationImpl) TransactionSynchronizationManager.getResource(RESOURCE_KEY_TXN_SYNCH);
+        return registerSynchronizations();
     }
     
     /**

@@ -781,6 +781,64 @@ public class ServerConfiguration
 
                 setNetBIOSBindAddress(getSMBBindAddress());
             }
+            else
+            {
+                // Get a list of all the local addresses
+
+                InetAddress[] addrs = null;
+                    
+                try
+                {
+                    // Get the local server IP address list
+
+                    addrs = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
+                }
+                catch (UnknownHostException ex)
+                {
+                    logger.error("Failed to get local address list", ex);
+                }
+                
+                // Check the address list for one or more valid local addresses filtering out the loopback address
+                
+                int addrCnt = 0;
+
+                if ( addrs != null)
+                {
+                    for (int i = 0; i < addrs.length; i++)
+                    {
+    
+                        // Check for a valid address, filter out '127.0.0.1' and '0.0.0.0' addresses
+    
+                        if (addrs[i].getHostAddress().equals("127.0.0.1") == false
+                                && addrs[i].getHostAddress().equals("0.0.0.0") == false)
+                            addrCnt++;
+                    }
+                }
+                
+                // Check if any addresses were found
+                
+                if ( addrCnt == 0)
+                {
+                    // Log the available IP addresses
+                    
+                    if ( logger.isDebugEnabled())
+                    {
+                        logger.debug("Local address list dump :-");
+                        if ( addrs != null)
+                        {
+                            for ( int i = 0; i < addrs.length; i++)
+                                logger.debug( "  Address: " + addrs[i]);
+                        }
+                        else
+                            logger.debug("  No addresses");
+                    }
+                    
+                    // Throw an exception to stop the CIFS/NetBIOS name server from starting
+                    
+                    throw new AlfrescoRuntimeException( "Failed to get IP address(es) for the local server, check hosts file and/or DNS setup");
+                }
+                
+            }
         }
         else
         {

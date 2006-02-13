@@ -1481,6 +1481,21 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
                             && addrs[i].getHostAddress().equals("0.0.0.0") == false)
                         ipList.add(addrs[i].getAddress());
                 }
+                
+                // Check if any addresses were added to the list
+                
+                if ( ipList.size() == 0)
+                {
+                    // Log the available IP addresses
+                    
+                    logger.error("Failed to get IP address(es) for NetBIOS name");
+                    for ( int i = 0; i < addrs.length; i++)
+                        logger.error( "  Address: " + addrs[i]);
+                    logger.error("Check hosts file and/or DNS setup");
+                    logger.error("NetBIOS name server is shutting down");
+                    
+                    return;
+                }
             }
 
             // Initialize the NetBIOS name socket

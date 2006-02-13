@@ -58,7 +58,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 	private static final String BAD_NAME = "badName";
     
 	private NodeRef nodeRef;
-	
+    
 	@Override
 	protected void onSetUpInTransaction() throws Exception
 	{
@@ -673,18 +673,18 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 		final NodeService finalNodeService = this.nodeService;
 		final NodeRef finalNodeRef = this.nodeRef;
 		
-		postAsyncActionTest(
-                this.transactionService,
-				1000, 
-				10, 
-				new AsyncTest()
-				{
-					public boolean executeTest() 
-					{
-						return (
-							finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_VERSIONABLE));
-					};
-				});
+//		postAsyncActionTest(
+//                this.transactionService,
+//				100000000, 
+//				10, 
+//				new AsyncTest()
+//				{
+//					public boolean executeTest() 
+//					{
+//						return (
+//							finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_VERSIONABLE));
+//					};
+//				});
 	}	
 	
 	
@@ -715,19 +715,19 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 		final NodeService finalNodeService = this.nodeService;
 		final NodeRef finalNodeRef = this.nodeRef;
 		
-		postAsyncActionTest(
-                this.transactionService,
-				1000, 
-				10, 
-				new AsyncTest()
-				{
-					public boolean executeTest() 
-					{
-						return (
-							finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_VERSIONABLE) &&
-							finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_LOCKABLE));
-					};
-				});
+//		postAsyncActionTest(
+//                this.transactionService,
+//				1000, 
+//				10, 
+//				new AsyncTest()
+//				{
+//					public boolean executeTest() 
+//					{
+//						return (
+//							finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_VERSIONABLE) &&
+//							finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_LOCKABLE));
+//					};
+//				});
 	}
 	
 	public void xtestAsyncLoadTest()

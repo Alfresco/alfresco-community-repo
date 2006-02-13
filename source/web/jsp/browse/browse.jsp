@@ -533,7 +533,7 @@
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
                               <r:permissionEvaluator value="#{r}" allow="CreateChildren">
-	                              <a:booleanEvaluator value="#{r.beingDiscussed == false}">
+	                              <a:booleanEvaluator value="#{r.beingDiscussed == false && r.locked == false}">
 	                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
 	                                    <f:param name="id" value="#{r.id}" />
 	                                 </a:actionLink>

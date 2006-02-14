@@ -1655,6 +1655,7 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
         checkAbleToDoWork(true, false);
         if (!mainIndexExists())
         {
+            remainingCount = size;
             return;
         }
         try
@@ -1672,6 +1673,12 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
             try
             {
                 searcher = getSearcher(null);
+                // commit on another thread - appears like there is no index ...try later
+                if(searcher == null)
+                {
+                    remainingCount = size;
+                    return;
+                }
                 Hits hits;
                 try
                 {

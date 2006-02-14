@@ -108,7 +108,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
             DataAccessException
     {
         String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
-        NodeRef userRef = getUserOrNull(userNamesAreCaseSensitive ? userName : userName.toLowerCase());
+        NodeRef userRef = getUserOrNull(userName);
         if (userRef == null)
         {
             throw new UsernameNotFoundException("Could not find user by userName: " + caseSensitiveUserName);

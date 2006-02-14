@@ -257,7 +257,6 @@ public class AsynchronousActionExecutionQueueImpl extends ThreadPoolExecutor imp
          * 
          * @see java.lang.Runnable#run()
          */
-        @SuppressWarnings("unchecked")
         public void run()
         {
             try
@@ -274,7 +273,7 @@ public class AsynchronousActionExecutionQueueImpl extends ThreadPoolExecutor imp
                 try
                 {
                     TransactionUtil.executeInNonPropagatingUserTransaction(this.transactionService,
-                            new TransactionUtil.TransactionWork()
+                            new TransactionUtil.TransactionWork<Object>()
                             {
                                 public Object doWork()
                                 {                                

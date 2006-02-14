@@ -99,6 +99,16 @@ public class LoginBean
    {
       this.navigator = navigator;
    }
+   
+   /**
+    * @return true if the default Alfresco authentication process is being used, else false
+    *         if an external authorisation mechanism is present.
+    */
+   public boolean isAlfrescoAuth()
+   {
+      Map session = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
+      return (session.get(LOGIN_EXTERNAL_AUTH) == null);
+   }
 
    /**
     * @param val        Username from login dialog
@@ -263,7 +273,6 @@ public class LoginBean
             
             // Authenticate via the authentication service, then save the details of user in an object
             // in the session - this is used by the servlet filter etc. on each page to check for login
-            //this.authenticationService = (AuthenticationService)FacesContextUtils.getRequiredWebApplicationContext(FacesContext.getCurrentInstance()).getBean("authenticationService");
             this.authenticationService.authenticate(this.username, this.password.toCharArray());
             
             // remove the session invalidated flag (used to remove last username cookie by AuthenticationFilter)
@@ -343,8 +352,6 @@ public class LoginBean
       Map session = context.getExternalContext().getSessionMap();
       User user = (User) session.get(AuthenticationHelper.AUTHENTICATION_USER);
       
-      boolean alfrescoAuth = (session.get(LOGIN_EXTERNAL_AUTH) == null);
-      
       // Invalidate Session for this user.
       // This causes the sessionDestroyed() event to be processed by ContextListener
       // which is responsible for invalidating the ticket and clearing the security context
@@ -371,7 +378,7 @@ public class LoginBean
          Application.setLanguage(context, this.language);
       }
       
-      return alfrescoAuth ? "logout" : "relogin";
+      return isAlfrescoAuth() ? "logout" : "relogin";
    }
    
    

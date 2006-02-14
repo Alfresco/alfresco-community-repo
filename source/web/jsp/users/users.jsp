@@ -77,7 +77,7 @@
                            <td width=100 style="padding-left:2px">
                               <%-- Current object actions --%>
                               <h:outputText style="padding-left:20px;" styleClass="mainSubTitle" value="#{msg.actions}" /><br/>
-                              <a:actionLink value="#{msg.create_user}" image="/images/icons/create_user.gif" padding="4" action="createUser" actionListener="#{NewUserWizard.startWizard}" />
+                              <a:actionLink value="#{msg.create_user}" image="/images/icons/create_user.gif" padding="4" rendered="#{LoginBean.alfrescoAuth}" action="createUser" actionListener="#{NewUserWizard.startWizard}" />
                            </td>
                            <td bgcolor="#465F7D" width=1></td>
                            <td width=110 style="padding-left:2px">

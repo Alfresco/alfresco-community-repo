@@ -300,7 +300,7 @@ public class ContentNetworkFile extends NetworkFile
             // ensure that the content we are going to read is valid
             content = FileContentReader.getSafeContentReader(
                     (ContentReader) content,
-                    I18NUtil.getMessage("content.content_missing"),
+                    I18NUtil.getMessage(FileContentReader.MSG_MISSING_CONTENT),
                     nodeRef, content);
             
             // Indicate that we only have a read-only channel to the data

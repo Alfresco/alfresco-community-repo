@@ -43,6 +43,15 @@ import org.apache.commons.logging.LogFactory;
  */
 public class FileContentReader extends AbstractContentReader
 {
+    /**
+     * message key for missing content.  Parameters are
+     * <ul>
+     *    <li>{@link org.alfresco.service.cmr.repository.NodeRef NodeRef}</li>
+     *    <li>{@link ContentReader ContentReader}</li>
+     * </ul>
+     */
+    public static final String MSG_MISSING_CONTENT = "content.content_missing";
+    
     private static final Log logger = LogFactory.getLog(FileContentReader.class);
     
     private File file;
@@ -56,7 +65,7 @@ public class FileContentReader extends AbstractContentReader
      * It is a convenience method that clients can use to cheaply get a reader that
      * is valid, regardless of whether the initial reader is valid.
      * 
-     * @param existingReader a potentially valid reader
+     * @param existingReader a potentially invalid reader or null
      * @param msgTemplate the template message that will used to format the final <i>fake</i> content
      * @param args arguments to put into the <i>fake</i> content
      * @return Returns a the existing reader or a new reader onto some generated text content

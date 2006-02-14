@@ -631,7 +631,7 @@
 
  
 
-    <!-- Importer -->
+    <!-- Importers -->
 
     <bean id="viewParser" class="org.alfresco.repo.importer.view.ViewParser">
         <property name="namespaceService">
@@ -642,7 +642,7 @@
         </property>
     </bean>
 
-    <bean id="importerComponent" class="org.alfresco.repo.importer.ImporterComponent">
+    <bean id="importerComponent" class="org.alfresco.repo.importer.ImporterComponent" depends-on="nodeIndexer, auditableAspect">
         <!-- For now, hard-wire the view parser -->
         <property name="namespaceService">
             <ref bean="NamespaceService" />
@@ -679,7 +679,7 @@
         </property>
     </bean>
 
-    <bean id="systemStoreImporter" class="org.alfresco.repo.importer.ImporterBootstrap" abstract="true" init-method="bootstrap">
+    <bean id="storeImporter" class="org.alfresco.repo.importer.ImporterBootstrap" abstract="true" init-method="bootstrap">
         <property name="transactionService">
             <ref bean="transactionComponent"/>
         </property>
@@ -695,11 +695,32 @@
         <property name="authenticationComponent">
             <ref bean="authenticationComponent" />
         </property>
-        <property name="storeUrl">
-            <value>${system.store}</value>
-        </property>
         <property name="allowWrite">
             <value>${server.transaction.allow-writes}</value>
+        </property>
+        <!-- To specify a locale other than the system default, uncomment the following
+        <property name="locale">
+            <value>en_GB</value>
+        </property>
+        -->
+	</bean>
+
+    <bean id="userStoreImporter" parent="storeImporter" abstract="true">
+        <property name="storeUrl">
+            <value>${alfresco_user_store.store}</value>
+        </property>
+        <property name="configuration">
+            <props>
+                <prop key="alfresco_user_store.system_container.childname">${alfresco_user_store.system_container.childname}</prop>
+                <prop key="alfresco_user_store.user_container.childname">${alfresco_user_store.user_container.childname}</prop>
+                <prop key="alfresco_user_store.authorities_container.childname">${alfresco_user_store.authorities_container.childname}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="systemStoreImporter" parent="storeImporter" abstract="true">
+        <property name="storeUrl">
+            <value>${system.store}</value>
         </property>
         <property name="mustNotExistStoreUrls">
             <list>
@@ -718,90 +739,9 @@
         </property>
     </bean>
 
-    <bean id="systemBootstrap" parent="systemStoreImporter" depends-on="nodeIndexer, auditableAspect">
-        <!-- To specify a locale other than the system default, uncomment the following
-        <property name="locale">
-            <value>en_GB</value>
-        </property>
-        -->
-        <property name="bootstrapViews">
-            <list>
-                <props>
-                    <prop key="path">/</prop>
-                    <prop key="location">alfresco/bootstrap/descriptor.xml</prop>
-                </props>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="userStoreImporter" class="org.alfresco.repo.importer.ImporterBootstrap" abstract="true" init-method="bootstrap">
-        <property name="transactionService">
-            <ref bean="transactionComponent"/>
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>
-        <property name="importerService">
-            <ref bean="importerComponent"/>
-        </property>
-        <property name="namespaceService">
-            <ref bean="namespaceService"/>
-        </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
-        </property>
-        <property name="storeUrl">
-            <value>${alfresco_user_store.store}</value>
-        </property>
-        <property name="allowWrite">
-            <value>${server.transaction.allow-writes}</value>
-        </property>
-        <property name="configuration">
-            <props>
-                <prop key="alfresco_user_store.system_container.childname">${alfresco_user_store.system_container.childname}</prop>
-                <prop key="alfresco_user_store.user_container.childname">${alfresco_user_store.user_container.childname}</prop>
-                <prop key="alfresco_user_store.authorities_container.childname">${alfresco_user_store.authorities_container.childname}</prop>
-            </props>
-        </property>
-    </bean>
-
-    <bean id="userBootstrap" parent="userStoreImporter" depends-on="systemBootstrap">
-        <!-- To specify a locale other than the system default, uncomment the following
-        <property name="locale">
-            <value>en_GB</value>
-        </property>
-        -->
-        <property name="bootstrapViews">
-            <list>
-                <props>
-                    <prop key="path">/</prop>
-                    <prop key="location">alfresco/bootstrap/alfrescoUserStore.xml</prop>
-                </props>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="spacesStoreImporter" class="org.alfresco.repo.importer.ImporterBootstrap" abstract="true" init-method="bootstrap">
-        <property name="transactionService">
-            <ref bean="transactionComponent"/>
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>
-        <property name="importerService">
-            <ref bean="importerComponent"/>
-        </property>
-        <property name="namespaceService">
-            <ref bean="namespaceService"/>
-        </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
-        </property>
+    <bean id="spacesStoreImporter" parent="storeImporter" abstract="true">
         <property name="storeUrl">
             <value>${spaces.store}</value>
-        </property>
-        <property name="allowWrite">
-            <value>${server.transaction.allow-writes}</value>
         </property>
         <property name="configuration">
             <props>
@@ -817,12 +757,31 @@
         </property>
     </bean>
 
-    <bean id="importerBootstrap" parent="spacesStoreImporter" depends-on="userBootstrap, versionBootstrap">
-        <!-- To specify a locale other than the system default, uncomment the following
-        <property name="locale">
-            <value>en_GB</value>
+	<!-- Bootstrap Files -->
+
+    <bean id="userBootstrap" parent="userStoreImporter">
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/alfrescoUserStore.xml</prop>
+                </props>
+            </list>
         </property>
-        -->
+    </bean>
+
+    <bean id="systemBootstrap" parent="systemStoreImporter" depends-on="userBootstrap">
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/descriptor.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="importerBootstrap" parent="spacesStoreImporter" depends-on="systemBootstrap, versionBootstrap">
         <property name="bootstrapViews">
             <list>
                 <props>
@@ -856,7 +815,8 @@
         </property>
     </bean>
 
-    <!-- Exporter -->
+
+    <!-- Exporters -->
     <bean id="exporterComponent" class="org.alfresco.repo.exporter.ExporterComponent">
         <property name="namespaceService">
             <ref bean="NamespaceService" />

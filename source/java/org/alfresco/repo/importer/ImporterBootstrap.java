@@ -44,6 +44,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.impl.Log4JLogger;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.springframework.core.io.ClassPathResource;
 
 /**
@@ -62,6 +65,7 @@ public class ImporterBootstrap
     
     // Logger
     private static final Log logger = LogFactory.getLog(ImporterBootstrap.class);
+    private boolean logEnabled = false;
 
     // Dependencies
     private boolean allowWrite = true;
@@ -235,6 +239,16 @@ public class ImporterBootstrap
     }
     
     /**
+     * Set log
+     * 
+     * @param logEnabled
+     */
+    public void setLog(boolean logEnabled)
+    {
+        this.logEnabled = logEnabled;
+    }
+    
+    /**
      * Boostrap the Repository
      */
     public void bootstrap()
@@ -258,6 +272,14 @@ public class ImporterBootstrap
         if (storeRef == null)
         {
             throw new ImporterException("Store URL must be provided");
+        }
+
+        // initialise log level
+        // note: only supported with Log4J
+        if (logEnabled && logger instanceof Log4JLogger)
+        {
+            Logger log4JLogger = ((Log4JLogger)logger).getLogger();
+            log4JLogger.setLevel(Level.DEBUG);
         }
         
         UserTransaction userTransaction = transactionService.getUserTransaction();
@@ -339,7 +361,7 @@ public class ImporterBootstrap
                         ImporterProgress importProgress = null;
                         if (logger.isDebugEnabled())
                         {
-                            importProgress = new ImportTimerProgress();
+                            importProgress = new ImportTimerProgress(logger);
                             logger.debug("Importing " + view);
                         }
                         

@@ -23,6 +23,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -40,6 +42,25 @@ public class ImportTimerProgress implements ImporterProgress
     private long aspectAdded = 0;
     private long permissionCount = 0;
     
+    private Log logger = LogFactory.getLog(ImportTimerProgress.class);;
+    
+    /**
+     * Construct
+     */
+    public ImportTimerProgress()
+    {
+    }
+
+    /**
+     * Construct
+     * 
+     * @param logger
+     */
+    public ImportTimerProgress(Log logger)
+    {
+        this.logger = logger;
+    }
+    
     /*
      *  (non-Javadoc)
      * @see org.alfresco.service.cmr.view.ImporterProgress#started()
@@ -53,7 +74,9 @@ public class ImportTimerProgress implements ImporterProgress
         nodeLinkedCount = 0;
         aspectAdded = 0;
         permissionCount = 0;
-        System.out.println("Import started at " + start + " (" + start.getTime() + ")");
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Import started at " + start + " (" + start.getTime() + ")");
     }
 
     /*
@@ -62,9 +85,12 @@ public class ImportTimerProgress implements ImporterProgress
      */
     public void completed()
     {
-        Date end = new Date();
-        System.out.println("Import completed at " + end + " (" + end.getTime() + ")");
-        dumpStats(end);
+        if (logger.isDebugEnabled())
+        {
+            Date end = new Date();
+            logger.debug("Import completed at " + end + " (" + end.getTime() + ")");
+            dumpStats(end);
+        }
     }
 
     /*
@@ -73,10 +99,14 @@ public class ImportTimerProgress implements ImporterProgress
      */
     public void error(Throwable e)
     {
-        Date end = new Date();
-        System.out.println("Error occured at " + end + " (" + end.getTime() + ")");
-        System.out.println("Exception: " + e.toString());
-        dumpStats(end);
+        if (logger.isDebugEnabled())
+        {
+            Date end = new Date();
+            logger.debug("Import completed at " + end + " (" + end.getTime() + ")");
+            logger.debug("Error occured at " + end + " (" + end.getTime() + ")");
+            logger.debug("Exception: " + e.toString());
+            dumpStats(end);
+        }
     }
 
     /*
@@ -140,13 +170,16 @@ public class ImportTimerProgress implements ImporterProgress
      */
     private void dumpStats(Date end)
     {
-        System.out.println("Import duration: " + (end.getTime() - start.getTime()) + " ms (Note: excluding commit time)");
-        System.out.println(" Nodes created: " + nodeCreateCount);
-        System.out.println(" Nodes linked: " + nodeLinkedCount);
-        System.out.println(" Aspects Added: " + aspectAdded);
-        System.out.println(" Properties set: " + propCount);
-        System.out.println(" Content set: " + contentCount);
-        System.out.println(" Permissions set: " + permissionCount);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Import duration: " + (end.getTime() - start.getTime()) + " ms (Note: excluding commit time)");
+            logger.debug(" Nodes created: " + nodeCreateCount);
+            logger.debug(" Nodes linked: " + nodeLinkedCount);
+            logger.debug(" Aspects Added: " + aspectAdded);
+            logger.debug(" Properties set: " + propCount);
+            logger.debug(" Content set: " + contentCount);
+            logger.debug(" Permissions set: " + permissionCount);
+        }
     }
     
 }

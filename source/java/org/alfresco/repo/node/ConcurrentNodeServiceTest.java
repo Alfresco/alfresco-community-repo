@@ -159,7 +159,7 @@ public class ConcurrentNodeServiceTest extends TestCase
     /**
      * Daemon thread
      */
-    class Nester extends Thread
+    private class Nester extends Thread
     {
         Thread waiter;
 
@@ -175,6 +175,8 @@ public class ConcurrentNodeServiceTest extends TestCase
 
         public void run()
         {
+            authenticationComponent.setSystemUserAsCurrentUser();
+            
             if (waiter != null)
             {
                 waiter.start();

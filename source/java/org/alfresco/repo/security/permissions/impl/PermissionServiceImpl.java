@@ -56,8 +56,9 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class PermissionServiceImpl implements PermissionServiceSPI, InitializingBean
 {
+    
     static SimplePermissionReference OLD_ALL_PERMISSIONS_REFERENCE = new SimplePermissionReference(
-            QName.createQName(NamespaceService.SECURITY_MODEL_1_0_URI, PermissionService.ALL_PERMISSIONS),
+            QName.createQName("", PermissionService.ALL_PERMISSIONS),
             PermissionService.ALL_PERMISSIONS);
     
     private static Log log = LogFactory.getLog(PermissionServiceImpl.class);

@@ -143,7 +143,7 @@ public abstract class BaseServlet extends HttpServlet
       // also save the requested URL so the login page knows where to redirect too later
       res.sendRedirect(req.getContextPath() + FACES_SERVLET + Application.getLoginPage(sc));
       String uri = req.getRequestURI();
-      if (uri.indexOf(BaseServlet.FACES_SERVLET) != -1)
+      if (uri.indexOf(req.getContextPath() + FACES_SERVLET) != -1)
       {
          // if we find a JSF servlet reference in the URI then we need to check if the rest of the
          // JSP specified is valid for a redirect operation after Login has occured.

@@ -1,4 +1,5 @@
 <ehcache>
+    <!-- defaults -->
     <diskStore 
         path="java.io.tmpdir"/>
     <defaultCache 
@@ -8,11 +9,23 @@
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         />
+    <!-- Hibernate usage -->
+    <cache 
+        name="org.hibernate.cache.StandardQueryCache" 
+        maxElementsInMemory="50" 
+        eternal="true"
+        timeToLiveSeconds="0" 
+        overflowToDisk="false"/>
+    <cache 
+        name="org.hibernate.cache.UpdateTimestampsCache" 
+        maxElementsInMemory="5000" 
+        eternal="true" 
+        overflowToDisk="false"/>
     <!-- Nodes: Most other objects are cached as a ratio against the number of nodes cached -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl" 
         maxElementsInMemory="100000" 
-        eternal="false" 
+        eternal="true" 
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
@@ -21,7 +34,7 @@
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeStatusImpl" 
         maxElementsInMemory="100000" 
-        eternal="false" 
+        eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
@@ -30,7 +43,7 @@
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.aspects" 
         maxElementsInMemory="500000" 
-        eternal="false" 
+        eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
@@ -39,7 +52,7 @@
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.properties" 
         maxElementsInMemory="1000000" 
-        eternal="false" 
+        eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
@@ -48,7 +61,7 @@
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.childAssocs" 
         maxElementsInMemory="100000" 
-        eternal="false" 
+        eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
@@ -57,7 +70,7 @@
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.parentAssocs" 
         maxElementsInMemory="100000"
-        eternal="false" 
+        eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
@@ -66,7 +79,7 @@
     <cache 
         name="org.alfresco.repo.domain.hibernate.ChildAssocImpl" 
         maxElementsInMemory="100000"
-        eternal="false" 
+        eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
@@ -75,7 +88,7 @@
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.sourceNodeAssocs" 
         maxElementsInMemory="10000"
-        eternal="false" 
+        eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
@@ -84,7 +97,7 @@
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.targetNodeAssocs" 
         maxElementsInMemory="10000" 
-        eternal="false" 
+        eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
@@ -93,7 +106,7 @@
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeAssocImpl" 
         maxElementsInMemory="10000" 
-        eternal="false" 
+        eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
@@ -102,7 +115,7 @@
     <cache 
         name="org.alfresco.repo.domain.hibernate.StoreImpl" 
         maxElementsInMemory="100" 
-        eternal="false" 
+        eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
@@ -111,7 +124,7 @@
     <cache 
         name="org.alfresco.repo.domain.hibernate.VersionCountImpl" 
         maxElementsInMemory="100" 
-        eternal="false" 
+        eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
@@ -120,22 +133,11 @@
     <cache 
         name="org.alfresco.repo.domain.hibernate.AppliedPatchImpl" 
         maxElementsInMemory="100" 
-        eternal="false" 
+        eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="60" 
         overflowToDisk="false" 
         />
-    <cache 
-        name="org.hibernate.cache.StandardQueryCache" 
-        maxElementsInMemory="50" 
-        eternal="false" 
-        timeToLiveSeconds="0" 
-        overflowToDisk="false"/>
-    <cache 
-        name="org.hibernate.cache.UpdateTimestampsCache" 
-        maxElementsInMemory="5000" 
-        eternal="true" 
-        overflowToDisk="false"/>
     <!-- Permission related caches -->
     <cache 
         name="org.alfresco.repo.security.permissions.impl.hibernate.RecipientImpl" 

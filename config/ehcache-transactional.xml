@@ -1,0 +1,14 @@
+<!--
+   This configures the cache properties for Alfresco's in-transaction caches.
+-->
+<ehcache>
+    <diskStore 
+        path="java.io.tmpdir"/>
+    <defaultCache 
+        maxElementsInMemory="5000" 
+        eternal="true" 
+        timeToIdleSeconds="0" 
+        timeToLiveSeconds="0" 
+        overflowToDisk="false" 
+        />
+</ehcache>

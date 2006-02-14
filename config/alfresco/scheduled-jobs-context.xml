@@ -131,6 +131,23 @@
         </property>
     </bean>
 
+    <!-- enable DEBUG for 'org.alfresco.repo.cache.EhCacheTracerJob' to activate -->
+    <bean id="ehCacheTracerJob" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        <property name="jobDetail">
+            <bean id="ehCacheTracerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.cache.EhCacheTracerJob</value>
+                </property>
+            </bean>
+        </property>
+        <property name="startDelay">
+            <value>3600000</value><!-- start after an hour -->
+        </property>
+        <property name="repeatInterval">
+            <value>3600000</value><!-- repeat every hour -->
+        </property>
+    </bean>
+
     <!-- Scheduled tasks -->
     <bean id="schedulerFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
@@ -144,7 +161,9 @@
                 <ref bean="ldapGroupTrigger" />
                 <ref bean="ldapPeopleTrigger" />
                 -->
-                
+                <!--
+                <ref bean="ehCacheTracerJob" />
+                -->
             </list>
         </property>
         <property name="waitForJobsToCompleteOnShutdown">

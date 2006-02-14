@@ -1,14 +1,21 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
  
+<!--
+   Configuration of in-transaction caches along with the shared (cross-transaction) caches.
+   The in-transaction caches do not share the same configuration as the shared caches.
+   This is because the shared caches can support replication (EHCache 1.2), while the 
+   in-transaction caches must not use these features.
+-->
 <beans>
+   
    <!-- ==================================================== -->
    <!-- EH Cache Manager to produce in-transaction EH Caches -->
    <!-- ==================================================== -->
    
-   <bean name="ehCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" >
+   <bean name="transactionalEHCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" >
       <property name="configLocation">
-         <value>classpath:ehcache.xml</value>
+         <value>classpath:ehcache-transactional.xml</value>
       </property>
    </bean>
    
@@ -42,7 +49,7 @@
          <ref bean="nullPermissionSharedCache" />
       </property>
       <property name="cacheManager" >
-         <ref bean="ehCacheManager" />
+         <ref bean="transactionalEHCacheManager" />
       </property>
       <!-- Eh cache area -->
       <property name="name">
@@ -83,7 +90,7 @@
          <ref bean="userToAuthoritySharedCache" />
       </property>
       <property name="cacheManager" >
-         <ref bean="ehCacheManager" />
+         <ref bean="transactionalEHCacheManager" />
       </property>
       <!-- Eh cache area -->
       <property name="name">
@@ -124,7 +131,7 @@
          <ref bean="permissionsAccessSharedCache" />
       </property>
       <property name="cacheManager" >
-         <ref bean="ehCacheManager" />
+         <ref bean="transactionalEHCacheManager" />
       </property>
       <!-- Eh cache area -->
       <property name="name">
@@ -165,7 +172,7 @@
          <ref bean="nodeOwnerSharedCache" />
       </property>
       <property name="cacheManager" >
-         <ref bean="ehCacheManager" />
+         <ref bean="transactionalEHCacheManager" />
       </property>
       <!-- Eh cache area -->
       <property name="name">

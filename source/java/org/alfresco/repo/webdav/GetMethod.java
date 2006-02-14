@@ -27,6 +27,8 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -182,17 +184,19 @@ public class GetMethod extends WebDAVMethod
             }
 
             ContentReader reader = fileFolderService.getReader(nodeInfo.getNodeRef());
-            if (reader != null)
+            // ensure that we generate something, even if the content is missing
+            reader = FileContentReader.getSafeContentReader(
+                    (ContentReader) reader,
+                    I18NUtil.getMessage(FileContentReader.MSG_MISSING_CONTENT),
+                    nodeInfo.getNodeRef(), reader);
+            // there is content associated with the node
+            m_response.setHeader(WebDAV.HEADER_CONTENT_LENGTH, "" + reader.getSize());
+            m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, reader.getMimetype());
+            
+            if (m_returnContent)
             {
-                // there is content associated with the node
-                m_response.setHeader(WebDAV.HEADER_CONTENT_LENGTH, "" + reader.getSize());
-                m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, reader.getMimetype());
-                
-                if (m_returnContent)
-                {
-                    // copy the content to the response output stream
-                    reader.getContent(m_response.getOutputStream());
-                }
+                // copy the content to the response output stream
+                reader.getContent(m_response.getOutputStream());
             }
         }
     }

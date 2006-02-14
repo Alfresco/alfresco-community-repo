@@ -163,7 +163,7 @@ public class DownloadContentServlet extends BaseServlet
       {
          if (logger.isDebugEnabled())
             logger.debug("User does not have permissions to read content for NodeRef: " + nodeRef.toString());
-         redirectToLoginPage(req, res);
+         redirectToLoginPage(req, res, getServletContext());
          return;
       }
       

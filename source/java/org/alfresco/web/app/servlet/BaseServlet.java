@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
@@ -57,6 +59,24 @@ public abstract class BaseServlet extends HttpServlet
    
    /** forcing guess access is available on most servlets */
    private static final String ARG_GUEST    = "guest";
+   
+   /** list of valid JSPs for redirect after a clean login */
+   // TODO: make this list configurable
+   private static Set<String> validRedirectJSPs = new HashSet<String>();
+   static
+   {
+      validRedirectJSPs.add("/jsp/browse/browse.jsp");
+      validRedirectJSPs.add("/jsp/browse/dashboard.jsp");
+      validRedirectJSPs.add("/jsp/admin/admin-console.jsp");
+      validRedirectJSPs.add("/jsp/admin/node-browser.jsp");
+      validRedirectJSPs.add("/jsp/admin/store-browser.jsp");
+      validRedirectJSPs.add("/jsp/categories/categories.jsp");
+      validRedirectJSPs.add("/jsp/dialog/about.jsp");
+      validRedirectJSPs.add("/jsp/dialog/advanced-search.jsp");
+      validRedirectJSPs.add("/jsp/dialog/system-info.jsp");
+      validRedirectJSPs.add("/jsp/forums/forums.jsp");
+      validRedirectJSPs.add("/jsp/users/users.jsp");
+   }
    
    private static Log logger = LogFactory.getLog(BaseServlet.class);
    
@@ -106,7 +126,7 @@ public abstract class BaseServlet extends HttpServlet
       if (status == AuthenticationStatus.Failure)
       {
          // authentication failed - now need to display the login page to the user
-         redirectToLoginPage(req, res);
+         redirectToLoginPage(req, res, getServletContext());
       }
       
       return status;
@@ -116,13 +136,27 @@ public abstract class BaseServlet extends HttpServlet
     * Redirect to the Login page - saving the current URL which can be redirected back later
     * once the user has successfully completed the authentication process.
     */
-   public void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res)
+   public static void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res, ServletContext sc)
       throws IOException
    {
       // authentication failed - so end servlet execution and redirect to login page
       // also save the requested URL so the login page knows where to redirect too later
-      res.sendRedirect(req.getContextPath() + FACES_SERVLET + Application.getLoginPage(getServletContext()));
-      req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, req.getRequestURI());
+      res.sendRedirect(req.getContextPath() + FACES_SERVLET + Application.getLoginPage(sc));
+      String uri = req.getRequestURI();
+      if (uri.indexOf(BaseServlet.FACES_SERVLET) != -1)
+      {
+         // if we find a JSF servlet reference in the URI then we need to check if the rest of the
+         // JSP specified is valid for a redirect operation after Login has occured.
+         int jspIndex = uri.indexOf(BaseServlet.FACES_SERVLET) + BaseServlet.FACES_SERVLET.length();
+         if (uri.length() > jspIndex && BaseServlet.validRedirectJSP(uri.substring(jspIndex)))
+         {
+            req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, uri);
+         }
+      }
+      else
+      {
+         req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, uri);
+      }
    }
    
    /**
@@ -137,6 +171,22 @@ public abstract class BaseServlet extends HttpServlet
    {
       ValueBinding vb = fc.getApplication().createValueBinding("#{" + name + "}");
       return vb.getValue(fc);
+   }
+   
+   /**
+    * Returns true if the specified JSP file is valid for a redirect after login.
+    * Only a specific sub-set of the available JSPs are valid to jump directly too after a
+    * clean login attempt - e.g. those that do not require JSF bean context setup. This is
+    * a limitation of the JSP architecture. The ExternalAccessServlet provides a mechanism to
+    * setup the JSF bean context directly for some specific cases.
+    * 
+    * @param jsp     Filename of JSP to check, for example "/jsp/browse/browse.jsp"
+    * 
+    * @return true if the JSP is in the list of valid direct URLs, false otherwise
+    */
+   public static boolean validRedirectJSP(String jsp)
+   {
+      return validRedirectJSPs.contains(jsp);
    }
    
    /**

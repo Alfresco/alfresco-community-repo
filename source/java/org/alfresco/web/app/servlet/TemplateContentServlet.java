@@ -131,7 +131,7 @@ public class TemplateContentServlet extends BaseServlet
       if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED ||
           (templateRef != null && permissionService.hasPermission(templateRef, PermissionService.READ) == AccessStatus.DENIED))
       {
-         redirectToLoginPage(req, res);
+         redirectToLoginPage(req, res, getServletContext());
          return;
       }
       

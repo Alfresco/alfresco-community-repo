@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.LoginBean;
 
 /**
  * @author Kevin Roast
@@ -75,10 +74,10 @@ public class AuthenticationFilter implements Filter
          }
          else
          {
+            
             // authentication failed - so end servlet execution and redirect to login page
             // also save the requested URL so the login page knows where to redirect too later
-            httpRes.sendRedirect(httpReq.getContextPath() + BaseServlet.FACES_SERVLET + Application.getLoginPage(context));
-            httpReq.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, httpReq.getRequestURI());
+            BaseServlet.redirectToLoginPage(httpReq, httpRes, context);
          }
       }
       else

@@ -137,7 +137,7 @@ public class ExternalAccessServlet extends BaseServlet
             {
                if (logger.isDebugEnabled())
                   logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
-               redirectToLoginPage(req, res);
+               redirectToLoginPage(req, res, getServletContext());
                return;
             }
             
@@ -170,7 +170,7 @@ public class ExternalAccessServlet extends BaseServlet
             {
                if (logger.isDebugEnabled())
                   logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
-               redirectToLoginPage(req, res);
+               redirectToLoginPage(req, res, getServletContext());
                return;
             }
             
@@ -198,7 +198,7 @@ public class ExternalAccessServlet extends BaseServlet
             {
                if (logger.isDebugEnabled())
                   logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
-               redirectToLoginPage(req, res);
+               redirectToLoginPage(req, res, getServletContext());
                return;
             }
             

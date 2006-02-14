@@ -22,10 +22,10 @@
             </bean>
         </property>
         <property name="startDelay">
-            <value>10000</value>
+            <value>60000</value>
         </property>
         <property name="repeatInterval">
-            <value>10000</value>
+            <value>60000</value>
         </property>
     </bean>
 
@@ -153,7 +153,9 @@
         <property name="triggers">
             <list>
                 <ref bean="tempFileCleanerTrigger" />
-                <!-- <ref local="fileContentStoreCleanerTrigger"/> -->
+                <!--
+                <ref local="fileContentStoreCleanerTrigger"/>
+                -->
                 <ref bean="ftsIndexerTrigger" />
                 <ref bean="indexRecoveryTrigger" />
                 <ref bean="indexBackupTrigger" />

@@ -1305,8 +1305,7 @@ public class SMBSrvSession extends SrvSession implements Runnable
             setDefaultFlags2(SMBSrvPacket.FLG2_LONGFILENAMES + SMBSrvPacket.FLG2_UNICODE);
 
             // Access the authenticator for this server and determine if the server is in share or
-            // user level
-            // security mode.
+            // user level security mode.
 
             SrvAuthenticator auth = getServer().getConfiguration().getAuthenticator();
             int secMode = 0;
@@ -1350,13 +1349,12 @@ public class SMBSrvSession extends SrvSession implements Runnable
             nt.packInt(Capability.Unicode + Capability.RemoteAPIs + Capability.NTSMBs + Capability.NTFind
                     + Capability.NTStatus + Capability.LargeFiles + Capability.LargeRead + Capability.LargeWrite);
 
-            // Return the current server date/time, and timezone
+            // Return the current server date/time, and timezone offset
 
             long srvTime = NTTime.toNTTime(new java.util.Date(System.currentTimeMillis()));
 
             nt.packLong(srvTime);
             nt.packWord(getServer().getConfiguration().getTimeZoneOffset());
-            // server timezone offset
 
             // Encryption key length
 
@@ -1402,6 +1400,9 @@ public class SMBSrvSession extends SrvSession implements Runnable
 
             m_smbPkt.setByteCount(pos - m_smbPkt.getByteOffset());
 
+            m_smbPkt.setFlags( getDefaultFlags());
+            m_smbPkt.setFlags2( getDefaultFlags2());
+            
             m_smbPkt.setTreeId(0);
             m_smbPkt.setUserId(0);
         }

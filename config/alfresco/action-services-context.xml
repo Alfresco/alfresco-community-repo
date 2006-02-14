@@ -153,13 +153,13 @@
 
     <bean id="add-features" class="org.alfresco.repo.action.executer.AddFeaturesActionExecuter" parent="action-executer">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="NodeService" />
         </property>
     </bean>
     
     <bean id="specialise-type" class="org.alfresco.repo.action.executer.SpecialiseTypeActionExecuter" parent="action-executer">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="NodeService" />
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
@@ -168,7 +168,7 @@
 
     <bean id="link-category" class="org.alfresco.repo.action.executer.LinkCategoryActionExecuter" parent="action-executer">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="NodeService" />
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
@@ -177,22 +177,22 @@
 
     <bean id="simple-workflow" class="org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter" parent="action-executer">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="NodeService" />
         </property>
     </bean>
 
     <bean id="transform" class="org.alfresco.repo.action.executer.TransformActionExecuter" parent="action-executer">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="NodeService" />
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
         </property>
         <property name="contentService">
-            <ref bean="contentService" />
+            <ref bean="ContentService" />
         </property>
         <property name="copyService">
-            <ref bean="copyService" />
+            <ref bean="CopyService" />
         </property>
         <property name="mimetypeService">
             <ref bean="mimetypeService" />
@@ -208,22 +208,22 @@
 
     <bean id="copy" class="org.alfresco.repo.action.executer.CopyActionExecuter" parent="action-executer">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="NodeService" />
         </property>
         <property name="copyService">
-            <ref bean="copyService" />
+            <ref bean="CopyService" />
         </property>
     </bean>
 
     <bean id="move" class="org.alfresco.repo.action.executer.MoveActionExecuter" parent="action-executer">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="NodeService" />
         </property>
     </bean>
 
     <bean id="check-in" class="org.alfresco.repo.action.executer.CheckInActionExecuter" parent="action-executer">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="NodeService" />
         </property>
         <property name="cociService">
             <ref bean="checkOutCheckInService"></ref>
@@ -232,7 +232,7 @@
 
     <bean id="check-out" class="org.alfresco.repo.action.executer.CheckOutActionExecuter" parent="action-executer">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="NodeService" />
         </property>
         <property name="cociService">
             <ref bean="checkOutCheckInService"></ref>
@@ -250,16 +250,16 @@
             <value>false</value>
         </property>
         <property name="nodeService">
-            <ref bean="nodeService"></ref>
+            <ref bean="NodeService"></ref>
         </property>
     </bean>
     
     <bean id="extract-metadata" class="org.alfresco.repo.action.executer.ContentMetadataExtracter" parent="action-executer">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="NodeService" />
         </property>
         <property name="contentService">
-            <ref bean="contentService" />
+            <ref bean="ContentService" />
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
@@ -274,10 +274,10 @@
             <ref bean="ImporterService"/>
         </property>
         <property name="nodeService">
-            <ref bean="nodeService"></ref>
+            <ref bean="NodeService"></ref>
         </property>
         <property name="contentService">
-            <ref bean="contentService" />
+            <ref bean="ContentService" />
         </property>
     </bean>
     
@@ -292,10 +292,10 @@
             <ref bean="mimetypeService"/>
         </property>
         <property name="nodeService">
-            <ref bean="nodeService"></ref>
+            <ref bean="NodeService"></ref>
         </property>
         <property name="contentService">
-            <ref bean="contentService" />
+            <ref bean="ContentService" />
         </property>
     </bean>
 

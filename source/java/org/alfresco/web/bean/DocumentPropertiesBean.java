@@ -33,7 +33,9 @@ import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -177,6 +179,24 @@ public class DocumentPropertiesBean
             
             // make sure the property is represented correctly
             Serializable propValue = (Serializable)props.get(propName);
+            
+            // check for empty strings when using number types, set to null in this case
+            if ((propValue != null) && (propValue instanceof String) && 
+                (propValue.toString().length() == 0))
+            {
+               PropertyDefinition propDef = this.dictionaryService.getProperty(qname);
+               if (propDef != null)
+               {
+                  if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) || 
+                      propDef.getDataType().getName().equals(DataTypeDefinition.FLOAT) ||
+                      propDef.getDataType().getName().equals(DataTypeDefinition.INT) || 
+                      propDef.getDataType().getName().equals(DataTypeDefinition.LONG))
+                  {
+                     propValue = null;
+                  }
+               }
+            }
+            
             properties.put(qname, propValue);
          }
          

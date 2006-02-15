@@ -52,7 +52,7 @@ public class OwnableServiceTest extends TestCase
 
     private NodeRef rootNodeRef;
 
-    private UserTransaction userTransaction;
+    private UserTransaction txn;
     
     private PermissionService permissionService;
     
@@ -81,8 +81,8 @@ public class OwnableServiceTest extends TestCase
         
         
         TransactionService transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
-        userTransaction = transactionService.getUserTransaction();
-        userTransaction.begin();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
         
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
@@ -103,8 +103,15 @@ public class OwnableServiceTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
-        authenticationComponent.clearCurrentSecurityContext();
-        userTransaction.rollback();
+        try
+        {
+            authenticationComponent.clearCurrentSecurityContext();
+            txn.rollback();
+        }
+        catch (Throwable e)
+        {
+            // don't absorb any exceptions going past
+        }
         super.tearDown();
     }
     

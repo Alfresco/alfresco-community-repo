@@ -382,7 +382,7 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     {
         boolean result = true;
         
-        QName nodeType = this.nodeService.getType(nodeRef);
+        QName nodeType = this.runtimeNodeService.getType(nodeRef);
         if (this.dictionaryService.isSubClass(nodeType, ContentModel.TYPE_SYSTEM_FOLDER) == true ||
             this.dictionaryService.isSubClass(nodeType, ActionModel.TYPE_ACTION) == true ||
             this.dictionaryService.isSubClass(nodeType, ActionModel.TYPE_ACTION_CONDITION) == true ||

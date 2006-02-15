@@ -741,8 +741,34 @@ public class BrowseBean implements IContextListener
    };
    
    public NodePropertyResolver resolverCheckIn = new NodePropertyResolver() {
-      public Object get(Node node) {
-         return node.hasAspect(ContentModel.ASPECT_WORKING_COPY) && node.hasPermission(PermissionService.CHECK_IN);
+      public Object get(Node node) 
+      {
+         boolean canCheckin = false;
+         
+         // if the working copy has a discussion the user will also need to have
+         // contributor permission on the locked node
+         if (node.hasAspect(ContentModel.ASPECT_WORKING_COPY))
+         {
+            if (node.hasAspect(ForumModel.ASPECT_DISCUSSABLE))
+            {
+               // get the original locked node (via the copiedfrom aspect)
+               NodeRef lockedNodeRef = (NodeRef)nodeService.getProperty(node.getNodeRef(), ContentModel.PROP_COPY_REFERENCE);
+               if (lockedNodeRef != null)
+               {
+                  Node lockedNode = new Node(lockedNodeRef);
+                  canCheckin = node.hasPermission(PermissionService.CHECK_IN) && 
+                               lockedNode.hasPermission(PermissionService.CONTRIBUTOR);
+               }
+            }
+            else
+            {
+               // there is no discussion so just check they have checkin permission
+               // for the node
+               canCheckin = node.hasPermission(PermissionService.CHECK_IN);
+            }
+         }
+         
+         return canCheckin;
       }
    };
    

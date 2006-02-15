@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.faces.context.FacesContext;
-import javax.faces.el.ValueBinding;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -157,20 +156,6 @@ public abstract class BaseServlet extends HttpServlet
       {
          req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, uri);
       }
-   }
-   
-   /**
-    * Return a JSF managed bean reference.
-    * 
-    * @param fc      FacesContext
-    * @param name    Name of the managed bean to return
-    * 
-    * @return the managed bean or null if not found
-    */
-   public static Object getManagedBean(FacesContext fc, String name)
-   {
-      ValueBinding vb = fc.getApplication().createValueBinding("#{" + name + "}");
-      return vb.getValue(fc);
    }
    
    /**

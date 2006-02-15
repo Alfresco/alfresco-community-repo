@@ -19,16 +19,20 @@ package org.alfresco.web.bean;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.config.Config;
+import org.alfresco.config.ConfigElement;
+import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.lock.LockService;
@@ -50,6 +54,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
@@ -71,7 +76,6 @@ import org.alfresco.web.ui.repo.component.UINodePath;
 import org.alfresco.web.ui.repo.component.UISimpleSearch;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
-import org.springframework.util.StringUtils;
 
 /**
  * Bean providing properties and behaviour for the main folder/document browse screen and
@@ -391,17 +395,17 @@ public class BrowseBean implements IContextListener
    }
    
    /**
-    * Setup the additional properties required at data-binding time.
+    * Setup the common properties required at data-binding time.
     * <p>
     * These are properties used by components on the page when iterating over the nodes.
     * Information such as whether the node is locked, a working copy, download URL etc.
     * <p>
     * We use a set of anonymous inner classes to provide the implemention for the property
-    * getters. The interfaces are only called when the properties are first required. 
+    * getters. The interfaces are only called when the properties are first requested. 
     * 
-    * @param node       MapNode to add the properties too
+    * @param node       Node to add the properties too
     */
-   public void setupDataBindingProperties(MapNode node)
+   public void setupCommonBindingProperties(Node node)
    {
       // special properties to be used by the value binding components on the page
       node.addPropertyResolver("locked", this.resolverlocked);
@@ -413,7 +417,6 @@ public class BrowseBean implements IContextListener
       node.addPropertyResolver("size", this.resolverSize);
       node.addPropertyResolver("cancelCheckOut", this.resolverCancelCheckOut);
       node.addPropertyResolver("checkIn", this.resolverCheckIn);
-      node.addPropertyResolver("beingDiscussed", this.resolverBeingDiscussed);
       node.addPropertyResolver("editLinkType", this.resolverEditLinkType);
       node.addPropertyResolver("webdavUrl", this.resolverWebdavUrl);
       node.addPropertyResolver("cifsPath", this.resolverCifsPath);
@@ -429,6 +432,26 @@ public class BrowseBean implements IContextListener
    public void contextUpdated()
    {
       invalidateComponents();
+   }
+   
+   
+   // ------------------------------------------------------------------------------
+   // NodeEventListener listeners
+   
+   /**
+    * Add a listener to those called by the BrowseBean when nodes are created
+    */
+   public void addNodeEventListener(NodeEventListener listener)
+   {
+      getNodeEventListeners().add(listener);
+   }
+   
+   /**
+    * Remove a listener from the list of those called by BrowseBean
+    */
+   public void removeNodeEventListener(NodeEventListener listener)
+   {
+      getNodeEventListeners().remove(listener);
    }
    
    
@@ -533,7 +556,11 @@ public class BrowseBean implements IContextListener
                      MapNode node = new MapNode(nodeRef, this.nodeService, true);
                      node.addPropertyResolver("icon", this.resolverSpaceIcon);
                      node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
-                     node.addPropertyResolver("beingDiscussed", this.resolverBeingDiscussed);
+                     
+                     for (NodeEventListener listener : getNodeEventListeners())
+                     {
+                        listener.created(node, type);
+                     }
                      
                      this.containerNodes.add(node);
                   }
@@ -542,7 +569,12 @@ public class BrowseBean implements IContextListener
                      // create our Node representation
                      MapNode node = new MapNode(nodeRef, this.nodeService, true);
                      
-                     setupDataBindingProperties(node);
+                     setupCommonBindingProperties(node);
+                     
+                     for (NodeEventListener listener : getNodeEventListeners())
+                     {
+                        listener.created(node, type);
+                     }
                      
                      this.contentNodes.add(node);
                   }
@@ -646,12 +678,15 @@ public class BrowseBean implements IContextListener
                         // create our Node representation
                         MapNode node = new MapNode(nodeRef, this.nodeService, true);
                         
-                        // construct the path to this Node
                         node.addPropertyResolver("path", this.resolverPath);
                         node.addPropertyResolver("displayPath", this.resolverDisplayPath);
                         node.addPropertyResolver("icon", this.resolverSpaceIcon);
                         node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
-                        node.addPropertyResolver("beingDiscussed", this.resolverBeingDiscussed);
+                        
+                        for (NodeEventListener listener : getNodeEventListeners())
+                        {
+                           listener.created(node, type);
+                        }
                         
                         this.containerNodes.add(node);
                      }
@@ -660,11 +695,15 @@ public class BrowseBean implements IContextListener
                         // create our Node representation
                         MapNode node = new MapNode(nodeRef, this.nodeService, true);
                         
-                        setupDataBindingProperties(node);
+                        setupCommonBindingProperties(node);
                         
-                        // construct the path to this Node
                         node.addPropertyResolver("path", this.resolverPath);
                         node.addPropertyResolver("displayPath", this.resolverDisplayPath);
+                        
+                        for (NodeEventListener listener : getNodeEventListeners())
+                        {
+                           listener.created(node, type);
+                        }
                         
                         this.contentNodes.add(node);
                      }
@@ -741,46 +780,14 @@ public class BrowseBean implements IContextListener
    };
    
    public NodePropertyResolver resolverCheckIn = new NodePropertyResolver() {
-      public Object get(Node node) 
-      {
-         boolean canCheckin = false;
-         
-         // if the working copy has a discussion the user will also need to have
-         // contributor permission on the locked node
-         if (node.hasAspect(ContentModel.ASPECT_WORKING_COPY))
-         {
-            if (node.hasAspect(ForumModel.ASPECT_DISCUSSABLE))
-            {
-               // get the original locked node (via the copiedfrom aspect)
-               NodeRef lockedNodeRef = (NodeRef)nodeService.getProperty(node.getNodeRef(), ContentModel.PROP_COPY_REFERENCE);
-               if (lockedNodeRef != null)
-               {
-                  Node lockedNode = new Node(lockedNodeRef);
-                  canCheckin = node.hasPermission(PermissionService.CHECK_IN) && 
-                               lockedNode.hasPermission(PermissionService.CONTRIBUTOR);
-               }
-            }
-            else
-            {
-               // there is no discussion so just check they have checkin permission
-               // for the node
-               canCheckin = node.hasPermission(PermissionService.CHECK_IN);
-            }
-         }
-         
-         return canCheckin;
+      public Object get(Node node) {
+         return node.hasAspect(ContentModel.ASPECT_WORKING_COPY) && node.hasPermission(PermissionService.CHECK_IN);
       }
    };
    
    public NodePropertyResolver resolverWorkingCopy = new NodePropertyResolver() {
       public Object get(Node node) {
          return node.hasAspect(ContentModel.ASPECT_WORKING_COPY);
-      }
-   };
-   
-   public NodePropertyResolver resolverBeingDiscussed = new NodePropertyResolver() {
-      public Object get(Node node) {
-         return node.hasAspect(ForumModel.ASPECT_DISCUSSABLE);
       }
    };
    
@@ -845,24 +852,8 @@ public class BrowseBean implements IContextListener
    
    public NodePropertyResolver resolverSmallIcon = new NodePropertyResolver() {
       public Object get(Node node) {
-         QNameNodeMap props = (QNameNodeMap)node.getProperties();
-         
-         String icon = "space_small";
-         
-         // we know we have small versions of the forum space types so use them!
-         QName nodeType = node.getType();
-         if (nodeType.equals(ForumModel.TYPE_FORUMS) || nodeType.equals(ForumModel.TYPE_FORUM) ||
-             nodeType.equals(ForumModel.TYPE_TOPIC))
-         {
-            String storedIcon = (String)props.getRaw("app:icon");
-         
-            if (storedIcon != null)
-            {
-               icon = StringUtils.replace(storedIcon, "_large", "");
-            }
-         }
-         
-         return icon;
+         // TODO: add support for different small space icons
+         return SPACE_SMALL_DEFAULT;
       }
    };
    
@@ -1155,6 +1146,11 @@ public class BrowseBean implements IContextListener
             node.addPropertyResolver("cancelCheckOut", this.resolverCancelCheckOut);
             node.addPropertyResolver("checkIn", this.resolverCheckIn);
             
+            for (NodeEventListener listener : getNodeEventListeners())
+            {
+               listener.created(node, node.getType());
+            }
+            
             // get hold of the DocumentDetailsBean and reset it
             DocumentDetailsBean docDetails = (DocumentDetailsBean)FacesContext.getCurrentInstance().
                getExternalContext().getSessionMap().get("DocumentDetailsBean");
@@ -1321,13 +1317,50 @@ public class BrowseBean implements IContextListener
     */
    private void initFromClientConfig()
    {
-      this.viewsConfig = (ViewsConfigElement)Application.getConfigService(
-            FacesContext.getCurrentInstance()).getConfig("Views").
+      ConfigService config = Application.getConfigService(FacesContext.getCurrentInstance());
+      
+      this.viewsConfig = (ViewsConfigElement)config.getConfig("Views").
             getConfigElement(ViewsConfigElement.CONFIG_ELEMENT_ID);
       
       this.browseViewMode = this.viewsConfig.getDefaultView(PAGE_NAME_BROWSE);
       this.browsePageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_BROWSE, 
             this.browseViewMode);
+   }
+   
+   /**
+    * @return the Set of NodeEventListeners registered against this bean
+    */
+   private Set<NodeEventListener> getNodeEventListeners()
+   {
+      if (this.nodeEventListeners == null)
+      {
+         this.nodeEventListeners = new HashSet<NodeEventListener>();
+         
+         FacesContext fc = FacesContext.getCurrentInstance();
+         
+         Config listenerConfig = Application.getConfigService(fc).getConfig("Node Event Listeners");
+         if (listenerConfig != null)
+         {
+            ConfigElement listenerElement = listenerConfig.getConfigElement("node-event-listeners");
+            if (listenerElement != null)
+            {
+               for (ConfigElement child : listenerElement.getChildren())
+               {
+                  if (child.getName().equals("listener"))
+                  {
+                     // retrieved the JSF Managed Bean identified in the config
+                     String listenerName = child.getValue().trim();
+                     Object bean = FacesHelper.getManagedBean(fc, listenerName);
+                     if (bean instanceof NodeEventListener)
+                     {
+                        addNodeEventListener((NodeEventListener)bean);
+                     }
+                  }
+               }
+            }
+         }
+      }
+      return this.nodeEventListeners;
    }
    
    /**
@@ -1515,7 +1548,11 @@ public class BrowseBean implements IContextListener
    // ------------------------------------------------------------------------------
    // Private data
    
+   /** Browse screen view ID */
    public static final String BROWSE_VIEW_ID = "/jsp/browse/browse.jsp";
+   
+   /** Small icon default name */
+   public static final String SPACE_SMALL_DEFAULT = "space_small";
    
    private static final String VIEWMODE_DASHBOARD = "dashboard";
    private static final String PAGE_NAME_BROWSE = "browse";
@@ -1548,6 +1585,9 @@ public class BrowseBean implements IContextListener
 
    /** Views configuration object */
    private ViewsConfigElement viewsConfig = null;
+   
+   /** Listeners for Node events */
+   private Set<NodeEventListener> nodeEventListeners = null;
    
    /** Component references */
    private UIRichList spacesRichList;

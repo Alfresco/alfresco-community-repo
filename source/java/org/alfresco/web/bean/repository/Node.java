@@ -243,6 +243,18 @@ public class Node implements Serializable
    }
    
    /**
+    * Returns if a property resolver with a specific name has been applied to the Node
+    *  
+    * @param name of property resolver to look for
+    * 
+    * @return true if a resolver with the name is found, false otherwise
+    */
+   public final boolean containsPropertyResolver(String name)
+   {
+      return this.properties.containsPropertyResolver(name);
+   }
+   
+   /**
     * Determines whether the given property name is held by this node 
     * 
     * @param propertyName Property to test existence of

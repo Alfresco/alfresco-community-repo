@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -75,7 +76,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author gavinc
  */
-public class ForumsBean implements IContextListener
+public class ForumsBean implements IContextListener, NodeEventListener
 {
    private static Log logger = LogFactory.getLog(ForumsBean.class);
    private static final String PAGE_NAME_FORUMS = "forums";
@@ -134,6 +135,7 @@ public class ForumsBean implements IContextListener
    /** The current topic view page size */
    private int topicPageSize;
    
+   
    // ------------------------------------------------------------------------------
    // Construction 
 
@@ -146,6 +148,7 @@ public class ForumsBean implements IContextListener
       
       initFromClientConfig();
    }
+   
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
@@ -488,7 +491,7 @@ public class ForumsBean implements IContextListener
                         // create our Node representation
                         MapNode node = new MapNode(nodeRef, this.nodeService, true);
                         
-                        this.browseBean.setupDataBindingProperties(node);
+                        this.browseBean.setupCommonBindingProperties(node);
                         node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                         node.addPropertyResolver("message", this.resolverContent);
                         node.addPropertyResolver("replyTo", this.resolverReplyTo);
@@ -592,9 +595,38 @@ public class ForumsBean implements IContextListener
       this.posts = null;
    }
    
+   
+   // ------------------------------------------------------------------------------
+   // NodeEventListener implementation
+   
+   /**
+    * @see org.alfresco.web.bean.NodeEventListener#created(org.alfresco.web.bean.repository.Node, org.alfresco.service.namespace.QName)
+    */
+   public void created(Node node, QName type)
+   {
+      // override the checkin resolver if appropriate
+      if (node.containsPropertyResolver("checkIn") == true)
+      {
+         node.addPropertyResolver("checkIn", this.resolverCheckIn);
+      }
+      
+      // add the forums specific action resolver
+      node.addPropertyResolver("beingDiscussed", this.resolverBeingDiscussed);
+      
+      // override the small icon resolver if it's a forum model type 
+      if (type.equals(ForumModel.TYPE_FORUMS) ||
+          type.equals(ForumModel.TYPE_FORUM) ||
+          type.equals(ForumModel.TYPE_TOPIC))
+      {
+         // override icon handling for forum objects - as we have a specific small icon set
+         node.addPropertyResolver("smallIcon", resolverSmallIcon);
+      }
+   }
+   
+   
    // ------------------------------------------------------------------------------
    // Navigation action event handlers 
-   
+
    /**
     * Change the current forums view mode based on user selection
     * 
@@ -847,8 +879,41 @@ public class ForumsBean implements IContextListener
       return outcome;
    }
    
+   
    // ------------------------------------------------------------------------------
    // Property Resolvers
+   
+   public NodePropertyResolver resolverCheckIn = new NodePropertyResolver() {
+      public Object get(Node node) 
+      {
+         boolean canCheckin = false;
+         
+         // if the working copy has a discussion the user will also need to have
+         // contributor permission on the locked node
+         if (node.hasAspect(ContentModel.ASPECT_WORKING_COPY))
+         {
+            if (node.hasAspect(ForumModel.ASPECT_DISCUSSABLE))
+            {
+               // get the original locked node (via the copiedfrom aspect)
+               NodeRef lockedNodeRef = (NodeRef)nodeService.getProperty(node.getNodeRef(), ContentModel.PROP_COPY_REFERENCE);
+               if (lockedNodeRef != null)
+               {
+                  Node lockedNode = new Node(lockedNodeRef);
+                  canCheckin = node.hasPermission(PermissionService.CHECK_IN) && 
+                               lockedNode.hasPermission(PermissionService.CONTRIBUTOR);
+               }
+            }
+            else
+            {
+               // there is no discussion so just check they have checkin permission
+               // for the node
+               canCheckin = node.hasPermission(PermissionService.CHECK_IN);
+            }
+         }
+         
+         return canCheckin;
+      }
+   };
    
    public NodePropertyResolver resolverSmallIcon = new NodePropertyResolver() {
       public Object get(Node node) {
@@ -861,10 +926,16 @@ public class ForumsBean implements IContextListener
          }
          else
          {
-            icon = "space_small";
+            icon = BrowseBean.SPACE_SMALL_DEFAULT;
          }
          
          return icon;
+      }
+   };
+   
+   public NodePropertyResolver resolverBeingDiscussed = new NodePropertyResolver() {
+      public Object get(Node node) {
+         return node.hasAspect(ForumModel.ASPECT_DISCUSSABLE);
       }
    };
    
@@ -956,6 +1027,7 @@ public class ForumsBean implements IContextListener
       
       return name.toString();
    }
+   
    
    // ------------------------------------------------------------------------------
    // Private helpers

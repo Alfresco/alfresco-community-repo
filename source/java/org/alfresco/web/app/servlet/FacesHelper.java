@@ -20,6 +20,7 @@ import javax.faces.FactoryFinder;
 import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
 import javax.faces.context.FacesContextFactory;
+import javax.faces.el.ValueBinding;
 import javax.faces.lifecycle.Lifecycle;
 import javax.faces.lifecycle.LifecycleFactory;
 import javax.portlet.PortletContext;
@@ -101,6 +102,20 @@ public final class FacesHelper
       facesContext.setViewRoot(view);
       
       return facesContext;
+   }
+   
+   /**
+    * Return a JSF managed bean reference.
+    * 
+    * @param fc      FacesContext
+    * @param name    Name of the managed bean to return
+    * 
+    * @return the managed bean or null if not found
+    */
+   public static Object getManagedBean(FacesContext fc, String name)
+   {
+      ValueBinding vb = fc.getApplication().createValueBinding("#{" + name + "}");
+      return vb.getValue(fc);
    }
    
    /**

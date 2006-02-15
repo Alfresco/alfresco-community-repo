@@ -149,7 +149,7 @@ public class DatePickerRenderer extends BaseRenderer
          }
          else
          {
-            nStartYear = new Date().getYear() + 1900;
+            nStartYear = new Date().getYear() + 1900 + 2;   // for "effectivity date" searches
          }
          
          int nYearCount = 25;

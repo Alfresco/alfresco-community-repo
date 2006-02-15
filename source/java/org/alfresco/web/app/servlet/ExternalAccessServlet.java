@@ -34,7 +34,6 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.BrowseBean;
-import org.alfresco.web.bean.LoginBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -109,7 +108,7 @@ public class ExternalAccessServlet extends BaseServlet
       
       // we almost always need this bean reference
       FacesContext fc = FacesHelper.getFacesContext(req, res, getServletContext());
-      BrowseBean browseBean = (BrowseBean)getManagedBean(fc, "BrowseBean");
+      BrowseBean browseBean = (BrowseBean)FacesHelper.getManagedBean(fc, "BrowseBean");
       
       // get services we need
       ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());

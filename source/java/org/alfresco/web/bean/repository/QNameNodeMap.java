@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
 public final class QNameNodeMap<K,V> extends QNameMap implements Map, Cloneable
 {
    private Node parent = null;
-   private Map<String, NodePropertyResolver> resolvers = new HashMap<String, NodePropertyResolver>(11, 1.0f);
+   private Map<String, NodePropertyResolver> resolvers = new HashMap<String, NodePropertyResolver>(16, 1.0f);
    
    /**
     * Constructor
@@ -60,6 +60,18 @@ public final class QNameNodeMap<K,V> extends QNameMap implements Map, Cloneable
    public void addPropertyResolver(String name, NodePropertyResolver resolver)
    {
       this.resolvers.put(name, resolver);
+   }
+   
+   /**
+    * Returns if a property resolver with a specific name has been applied to the map
+    *  
+    * @param name of property resolver to look for
+    * 
+    * @return true if a resolver with the name is found, false otherwise
+    */
+   public boolean containsPropertyResolver(String name)
+   {
+      return this.resolvers.containsKey(name);
    }
 
    /**

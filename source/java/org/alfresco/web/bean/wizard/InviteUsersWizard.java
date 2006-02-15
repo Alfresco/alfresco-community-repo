@@ -477,7 +477,10 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
                   else
                   {
                      // found a group authority
-                     label.append(authority.substring(PermissionService.GROUP_PREFIX.length()));
+                     label.append(authority.substring(PermissionService.GROUP_PREFIX.length()))
+                          .append(" (")
+                          .append(Application.getMessage(FacesContext.getCurrentInstance(), role))
+                          .append(")");
                   }
                   
                   this.userGroupRoles.add(new UserGroupRole(authority, role, label.toString()));

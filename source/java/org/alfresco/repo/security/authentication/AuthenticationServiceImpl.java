@@ -16,7 +16,6 @@
  */
 package org.alfresco.repo.security.authentication;
 
-import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.service.cmr.security.AuthenticationService;
 
 public class AuthenticationServiceImpl implements AuthenticationService
@@ -27,8 +26,6 @@ public class AuthenticationServiceImpl implements AuthenticationService
     
     TicketComponent ticketComponent;
     
-    PermissionServiceSPI permissionServiceSPI;
-
     public AuthenticationServiceImpl()
     {
         super();
@@ -49,11 +46,6 @@ public class AuthenticationServiceImpl implements AuthenticationService
         this.authenticationComponent = authenticationComponent;
     }
 
-    public void setPermissionServiceSPI(PermissionServiceSPI permissionServiceSPI)
-    {
-        this.permissionServiceSPI = permissionServiceSPI;
-    }
-    
     public void createAuthentication(String userName, char[] password) throws AuthenticationException
     {
         authenticationDao.createUser(userName, password);
@@ -73,7 +65,6 @@ public class AuthenticationServiceImpl implements AuthenticationService
     public void deleteAuthentication(String userName) throws AuthenticationException
     {
         authenticationDao.deleteUser(userName);
-        permissionServiceSPI.deletePermissions(authenticationDao.getUserNamesAreCaseSensitive() ? userName: userName.toLowerCase());
     }
 
     public boolean getAuthenticationEnabled(String userName) throws AuthenticationException

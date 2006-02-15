@@ -26,19 +26,17 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.QueryParameterDefImpl;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
@@ -56,10 +54,12 @@ public class PersonServiceImpl implements PersonService
 
     private NodeService nodeService;
 
-    private DictionaryService dictionaryService;
-
     private SearchService searchService;
+    
+    private AuthorityService authorityService;
 
+    private PermissionServiceSPI permissionServiceSPI;
+    
     private NamespacePrefixResolver namespacePrefixResolver;
 
     private boolean createMissingPeople;
@@ -285,11 +285,25 @@ public class PersonServiceImpl implements PersonService
     public void deletePerson(String userName)
     {
         NodeRef personNodeRef = getPersonOrNull(userName);
+        
+        // delete the person
         if (personNodeRef != null)
         {
             nodeService.deleteNode(personNodeRef);
         }
 
+        // translate username based on user name case sensitivity
+        String authorityName = userNamesAreCaseSensitive ? userName : userName.toLowerCase();
+        
+        // remove user from any containing authorities
+        Set<String> containerAuthorities = authorityService.getContainingAuthorities(null, userName, true);
+        for (String containerAuthority : containerAuthorities)
+        {
+            authorityService.removeAuthority(containerAuthority, authorityName);
+        }
+        
+        // remove any user permissions
+        permissionServiceSPI.deletePermissions(authorityName);
     }
 
     public Set<NodeRef> getAllPeople()
@@ -333,16 +347,21 @@ public class PersonServiceImpl implements PersonService
         this.createMissingPeople = createMissingPeople;
     }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
     public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
     {
         this.namespacePrefixResolver = namespacePrefixResolver;
     }
 
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
+    public void setPermissionServiceSPI(PermissionServiceSPI permissionServiceSPI)
+    {
+        this.permissionServiceSPI = permissionServiceSPI;
+    }
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;

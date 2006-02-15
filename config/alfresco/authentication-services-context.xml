@@ -172,9 +172,6 @@
         <property name="authenticationComponent">
             <ref bean="authenticationComponentImpl" />
         </property>
-        <property name="permissionServiceSPI">
-            <ref bean="permissionServiceImpl" />
-        </property>
     </bean>
 
     <!-- A transactional wrapper that should be removed.                    -->
@@ -240,8 +237,11 @@
               <property name="searchService">
                  <ref bean="searchService" />
               </property>
-              <property name="dictionaryService">
-                 <ref bean="dictionaryService" />
+			  <property name="permissionServiceSPI">
+	            <ref bean="permissionServiceImpl" />
+	          </property>
+              <property name="authorityService">
+                 <ref bean="authorityService" />
               </property>
               <property name="namespacePrefixResolver">
                  <ref bean="namespaceService" />

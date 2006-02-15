@@ -51,6 +51,29 @@ public class UIOutputText extends UIOutput
    }
    
    /**
+    * @see javax.faces.component.StateHolder#restoreState(javax.faces.context.FacesContext, java.lang.Object)
+    */
+   public void restoreState(FacesContext context, Object state)
+   {
+      Object values[] = (Object[])state;
+      // standard component attributes are restored by the super class
+      super.restoreState(context, values[0]);
+      this.encodeForJavaScript = (Boolean)values[1];
+   }
+   
+   /**
+    * @see javax.faces.component.StateHolder#saveState(javax.faces.context.FacesContext)
+    */
+   public Object saveState(FacesContext context)
+   {
+      Object values[] = new Object[3];
+      // standard component attributes are saved by the super class
+      values[0] = super.saveState(context);
+      values[1] = this.encodeForJavaScript;
+      return values;
+   }
+   
+   /**
     * Sets whether the text should be encoded for JavaScript consumption
     * 
     * @param encodeForJavaScript true to escape text

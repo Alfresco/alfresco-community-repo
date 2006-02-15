@@ -245,7 +245,7 @@
        </tr>
     </table>
     
-    <script language="JavaScript1.5">
+    <script language="JavaScript">
       function itemSelected(inputField)
       {
          if (inputField.selectedIndex == 0)

@@ -113,6 +113,13 @@
       </views>
    </config>
    
+   <config evaluator="string-compare" condition="Node Event Listeners">
+      <!-- Managed beans that wish to be notified of Node events from the BrowseBean -->
+      <node-event-listeners>
+         <listener>ForumsBean</listener>
+      </node-event-listeners>
+   </config>
+   
    <config evaluator="string-compare" condition="Advanced Search">
       <!-- advanced search custom attribute config -->
       <advanced-search>

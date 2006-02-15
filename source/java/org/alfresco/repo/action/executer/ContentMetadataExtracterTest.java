@@ -66,7 +66,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
                 .getBean("metadataExtracterRegistry");
         
         AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
-        authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+        authenticationComponent.setSystemUserAsCurrentUser();
 
         // Create the store and get the root node
         this.testStoreRef = this.nodeService.createStore(

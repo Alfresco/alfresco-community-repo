@@ -69,7 +69,7 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
         
         listeners = new ArrayList<ContentStreamListener>(2);
     }
-    
+
     /**
      * Adds the listener after checking that the output stream isn't already in
      * use.
@@ -141,6 +141,19 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
         }
     }
 
+    /** helper implementation for base class */
+    protected boolean isChannelOpen()
+    {
+        if (channel != null)
+        {
+            return channel.isOpen();
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     /**
      * Provides low-level access to read content from the repository.
      * <p>
@@ -204,6 +217,8 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
         ReadableByteChannel directChannel = getDirectReadableChannel();
         channel = getCallbackReadableChannel(directChannel, listeners);
 
+        // notify that the channel was opened
+        super.channelOpened();
         // done
         if (logger.isDebugEnabled())
         {

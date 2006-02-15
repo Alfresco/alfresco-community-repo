@@ -155,6 +155,19 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
             return false;
         }
     }
+
+    /** helper implementation for base class */
+    protected boolean isChannelOpen()
+    {
+        if (channel != null)
+        {
+            return channel.isOpen();
+        }
+        else
+        {
+            return false;
+        }
+    }
     
     /**
      * Provides low-level access to write content to the repository.
@@ -218,6 +231,8 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         WritableByteChannel directChannel = getDirectWritableChannel();
         channel = getCallbackWritableChannel(directChannel, listeners);
 
+        // notify that the channel was opened
+        super.channelOpened();
         // done
         if (logger.isDebugEnabled())
         {

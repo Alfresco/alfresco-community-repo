@@ -26,6 +26,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
 
+import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -44,6 +45,16 @@ import org.springframework.aop.AfterReturningAdvice;
 public abstract class AbstractContentAccessor implements ContentAccessor
 {
     private static Log logger = LogFactory.getLog(AbstractContentAccessor.class);
+    private static final Log loggerTrace = LogFactory.getLog(AbstractContentAccessor.class.getName() + ".trace");
+    static
+    {
+        if (loggerTrace.isDebugEnabled())
+        {
+            loggerTrace.warn("Trace channel assignment logging is on and will affect performance");
+        }
+    }
+    
+    private StackTraceElement[] traceLoggerChannelAssignTrace;
     
     /** when set, ensures that listeners are executed within a transaction */
     private TransactionService transactionService;
@@ -65,6 +76,37 @@ public abstract class AbstractContentAccessor implements ContentAccessor
         
         // the default encoding is Java's default encoding
         encoding = "UTF-8";
+    }
+    
+    @Override
+    protected void finalize() throws Throwable
+    {
+        if (loggerTrace.isDebugEnabled() && traceLoggerChannelAssignTrace != null)
+        {
+            // check that the channel is closed if it was used
+            if (isChannelOpen())
+            {
+                StringBuilder sb = new StringBuilder(1024);
+                StackTraceUtil.buildStackTrace(
+                        "UserTransaction being garbage collected without a commit() or rollback().",
+                        traceLoggerChannelAssignTrace,
+                        sb,
+                        -1);
+                loggerTrace.error(sb);
+            }
+        }
+    }
+    
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(100);
+        sb.append("ContentAccessor")
+          .append("[ contentUrl=").append(getContentUrl())
+          .append(", mimetype=").append(getMimetype())
+          .append(", size=").append(getSize())
+          .append(", encoding=").append(getEncoding())
+          .append("]");
+        return sb.toString();
     }
     
     public ContentData getContentData()
@@ -93,17 +135,28 @@ public abstract class AbstractContentAccessor implements ContentAccessor
         this.transactionService = transactionService;
     }
 
-    public String toString()
+    /**
+     * Derived classes can call this method to ensure that necessary trace logging is performed
+     * when the IO Channel is opened.
+     */
+    protected final void channelOpened()
     {
-        StringBuilder sb = new StringBuilder(100);
-        sb.append("ContentAccessor")
-          .append("[ contentUrl=").append(getContentUrl())
-          .append(", mimetype=").append(getMimetype())
-          .append(", size=").append(getSize())
-          .append(", encoding=").append(getEncoding())
-          .append("]");
-        return sb.toString();
+        // trace debug
+        if (loggerTrace.isDebugEnabled())
+        {
+            Exception e = new Exception();
+            e.fillInStackTrace();
+            traceLoggerChannelAssignTrace = e.getStackTrace();
+        }
     }
+    
+    /**
+     * Derived classes must implement this to help determine if the underlying
+     * IO Channel is still open.
+     * 
+     * @return Returns true if the underlying IO Channel is open
+     */
+    protected abstract boolean isChannelOpen();
     
     public String getContentUrl()
     {

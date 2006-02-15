@@ -208,7 +208,7 @@
     <bean id="afterAcl" class="org.alfresco.repo.security.permissions.impl.acegi.ACLEntryAfterInvocationProvider" abstract="false" singleton="true"
         lazy-init="default" autowire="default" dependency-check="default" >
         <property name="permissionService">
-            <ref bean="permissionService"></ref>
+            <ref bean="permissionServiceImpl"></ref>
         </property>
         <property name="namespacePrefixResolver">
             <ref bean="namespaceService"></ref>
@@ -217,7 +217,7 @@
             <ref bean="nodeService"></ref>
         </property>  
         <property name="authenticationService">
-             <ref bean="authenticationService" />
+             <ref bean="authenticationServiceImpl" />
         </property>  
     </bean>
    

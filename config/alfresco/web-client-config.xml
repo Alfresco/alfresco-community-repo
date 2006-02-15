@@ -127,7 +127,6 @@
          <content-types>
             <!-- cm:content type is implicit in this list -->
             <!-- types must extend cm:content for the Alfresco web-client -->
-            <type name="cm:dictionaryModel" />
             <type name="fm:post" />
          </content-types>
          <!-- custom properties to be shown in the More Options panel -->

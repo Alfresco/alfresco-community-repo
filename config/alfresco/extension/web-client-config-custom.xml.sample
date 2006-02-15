@@ -1,7 +1,63 @@
 <alfresco-config>
 
-   <!-- The config below shows how to incorporate the -->
-   <!-- example model into the web client             -->
+   <!-- Example of overriding the from email address -->
+   <!--
+   <config>
+      <client>
+         <from-email-address>someone@your-domain.com</from-email-address>
+      </client>
+   </config>
+   -->
+
+   <!-- Example of adding languages to the list in the login page -->
+   <!--
+   <config evaluator="string-compare" condition="Languages">
+      <languages>
+         <language locale="fr_FR">French</language>
+         <language locale="de_DE">German</language>
+         <language locale="ja_JP">Japanese</language>
+      </languages>
+   </config>
+   -->
+
+   <!-- Example of configuring advanced search -->
+   <!--
+   <config evaluator="string-compare" condition="Advanced Search">
+      <advanced-search>
+         <content-types>
+         </content-types>
+         <custom-properties>
+            <meta-data aspect="app:simpleworkflow" property="app:approveStep" />
+         </custom-properties>
+      </advanced-search>
+   </config>
+   -->
+
+   <!-- Example of changing the sort direction for a view in the client -->
+   <!--
+   <config evaluator="string-compare" condition="Views">
+      <views>
+         <view-defaults>
+            <topic>
+               <sort-direction>ascending</sort-direction>
+            </topic>
+         </view-defaults>
+      </views>
+   </config>
+   -->
+
+   <!-- Example of adding a custom icon to the Create Space dialog -->
+   <!--
+   <config evaluator="string-compare" condition="cm:folder icons">
+      <icons>
+         <icon name="space-icon-custom" path="/images/icons/space-icon-custom.gif" />
+      </icons>
+   </config>
+   -->
+
+   <!-- The config below shows how to incorporate the example model-->
+   <!-- into the web client, for this to work you will need to -->
+   <!-- rename example-model-context.xml.sample to example-model-context.xml -->
    <!--
    <config evaluator="string-compare" condition="Custom Content Types">
       <content-types>
@@ -35,6 +91,18 @@
       <aspects>
          <aspect name="my:imageClassification"/>
       </aspects>
+   </config>
+
+   <config evaluator="string-compare" condition="Advanced Search">
+      <advanced-search>
+         <content-types>
+            <type name="my:sop" />
+         </content-types>
+         <custom-properties>
+            <meta-data type="my:sop" property="my:authorisedBy" />
+            <meta-data aspect="my:imageClassification" property="my:resolution" />
+         </custom-properties>
+      </advanced-search>
    </config>
    -->
 

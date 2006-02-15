@@ -124,8 +124,8 @@
                               
                               <div style="padding: 6px;" />
                               <h:inputText value="#{UsersBean.searchCriteria}" size="35" maxlength="1024" />&nbsp;
-                              <h:commandButton value="Search" action="#{UsersBean.search}" />&nbsp;
-                              <h:commandButton value="Show All" action="#{UsersBean.showAll}" />
+                              <h:commandButton value="#{msg.search}" action="#{UsersBean.search}" />&nbsp;
+                              <h:commandButton value="#{msg.show_all}" action="#{UsersBean.showAll}" />
                               <div style="padding: 6px;" />
                               
                               <a:richList id="users-list" binding="#{UsersBean.usersRichList}" viewMode="details" pageSize="10"

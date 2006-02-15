@@ -18,6 +18,7 @@ package org.alfresco.repo.action.executer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -46,6 +47,9 @@ public class SetPropertyValueActionExecuterTest extends BaseSpringTest
     protected void onSetUpInTransaction() throws Exception
     {
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
+        
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
+        authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
         
         // Create the store and get the root node
         this.testStoreRef = this.nodeService.createStore(

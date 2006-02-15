@@ -194,6 +194,10 @@
          <property-name>authenticationService</property-name>
          <value>#{authenticationService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>personService</property-name>
+         <value>#{personService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

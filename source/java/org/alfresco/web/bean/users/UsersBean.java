@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -68,6 +69,9 @@ public class UsersBean implements IContextListener
    /** AuthenticationService bean reference */
    private AuthenticationService authenticationService;
 
+   /** PersonService bean reference */
+   private PersonService personService;
+   
    /** Component reference for Users RichList control */
    private UIRichList usersRichList;
 
@@ -118,6 +122,14 @@ public class UsersBean implements IContextListener
    public void setAuthenticationService(AuthenticationService authenticationService)
    {
       this.authenticationService = authenticationService;
+   }
+
+   /**
+    * @param personService  The PersonService to set.
+    */
+   public void setPersonService(PersonService personService)
+   {
+      this.personService = personService;
    }
 
    /**
@@ -267,6 +279,8 @@ public class UsersBean implements IContextListener
          tx = Repository.getUserTransaction(context);
          tx.begin();
          
+         String userName = (String)getPerson().getProperties().get("userName");
+         
          // we only delete the user auth if Alfresco is managing the authentication 
          Map session = context.getExternalContext().getSessionMap();
          if (session.get(LoginBean.LOGIN_EXTERNAL_AUTH) == null)
@@ -274,7 +288,7 @@ public class UsersBean implements IContextListener
             // delete the User authentication
             try
             {
-               authenticationService.deleteAuthentication((String) getPerson().getProperties().get("userName"));
+               authenticationService.deleteAuthentication(userName);
             }
             catch (AuthenticationException authErr)
             {
@@ -283,7 +297,7 @@ public class UsersBean implements IContextListener
          }
          
          // delete the associated Person
-         this.nodeService.deleteNode(getPerson().getNodeRef());
+         this.personService.deletePerson(userName);
          
          // commit the transaction
          tx.commit();

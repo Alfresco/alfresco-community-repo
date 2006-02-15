@@ -218,7 +218,7 @@ import java.util.List;
             }
             catch (InvocationTargetException e)
             {
-                throw e.getCause();
+                throw e.getTargetException();
             }
         }
 

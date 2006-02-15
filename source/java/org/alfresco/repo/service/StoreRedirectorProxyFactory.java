@@ -213,7 +213,7 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
             }
             catch (InvocationTargetException e)
             {
-                throw e.getCause();
+                throw e.getTargetException();
             }
         }
         

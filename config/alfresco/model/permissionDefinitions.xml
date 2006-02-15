@@ -224,6 +224,12 @@
       <!-- permissions are set not to inherit or permission is denied.                 -->
       <permissionGroup name="Coordinator" allowFullControl="true" expose="true" />
       
+      <!-- A collaborator can do anything that an editor and a contributor can do -->
+      <permissionGroup name="Collaborator" allowFullControl="false" expose="true">
+         <includePermissionGroup permissionGroup="Editor" type="cm:cmobject" />
+         <includePermissionGroup permissionGroup="Contributor" type="cm:cmobject" />
+      </permissionGroup>
+      
       <!-- A contributor can create content and then they have full permission on what -->
       <!-- they have created - via the permissions assigned to the owner.              -->
       <permissionGroup name="Contributor" allowFullControl="false" expose="true" >
@@ -295,6 +301,7 @@
       </permission>
       
       <permissionGroup name="Coordinator" extends="true" expose="true"/>
+      <permissionGroup name="Collaborator" extends="true" expose="true"/>
       <permissionGroup name="Contributor" extends="true" expose="true"/>
       <permissionGroup name="Editor" extends="true" expose="true"/>
       <permissionGroup name="Guest" extends="true" expose="true"/>

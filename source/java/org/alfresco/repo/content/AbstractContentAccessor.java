@@ -88,7 +88,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
             {
                 StringBuilder sb = new StringBuilder(1024);
                 StackTraceUtil.buildStackTrace(
-                        "UserTransaction being garbage collected without a commit() or rollback().",
+                        "Content IO Channel was opened but not closed",
                         traceLoggerChannelAssignTrace,
                         sb,
                         -1);

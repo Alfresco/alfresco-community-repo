@@ -240,6 +240,18 @@ public abstract class AbstractContentTransformer implements ContentTransformer
                     "   options: " + options,
                     e);
         }
+        finally
+        {
+            // check that the reader and writer are both closed
+            if (!reader.isClosed())
+            {
+                logger.error("Content reader not closed by transformer: \n" + reader);
+            }
+            if (!writer.isClosed())
+            {
+                logger.error("Content writer not closed by transformer: \n" + writer);
+            }
+        }
         
         // record time
         long after = System.currentTimeMillis();

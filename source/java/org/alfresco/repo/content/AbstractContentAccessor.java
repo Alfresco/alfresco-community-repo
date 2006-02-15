@@ -88,7 +88,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
             {
                 StringBuilder sb = new StringBuilder(1024);
                 StackTraceUtil.buildStackTrace(
-                        "Content IO Channel was opened but not closed",
+                        "Content IO Channel was opened but not closed: \n" + this,
                         traceLoggerChannelAssignTrace,
                         sb,
                         -1);

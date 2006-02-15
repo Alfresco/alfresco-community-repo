@@ -70,6 +70,8 @@ public interface ContentTransformer
      * The source and target mimetypes <b>must</b> be available on the
      * {@link org.alfresco.service.cmr.repository.ContentAccessor#getMimetype()} methods of
      * both the reader and the writer.
+     * <p>
+     * Both reader and writer will be closed after the transformation completes.
      * 
      * @param reader the source of the content
      * @param writer the destination of the transformed content

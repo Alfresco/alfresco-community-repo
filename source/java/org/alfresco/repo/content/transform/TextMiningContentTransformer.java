@@ -23,8 +23,6 @@ import java.util.Map;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.textmining.text.extraction.WordExtractor;
 
 /**
@@ -35,8 +33,6 @@ import org.textmining.text.extraction.WordExtractor;
  */
 public class TextMiningContentTransformer extends AbstractContentTransformer
 {
-    private static final Log logger = LogFactory.getLog(TextMiningContentTransformer.class);
-    
     private WordExtractor wordExtractor;
     
     public TextMiningContentTransformer()
@@ -64,10 +60,11 @@ public class TextMiningContentTransformer extends AbstractContentTransformer
     public void transformInternal(ContentReader reader, ContentWriter writer,  Map<String, Object> options)
             throws Exception
     {
-        InputStream is = reader.getContentInputStream();
+        InputStream is = null;
         String text = null;
         try
         {
+            is = reader.getContentInputStream();
             text = wordExtractor.extractText(is);
         }
         catch (IOException e)
@@ -80,7 +77,14 @@ public class TextMiningContentTransformer extends AbstractContentTransformer
                 text = "";
             }
         }
-        // dump the text out
+        finally
+        {
+            if (is != null)
+            {
+                is.close();
+            }
+        }
+        // dump the text out.  This will close the writer automatically.
         writer.putContent(text);
     }
 }

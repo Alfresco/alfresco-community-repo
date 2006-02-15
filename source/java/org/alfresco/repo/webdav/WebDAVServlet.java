@@ -17,7 +17,6 @@
 package org.alfresco.repo.webdav;
 
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.Hashtable;
 
 import javax.servlet.ServletConfig;
@@ -25,19 +24,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.filesys.server.config.ServerConfiguration;
-import org.alfresco.filesys.server.core.InvalidDeviceInterfaceException;
-import org.alfresco.filesys.server.core.ShareType;
-import org.alfresco.filesys.server.core.SharedDevice;
-import org.alfresco.filesys.server.core.SharedDeviceList;
-import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
-import org.alfresco.filesys.smb.server.repo.ContentDiskInterface;
-import org.alfresco.repo.webdav.auth.AuthenticationFilter;
-import org.alfresco.repo.webdav.auth.WebDAVUser;
+import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -55,36 +47,28 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public class WebDAVServlet extends HttpServlet
 {
-    public static final String WEBDAV_PREFIX = "webdav"; 
     
     private static final long serialVersionUID = 6900069445027527165L;
 
     // Logging
-    
     private static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
     
-    // Error message(s)
-    
+    public static final String WEBDAV_PREFIX = "webdav"; 
     private static final String INTERNAL_SERVER_ERROR = "Internal Server Error: ";
 
     // Service registry, used by methods to find services to process requests
-    
     private ServiceRegistry m_serviceRegistry;
     
     // Transaction service, each request is wrapped in a transaction
-    
     private TransactionService m_transactionService;
     
     // WebDAV method handlers
-    
     private Hashtable<String,Class> m_davMethods;
     
     // Root node
-    
     private NodeRef m_rootNodeRef;
     
     // WebDAV helper class
-    
     private WebDAVHelper m_davHelper;
     
     /**
@@ -100,20 +84,13 @@ public class WebDAVServlet extends HttpServlet
             startTime = System.currentTimeMillis();
         }
 
-        // Wrap the request in a transaction
-        
-        UserTransaction tx = m_transactionService.getUserTransaction();
-
         try
         {
             // Create the appropriate WebDAV method for the request and execute it
-            
-            WebDAVMethod method = createMethod(request, response);
+            final WebDAVMethod method = createMethod(request, response);
 
             if (method == null)
             {
-                // Debug
-                
                 if ( logger.isErrorEnabled())
                     logger.error("WebDAV method not implemented - " + request.getMethod());
                 
@@ -122,40 +99,37 @@ public class WebDAVServlet extends HttpServlet
                 response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
                 return;
             }
-            else if ( method.getRootNodeRef() == null)
+            else if (method.getRootNodeRef() == null)
             {
-                // Debug
-                
                 if ( logger.isErrorEnabled())
                     logger.error("No root node for request");
                 
                 // Return an error status
-                
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 return;
             }
 
             // Execute the WebDAV request, wrapped in a transaction
-            
-            tx.begin();
-            method.execute();
-            tx.commit();
+            TransactionWork<Object> methodWork = new TransactionWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    method.execute();
+                    return null;
+                }
+            };
+            TransactionUtil.executeInUserTransaction(m_transactionService, methodWork);
         }
         catch (Throwable e)
         {
-            // Whatever happened we need to rollback the transaction
-            
-            try
+            if (!(e instanceof WebDAVServerException) && e.getCause() != null)
             {
-                tx.rollback();
+                if (e.getCause() instanceof WebDAVServerException)
+                {
+                    e = e.getCause();
+                }
             }
-            catch (Exception ex)
-            {
-                logger.warn("Failed to rollback transaction", ex);
-            }
-
             // Work out how to handle the error
-            
             if (e instanceof WebDAVServerException)
             {
                 WebDAVServerException error = (WebDAVServerException) e;

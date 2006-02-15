@@ -775,6 +775,9 @@ public class RuleServiceCoverageTest extends TestCase
     	        
     	        //System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.testStoreRef));
     	        
+                AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
+                authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+                
     	        // Check that the created node is still there
     	        List<ChildAssociationRef> origRefs = this.nodeService.getChildAssocs(
     	                this.nodeRef, 

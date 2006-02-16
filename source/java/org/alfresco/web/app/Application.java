@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.config.ConfigService;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
@@ -483,14 +482,7 @@ public class Application
          {
             locale = Locale.getDefault();
          }
-         bundle = ResourceBundle.getBundle(MESSAGE_BUNDLE, locale);
-         if (bundle == null)
-         {
-            throw new AlfrescoRuntimeException("Unable to load Alfresco messages bundle: " + MESSAGE_BUNDLE);
-         }
-         
-         // apply our wrapper to catch MissingResourceException
-         bundle = new ResourceBundleWrapper(bundle);
+         bundle = ResourceBundleWrapper.findSharedResourceBundle(MESSAGE_BUNDLE, locale);
          
          session.setAttribute(MESSAGE_BUNDLE, bundle);
       }
@@ -520,14 +512,7 @@ public class Application
          {
             locale = Locale.getDefault();
          }
-         bundle = ResourceBundle.getBundle(MESSAGE_BUNDLE, locale);
-         if (bundle == null)
-         {
-            throw new AlfrescoRuntimeException("Unable to load Alfresco messages bundle: " + MESSAGE_BUNDLE);
-         }
-         
-         // apply our wrapper to catch MissingResourceException
-         bundle = new ResourceBundleWrapper(bundle);
+         bundle = ResourceBundleWrapper.findSharedResourceBundle(MESSAGE_BUNDLE, locale);
          
          session.put(MESSAGE_BUNDLE, bundle);
       }

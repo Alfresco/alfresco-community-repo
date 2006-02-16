@@ -22,7 +22,6 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -48,7 +47,6 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
 
     private NodeService nodeService;
     private ContentService contentService;
-    private MetadataExtracterRegistry metadataExtracterRegistry;
     private StoreRef testStoreRef;
     private NodeRef rootNodeRef;
     private NodeRef nodeRef;
@@ -62,8 +60,6 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     {
         this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
         this.contentService = (ContentService) this.applicationContext.getBean("contentService");
-        this.metadataExtracterRegistry = (MetadataExtracterRegistry) this.applicationContext
-                .getBean("metadataExtracterRegistry");
         
         AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();

@@ -18,21 +18,26 @@ package org.alfresco.repo.webdav;
 
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.filesys.server.config.ServerConfiguration;
-import org.alfresco.filesys.server.filesys.DiskSharedDevice;
-import org.alfresco.filesys.smb.server.repo.ContentContext;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,9 +58,14 @@ public class WebDAVServlet extends HttpServlet
     // Logging
     private static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
     
+    // Constants
     public static final String WEBDAV_PREFIX = "webdav"; 
     private static final String INTERNAL_SERVER_ERROR = "Internal Server Error: ";
 
+    // Init parameter names
+    public static final String KEY_STORE = "store";
+    public static final String KEY_ROOT_PATH = "rootPath";
+    
     // Service registry, used by methods to find services to process requests
     private ServiceRegistry m_serviceRegistry;
     
@@ -240,31 +250,96 @@ public class WebDAVServlet extends HttpServlet
         m_transactionService = m_serviceRegistry.getTransactionService();
         
         AuthenticationService authService = (AuthenticationService) context.getBean("authenticationService");
+        NodeService nodeService = (NodeService) context.getBean("NodeService");
+        SearchService searchService = (SearchService) context.getBean("SearchService");
+        NamespaceService namespaceService = (NamespaceService) context.getBean("NamespaceService");
         
         // Create the WebDAV helper
 
         m_davHelper = new WebDAVHelper(m_serviceRegistry, authService);
         
         // Initialize the root node
-        //
-        // For now we get the details from the first available shared filesystem that is configured
         
         ServerConfiguration fileSrvConfig = (ServerConfiguration) context.getBean(ServerConfiguration.SERVER_CONFIGURATION);
         if ( fileSrvConfig == null)
             throw new ServletException("File server configuration not available");
 
-        DiskSharedDevice filesys = fileSrvConfig.getPrimaryFilesystem();
+        // Use the system user as the authenticated context for the filesystem initialization
+
+        AuthenticationComponent authComponent = fileSrvConfig.getAuthenticationComponent();
+        authComponent.setCurrentUser( authComponent.getSystemUserName());
         
-        if ( filesys != null)
+        // Wrap the initialization in a transaction
+        
+        UserTransaction tx = m_transactionService.getUserTransaction(true);
+        
+        try
         {
-            // Get the root node from the filesystem
+            // Start the transaction
             
-            ContentContext contentCtx = (ContentContext) filesys.getContext();
-            m_rootNodeRef = contentCtx.getRootNode();
+            if ( tx != null)
+                tx.begin();
+            
+            // Get the store
+            
+            String storeValue = config.getInitParameter(KEY_STORE);
+            if (storeValue == null)
+            {
+                throw new ServletException("Device missing init value: " + KEY_STORE);
+            }
+            StoreRef storeRef = new StoreRef(storeValue);
+            
+            // Connect to the repo and ensure that the store exists
+            
+            if (! nodeService.exists(storeRef))
+            {
+                throw new ServletException("Store not created prior to application startup: " + storeRef);
+            }
+            NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
+            
+            // Get the root path
+            
+            String rootPath = config.getInitParameter(KEY_ROOT_PATH);
+            if (rootPath == null)
+            {
+                throw new ServletException("Device missing init value: " + KEY_ROOT_PATH);
+            }
+            
+            // Find the root node for this device
+            
+            List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, rootPath, null, namespaceService, false);
+            
+            if (nodeRefs.size() > 1)
+            {
+                throw new ServletException("Multiple possible roots for device: \n" +
+                        "   root path: " + rootPath + "\n" +
+                        "   results: " + nodeRefs);
+            }
+            else if (nodeRefs.size() == 0)
+            {
+                // nothing found
+                throw new ServletException("No root found for device: \n" +
+                        "   root path: " + rootPath);
+            }
+            else
+            {
+                // we found a node
+                m_rootNodeRef = nodeRefs.get(0);
+            }
+            
+            // Commit the transaction
+            
+            tx.commit();
         }
-        else
+        catch (Exception ex)
         {
-            logger.warn("No default root node for WebDAV, using home node only");
+            logger.error(ex);
+        }
+        finally
+        {
+            // Clear the current system user
+            
+            authComponent.clearCurrentSecurityContext();
         }
         
         // Create the WebDAV methods table

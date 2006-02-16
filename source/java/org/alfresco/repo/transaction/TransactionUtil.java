@@ -71,11 +71,30 @@ public class TransactionUtil
             TransactionService transactionService,
             TransactionWork<R> transactionWork)
     {
-        return executeInTransaction(transactionService, transactionWork, false);
+        return executeInTransaction(transactionService, transactionWork, false, false);
     }
 
     /**
-     * Execute the transaction work in a non propigating user transaction
+     * Execute the transaction work in a user transaction.
+     * Any current transaction will be continued.
+     * 
+     * @param transactionService the transaction service
+     * @param transactionWork the transaction work
+     * @param readOnly true if the transaction should be read-only
+     * 
+     * @throws java.lang.RuntimeException if the transaction was rolled back
+     */
+    public static <R> R executeInUserTransaction(
+            TransactionService transactionService,
+            TransactionWork<R> transactionWork,
+            boolean readOnly)
+    {
+        return executeInTransaction(transactionService, transactionWork, false, readOnly);
+    }
+
+    /**
+     * Execute the transaction work in a <b>writable</b>, non-propagating user transaction.
+     * Any current transaction will be suspended a new one started.
      * 
      * @param transactionService the transaction service
      * @param transactionWork the transaction work
@@ -86,7 +105,25 @@ public class TransactionUtil
             TransactionService transactionService,
             TransactionWork<R> transactionWork)
     {
-        return executeInTransaction(transactionService, transactionWork, true);
+        return executeInTransaction(transactionService, transactionWork, true, false);
+    }
+
+    /**
+     * Execute the transaction work in a non-propagating user transaction.
+     * Any current transaction will be suspended a new one started.
+     * 
+     * @param transactionService the transaction service
+     * @param transactionWork the transaction work
+     * @param readOnly true if the transaction should be read-only
+     * 
+     * @throws java.lang.RuntimeException if the transaction was rolled back
+     */
+    public static <R> R executeInNonPropagatingUserTransaction(
+            TransactionService transactionService,
+            TransactionWork<R> transactionWork,
+            boolean readOnly)
+    {
+        return executeInTransaction(transactionService, transactionWork, true, readOnly);
     }
 
     /**
@@ -98,13 +135,15 @@ public class TransactionUtil
      *        ignored or re-thrown
      * @param nonPropagatingUserTransaction indicates whether the transaction
      *        should be non propigating or not
+     * @param readOnly true if the transaction should be read-only
      * 
      * @throws java.lang.RuntimeException if the transaction was rolled back
      */
     private static <R> R executeInTransaction(
             TransactionService transactionService,
             TransactionWork<R> transactionWork,
-            boolean nonPropagatingUserTransaction)
+            boolean nonPropagatingUserTransaction,
+            boolean readOnly)
     {
         ParameterCheck.mandatory("transactionWork", transactionWork);
 
@@ -118,7 +157,7 @@ public class TransactionUtil
         }
         else
         {
-            txn = transactionService.getUserTransaction();
+            txn = transactionService.getUserTransaction(readOnly);
         }
 
         try

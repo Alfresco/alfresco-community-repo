@@ -45,17 +45,22 @@ public class DummyTransactionService implements TransactionService
         return false;
     }
 
-    public UserTransaction getNonPropagatingUserTransaction()
-    {
-        return txn;
-    }
-
     public UserTransaction getUserTransaction()
     {
         return txn;
     }
     
-    public UserTransaction getUserTransaction(boolean readonly)
+    public UserTransaction getUserTransaction(boolean readOnly)
+    {
+        return txn;
+    }
+
+    public UserTransaction getNonPropagatingUserTransaction()
+    {
+        return txn;
+    }
+
+    public UserTransaction getNonPropagatingUserTransaction(boolean readOnly)
     {
         return txn;
     }

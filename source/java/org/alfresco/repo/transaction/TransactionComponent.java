@@ -99,4 +99,18 @@ public class TransactionComponent implements TransactionService
                 TransactionDefinition.TIMEOUT_DEFAULT);
         return txn;
     }
+
+    /**
+     * @see org.springframework.transaction.TransactionDefinition#PROPAGATION_REQUIRES_NEW
+     */
+    public UserTransaction getNonPropagatingUserTransaction(boolean readOnly)
+    {
+        SpringAwareUserTransaction txn = new SpringAwareUserTransaction(
+                transactionManager,
+                (readOnly | this.readOnly),
+                TransactionDefinition.ISOLATION_DEFAULT,
+                TransactionDefinition.PROPAGATION_REQUIRES_NEW,
+                TransactionDefinition.TIMEOUT_DEFAULT);
+        return txn;
+    }
 }

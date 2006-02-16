@@ -52,32 +52,30 @@
         </property>
     </bean>
 
-    <bean id="fileContentStoreCleanerTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+    <bean id="contentStoreCleanerTrigger" class="org.alfresco.util.TriggerBean">
         <property name="jobDetail">
             <bean id="fileContentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
                 <property name="jobClass">
-                    <value>org.alfresco.repo.content.ContentStoreCleanupJob</value>
+                    <value>org.alfresco.repo.content.cleanup.ContentStoreCleanupJob</value>
                 </property>
                 <property name="jobDataAsMap">
                     <map>
-                        <entry key="contentStore">
-                            <ref bean="fileContentStore" />
-                        </entry>
-                        <entry key="searcher">
-                            <ref bean="searchService" />
-                        </entry>
-                        <entry key="protectHours">
-                            <value>24</value>
+                        <entry key="contentStoreCleaner">
+                            <ref bean="contentStoreCleaner" />
                         </entry>
                     </map>
                 </property>
             </bean>
         </property>
-        <property name="startDelay">
-            <value>600000</value><!-- start after 10 minutes -->
+        <!-- trigger at 4am -->
+        <property name="hour">
+            <value>04</value>
+        </property>
+        <property name="minute">
+            <value>00</value>
         </property>
         <property name="repeatInterval">
-            <value>3600000</value><!-- repeat every hour -->
+            <value>86400000</value>     <!-- repeat daily -->
         </property>
     </bean>
 
@@ -153,9 +151,7 @@
         <property name="triggers">
             <list>
                 <ref bean="tempFileCleanerTrigger" />
-                <!--
-                <ref local="fileContentStoreCleanerTrigger"/>
-                -->
+                <ref local="contentStoreCleanerTrigger"/>
                 <ref bean="ftsIndexerTrigger" />
                 <ref bean="indexRecoveryTrigger" />
                 <ref bean="indexBackupTrigger" />

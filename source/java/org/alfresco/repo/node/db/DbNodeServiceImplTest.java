@@ -24,12 +24,14 @@ import java.util.Map;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -256,5 +258,23 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
             try { txn.rollback(); } catch (Throwable ee) {}
             throw e;
         }
+    }
+    
+    /**
+     * Checks that the string_value retrieval against a property type is working
+     */
+    public void testGetContentDataStringValues() throws Exception
+    {
+        ContentData contentData = new ContentData("abc", MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, null);
+        // put this in as a random property
+        nodeService.setProperty(
+                rootNodeRef,
+                QName.createQName(NAMESPACE, "random"),
+                contentData);
+        // get a list of all content values
+        List<String> contentDataStrings = nodeDaoService.getContentDataStrings();
+        assertNotNull(contentDataStrings);
+        assertTrue("ContentData not represented as a String in results",
+                contentDataStrings.contains(contentData.toString()));
     }
 }

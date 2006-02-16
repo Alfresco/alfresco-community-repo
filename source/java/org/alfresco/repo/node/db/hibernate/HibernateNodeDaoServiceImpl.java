@@ -54,11 +54,11 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  */
 public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements NodeDaoService
 {
-    public static final String QUERY_GET_ALL_STORES = "store.GetAllStores";
-    public static final String QUERY_GET_CHILD_ASSOC = "node.GetChildAssoc";
-    public static final String QUERY_GET_NODE_ASSOC = "node.GetNodeAssoc";
-    public static final String QUERY_GET_NODE_ASSOC_TARGETS = "node.GetNodeAssocTargets";
-    public static final String QUERY_GET_NODE_ASSOC_SOURCES = "node.GetNodeAssocSources";
+    private static final String QUERY_GET_ALL_STORES = "store.GetAllStores";
+    private static final String QUERY_GET_NODE_ASSOC = "node.GetNodeAssoc";
+    private static final String QUERY_GET_NODE_ASSOC_TARGETS = "node.GetNodeAssocTargets";
+    private static final String QUERY_GET_NODE_ASSOC_SOURCES = "node.GetNodeAssocSources";
+    private static final String QUERY_GET_CONTENT_DATA_STRINGS = "node.GetContentDataStrings";
     
     /** a uuid identifying this unique instance */
     private String uuid;
@@ -504,4 +504,39 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // remove instance
         getHibernateTemplate().delete(assoc);
     }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getContentDataStrings()
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CONTENT_DATA_STRINGS);
+                return query.list();
+            }
+        };
+        List<String> queryResults = (List) getHibernateTemplate().execute(callback);
+        return queryResults;
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

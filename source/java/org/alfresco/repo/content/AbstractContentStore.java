@@ -59,12 +59,14 @@ public abstract class AbstractContentStore implements ContentStore
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH) + 1;  // 0-based
         int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
         // create the URL
         StringBuilder sb = new StringBuilder(20);
         sb.append(STORE_PROTOCOL)
           .append(year).append('/')
           .append(month).append('/')
           .append(day).append('/')
+          .append(hour).append('/')
           .append(GUID.generate()).append(".bin");
         String newContentUrl = sb.toString();
         // done

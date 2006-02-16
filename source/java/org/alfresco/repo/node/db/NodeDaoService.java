@@ -176,4 +176,12 @@ public interface NodeDaoService
      *      returns <code>null</code>.
      */
     public NodeStatus getNodeStatus(String protocol, String identifier, String id);
+    
+    /**
+     * Fetch all content data strings.  These are all string values that begin
+     * with <b>contentUrl=</b>.
+     * 
+     * @return Returns the string values for content data
+     */
+    public List<String> getContentDataStrings();
 }

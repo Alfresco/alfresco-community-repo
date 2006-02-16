@@ -8,6 +8,44 @@
          <value>${dir.contentstore}</value>
       </constructor-arg>
    </bean>
+   
+   <!-- deleted content will get pushed into this store, where it can be cleaned up at will -->
+   <bean id="deletedContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
+      <constructor-arg>
+         <value>${dir.contentstore.deleted}</value>
+      </constructor-arg>
+   </bean>
+   <!-- bean to move deleted content into the the backup store -->
+   <bean id="deletedContentBackupListener" class="org.alfresco.repo.content.cleanup.DeletedContentBackupCleanerListener" >
+      <property name="store">
+         <ref bean="deletedContentStore" />
+      </property>
+   </bean>
+   <!-- Performs the content cleanup -->
+   <bean id="contentStoreCleaner" class="org.alfresco.repo.content.cleanup.ContentStoreCleaner" >
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
+      <property name="nodeDaoService" >
+         <ref bean="nodeDaoService" />
+      </property>
+      <property name="transactionService" >
+         <ref bean="transactionComponent" />
+      </property>
+      <property name="protectDays" >
+         <value>14</value>
+      </property>
+      <property name="stores" >
+         <list>
+            <ref bean="fileContentStore" />
+         </list>
+      </property>
+      <property name="listeners" >
+         <list>
+            <ref bean="deletedContentBackupListener" />
+         </list>
+      </property>
+   </bean>
 
    <bean id="contentService" class="org.alfresco.repo.content.RoutingContentService" init-method="init">
       <property name="transactionService">

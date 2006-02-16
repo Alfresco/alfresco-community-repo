@@ -115,7 +115,17 @@ public class EhCacheTracerJob implements Job
         public CacheAnalysis(Cache cache) throws CacheException
         {
             this.cache = cache;
-            calculateSize();
+            if (this.cache.getStatus() == Cache.STATUS_ALIVE)
+            {
+                try
+                {
+                    calculateSize();
+                }
+                catch (Throwable e)
+                {
+                    // just ignore
+                }
+            }
         }
         
         public synchronized long getSize()
@@ -176,15 +186,21 @@ public class EhCacheTracerJob implements Job
             double sizeMB = (double)getSize()/1024.0/1024.0;
             long maxSize = cache.getMaxElementsInMemory();
             long currentSize = cache.getMemoryStoreSize();
+            long hitCount = cache.getHitCount();
+            long missCount = cache.getMissCountNotFound();
             double percentageFull = (double)currentSize / (double)maxSize * 100.0;
             double estMaxSize = sizeMB / (double) currentSize * (double) maxSize;
             
             StringBuilder sb = new StringBuilder(512);
             sb.append("   Analyzing EHCache: \n")
-              .append("===>  ").append(cache).append("\n")
-              .append("      Deep Size:              ").append(String.format("%5.2f MB", sizeMB)).append("\n")
-              .append("      Percentage used:        ").append(String.format("%5.2f percent", percentageFull)).append("\n")
-              .append("      Estimated maximum size: ").append(String.format("%5.2f MB", estMaxSize));
+              .append("===>  ").append(cache.getName()).append("\n")
+              .append("      Hit Count:              ").append(String.format("%10d hits     ", hitCount      ))
+              .append("   |         Miss Count:    ").append(String.format("%10d misses   ", missCount     )).append("\n")
+              .append("      Deep Size:              ").append(String.format("%10.2f MB     ", sizeMB        ))
+              .append("     |         Current Count: ").append(String.format("%10d entries  ", currentSize   )).append("\n")
+              .append("      Percentage used:        ").append(String.format("%10.2f percent", percentageFull))
+              .append("     |         Max Count:     ").append(String.format("%10d entries  ", maxSize       )).append("\n")
+              .append("      Estimated maximum size: ").append(String.format("%10.2f MB     ", estMaxSize    ));
             return sb.toString();
         }
     }

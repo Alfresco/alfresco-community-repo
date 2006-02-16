@@ -179,12 +179,6 @@
       </image-transformers>
    </config>
    
-   <!-- TODO: Move the languages, advanced search and views config -->
-   <!--       out to separate config blocks, this means users can -->
-   <!--       replace just those sections independently of the client -->
-   <!--       section -->
-   
-   
    <!-- This config sections below hold all the icons choices -->
    <!-- displayed to users when creating various types of spaces -->
    <!-- in the client. --> 

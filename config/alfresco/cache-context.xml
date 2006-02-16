@@ -33,7 +33,7 @@
                <value>nullPermissionCache</value>
             </property>
             <property name="maxElementsInMemory">
-               <value>10000</value>
+               <value>10000</value> <!-- approx 8MB memory required -->
             </property>
             <property name="overflowToDisk">
                <value>false</value>
@@ -74,7 +74,7 @@
                <value>userToAuthorityCache</value>
             </property>
             <property name="maxElementsInMemory">
-               <value>10000</value>
+               <value>10000</value>  <!-- approx 2MB memory required -->
             </property>
             <property name="overflowToDisk">
                <value>false</value>
@@ -115,7 +115,7 @@
                <value>permissionsAccessCache</value>
             </property>
             <property name="maxElementsInMemory">
-               <value>10000</value>
+               <value>50000</value>  <!-- approx 20MB memory required -->
             </property>
             <property name="overflowToDisk">
                <value>false</value>
@@ -156,7 +156,7 @@
                <value>nodeOwnerCache</value>
             </property>
             <property name="maxElementsInMemory">
-               <value>10000</value>
+               <value>20000</value> <!-- approx 20MB memory required -->
             </property>
             <property name="overflowToDisk">
                <value>false</value>

@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+
+<!--
+    Repository Boostrap Sequence.
+    
+    This file specifies the initialisation (and order of initialisation) to perform during Repository startup.
+    
+    The pattern for adding new initialisation to the bootstrap sequence is as follows:
+    
+    1) Develop a bean that implements the Spring interface ApplicationListener
+    2) Place the initialisation logic in the method onApplicationEvent(ApplicationEvent event)...
+    
+       public void onApplicationEvent(ApplicationEvent event)
+       {
+          if (event instanceof ContextRefreshedEvent)
+          {
+             // initialisation logic here
+          }
+       }
+       
+    3) Add the bean definition to this file - Note: the beans are initialised in the order they are specified.
+-->
+
+<beans>
+
+	<!-- Bootstrap Files -->
+
+    <bean id="userBootstrap" parent="userStoreImporter">
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/alfrescoUserStore.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="systemBootstrap" parent="systemStoreImporter">
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/descriptor.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="spacesBootstrap" parent="spacesStoreImporter">
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/categories.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/spaces.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/system.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.guest_home.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/tutorial.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-tutorial</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.childname}</prop>
+                    <prop key="location">alfresco/templates/software_engineering_project.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-templates</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</prop>
+                    <prop key="location">alfresco/templates/content_template_examples.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Descriptor Service -->
+
+    <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
+       <property name="descriptor">
+	       <value>classpath:alfresco/version.properties</value>
+       </property>
+       <property name="systemBootstrap">
+           <ref bean="systemBootstrap"/>
+       </property>
+       <property name="transactionService">
+           <ref bean="transactionComponent"/>
+       </property>
+       <property name="namespaceService">
+           <ref bean="namespaceService"/>
+       </property>
+       <property name="nodeService">
+           <ref bean="nodeService"/>
+       </property>
+       <property name="searchService">
+           <ref bean="searchService"/>
+       </property>
+    </bean>
+
+    <!-- This component ensures that patches get applied on startup -->
+
+    <bean id="patchExecuter" class="org.alfresco.repo.admin.patch.PatchExecuter">
+        <property name="patchService">
+            <ref bean="PatchService" />
+        </property>
+    </bean>
+
+    <!-- CIFS Server -->
+
+    <bean id="fileServerConfiguration" class="org.alfresco.filesys.server.config.ServerConfiguration" parent="fileServerConfigurationBase">
+       <property name="configService">
+           <ref bean="fileServersConfigService"/>
+       </property>
+    </bean>
+    
+    <bean id="cifsServer" class="org.alfresco.filesys.CIFSServer" destroy-method="stopServer">
+        <constructor-arg>
+           <ref local="fileServerConfiguration"/>
+        </constructor-arg>
+    </bean>
+   
+    <!-- FTP Server -->
+    
+    <bean id="ftpServer" class="org.alfresco.filesys.FTPServer" destroy-method="stopServer">
+        <constructor-arg>
+           <ref local="fileServerConfiguration"/>
+        </constructor-arg>
+    </bean>
+
+	<!-- Startup Message -->
+
+    <bean id="startupLog" class="org.alfresco.repo.descriptor.DescriptorStartupLog">
+       <property name="descriptorService">
+	       	<ref local="descriptorComponent"/>
+       </property>
+	</bean>
+	
+</beans>

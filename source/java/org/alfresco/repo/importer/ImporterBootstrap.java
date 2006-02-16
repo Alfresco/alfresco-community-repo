@@ -23,6 +23,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -47,6 +48,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.impl.Log4JLogger;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.ClassPathResource;
 
 /**
@@ -54,7 +58,7 @@ import org.springframework.core.io.ClassPathResource;
  * 
  * @author David Caruana
  */
-public class ImporterBootstrap
+public class ImporterBootstrap implements ApplicationListener
 {
     // View Properties (used in setBootstrapViews)
     public static final String VIEW_PATH_PROPERTY = "path";
@@ -520,6 +524,18 @@ public class ImporterBootstrap
         }
         
         return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+     */
+    public void onApplicationEvent(ApplicationEvent event)
+    {
+        if (event instanceof ContextRefreshedEvent)
+        {
+            bootstrap();
+        }
     }
     
 }

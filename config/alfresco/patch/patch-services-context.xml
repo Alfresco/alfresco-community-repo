@@ -80,7 +80,7 @@
     <bean id="patch.savedSearches.Base" abstract="true" parent="basePatch" >
         <!-- helper beans for execution -->
         <property name="importerBootstrap">
-            <ref bean="importerBootstrap" />
+            <ref bean="spacesBootstrap" />
         </property>
         <property name="namespaceService">
             <ref bean="namespaceService" />
@@ -164,7 +164,7 @@
             <ref bean="permissionService"/>
         </property>
         <property name="importerBootstrap">
-            <ref bean="importerBootstrap" />
+            <ref bean="spacesBootstrap" />
         </property>
         <property name="namespaceService">
             <ref bean="namespaceService" />
@@ -185,15 +185,4 @@
         </property>
     </bean>
 
-    <!-- This component ensures that patches get applied on startup -->
-    <!-- The order is important here.  All the self-registering patches must be defined before this bean -->
-    <bean id="patchExecuter"
-            class="org.alfresco.repo.admin.patch.PatchExecuter"
-            depends-on="importerBootstrap"
-            init-method="applyOutstandingPatches">
-        <property name="patchService">
-            <ref bean="PatchService" />
-        </property>
-    </bean>
-    
 </beans>

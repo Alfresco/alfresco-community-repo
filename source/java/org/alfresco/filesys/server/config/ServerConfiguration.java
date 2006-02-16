@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.Provider;
 import java.security.Security;
@@ -78,6 +79,9 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * <p>
@@ -85,7 +89,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Gary K. Spencer
  */
-public class ServerConfiguration
+public class ServerConfiguration implements ApplicationListener
 {
     // Debug logging
 
@@ -407,6 +411,18 @@ public class ServerConfiguration
         return initialised;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+     */
+    public void onApplicationEvent(ApplicationEvent event)
+    {
+        if (event instanceof ContextRefreshedEvent)
+        {
+            init();
+        }
+    }
+    
     /**
      * Initialize the configuration using the configuration service
      */

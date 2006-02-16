@@ -33,6 +33,10 @@
       <filesystem name="Alfresco">
          <store>workspace://SpacesStore</store>
          <rootPath>/app:company_home</rootPath>
+        <urlFile>
+            <filename>__AlfrescoClient.url</filename>
+            <webpath>http://localhost:8080/alfresco/</webpath>
+         </urlFile>
 <!--
          <accessControl default="Write">
             <user name="admin" access="Write"/>
@@ -66,5 +70,6 @@
       </users>
 -->
    </config>
+
 
 </alfresco-config>

@@ -4,29 +4,6 @@
 <!-- Core and miscellaneous bean definitions -->
 <beans>
 
-	 <!-- Descriptor Service -->
-
-    <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl" init-method="init">
-       <property name="descriptor">
-	       <value>classpath:alfresco/version.properties</value>
-       </property>
-       <property name="systemBootstrap">
-           <ref local="systemBootstrap"/>
-       </property>
-       <property name="transactionService">
-           <ref bean="transactionComponent"/>
-       </property>
-       <property name="namespaceService">
-           <ref bean="namespaceService"/>
-       </property>
-       <property name="nodeService">
-           <ref bean="nodeService"/>
-       </property>
-       <property name="searchService">
-           <ref bean="searchService"/>
-       </property>
-    </bean>
-
     <!--                    -->
     <!--  PERSISTENCE       -->
     <!--                    -->
@@ -642,7 +619,7 @@
         </property>
     </bean>
 
-    <bean id="importerComponent" class="org.alfresco.repo.importer.ImporterComponent" depends-on="nodeIndexer, auditableAspect">
+    <bean id="importerComponent" class="org.alfresco.repo.importer.ImporterComponent">
         <!-- For now, hard-wire the view parser -->
         <property name="namespaceService">
             <ref bean="NamespaceService" />
@@ -679,7 +656,7 @@
         </property>
     </bean>
 
-    <bean id="storeImporter" class="org.alfresco.repo.importer.ImporterBootstrap" abstract="true" init-method="bootstrap">
+    <bean id="storeImporter" class="org.alfresco.repo.importer.ImporterBootstrap" abstract="true">
         <property name="transactionService">
             <ref bean="transactionComponent"/>
         </property>
@@ -756,65 +733,6 @@
             </props>
         </property>
     </bean>
-
-	<!-- Bootstrap Files -->
-
-    <bean id="userBootstrap" parent="userStoreImporter">
-        <property name="bootstrapViews">
-            <list>
-                <props>
-                    <prop key="path">/</prop>
-                    <prop key="location">alfresco/bootstrap/alfrescoUserStore.xml</prop>
-                </props>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="systemBootstrap" parent="systemStoreImporter" depends-on="userBootstrap">
-        <property name="bootstrapViews">
-            <list>
-                <props>
-                    <prop key="path">/</prop>
-                    <prop key="location">alfresco/bootstrap/descriptor.xml</prop>
-                </props>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="importerBootstrap" parent="spacesStoreImporter" depends-on="systemBootstrap, versionBootstrap">
-        <property name="bootstrapViews">
-            <list>
-                <props>
-                    <prop key="path">/</prop>
-                    <prop key="location">alfresco/bootstrap/categories.xml</prop>
-                </props>
-                <props>
-                    <prop key="path">/</prop>
-                    <prop key="location">alfresco/bootstrap/spaces.xml</prop>
-                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-                </props>
-                <props>
-                    <prop key="path">/</prop>
-                    <prop key="location">alfresco/bootstrap/system.xml</prop>
-                </props>
-                <props>
-                    <prop key="path">/${spaces.company_home.childname}/${spaces.guest_home.childname}</prop>
-                    <prop key="location">alfresco/bootstrap/tutorial.xml</prop>
-                    <prop key="messages">alfresco/messages/bootstrap-tutorial</prop>
-                </props>
-                <props>
-                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.childname}</prop>
-                    <prop key="location">alfresco/templates/software_engineering_project.xml</prop>
-                    <prop key="messages">alfresco/messages/bootstrap-templates</prop>
-                </props>
-                <props>
-                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</prop>
-                    <prop key="location">alfresco/templates/content_template_examples.xml</prop>
-                </props>
-            </list>
-        </property>
-    </bean>
-
 
     <!-- Exporters -->
     <bean id="exporterComponent" class="org.alfresco.repo.exporter.ExporterComponent">

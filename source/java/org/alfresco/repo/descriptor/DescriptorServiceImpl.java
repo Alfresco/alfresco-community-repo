@@ -35,8 +35,7 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -48,7 +47,7 @@ import org.springframework.core.io.Resource;
  * 
  * @author David Caruana
  */
-public class DescriptorServiceImpl implements DescriptorService, ApplicationListener
+public class DescriptorServiceImpl implements DescriptorService, ApplicationListener, InitializingBean
 {
     private Properties serverProperties;
     
@@ -62,9 +61,6 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     private Descriptor repoDescriptor;
     
     
-    // Logger
-    private static final Log logger = LogFactory.getLog(DescriptorService.class);
-
     
     /**
      * Sets the server descriptor from a resource file
@@ -136,66 +132,33 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     }
 
     /**
-     * Initialise Descriptors
-     */
-    public void init()
-    {
-        // initialise descriptors
-        serverDescriptor = createServerDescriptor();
-        repoDescriptor = TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<Descriptor>()
-        {
-            public Descriptor doWork()
-            {
-                return createRepositoryDescriptor();
-            }
-        });
-    }
-    
-    /**
      * @param event
      */
     public void onApplicationEvent(ApplicationEvent event)
     {
         if (event instanceof ContextRefreshedEvent)
         {
-            if (serverDescriptor != null)
+            // initialise the repository descriptor
+            // note: this requires that the repository schema has already been initialised
+            repoDescriptor = TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<Descriptor>()
             {
-                // log output of VM stats
-                Map properties = System.getProperties();
-                String version = (properties.get("java.runtime.version") == null) ? "unknown" : (String)properties.get("java.runtime.version");
-                long maxHeap = Runtime.getRuntime().maxMemory();
-                float maxHeapMB = maxHeap / 1024l;
-                maxHeapMB = maxHeapMB / 1024l;
-                if (logger.isInfoEnabled())
+                public Descriptor doWork()
                 {
-                    logger.info(String.format("Alfresco JVM - v%s; maximum heap size %.3fMB", version, maxHeapMB));
+                    return createRepositoryDescriptor();
                 }
-                if (logger.isWarnEnabled())
-                {
-                    if (version.startsWith("1.2") || version.startsWith("1.3") || version.startsWith("1.4"))
-                    {
-                        logger.warn(String.format("Alfresco JVM - WARNING - v1.5 is required; currently using v%s", version));
-                    }
-                    if (maxHeapMB < 500)
-                    {
-                        logger.warn(String.format("Alfresco JVM - WARNING - maximum heap size %.3fMB is less than recommended 512MB", maxHeapMB));
-                    }
-                }
-                
-                // log output of version initialised
-                if (logger.isInfoEnabled())
-                {
-                    String serverEdition = serverDescriptor.getEdition();
-                    String serverVersion = serverDescriptor.getVersion();
-                    String repoVersion = repoDescriptor.getVersion();
-                    int schemaVersion = repoDescriptor.getSchema();
-                    logger.info(String.format("Alfresco started (%s) - v%s; repository v%s; schema %d",
-                            serverEdition, serverVersion, repoVersion, schemaVersion));
-                }
-            }
+            });
         }
     }
-    
+
+    /**
+     * Initialise Descriptors
+     */
+    public void afterPropertiesSet() throws Exception
+    {
+        // initialise server descriptor
+        serverDescriptor = createServerDescriptor();
+    }
+
     /**
      * Create server descriptor
      * 
@@ -257,7 +220,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
          */
         public String getVersionMajor()
         {
-            return "unknown";
+            return "Unknown";
         }
 
         /* (non-Javadoc)
@@ -265,7 +228,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
          */
         public String getVersionMinor()
         {
-            return "unknown";
+            return "Unknown";
         }
 
         /* (non-Javadoc)
@@ -273,7 +236,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
          */
         public String getVersionRevision()
         {
-            return "unknown";
+            return "Unknown";
         }
 
         /* (non-Javadoc)
@@ -281,7 +244,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
          */
         public String getVersionLabel()
         {
-            return "unknown";
+            return "Unknown";
         }
 
         /* (non-Javadoc)
@@ -289,7 +252,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
          */
         public String getVersion()
         {
-            return "unknown (pre 1.0.0 RC2)";
+            return "Unknown (pre 1.0.0 RC2)";
         }
 
         /* (non-Javadoc)
@@ -297,7 +260,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
          */
         public String getEdition()
         {
-            return "unknown";
+            return "Unknown";
         }
 
         /*

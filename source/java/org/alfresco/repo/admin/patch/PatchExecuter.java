@@ -23,6 +23,9 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * This component is responsible for ensuring that patches are applied
@@ -30,7 +33,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class PatchExecuter
+public class PatchExecuter implements ApplicationListener
 {
     private static final String MSG_CHECKING = "patch.executer.checking";
     private static final String MSG_NO_PATCHES_REQUIRED = "patch.executer.no_patches_required";
@@ -97,4 +100,17 @@ public class PatchExecuter
             }
         }
     }
+
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+     */
+    public void onApplicationEvent(ApplicationEvent event)
+    {
+        if (event instanceof ContextRefreshedEvent)
+        {
+            applyOutstandingPatches();
+        }
+    }
+
 }

@@ -27,6 +27,9 @@ import org.alfresco.filesys.server.config.ServerConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -36,7 +39,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * 
  * @author GKSpencer
  */
-public class FTPServer
+public class FTPServer implements ApplicationListener
 {
     private static final Log logger = LogFactory.getLog("org.alfresco.ftp.server");
 
@@ -76,6 +79,29 @@ public class FTPServer
         return (filesysConfig != null && filesysConfig.isFTPServerEnabled());
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+     */
+    public void onApplicationEvent(ApplicationEvent event)
+    {
+        if (event instanceof ContextRefreshedEvent)
+        {
+            try
+            {
+                startServer();
+            }
+            catch (SocketException e)
+            {
+                throw new AlfrescoRuntimeException("Failed to start FTP server", e);
+            }
+            catch (IOException e)
+            {
+                throw new AlfrescoRuntimeException("Failed to start FTP server", e);
+            }
+        }
+    }
+    
     /**
      * Start the FTP server components
      * 

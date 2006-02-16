@@ -29,6 +29,9 @@ import org.alfresco.filesys.smb.server.SMBServer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -38,7 +41,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * 
  * @author GKSpencer
  */
-public class CIFSServer
+public class CIFSServer implements ApplicationListener
 {
     private static final Log logger = LogFactory.getLog("org.alfresco.smb.server");
 
@@ -78,6 +81,29 @@ public class CIFSServer
         return (filesysConfig != null && filesysConfig.isSMBServerEnabled());
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+     */
+    public void onApplicationEvent(ApplicationEvent event)
+    {
+        if (event instanceof ContextRefreshedEvent)
+        {
+            try
+            {
+                startServer();
+            }
+            catch (SocketException e)
+            {
+                throw new AlfrescoRuntimeException("Failed to start CIFS server", e);
+            }
+            catch (IOException e)
+            {
+                throw new AlfrescoRuntimeException("Failed to start CIFS server", e);
+            }
+        }
+    }
+    
     /**
      * Start the CIFS server components
      * 
@@ -237,4 +263,6 @@ public class CIFSServer
         }
         System.exit(1);
     }
+
+
 }

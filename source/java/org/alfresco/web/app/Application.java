@@ -482,7 +482,7 @@ public class Application
          {
             locale = Locale.getDefault();
          }
-         bundle = ResourceBundleWrapper.findSharedResourceBundle(MESSAGE_BUNDLE, locale);
+         bundle = ResourceBundleWrapper.getResourceBundle(MESSAGE_BUNDLE, locale);
          
          session.setAttribute(MESSAGE_BUNDLE, bundle);
       }
@@ -512,7 +512,7 @@ public class Application
          {
             locale = Locale.getDefault();
          }
-         bundle = ResourceBundleWrapper.findSharedResourceBundle(MESSAGE_BUNDLE, locale);
+         bundle = ResourceBundleWrapper.getResourceBundle(MESSAGE_BUNDLE, locale);
          
          session.put(MESSAGE_BUNDLE, bundle);
       }

@@ -66,7 +66,6 @@
 
    <filter>
       <filter-name>Authentication Filter</filter-name>
-      
       <filter-class>org.alfresco.web.app.servlet.AuthenticationFilter</filter-class>
       
       <!-- For Novell IChain support use the following filter -->
@@ -106,7 +105,7 @@
       <url-pattern>/navigate/*</url-pattern>
    </filter-mapping>
    -->
-   
+      
    <filter-mapping>
       <filter-name>WebDAV Authentication Filter</filter-name>
       <url-pattern>/webdav/*</url-pattern>
@@ -160,6 +159,14 @@
    <servlet>
       <servlet-name>WebDAV</servlet-name>
       <servlet-class>org.alfresco.repo.webdav.WebDAVServlet</servlet-class>
+      <init-param>
+         <param-name>store</param-name>
+         <param-value>workspace://SpacesStore</param-value>
+      </init-param>
+      <init-param>
+         <param-name>rootPath</param-name>
+         <param-value>/app:company_home</param-value>
+      </init-param>
       <load-on-startup>5</load-on-startup>
    </servlet>
    

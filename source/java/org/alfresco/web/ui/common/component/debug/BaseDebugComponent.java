@@ -69,16 +69,24 @@ public abstract class BaseDebugComponent extends SelfRenderingComponent
          out.write("<tr><td>");
          out.write(key.toString());
          out.write("</td><td>");
-         String value = session.get(key).toString();
-         if (value == null || value.length() == 0)
+         Object obj = session.get(key);
+         if (obj == null)
          {
-            out.write("&nbsp;");
+            out.write("null");
          }
          else
          {
-            // replace any ; characters with ;<space> as that will help break up long lines
-            value = value.replaceAll(";", "; ");
-            out.write(value);
+            String value = obj.toString();
+            if (value.length() == 0)
+            {
+               out.write("&nbsp;");
+            }
+            else
+            {
+               // replace any ; characters with ;<space> as that will help break up long lines
+               value = value.replaceAll(";", "; ");
+               out.write(value);
+            }
          }
          out.write("</td></tr>");
       }

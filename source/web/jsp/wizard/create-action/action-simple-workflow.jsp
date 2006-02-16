@@ -179,7 +179,7 @@
                                                 </h:selectOneRadio>
                                              </td>
                                              <td style="padding-left:6px;"></td>
-                                             <td valign="top" style="padding-top:10px;">To:</td>
+                                             <td valign="top" style="padding-top:10px;"><h:outputText value="#{msg.to}"/>:</td>
                                              <td style="padding-left:6px;"></td>
                                              <td style="padding-top:6px;">
                                                 <r:spaceSelector id="client-approve-folder"

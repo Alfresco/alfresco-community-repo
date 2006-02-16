@@ -26,6 +26,29 @@
 
 <r:page titleId="title_users">
 
+<script language="JavaScript1.2">
+
+   window.onload = pageLoaded;
+   
+   function pageLoaded()
+   {
+      document.getElementById("users:search-text").focus();
+      updateButtonState();
+   }
+   
+   function updateButtonState()
+   {
+      if (document.getElementById("users:search-text").value.length == 0)
+      {
+         document.getElementById("users:search-btn").disabled = true;
+      }
+      else
+      {
+         document.getElementById("users:search-btn").disabled = false;
+      }
+   }
+</script>
+
 <f:view>
    
    <%-- load a bundle of properties with I18N strings --%>
@@ -123,8 +146,8 @@
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
                               
                               <div style="padding: 6px;" />
-                              <h:inputText value="#{UsersBean.searchCriteria}" size="35" maxlength="1024" />&nbsp;
-                              <h:commandButton value="#{msg.search}" action="#{UsersBean.search}" />&nbsp;
+                              <h:inputText id="search-text" value="#{UsersBean.searchCriteria}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;
+                              <h:commandButton id="search-btn" value="#{msg.search}" action="#{UsersBean.search}" disabled="true" />&nbsp;
                               <h:commandButton value="#{msg.show_all}" action="#{UsersBean.showAll}" />
                               <div style="padding: 6px;" />
                               

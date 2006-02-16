@@ -55,7 +55,7 @@ public class Application
    
    public static final String BEAN_CONFIG_SERVICE = "webClientConfigService";
    public static final String BEAN_DATA_DICTIONARY = "dataDictionary";
-   public static final String BEAN_IMPORTER_BOOTSTRAP = "importerBootstrap";
+   public static final String BEAN_IMPORTER_BOOTSTRAP = "spacesBootstrap";
    
    public static final String MESSAGE_BUNDLE = "alfresco.messages.webclient";
    

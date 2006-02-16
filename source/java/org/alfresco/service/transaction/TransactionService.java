@@ -48,13 +48,12 @@ public interface TransactionService
      * Gets a user transaction that supports transaction propagation.
      * This is like the EJB <b>REQUIRED</b> transaction attribute.
      * 
-     * @param readonly     Set true for a READONLY transaction instance, false otherwise.
+     * @param readOnly     Set true for a READONLY transaction instance, false otherwise.
      *      Note that it is not <i>always</i> possible to force a write transaction if the
      *      system is in read-only mode.
-     * 
      * @return the user transaction
      */
-    UserTransaction getUserTransaction(boolean readonly);
+    UserTransaction getUserTransaction(boolean readOnly);
     
     /**
      * Gets a user transaction that ensures a new transaction is created.
@@ -63,7 +62,21 @@ public interface TransactionService
      * when the transaction is started, the current transaction will be
      * suspended and a new one started.
      * 
-     * @return Returns a non-gating user transaction
+     * @return Returns a non-propagating user transaction
      */
     UserTransaction getNonPropagatingUserTransaction();
+    
+    /**
+     * Gets a user transaction that ensures a new transaction is created.
+     * Any enclosing transaction is not propagated.
+     * This is like the EJB <b>REQUIRES_NEW</b> transaction attribute -
+     * when the transaction is started, the current transaction will be
+     * suspended and a new one started.
+     * 
+     * @param readOnly Set true for a READONLY transaction instance, false otherwise.
+     *      Note that it is not <i>always</i> possible to force a write transaction if the
+     *      system is in read-only mode.
+     * @return Returns a non-gating user transaction
+     */
+    UserTransaction getNonPropagatingUserTransaction(boolean readOnly);
 }

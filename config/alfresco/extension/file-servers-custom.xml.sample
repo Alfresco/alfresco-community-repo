@@ -1,0 +1,39 @@
+<alfresco-config area="file-servers">
+
+   <config evaluator="string-compare" condition="Filesystems">
+
+      <!-- Default share -->
+      <filesystem name="Alfresco">
+
+         <store>workspace://SpacesStore</store>
+         <rootPath>/app:company_home</rootPath>
+
+         <!-- Enable Web client launch shortcut in all folders -->
+         <urlFile>
+
+            <!-- Change the filename as required, keeping the .url extension -->
+            <filename>_Alfresco.url</filename>
+
+            <!-- Change 'localhost' to the name or IP of the Alfresco server -->
+            <webpath>http://localhost:8080/alfresco/</webpath>
+
+         </urlFile>
+
+      </filesystem>
+
+   </config>
+
+   <!-- Allow guest access to file systems -->
+   <config evaluator="string-compare" condition="Filesystem Security">
+
+      <authenticator type="alfresco">
+         <allowGuest/>
+         <!-- Map any unknown user to guest -->
+         <!--
+         <mapUnknownUserToGuest/>
+         -->
+      </authenticator>
+
+   </config>
+
+</alfresco-config>

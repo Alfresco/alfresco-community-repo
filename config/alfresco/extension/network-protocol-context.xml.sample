@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- import further configurations -->
+   <bean id="fileServersConfigSource" class="org.alfresco.config.source.UrlConfigSource">
+      <constructor-arg>
+         <list>
+            <!-- Load the standard config first -->
+            <value>classpath:alfresco/file-servers.xml</value>
+            <!-- Load any overrides after -->
+            <value>classpath:alfresco/extension/file-servers-custom.xml</value>
+         </list>
+      </constructor-arg>
+   </bean>
+
+</beans>

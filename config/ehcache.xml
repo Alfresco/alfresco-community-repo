@@ -16,87 +16,88 @@
         eternal="true"
         timeToLiveSeconds="0" 
         overflowToDisk="false"/>
+    <!-- approx 1MB memory required -->
     <cache 
         name="org.hibernate.cache.UpdateTimestampsCache" 
-        maxElementsInMemory="5000"  <!-- approx 1MB memory required -->
+        maxElementsInMemory="5000"
         eternal="true" 
         overflowToDisk="false"/>
-    <!-- Nodes: Most other objects are cached as a ratio against the number of nodes cached -->
+    <!-- approx 40MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl" 
-        maxElementsInMemory="10000" <!-- approx 40MB memory required -->
+        maxElementsInMemory="10000"
         eternal="true" 
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         />
-    <!-- node:node status -->
+    <!-- approx 20MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeStatusImpl" 
-        maxElementsInMemory="5000"  <!-- approx 20MB memory required -->
+        maxElementsInMemory="5000"
         eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         />
-    <!-- node:aspects -->
+    <!-- approx 40MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.aspects" 
-        maxElementsInMemory="10000"   <!-- approx 40MB memory required -->
+        maxElementsInMemory="10000"
         eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         />
-    <!-- node:properties -->
+    <!-- approx 50MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.properties" 
-        maxElementsInMemory="10000"    <!-- approx 50MB memory required -->
+        maxElementsInMemory="10000"
         eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         />
-    <!-- node:child assocs set -->
+    <!-- approx 50MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.childAssocs" 
-        maxElementsInMemory="25000"    <!-- approx 50MB memory required -->
+        maxElementsInMemory="25000"
         eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         />
-    <!-- node:parent assocs set -->
+    <!-- approx 40MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.parentAssocs" 
-        maxElementsInMemory="10000"    <!-- approx 40MB memory required -->
+        maxElementsInMemory="10000"
         eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         />
-    <!-- node:child assocs -->
+    <!-- approx 40MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.ChildAssocImpl" 
-        maxElementsInMemory="25000"    <!-- approx 40MB memory required -->
+        maxElementsInMemory="25000"
         eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         />
-    <!-- node:source node assocs set -->
+    <!-- approx 20MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.sourceNodeAssocs" 
-        maxElementsInMemory="5000"     <!-- approx 20MB memory required -->
+        maxElementsInMemory="5000"
         eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         />
-    <!-- node:target node assocs set -->
+    <!-- approx 20MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.targetNodeAssocs" 
-        maxElementsInMemory="5000"     <!-- approx 20MB memory required -->
+        maxElementsInMemory="5000"
         eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
@@ -129,39 +130,44 @@
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         />
-    <!-- applied patches -->
+    <!-- approx 0.1MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.AppliedPatchImpl" 
-        maxElementsInMemory="100"          <!-- approx 0.1MB memory required -->
+        maxElementsInMemory="100"
         eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="60" 
         overflowToDisk="false" 
         />
     <!-- Permission related caches -->
+    <!-- approx 40MB memory required -->
     <cache 
         name="org.alfresco.repo.security.permissions.impl.hibernate.RecipientImpl" 
-        maxElementsInMemory="10000"        <!-- approx 40MB memory required -->
+        maxElementsInMemory="10000"        
         eternal="true" 
         overflowToDisk="false"/>
+    <!-- approx 2MB memory required -->
     <cache 
         name="org.alfresco.repo.security.permissions.impl.hibernate.PermissionReferenceImpl" 
-        maxElementsInMemory="500"          <!-- approx 2MB memory required -->
+        maxElementsInMemory="500"          
         eternal="true" 
         overflowToDisk="false"/>
+    <!-- approx 35MB memory required -->
     <cache 
         name="org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntryImpl" 
-        maxElementsInMemory="25000"        <!-- approx 35MB memory required -->
+        maxElementsInMemory="25000"        
         eternal="true" 
         overflowToDisk="false"/>
+    <!-- approx 40MB memory required -->
     <cache 
         name="org.alfresco.repo.security.permissions.impl.hibernate.NodePermissionEntryImpl" 
-        maxElementsInMemory="10000"        <!-- approx 40MB memory required -->
+        maxElementsInMemory="10000"        
         eternal="true" 
         overflowToDisk="false"/>
+    <!-- approx 40MB memory required -->
     <cache 
         name="org.alfresco.repo.security.permissions.impl.hibernate.NodePermissionEntryImpl.permissionEntries" 
-        maxElementsInMemory="10000"       <!-- approx 40MB memory required -->
+        maxElementsInMemory="10000"
         eternal="true" 
         overflowToDisk="false"/>
     <cache 

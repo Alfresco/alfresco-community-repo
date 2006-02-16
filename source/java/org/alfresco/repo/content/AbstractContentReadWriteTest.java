@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Date;
 import java.util.Set;
 
 import javax.transaction.UserTransaction;
@@ -531,6 +532,8 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         Set<String> contentUrls = store.getUrls();
         String contentUrl = writer.getContentUrl();
         assertTrue("Writer URL not listed by store", contentUrls.contains(contentUrl));
+
+        Date yesterday = new Date(System.currentTimeMillis() - 3600L * 1000L * 24L);
         
         // write some data
         writer.putContent("The quick brown fox...");
@@ -538,6 +541,10 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         // check again
         contentUrls = store.getUrls();
         assertTrue("Writer URL not listed by store", contentUrls.contains(contentUrl));
+        
+        // check that the query for content created before this time yesterday doesn't return the URL
+        contentUrls = store.getUrls(null, yesterday);
+        assertFalse("URL was younger than required, but still shows up", contentUrls.contains(contentUrl));
         
         // delete the content
         boolean deleted = store.delete(contentUrl);

@@ -18,6 +18,7 @@ package org.alfresco.repo.content.filestore;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -268,11 +269,11 @@ public class FileContentStore extends AbstractContentStore
         }
     }
 
-    public Set<String> getUrls()
+    public Set<String> getUrls(Date createdAfter, Date createdBefore)
     {
         // recursively get all files within the root
         Set<String> contentUrls = new HashSet<String>(1000);
-        getUrls(rootDirectory, contentUrls);
+        getUrls(rootDirectory, contentUrls, createdAfter, createdBefore);
         // done
         if (logger.isDebugEnabled())
         {
@@ -286,9 +287,11 @@ public class FileContentStore extends AbstractContentStore
     /**
      * @param directory the current directory to get the files from
      * @param contentUrls the list of current content URLs to add to
+     * @param createdAfter only get URLs for content create after this date
+     * @param createdBefore only get URLs for content created before this date
      * @return Returns a list of all files within the given directory and all subdirectories
      */
-    private void getUrls(File directory, Set<String> contentUrls)
+    private void getUrls(File directory, Set<String> contentUrls, Date createdAfter, Date createdBefore)
     {
         File[] files = directory.listFiles();
         if (files == null)
@@ -301,10 +304,22 @@ public class FileContentStore extends AbstractContentStore
             if (file.isDirectory())
             {
                 // we have a subdirectory - recurse
-                getUrls(file, contentUrls);
+                getUrls(file, contentUrls, createdAfter, createdBefore);
             }
             else
             {
+                // check the created date of the file
+                long lastModified = file.lastModified();
+                if (createdAfter != null && lastModified < createdAfter.getTime())
+                {
+                    // file is too old
+                    continue;
+                }
+                else if (createdBefore != null && lastModified > createdBefore.getTime())
+                {
+                    // file is too young
+                    continue;
+                }
                 // found a file - create the URL
                 String contentUrl = makeContentUrl(file);
                 contentUrls.add(contentUrl);

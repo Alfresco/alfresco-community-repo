@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.Date;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -108,13 +109,23 @@ public interface ContentStore
     public ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl) throws ContentIOException;
 
     /**
-     * Get a set of all content in the store
+     * Get all URLs for the store, regardless of creation time.
      * 
+     * @see #getUrls(Date, Date)
+     */
+    public Set<String> getUrls() throws ContentIOException;
+
+    /**
+     * Get a set of all content URLs in the store.  This indicates all content
+     * available for reads.
+     * 
+     * @param createdAfter all URLs returned must have been created after this date.  May be null.
+     * @param createdBefore all URLs returned must have been created before this date.  May be null.
      * @return Returns a complete set of the unique URLs of all available content
      *      in the store
      * @throws ContentIOException
      */
-    public Set<String> getUrls() throws ContentIOException;
+    public Set<String> getUrls(Date createdAfter, Date createdBefore) throws ContentIOException;
     
     /**
      * Deletes the content at the given URL.

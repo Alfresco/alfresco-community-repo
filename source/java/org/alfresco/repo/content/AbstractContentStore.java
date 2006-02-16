@@ -18,6 +18,7 @@ package org.alfresco.repo.content;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -111,5 +112,10 @@ public abstract class AbstractContentStore implements ContentStore
                     "   content url: " + contentUrl);
         }
         return path;
+    }
+
+    public final Set<String> getUrls() throws ContentIOException
+    {
+        return getUrls(null, null);
     }
 }

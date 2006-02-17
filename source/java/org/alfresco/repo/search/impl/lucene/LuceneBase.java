@@ -860,6 +860,20 @@ public abstract class LuceneBase implements Lockable
         getLuceneIndexLock().getReadLock(store);
     }
 
+    public static boolean isWriteLocked(String directory) throws IOException
+    {
+        Directory dir = FSDirectory.getDirectory(directory, false);
+        boolean result = isWriteLocked(dir);
+        dir.close();
+        return result;
+    }
+
+    public static boolean isWriteLocked(Directory directory) throws IOException
+    {
+        return directory.makeLock(IndexWriter.WRITE_LOCK_NAME).isLocked();
+
+    }
+
     private int writeLockCount = 0;
 
     public void getWriteLock() throws LuceneIndexException
@@ -870,11 +884,18 @@ public abstract class LuceneBase implements Lockable
         // We must have the lock
         try
         {
-            if (((writeLockCount == 1) && IndexReader.indexExists(baseDir) && (IndexReader.isLocked(baseDir.getPath()))))
+            if (((writeLockCount == 1) && IndexReader.indexExists(baseDir) && (LuceneBase.isWriteLocked(baseDir
+                    .getPath()))))
             {
                 Directory dir = FSDirectory.getDirectory(baseDir, false);
-                IndexReader.unlock(dir);
-                dir.close();
+                try
+                {
+                    dir.makeLock(IndexWriter.WRITE_LOCK_NAME).release();
+                }
+                finally
+                {
+                    dir.close();
+                }
                 s_logger.warn("Releasing unexpected lucene index write lock for " + baseDir);
                 StackTraceElement[] trace = Thread.currentThread().getStackTrace();
                 for (StackTraceElement el : trace)
@@ -902,12 +923,18 @@ public abstract class LuceneBase implements Lockable
         {
             try
             {
-                if (((writeLockCount == 1) && IndexReader.indexExists(baseDir) && (IndexReader.isLocked(baseDir
+                if (((writeLockCount == 1) && IndexReader.indexExists(baseDir) && (LuceneBase.isWriteLocked(baseDir
                         .getPath()))))
                 {
                     Directory dir = FSDirectory.getDirectory(baseDir, false);
-                    IndexReader.unlock(dir);
-                    dir.close();
+                    try
+                    {
+                        dir.makeLock(IndexWriter.WRITE_LOCK_NAME).release();
+                    }
+                    finally
+                    {
+                        dir.close();
+                    }
                 }
             }
             catch (IOException e)

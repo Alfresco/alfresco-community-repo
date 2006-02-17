@@ -239,6 +239,7 @@ public class CifsHelper
         {
             long modified = DefaultTypeConverter.INSTANCE.longValue(modifiedDate);
             fileInfo.setModifyDateTime(modified);
+            fileInfo.setAccessDateTime(modified);
         }
         // name
         String name = fileFolderInfo.getName();
@@ -252,6 +253,11 @@ public class CifsHelper
         if ( permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
             fileInfo.setFileAttributes(fileInfo.getFileAttributes() + FileAttribute.ReadOnly);
 
+        // Set the normal file attribute if no other attributes are set
+        
+        if ( fileInfo.getFileAttributes() == 0)
+            fileInfo.setFileAttributes(FileAttribute.NTNormal);
+        
         // Debug
         
         if (logger.isDebugEnabled())

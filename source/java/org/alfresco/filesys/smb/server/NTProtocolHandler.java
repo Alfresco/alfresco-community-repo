@@ -5687,7 +5687,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
         // Build the NT create andX response
 
-        outPkt.setParameterCount((flags & WinNT.ExtendedResponse) != 0 ? 42 : 34);
+        outPkt.setParameterCount( 34);
 
         outPkt.setAndXCommand(0xFF);
         outPkt.setParameter(1, 0); // AndX offset
@@ -5696,7 +5696,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
         // Fake the oplock for certain file types
         
-        boolean fakeOpLocks = false;
+        boolean fakeOpLocks = FakeOpLocks;
         String fname = params.getPath().toUpperCase();
         
         if ( fname.endsWith( ".URL")){
@@ -5778,7 +5778,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
         prms.packLong(fileSize); // Allocation size
         prms.packLong(netFile.getFileSize()); // End of file
         prms.packWord(0); // File type - disk file
-        prms.packWord(0); // Device state
+        prms.packWord((flags & WinNT.ExtendedResponse) != 0 ? 7 : 0); // Device state
         prms.packByte(netFile.isDirectory() ? 1 : 0);
 
         prms.packWord(0); // byte count = 0

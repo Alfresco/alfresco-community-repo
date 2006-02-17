@@ -44,7 +44,7 @@ public class ImporterComponentTest extends BaseSpringTest
         nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
         importerService = (ImporterService)applicationContext.getBean(ServiceRegistry.IMPORTER_SERVICE.getLocalName());
         
-        importerBootstrap = (ImporterBootstrap)applicationContext.getBean("importerBootstrap");
+        importerBootstrap = (ImporterBootstrap)applicationContext.getBean("spacesBootstrap");
         
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
         

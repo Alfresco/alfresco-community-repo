@@ -60,19 +60,19 @@ public class SpaceDetailsBean
    private static final String OUTCOME_RETURN = "showSpaceDetails";
 
    /** BrowseBean instance */
-   private BrowseBean browseBean;
+   protected BrowseBean browseBean;
    
    /** The NavigationBean bean reference */
-   private NavigationBean navigator;
+   protected NavigationBean navigator;
    
    /** PermissionService bean reference */
-   private PermissionService permissionService;
+   protected PermissionService permissionService;
    
    /** OwnableService bean reference */
-   private OwnableService ownableService;
+   protected OwnableService ownableService;
    
    /** NodeServuce bean reference */
-   private NodeService nodeService;
+   protected NodeService nodeService;
    
    /** Selected template Id */
    private String template;

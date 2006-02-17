@@ -125,6 +125,11 @@
    </component>
    
    <component>
+      <component-type>org.alfresco.faces.debug.RepositoryProperties</component-type>
+      <component-class>org.alfresco.web.ui.common.component.debug.UIRepositoryProperties</component-class>
+   </component>
+   
+   <component>
       <component-type>org.alfresco.faces.GenericPicker</component-type>
       <component-class>org.alfresco.web.ui.common.component.UIGenericPicker</component-class>
    </component>

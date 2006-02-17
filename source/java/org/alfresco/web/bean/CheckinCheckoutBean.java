@@ -938,14 +938,14 @@ public class CheckinCheckoutBean
    private NodeRef selectedSpaceId = null;
    
    /** The BrowseBean to be used by the bean */
-   private BrowseBean browseBean;
+   protected BrowseBean browseBean;
    
    /** The NodeService to be used by the bean */
-   private NodeService nodeService;
+   protected NodeService nodeService;
    
    /** The VersionOperationsService to be used by the bean */
-   private CheckOutCheckInService versionOperationsService;
+   protected CheckOutCheckInService versionOperationsService;
    
    /** The ContentService to be used by the bean */
-   private ContentService contentService;
+   protected ContentService contentService;
 }

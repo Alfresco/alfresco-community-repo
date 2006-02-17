@@ -323,13 +323,13 @@ public class ClipboardBean
    private static final String MSG_ERROR_PASTE = "error_paste";
    
    /** The NodeService to be used by the bean */
-   private NodeService nodeService;
+   protected NodeService nodeService;
    
    /** The NodeOperationsService to be used by the bean */
-   private CopyService nodeOperationsService;
+   protected CopyService nodeOperationsService;
    
    /** The NavigationBean reference */
-   private NavigationBean navigator;
+   protected NavigationBean navigator;
    
    /** Current state of the clipboard items */
    private List<ClipboardItem> items = new ArrayList<ClipboardItem>(4);

@@ -1499,22 +1499,22 @@ public class AdvancedSearchBean
    private static final String NO_SELECTION = "NONE";
    
    /** The NodeService to be used by the bean */
-   private NodeService nodeService;
+   protected NodeService nodeService;
    
    /** The NamespaceService to be used by the bean */
-   private NamespaceService namespaceService;
+   protected NamespaceService namespaceService;
    
    /** The NavigationBean reference */
-   private NavigationBean navigator;
+   protected NavigationBean navigator;
    
    /** SearchService bean reference */
-   private SearchService searchService;
+   protected SearchService searchService;
    
    /** PermissionService */
-   private PermissionService permissionService;
+   protected PermissionService permissionService;
    
    /** Client Config reference */
-   private AdvancedSearchConfigElement searchConfigElement = null;
+   protected AdvancedSearchConfigElement searchConfigElement = null;
    
    /** Progressive panel UI state */
    private Map<String, Boolean> panels = new HashMap(5, 1.0f);

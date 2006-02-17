@@ -53,8 +53,8 @@ public class RulesBean
    private static Log logger = LogFactory.getLog(RulesBean.class);
    
    private String viewMode = INHERITED;
-   private BrowseBean browseBean;
-   private RuleService ruleService;
+   protected BrowseBean browseBean;
+   protected RuleService ruleService;
    private List<WrappedRule> rules;
    private Rule currentRule;
    private UIRichList richList;

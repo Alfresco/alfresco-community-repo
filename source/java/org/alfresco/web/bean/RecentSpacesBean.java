@@ -48,10 +48,10 @@ public class RecentSpacesBean implements IContextListener
    private static Logger logger = Logger.getLogger(RecentSpacesBean.class);
    
    /** The NavigationBean reference */
-   private NavigationBean navigator;
+   protected NavigationBean navigator;
    
    /** The BrowseBean reference */
-   private BrowseBean browseBean;
+   protected BrowseBean browseBean;
    
    /** Maximum number of recent spaces to show */
    private Integer maxRecentSpaces = null;

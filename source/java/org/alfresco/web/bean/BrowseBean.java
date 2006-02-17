@@ -1566,32 +1566,32 @@ public class BrowseBean implements IContextListener
    private static Logger logger = Logger.getLogger(BrowseBean.class);
    
    /** The NodeService to be used by the bean */
-   private NodeService nodeService;
+   protected NodeService nodeService;
    
    /** The SearchService to be used by the bean */
-   private SearchService searchService;
+   protected SearchService searchService;
    
    /** The LockService to be used by the bean */
-   private LockService lockService;
+   protected LockService lockService;
    
    /** The NavigationBean bean reference */
-   private NavigationBean navigator;
+   protected NavigationBean navigator;
    
    /** The DictionaryService bean reference */
-   private DictionaryService dictionaryService;
+   protected DictionaryService dictionaryService;
    
    /** The file folder service */
-   private FileFolderService fileFolderService;
+   protected FileFolderService fileFolderService;
 
    /** Views configuration object */
-   private ViewsConfigElement viewsConfig = null;
+   protected ViewsConfigElement viewsConfig = null;
    
    /** Listeners for Node events */
    private Set<NodeEventListener> nodeEventListeners = null;
    
    /** Component references */
-   private UIRichList spacesRichList;
-   private UIRichList contentRichList;
+   protected UIRichList spacesRichList;
+   protected UIRichList contentRichList;
    private UIStatusMessage statusMessage;
    
    /** Transient lists of container and content nodes for display */

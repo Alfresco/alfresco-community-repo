@@ -644,22 +644,22 @@ public class NavigationBean
    private static final String ERROR_DELETED_FOLDER = "error_deleted_folder";
    
    /** The NodeService to be used by the bean */
-   private NodeService nodeService;
+   protected NodeService nodeService;
    
    /** The SearchService to be used by the bean */
-   private SearchService searchService;
+   protected SearchService searchService;
    
    /** NamespaceService bean reference */
-   private NamespaceService namespaceService;
+   protected NamespaceService namespaceService;
    
    /** CIFSServer bean reference */
-   private CIFSServer cifsServer;
+   protected CIFSServer cifsServer;
    
    /** CIFS content disk driver bean reference */
-   private ContentDiskInterface contentDiskDriver;
+   protected ContentDiskInterface contentDiskDriver;
    
    /** Client configuration object */
-   private ClientConfigElement clientConfig = null;
+   protected ClientConfigElement clientConfig = null;
    
    /** Cached path to our CIFS server and top level node DIR */
    private String cifsServerPath;

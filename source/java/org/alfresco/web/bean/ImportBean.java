@@ -59,10 +59,10 @@ public class ImportBean
    private static final String MSG_ERROR_NO_FILE = "error_import_no_file";
    private static final String MSG_ERROR_EMPTY_FILE = "error_import_empty_file";
    
-   private BrowseBean browseBean;
-   private NodeService nodeService;
-   private ActionService actionService;
-   private ContentService contentService;
+   protected BrowseBean browseBean;
+   protected NodeService nodeService;
+   protected ActionService actionService;
+   protected ContentService contentService;
    
    private File file;
    private String fileName;

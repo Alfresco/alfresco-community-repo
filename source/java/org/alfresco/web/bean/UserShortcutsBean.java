@@ -52,10 +52,10 @@ public class UserShortcutsBean
    private static Logger logger = Logger.getLogger(UserShortcutsBean.class);
    
    /** The NodeService to be used by the bean */
-   private NodeService nodeService;
+   protected NodeService nodeService;
    
    /** The BrowseBean reference */
-   private BrowseBean browseBean;
+   protected BrowseBean browseBean;
    
    /** List of shortcut nodes */
    private List<Node> shortcuts = null;

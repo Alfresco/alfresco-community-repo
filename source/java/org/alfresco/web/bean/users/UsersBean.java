@@ -61,19 +61,19 @@ public class UsersBean implements IContextListener
    private static final String DEFAULT_OUTCOME = "manageUsers";
 
    /** NodeService bean reference */
-   private NodeService nodeService;
+   protected NodeService nodeService;
 
    /** SearchService bean reference */
-   private SearchService searchService;
+   protected SearchService searchService;
    
    /** AuthenticationService bean reference */
-   private AuthenticationService authenticationService;
+   protected AuthenticationService authenticationService;
 
    /** PersonService bean reference */
-   private PersonService personService;
+   protected PersonService personService;
    
    /** Component reference for Users RichList control */
-   private UIRichList usersRichList;
+   protected UIRichList usersRichList;
 
    /** action context */
    private Node person = null;

@@ -63,10 +63,10 @@ public class DocumentPropertiesBean
 {
    private static final String TEMP_PROP_MIMETYPE = "mimetype";
    
-   private NodeService nodeService;
-   private FileFolderService fileFolderService;
-   private DictionaryService dictionaryService;
-   private BrowseBean browseBean;
+   protected NodeService nodeService;
+   protected FileFolderService fileFolderService;
+   protected DictionaryService dictionaryService;
+   protected BrowseBean browseBean;
    private List<SelectItem> contentTypes;
    private Node editableNode;
    private Boolean hasOtherProperties;

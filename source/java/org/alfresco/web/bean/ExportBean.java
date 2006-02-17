@@ -52,9 +52,9 @@ public class ExportBean
    
    private static final String MSG_ERROR = "error_export";
    
-   private BrowseBean browseBean;
-   private NodeService nodeService;
-   private ActionService actionService;
+   protected BrowseBean browseBean;
+   protected NodeService nodeService;
+   protected ActionService actionService;
    
    private String packageName;
    private String encoding = "UTF-8";

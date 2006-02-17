@@ -1522,6 +1522,31 @@
    </tag>
    
    <tag>
+      <name>repositoryProperties</name>
+      <tag-class>org.alfresco.web.ui.common.tag.debug.RepositoryPropertiesTag</tag-class>
+      <body-content>JSP</body-content>
+      <description>Displays the Alfresco Repository properties in a table</description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>title</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
+   <tag>
       <name>genericPicker</name>
       <tag-class>org.alfresco.web.ui.common.tag.GenericPickerTag</tag-class>
       <body-content>JSP</body-content>

@@ -129,6 +129,12 @@
                                        	<a:httpRequestHeaders id="hrh" />
                                        </a:panel>
                                        <br/>
+                                       <a:panel label="#{msg.repository_props}" id="repo-props" border="white" bgcolor="white" 
+                                                titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true" styleClass="mainSubTitle"
+                                                expanded="false">
+                                       	<a:repositoryProperties id="rp" />
+                                       </a:panel>
+                                       <br/>
                                        <a:panel label="#{msg.system_props}" id="system-props" border="white" bgcolor="white" 
                                                 titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true" styleClass="mainSubTitle"
                                                 expanded="false">

@@ -66,12 +66,12 @@ public class CategoriesBean implements IContextListener
    private static Logger logger = Logger.getLogger(CategoriesBean.class);
    
    /** The NodeService to be used by the bean */
-   private NodeService nodeService;
+   protected NodeService nodeService;
    
-   private CategoryService categoryService;
+   protected CategoryService categoryService;
    
    /** Component references */
-   private UIRichList categoriesRichList;
+   protected UIRichList categoriesRichList;
    
    /** Currently visible category Node*/
    private Node category = null;

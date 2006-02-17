@@ -408,17 +408,17 @@ public class LoginBean
    private String language = null;
 
    /** PersonService bean reference */
-   private PersonService personService;
+   protected PersonService personService;
    
    /** AuthenticationService bean reference */
-   private AuthenticationService authenticationService;
+   protected AuthenticationService authenticationService;
 
    /** NodeService bean reference */
-   private NodeService nodeService;
+   protected NodeService nodeService;
 
    /** The BrowseBean reference */
-   private BrowseBean browseBean;
+   protected BrowseBean browseBean;
    
    /** The NavigationBean bean reference */
-   private NavigationBean navigator;
+   protected NavigationBean navigator;
 }

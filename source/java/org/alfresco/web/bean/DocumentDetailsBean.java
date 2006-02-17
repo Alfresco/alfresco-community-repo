@@ -80,13 +80,13 @@ public class DocumentDetailsBean
 
    private static Logger logger = Logger.getLogger(DocumentDetailsBean.class);
    
-   private BrowseBean browseBean;
-   private NodeService nodeService;
-   private LockService lockService;
-   private CopyService copyService;
-   private VersionService versionService;
-   private OwnableService ownableService;
-   private NavigationBean navigator;
+   protected BrowseBean browseBean;
+   protected NodeService nodeService;
+   protected LockService lockService;
+   protected CopyService copyService;
+   protected VersionService versionService;
+   protected OwnableService ownableService;
+   protected NavigationBean navigator;
    
    private Map<String, Boolean> panels = new HashMap<String, Boolean>(5, 1.0f);
    

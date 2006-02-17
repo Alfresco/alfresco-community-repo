@@ -52,7 +52,7 @@ public abstract class BaseDebugComponent extends SelfRenderingComponent
       }
       
       ResponseWriter out = context.getResponseWriter();
-      out.write("<table cellpadding='3' cellspacing='3' border='1'>");
+      out.write("<table cellpadding='2' cellspacing='2' border='0' style='border: 1px solid #aaaaaa;border-collapse: collapse;border-spacing: 0px;'>");
       
       if (this.getTitle() != null)
       {
@@ -61,12 +61,12 @@ public abstract class BaseDebugComponent extends SelfRenderingComponent
          out.write("</td></tr>");
       }
       
-      out.write("<tr><th align='left'>Property</th><th align='left'>Value</th></tr>");
+      out.write("<tr style='border: 1px solid #dddddd;'><th align='left'>Property</th><th align='left'>Value</th></tr>");
       
       Map session = getDebugData();
       for (Object key : session.keySet())
       {
-         out.write("<tr><td>");
+         out.write("<tr style='border: 1px solid #dddddd;'><td>");
          out.write(key.toString());
          out.write("</td><td>");
          Object obj = session.get(key);

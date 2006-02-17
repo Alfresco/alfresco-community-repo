@@ -84,33 +84,33 @@ public class ForumsBean implements IContextListener, NodeEventListener
    private static final String PAGE_NAME_TOPIC = "topic"; 
    
    /** The NodeService to be used by the bean */
-   private NodeService nodeService;
+   protected NodeService nodeService;
    
    /** The ContentService to be used by the bean */
-   private ContentService contentService;
+   protected ContentService contentService;
    
    /** The DictionaryService bean reference */
-   private DictionaryService dictionaryService;
+   protected DictionaryService dictionaryService;
    
    /** The SearchService bean reference. */
-   private SearchService searchService;
+   protected SearchService searchService;
    
    /** The NamespaceService bean reference. */
-   private NamespaceService namespaceService;
+   protected NamespaceService namespaceService;
    
    /** The browse bean */
-   private BrowseBean browseBean;
+   protected BrowseBean browseBean;
    
    /** The NavigationBean bean reference */
-   private NavigationBean navigator;
+   protected NavigationBean navigator;
    
    /** Views configuration object */
-   private ViewsConfigElement viewsConfig = null;
+   protected ViewsConfigElement viewsConfig = null;
    
    /** Component references */
-   private UIRichList forumsRichList;
-   private UIRichList forumRichList;
-   private UIRichList topicRichList;
+   protected UIRichList forumsRichList;
+   protected UIRichList forumRichList;
+   protected UIRichList topicRichList;
 
    /** Node lists */
    private List<Node> forums;

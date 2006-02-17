@@ -103,10 +103,6 @@ public class PersonTest extends BaseSpringTest
                 System.out.println("Size ("+size+") : "+((end-start)/1000000.0f));
             }
         }
-       
-        
-        
-        
     }
     
     public void testCreateMissingPeople1()

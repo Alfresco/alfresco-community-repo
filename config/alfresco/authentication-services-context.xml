@@ -82,26 +82,7 @@
             <ref bean="transactionManager" />
         </property>
         <property name="target">
-           <bean  class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">
-              <property name="nodeService">
-                  <ref bean="nodeService" />
-              </property>
-              <property name="dictionaryService">
-                  <ref bean="dictionaryService" />
-              </property>
-              <property name="namespaceService">
-                  <ref bean="namespaceService" />
-              </property>
-              <property name="searchService">
-                  <ref bean="searchService" />
-              </property>
-              <property name="userNamesAreCaseSensitive">
-                 <value>${user.name.caseSensitive}</value>
-              </property>
-              <property name="passwordEncoder">
-                  <ref bean="passwordEncoder" />
-              </property>
-           </bean>
+            <ref bean="authenticationDao"/>
         </property>
         <property name="transactionAttributes">
             <props>
@@ -110,6 +91,27 @@
         </property>
     </bean>
     
+    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">
+       <property name="nodeService">
+           <ref bean="nodeService" />
+       </property>
+       <property name="dictionaryService">
+           <ref bean="dictionaryService" />
+       </property>
+       <property name="namespaceService">
+           <ref bean="namespaceService" />
+       </property>
+       <property name="searchService">
+           <ref bean="searchService" />
+       </property>
+       <property name="userNamesAreCaseSensitive">
+          <value>${user.name.caseSensitive}</value>
+       </property>
+       <property name="passwordEncoder">
+           <ref bean="passwordEncoder" />
+       </property>
+    </bean>
+
     <!-- The DAO also acts as a salt provider.                              -->
     
     <alias alias="saltSource" name="alfDaoImpl"/>
@@ -222,71 +224,56 @@
 
     <!-- The person service.                                                -->
 
-    <bean id="personService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.service.cmr.security.PersonService</value>
+    <bean id="personService" class="org.alfresco.repo.security.person.PersonServiceImpl">
+		<property name="nodeService">
+		    <ref bean="nodeService" />
+		</property>
+		<property name="searchService">
+		    <ref bean="searchService" />
+		</property>
+		<property name="permissionServiceSPI">
+			<ref bean="permissionServiceImpl" />
+		</property>
+        <property name="authorityService">
+           <ref bean="authorityService" />
         </property>
-        <property name="transactionManager">
-            <ref bean="transactionManager" />
+		<property name="namespacePrefixResolver">
+			<ref bean="namespaceService" />
+		</property>
+        <!-- Configurable properties.                                 -->
+        <!--                                                          -->
+        <!-- TODO:                                                    -->
+        <!-- Add support for creating real home spaces adn setting    -->
+        <!-- permissions on the hame space and people created.        -->
+        <!--                                                          -->
+        <!-- The store in which people are persisted.                 -->
+        <property name="storeUrl">
+           <value>${spaces.store}</value>
         </property>
-        <property name="target">
-           <bean id="personServiceImpl" class="org.alfresco.repo.security.person.PersonServiceImpl">
-              <property name="nodeService">
-                 <ref bean="nodeService" />
-              </property>
-              <property name="searchService">
-                 <ref bean="searchService" />
-              </property>
-			  <property name="permissionServiceSPI">
-	            <ref bean="permissionServiceImpl" />
-	          </property>
-              <property name="authorityService">
-                 <ref bean="authorityService" />
-              </property>
-              <property name="namespacePrefixResolver">
-                 <ref bean="namespaceService" />
-              </property>
-              <!-- Configurable properties.                                 -->
-              <!--                                                          -->
-              <!-- TODO:                                                    -->
-              <!-- Add support for creating real home spaces adn setting    -->
-              <!-- permissions on the hame space and people created.        -->
-              <!--                                                          -->
-              <!-- The store in which people are persisted.                 -->
-              <property name="storeUrl">
-                 <value>${spaces.store}</value>
-              </property>
-              <!-- The path to the company home space, used to set the      -->
-              <!-- default home space for users that are created if         -->
-              <!-- missing.                                                 --> 
-              <property name="companyHomePath">
-                 <value>/${spaces.company_home.childname}</value>
-              </property>
-              <!-- Some authentication mechanisms may need to create people -->
-              <!-- in the repository on demand. This enables that feature.  -->
-              <!-- If dsiabled an error will be generated for missing       -->
-              <!-- people. If enabled then a person will be created and     -->
-              <!-- persisted.                                               -->
-              <!--                                                          -->
-              <!-- This value should be false or only true if the           -->
-              <!-- repository is mutable; set from the property             -->
-              <!-- ${server.transaction.allow-writes}                       -->
-              <property name="createMissingPeople">
-                 <value>${server.transaction.allow-writes}</value>
-              </property>
-              <!-- Set is user names are case sensitive - taken from the    -->
-              <!-- repository wide setting - you are advised not to change  -->
-              <!-- this setting.                                            -->
-              <!-- This value should be ${user.name.caseSensitive}          -->
-              <property name="userNamesAreCaseSensitive">
-                 <value>${user.name.caseSensitive}</value>
-              </property>
-           </bean>
+        <!-- The path to the company home space, used to set the      -->
+        <!-- default home space for users that are created if         -->
+        <!-- missing.                                                 --> 
+        <property name="companyHomePath">
+           <value>/${spaces.company_home.childname}</value>
         </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
+        <!-- Some authentication mechanisms may need to create people -->
+        <!-- in the repository on demand. This enables that feature.  -->
+        <!-- If dsiabled an error will be generated for missing       -->
+        <!-- people. If enabled then a person will be created and     -->
+        <!-- persisted.                                               -->
+        <!--                                                          -->
+        <!-- This value should be false or only true if the           -->
+        <!-- repository is mutable; set from the property             -->
+        <!-- ${server.transaction.allow-writes}                       -->
+        <property name="createMissingPeople">
+           <value>${server.transaction.allow-writes}</value>
+        </property>
+        <!-- Set is user names are case sensitive - taken from the    -->
+        <!-- repository wide setting - you are advised not to change  -->
+        <!-- this setting.                                            -->
+        <!-- This value should be ${user.name.caseSensitive}          -->
+        <property name="userNamesAreCaseSensitive">
+           <value>${user.name.caseSensitive}</value>
         </property>
     </bean>
 

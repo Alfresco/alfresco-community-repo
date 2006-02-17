@@ -339,7 +339,7 @@ public class UserShortcutsBean
             // view details for document
             this.browseBean.setupContentAction(selectedNode.getId(), true);
             FacesContext fc = FacesContext.getCurrentInstance();
-            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "showDocDetails");
+            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:showDocDetails");
          }
       }
       catch (InvalidNodeRefException refErr)

@@ -121,12 +121,12 @@
                                     </a:actionLink>
                                  </r:permissionEvaluator>
                                  
-                                 <a:booleanEvaluator value="#{SpaceDetailsBean.beingDiscussed == true}">
+                                 <a:booleanEvaluator value='#{SpaceDetailsBean.space.properties["beingDiscussed"] == true}'>
                                     <a:actionLink value="#{msg.discuss}" image="/images/icons/forum.gif" actionListener="#{ForumsBean.discuss}">
                                        <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                     </a:actionLink>
                                  </a:booleanEvaluator>
-                                 <a:booleanEvaluator value="#{SpaceDetailsBean.beingDiscussed == false}">
+                                 <a:booleanEvaluator value='#{SpaceDetailsBean.space.properties["beingDiscussed"] == false}'>
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="CreateChildren">
    	                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
    	                                    <f:param name="id" value="#{SpaceDetailsBean.id}" />

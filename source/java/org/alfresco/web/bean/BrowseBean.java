@@ -229,6 +229,10 @@ public class BrowseBean implements IContextListener
     */
    public void setActionSpace(Node actionSpace)
    {
+      for (NodeEventListener listener : getNodeEventListeners())
+      {
+         listener.created(actionSpace, actionSpace.getType());
+      }
       this.actionSpace = actionSpace;
    }
    
@@ -245,6 +249,10 @@ public class BrowseBean implements IContextListener
     */
    public void setDocument(Node document)
    {
+      for (NodeEventListener listener : getNodeEventListeners())
+      {
+         listener.created(document, document.getType());
+      }
       this.document = document;
    }
 

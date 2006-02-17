@@ -176,12 +176,12 @@
                                  </a:actionLink>
                                  
                                  <%-- discussion --%>
-                                 <a:booleanEvaluator value="#{DocumentDetailsBean.beingDiscussed == true}">
+                                 <a:booleanEvaluator value='#{DocumentDetailsBean.document.properties["beingDiscussed"] == true}'>
                                     <a:actionLink value="#{msg.discuss}" image="/images/icons/forum.gif" actionListener="#{ForumsBean.discuss}">
                                        <f:param name="id" value="#{DocumentDetailsBean.id}" />
                                     </a:actionLink>
                                  </a:booleanEvaluator>
-                                 <a:booleanEvaluator value="#{DocumentDetailsBean.beingDiscussed == false}">
+                                 <a:booleanEvaluator value='#{DocumentDetailsBean.document.properties["beingDiscussed"] == false}'>
                                     <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="CreateChildren">
    	                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
    	                                    <f:param name="id" value="#{DocumentDetailsBean.id}" />

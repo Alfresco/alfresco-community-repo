@@ -408,7 +408,7 @@
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
-				org.alfresco.service.cmr.search.SearchService.query=AFTER_ACL_NODE.sys:base.Read
+                org.alfresco.service.cmr.search.SearchService.query=AFTER_ACL_NODE.sys:base.Read
                 org.alfresco.service.cmr.search.SearchService.selectNodes=AFTER_ACL_NODE.sys:base.Read
                 org.alfresco.service.cmr.search.SearchService.selectProperties=ACL_NODE.0.sys:base.Read
                 org.alfresco.service.cmr.search.SearchService.contains=ACL_NODE.0.sys:base.Read
@@ -430,7 +430,7 @@
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
-				org.alfresco.service.cmr.search.CategoryService.getChildren=AFTER_ACL_NODE.sys:base.Read
+                org.alfresco.service.cmr.search.CategoryService.getChildren=AFTER_ACL_NODE.sys:base.Read
                 org.alfresco.service.cmr.search.CategoryService.getCategories=AFTER_ACL_NODE.sys:base.Read
                 org.alfresco.service.cmr.search.CategoryService.getClassifications=AFTER_ACL_NODE.sys:base.Read
                 org.alfresco.service.cmr.search.CategoryService.getRootCategories=AFTER_ACL_NODE.sys:base.Read
@@ -547,7 +547,7 @@
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
-				org.alfresco.service.cmr.security.PermissionService.getOwnerAuthority=ACL_ALLOW
+                org.alfresco.service.cmr.security.PermissionService.getOwnerAuthority=ACL_ALLOW
                 org.alfresco.service.cmr.security.PermissionService.getAllAuthorities=ACL_ALLOW
                 org.alfresco.service.cmr.security.PermissionService.getAllPermission=ACL_ALLOW
                 org.alfresco.service.cmr.security.PermissionService.getPermissions=ACL_NODE.0.sys:base.ReadPermissions
@@ -576,7 +576,7 @@
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
-				org.alfresco.service.cmr.security.AuthorityService.hasAdminAuthority=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.hasAdminAuthority=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getAuthorities=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getAllAuthorities=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getAllRootAuthorities=ACL_ALLOW
@@ -604,7 +604,7 @@
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
-				org.alfresco.service.cmr.security.AuthenticationService.createAuthentication=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthenticationService.createAuthentication=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthenticationService.updateAuthentication=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthenticationService.setAuthentication=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthenticationService.deleteAuthentication=ACL_METHOD.ROLE_ADMINISTRATOR
@@ -633,7 +633,7 @@
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
-				org.alfresco.service.cmr.security.OwnableService.getOwner=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.security.OwnableService.getOwner=ACL_NODE.0.sys:base.Read
                 org.alfresco.service.cmr.security.OwnableService.setOwner=ACL_NODE.0.cm:ownable.SetOwner
                 org.alfresco.service.cmr.security.OwnableService.takeOwnership=ACL_NODE.0.cm:ownable.TakeOwnership
                 org.alfresco.service.cmr.security.OwnableService.hasOwner=ACL_NODE.0.sys:base.Read
@@ -650,7 +650,7 @@
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
-				org.alfresco.service.cmr.security.PersonService.getPerson=AFTER_ACL_NODE.sys:base.Read
+                org.alfresco.service.cmr.security.PersonService.getPerson=AFTER_ACL_NODE.sys:base.Read
                 org.alfresco.service.cmr.security.PersonService.personExists=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.createMissingPeople=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.setCreateMissingPeople=ACL_METHOD.ROLE_ADMINISTRATOR

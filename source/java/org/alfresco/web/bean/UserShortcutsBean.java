@@ -32,6 +32,8 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
@@ -57,6 +59,9 @@ public class UserShortcutsBean
    /** The BrowseBean reference */
    protected BrowseBean browseBean;
    
+   /** The PermissionService reference */
+   protected PermissionService permissionService;
+   
    /** List of shortcut nodes */
    private List<Node> shortcuts = null;
    
@@ -80,6 +85,14 @@ public class UserShortcutsBean
    public void setBrowseBean(BrowseBean browseBean)
    {
       this.browseBean = browseBean;
+   }
+   
+   /**
+    * @param permissionService The PermissionService to set.
+    */
+   public void setPermissionService(PermissionService permissionService)
+   {
+      this.permissionService = permissionService;
    }
    
    /**
@@ -327,19 +340,26 @@ public class UserShortcutsBean
       
       try
       {
-         DictionaryService dd = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDictionaryService();
-         if (dd.isSubClass(selectedNode.getType(), ContentModel.TYPE_FOLDER))
+         if (permissionService.hasPermission(selectedNode.getNodeRef(), PermissionService.READ) == AccessStatus.ALLOWED)
          {
-            // then navigate to the appropriate node in UI
-            // use browse bean functionality for this as it will update the breadcrumb for us
-            this.browseBean.updateUILocation(selectedNode.getNodeRef());
+            DictionaryService dd = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDictionaryService();
+            if (dd.isSubClass(selectedNode.getType(), ContentModel.TYPE_FOLDER))
+            {
+               // then navigate to the appropriate node in UI
+               // use browse bean functionality for this as it will update the breadcrumb for us
+               this.browseBean.updateUILocation(selectedNode.getNodeRef());
+            }
+            else if (dd.isSubClass(selectedNode.getType(), ContentModel.TYPE_CONTENT))
+            {
+               // view details for document
+               this.browseBean.setupContentAction(selectedNode.getId(), true);
+               FacesContext fc = FacesContext.getCurrentInstance();
+               fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:showDocDetails");
+            }
          }
-         else if (dd.isSubClass(selectedNode.getType(), ContentModel.TYPE_CONTENT))
+         else
          {
-            // view details for document
-            this.browseBean.setupContentAction(selectedNode.getId(), true);
-            FacesContext fc = FacesContext.getCurrentInstance();
-            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:showDocDetails");
+            Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(), "error_shortcut_permissions"));
          }
       }
       catch (InvalidNodeRefException refErr)

@@ -17,6 +17,7 @@
 package org.alfresco.repo.content.metadata;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -27,8 +28,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hpsf.PropertySet;
 import org.apache.poi.hpsf.PropertySetFactory;
@@ -43,8 +42,6 @@ import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
  */
 public class OfficeMetadataExtracter extends AbstractMetadataExtracter
 {
-
-    private static final Log logger = LogFactory.getLog(OfficeMetadataExtracter.class);
     private static String[] mimeTypes = new String[] { MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_EXCEL,
             MimetypeMap.MIMETYPE_PPT };
 
@@ -76,7 +73,7 @@ public class OfficeMetadataExtracter extends AbstractMetadataExtracter
                     }
                     else if (ps instanceof DocumentSummaryInformation)
                     {
-                        DocumentSummaryInformation dsi = (DocumentSummaryInformation) ps;
+//                        DocumentSummaryInformation dsi = (DocumentSummaryInformation) ps;
 
                         // These are not really interesting to any aspect:
                         // trimPut(ContentModel.PROP_xxx, dsi.getCompany(),
@@ -91,17 +88,26 @@ public class OfficeMetadataExtracter extends AbstractMetadataExtracter
                 }
             }
         };
+        InputStream is = null;
         try
         {
-            POIFSReader r = new POIFSReader();
-            r.registerListener(readerListener, SummaryInformation.DEFAULT_STREAM_NAME);
-            r.read(reader.getContentInputStream());
+            is = reader.getContentInputStream();
+            POIFSReader poiFSReader = new POIFSReader();
+            poiFSReader.registerListener(readerListener, SummaryInformation.DEFAULT_STREAM_NAME);
+            poiFSReader.read(is);
         }
         catch (IOException e)
         {
             throw new ContentIOException("Compound Document SummaryInformation metadata extraction failed: \n"
                     + "   reader: " + reader,
                     e);
+        }
+        finally
+        {
+            if (is != null)
+            {
+                try { is.close(); } catch (IOException e) {}
+            }
         }
     }
 }

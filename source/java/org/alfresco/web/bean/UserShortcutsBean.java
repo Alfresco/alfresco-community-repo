@@ -342,6 +342,11 @@ public class UserShortcutsBean
       {
          if (permissionService.hasPermission(selectedNode.getNodeRef(), PermissionService.READ) == AccessStatus.ALLOWED)
          {
+            if (nodeService.exists(selectedNode.getNodeRef()) == false)
+            {
+               throw new InvalidNodeRefException(selectedNode.getNodeRef());
+            }
+            
             DictionaryService dd = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDictionaryService();
             if (dd.isSubClass(selectedNode.getType(), ContentModel.TYPE_FOLDER))
             {

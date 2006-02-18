@@ -249,9 +249,12 @@ public class BrowseBean implements IContextListener
     */
    public void setDocument(Node document)
    {
-      for (NodeEventListener listener : getNodeEventListeners())
+      if (document != null)
       {
-         listener.created(document, document.getType());
+         for (NodeEventListener listener : getNodeEventListeners())
+         {
+            listener.created(document, document.getType());
+         }
       }
       this.document = document;
    }

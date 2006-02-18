@@ -16,8 +16,6 @@
  */
 package org.alfresco.repo.version.common.counter.hibernate;
 
-import java.util.concurrent.locks.Lock;
-
 import org.alfresco.repo.domain.StoreKey;
 import org.alfresco.repo.domain.VersionCount;
 import org.alfresco.repo.domain.hibernate.VersionCountImpl;
@@ -37,9 +35,6 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  */
 public class HibernateVersionCounterDaoServiceImpl extends HibernateDaoSupport implements VersionCounterDaoService
 {
-    private Lock countReadLock;
-    private Lock countWriteLock;
-    
     /**
      * Retrieves or creates a version counter
      * 
@@ -56,7 +51,8 @@ public class HibernateVersionCounterDaoServiceImpl extends HibernateDaoSupport i
         {
             // create a new one
             versionCounter = new VersionCountImpl();
-            getHibernateTemplate().save(versionCounter, storeKey);
+            versionCounter.setKey(storeKey);
+            getHibernateTemplate().save(versionCounter);
         }
         return versionCounter;
     }

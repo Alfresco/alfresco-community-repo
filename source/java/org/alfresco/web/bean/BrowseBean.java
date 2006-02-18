@@ -229,9 +229,12 @@ public class BrowseBean implements IContextListener
     */
    public void setActionSpace(Node actionSpace)
    {
-      for (NodeEventListener listener : getNodeEventListeners())
+      if (actionSpace != null)
       {
-         listener.created(actionSpace, actionSpace.getType());
+         for (NodeEventListener listener : getNodeEventListeners())
+         {
+            listener.created(actionSpace, actionSpace.getType());
+         }
       }
       this.actionSpace = actionSpace;
    }

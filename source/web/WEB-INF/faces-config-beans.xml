@@ -21,7 +21,7 @@
       </managed-property>
       <managed-property>
          <property-name>personService</property-name>
-         <value>#{personService}</value>
+         <value>#{PersonService}</value>
       </managed-property>
       <managed-property>
          <property-name>navigator</property-name>
@@ -196,11 +196,11 @@
       </managed-property>
       <managed-property>
          <property-name>authenticationService</property-name>
-         <value>#{authenticationService}</value>
+         <value>#{AuthenticationService}</value>
       </managed-property>
       <managed-property>
          <property-name>personService</property-name>
-         <value>#{personService}</value>
+         <value>#{PersonService}</value>
       </managed-property>
    </managed-bean>
    
@@ -542,7 +542,7 @@
       </managed-property>
       <managed-property>
          <property-name>personService</property-name>
-         <value>#{personService}</value>
+         <value>#{PersonService}</value>
       </managed-property>
       <managed-property>
          <property-name>ownableService</property-name>
@@ -579,7 +579,7 @@
       </managed-property>
       <managed-property>
          <property-name>personService</property-name>
-         <value>#{personService}</value>
+         <value>#{PersonService}</value>
       </managed-property>
    </managed-bean>
    
@@ -612,7 +612,7 @@
       </managed-property>
       <managed-property>
          <property-name>personService</property-name>
-         <value>#{personService}</value>
+         <value>#{PersonService}</value>
       </managed-property>
    </managed-bean>
    
@@ -641,7 +641,7 @@
       </managed-property>
       <managed-property>
          <property-name>personService</property-name>
-         <value>#{personService}</value>
+         <value>#{PersonService}</value>
       </managed-property>
       <managed-property>
          <property-name>navigator</property-name>
@@ -686,7 +686,7 @@
       </managed-property>
       <managed-property>
          <property-name>personService</property-name>
-         <value>#{personService}</value>
+         <value>#{PersonService}</value>
       </managed-property>
       <managed-property>
          <property-name>navigator</property-name>

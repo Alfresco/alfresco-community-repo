@@ -30,14 +30,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -60,7 +59,6 @@ public class AuthenticationFilter implements Filter
     // Various services required by NTLM authenticator
     
     private AuthenticationService m_authService;
-    private AuthenticationComponent m_authComponent;
     private PersonService m_personService;
     private NodeService m_nodeService;
     
@@ -82,10 +80,8 @@ public class AuthenticationFilter implements Filter
         
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         m_nodeService = serviceRegistry.getNodeService();
-
-        m_authService = (AuthenticationService) ctx.getBean("authenticationService");
-        m_authComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        m_personService = (PersonService) ctx.getBean("personService");
+        m_authService = serviceRegistry.getAuthenticationService();
+        m_personService = (PersonService) ctx.getBean("PersonService");   // transactional and permission-checked
     }
 
     /**
@@ -141,20 +137,21 @@ public class AuthenticationFilter implements Filter
                 try
                 {
                     // Authenticate the user
-                    
                     m_authService.authenticate(username, password.toCharArray());
                     
-                    // Get the users home folder
-                    
-                    NodeRef homeSpaceRef = (NodeRef) m_nodeService.getProperty(m_personService.getPerson(username), ContentModel.PROP_HOMEFOLDER);
-                    
+                    // Get the user node and home folder
+                    NodeRef personNodeRef = m_personService.getPerson(username);
+                    NodeRef homeSpaceRef = (NodeRef) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
                     // Setup User object and Home space ID etc.
-                    
                     user = new WebDAVUser(username, m_authService.getCurrentTicket(), homeSpaceRef);
                     
                     httpReq.getSession().setAttribute(AUTHENTICATION_USER, user);
                 }
                 catch ( AuthenticationException ex)
+                {
+                    // Do nothing, user object will be null
+                }
+                catch (NoSuchPersonException e)
                 {
                     // Do nothing, user object will be null
                 }

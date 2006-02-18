@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
@@ -111,7 +112,7 @@ public class PersonServiceImpl implements PersonService
             }
             else
             {
-                throw new PersonException("No person found for user name " + userName);
+                throw new NoSuchPersonException(userName);
             }
 
         }

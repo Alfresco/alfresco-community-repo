@@ -39,18 +39,23 @@ public interface PersonService
 {
     /**
      * Get a person by userName. The person is store in the repository. The
-     * person may be created as a side effect of this call.
+     * person may be created as a side effect of this call, depending on
+     * the setting to {@link #setCreateMissingPeople(boolean) create missing people or not}.
      * 
      * @param userName - the userName key to find the person
-     * @return
+     * @return Returns the person node, either existing or new
+     * @throws NoSuchPersonException if the user doesn't exist and could not be created automatically
+     * 
+     * @see #setCreateMissingPeople(boolean)
+     * @see #createMissingPeople()
      */
     public NodeRef getPerson(String userName);
 
     /**
      * Check if a person exists.
      * 
-     * @param userName
-     * @return
+     * @param userName the user name
+     * @return Returns true if the user exists, otherwise false
      */
     public boolean personExists(String userName);
     
@@ -65,7 +70,9 @@ public interface PersonService
     /**
      * Set if missing people should be created.
      * 
-     * @param createMissing
+     * @param createMissing set to true to create people
+     * 
+     * @see #getPerson(String)
      */
     public void setCreateMissingPeople(boolean createMissing);
     

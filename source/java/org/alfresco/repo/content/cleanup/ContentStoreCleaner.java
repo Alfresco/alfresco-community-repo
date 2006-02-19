@@ -136,6 +136,18 @@ public class ContentStoreCleaner
         {
             throw new AlfrescoRuntimeException("Property 'listeners' not set");
         }
+        
+        // check the protect days
+        if (protectDays < 0)
+        {
+            throw new AlfrescoRuntimeException("Property 'protectDays' must be 0 or greater (0 is not recommended)");
+        }
+        else if (protectDays == 0)
+        {
+            logger.warn(
+                    "Property 'protectDays' is set to 0.  " +
+                    "It is possible that in-transaction content will be deleted.");
+        }
     }
     
     private Set<String> getValidUrls()

@@ -45,7 +45,11 @@ public class PropertyValue implements Cloneable, Serializable
 {
     private static final long serialVersionUID = -497902497351493075L;
 
+    /** used to take care of empty strings being converted to nulls by the database */
+    private static final String STRING_EMPTY = "";
+    
     private static Log logger = LogFactory.getLog(PropertyValue.class);
+    private static Log loggerOracle = LogFactory.getLog(PropertyValue.class.getName() + ".oracle");
 
     /** potential value types */
     private static enum ValueType
@@ -557,7 +561,21 @@ public class PropertyValue implements Cloneable, Serializable
             case DOUBLE:
                 return this.doubleValue;
             case STRING:
-                return this.stringValue;
+                // Oracle stores empty strings as 'null'...
+                if (this.stringValue == null)
+                {
+                    // We know that we stored a non-null string, but now it is null.
+                    // It can only mean one thing - Oracle
+                    if (loggerOracle.isDebugEnabled())
+                    {
+                        logger.debug("string_value is 'null'.  Forcing to empty String");
+                    }
+                    return PropertyValue.STRING_EMPTY;
+                }
+                else
+                {
+                    return this.stringValue;
+                }
             case SERIALIZABLE:
                 return this.serializableValue;
             default:

@@ -202,7 +202,13 @@ public class PatchServiceImpl implements PatchService
             appliedPatch = patchDaoService.newAppliedPatch(patch.getId());
         }
         // fill in the record's details
-        appliedPatch.setDescription(I18NUtil.getMessage(patch.getDescription()));
+        String patchDescription = I18NUtil.getMessage(patch.getDescription());
+        if (patchDescription == null)
+        {
+            logger.warn("Patch description is not available: " + patch);
+            patchDescription = "No patch description available";
+        }
+        appliedPatch.setDescription(patchDescription);
         appliedPatch.setFixesFromSchema(patch.getFixesFromSchema());
         appliedPatch.setFixesToSchema(patch.getFixesToSchema());
         appliedPatch.setTargetSchema(patch.getTargetSchema());       // the schema the server is expecting

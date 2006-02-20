@@ -47,11 +47,11 @@ public class RuntimeExecutableContentTransformerTest extends BaseAlfrescoTestCas
         RuntimeExec transformCommand = new RuntimeExec();
         Map<String, String> commandMap = new HashMap<String, String>(5);
         commandMap.put("Linux", "mv -f ${source} ${target}");
-        commandMap.put("*", "cmd /c copy /Y \"${source}\" \"${target}\"");
+        commandMap.put(".*", "cmd /c copy /Y \"${source}\" \"${target}\"");
         transformCommand.setCommandMap(commandMap);
+        transformCommand.setErrorCodes("1, 2");
         transformer.setTransformCommand(transformCommand);
         transformer.setMimetypeService(serviceRegistry.getMimetypeService());
-        transformer.setErrorCodes("1, 2");
         
         // initialise so that it doesn't score 0
         transformer.init();

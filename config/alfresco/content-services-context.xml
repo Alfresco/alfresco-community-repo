@@ -211,7 +211,7 @@
                     <entry key="Linux">
                         <value>imconvert ${source} ${options} ${target}</value>
                     </entry>
-                    <entry key="*">
+                    <entry key=".*">
                         <value>imconvert "${source}" ${options} "${target}"</value>
                     </entry>
                 </map>

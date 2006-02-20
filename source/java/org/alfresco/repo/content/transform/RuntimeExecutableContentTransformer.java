@@ -18,10 +18,7 @@ package org.alfresco.repo.content.transform;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -69,13 +66,9 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
     private MimetypeService mimetypeService;
     private RuntimeExec checkCommand;
     private RuntimeExec transformCommand;
-    private Set<Integer> errCodes;
 
     public RuntimeExecutableContentTransformer()
     {
-        this.errCodes = new HashSet<Integer>(2);
-        errCodes.add(1);
-        errCodes.add(2);
     }
     
     /**
@@ -118,34 +111,9 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
      */
     public void setErrorCodes(String errCodesStr)
     {
-        StringTokenizer tokenizer = new StringTokenizer(errCodesStr, " ,");
-        while(tokenizer.hasMoreElements())
-        {
-            String errCodeStr = tokenizer.nextToken();
-            // attempt to convert it to an integer
-            try
-            {
-                int errCode = Integer.parseInt(errCodeStr);
-                this.errCodes.add(errCode);
-            }
-            catch (NumberFormatException e)
-            {
-                throw new AlfrescoRuntimeException("Error codes string must be integers: " + errCodesStr);
-            }
-        }
+        throw new AlfrescoRuntimeException("content.runtime_exec.property_moved");
     }
     
-    /**
-     * @param exitValue the command exit value
-     * @return Returns true if the code is a listed failure code
-     * 
-     * @see #setErrorCodes(String)
-     */
-    private boolean isFailureCode(int exitValue)
-    {
-        return errCodes.contains((Integer)exitValue);
-    }
-
     /**
      * Executes the check command, if present.  Any errors will result in this component
      * being rendered unusable within the transformer registry, but may still be called
@@ -167,7 +135,7 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
         {
             ExecutionResult result = checkCommand.execute();
             // check the return code
-            available = !isFailureCode(result.getExitValue());
+            available = result.getSuccess();
         }
         else
         {
@@ -263,7 +231,7 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
         }
         
         // check
-        if (isFailureCode(result.getExitValue()))
+        if (!result.getSuccess())
         {
             throw new ContentIOException("Transformation failed - status indicates an error: \n" + result);
         }

@@ -49,7 +49,7 @@ public class UploadFormTag extends TagSupport
       {
          Writer out = pageContext.getOut();
          
-         out.write("<form name='upload-form' method='post' enctype='multipart/form-data' action='");
+         out.write("<form name='upload-form' acceptCharset='UTF-8' method='post' enctype='multipart/form-data' action='");
          
          if (Application.inPortalServer())
          {

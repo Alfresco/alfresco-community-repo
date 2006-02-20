@@ -81,9 +81,9 @@ public class CategoriesBean implements IContextListener
    
    /** Action category node */
    private Node actionCategory = null;
-   
-   /** Member Count of the linked items of a category */
-   private Integer members = null;
+      
+   /** Members of the linked items of a category */
+   private Collection<ChildAssociationRef> members = null;
    
    /** Dialog properties */
    private String name = null;
@@ -196,7 +196,7 @@ public class CategoriesBean implements IContextListener
     */
    public int getMembers()
    {
-      return (this.members != null ? this.members.intValue() : 0);
+      return (this.members != null ? this.members.size() : 0);
    }
    
    /**
@@ -219,13 +219,13 @@ public class CategoriesBean implements IContextListener
          // setup form properties
          this.name = node.getName();
          this.description = (String)node.getProperties().get(ContentModel.PROP_DESCRIPTION);
-         this.members = this.categoryService.getChildren(node.getNodeRef(), Mode.MEMBERS, Depth.ANY).size();
+         this.members = this.categoryService.getChildren(node.getNodeRef(), Mode.MEMBERS, Depth.ANY);
       }
       else
       {
          this.name = null;
          this.description = null;
-         this.members = 0;
+         this.members = Collections.emptyList();
       }
    }
    
@@ -552,8 +552,33 @@ public class CategoriesBean implements IContextListener
             tx.begin();
             
             // delete the category node using the nodeservice
-            NodeRef nodeRef = getActionCategory().getNodeRef();
-            this.categoryService.deleteCategory(nodeRef);
+            NodeRef categoryNodeRef = getActionCategory().getNodeRef();
+            this.categoryService.deleteCategory(categoryNodeRef);
+            
+            // if there are other items in the repository using this category
+            // all the associations to the category should be removed too
+            if (this.members != null && this.members.size() > 0)
+            {
+               for (ChildAssociationRef childRef : this.members)
+               {
+                  List<NodeRef> list = new ArrayList<NodeRef>(this.members.size());
+                  
+                  NodeRef member = childRef.getChildRef();
+                  Collection<NodeRef> categories = (Collection<NodeRef>)this.nodeService.
+                        getProperty(member, ContentModel.PROP_CATEGORIES);
+
+                  for (NodeRef category : categories)
+                  {
+                     if (category.equals(categoryNodeRef) == false)
+                     {
+                        list.add(category);
+                     }
+                  }
+                  
+                  // persist the list back to the repository
+                  this.nodeService.setProperty(member, ContentModel.PROP_CATEGORIES, (Serializable)list);
+               }
+            }
             
             // commit the transaction
             tx.commit();
@@ -563,7 +588,7 @@ public class CategoriesBean implements IContextListener
             IBreadcrumbHandler handler = location.get(location.size() - 1);
             
             // see if the current breadcrumb location is our node 
-            if ( nodeRef.equals(((IRepoBreadcrumbHandler)handler).getNodeRef()) )
+            if ( categoryNodeRef.equals(((IRepoBreadcrumbHandler)handler).getNodeRef()) )
             {
                location.remove(location.size() - 1);
                

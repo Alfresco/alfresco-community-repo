@@ -352,6 +352,9 @@ public class LoginBean
       Map session = context.getExternalContext().getSessionMap();
       User user = (User) session.get(AuthenticationHelper.AUTHENTICATION_USER);
       
+      // need to capture this value before invalidating the session
+      boolean externalAuth = isAlfrescoAuth();
+      
       // Invalidate Session for this user.
       // This causes the sessionDestroyed() event to be processed by ContextListener
       // which is responsible for invalidating the ticket and clearing the security context
@@ -378,7 +381,7 @@ public class LoginBean
          Application.setLanguage(context, this.language);
       }
       
-      return isAlfrescoAuth() ? "logout" : "relogin";
+      return externalAuth ? "logout" : "relogin";
    }
    
    

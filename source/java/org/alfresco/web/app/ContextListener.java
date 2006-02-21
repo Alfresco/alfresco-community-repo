@@ -125,53 +125,6 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
          // Extract company space id and store it in the Application object
          companySpaceNodeRef = nodes.get(0);
          Application.setCompanyRootId(companySpaceNodeRef.getId());
-
-         // check the admin user exists, create if it doesn't
-         MutableAuthenticationDao dao = (MutableAuthenticationDao) ctx.getBean("alfDaoImpl");
-
-         // this is required to setup the ACEGI context before we can check
-         // for the user
-         if (!dao.userExists(ADMIN))
-         {
-            ConfigService configService = (ConfigService) ctx.getBean(Application.BEAN_CONFIG_SERVICE);
-            // default to password of "admin" if we don't find config for it
-            String password = ADMIN;
-            ConfigElement adminConfig = configService.getGlobalConfig().getConfigElement("admin");
-            if (adminConfig != null)
-            {
-               List<ConfigElement> children = adminConfig.getChildren();
-               if (children.size() != 0)
-               {
-                  // try to find the config element for the initial
-                  // password
-                  ConfigElement passElement = children.get(0);
-                  if (passElement.getName().equals("initial-password"))
-                  {
-                     password = passElement.getValue();
-                  }
-               }
-            }
-
-            // create the Authentication instance for the "admin" user
-            AuthenticationService authService = (AuthenticationService) ctx.getBean("authenticationService");
-            authService.createAuthentication(ADMIN, password.toCharArray());
-         }
-         
-         PersonService personService = (PersonService) ctx.getBean("personService");
-         if (!personService.personExists(ADMIN))
-         {
-             // create the node to represent the Person instance for the
-             // admin user
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(7, 1.0f);
-            props.put(ContentModel.PROP_USERNAME, ADMIN);
-            props.put(ContentModel.PROP_FIRSTNAME, ADMIN_FIRSTNAME);
-            props.put(ContentModel.PROP_LASTNAME, ADMIN_LASTNAME);
-            props.put(ContentModel.PROP_HOMEFOLDER, companySpaceNodeRef);
-            props.put(ContentModel.PROP_EMAIL, "");
-            props.put(ContentModel.PROP_ORGID, "");
-          
-            personService.createPerson(props);
-         }
          
          // commit the transaction
          tx.commit();

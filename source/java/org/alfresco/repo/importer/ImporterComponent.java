@@ -1181,14 +1181,16 @@ public class ImporterComponent
 
                 // Create initial node (but, first disable behaviour for the node to be created)
                 Set<QName> disabledBehaviours = getDisabledBehaviours(node);
+                List<QName> alreadyDisabledBehaviours = new ArrayList<QName>(); 
                 for (QName disabledBehaviour: disabledBehaviours)
                 {
                     boolean alreadyDisabled = behaviourFilter.disableBehaviour(disabledBehaviour);
                     if (alreadyDisabled)
                     {
-                        disabledBehaviours.remove(disabledBehaviour);
+                        alreadyDisabledBehaviours.add(disabledBehaviour);
                     }
                 }
+                disabledBehaviours.removeAll(alreadyDisabledBehaviours);
                 
                 // Build initial map of properties
                 Map<QName, Serializable> initialProperties = bindProperties(node);
@@ -1276,7 +1278,6 @@ public class ImporterComponent
                         ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(existingNodeRef);
                         
                         // TODO: Check for root node
-                        
                         nodeService.removeChild(childAssocRef.getParentRef(), childAssocRef.getChildRef());
                     }
                 }

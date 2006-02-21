@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 
 
@@ -340,6 +341,13 @@ public class NodeContext extends ElementContext
      */
     public void addAccessControlEntry(AccessStatus accessStatus, String authority, String permission)
     {
+       // Note: Map guest permission to Consumer permission - this is to handle the case where 
+       //       exports made against a pre 1.2 RC2 release
+       if (permission.equalsIgnoreCase("guest"))
+       {
+           permission = PermissionService.CONSUMER;
+       }
+      
        ACE ace = new ACE();
        ace.accessStatus = accessStatus;
        ace.authority = authority;

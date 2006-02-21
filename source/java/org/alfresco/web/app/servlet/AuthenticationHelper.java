@@ -138,8 +138,8 @@ public final class AuthenticationHelper
                   
                   NodeService nodeService = services.getNodeService();
                   PersonService personService = (PersonService)wc.getBean(PERSON_SERVICE);
-                  NodeRef guestRef = personService.getPerson(PermissionService.GUEST);
-                  user = new User(PermissionService.GUEST, auth.getCurrentTicket(), guestRef);
+                  NodeRef guestRef = personService.getPerson(PermissionService.GUEST_AUTHORITY);
+                  user = new User(PermissionService.GUEST_AUTHORITY, auth.getCurrentTicket(), guestRef);
                   NodeRef guestHomeRef = (NodeRef)nodeService.getProperty(guestRef, ContentModel.PROP_HOMEFOLDER);
                   
                   // check that the home space node exists - else Guest cannot proceed
@@ -266,8 +266,8 @@ public final class AuthenticationHelper
          
          NodeService nodeService = services.getNodeService();
          PersonService personService = (PersonService)ctx.getBean(PERSON_SERVICE);
-         NodeRef guestRef = personService.getPerson(PermissionService.GUEST);
-         User user = new User(PermissionService.GUEST, auth.getCurrentTicket(), guestRef);
+         NodeRef guestRef = personService.getPerson(PermissionService.GUEST_AUTHORITY);
+         User user = new User(PermissionService.GUEST_AUTHORITY, auth.getCurrentTicket(), guestRef);
          NodeRef guestHomeRef = (NodeRef)nodeService.getProperty(guestRef, ContentModel.PROP_HOMEFOLDER);
          
          // check that the home space node exists - else Guest cannot proceed

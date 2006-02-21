@@ -37,9 +37,9 @@
          
          <!-- The default permissions to apply to a new users Home Space when first created -->
          <!-- this permission is for other users attempting to access that Home Space -->
-         <!-- generally set to "Guest" or empty value to indicate a private hidden space. -->
+         <!-- generally set to "Consumer" or empty value to indicate a private hidden space. -->
          <!-- see org.alfresco.service.cmr.security.PermissionService for allowed values -->
-         <home-space-permission>Guest</home-space-permission>
+         <home-space-permission>Consumer</home-space-permission>
          
          <!-- the URL to the client Help file -->
          <help-url>http://www.alfresco.org/help/webclient</help-url>

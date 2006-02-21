@@ -25,7 +25,6 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
-import org.alfresco.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.CIFSServer;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
@@ -42,7 +41,6 @@ import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.repository.Node;
@@ -427,7 +425,7 @@ public class NavigationBean
     */
    public boolean getIsGuest()
    {
-      return Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName().equals(PermissionService.GUEST);
+      return Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName().equals(PermissionService.GUEST_AUTHORITY);
    }
    
    /**

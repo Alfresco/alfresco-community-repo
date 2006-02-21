@@ -37,7 +37,7 @@ public class AlfrescoDefaultViewSelector implements DefaultViewSelector
    public String selectViewId(RenderRequest request, RenderResponse response) throws PortletException
    {
       User user = (User)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
-      if (user != null && user.getUserName().equals(PermissionService.GUEST))
+      if (user != null && user.getUserName().equals(PermissionService.GUEST_AUTHORITY))
       {
          return "/jsp/browse/browse.jsp";
       }

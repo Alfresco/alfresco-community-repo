@@ -40,7 +40,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -172,12 +171,6 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
             props.put(ContentModel.PROP_ORGID, "");
           
             personService.createPerson(props);
-         }
-         // set the store's GUEST access if we are allowed to modify permissions
-         if (!transactionService.isReadOnly())
-         {
-             PermissionService permissionService = (PermissionService) ctx.getBean("permissionService");
-             permissionService.setPermission(rootNodeRef, permissionService.getAllAuthorities(), PermissionService.GUEST, true);
          }
          
          // commit the transaction

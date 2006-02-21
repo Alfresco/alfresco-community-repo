@@ -23,7 +23,6 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -353,6 +352,7 @@ public class ImporterBootstrap implements ApplicationListener
                         // Create import binding
                         BootstrapBinding binding = new BootstrapBinding();
                         binding.setConfiguration(configuration);
+                        binding.setLocation(importLocation);
                         String messages = bootstrapView.getProperty(VIEW_MESSAGES_PROPERTY);
                         if (messages != null && messages.length() > 0)
                         {
@@ -431,6 +431,12 @@ public class ImporterBootstrap implements ApplicationListener
     {
         private Properties configuration = null;
         private ResourceBundle resourceBundle = null;
+        private Location bootstrapLocation = null;
+        
+        private static final String IMPORT_LOCATION_UUID = "bootstrap.location.uuid";
+        private static final String IMPORT_LOCATION_NODEREF = "bootstrap.location.noderef";
+        private static final String IMPORT_LOCATION_PATH = "bootstrap.location.path";
+        
         
         /**
          * Set Import Configuration
@@ -462,6 +468,16 @@ public class ImporterBootstrap implements ApplicationListener
             this.resourceBundle = resourceBundle;
         }
         
+        /**
+         * Set Location
+         * 
+         * @param location
+         */
+        public void setLocation(Location location)
+        {
+            this.bootstrapLocation = location;
+        }
+        
         /* (non-Javadoc)
          * @see org.alfresco.service.cmr.view.ImporterBinding#getValue(java.lang.String)
          */
@@ -476,6 +492,22 @@ public class ImporterBootstrap implements ApplicationListener
             {
                 value = resourceBundle.getString(key);
             }
+            if (value == null && bootstrapLocation != null)
+            {
+                if (key.equals(IMPORT_LOCATION_UUID))
+                {
+                    value = bootstrapLocation.getNodeRef().getId();
+                }
+                else if (key.equals(IMPORT_LOCATION_NODEREF))
+                {
+                    value = bootstrapLocation.getNodeRef().toString();
+                }
+                else if (key.equals(IMPORT_LOCATION_PATH))
+                {
+                    value = bootstrapLocation.getPath();
+                }
+            }
+            
             return value;
         }
 

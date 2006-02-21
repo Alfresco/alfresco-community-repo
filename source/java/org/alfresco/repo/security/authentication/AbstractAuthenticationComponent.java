@@ -79,10 +79,10 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 gas[0] = new GrantedAuthorityImpl("ROLE_SYSTEM");
                 ud = new User(SYSTEM_USER_NAME, "", true, true, true, true, gas);
             }
-            else if (userName.equalsIgnoreCase(PermissionService.GUEST))
+            else if (userName.equalsIgnoreCase(PermissionService.GUEST_AUTHORITY))
             {
                 GrantedAuthority[] gas = new GrantedAuthority[0];
-                ud = new User(PermissionService.GUEST.toLowerCase(), "", true, true, true, true, gas);
+                ud = new User(PermissionService.GUEST_AUTHORITY.toLowerCase(), "", true, true, true, true, gas);
             }
             else
             {
@@ -215,7 +215,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public String getGuestUserName()
     {
-        return PermissionService.GUEST.toLowerCase();
+        return PermissionService.GUEST_AUTHORITY.toLowerCase();
     }
 
     /**
@@ -227,7 +227,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         {
             if(implementationAllowsGuestLogin())
             {
-                return setCurrentUser(PermissionService.GUEST);
+                return setCurrentUser(PermissionService.GUEST_AUTHORITY);
             }
             else
             {
@@ -238,7 +238,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         {
             if(allowGuestLogin.booleanValue())
             {
-                return setCurrentUser(PermissionService.GUEST);
+                return setCurrentUser(PermissionService.GUEST_AUTHORITY);
             }
             else
             {

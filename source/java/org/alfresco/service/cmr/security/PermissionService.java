@@ -44,6 +44,7 @@ public interface PermissionService
     
     public static final String ADMINISTRATOR_AUTHORITY = "ROLE_ADMINISTRATOR";
 
+    public static final String GUEST_AUTHORITY = "guest";
     
     
     
@@ -101,7 +102,7 @@ public interface PermissionService
 
     public static final String EDITOR = "Editor";
 
-    public static final String GUEST = "Guest";
+    public static final String CONSUMER = "Consumer";
     
     public static final String LOCK = "Lock";
     

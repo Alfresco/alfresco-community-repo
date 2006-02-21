@@ -2,6 +2,12 @@
            xmlns:cm="http://www.alfresco.org/model/content/1.0">
 
 	<cm:category_root view:childName="cm:categoryRoot">
+        <view:acl>
+            <view:ace view:access="ALLOWED">
+                <view:authority>guest</view:authority>
+                <view:permission>Read</view:permission>
+            </view:ace>
+        </view:acl>
 		<cm:name>categories</cm:name>
 		<cm:categories>
 

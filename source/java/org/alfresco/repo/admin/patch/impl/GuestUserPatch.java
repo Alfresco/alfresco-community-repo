@@ -177,7 +177,7 @@ public class GuestUserPatch extends AbstractPatch
         NodeRef personRef = personService.getPerson(guestId);
 
         permissionService.setInheritParentPermissions(personRef, false);
-        permissionService.setPermission(personRef, guestId, PermissionService.READ, true);
+        permissionService.setPermission(personRef, guestId, PermissionService.CONSUMER, true);
 
     }
 
@@ -237,8 +237,8 @@ public class GuestUserPatch extends AbstractPatch
     private void setGuestHomePermissions(NodeRef nodeRef)
     {
         permissionService.setInheritParentPermissions(nodeRef, false);
-        permissionService.setPermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.GUEST, true);
-        permissionService.setPermission(nodeRef, guestId, PermissionService.GUEST, true);
+        permissionService.setPermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.CONSUMER, true);
+        permissionService.setPermission(nodeRef, guestId, PermissionService.CONSUMER, true);
     }
 
     private NodeRef setCompanyHomeSpacePermissions(NodeRef storeRootNodeRef, String companyHomeChildName)
@@ -259,7 +259,7 @@ public class GuestUserPatch extends AbstractPatch
         NodeRef companyHomeRef = nodeRefs.get(0);
 
         permissionService.setInheritParentPermissions(companyHomeRef, false);
-        permissionService.setPermission(companyHomeRef, PermissionService.ALL_AUTHORITIES, PermissionService.GUEST,
+        permissionService.setPermission(companyHomeRef, PermissionService.ALL_AUTHORITIES, PermissionService.CONSUMER,
                 true);
         return companyHomeRef;
     }

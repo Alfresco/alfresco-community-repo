@@ -645,6 +645,9 @@
         <property name="authorityService">
         	<ref bean="AuthorityService" />
         </property>
+        <property name="authenticationService">
+        	<ref bean="AuthenticationService" />
+        </property>
         <property name="viewParser">
             <ref bean="viewParser" />
         </property>
@@ -731,6 +734,12 @@
                 <prop key="spaces.templates.content.childname">${spaces.templates.content.childname}</prop>
                 <prop key="spaces.savedsearches.childname">${spaces.savedsearches.childname}</prop>
             </props>
+        </property>
+    </bean>
+
+    <bean id="versionStoreImporter" parent="storeImporter" abstract="true">
+        <property name="storeUrl">
+            <value>workspace://lightWeightVersionStore</value>
         </property>
     </bean>
 

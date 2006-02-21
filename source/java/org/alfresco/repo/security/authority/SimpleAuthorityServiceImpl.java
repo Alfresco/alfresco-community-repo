@@ -43,7 +43,7 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
 
     private Set<String> adminSet = Collections.singleton(PermissionService.ADMINISTRATOR_AUTHORITY);
 
-    private Set<String> guestSet = Collections.singleton(PermissionService.GUEST);
+    private Set<String> guestSet = Collections.singleton(PermissionService.GUEST_AUTHORITY);
 
     private Set<String> allSet = Collections.singleton(PermissionService.ALL_AUTHORITIES);
 

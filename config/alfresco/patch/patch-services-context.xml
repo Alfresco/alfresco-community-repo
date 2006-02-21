@@ -184,5 +184,86 @@
             <ref bean="sessionFactory" />
         </property>
     </bean>
+    <bean id="patch.updateGuestPermission" class="org.alfresco.repo.admin.patch.impl.UpdateGuestPermissionPatch" parent="basePatch" >
+        <property name="id"><value>patch.updateGuestPermission</value></property>
+        <property name="description"><value>patch.updateGuestPermission.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5</value></property>
+        <property name="targetSchema"><value>6</value></property>
+        <!-- helper beans -->
+        <property name="sessionFactory">
+            <ref bean="sessionFactory"/>
+        </property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.guestUser"/>
+                <ref bean="patch.updatePermissionData"/>
+            </list>
+        </property>
+    </bean>
+    <bean id="patch.guestPersonPermission" class="org.alfresco.repo.admin.patch.impl.GuestPersonPermissionPatch" parent="basePatch" >
+        <property name="id"><value>patch.guestPersonPermission</value></property>
+        <property name="description"><value>patch.guestPersonPermission.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5</value></property>
+        <property name="targetSchema"><value>6</value></property>
+        <!-- helper beans for execution -->
+        <property name="permissionService">
+            <ref bean="permissionService"/>
+        </property>
+        <property name="personService">
+            <ref bean="personService"/>
+        </property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.updateGuestPermission" />
+            </list>
+        </property>
+    </bean>
+    <bean id="patch.spacesRootPermission" class="org.alfresco.repo.admin.patch.impl.SpacesRootPermissionPatch" parent="basePatch" >
+        <property name="id"><value>patch.spacesRootPermission</value></property>
+        <property name="description"><value>patch.spacesRootPermission.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5</value></property>
+        <property name="targetSchema"><value>6</value></property>
+        <!-- helper beans for execution -->
+        <property name="spacesBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="permissionService">
+            <ref bean="permissionService"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.updateGuestPermission" />
+            </list>
+        </property>
+    </bean>
+    <bean id="patch.categoryRootPermission" class="org.alfresco.repo.admin.patch.impl.CategoryRootPermissionPatch" parent="basePatch" >
+        <property name="id"><value>patch.categoryRootPermission</value></property>
+        <property name="description"><value>patch.categoryRootPermission.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5</value></property>
+        <property name="targetSchema"><value>6</value></property>
+        <!-- helper beans for execution -->
+        <property name="permissionService">
+            <ref bean="permissionService"/>
+        </property>
+        <property name="searchService">
+            <ref bean="searchService"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService"/>
+        </property>
+        <property name="spacesBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+    </bean>
 
 </beans>

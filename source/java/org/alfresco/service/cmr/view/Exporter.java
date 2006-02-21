@@ -17,7 +17,6 @@
 package org.alfresco.service.cmr.view;
 
 import java.io.InputStream;
-import java.util.Collection;
 
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -164,6 +163,14 @@ public interface Exporter
     public void endProperties(NodeRef nodeRef);
     
     /**
+     * Export start of value collection
+     * 
+     * @param nodeRef  the node reference
+     * @param property  the property name
+     */
+    public void startValueCollection(NodeRef nodeRef, QName property);
+
+    /**
      * Export single valued property
      * 
      * @param nodeRef  the node reference
@@ -173,16 +180,15 @@ public interface Exporter
     public void value(NodeRef nodeRef, QName property, Object value);
 
     /**
-     * Export multi valued property
+     * Export end of value collection
      * 
      * @param nodeRef  the node reference
      * @param property  the property name
-     * @param value  the value
      */
-    public void value(NodeRef nodeRef, QName property, Collection values);
+    public void endValueCollection(NodeRef nodeRef, QName property);
     
     /**
-     * Export content stream
+     * Export content stream property
      * 
      * @param nodeRef  the node reference
      * @param property  the property name

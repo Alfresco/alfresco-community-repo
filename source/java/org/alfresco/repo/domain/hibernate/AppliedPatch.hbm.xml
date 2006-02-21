@@ -43,6 +43,7 @@
       where
          appliedPatch.appliedOnDate >= :fromDate and
          appliedPatch.appliedOnDate <= :toDate
+      order by appliedPatch.appliedOnDate
       ]]>
    </query>
    

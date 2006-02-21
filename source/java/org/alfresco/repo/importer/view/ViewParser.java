@@ -60,6 +60,7 @@ public class ViewParser implements Parser
     private static final String VIEW_ID_ATTR = "id";
     private static final String VIEW_IDREF_ATTR = "idref";
     private static final String VIEW_PATHREF_ATTR = "pathref";
+    private static final String VIEW_NODEREF_ATTR = "noderef";
     private static final QName VIEW_METADATA = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "metadata");
     private static final QName VIEW_VALUE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "value");
     private static final QName VIEW_VALUES_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_1_0_URI, "values");
@@ -409,30 +410,36 @@ public class ViewParser implements Parser
         node.setReference(true);
         
         // Extract Import scoped reference Id if explicitly defined
-        String idRef = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_IDREF_ATTR);
-        String pathRef = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_PATHREF_ATTR);
+        String idRefAttr = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_IDREF_ATTR);
+        String pathRefAttr = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_PATHREF_ATTR);
+        String nodeRefAttr = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_NODEREF_ATTR);
 
-        if ((idRef != null && idRef.length() > 0) && (pathRef != null && pathRef.length() > 0))
+        if ((idRefAttr != null && idRefAttr.length() > 0) && (pathRefAttr != null && pathRefAttr.length() > 0) && (nodeRefAttr != null && nodeRefAttr.length() > 0))
         {
             // Do not support both IDREF and PATHREF
-            throw new ImporterException("Only one of " + VIEW_IDREF_ATTR + " or " + VIEW_PATHREF_ATTR + " can be specified.");
+            throw new ImporterException("Only one of " + VIEW_IDREF_ATTR + " or " + VIEW_PATHREF_ATTR + " or " + VIEW_NODEREF_ATTR + " can be specified.");
         }
-        if (idRef != null && idRef.length() > 0)
+        if (nodeRefAttr != null)
+        {
+            NodeRef nodeRef = new NodeRef(nodeRefAttr);
+            node.setUUID(nodeRef.getId());
+        }
+        else if (idRefAttr != null && idRefAttr.length() > 0)
         {
             // retrieve uuid from previously imported node
-            NodeRef nodeRef = getImportReference(parserContext, idRef);
+            NodeRef nodeRef = getImportReference(parserContext, idRefAttr);
             if (nodeRef == null)
             {
-                throw new ImporterException("Cannot find node referenced by id " + idRef);
+                throw new ImporterException("Cannot find node referenced by id " + idRefAttr);
             }
             node.setUUID(nodeRef.getId());
         }
-        else if (pathRef != null && pathRef.length() > 0)
+        else if (pathRefAttr != null && pathRefAttr.length() > 0)
         {
-            NodeRef referencedRef = parserContext.importer.resolvePath(pathRef);
+            NodeRef referencedRef = parserContext.importer.resolvePath(pathRefAttr);
             if (referencedRef == null)
             {
-                throw new ImporterException("Cannot find node referenced by path " + pathRef);
+                throw new ImporterException("Cannot find node referenced by path " + pathRefAttr);
             }
             node.setUUID(referencedRef.getId());
         }
@@ -766,8 +773,8 @@ public class ViewParser implements Parser
      */
     private void processEndType(ParserContext parserContext, NodeContext node)
     {
-        NodeRef nodeRef = node.getNodeRef();
         importNode(parserContext, node);
+        NodeRef nodeRef = node.getNodeRef();
         node.getImporter().childrenImported(nodeRef);
     }
 

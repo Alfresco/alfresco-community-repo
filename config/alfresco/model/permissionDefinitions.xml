@@ -233,9 +233,9 @@
       <!-- A contributor can create content and then they have full permission on what -->
       <!-- they have created - via the permissions assigned to the owner.              -->
       <permissionGroup name="Contributor" allowFullControl="false" expose="true" >
-          <!-- Contributor is a guest who can add content, and then can modify via the -->
+          <!-- Contributor is a consumer who can add content, and then can modify via the -->
           <!-- owner permissions.                                                      -->
-          <includePermissionGroup permissionGroup="Guest" type="cm:cmobject"/>
+          <includePermissionGroup permissionGroup="Consumer" type="cm:cmobject"/>
           <includePermissionGroup permissionGroup="AddChildren" type="sys:base"/>
           <!-- Check out requires write permissions so this will not apply to all      -->
           <!-- documents.                                                              -->
@@ -246,13 +246,13 @@
       <!-- new nodes. They can cehck out content into a space to which they have       -->
       <!-- create permission.                                                          -->
       <permissionGroup name="Editor"  expose="true" allowFullControl="false" >
-          <includePermissionGroup type="cm:cmobject" permissionGroup="Guest"/>
+          <includePermissionGroup type="cm:cmobject" permissionGroup="Consumer"/>
           <includePermissionGroup type="sys:base" permissionGroup="Write"/>
           <includePermissionGroup type="cm:lockable" permissionGroup="CheckOut"/>
       </permissionGroup>
       
-      <!-- The guest permission allows read to everything by default.                  -->
-      <permissionGroup name="Guest" allowFullControl="false" expose="true" >
+      <!-- The Consumer permission allows read to everything by default.                  -->
+      <permissionGroup name="Consumer" allowFullControl="false" expose="true" >
           <includePermissionGroup permissionGroup="Read" type="sys:base" />
       </permissionGroup>
       
@@ -304,7 +304,7 @@
       <permissionGroup name="Collaborator" extends="true" expose="true"/>
       <permissionGroup name="Contributor" extends="true" expose="true"/>
       <permissionGroup name="Editor" extends="true" expose="true"/>
-      <permissionGroup name="Guest" extends="true" expose="true"/>
+      <permissionGroup name="Consumer" extends="true" expose="true"/>
       
    </permissionSet>
    

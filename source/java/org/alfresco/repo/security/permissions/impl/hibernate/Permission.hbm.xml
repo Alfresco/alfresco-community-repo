@@ -149,5 +149,14 @@
          typeName = :typeNameOld and
          name in ('Coordinator', 'Contributor', 'Editor', 'Guest')
    </query>
+   
+   <query name="permission.patch.UpdatePermissionName" >
+      update
+         org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntryImpl as entry
+      set
+         name = :nameNew
+      where
+         name = :nameOld
+   </query>
     
 </hibernate-mapping>

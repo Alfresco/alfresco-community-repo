@@ -110,7 +110,7 @@ public enum AuthorityType
 
         public String getFixedString()
         {
-            return PermissionService.GUEST;
+            return PermissionService.GUEST_AUTHORITY;
         }
 
         public boolean isPrefixed()
@@ -219,7 +219,7 @@ public enum AuthorityType
         {
             authorityType = AuthorityType.OWNER;
         }
-        else if (authority.equalsIgnoreCase(PermissionService.GUEST))
+        else if (authority.equalsIgnoreCase(PermissionService.GUEST_AUTHORITY))
         {
             authorityType = AuthorityType.GUEST;
         }

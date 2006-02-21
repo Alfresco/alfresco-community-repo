@@ -53,6 +53,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -95,6 +96,7 @@ public class ImporterComponent
     private RuleService ruleService;
     private PermissionService permissionService;
     private AuthorityService authorityService;
+    private AuthenticationService authenticationService;
     private OwnableService ownableService;
 
     // binding markers    
@@ -184,6 +186,14 @@ public class ImporterComponent
         this.authorityService = authorityService;
     }
 
+    /**
+     * @param authenticationService  authenticationService
+     */
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
+    }
+    
     /**
      * @param ownableService  ownableService
      */
@@ -948,8 +958,13 @@ public class ImporterComponent
         {
             // Resolve path to node reference
             NodeRef nodeRef = null;
+            importedRef = bindPlaceHolder(importedRef, binding);
 
-            if (importedRef.startsWith("/"))
+            if (importedRef.equals("/"))
+            {
+                nodeRef = sourceNodeRef;
+            }
+            else if (importedRef.startsWith("/"))
             {
                 // resolve absolute path
                 SearchParameters searchParameters = new SearchParameters();
@@ -1197,7 +1212,7 @@ public class ImporterComponent
                 // apply permissions
                 List<AccessPermission> permissions = null;
                 AccessStatus writePermission = permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS);
-                if (writePermission.equals(AccessStatus.ALLOWED))
+                if (authenticationService.isCurrentUserTheSystemUser() || writePermission.equals(AccessStatus.ALLOWED))
                 {
                     permissions = node.getAccessControlEntries();
                     for (AccessPermission permission : permissions)
@@ -1377,7 +1392,7 @@ public class ImporterComponent
                         // Apply permissions
                         List<AccessPermission> permissions = null;
                         AccessStatus writePermission = permissionService.hasPermission(existingNodeRef, PermissionService.CHANGE_PERMISSIONS);
-                        if (writePermission.equals(AccessStatus.ALLOWED))
+                        if (authenticationService.isCurrentUserTheSystemUser() || writePermission.equals(AccessStatus.ALLOWED))
                         {
                             boolean inheritPermissions = node.getInheritPermissions();
                             if (!inheritPermissions)

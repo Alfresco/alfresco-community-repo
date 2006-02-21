@@ -18,10 +18,9 @@ package org.alfresco.tools;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.Collection;
 
-import org.alfresco.repo.exporter.FileExportPackageHandler;
 import org.alfresco.repo.exporter.ACPExportPackageHandler;
+import org.alfresco.repo.exporter.FileExportPackageHandler;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -239,6 +238,7 @@ public final class Export extends Tool
         }
         catch(ExporterException e)
         {
+            e.printStackTrace();
             throw new ToolException("Failed to export", e);
         }
     }
@@ -552,16 +552,23 @@ public final class Export extends Tool
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
+         * @see org.alfresco.service.cmr.view.Exporter#startValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
          */
-        public void value(NodeRef nodeRef, QName property, Object value)
+        public void startValueCollection(NodeRef nodeRef, QName property)
         {
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.util.Collection)
+         * @see org.alfresco.service.cmr.view.Exporter#endValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
          */
-        public void value(NodeRef nodeRef, QName property, Collection values)
+        public void endValueCollection(NodeRef nodeRef, QName property)
+        {
+        }
+        
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
+         */
+        public void value(NodeRef nodeRef, QName property, Object value)
         {
         }
 
@@ -627,10 +634,7 @@ public final class Export extends Tool
          */
         public void endReference(NodeRef nodeRef)
         {
-            // TODO Auto-generated method stub
-            
         }
-
     }
 
 }

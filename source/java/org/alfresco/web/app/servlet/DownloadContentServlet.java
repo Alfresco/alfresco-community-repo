@@ -158,25 +158,25 @@ public class DownloadContentServlet extends BaseServlet
       ContentService contentService = serviceRegistry.getContentService();
       PermissionService permissionService = serviceRegistry.getPermissionService();
       
-      // check that the user has at least READ_CONTENT access - else redirect to the login page
-      if (permissionService.hasPermission(nodeRef, PermissionService.READ_CONTENT) == AccessStatus.DENIED)
-      {
-         if (logger.isDebugEnabled())
-            logger.debug("User does not have permissions to read content for NodeRef: " + nodeRef.toString());
-         redirectToLoginPage(req, res, getServletContext());
-         return;
-      }
-      
-      if (attachment == true)
-      {
-         // set header based on filename - will force a Save As from the browse if it doesn't recognise it
-         // this is better than the default response of the browse trying to display the contents!
-         // TODO: make this configurable - and check it does not prevent streaming of large files
-         res.setHeader("Content-Disposition", "attachment;filename=\"" + URLDecoder.decode(filename, "UTF-8") + '"');
-      }
-      
       try
       {
+         // check that the user has at least READ_CONTENT access - else redirect to the login page
+         if (permissionService.hasPermission(nodeRef, PermissionService.READ_CONTENT) == AccessStatus.DENIED)
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("User does not have permissions to read content for NodeRef: " + nodeRef.toString());
+            redirectToLoginPage(req, res, getServletContext());
+            return;
+         }
+         
+         if (attachment == true)
+         {
+            // set header based on filename - will force a Save As from the browse if it doesn't recognise it
+            // this is better than the default response of the browse trying to display the contents!
+            // TODO: make this configurable - and check it does not prevent streaming of large files
+            res.setHeader("Content-Disposition", "attachment;filename=\"" + URLDecoder.decode(filename, "UTF-8") + '"');
+         }
+      
          // get the content reader
          ContentReader reader = contentService.getReader(nodeRef, propertyQName);
          // ensure that it is safe to use

@@ -82,8 +82,11 @@ public final class Repository
    /** reference to System folder */
    private static NodeRef systemRef = null;
    
-   /** reference to the namespace service */
+   /** reference to the NamespaceService */
    private static NamespaceService namespaceService = null;
+   
+   /** reference to the ServiceRegistry */
+   private static ServiceRegistry serviceRegistry = null;
    
    /**
     * Private constructor
@@ -411,8 +414,12 @@ public final class Repository
     */
    public static ServiceRegistry getServiceRegistry(FacesContext context)
    {
-      return (ServiceRegistry)FacesContextUtils.getRequiredWebApplicationContext(
-            context).getBean(ServiceRegistry.SERVICE_REGISTRY);
+      if (serviceRegistry == null)
+      {
+         serviceRegistry = (ServiceRegistry)FacesContextUtils.getRequiredWebApplicationContext(
+               context).getBean(ServiceRegistry.SERVICE_REGISTRY);
+      }
+      return serviceRegistry;
    }
    
    /**
@@ -423,8 +430,12 @@ public final class Repository
     */
    public static ServiceRegistry getServiceRegistry(ServletContext context)
    {
-      return (ServiceRegistry)WebApplicationContextUtils.getRequiredWebApplicationContext(
-            context).getBean(ServiceRegistry.SERVICE_REGISTRY);
+      if (serviceRegistry == null)
+      {
+         serviceRegistry = (ServiceRegistry)WebApplicationContextUtils.getRequiredWebApplicationContext(
+               context).getBean(ServiceRegistry.SERVICE_REGISTRY);
+      }
+      return serviceRegistry;
    }
    
    /**

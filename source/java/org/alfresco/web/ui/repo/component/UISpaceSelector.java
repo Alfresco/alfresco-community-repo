@@ -23,10 +23,13 @@ import java.util.List;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -58,7 +61,8 @@ public class UISpaceSelector extends AbstractItemSelector
    }
    
    /**
-    * Returns the parent id of the current space or null if the parent space is the company home space
+    * Returns the parent id of the current space or null if the parent space is an immediate child
+    * of the repository root node or the parent is inaccessable due to permissions.
     * 
     * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getParentNodeId(javax.faces.context.FacesContext)
     */
@@ -68,20 +72,47 @@ public class UISpaceSelector extends AbstractItemSelector
       
       if (this.navigationId != null && this.navigationId.equals(Application.getCompanyRootId()) == false)
       {
-         ChildAssociationRef parentRef = getNodeService(context).getPrimaryParent(
-               new NodeRef(Repository.getStoreRef(), this.navigationId));
-         id = parentRef.getParentRef().getId();
+         try
+         {
+            ChildAssociationRef parentRef = getNodeService(context).getPrimaryParent(
+                  new NodeRef(Repository.getStoreRef(), this.navigationId));
+            id = parentRef.getParentRef().getId();
+         }
+         catch (AccessDeniedException accessErr)
+         {
+            // cannot navigate to parent id will be null
+         }
       }
       
       return id;
    }
+   
+   /**
+    * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#parentAccessable()
+    */
+   /*public boolean parentAccessable(FacesContext context)
+   {
+      boolean accessable = false;
+      try
+      {
+         ChildAssociationRef parentRef = getNodeService(context).getPrimaryParent(
+               new NodeRef(Repository.getStoreRef(), this.navigationId));
+         parentRef.getParentRef().getId();
+         accessable = true;
+      }
+      catch (AccessDeniedException accessErr)
+      {
+         // cannot navigate to parent id - not accessable
+      }
+      return accessable;
+   }*/
 
    /**
     * Returns the child spaces of the current space
     * 
     * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getChildrenForNode(javax.faces.context.FacesContext)
     */
-   public Collection<ChildAssociationRef> getChildrenForNode(FacesContext context)
+   public Collection<NodeRef> getChildrenForNode(FacesContext context)
    {
       NodeRef nodeRef = new NodeRef(Repository.getStoreRef(), this.navigationId);
       List<ChildAssociationRef> allKids = getNodeService(context).getChildAssocs(nodeRef,
@@ -90,13 +121,13 @@ public class UISpaceSelector extends AbstractItemSelector
       NodeService service = getNodeService(context);
       
       // filter out those children that are not spaces
-      List<ChildAssociationRef> spaceKids = new ArrayList<ChildAssociationRef>(); 
+      List<NodeRef> spaceKids = new ArrayList<NodeRef>(); 
       for (ChildAssociationRef ref : allKids)
       {
          if (dd.isSubClass(service.getType(ref.getChildRef()), ContentModel.TYPE_FOLDER) && 
              dd.isSubClass(service.getType(ref.getChildRef()), ContentModel.TYPE_SYSTEM_FOLDER) == false)
          {
-            spaceKids.add(ref);
+            spaceKids.add(ref.getChildRef());
          }
       }
       
@@ -104,22 +135,26 @@ public class UISpaceSelector extends AbstractItemSelector
    }
 
    /**
-    * Returns the current users home space
+    * Returns the children of the initial root space
     * 
     * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getRootChildren(javax.faces.context.FacesContext)
     */
-   public Collection<ChildAssociationRef> getRootChildren(FacesContext context)
+   public Collection<NodeRef> getRootChildren(FacesContext context)
    {
-      // get the root space from the current user
-      //String rootId = Application.getCurrentUser(context).getHomeSpaceId();
       NodeRef rootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
-
-      // get a child association reference back to the real repository root to satisfy
+      
+      // get a child association reference back from the parent node to satisfy
       // the generic API we have in the abstract super class
-      ChildAssociationRef childRefFromRealRoot = getNodeService(context).getPrimaryParent(rootRef);
-      List<ChildAssociationRef> roots = new ArrayList<ChildAssociationRef>(1);
-      roots.add(childRefFromRealRoot);
-                  
+      PermissionService ps = Repository.getServiceRegistry(context).getPermissionService();
+      if (ps.hasPermission(rootRef, PermissionService.READ) != AccessStatus.ALLOWED)
+      {
+         // get the root space from the current user home instead
+         String homeId = Application.getCurrentUser(context).getHomeSpaceId();
+         rootRef = new NodeRef(Repository.getStoreRef(), homeId);
+      }
+      List<NodeRef> roots = new ArrayList<NodeRef>(1);
+      roots.add(rootRef);
+      
       return roots;
    }
 

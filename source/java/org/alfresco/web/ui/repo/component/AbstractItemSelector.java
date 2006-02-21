@@ -33,7 +33,6 @@ import javax.faces.event.FacesEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
@@ -79,6 +78,7 @@ public abstract class AbstractItemSelector extends UIInput
    /** Flag to show whether the component is disabled */
    protected Boolean disabled;
    
+   
    // ------------------------------------------------------------------------------
    // Component Impl 
    
@@ -117,7 +117,7 @@ public abstract class AbstractItemSelector extends UIInput
     * @param context The Faces context
     * @return The children
     */
-   public abstract Collection<ChildAssociationRef> getChildrenForNode(FacesContext context);
+   public abstract Collection<NodeRef> getChildrenForNode(FacesContext context);
    
    /**
     * Returns a collection of child associations of the root
@@ -125,7 +125,7 @@ public abstract class AbstractItemSelector extends UIInput
     * @param context The Faces context
     * @return The root options
     */
-   public abstract Collection<ChildAssociationRef> getRootChildren(FacesContext context);
+   public abstract Collection<NodeRef> getRootChildren(FacesContext context);
    
    /**
     * @return The icon image to display next to the item links, or null for no icon 
@@ -240,6 +240,8 @@ public abstract class AbstractItemSelector extends UIInput
          return;
       }
       
+      NodeService service = getNodeService(context);
+      
       if (isDisabled())
       {
          // render a read-only view of the selected category (if any)
@@ -263,13 +265,12 @@ public abstract class AbstractItemSelector extends UIInput
          // if there is a value show it's name
          if (nodeRef != null)
          {
-            NodeService service = Repository.getServiceRegistry(context).getNodeService();
             out.write(Repository.getNameForNode(service, nodeRef));
          }
       }
       else
       {
-         // render an editable control for selecting categories
+         // render an editable control for selecting items
          String clientId = getClientId(context);
          
          StringBuilder buf = new StringBuilder(512);
@@ -327,7 +328,7 @@ public abstract class AbstractItemSelector extends UIInput
                   }
                   else
                   {
-                     label = Repository.getNameForNode(getNodeService(context), value);
+                     label = Repository.getNameForNode(service, value);
                      showValueInHiddenField = true;
                   }
                   
@@ -400,120 +401,93 @@ public abstract class AbstractItemSelector extends UIInput
             {
                // show the picker list
                // get the children of the node ref to show
-               NodeService service = getNodeService(context);
+               buf.append("<table border=0 cellspacing=1 cellpadding=1");
+               if (attrs.get("style") != null)
+               {
+                  buf.append(" style=\"")
+                     .append(attrs.get("style"))
+                     .append('"');
+               }
+               if (attrs.get("styleClass") != null)
+               {
+                  buf.append(" class=")
+                     .append(attrs.get("styleClass"));
+               }
+               buf.append(">");
+               
+               // if we are setting up the initial selection we need to get the
+               // parent id of the initial selection so the user can actually see
+               // the item when the list is rendered
+               if (this.mode == MODE_INITIAL_SELECTION)
+               {
+                  this.navigationId = getParentNodeId(context);
+               }
+               
+               // render "Go Up" link if not at the root level
+               if (this.navigationId != null)
+               {
+                  // get the id of the parent node of the current navigation node,
+                  // null indicates we are at the root level
+                  String id = getParentNodeId(context);
+                  
+                  buf.append("<tr><td></td><td>");
+                  
+                  String upImage = Utils.buildImageTag(context, WebResources.IMAGE_GO_UP, null, "absmiddle");
+                  
+                  // render a link to the parent node
+                  renderNodeLink(context, id, Application.getMessage(context, MSG_GO_UP), upImage, buf);
+                  buf.append("</td></tr>");
+               }
+               
+               String okButtonId = clientId + OK_BUTTON;
+               boolean okButtonEnabled = false;
+               
+               // display the children of the specified navigation node ID
+               Collection<NodeRef> childRefs;
+               if (this.navigationId != null)
+               {
+                  // get a list of children for the current navigation node
+                  childRefs = getChildrenForNode(context);
+               }
+               else
+               {
+                  // no node set - special case to show the initial root items
+                  childRefs = getRootChildren(context);
+               }
+               
                UserTransaction tx = null;
                try
                {
                   tx = Repository.getUserTransaction(context, true);
                   tx.begin();
                   
-                  buf.append("<table border=0 cellspacing=1 cellpadding=1");
-                  if (attrs.get("style") != null)
+                  for (NodeRef childRef : childRefs)
                   {
-                     buf.append(" style=\"")
-                        .append(attrs.get("style"))
-                        .append('"');
-                  }
-                  if (attrs.get("styleClass") != null)
-                  {
-                     buf.append(" class=")
-                        .append(attrs.get("styleClass"));
-                  }
-                  buf.append(">");
-                  
-                  // if we are setting up the initial selection we need to get the
-                  // parent id of the initial selection so the user can actually see
-                  // the item when the list is rendered
-                  if (this.mode == MODE_INITIAL_SELECTION)
-                  {
-                     this.navigationId = getParentNodeId(context);
-                  }
-                  
-                  // render "Go Up" link
-                  if (this.navigationId != null)
-                  {
-                     // get the id of the parent node of the current navigation node,
-                     // null indicates we are at the root level
-                     String id = getParentNodeId(context);
+                     // render each child found
+                     String childId = childRef.getId();
+                     buf.append("<tr><td><input type='radio' name='")
+                     .append(clientId).append(OPTION).append("' value='")
+                     .append(childId).append("'");
+                     if (childId.equals(this.initialSelectionId))
+                     {
+                        buf.append(" checked");
+                        
+                        // if any radio buttons are checked, the OK button must start enabled
+                        okButtonEnabled = true;
+                        
+                        // now remove the initial selection as we only need it the first time
+                        this.initialSelectionId = null;
+                     }
+                     buf.append(" onclick=\"javascript:document.getElementById('")
+                        .append(okButtonId)
+                        .append("').disabled=false;\"");
+                     buf.append("/></td><td>");
                      
-                     buf.append("<tr><td></td><td>");
-                     
-                     String upImage = Utils.buildImageTag(context, WebResources.IMAGE_GO_UP, null, "absmiddle");
-                     
-                     // render a link to the parent node
-                     renderNodeLink(context, id, Application.getMessage(context, MSG_GO_UP), upImage, buf);
+                     // get the name for the child and output as link
+                     NodeRef childNodeRef = new NodeRef(Repository.getStoreRef(), childId);
+                     String name = Repository.getNameForNode(service, childNodeRef);
+                     renderNodeLink(context, childId, name, image, buf);
                      buf.append("</td></tr>");
-                  }
-                  
-                  String okButtonId = clientId + OK_BUTTON;
-                  boolean okButtonEnabled = false;
-                  
-                  // display the children of the specified navigation node ID
-                  if (this.navigationId != null)
-                  {
-                     // get a list of children for the current navigation node
-                     Collection<ChildAssociationRef> childRefs = getChildrenForNode(context);
-                     for (ChildAssociationRef childRef : childRefs)
-                     {
-                        // render each child found
-                        String childId = childRef.getChildRef().getId();
-                        buf.append("<tr><td><input type='radio' name='")
-                           .append(clientId).append(OPTION).append("' value='")
-                           .append(childId).append("'");
-                        if (childId.equals(this.initialSelectionId))
-                        {
-                           buf.append(" checked");
-                           
-                           // if any radio buttons are checked, the OK button must start enabled
-                           okButtonEnabled = true;
-                           
-                           // now remove the initial selection as we only need it the first time
-                           this.initialSelectionId = null;
-                        }
-                        buf.append(" onclick=\"javascript:document.getElementById('")
-                           .append(okButtonId)
-                           .append("').disabled=false;\"");
-                        buf.append("/></td><td>");
-                        
-                        // get the name for the child and output as link
-                        NodeRef childNodeRef = new NodeRef(Repository.getStoreRef(), childId);
-                        String name = Repository.getNameForNode(service, childNodeRef);
-                        renderNodeLink(context, childId, name, image, buf);
-                        buf.append("</td></tr>");
-                     }
-                  }
-                  else
-                  {
-                     // no node set - special case so show the root items
-                     Collection<ChildAssociationRef> childRefs = getRootChildren(context);
-                     for (ChildAssociationRef childRef : childRefs)
-                     {
-                        // render each root category found
-                        String childId = childRef.getChildRef().getId();
-                        buf.append("<tr><td><input type='radio' name='")
-                           .append(clientId).append(OPTION).append("' value='")
-                           .append(childId).append("'");
-                        if (childId.equals(this.initialSelectionId))
-                        {
-                           buf.append(" checked");
-                           
-                           // if any radio buttons are checked, the OK button must start enabled
-                           okButtonEnabled = true;
-                           
-                           // now remove the initial selection as we only need it the first time
-                           this.initialSelectionId = null;
-                        }
-                        buf.append(" onclick=\"javascript:document.getElementById('")
-                           .append(okButtonId)
-                           .append("').disabled=false;\"");
-                        buf.append("/></td><td>");
-                        
-                        // get the name for the child (rather than association name)
-                        NodeRef childNodeRef = new NodeRef(Repository.getStoreRef(), childId);
-                        String name = Repository.getNameForNode(service, childNodeRef);
-                        renderNodeLink(context, childId, name, image, buf);
-                        buf.append("</td></tr>");
-                     }
                   }
                   
                   // render OK button
@@ -679,6 +653,7 @@ public abstract class AbstractItemSelector extends UIInput
    {
       this.disabled = disabled;
    }
+   
    
    // ------------------------------------------------------------------------------
    // Protected helpers

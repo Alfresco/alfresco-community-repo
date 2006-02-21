@@ -16,6 +16,7 @@
  */
 package org.alfresco.web.ui.repo.component;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.faces.context.FacesContext;
@@ -107,14 +108,19 @@ public class UICategorySelector extends AbstractItemSelector
     * 
     * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getChildrenForNode(javax.faces.context.FacesContext)
     */
-   public Collection<ChildAssociationRef> getChildrenForNode(FacesContext context)
+   public Collection<NodeRef> getChildrenForNode(FacesContext context)
    {
       NodeRef nodeRef = new NodeRef(Repository.getStoreRef(), this.navigationId);
       
       Collection<ChildAssociationRef> childRefs = getCategoryService(context).getChildren(nodeRef, 
             CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.IMMEDIATE);
+      Collection<NodeRef> refs = new ArrayList<NodeRef>(childRefs.size());
+      for (ChildAssociationRef childRef : childRefs)
+      {
+         refs.add(childRef.getChildRef());
+      }
       
-      return childRefs;
+      return refs;
    }
 
    /**
@@ -122,9 +128,17 @@ public class UICategorySelector extends AbstractItemSelector
     * 
     * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getRootChildren(javax.faces.context.FacesContext)
     */
-   public Collection<ChildAssociationRef> getRootChildren(FacesContext context)
+   public Collection<NodeRef> getRootChildren(FacesContext context)
    {
-      return getCategoryService(context).getCategories(Repository.getStoreRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, Depth.IMMEDIATE);
+      Collection<ChildAssociationRef> childRefs = getCategoryService(context).getCategories(
+            Repository.getStoreRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, Depth.IMMEDIATE);
+      Collection<NodeRef> refs = new ArrayList<NodeRef>(childRefs.size());
+      for (ChildAssociationRef childRef : childRefs)
+      {
+         refs.add(childRef.getChildRef());
+      }
+      
+      return refs;
    }
    
    /**

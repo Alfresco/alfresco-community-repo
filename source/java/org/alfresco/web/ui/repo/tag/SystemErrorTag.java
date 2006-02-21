@@ -171,7 +171,7 @@ public class SystemErrorTag extends TagSupport
          out.write("} else {\n");
          out.write("document.getElementById('detailsTitle').innerHTML = '");
          out.write(bundle.getString(MSG_SHOW_DETAILS));
-         out.write(")';\n");
+         out.write("';\n");
          out.write("document.getElementById('details').style.display = 'none';\n");
          out.write("hidden = true;\n");
          out.write("} } </script>\n");

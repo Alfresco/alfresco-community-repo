@@ -31,7 +31,6 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.filesys.server.SrvSession;
@@ -2866,7 +2865,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
             // Get the file information
 
-            FileInfo finfo = disk.getFileInformation(null, tree, ftpPath.getSharePath());
+            FileInfo finfo = disk.getFileInformation(this, tree, ftpPath.getSharePath());
 
             if (finfo == null)
             {

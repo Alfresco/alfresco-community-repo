@@ -11,8 +11,10 @@ public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private MetadataExtracter extracter;
 
-    public void onSetUpInTransaction() throws Exception
+    @Override
+    public void setUp() throws Exception
     {
+        super.setUp();
         extracter = new PdfBoxMetadataExtracter();
     }
 
@@ -36,6 +38,6 @@ public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
 
     public void testPdfExtraction() throws Exception
     {
-        testCommonMetadata(extractFromExtension("pdf", MimetypeMap.MIMETYPE_PDF));
+        testExtractFromMimetype(MimetypeMap.MIMETYPE_PDF);
     }
 }

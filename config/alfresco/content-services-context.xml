@@ -102,6 +102,9 @@
       <property name="registry">
          <ref bean="metadataExtracterRegistry" />
       </property>
+      <property name="mimetypeService">
+         <ref bean="mimetypeService" />
+      </property>
    </bean>
    
    <!-- Content Metadata Extracters -->
@@ -110,11 +113,7 @@
    <bean class="org.alfresco.repo.content.metadata.HtmlMetadataExtracter" parent="baseMetadataExtracter" />
    <bean class="org.alfresco.repo.content.metadata.MP3MetadataExtracter" parent="baseMetadataExtracter" />
    <bean class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter" parent="baseMetadataExtracter" />
-   <bean class="org.alfresco.repo.content.metadata.UnoMetadataExtracter" parent="baseMetadataExtracter" init-method="init" >
-      <property name="mimetypeMap">
-         <ref bean="mimetypeService" />
-      </property>
-   </bean>
+   <bean class="org.alfresco.repo.content.metadata.UnoMetadataExtracter" parent="baseMetadataExtracter" init-method="init" />
    
 
    <!-- Content Transformation Regisitry -->

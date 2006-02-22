@@ -113,9 +113,11 @@ public abstract class AbstractContentTransformer implements ContentTransformer
     {
         if (registry == null)
         {
-            if (logger.isDebugEnabled())
+            if (registry == null)
             {
-                logger.debug("No registry assigned.  Ignoring auto-registration.");
+                logger.warn("Property 'registry' has not been set.  Ignoring auto-registration: \n" +
+                        "   transformer: " + this);
+                return;
             }
             return;
         }
@@ -245,11 +247,15 @@ public abstract class AbstractContentTransformer implements ContentTransformer
             // check that the reader and writer are both closed
             if (!reader.isClosed())
             {
-                logger.error("Content reader not closed by transformer: \n" + reader);
+                logger.error("Content reader not closed by transformer: \n" +
+                        "   reader: " + reader + "\n" +
+                        "   transformer: " + this);
             }
             if (!writer.isClosed())
             {
-                logger.error("Content writer not closed by transformer: \n" + writer);
+                logger.error("Content writer not closed by transformer: \n" +
+                        "   writer: " + writer + "\n" +
+                        "   transformer: " + this);
             }
         }
         

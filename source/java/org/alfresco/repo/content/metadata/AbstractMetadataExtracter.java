@@ -24,6 +24,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,6 +37,7 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
 {
     private static Log logger = LogFactory.getLog(AbstractMetadataExtracter.class);
     
+    private MimetypeService mimetypeService;
     private MetadataExtracterRegistry registry;
     private Set<String> supportedMimetypes;
     private double reliability;
@@ -64,6 +66,24 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
     {
         this.registry = registry;
     }
+
+    /**
+     * Helper setter of the mimetype service.  This is not always required.
+     * 
+     * @param mimetypeService
+     */
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
+    }
+
+    /**
+     * @return Returns the mimetype helper
+     */
+    protected MimetypeService getMimetypeService()
+    {
+        return mimetypeService;
+    }
     
     /**
      * Registers this instance of the extracter with the registry.
@@ -74,7 +94,9 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
     {
         if (registry == null)
         {
-            throw new IllegalArgumentException("Property 'registry' has not been set");
+            logger.warn("Property 'registry' has not been set.  Ignoring auto-registration: \n" +
+                    "   extracter: " + this);
+            return;
         }
         registry.register(this);
     }
@@ -129,15 +151,17 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
         catch (Throwable e)
         {
             throw new ContentIOException("Metadata extraction failed: \n" +
-                    "   reader: " + reader + "\n" +
+                    "   reader: " + reader,
                     e);
         }
         finally
         {
-            // check that the reader and writer are both closed
+            // check that the reader was closed
             if (!reader.isClosed())
             {
-                logger.error("Content reader not closed by metadata extracter: \n" + reader);
+                logger.error("Content reader not closed by metadata extracter: \n" +
+                        "   reader: " + reader + "\n" +
+                        "   extracter: " + this);
             }
         }
         

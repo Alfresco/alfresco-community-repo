@@ -25,8 +25,10 @@ public class HtmlMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private MetadataExtracter extracter;
 
-    public void onSetUpInTransaction() throws Exception
+    @Override
+    public void setUp() throws Exception
     {
+        super.setUp();
         extracter = new HtmlMetadataExtracter();
     }
 
@@ -50,7 +52,6 @@ public class HtmlMetadataExtracterTest extends AbstractMetadataExtracterTest
 
     public void testHtmlExtraction() throws Exception
     {
-        testCommonMetadata(extractFromExtension("html", MimetypeMap.MIMETYPE_HTML));
+        testExtractFromMimetype(MimetypeMap.MIMETYPE_HTML);
     }
-
 }

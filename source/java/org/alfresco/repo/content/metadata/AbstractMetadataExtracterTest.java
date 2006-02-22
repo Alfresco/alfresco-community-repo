@@ -18,40 +18,37 @@ package org.alfresco.repo.content.metadata;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+
+import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.BaseSpringTest;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.TempFileProvider;
+import org.springframework.context.ApplicationContext;
 
 /**
- * Provides a base set of tests for testing 
- * {@link org.alfresco.repo.content.metadata.MetadataExtracter} implementations.
+ * @see org.alfresco.repo.content.metadata.MetadataExtracter
+ * @see org.alfresco.repo.content.metadata.AbstractMetadataExtracter
  * 
  * @author Jesper Steen Møller
  */
-public abstract class AbstractMetadataExtracterTest extends BaseSpringTest
+public abstract class AbstractMetadataExtracterTest extends TestCase
 {
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    
     protected static final String QUICK_TITLE = "The quick brown fox jumps over the lazy dog";
     protected static final String QUICK_DESCRIPTION = "Gym class featuring a brown fox and lazy dog";
     protected static final String QUICK_CREATOR = "Nevin Nollop";
-    protected static final String[] QUICK_WORDS = new String[] { "quick", "brown", "fox", "jumps", "lazy", "dog" };
 
     protected MimetypeMap mimetypeMap;
-    protected MetadataExtracter transformer;
-
-    public final void setMimetypeMap(MimetypeMap mimetypeMap)
-    {
-        this.mimetypeMap = mimetypeMap;
-    }
 
     protected abstract MetadataExtracter getExtracter();
 
@@ -59,8 +56,10 @@ public abstract class AbstractMetadataExtracterTest extends BaseSpringTest
      * Ensures that the temp locations are cleaned out before the tests start
      */
     @Override
-    protected void onSetUpInTransaction() throws Exception
+    public void setUp() throws Exception
     {
+        this.mimetypeMap = (MimetypeMap) ctx.getBean("mimetypeService");
+        
         // perform a little cleaning up
         long now = System.currentTimeMillis();
         TempFileProvider.TempFileCleanerJob.removeFiles(now);
@@ -73,40 +72,26 @@ public abstract class AbstractMetadataExtracterTest extends BaseSpringTest
     {
         assertNotNull("MimetypeMap not present", mimetypeMap);
         // check that the quick resources are available
-        File sourceFile = AbstractMetadataExtracterTest.loadQuickTestFile("txt");
+        File sourceFile = AbstractContentTransformerTest.loadQuickTestFile("txt");
         assertNotNull("quick.* files should be available from Tests", sourceFile);
     }
-
-    /**
-     * Helper method to load one of the "The quick brown fox" files from the
-     * classpath.
-     * 
-     * @param extension the extension of the file required
-     * @return Returns a test resource loaded from the classpath or
-     *         <tt>null</tt> if no resource could be found.
-     * @throws IOException
-     */
-    public static File loadQuickTestFile(String extension) throws IOException
+    
+    protected void testExtractFromMimetype(String mimetype) throws Exception
     {
-        URL url = AbstractMetadataExtracterTest.class.getClassLoader().getResource("quick/quick." + extension);
-        if (url == null)
-        {
-            return null;
-        }
-        File file = new File(url.getFile());
-        if (!file.exists())
-        {
-            return null;
-        }
-        return file;
+        Map<QName, Serializable> properties = extractFromMimetype(mimetype);
+        // check
+        testCommonMetadata(mimetype, properties);
     }
 
-    public Map<QName, Serializable> extractFromExtension(String ext, String mimetype) throws Exception
+    protected Map<QName, Serializable> extractFromMimetype(String mimetype) throws Exception
     {
-        Map<QName, Serializable> destination = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        
+        // get the extension for the mimetype
+        String ext = mimetypeMap.getExtension(mimetype);
 
         // attempt to get a source file for each mimetype
-        File sourceFile = AbstractMetadataExtracterTest.loadQuickTestFile(ext);
+        File sourceFile = AbstractContentTransformerTest.loadQuickTestFile(ext);
         if (sourceFile == null)
         {
             throw new FileNotFoundException("No quick." + ext + " file found for test");
@@ -115,14 +100,17 @@ public abstract class AbstractMetadataExtracterTest extends BaseSpringTest
         // construct a reader onto the source file
         ContentReader sourceReader = new FileContentReader(sourceFile);
         sourceReader.setMimetype(mimetype);
-        getExtracter().extract(sourceReader, destination);
-        return destination;
+        getExtracter().extract(sourceReader, properties);
+        return properties;
     }
 
-    public void testCommonMetadata(Map<QName, Serializable> destination)
+    protected void testCommonMetadata(String mimetype, Map<QName, Serializable> properties)
     {
-        assertEquals(QUICK_TITLE, destination.get(ContentModel.PROP_TITLE));
-        assertEquals(QUICK_DESCRIPTION, destination.get(ContentModel.PROP_DESCRIPTION));
-        assertEquals(QUICK_CREATOR, destination.get(ContentModel.PROP_AUTHOR));
+        assertEquals(
+                "Property " + ContentModel.PROP_TITLE + " not found for mimetype " + mimetype,
+                QUICK_TITLE, properties.get(ContentModel.PROP_TITLE));
+        assertEquals(
+                "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
+                QUICK_DESCRIPTION, properties.get(ContentModel.PROP_DESCRIPTION));
     }
 }

@@ -42,12 +42,14 @@ import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
  */
 public class OfficeMetadataExtracter extends AbstractMetadataExtracter
 {
-    private static String[] mimeTypes = new String[] { MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_EXCEL,
-            MimetypeMap.MIMETYPE_PPT };
+    public static String[] SUPPORTED_MIMETYPES = new String[] {
+        MimetypeMap.MIMETYPE_WORD,
+        MimetypeMap.MIMETYPE_EXCEL,
+        MimetypeMap.MIMETYPE_PPT };
 
     public OfficeMetadataExtracter()
     {
-        super(new HashSet<String>(Arrays.asList(mimeTypes)), 1.0, 1000);
+        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)), 1.0, 1000);
     }
 
     public void extractInternal(ContentReader reader, final Map<QName, Serializable> destination) throws Throwable

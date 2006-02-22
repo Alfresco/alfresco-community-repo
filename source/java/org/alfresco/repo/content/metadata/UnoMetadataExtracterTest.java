@@ -16,7 +16,6 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import org.alfresco.repo.content.MimetypeMap;
 
 /**
  * @author Jesper Steen Møller
@@ -25,10 +24,13 @@ public class UnoMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private UnoMetadataExtracter extracter;
 
-    public void onSetUpInTransaction() throws Exception
+    @Override
+    public void setUp() throws Exception
     {
+        super.setUp();
         extracter = new UnoMetadataExtracter();
-        extracter.setMimetypeMap(mimetypeMap);
+        extracter.setMimetypeService(mimetypeMap);
+        extracter.init();
     }
 
     /**
@@ -46,34 +48,22 @@ public class UnoMetadataExtracterTest extends AbstractMetadataExtracterTest
             return;
         }
         
-        double reliability = 0.0;
-        reliability = extracter.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals("Mimetype text should not be supported", 0.0, reliability);
-
-        reliability = extracter.getReliability(MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT);
-        assertEquals("OpenOffice 2.0 Writer (OpenDoc) should be supported", 1.0, reliability);
-
-        reliability = extracter.getReliability(MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER);
-        assertEquals("OpenOffice 1.0 Writer should be supported", 1.0, reliability);
+        for (String mimetype : UnoMetadataExtracter.SUPPORTED_MIMETYPES)
+        {
+            double reliability = extracter.getReliability(mimetype);
+            assertTrue("Expected above zero reliability", reliability > 0.0);
+        }
     }
 
-    public void testOOo20WriterExtraction() throws Exception
+    public void testSupportedMimetypes() throws Exception
     {
         if (!extracter.isConnected())
         {
             return;
         }
-        
-        testCommonMetadata(extractFromExtension("odt", MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT));
-    }
-
-    public void testOOo10WriterExtraction() throws Exception
-    {
-        if (!extracter.isConnected())
+        for (String mimetype : UnoMetadataExtracter.SUPPORTED_MIMETYPES)
         {
-            return;
+            testExtractFromMimetype(mimetype);
         }
-        
-        testCommonMetadata(extractFromExtension("sxw", MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER));
     }
 }

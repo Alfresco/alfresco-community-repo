@@ -1,20 +1,19 @@
 package org.alfresco.repo.content.metadata;
 
-import org.alfresco.repo.content.MimetypeMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @see org.alfresco.repo.content.transform.OfficeMetadataExtracter
+ * 
  * @author Jesper Steen Møller
  */
 public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
-    private static final Log logger = LogFactory.getLog(OfficeMetadataExtracterTest.class);
     private MetadataExtracter extracter;
 
-    public void onSetUpInTransaction() throws Exception
+    @Override
+    public void setUp() throws Exception
     {
+        super.setUp();
         extracter = new OfficeMetadataExtracter();
     }
 
@@ -28,33 +27,21 @@ public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
 
     public void testReliability() throws Exception
     {
-        double reliability = 0.0;
-        reliability = extracter.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals("Mimetype text should not be supported", 0.0, reliability);
-
-        reliability = extracter.getReliability(MimetypeMap.MIMETYPE_WORD);
-        assertEquals("Word should be supported", 1.0, reliability);
-
-        reliability = extracter.getReliability(MimetypeMap.MIMETYPE_EXCEL);
-        assertEquals("Excel should be supported", 1.0, reliability);
-
-        reliability = extracter.getReliability(MimetypeMap.MIMETYPE_PPT);
-        assertEquals("PowerPoint should be supported", 1.0, reliability);
+        for (String mimetype : OfficeMetadataExtracter.SUPPORTED_MIMETYPES)
+        {
+            double reliability = extracter.getReliability(mimetype);
+            assertTrue("Expected above zero reliability", reliability > 0.0);
+        }
     }
 
-    public void testWordExtraction() throws Exception
+    /**
+     * Test all the supported mimetypes
+     */
+    public void testSupportedMimetypes() throws Exception
     {
-        testCommonMetadata(extractFromExtension("doc", MimetypeMap.MIMETYPE_WORD));
+        for (String mimetype : OfficeMetadataExtracter.SUPPORTED_MIMETYPES)
+        {
+            testExtractFromMimetype(mimetype);
+        }
     }
-
-    public void testExcelExtraction() throws Exception
-    {
-        testCommonMetadata(extractFromExtension("xls", MimetypeMap.MIMETYPE_EXCEL));
-    }
-
-    public void testPowerPointExtraction() throws Exception
-    {
-        testCommonMetadata(extractFromExtension("ppt", MimetypeMap.MIMETYPE_PPT));
-    }
-
 }

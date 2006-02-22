@@ -41,33 +41,28 @@ import com.sun.star.ucb.XFileIdentifierConverter;
 import com.sun.star.uno.UnoRuntime;
 
 /**
- * 
  * @author Jesper Steen Møller
  */
 public class UnoMetadataExtracter extends AbstractMetadataExtracter
 {
-    private static String[] mimeTypes = new String[] {
-        MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT,
+    public static String[] SUPPORTED_MIMETYPES = new String[] {
+        MimetypeMap.MIMETYPE_STAROFFICE5_WRITER,
+        MimetypeMap.MIMETYPE_STAROFFICE5_IMPRESS,
         MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER,
+        MimetypeMap.MIMETYPE_OPENOFFICE1_IMPRESS
     // Add the other OpenOffice.org stuff here
     // In fact, other types may apply as well, but should be counted as lower
     // quality since they involve conversion.
     };
 
-    private MimetypeMap mimetypeMap;
     private String contentUrl;
     private MyUnoConnection connection;
     private boolean isConnected;
 
     public UnoMetadataExtracter()
     {
-        super(new HashSet<String>(Arrays.asList(mimeTypes)), 1.00, 10000);
+        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)), 1.00, 10000);
         this.contentUrl = UnoConnection.DEFAULT_CONNECTION_STRING;
-    }
-
-    public void setMimetypeMap(MimetypeMap mimetypeMap)
-    {
-        this.mimetypeMap = mimetypeMap;
     }
 
     /**
@@ -115,7 +110,7 @@ public class UnoMetadataExtracter extends AbstractMetadataExtracter
         // create temporary files to convert from and to
         File tempFromFile = TempFileProvider.createTempFile(
                 "UnoContentTransformer_", "."
-                + mimetypeMap.getExtension(sourceMimetype));
+                + getMimetypeService().getExtension(sourceMimetype));
         // download the content from the source reader
         reader.getContent(tempFromFile);
 

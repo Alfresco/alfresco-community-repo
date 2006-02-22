@@ -16,10 +16,7 @@
  */
 package org.alfresco.web.app;
 
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -28,21 +25,15 @@ import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
@@ -65,10 +56,6 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 public class ContextListener implements ServletContextListener, HttpSessionListener
 {
    private static Log logger = LogFactory.getLog(ContextListener.class);
-
-   private static final String ADMIN = "admin";
-   private static final String ADMIN_FIRSTNAME = "Repository";
-   private static final String ADMIN_LASTNAME = "Administrator";
 
    private ServletContext servletContext;
 

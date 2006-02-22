@@ -222,7 +222,7 @@ public class WebClientConfigTest extends BaseTest
       
       assertEquals("error page", "/jsp/error.jsp", clientConfig.getErrorPage());
       assertEquals("login page", "/jsp/login.jsp", clientConfig.getLoginPage());
-      assertEquals("home space permission", "Guest", clientConfig.getHomeSpacePermission());
+      assertEquals("home space permission", "Consumer", clientConfig.getHomeSpacePermission());
       assertEquals("help url", "http://www.alfresco.org/help/webclient", clientConfig.getHelpUrl());
       assertEquals("edit link type", "http", clientConfig.getEditLinkType());
       assertEquals("from address", "alfresco@alfresco.org", clientConfig.getFromEmailAddress());

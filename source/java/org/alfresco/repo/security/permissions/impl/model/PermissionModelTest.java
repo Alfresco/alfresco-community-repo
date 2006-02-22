@@ -35,7 +35,7 @@ public class PermissionModelTest extends AbstractPermissionTest
     public void testIncludePermissionGroups()
     {
         Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(new SimplePermissionReference(QName.createQName("cm", "cmobject",
-                namespacePrefixResolver), "Guest"));
+                namespacePrefixResolver), "Consumer"));
 
         assertEquals(5, grantees.size());
     }

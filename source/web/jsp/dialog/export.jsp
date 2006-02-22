@@ -140,6 +140,7 @@
                                     </td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
+                                 <%--
                                  <tr>
                                     <td><nobr><h:outputText value="#{msg.export_from}"/>:</nobr></td>
                                     <td>
@@ -149,7 +150,6 @@
                                        </h:selectOneRadio>
                                     </td>
                                  </tr>
-                                 <%--
                                  <tr>
                                     <td><nobr><h:outputText value="#{msg.encoding}"/>:</nobr></td>
                                     <td>

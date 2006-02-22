@@ -2,15 +2,18 @@
  * CMLAddAspect.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ * by the Apache Axis 1.3 Oct 05, 2005 (05:23:37 EDT) WSDL2Java emitter.
  */
 
 package org.alfresco.repo.webservice.types;
 
 public class CMLAddAspect  implements java.io.Serializable {
     private java.lang.String aspect;
+
     private org.alfresco.repo.webservice.types.NamedValue[] property;
+
     private org.alfresco.repo.webservice.types.Predicate where;
+
     private java.lang.String where_id;
 
     public CMLAddAspect() {
@@ -183,7 +186,7 @@ public class CMLAddAspect  implements java.io.Serializable {
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("aspect");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/cml/1.0", "aspect"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "Name"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();

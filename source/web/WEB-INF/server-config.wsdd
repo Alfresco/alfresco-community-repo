@@ -16,9 +16,8 @@
 	<handler name="CreateSpringTicketCallback" type="java:org.alfresco.repo.webservice.axis.TicketCallbackSpringHandler"/>
 	<handler name="QueryConfigHandler" type="java:org.alfresco.repo.webservice.axis.QueryConfigHandler"/>
 	<handler name="WSSecurity" type="java:org.apache.ws.axis.security.WSDoAllReceiver">
-	   <parameter name="action" value="UsernameToken"/>
-	   <!-- Uncomment the following line and comment the one above for .NET support (but only .NET support) -->
-	   <!-- <parameter name="action" value="UsernameToken Timestamp"/> -->
+	   <!-- Timestamp added to support .NET -->
+	   <parameter name="action" value="UsernameToken Timestamp"/>
 	</handler>
 
       <typeMapping

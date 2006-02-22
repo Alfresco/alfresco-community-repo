@@ -2,15 +2,18 @@
  * CMLRemoveChild.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ * by the Apache Axis 1.3 Oct 05, 2005 (05:23:37 EDT) WSDL2Java emitter.
  */
 
 package org.alfresco.repo.webservice.types;
 
 public class CMLRemoveChild  implements java.io.Serializable {
     private org.alfresco.repo.webservice.types.Reference from;
+
     private java.lang.String from_id;
+
     private org.alfresco.repo.webservice.types.Predicate where;
+
     private java.lang.String where_id;
 
     public CMLRemoveChild() {

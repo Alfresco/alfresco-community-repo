@@ -2,15 +2,18 @@
  * CMLCreate.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ * by the Apache Axis 1.3 Oct 05, 2005 (05:23:37 EDT) WSDL2Java emitter.
  */
 
 package org.alfresco.repo.webservice.types;
 
 public class CMLCreate  implements java.io.Serializable {
     private java.lang.String id;
+
     private org.alfresco.repo.webservice.types.ParentReference parent;
+
     private java.lang.String type;
+
     private org.alfresco.repo.webservice.types.NamedValue[] property;
 
     public CMLCreate() {
@@ -196,7 +199,7 @@ public class CMLCreate  implements java.io.Serializable {
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("type");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/cml/1.0", "type"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "Name"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setMinOccurs(0);
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);

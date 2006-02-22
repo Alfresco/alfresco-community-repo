@@ -290,6 +290,7 @@
 
 	<xsd:complexType name="VersionHistory">
 		<xsd:sequence>
+		    <xsd:element name="marker" type="xsd:string" nillable="true"/>
 			<xsd:element name="versions" type="cms:Version" maxOccurs="unbounded" minOccurs="0"></xsd:element>
 		</xsd:sequence>
 	</xsd:complexType>

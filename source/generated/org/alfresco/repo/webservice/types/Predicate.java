@@ -2,14 +2,16 @@
  * Predicate.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ * by the Apache Axis 1.3 Oct 05, 2005 (05:23:37 EDT) WSDL2Java emitter.
  */
 
 package org.alfresco.repo.webservice.types;
 
 public class Predicate  implements java.io.Serializable {
     private org.alfresco.repo.webservice.types.Reference[] nodes;
+
     private org.alfresco.repo.webservice.types.Store store;
+
     private org.alfresco.repo.webservice.types.Query query;
 
     public Predicate() {

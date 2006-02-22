@@ -2,17 +2,18 @@
  * ContentFormat.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ * by the Apache Axis 1.3 Oct 05, 2005 (05:23:37 EDT) WSDL2Java emitter.
  */
 
 package org.alfresco.repo.webservice.types;
 
 public class ContentFormat  implements java.io.Serializable {
-    /** TODO: MinOccurs = 0?
- *     					TODO: Define Constraints */
+    /* TODO: MinOccurs = 0?
+     *     					TODO: Define Constraints */
     private java.lang.String mimetype;
-    /** TODO: MinOccurs = 0?
- *     					TODO: Define Constraints */
+
+    /* TODO: MinOccurs = 0?
+     *     					TODO: Define Constraints */
     private java.lang.String encoding;
 
     public ContentFormat() {
@@ -29,8 +30,8 @@ public class ContentFormat  implements java.io.Serializable {
     /**
      * Gets the mimetype value for this ContentFormat.
      * 
-     * @return mimetype TODO: MinOccurs = 0?
- *     					TODO: Define Constraints
+     * @return mimetype   * TODO: MinOccurs = 0?
+     *     					TODO: Define Constraints
      */
     public java.lang.String getMimetype() {
         return mimetype;
@@ -40,8 +41,8 @@ public class ContentFormat  implements java.io.Serializable {
     /**
      * Sets the mimetype value for this ContentFormat.
      * 
-     * @param mimetype TODO: MinOccurs = 0?
- *     					TODO: Define Constraints
+     * @param mimetype   * TODO: MinOccurs = 0?
+     *     					TODO: Define Constraints
      */
     public void setMimetype(java.lang.String mimetype) {
         this.mimetype = mimetype;
@@ -51,8 +52,8 @@ public class ContentFormat  implements java.io.Serializable {
     /**
      * Gets the encoding value for this ContentFormat.
      * 
-     * @return encoding TODO: MinOccurs = 0?
- *     					TODO: Define Constraints
+     * @return encoding   * TODO: MinOccurs = 0?
+     *     					TODO: Define Constraints
      */
     public java.lang.String getEncoding() {
         return encoding;
@@ -62,8 +63,8 @@ public class ContentFormat  implements java.io.Serializable {
     /**
      * Sets the encoding value for this ContentFormat.
      * 
-     * @param encoding TODO: MinOccurs = 0?
- *     					TODO: Define Constraints
+     * @param encoding   * TODO: MinOccurs = 0?
+     *     					TODO: Define Constraints
      */
     public void setEncoding(java.lang.String encoding) {
         this.encoding = encoding;
@@ -117,13 +118,13 @@ public class ContentFormat  implements java.io.Serializable {
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("mimetype");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "mimetype"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", ">ContentFormat>mimetype"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("encoding");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "encoding"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", ">ContentFormat>encoding"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setMinOccurs(0);
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);

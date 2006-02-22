@@ -2,17 +2,22 @@
  * Version.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ * by the Apache Axis 1.3 Oct 05, 2005 (05:23:37 EDT) WSDL2Java emitter.
  */
 
 package org.alfresco.repo.webservice.types;
 
 public class Version  implements java.io.Serializable {
     private org.alfresco.repo.webservice.types.Reference id;
+
     private java.util.Calendar created;
+
     private java.lang.String creator;
+
     private java.lang.String label;
+
     private boolean major;
+
     private org.alfresco.repo.webservice.types.NamedValue[] commentaries;
 
     public Version() {

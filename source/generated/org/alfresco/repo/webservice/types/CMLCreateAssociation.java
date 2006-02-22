@@ -2,16 +2,20 @@
  * CMLCreateAssociation.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ * by the Apache Axis 1.3 Oct 05, 2005 (05:23:37 EDT) WSDL2Java emitter.
  */
 
 package org.alfresco.repo.webservice.types;
 
 public class CMLCreateAssociation  implements java.io.Serializable {
     private org.alfresco.repo.webservice.types.Predicate from;
+
     private java.lang.String from_id;
+
     private org.alfresco.repo.webservice.types.Predicate to;
+
     private java.lang.String to_id;
+
     private java.lang.String association;
 
     public CMLCreateAssociation() {
@@ -224,7 +228,7 @@ public class CMLCreateAssociation  implements java.io.Serializable {
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("association");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/cml/1.0", "association"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "Name"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
     }

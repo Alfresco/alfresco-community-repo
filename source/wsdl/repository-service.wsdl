@@ -171,7 +171,7 @@
                </sequence>
             </complexType>
          </element>
-         
+
          <element name="getResponse">
             <complexType>
                <sequence>
@@ -408,7 +408,7 @@
          <wsdl:documentation>Executes a query against a store</wsdl:documentation>
          <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/repository/1.0/query"/>
          <wsdl:input name="queryRequest">
-            <wsdlsoap:header use="literal" message="rep:QueryConfiguration" part="QueryConfiguration"/>
+            <wsdlsoap:header use="literal" message="rep:Headers" part="QueryConfiguration"/>
             <wsdlsoap:body use="literal"/>
          </wsdl:input>
          <wsdl:output name="queryResponse">
@@ -422,7 +422,7 @@
          <wsdl:documentation>Executes a query to retrieve the children of the specified resource.</wsdl:documentation>
          <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/repository/1.0/queryChildren"/>
          <wsdl:input name="queryChildrenRequest">
-            <wsdlsoap:header use="literal" message="rep:QueryConfiguration" part="QueryConfiguration"/>
+            <wsdlsoap:header use="literal" message="rep:Headers" part="QueryConfiguration"/>
             <wsdlsoap:body use="literal"/>
          </wsdl:input>
          <wsdl:output name="queryChildrenResponse">
@@ -436,7 +436,7 @@
          <wsdl:documentation>Executes a query to retrieve the parents of the specified resource.</wsdl:documentation>
          <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/repository/1.0/queryParents"/>
          <wsdl:input name="queryParentsRequest">
-            <wsdlsoap:header use="literal" message="rep:QueryConfiguration" part="QueryConfiguration"/>
+            <wsdlsoap:header use="literal" message="rep:Headers" part="QueryConfiguration"/>
             <wsdlsoap:body use="literal"/>
          </wsdl:input>
          <wsdl:output name="queryParentsResponse">
@@ -450,7 +450,7 @@
          <wsdl:documentation>Executes a query to retrieve associated resources of the specified resource.</wsdl:documentation>
          <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/repository/1.0/queryAssociated"/>
          <wsdl:input name="queryAssociatedRequest">
-            <wsdlsoap:header use="literal" message="rep:QueryConfiguration" part="QueryConfiguration"/>
+            <wsdlsoap:header use="literal" message="rep:Headers" part="QueryConfiguration"/>
             <wsdlsoap:body use="literal"/>
          </wsdl:input>
          <wsdl:output name="queryAssociatedResponse">

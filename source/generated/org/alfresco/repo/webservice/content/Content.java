@@ -2,16 +2,20 @@
  * Content.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ * by the Apache Axis 1.3 Oct 05, 2005 (05:23:37 EDT) WSDL2Java emitter.
  */
 
 package org.alfresco.repo.webservice.content;
 
 public class Content  implements java.io.Serializable {
     private org.alfresco.repo.webservice.types.Reference node;
+
     private java.lang.String property;
+
     private long length;
+
     private org.alfresco.repo.webservice.types.ContentFormat format;
+
     private java.lang.String url;
 
     public Content() {

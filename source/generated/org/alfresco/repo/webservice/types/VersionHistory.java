@@ -2,20 +2,44 @@
  * VersionHistory.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ * by the Apache Axis 1.3 Oct 05, 2005 (05:23:37 EDT) WSDL2Java emitter.
  */
 
 package org.alfresco.repo.webservice.types;
 
 public class VersionHistory  implements java.io.Serializable {
+    private java.lang.String marker;
+
     private org.alfresco.repo.webservice.types.Version[] versions;
 
     public VersionHistory() {
     }
 
     public VersionHistory(
+           java.lang.String marker,
            org.alfresco.repo.webservice.types.Version[] versions) {
+           this.marker = marker;
            this.versions = versions;
+    }
+
+
+    /**
+     * Gets the marker value for this VersionHistory.
+     * 
+     * @return marker
+     */
+    public java.lang.String getMarker() {
+        return marker;
+    }
+
+
+    /**
+     * Sets the marker value for this VersionHistory.
+     * 
+     * @param marker
+     */
+    public void setMarker(java.lang.String marker) {
+        this.marker = marker;
     }
 
 
@@ -58,6 +82,9 @@ public class VersionHistory  implements java.io.Serializable {
         __equalsCalc = obj;
         boolean _equals;
         _equals = true && 
+            ((this.marker==null && other.getMarker()==null) || 
+             (this.marker!=null &&
+              this.marker.equals(other.getMarker()))) &&
             ((this.versions==null && other.getVersions()==null) || 
              (this.versions!=null &&
               java.util.Arrays.equals(this.versions, other.getVersions())));
@@ -72,6 +99,9 @@ public class VersionHistory  implements java.io.Serializable {
         }
         __hashCodeCalc = true;
         int _hashCode = 1;
+        if (getMarker() != null) {
+            _hashCode += getMarker().hashCode();
+        }
         if (getVersions() != null) {
             for (int i=0;
                  i<java.lang.reflect.Array.getLength(getVersions());
@@ -94,6 +124,12 @@ public class VersionHistory  implements java.io.Serializable {
     static {
         typeDesc.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "VersionHistory"));
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("marker");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "marker"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setNillable(true);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("versions");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "versions"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "Version"));

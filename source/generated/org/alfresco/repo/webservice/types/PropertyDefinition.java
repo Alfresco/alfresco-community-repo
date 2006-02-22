@@ -2,26 +2,37 @@
  * PropertyDefinition.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ * by the Apache Axis 1.3 Oct 05, 2005 (05:23:37 EDT) WSDL2Java emitter.
  */
 
 package org.alfresco.repo.webservice.types;
 
 public class PropertyDefinition  extends org.alfresco.repo.webservice.types.ValueDefinition  implements java.io.Serializable {
     private boolean mandatory;
+
     private boolean readOnly;
+
     private java.lang.String defaultValue;
 
     public PropertyDefinition() {
     }
 
     public PropertyDefinition(
+           java.lang.String name,
+           java.lang.String title,
+           java.lang.String description,
+           java.lang.String dataType,
            boolean mandatory,
            boolean readOnly,
            java.lang.String defaultValue) {
-           this.mandatory = mandatory;
-           this.readOnly = readOnly;
-           this.defaultValue = defaultValue;
+        super(
+            name,
+            title,
+            description,
+            dataType);
+        this.mandatory = mandatory;
+        this.readOnly = readOnly;
+        this.defaultValue = defaultValue;
     }
 
 

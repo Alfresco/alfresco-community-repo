@@ -2,23 +2,31 @@
  * ParentReference.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ * by the Apache Axis 1.3 Oct 05, 2005 (05:23:37 EDT) WSDL2Java emitter.
  */
 
 package org.alfresco.repo.webservice.types;
 
 public class ParentReference  extends org.alfresco.repo.webservice.types.Reference  implements java.io.Serializable {
     private java.lang.String associationType;
+
     private java.lang.String childName;
 
     public ParentReference() {
     }
 
     public ParentReference(
+           org.alfresco.repo.webservice.types.Store store,
+           java.lang.String uuid,
+           java.lang.String path,
            java.lang.String associationType,
            java.lang.String childName) {
-           this.associationType = associationType;
-           this.childName = childName;
+        super(
+            store,
+            uuid,
+            path);
+        this.associationType = associationType;
+        this.childName = childName;
     }
 
 
@@ -109,14 +117,14 @@ public class ParentReference  extends org.alfresco.repo.webservice.types.Referen
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("associationType");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "associationType"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "Name"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setMinOccurs(0);
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("childName");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "childName"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "Name"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setMinOccurs(0);
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);

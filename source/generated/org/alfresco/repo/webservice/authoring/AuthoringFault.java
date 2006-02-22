@@ -2,13 +2,14 @@
  * AuthoringFault.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ * by the Apache Axis 1.3 Oct 05, 2005 (05:23:37 EDT) WSDL2Java emitter.
  */
 
 package org.alfresco.repo.webservice.authoring;
 
 public class AuthoringFault  extends org.apache.axis.AxisFault  implements java.io.Serializable {
     private int errorCode;
+
     private java.lang.String message1;
 
     public AuthoringFault() {

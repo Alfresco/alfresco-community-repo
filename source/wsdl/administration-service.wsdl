@@ -243,54 +243,36 @@
          <wsdl:output message="admin:queryUsersResponse" name="queryUsersResponse"/>
          <wsdl:fault message="admin:AdministrationFault" name="AdministrationFault"/>
       </wsdl:operation>
-   </wsdl:portType>
-   
-   <wsdl:portType name="AdministrationServiceSoapPort">
       <wsdl:operation name="fetchMoreUsers">
          <wsdl:documentation>Fetch the next bathc of users from an existing user query.</wsdl:documentation>
          <wsdl:input message="admin:fetchMoreUsersRequest" name="fetchMoreUsersRequest"/>
          <wsdl:output message="admin:fetchMoreUsersResponse" name="fetchMoreUsersResponse"/>
          <wsdl:fault message="admin:AdministrationFault" name="AdministrationFault"/>
       </wsdl:operation>
-   </wsdl:portType>
-   
-   <wsdl:portType name="AdministrationServiceSoapPort">
       <wsdl:operation name="getUser">
          <wsdl:documentation>Get the details of a specified user.</wsdl:documentation>
          <wsdl:input message="admin:getUserRequest" name="getUserRequest"/>
          <wsdl:output message="admin:getUserResponse" name="getUserResponse"/>
          <wsdl:fault message="admin:AdministrationFault" name="AdministrationFault"/>
       </wsdl:operation>
-   </wsdl:portType>
-   
-   <wsdl:portType name="AdministrationServiceSoapPort">
       <wsdl:operation name="createUsers">
          <wsdl:documentation>Create new users with the details provided.</wsdl:documentation>
          <wsdl:input message="admin:createUsersRequest" name="createUsersRequest"/>
          <wsdl:output message="admin:createUsersResponse" name="createUsersResponse"/>
          <wsdl:fault message="admin:AdministrationFault" name="AdministrationFault"/>
       </wsdl:operation>
-   </wsdl:portType>
-   
-   <wsdl:portType name="AdministrationServiceSoapPort">
       <wsdl:operation name="updateUsers">
          <wsdl:documentation>Updates the details of the specified users.</wsdl:documentation>
          <wsdl:input message="admin:updateUsersRequest" name="updateUsersRequest"/>
          <wsdl:output message="admin:updateUsersResponse" name="updateUsersResponse"/>
          <wsdl:fault message="admin:AdministrationFault" name="AdministrationFault"/>
       </wsdl:operation>
-   </wsdl:portType>
-   
-   <wsdl:portType name="AdministrationServiceSoapPort">
       <wsdl:operation name="changePassword">
          <wsdl:documentation>Changes the password of the specified user.</wsdl:documentation>
          <wsdl:input message="admin:changePasswordRequest" name="changePasswordRequest"/>
          <wsdl:output message="admin:changePasswordResponse" name="changePasswordResponse"/>
          <wsdl:fault message="admin:AdministrationFault" name="AdministrationFault"/>
       </wsdl:operation>
-   </wsdl:portType>
-   
-   <wsdl:portType name="AdministrationServiceSoapPort">
       <wsdl:operation name="deleteUsers">
          <wsdl:documentation>Delete the specified users.</wsdl:documentation>
          <wsdl:input message="admin:deleteUsersRequest" name="deleteUsersRequest"/>

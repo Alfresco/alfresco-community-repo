@@ -866,8 +866,9 @@ public class BrowseBean implements IContextListener
    
    public NodePropertyResolver resolverSmallIcon = new NodePropertyResolver() {
       public Object get(Node node) {
-         // TODO: add support for different small space icons
-         return SPACE_SMALL_DEFAULT;
+         QNameNodeMap props = (QNameNodeMap)node.getProperties();
+         String icon = (String)props.getRaw("app:icon");
+         return (icon != null ? icon + "-16" : SPACE_SMALL_DEFAULT);
       }
    };
    

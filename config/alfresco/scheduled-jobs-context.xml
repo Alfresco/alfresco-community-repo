@@ -151,7 +151,7 @@
         <property name="triggers">
             <list>
                 <ref bean="tempFileCleanerTrigger" />
-                <ref local="contentStoreCleanerTrigger"/>
+                <ref bean="contentStoreCleanerTrigger"/>
                 <ref bean="ftsIndexerTrigger" />
                 <ref bean="indexRecoveryTrigger" />
                 <ref bean="indexBackupTrigger" />

@@ -19,7 +19,6 @@ package org.alfresco.repo.content.metadata;
 import org.alfresco.repo.content.MimetypeMap;
 
 /**
- * @see org.alfresco.repo.content.transform.UnoMetadataExtracter
  * @author Jesper Steen Møller
  */
 public class UnoMetadataExtracterTest extends AbstractMetadataExtracterTest
@@ -28,7 +27,8 @@ public class UnoMetadataExtracterTest extends AbstractMetadataExtracterTest
 
     public void onSetUpInTransaction() throws Exception
     {
-        extracter = new UnoMetadataExtracter(mimetypeMap);
+        extracter = new UnoMetadataExtracter();
+        extracter.setMimetypeMap(mimetypeMap);
     }
 
     /**

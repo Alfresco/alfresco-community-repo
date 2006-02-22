@@ -17,17 +17,15 @@
 package org.alfresco.repo.content.metadata;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.pdfbox.pdmodel.PDDocument;
 import org.pdfbox.pdmodel.PDDocumentInformation;
 
@@ -37,26 +35,20 @@ import org.pdfbox.pdmodel.PDDocumentInformation;
  */
 public class PdfBoxMetadataExtracter extends AbstractMetadataExtracter
 {
-
-    private static final Log logger = LogFactory.getLog(PdfBoxMetadataExtracter.class);
-
     public PdfBoxMetadataExtracter()
     {
         super(MimetypeMap.MIMETYPE_PDF, 1.0, 1000);
     }
 
-    public void extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException
+    public void extractInternal(ContentReader reader, Map<QName, Serializable> destination) throws Throwable
     {
-        if (!MimetypeMap.MIMETYPE_PDF.equals(reader.getMimetype()))
-        {
-            logger.debug("No metadata extracted for " + reader.getMimetype());
-            return;
-        }
         PDDocument pdf = null;
+        InputStream is = null;
         try
         {
+            is = reader.getContentInputStream();
             // stream the document in
-            pdf = PDDocument.load(reader.getContentInputStream());
+            pdf = PDDocument.load(is);
             // Scoop out the metadata
             PDDocumentInformation docInfo = pdf.getDocumentInformation();
 
@@ -68,23 +60,15 @@ public class PdfBoxMetadataExtracter extends AbstractMetadataExtracter
             if (created != null)
                 destination.put(ContentModel.PROP_CREATED, created.getTime());
         }
-        catch (IOException e)
-        {
-            throw new ContentIOException("PDF metadata extraction failed: \n" +
-                    "   reader: " + reader);
-        }
         finally
         {
+            if (is != null)
+            {
+                try { is.close(); } catch (IOException e) {}
+            }
             if (pdf != null)
             {
-                try
-                {
-                    pdf.close();
-                }
-                catch (Throwable e)
-                {
-                    e.printStackTrace();
-                }
+                try { pdf.close(); } catch (Throwable e) { e.printStackTrace(); }
             }
         }
     }

@@ -16,7 +16,7 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +28,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.Assert;
 
 /**
  * Holds and provides the most appropriate metadate extracter for a particular
@@ -52,21 +51,50 @@ public class MetadataExtracterRegistry
     /** controls write access to the cache */
     private Lock extracterCacheWriteLock;
 
-    /**
-     * @param mimetypeMap all the mimetypes available to the system
-     */
-    public MetadataExtracterRegistry(MimetypeMap mimetypeMap)
+    public MetadataExtracterRegistry()
     {
-        Assert.notNull(mimetypeMap, "The MimetypeMap is mandatory");
-        this.mimetypeMap = mimetypeMap;
-
-        extracters = Collections.emptyList(); // just in case it isn't set
+        // initialise lists
+        extracters = new ArrayList<MetadataExtracter>(10);
         extracterCache = new HashMap<String, MetadataExtracter>(17);
 
         // create lock objects for access to the cache
         ReadWriteLock extractionCacheLock = new ReentrantReadWriteLock();
         extracterCacheReadLock = extractionCacheLock.readLock();
         extracterCacheWriteLock = extractionCacheLock.writeLock();
+    }
+
+    /**
+     * The mimetype map that will be used to check requests against
+     * 
+     * @param mimetypeMap a map of mimetypes
+     */
+    public void setMimetypeMap(MimetypeMap mimetypeMap)
+    {
+        this.mimetypeMap = mimetypeMap;
+    }
+
+    /**
+     * Register an instance of an extracter for use
+     * 
+     * @param extracter an extracter
+     */
+    public void register(MetadataExtracter extracter)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Registering metadata extracter: " + extracter);
+        }
+
+        extracterCacheWriteLock.lock();
+        try
+        {
+            extracters.add(extracter);
+            extracterCache.clear();
+        }
+        finally
+        {
+            extracterCacheWriteLock.unlock();
+        }
     }
 
     /**
@@ -123,8 +151,8 @@ public class MetadataExtracterRegistry
 
     /**
      * @param sourceMimetype The MIME type under examination
-     * @return The fastest of the most reliable extracters in
-     *         <code>extracters</code> for the given MIME type.
+     * @return The fastest of the most reliable extracters in <code>extracters</code>
+     *      for the given MIME type, or null if none is available.
      */
     private MetadataExtracter findBestExtracter(String sourceMimetype)
     {
@@ -137,7 +165,12 @@ public class MetadataExtracterRegistry
         for (MetadataExtracter ext : extracters)
         {
             double r = ext.getReliability(sourceMimetype);
-            if (r == bestReliability)
+            if (r <= 0.0)
+            {
+                // extraction not achievable
+                continue;
+            }
+            else if (r == bestReliability)
             {
                 long time = ext.getExtractionTime();
                 if (time < bestTime)
@@ -154,27 +187,5 @@ public class MetadataExtracterRegistry
             }
         }
         return bestExtracter;
-    }
-
-    /**
-     * Provides a list of self-discovering extracters.
-     * 
-     * @param transformers all the available extracters that the registry can
-     *        work with
-     */
-    public void setExtracters(List<MetadataExtracter> extracters)
-    {
-        logger.debug("Setting " + extracters.size() + "new extracters.");
-
-        extracterCacheWriteLock.lock();
-        try
-        {
-            this.extracters = extracters;
-            this.extracterCache.clear();
-        }
-        finally
-        {
-            extracterCacheWriteLock.unlock();
-        }
     }
 }

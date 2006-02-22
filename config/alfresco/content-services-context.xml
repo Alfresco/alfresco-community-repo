@@ -87,27 +87,35 @@
       </constructor-arg>
    </bean>
    
+   <!-- Metadata Extraction Regisitry -->
    <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry" >
-      <constructor-arg>
+      <property name="mimetypeMap">
          <ref bean="mimetypeService" />
-      </constructor-arg>
-      <!-- metadata extracters -->
-      <property name="extracters">
-         <list>
-		    <bean class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter" />
-		    <bean class="org.alfresco.repo.content.metadata.OfficeMetadataExtracter" />
-		    <bean class="org.alfresco.repo.content.metadata.HtmlMetadataExtracter" />
-		    <bean class="org.alfresco.repo.content.metadata.StringMetadataExtracter" />
-		    <bean class="org.alfresco.repo.content.metadata.MP3MetadataExtracter" />
-		    <bean class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter" />
-		    <bean class="org.alfresco.repo.content.metadata.UnoMetadataExtracter" >
-                <constructor-arg>
-                    <ref bean="mimetypeService" />
-                </constructor-arg>
-		    </bean>
-         </list>
       </property>
    </bean>
+   
+   <!-- Abstract bean definition defining base definition for all metadata extracters -->
+   <bean id="baseMetadataExtracter"
+         class="org.alfresco.repo.content.metadata.AbstractMetadataExtracter"
+         abstract="true"
+         init-method="register">
+      <property name="registry">
+         <ref bean="metadataExtracterRegistry" />
+      </property>
+   </bean>
+   
+   <!-- Content Metadata Extracters -->
+   <bean class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter" parent="baseMetadataExtracter" />
+   <bean class="org.alfresco.repo.content.metadata.OfficeMetadataExtracter" parent="baseMetadataExtracter" />
+   <bean class="org.alfresco.repo.content.metadata.HtmlMetadataExtracter" parent="baseMetadataExtracter" />
+   <bean class="org.alfresco.repo.content.metadata.MP3MetadataExtracter" parent="baseMetadataExtracter" />
+   <bean class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter" parent="baseMetadataExtracter" />
+   <bean class="org.alfresco.repo.content.metadata.UnoMetadataExtracter" parent="baseMetadataExtracter" init-method="init" >
+      <property name="mimetypeMap">
+         <ref bean="mimetypeService" />
+      </property>
+   </bean>
+   
 
    <!-- Content Transformation Regisitry -->
    <bean id="contentTransformerRegistry" class="org.alfresco.repo.content.transform.ContentTransformerRegistry" >
@@ -116,9 +124,7 @@
       </constructor-arg>
    </bean>
 
-   <!--
-       Abstract bean definition defining base definition for all transformers
-   -->
+   <!-- Abstract bean definition defining base definition for all transformers -->
    <bean id="baseContentTransformer"
          class="org.alfresco.repo.content.transform.AbstractContentTransformer"
          abstract="true"

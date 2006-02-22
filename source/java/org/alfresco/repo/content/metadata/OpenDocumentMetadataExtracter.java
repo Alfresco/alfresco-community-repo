@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.content.metadata;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -23,11 +25,8 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import com.catcode.odf.ODFMetaFileAnalyzer;
 import com.catcode.odf.OpenDocumentMetadata;
@@ -41,8 +40,6 @@ import com.catcode.odf.OpenDocumentMetadata;
  */
 public class OpenDocumentMetadataExtracter extends AbstractMetadataExtracter
 {
-    private static final Log logger = LogFactory.getLog(OpenDocumentMetadataExtracter.class);
-
     private static String[] mimeTypes = new String[] {
             MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT,
             MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT_TEMPLATE,
@@ -67,13 +64,15 @@ public class OpenDocumentMetadataExtracter extends AbstractMetadataExtracter
         super(new HashSet<String>(Arrays.asList(mimeTypes)), 1.00, 1000);
     }
 
-    public void extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException
+    public void extractInternal(ContentReader reader, Map<QName, Serializable> destination) throws Throwable
     {
         ODFMetaFileAnalyzer analyzer = new ODFMetaFileAnalyzer();
+        InputStream is = null;
         try
         {
+            is = reader.getContentInputStream();
             // stream the document in
-            OpenDocumentMetadata docInfo = analyzer.analyzeZip(reader.getContentInputStream());
+            OpenDocumentMetadata docInfo = analyzer.analyzeZip(is);
 
             if (docInfo != null)
             {
@@ -84,12 +83,12 @@ public class OpenDocumentMetadataExtracter extends AbstractMetadataExtracter
                 destination.put(ContentModel.PROP_CREATED, docInfo.getCreationDate());
             }
         }
-        catch (Throwable e)
+        finally
         {
-            String message = "Metadata extraction failed: \n" +
-                    "   reader: " + reader;
-            logger.debug(message, e);
-            throw new ContentIOException(message, e);
+            if (is != null)
+            {
+                try { is.close(); } catch (IOException e) {}
+            }
         }
     }
 }

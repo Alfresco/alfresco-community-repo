@@ -50,7 +50,7 @@ public class OfficeMetadataExtracter extends AbstractMetadataExtracter
         super(new HashSet<String>(Arrays.asList(mimeTypes)), 1.0, 1000);
     }
 
-    public void extract(ContentReader reader, final Map<QName, Serializable> destination) throws ContentIOException
+    public void extractInternal(ContentReader reader, final Map<QName, Serializable> destination) throws Throwable
     {
         POIFSReaderListener readerListener = new POIFSReaderListener()
         {
@@ -95,12 +95,6 @@ public class OfficeMetadataExtracter extends AbstractMetadataExtracter
             POIFSReader poiFSReader = new POIFSReader();
             poiFSReader.registerListener(readerListener, SummaryInformation.DEFAULT_STREAM_NAME);
             poiFSReader.read(is);
-        }
-        catch (IOException e)
-        {
-            throw new ContentIOException("Compound Document SummaryInformation metadata extraction failed: \n"
-                    + "   reader: " + reader,
-                    e);
         }
         finally
         {

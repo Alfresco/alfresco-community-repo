@@ -17,20 +17,17 @@
 package org.alfresco.repo.content.metadata;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.GUID;
+import org.alfresco.util.TempFileProvider;
 import org.farng.mp3.AbstractMP3FragmentBody;
 import org.farng.mp3.MP3File;
-import org.farng.mp3.TagException;
 import org.farng.mp3.id3.AbstractID3v2;
 import org.farng.mp3.id3.AbstractID3v2Frame;
 import org.farng.mp3.id3.ID3v1;
@@ -58,103 +55,88 @@ public class MP3MetadataExtracter extends AbstractMetadataExtracter
         super(MimetypeMap.MIMETYPE_MP3, 1.0, 1000);
     }
 
-    /**
-     * @see org.alfresco.repo.content.metadata.MetadataExtracter#extract(org.alfresco.service.cmr.repository.ContentReader, java.util.Map)
-     */
-    public void extract(ContentReader reader,
-            Map<QName, Serializable> destination) throws ContentIOException
+    public void extractInternal(
+            ContentReader reader,
+            Map<QName, Serializable> destination) throws Throwable
     {
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();            
+        
+        // Create a temp file
+        File tempFile = TempFileProvider.createTempFile("MP3MetadataExtracter_", ".tmp");
         try
         {
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>();            
+            reader.getContent(tempFile);
             
-            // Create a temp file
-            File tempFile = File.createTempFile(GUID.generate(), ".tmp");
-            try
+            // Create the MP3 object from the file
+            MP3File mp3File = new MP3File(tempFile);
+            
+            ID3v1 id3v1 = mp3File.getID3v1Tag();
+            if (id3v1 != null)
             {
-                reader.getContent(tempFile);
+                setTagValue(props, PROP_ALBUM_TITLE, id3v1.getAlbum());
+                setTagValue(props, PROP_SONG_TITLE, id3v1.getTitle());
+                setTagValue(props, PROP_ARTIST, id3v1.getArtist());
+                setTagValue(props, PROP_COMMENT, id3v1.getComment());
+                setTagValue(props, PROP_YEAR_RELEASED, id3v1.getYear());
                 
-                // Create the MP3 object from the file
-                MP3File mp3File = new MP3File(tempFile);
+                // TODO sort out the genre
+                //setTagValue(props, MusicModel.PROP_GENRE, id3v1.getGenre());
                 
-                ID3v1 id3v1 = mp3File.getID3v1Tag();
-                if (id3v1 != null)
-                {
-                    setTagValue(props, PROP_ALBUM_TITLE, id3v1.getAlbum());
-                    setTagValue(props, PROP_SONG_TITLE, id3v1.getTitle());
-                    setTagValue(props, PROP_ARTIST, id3v1.getArtist());
-                    setTagValue(props, PROP_COMMENT, id3v1.getComment());
-                    setTagValue(props, PROP_YEAR_RELEASED, id3v1.getYear());
-                    
-                    // TODO sort out the genre
-                    //setTagValue(props, MusicModel.PROP_GENRE, id3v1.getGenre());
-                    
-                    // TODO sort out the size
-                    //setTagValue(props, MusicModel.PROP_SIZE, id3v1.getSize());            
-                }
-                
-                AbstractID3v2 id3v2 = mp3File.getID3v2Tag();
-                if (id3v2 != null)
-                {
-                    setTagValue(props, PROP_SONG_TITLE, getID3V2Value(id3v2, "TIT2"));
-                    setTagValue(props, PROP_ARTIST, getID3V2Value(id3v2, "TPE1"));
-                    setTagValue(props, PROP_ALBUM_TITLE, getID3V2Value(id3v2, "TALB"));
-                    setTagValue(props, PROP_YEAR_RELEASED, getID3V2Value(id3v2, "TDRC"));
-                    setTagValue(props, PROP_COMMENT, getID3V2Value(id3v2, "COMM"));
-                    setTagValue(props, PROP_TRACK_NUMBER, getID3V2Value(id3v2, "TRCK"));
-                    setTagValue(props, PROP_GENRE, getID3V2Value(id3v2, "TCON"));
-                    setTagValue(props, PROP_COMPOSER, getID3V2Value(id3v2, "TCOM"));
-                    
-                    // TODO sort out the lyrics
-                    //System.out.println("Lyrics: " + getID3V2Value(id3v2, "SYLT"));
-                    //System.out.println("Lyrics: " + getID3V2Value(id3v2, "USLT"));
-                }
-                
-                AbstractLyrics3 lyrics3Tag = mp3File.getLyrics3Tag();
-                if (lyrics3Tag != null)
-                {
-                    System.out.println("Lyrics3 tag found.");
-                    if (lyrics3Tag instanceof Lyrics3v2)
-                    {
-                        setTagValue(props, PROP_SONG_TITLE, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TIT2"));
-                        setTagValue(props, PROP_ARTIST, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TPE1"));
-                        setTagValue(props, PROP_ALBUM_TITLE, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TALB"));
-                        setTagValue(props, PROP_COMMENT, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "COMM"));
-                        setTagValue(props, PROP_LYRICS, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "SYLT"));
-                        setTagValue(props, PROP_COMPOSER, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TCOM"));
-                    }
-                }
-                
-            }
-            finally
-            {
-                tempFile.delete();
+                // TODO sort out the size
+                //setTagValue(props, MusicModel.PROP_SIZE, id3v1.getSize());            
             }
             
-            // Set the destination values
-            if (props.get(PROP_SONG_TITLE) != null)
+            AbstractID3v2 id3v2 = mp3File.getID3v2Tag();
+            if (id3v2 != null)
             {
-                destination.put(ContentModel.PROP_TITLE, props.get(PROP_SONG_TITLE));
+                setTagValue(props, PROP_SONG_TITLE, getID3V2Value(id3v2, "TIT2"));
+                setTagValue(props, PROP_ARTIST, getID3V2Value(id3v2, "TPE1"));
+                setTagValue(props, PROP_ALBUM_TITLE, getID3V2Value(id3v2, "TALB"));
+                setTagValue(props, PROP_YEAR_RELEASED, getID3V2Value(id3v2, "TDRC"));
+                setTagValue(props, PROP_COMMENT, getID3V2Value(id3v2, "COMM"));
+                setTagValue(props, PROP_TRACK_NUMBER, getID3V2Value(id3v2, "TRCK"));
+                setTagValue(props, PROP_GENRE, getID3V2Value(id3v2, "TCON"));
+                setTagValue(props, PROP_COMPOSER, getID3V2Value(id3v2, "TCOM"));
+                
+                // TODO sort out the lyrics
+                //System.out.println("Lyrics: " + getID3V2Value(id3v2, "SYLT"));
+                //System.out.println("Lyrics: " + getID3V2Value(id3v2, "USLT"));
             }
-            if (props.get(PROP_ARTIST) != null)
+            
+            AbstractLyrics3 lyrics3Tag = mp3File.getLyrics3Tag();
+            if (lyrics3Tag != null)
             {
-                destination.put(ContentModel.PROP_AUTHOR, props.get(PROP_ARTIST));
+                System.out.println("Lyrics3 tag found.");
+                if (lyrics3Tag instanceof Lyrics3v2)
+                {
+                    setTagValue(props, PROP_SONG_TITLE, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TIT2"));
+                    setTagValue(props, PROP_ARTIST, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TPE1"));
+                    setTagValue(props, PROP_ALBUM_TITLE, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TALB"));
+                    setTagValue(props, PROP_COMMENT, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "COMM"));
+                    setTagValue(props, PROP_LYRICS, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "SYLT"));
+                    setTagValue(props, PROP_COMPOSER, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TCOM"));
+                }
             }
-            String description = getDescription(props);
-            if (description != null)
-            {
-                destination.put(ContentModel.PROP_DESCRIPTION, description);
-            }
-        }       
-        catch (IOException ioException)
-        {
-            // TODO sort out exception handling
-            throw new RuntimeException("Error reading mp3 file.", ioException);
+            
         }
-        catch (TagException tagException)
+        finally
         {
-            // TODO sort out exception handling
-            throw new RuntimeException("Error reading mp3 tag information.", tagException);
+            tempFile.delete();
+        }
+        
+        // Set the destination values
+        if (props.get(PROP_SONG_TITLE) != null)
+        {
+            destination.put(ContentModel.PROP_TITLE, props.get(PROP_SONG_TITLE));
+        }
+        if (props.get(PROP_ARTIST) != null)
+        {
+            destination.put(ContentModel.PROP_AUTHOR, props.get(PROP_ARTIST));
+        }
+        String description = getDescription(props);
+        if (description != null)
+        {
+            destination.put(ContentModel.PROP_DESCRIPTION, description);
         }
     }
     

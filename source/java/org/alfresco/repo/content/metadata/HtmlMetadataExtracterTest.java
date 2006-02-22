@@ -17,16 +17,12 @@
 package org.alfresco.repo.content.metadata;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * @see org.alfresco.repo.content.transform.OfficeMetadataExtracter
  * @author Jesper Steen Møller
  */
 public class HtmlMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
-    private static final Log logger = LogFactory.getLog(HtmlMetadataExtracterTest.class);
     private MetadataExtracter extracter;
 
     public void onSetUpInTransaction() throws Exception

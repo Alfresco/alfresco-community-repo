@@ -21,7 +21,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * 
@@ -29,28 +34,60 @@ import org.alfresco.service.namespace.QName;
  */
 abstract public class AbstractMetadataExtracter implements MetadataExtracter
 {
-
-    private Set<String> mimetypes;
+    private static Log logger = LogFactory.getLog(AbstractMetadataExtracter.class);
+    
+    private MetadataExtracterRegistry registry;
+    private Set<String> supportedMimetypes;
     private double reliability;
     private long extractionTime;
 
-    protected AbstractMetadataExtracter(String mimetype, double reliability, long extractionTime)
+    protected AbstractMetadataExtracter(String supportedMimetype, double reliability, long extractionTime)
     {
-        this.mimetypes = Collections.singleton(mimetype);
+        this.supportedMimetypes = Collections.singleton(supportedMimetype);
         this.reliability = reliability;
         this.extractionTime = extractionTime;
     }
 
-    protected AbstractMetadataExtracter(Set<String> mimetypes, double reliability, long extractionTime)
+    protected AbstractMetadataExtracter(Set<String> supportedMimetypes, double reliability, long extractionTime)
     {
-        this.mimetypes = mimetypes;
+        this.supportedMimetypes = supportedMimetypes;
         this.reliability = reliability;
         this.extractionTime = extractionTime;
     }
 
-    public double getReliability(String sourceMimetype)
+    /**
+     * Set the registry to register with
+     * 
+     * @param registry a metadata extracter registry
+     */
+    public void setRegistry(MetadataExtracterRegistry registry)
     {
-        if (mimetypes.contains(sourceMimetype))
+        this.registry = registry;
+    }
+    
+    /**
+     * Registers this instance of the extracter with the registry.
+     * 
+     * @see #setRegistry(MetadataExtracterRegistry)
+     */
+    public void register()
+    {
+        if (registry == null)
+        {
+            throw new IllegalArgumentException("Property 'registry' has not been set");
+        }
+        registry.register(this);
+    }
+    
+    /**
+     * Default reliability check that returns the reliability as configured by the contstructor
+     * if the mimetype is in the list of supported mimetypes.
+     * 
+     * @param mimetype the mimetype to check
+     */
+    public double getReliability(String mimetype)
+    {
+        if (supportedMimetypes.contains(mimetype))
             return reliability;
         else
             return 0.0;
@@ -60,7 +97,69 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
     {
         return extractionTime;
     }
+    
+    /**
+     * Checks if the mimetype is supported.
+     * 
+     * @param reader the reader to check
+     * @throws AlfrescoRuntimeException if the mimetype is not supported
+     */
+    protected void checkReliability(ContentReader reader)
+    {
+        String mimetype = reader.getMimetype();
+        if (getReliability(mimetype) <= 0.0)
+        {
+            throw new AlfrescoRuntimeException(
+                    "Metadata extracter does not support mimetype: \n" +
+                    "   reader: " + reader + "\n" +
+                    "   supported: " + supportedMimetypes + "\n" +
+                    "   extracter: " + this);
+        }
+    }
 
+    public final void extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException
+    {
+        // check the reliability
+        checkReliability(reader);
+        
+        try
+        {
+            extractInternal(reader, destination);
+        }
+        catch (Throwable e)
+        {
+            throw new ContentIOException("Metadata extraction failed: \n" +
+                    "   reader: " + reader + "\n" +
+                    e);
+        }
+        finally
+        {
+            // check that the reader and writer are both closed
+            if (!reader.isClosed())
+            {
+                logger.error("Content reader not closed by metadata extracter: \n" + reader);
+            }
+        }
+        
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Completed metadata extraction: \n" +
+                    "   reader: " + reader + "\n" +
+                    "   extracter: " + this);
+        }
+    }
+
+    /**
+     * Override to provide the necessary extraction logic.  Implementations must ensure that the reader
+     * is closed before the method exits.
+     * 
+     * @param reader the source of the content
+     * @param destination the property map to fill
+     * @throws Throwable an exception
+     */
+    protected abstract void extractInternal(ContentReader reader, Map<QName, Serializable> destination) throws Throwable;
+    
     /**
      * Examines a value or string for nulls and adds it to the map (if
      * non-empty)

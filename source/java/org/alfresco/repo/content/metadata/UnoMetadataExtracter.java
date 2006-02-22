@@ -28,12 +28,9 @@ import net.sf.joott.uno.UnoConnection;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import com.sun.star.beans.PropertyValue;
 import com.sun.star.beans.XPropertySet;
@@ -49,9 +46,6 @@ import com.sun.star.uno.UnoRuntime;
  */
 public class UnoMetadataExtracter extends AbstractMetadataExtracter
 {
-
-    private static final Log logger = LogFactory.getLog(UnoMetadataExtracter.class);
-
     private static String[] mimeTypes = new String[] {
         MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT,
         MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER,
@@ -60,33 +54,44 @@ public class UnoMetadataExtracter extends AbstractMetadataExtracter
     // quality since they involve conversion.
     };
 
-    public UnoMetadataExtracter(MimetypeMap mimetypeMap, String connectionUrl)
-    {
-        super(new HashSet<String>(Arrays.asList(mimeTypes)), 1.00, 10000);
-        this.mimetypeMap = mimetypeMap;
-        init(connectionUrl);
-    }
-
-    public UnoMetadataExtracter(MimetypeMap mimetypeMap)
-    {
-        this(mimetypeMap, UnoConnection.DEFAULT_CONNECTION_STRING);
-    }
-
     private MimetypeMap mimetypeMap;
+    private String contentUrl;
     private MyUnoConnection connection;
     private boolean isConnected;
 
-    /**
-     * @param unoConnectionUrl the URL of the Uno server
-     */
-    private synchronized void init(String unoConnectionUrl)
+    public UnoMetadataExtracter()
     {
-        connection = new MyUnoConnection(unoConnectionUrl);
+        super(new HashSet<String>(Arrays.asList(mimeTypes)), 1.00, 10000);
+        this.contentUrl = UnoConnection.DEFAULT_CONNECTION_STRING;
+    }
+
+    public void setMimetypeMap(MimetypeMap mimetypeMap)
+    {
+        this.mimetypeMap = mimetypeMap;
+    }
+
+    /**
+     * 
+     * @param contentUrl the URL to connect to
+     */
+    public void setContentUrl(String contentUrl)
+    {
+        this.contentUrl = contentUrl;
+    }
+
+    /**
+     * Initialises the bean by establishing an UNO connection
+     */
+    public synchronized void init()
+    {
+        connection = new MyUnoConnection(contentUrl);
         // attempt to make an connection
         try
         {
             connection.connect();
             isConnected = true;
+            // register
+            super.register();
         }
         catch (ConnectException e)
         {
@@ -103,66 +108,58 @@ public class UnoMetadataExtracter extends AbstractMetadataExtracter
         return isConnected;
     }
 
-    public void extract(ContentReader reader, final Map<QName, Serializable> destination) throws ContentIOException
+    public void extractInternal(ContentReader reader, final Map<QName, Serializable> destination) throws Throwable
     {
         String sourceMimetype = reader.getMimetype();
 
         // create temporary files to convert from and to
-        File tempFromFile = TempFileProvider.createTempFile("UnoContentTransformer", "."
+        File tempFromFile = TempFileProvider.createTempFile(
+                "UnoContentTransformer_", "."
                 + mimetypeMap.getExtension(sourceMimetype));
         // download the content from the source reader
         reader.getContent(tempFromFile);
-        String sourceUrl = tempFromFile.toString();
-        try
-        {
-            sourceUrl = toUrl(tempFromFile, connection);
 
-            // UNO Interprocess Bridge *should* be thread-safe, but...
-            synchronized (connection)
+        String sourceUrl = toUrl(tempFromFile, connection);
+
+        // UNO Interprocess Bridge *should* be thread-safe, but...
+        synchronized (connection)
+        {
+            XComponentLoader desktop = connection.getDesktop();
+            XComponent document = desktop.loadComponentFromURL(
+                    sourceUrl,
+                    "_blank",
+                    0,
+                    new PropertyValue[] { property("Hidden", Boolean.TRUE) });
+            if (document == null)
             {
-                XComponentLoader desktop = connection.getDesktop();
-                XComponent document = desktop.loadComponentFromURL(
-                        sourceUrl,
-                        "_blank",
-                        0,
-                        new PropertyValue[] { property("Hidden", Boolean.TRUE) });
-                if (document == null)
-                {
-                    throw new FileNotFoundException("could not open source document: " + sourceUrl);
-                }
-                try
-                {
-                    XDocumentInfoSupplier infoSupplier = (XDocumentInfoSupplier) UnoRuntime.queryInterface(
-                            XDocumentInfoSupplier.class, document);
-                    XPropertySet propSet = (XPropertySet) UnoRuntime.queryInterface(
-                            XPropertySet.class,
-                            infoSupplier
-                            .getDocumentInfo());
-
-                    // Titled aspect
-                    trimPut(ContentModel.PROP_TITLE, propSet.getPropertyValue("Title"), destination);
-                    trimPut(ContentModel.PROP_DESCRIPTION, propSet.getPropertyValue("Subject"), destination);
-
-                    // Auditable aspect
-                    // trimPut(ContentModel.PROP_CREATED,
-                    // si.getCreateDateTime(), destination);
-                    trimPut(ContentModel.PROP_AUTHOR, propSet.getPropertyValue("Author"), destination);
-                    // trimPut(ContentModel.PROP_MODIFIED,
-                    // si.getLastSaveDateTime(), destination);
-                    // trimPut(ContentModel.PROP_MODIFIER, si.getLastAuthor(),
-                    // destination);
-                }
-                finally
-                {
-                    document.dispose();
-                }
+                throw new FileNotFoundException("could not open source document: " + sourceUrl);
             }
-        }
-        catch (Throwable e)
-        {
-            throw new ContentIOException("Conversion failed: \n" +
-                    "   source: " + sourceUrl + "\n",
-                    e);
+            try
+            {
+                XDocumentInfoSupplier infoSupplier = (XDocumentInfoSupplier) UnoRuntime.queryInterface(
+                        XDocumentInfoSupplier.class, document);
+                XPropertySet propSet = (XPropertySet) UnoRuntime.queryInterface(
+                        XPropertySet.class,
+                        infoSupplier
+                        .getDocumentInfo());
+
+                // Titled aspect
+                trimPut(ContentModel.PROP_TITLE, propSet.getPropertyValue("Title"), destination);
+                trimPut(ContentModel.PROP_DESCRIPTION, propSet.getPropertyValue("Subject"), destination);
+
+                // Auditable aspect
+                // trimPut(ContentModel.PROP_CREATED,
+                // si.getCreateDateTime(), destination);
+                trimPut(ContentModel.PROP_AUTHOR, propSet.getPropertyValue("Author"), destination);
+                // trimPut(ContentModel.PROP_MODIFIED,
+                // si.getLastSaveDateTime(), destination);
+                // trimPut(ContentModel.PROP_MODIFIER, si.getLastAuthor(),
+                // destination);
+            }
+            finally
+            {
+                document.dispose();
+            }
         }
     }
 

@@ -1,16 +1,14 @@
 package org.alfresco.repo.content.metadata;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * @see org.alfresco.repo.content.transform.PdfBoxContentTransformer
+ * @see org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter
+ * 
  * @author Jesper Steen Møller
  */
 public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
-    private static final Log logger = LogFactory.getLog(PdfBoxMetadataExtracterTest.class);
     private MetadataExtracter extracter;
 
     public void onSetUpInTransaction() throws Exception

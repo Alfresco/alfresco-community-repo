@@ -31,6 +31,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.context.IContextListener;
+import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -44,7 +46,7 @@ import org.apache.commons.logging.LogFactory;
  *  
  * @author gavinc
  */
-public class RulesBean
+public class RulesBean implements IContextListener
 {
    private static final String MSG_ERROR_DELETE_RULE = "error_delete_rule";
    private static final String LOCAL = "local";
@@ -58,6 +60,15 @@ public class RulesBean
    private List<WrappedRule> rules;
    private Rule currentRule;
    private UIRichList richList;
+   
+   
+   /**
+    * Default constructor
+    */
+   public RulesBean()
+   {
+      UIContextService.getInstance(FacesContext.getCurrentInstance()).registerBean(this);
+   }
    
    /**
     * Returns the current view mode the list of rules is in
@@ -122,6 +133,9 @@ public class RulesBean
          
          this.currentRule = this.ruleService.getRule(
                getSpace().getNodeRef(), id);
+         
+         // refresh list
+         contextUpdated();
       }
    }
    
@@ -201,7 +215,6 @@ public class RulesBean
    public void setRichList(UIRichList richList)
    {
       this.richList = richList;
-      this.richList.setValue(null);
    }
    
    /**
@@ -229,6 +242,22 @@ public class RulesBean
    {
       this.ruleService = ruleService;
    }
+
+   
+   // ------------------------------------------------------------------------------
+   // IContextListener implementation
+
+   /**
+    * @see org.alfresco.web.app.context.IContextListener#contextUpdated()
+    */
+   public void contextUpdated()
+   {
+      if (this.richList != null)
+      {
+         this.richList.setValue(null);
+      }
+   }
+   
    
    /**
     * Inner class to wrap the Rule objects so we can expose a flag to indicate whether

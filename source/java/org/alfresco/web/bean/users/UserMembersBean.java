@@ -45,6 +45,8 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.context.IContextListener;
+import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
@@ -57,7 +59,7 @@ import org.alfresco.web.ui.repo.WebResources;
 /**
  * @author Kevin Roast
  */
-public abstract class UserMembersBean
+public abstract class UserMembersBean implements IContextListener
 {
    private static final String MSG_SUCCESS_INHERIT_NOT = "success_not_inherit_permissions";
    private static final String MSG_SUCCESS_INHERIT = "success_inherit_permissions";
@@ -98,6 +100,15 @@ public abstract class UserMembersBean
    
    /** roles for current person */
    private List<PermissionWrapper> personRoles = null;
+   
+   
+   /**
+    * Default constructor
+    */
+   public UserMembersBean()
+   {
+      UIContextService.getInstance(FacesContext.getCurrentInstance()).registerBean(this);
+   }
    
    
    // ------------------------------------------------------------------------------
@@ -176,9 +187,6 @@ public abstract class UserMembersBean
    public void setUsersRichList(UIRichList usersRichList)
    {
       this.usersRichList = usersRichList;
-      
-      // force refresh on exit of the page (as this property is set by JSF on view restore) 
-      this.usersRichList.setValue(null);
    }
    
    /**
@@ -396,7 +404,30 @@ public abstract class UserMembersBean
    
    
    // ------------------------------------------------------------------------------
+   // IContextListener implementation
+
+   /**
+    * @see org.alfresco.web.app.context.IContextListener#contextUpdated()
+    */
+   public void contextUpdated()
+   {
+      if (this.usersRichList != null)
+      {
+         this.usersRichList.setValue(null);
+      }
+   }
+   
+   
+   // ------------------------------------------------------------------------------
    // Action event handlers
+   
+   /**
+    * Action called to Close the dialog
+    */
+   public void close(ActionEvent event)
+   {
+      UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
+   }
    
    /**
     * Action event called by all actions that need to setup a Person context on
@@ -465,9 +496,11 @@ public abstract class UserMembersBean
       {
          setPersonAuthority(null);
       }
+      
+      // force refresh on return to this page
+      contextUpdated();
    }
-   
-   
+      
    /**
     * Inherit parent Space permissions value changed by the user
     */
@@ -514,6 +547,9 @@ public abstract class UserMembersBean
          PermissionWrapper wrapper = new PermissionWrapper(role, Application.getMessage(context, role));
          this.personRoles.add(wrapper);
       }
+      
+      // force refresh on return to this page
+      contextUpdated();
    }
    
    /**
@@ -526,6 +562,9 @@ public abstract class UserMembersBean
       {
          this.personRoles.remove(wrapper);
       }
+      
+      // force refresh on return to this page
+      contextUpdated();
    }
    
    /**

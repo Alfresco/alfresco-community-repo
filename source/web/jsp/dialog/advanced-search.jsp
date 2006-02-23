@@ -76,33 +76,31 @@
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
                      <table cellspacing="4" cellpadding="0" width="100%">
-                        <tr valign="top">
+                        <tr>
                            <td width=32>
                               <img src="<%=request.getContextPath()%>/images/icons/search_large.gif" width=32 height=32>
                            </td>
                            <td>
-                              <div class="mainSubTitle"><h:outputText value='#{NavigationBean.nodeProperties.name}' /></div>
                               <div class="mainTitle"><h:outputText value="#{msg.advanced_search}" /></div>
                               <div class="mainSubText"><h:outputText value="#{msg.advancedsearch_description}" /></div>
                            </td>
-                           <td bgcolor="#465F7D" width=1></td>
-                           <td width=80 style="padding-left:2px">
-                              <%-- Current object actions --%>
-                              <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.actions}" /><br>
-                              <a:actionLink value="#{msg.resetall}" image="/images/icons/delete.gif" padding="4" actionListener="#{AdvancedSearchBean.reset}" />
+                           
+                           <td align=right>
+                              <a:actionLink value="#{msg.resetall}" image="/images/icons/delete.gif" padding="4" actionListener="#{AdvancedSearchBean.reset}" style="white-space:nowrap" />
                            </td>
-                           <td bgcolor="#465F7D" width=1></td>
-                           <td width=200 style="padding-left:2px">
+                           <td class="separator" width=1></td>
+                           <td width=80 style="padding-left:4px">
                               <%-- Available Saved Searches --%>
-                              <center><h:outputText styleClass="mainSubTitle" value="#{msg.saved_searches}" /></center>
-                              <div style="padding-top:4px">
+                              <div style="padding-top:4px" style="white-space:nowrap">
                                  <a:modeList itemSpacing="3" iconColumnWidth="20" style="text-align:right" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/Details.gif"
-                                       value="#{AdvancedSearchBean.savedSearchMode}" actionListener="#{AdvancedSearchBean.savedSearchModeChanged}">
+                                       value="#{AdvancedSearchBean.savedSearchMode}" actionListener="#{AdvancedSearchBean.savedSearchModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu" label="#{msg.saved_searches}">
                                     <a:listItem value="user" label="#{msg.user_searches}" />
                                     <a:listItem value="global" label="#{msg.global_searches}" />
                                  </a:modeList>
                               </div>
-                              <div style="white-space:nowrap">
+                           </td>
+                           <td width=128 style="padding-left:4px">
+                              <div>
                                  <%-- Saved Searches drop-down selector --%>
                                  <%-- uses a nasty hack to execute an ActionListener for the drop-down.
                                       tried using a valueChangedListener+formsubmit but the valueChangedListener

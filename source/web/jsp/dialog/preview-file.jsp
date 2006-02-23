@@ -64,18 +64,17 @@
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
                      <table cellspacing="4" cellpadding="0" width="100%">
-                        <tr valign="top">
+                        <tr>
                            <td width="32">
                               <img src="<%=request.getContextPath()%>/images/icons/preview_large.gif" width=32 height=32>
                            </td>
                            <td>
-                              <div class="mainSubTitle"><h:outputText value="#{NavigationBean.nodeProperties.name}" /></div>
                               <div class="mainTitle">
                                  <h:outputText value="#{msg.preview_of}" /> '<h:outputText value="#{DocumentPreviewBean.name}" />'<r:lockIcon value="#{DocumentPreviewBean.node.nodeRef}" align="absmiddle" />
                               </div>
                               <div class="mainSubText"><h:outputText value="#{msg.previewdocument_description}" /></div>
                            </td>
-                           <td bgcolor="#465F7D" width=1></td>
+                           <td class="separator" width=1></td>
                            <td width=100 style="padding-left:2px">
                               <%-- Available Templates --%>
                               <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.templates}" />
@@ -89,7 +88,7 @@
                            </td>
                            
                            <%-- Navigation --%>
-                           <td bgcolor="#465F7D" width=1></td>
+                           <td class="separator" width=1></td>
                            <td width=100>
                               <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.navigation}" /><br>
                               <a:actionLink value="#{msg.next_item}" image="/images/icons/NextItem.gif" padding="4" actionListener="#{DocumentDetailsBean.nextItem}" action="nextItem">

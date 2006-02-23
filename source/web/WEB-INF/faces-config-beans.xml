@@ -56,6 +56,10 @@
          <property-name>cifsServer</property-name>
          <value>#{cifsServer}</value>
       </managed-property>
+      <managed-property>
+         <property-name>ruleService</property-name>
+         <value>#{RuleService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

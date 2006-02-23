@@ -185,6 +185,11 @@ a.headbarLink
    font-size: 10px;
 }
 
+.separator
+{
+   background-color: #92A8C0;
+}
+
 .moreActionsMenu
 {
    background-color: #eeeeee;

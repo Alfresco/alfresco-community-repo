@@ -18,6 +18,7 @@ package org.alfresco.web.ui.common.component;
 
 import java.io.IOException;
 
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
@@ -53,7 +54,7 @@ public class UIMenu extends SelfRenderingComponent
       ResponseWriter out = context.getResponseWriter();
       
       // output a textual label with an optional icon to show the menu
-      String menuId = getNextMenuId(context);
+      String menuId = getNextMenuId(this, context);
       out.write("<a href='#' onclick=\"javascript:_toggleMenu(event, '");
       out.write(menuId);
       out.write("');return false;\"");
@@ -66,9 +67,7 @@ public class UIMenu extends SelfRenderingComponent
       String label = getLabel();
       if (label != null)
       {
-         out.write("<span>");
          out.write(Utils.encode(label));
-         out.write("</span>");
       }
       
       // output image
@@ -80,7 +79,6 @@ public class UIMenu extends SelfRenderingComponent
       out.write("</a>");
       
       // output the hidden DIV section to contain the menu item table
-      // also output the javascript handlers used to hide the menu after a delay of non-use
       out.write("<br><div id='");
       out.write(menuId);
       out.write("' style=\"position:absolute;display:none;padding-left:2px;\">");
@@ -180,7 +178,7 @@ public class UIMenu extends SelfRenderingComponent
    
    
    // ------------------------------------------------------------------------------
-   // Private helpers
+   // Helpers
    
    /**
     * Return the next usable menu DIV id in a sequence
@@ -189,7 +187,7 @@ public class UIMenu extends SelfRenderingComponent
     * 
     * @return next menu ID
     */
-   private String getNextMenuId(FacesContext context)
+   public static String getNextMenuId(UIComponent component, FacesContext context)
    {
       Integer val = (Integer)context.getExternalContext().getRequestMap().get(MENU_ID_KEY);
       if (val == null)
@@ -198,7 +196,7 @@ public class UIMenu extends SelfRenderingComponent
       }
       
       // build next id in sequence
-      String id = getClientId(context) + '_' + val.toString();
+      String id = component.getClientId(context) + '_' + val.toString();
       
       // save incremented value in the request ready for next menu component instance
       val = Integer.valueOf( val.intValue() + 1 );

@@ -64,6 +64,8 @@ public class ModeListTag extends HtmlComponentTag
       setIntProperty(component, "itemSpacing", this.itemSpacing);
       setIntProperty(component, "iconColumnWidth", this.iconColumnWidth);
       setIntProperty(component, "width", this.width);
+      setStringProperty(component, "menuImage", this.menuImage);
+      setBooleanProperty(component, "menu", this.menu);
       setBooleanProperty(component, "horizontal", this.horizontal);
       setBooleanProperty(component, "disabled", this.disabled);
       setStringProperty(component, "label", this.label);
@@ -319,7 +321,33 @@ public class ModeListTag extends HtmlComponentTag
    {
       this.disabledStyleClass = disabledStyleClass;
    }
+   
+   /**
+    * Set the menu
+    *
+    * @param menu     the menu
+    */
+   public void setMenu(String menu)
+   {
+      this.menu = menu;
+   }
 
+   /**
+    * Set the menuImage
+    *
+    * @param menuImage     the menuImage
+    */
+   public void setMenuImage(String menuImage)
+   {
+      this.menuImage = menuImage;
+   }
+
+
+   /** the menu */
+   private String menu;
+
+   /** the menuImage */
+   private String menuImage;
 
    /** the disabledStyle */
    private String disabledStyle;

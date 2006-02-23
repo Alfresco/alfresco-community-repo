@@ -64,38 +64,37 @@
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
                      <table cellspacing="4" cellpadding="0" width="100%">
-                        <tr valign="top">
+                        <tr>
                            <td width="32">
                               <img src="<%=request.getContextPath()%>/images/icons/details_large.gif" width=32 height=32>
                            </td>
                            <td>
-                              <div class="mainSubTitle"><h:outputText value="#{SpaceDetailsBean.name}" /></div>
                               <div class="mainTitle"><h:outputText value="#{msg.details_of}" /> '<h:outputText value="#{SpaceDetailsBean.name}" />'</div>
                               <div class="mainSubText"><h:outputText value="#{msg.location}" />: <r:nodePath value="#{SpaceDetailsBean.space.nodeRef}" breadcrumb="true" actionListener="#{BrowseBean.clickSpacePath}" /></div>
                               <div class="mainSubText"><h:outputText value="#{msg.spacedetails_description}" /></div>
                            </td>
-                           <td bgcolor="#465F7D" width=1></td>
-                           <td width=100 style="padding-left:2px">
-                              <%-- Current object actions --%>
-                              <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.actions}" /><br>
+                           
+                           <td align=right>
+                              <%-- Actions menu --%>
+                              <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.actions}" image="/images/icons/menu.gif"
+                                    menuStyleClass="moreActionsMenu" style="white-space:nowrap" tooltip="#{msg.more_options_space}">
                               
-                              <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Delete">
-                                 <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" padding="4" actionListener="#{ClipboardBean.cutNode}">
+                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Delete">
+                                    <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" actionListener="#{ClipboardBean.cutNode}">
+                                       <f:param name="id" value="#{SpaceDetailsBean.id}" />
+                                    </a:actionLink>
+                                 </r:permissionEvaluator>
+                                 
+                                 <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" actionListener="#{ClipboardBean.copyNode}">
                                     <f:param name="id" value="#{SpaceDetailsBean.id}" />
                                  </a:actionLink>
-                              </r:permissionEvaluator>
-                              
-                              <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" padding="4" actionListener="#{ClipboardBean.copyNode}">
-                                 <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                              </a:actionLink>
-                              
-                              <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Delete">
-                                 <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" padding="4" action="dialog:deleteSpace" actionListener="#{BrowseBean.setupSpaceAction}">
-                                    <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                 </a:actionLink>
-                              </r:permissionEvaluator>
-                              
-                              <a:menu itemSpacing="4" label="#{msg.more_options}" image="/images/icons/more.gif" tooltip="#{msg.more_options_space}" menuStyleClass="moreActionsMenu" style="padding-left:20px">
+                                 
+                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Delete">
+                                    <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" action="dialog:deleteSpace" actionListener="#{BrowseBean.setupSpaceAction}">
+                                       <f:param name="id" value="#{SpaceDetailsBean.id}" />
+                                    </a:actionLink>
+                                 </r:permissionEvaluator>
+                                 
                                  <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
                                     <a:actionLink value="#{msg.import}" image="/images/icons/import.gif" action="dialog:import" actionListener="#{BrowseBean.setupSpaceAction}">
                                        <f:param name="id" value="#{SpaceDetailsBean.id}" />
@@ -141,7 +140,7 @@
                            </td>
                            
                            <%-- Navigation --%>
-                           <td bgcolor="#465F7D" width=1></td>
+                           <td class="separator" width=1></td>
                            <td width=100>
                               <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.navigation}" /><br>
                               <a:actionLink value="#{msg.next_item}" image="/images/icons/NextItem.gif" padding="4" actionListener="#{SpaceDetailsBean.nextItem}" action="nextItem">

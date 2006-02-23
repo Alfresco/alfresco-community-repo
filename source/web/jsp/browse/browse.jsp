@@ -73,7 +73,7 @@
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
                      <table cellspacing=4 cellpadding=0 width=100%>
-                        <tr valign=top>
+                        <tr>
  
                            <%-- actions for browse mode --%>
                            <a:panel id="browse-actions" rendered="#{NavigationBean.searchContext == null}">
@@ -82,27 +82,42 @@
                               </td>
                               <td>
                                  <%-- Summary --%>
-                                 <div class="mainSubTitle"><h:outputText value="#{msg.product_name}" id="msg1" /></div>
                                  <div class="mainTitle"><h:outputText value="#{NavigationBean.nodeProperties.name}" id="msg2" />&nbsp;<a:actionLink image="/images/icons/opennetwork.gif" value="#{msg.network_folder} #{NavigationBean.nodeProperties.cifsPathLabel}" showLink="false" href="#{NavigationBean.nodeProperties.cifsPath}" rendered="#{NavigationBean.nodeProperties.cifsPath != null}" target="new" id="cifs" /></div>
                                  <div class="mainSubText"><h:outputText value="#{msg.view_description}" id="msg3" /></div>
                                  <div class="mainSubText"><h:outputText value="#{NavigationBean.nodeProperties.description}" id="msg4" /></div>
-                                 <%--<div style="padding-top:2px"><a:statusMessage id="status1" border="yellowInner" bgcolor="#ffffcc" binding="#{BrowseBean.statusMessage}" /></div>--%>
                               </td>
-                              <td bgcolor="#465F7D" width=1></td>
-                              <td width=110 style="padding-left:2px">
-                                 <%-- Current object actions --%>
-                                 <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.actions}" id="msg5" /><br>
-                                 <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval1">
-                                    <a:actionLink value="#{msg.new_space}" image="/images/icons/create_space.gif" padding="4" action="createSpace" actionListener="#{NewSpaceDialog.startWizard}" id="link1" />
-                                 </r:permissionEvaluator>
+                              <td style="padding-right:4px" align=right>
+                                 <nobr>
+                                 <%-- Additional summary info --%>
+                                 <img src="<%=request.getContextPath()%>/images/icons/rule.gif" width=16 height=16> <h:outputText value="(#{NavigationBean.ruleCount})" id="rulemsg1" style="vertical-align:20%" />
+                                 </nobr>
+                              </td>
+                              <td class="separator" width=1></td>
+                              <td style="padding-left:4px" align=right>
+                                 <%-- Quick upload action --%>
+                                 <nobr>
                                  <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval2">
-                                    <a:actionLink value="#{msg.add_content}" image="/images/icons/add.gif" padding="4" action="addContent" actionListener="#{AddContentWizard.startWizard}" id="link3" />
+                                    <a:actionLink value="#{msg.add_content}" image="/images/icons/add.gif" action="addContent" actionListener="#{AddContentWizard.startWizard}" style="white-space:nowrap" id="link3" />
                                  </r:permissionEvaluator>
-                                 <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval3">
-                                    <a:actionLink value="#{msg.create_content}" image="/images/icons/new_content.gif" id="link3_1" padding="4" action="createContent" actionListener="#{CreateContentWizard.startWizard}" />
-                                 </r:permissionEvaluator>
-                                 <%-- Current space More actions menu --%>
-                                 <a:menu id="spaceMenu" itemSpacing="4" label="#{msg.more_options}" image="/images/icons/more.gif" tooltip="#{msg.more_options_space}" menuStyleClass="moreActionsMenu" style="padding-left:20px">
+                                 </nobr>
+                              </td>
+                              <td style="padding-left:4px" width=52>
+                                 <%-- Create actions menu --%>
+                                 <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
+                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval3">
+                                       <a:actionLink value="#{msg.create_content}" image="/images/icons/new_content.gif" id="link3_1" action="createContent" actionListener="#{CreateContentWizard.startWizard}" />
+                                    </r:permissionEvaluator>
+                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval1">
+                                       <a:actionLink value="#{msg.new_space}" image="/images/icons/create_space.gif" action="createSpace" actionListener="#{NewSpaceDialog.startWizard}" id="link1" />
+                                    </r:permissionEvaluator>
+                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval6">
+                                       <a:actionLink value="#{msg.advanced_space_wizard}" image="/images/icons/create_space.gif" action="createAdvancedSpace" actionListener="#{NewSpaceWizard.startWizard}" id="link9" />
+                                    </r:permissionEvaluator>
+                                 </a:menu>
+                              </td>
+                              <td style="padding-left:4px" width=80>
+                                 <%-- More actions menu --%>
+                                 <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
                                     <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" action="dialog:showSpaceDetails" actionListener="#{BrowseBean.setupSpaceAction}" id="link5">
                                        <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param6" />
                                     </a:actionLink>
@@ -119,9 +134,6 @@
                                     </a:actionLink>
                                     <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Write" id="eval5">
                                        <a:actionLink value="#{msg.paste_all}" image="/images/icons/paste.gif" actionListener="#{ClipboardBean.pasteAll}" id="link8" />
-                                    </r:permissionEvaluator>
-                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval6">
-                                       <a:actionLink value="#{msg.advanced_space_wizard}" image="/images/icons/create_space.gif" action="createAdvancedSpace" actionListener="#{NewSpaceWizard.startWizard}" id="link9" />
                                     </r:permissionEvaluator>
                                     <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="ChangePermissions" id="eval3_1">
                                        <a:actionLink value="#{msg.manage_invited_users}" image="/images/icons/invite.gif" id="link4" action="dialog:manageInvitedUsers" actionListener="#{BrowseBean.setupSpaceAction}">
@@ -148,37 +160,36 @@
                               </td>
                               <td>
                                  <%-- Summary --%>
-                                 <div class="mainSubTitle"><h:outputText value="#{msg.product_name}" id="msg10" /></div>
                                  <div class="mainTitle"><h:outputText value="#{msg.search_results}" id="msg11" /></div>
-                                 <div class="mainSubText">
-                                    <h:outputFormat value="#{msg.search_detail}" id="msg12">
-                                       <f:param value="#{NavigationBean.searchContext.text}" id="param2" />
-                                    </h:outputFormat>
-                                 </div>
+                                 <div class="mainSubText"><h:outputFormat value="#{msg.search_detail}" id="msg12"><f:param value="#{NavigationBean.searchContext.text}" id="param2" /></h:outputFormat></div>
                                  <div class="mainSubText"><h:outputText value="#{msg.search_description}" id="msg13" /></div>
-                                 <%--<div style="padding-top:2px"><a:statusMessage id="status2" border="yellowInner" bgcolor="#ffffcc" binding="#{BrowseBean.statusMessage}" /></div>--%>
                               </td>
-                              <td bgcolor="#465F7D" width=1></td>
-                              <td width=135 style="padding-left:2px">
-                                 <%-- Current object actions --%>
-                                 <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.actions}" id="msg14" /><br>
-                                 <a:actionLink value="#{msg.new_search}" image="/images/icons/search_icon.gif" padding="4" action="advSearch" id="link20" />
-                                 <a:booleanEvaluator value="#{NavigationBean.isGuest == false}" id="eval0">
-                                    <a:actionLink value="#{msg.save_new_search}" image="/images/icons/save_search.gif" padding="4" action="#{AdvancedSearchBean.saveNewSearch}" id="link20_1" />
-                                    <a:booleanEvaluator value="#{AdvancedSearchBean.allowEdit == true}" id="eval0_1">
-                                       <a:actionLink value="#{msg.save_edit_search}" image="/images/icons/edit_search.gif" padding="4" action="#{AdvancedSearchBean.saveEditSearch}" id="link20_2" />
+                              <td style="padding-right:4px" align=right>
+                                 <%-- Close Search action --%>
+                                 <nobr><a:actionLink value="#{msg.close_search}" image="/images/icons/action.gif" style="white-space:nowrap" actionListener="#{BrowseBean.closeSearch}" id="link21" /></nobr>
+                              </td>
+                              <td style="padding-right:4px" width=80>
+                                 <%-- New Search actions --%>
+                                 <nobr><a:actionLink value="#{msg.new_search}" image="/images/icons/search_icon.gif" style="white-space:nowrap" action="advSearch" id="link20" /></nobr>
+                              </td>
+                              <td style="padding-left:4px" width=90>
+                                 <%-- More Search actions --%>
+                                 <a:menu id="searchMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
+                                    <a:booleanEvaluator value="#{NavigationBean.isGuest == false}" id="eval0">
+                                       <a:actionLink value="#{msg.save_new_search}" image="/images/icons/save_search.gif" padding="4" action="#{AdvancedSearchBean.saveNewSearch}" id="link20_1" />
+                                       <a:booleanEvaluator value="#{AdvancedSearchBean.allowEdit == true}" id="eval0_1">
+                                          <a:actionLink value="#{msg.save_edit_search}" image="/images/icons/edit_search.gif" padding="4" action="#{AdvancedSearchBean.saveEditSearch}" id="link20_2" />
+                                       </a:booleanEvaluator>
                                     </a:booleanEvaluator>
-                                 </a:booleanEvaluator>
-                                 <a:actionLink value="#{msg.close_search}" image="/images/icons/action.gif" padding="4" actionListener="#{BrowseBean.closeSearch}" id="link21" />
+                                 </a:menu>
                               </td>
                            </a:panel>
                            
-                           <td bgcolor="#465F7D" width=1></td>
-                           <td width=110>
+                           <td class="separator" width=1></td>
+                           <td width=110 valign=middle>
                               <%-- View mode settings --%>
-                              <h:outputText style="padding-left:26px" styleClass="mainSubTitle" value="#{msg.view}"/><br>
-                              <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/Details.gif"
-                                    value="#{BrowseBean.browseViewMode}" actionListener="#{BrowseBean.viewModeChanged}">
+                              <a:modeList itemSpacing="4" iconColumnWidth="20" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/Details.gif"
+                                    value="#{BrowseBean.browseViewMode}" actionListener="#{BrowseBean.viewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">
                                  <a:listItem value="details" label="#{msg.details_view}" />
                                  <a:listItem value="icons" label="#{msg.view_icon}" />
                                  <a:listItem value="list" label="#{msg.view_browse}" />
@@ -202,8 +213,7 @@
                <%-- Details - Spaces --%>
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
-                  <td>
-                     <div style="padding:4px">
+                  <td style="padding:4px">
                      
                      <a:panel id="spaces-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.browse_spaces}">
                      
@@ -346,8 +356,6 @@
                      
                      </a:panel>
                      
-                     <div>
-                     
                   </td>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
                </tr>
@@ -355,8 +363,7 @@
                <%-- Details - Content --%>
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
-                  <td>
-                     <div style="padding:4px">
+                  <td style="padding:4px">
                      
                      <a:panel id="content-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.browse_content}">
                      
@@ -547,7 +554,6 @@
                      
                      </a:panel>
                      
-                     </div>
                   </td>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
                </tr>

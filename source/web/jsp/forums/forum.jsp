@@ -63,7 +63,7 @@
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
                      <table cellspacing=4 cellpadding=0 width=100%>
-                        <tr valign=top>
+                        <tr>
  
                            <%-- actions for topics --%>
                            <a:panel id="forum-actions">
@@ -72,27 +72,29 @@
                               </td>
                               <td>
                                  <%-- Summary --%>
-                                 <div class="mainSubTitle"><h:outputText value="#{msg.forum}" id="msg1" /></div>
                                  <div class="mainTitle"><h:outputText value="#{NavigationBean.nodeProperties.name}" id="msg2" /></div>
                                  <div class="mainSubText"><h:outputText value="#{msg.forum_info}" id="msg3" /></div>
                               </td>
-                              <td bgcolor="#465F7D" width=1></td>
-                              <td width=110 style="padding-left:2px">
-                                 <%-- Current object actions --%>
-                                 <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.actions}" id="msg5" /><br>
-                                 <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval1">
-                                    <a:actionLink value="#{msg.create_topic}" image="/images/icons/create_topic.gif" padding="4" action="dialog:createTopic" actionListener="#{CreateTopicDialog.startWizard}" id="link1" />
-                                 </r:permissionEvaluator>
-                                 <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" padding="4" action="dialog:showForumDetails" actionListener="#{BrowseBean.setupSpaceAction}" id="link2">
-                                    <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param1" />
-                                 </a:actionLink>
-                                 <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval2">
-                                    <a:actionLink value="#{msg.delete_forum}" image="/images/icons/delete_forum.gif" padding="4" action="dialog:deleteForum" actionListener="#{BrowseBean.setupDeleteAction}" id="link3">
-                                       <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param2" />
+                              
+                              <td align=right>
+                                 <%-- Create actions menu --%>
+                                 <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
+                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval1">
+                                       <a:actionLink value="#{msg.create_topic}" image="/images/icons/create_topic.gif" action="dialog:createTopic" actionListener="#{CreateTopicDialog.startWizard}" id="link1" />
+                                    </r:permissionEvaluator>
+                                 </a:menu>
+                              </td>
+                              <td style="padding-left:4px" width=80>
+                                 <%-- More actions menu --%>
+                                 <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
+                                    <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" action="dialog:showForumDetails" actionListener="#{BrowseBean.setupSpaceAction}" id="link2">
+                                       <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param1" />
                                     </a:actionLink>
-                                 </r:permissionEvaluator>
-                                 <%-- Current space More actions menu --%>
-                                 <a:menu id="spaceMenu" itemSpacing="4" label="#{msg.more_options}" image="/images/icons/more.gif" tooltip="#{msg.more_options_space}" menuStyleClass="moreActionsMenu" style="padding-left:20px">
+                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval2">
+                                       <a:actionLink value="#{msg.delete_forum}" image="/images/icons/delete_forum.gif" action="dialog:deleteForum" actionListener="#{BrowseBean.setupDeleteAction}" id="link3">
+                                          <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param2" />
+                                       </a:actionLink>
+                                    </r:permissionEvaluator>
                                     <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval3">
                                        <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" actionListener="#{ClipboardBean.cutNode}" id="link4">
                                           <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param3" />
@@ -112,13 +114,12 @@
                                  </a:menu>
                               </td>
                            </a:panel>
-                                                      
-                           <td bgcolor="#465F7D" width=1></td>
-                           <td width=110>
+                           
+                           <td class="separator" width=1></td>
+                           <td width=110 valign=middle>
                               <%-- View mode settings --%>
-                              <h:outputText style="padding-left:26px" styleClass="mainSubTitle" value="#{msg.view}"/><br>
                               <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight" selectedImage="/images/icons/Details.gif"
-                                    value="#{ForumsBean.forumViewMode}" actionListener="#{ForumsBean.forumViewModeChanged}">
+                                    value="#{ForumsBean.forumViewMode}" actionListener="#{ForumsBean.forumViewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">
                                  <a:listItem value="details" label="#{msg.details_view}" />
                               </a:modeList>
                            </td>

@@ -64,63 +64,64 @@
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
                      <table cellspacing="4" cellpadding="0" width="100%">
-                        <tr valign="top">
+                        <tr>
                            <td width="32">
                               <img src="<%=request.getContextPath()%>/images/icons/details_large.gif" width=32 height=32>
                            </td>
                            <td>
-                              <div class="mainSubTitle"><h:outputText value="#{NavigationBean.nodeProperties.name}" /></div>
                               <div class="mainTitle">
                                  <h:outputText value="#{msg.details_of}" /> '<h:outputText value="#{DocumentDetailsBean.name}" />'<r:lockIcon value="#{DocumentDetailsBean.document.nodeRef}" align="absmiddle" />
                               </div>
                               <div class="mainSubText"><h:outputText value="#{msg.location}" />: <r:nodePath value="#{DocumentDetailsBean.document.nodeRef}" breadcrumb="true" actionListener="#{BrowseBean.clickSpacePath}" /></div>
                               <div class="mainSubText"><h:outputText value="#{msg.documentdetails_description}" /></div>
                            </td>
-                           <td bgcolor="#465F7D" width=1></td>
-                           <td width=100 style="padding-left:2px">
-                              <%-- Current object actions --%>
-                              <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.actions}" />
-                              
-                              <%-- checkin, checkout and undo checkout --%>
+                           
+                           <td align=right>
+                              <%-- Checkin/Checkout action --%>
+                              <nobr>
                               <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="CheckOut">
                                  <a:booleanEvaluator value="#{DocumentDetailsBean.locked == false && DocumentDetailsBean.workingCopy == false}">
-                                    <a:actionLink value="#{msg.checkout}" image="/images/icons/CheckOut_icon.gif" padding="4"
+                                    <a:actionLink value="#{msg.checkout}" image="/images/icons/CheckOut_icon.gif" padding="4" style="white-space:nowrap" 
                                                   actionListener="#{CheckinCheckoutBean.setupContentAction}" action="checkoutFile">
                                        <f:param name="id" value="#{DocumentDetailsBean.id}" />
                                     </a:actionLink>
                                  </a:booleanEvaluator>
                               </r:permissionEvaluator>
-                              
                               <a:booleanEvaluator value="#{DocumentDetailsBean.document.properties.checkIn == true}">
-                                 <a:actionLink value="#{msg.checkin}" image="/images/icons/CheckIn_icon.gif" padding="4"
+                                 <a:actionLink value="#{msg.checkin}" image="/images/icons/CheckIn_icon.gif" padding="4" style="white-space:nowrap" 
                                                actionListener="#{CheckinCheckoutBean.setupContentAction}" action="checkinFile">
                                     <f:param name="id" value="#{DocumentDetailsBean.id}" />
                                  </a:actionLink>
                               </a:booleanEvaluator>
+                              </nobr>
+                           </td>
+                           
+                           <td style="padding-left:4px" width=64>
+                              <%-- Actions menu --%>
+                              <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.actions}" image="/images/icons/menu.gif"
+                                    menuStyleClass="moreActionsMenu" style="white-space:nowrap" tooltip="#{msg.more_options_file}">
+                                 
+                                 <a:booleanEvaluator value="#{DocumentDetailsBean.document.properties.cancelCheckOut == true}">
+                                    <a:actionLink value="#{msg.undocheckout}" image="/images/icons/undo_checkout.gif" 
+                                                  actionListener="#{CheckinCheckoutBean.setupContentAction}" action="undoCheckoutFile">
+                                       <f:param name="id" value="#{DocumentDetailsBean.id}" />
+                                    </a:actionLink>
+                                 </a:booleanEvaluator>
+                                 
+                                 <%-- approve and reject --%>
+                                 <a:booleanEvaluator value="#{DocumentDetailsBean.approveStepName != null && DocumentDetailsBean.workingCopy == false && DocumentDetailsBean.locked == false}">
+                                    <a:actionLink value="#{DocumentDetailsBean.approveStepName}" image="/images/icons/approve.gif"
+                                                  actionListener="#{DocumentDetailsBean.approve}" action="browse">
+                                       <f:param name="id" value="#{DocumentDetailsBean.id}" />
+                                    </a:actionLink>
+                                 </a:booleanEvaluator>
+                                 <a:booleanEvaluator value="#{DocumentDetailsBean.rejectStepName != null && DocumentDetailsBean.workingCopy == false && DocumentDetailsBean.locked == false}">
+                                    <a:actionLink value="#{DocumentDetailsBean.rejectStepName}" image="/images/icons/reject.gif"
+                                                  actionListener="#{DocumentDetailsBean.reject}" action="browse">
+                                       <f:param name="id" value="#{DocumentDetailsBean.id}" />
+                                    </a:actionLink>
+                                 </a:booleanEvaluator>
                               
-                              <a:booleanEvaluator value="#{DocumentDetailsBean.document.properties.cancelCheckOut == true}">
-                                 <a:actionLink value="#{msg.undocheckout}" image="/images/icons/undo_checkout.gif" padding="4" 
-                                               actionListener="#{CheckinCheckoutBean.setupContentAction}" action="undoCheckoutFile">
-                                    <f:param name="id" value="#{DocumentDetailsBean.id}" />
-                                 </a:actionLink>
-                              </a:booleanEvaluator>
-                              
-                              <%-- approve and reject --%>
-                              <a:booleanEvaluator value="#{DocumentDetailsBean.approveStepName != null && DocumentDetailsBean.workingCopy == false && DocumentDetailsBean.locked == false}">
-                                 <a:actionLink value="#{DocumentDetailsBean.approveStepName}" image="/images/icons/approve.gif" padding="4"
-                                               actionListener="#{DocumentDetailsBean.approve}" action="browse">
-                                    <f:param name="id" value="#{DocumentDetailsBean.id}" />
-                                 </a:actionLink>
-                              </a:booleanEvaluator>
-                              <a:booleanEvaluator value="#{DocumentDetailsBean.rejectStepName != null && DocumentDetailsBean.workingCopy == false && DocumentDetailsBean.locked == false}">
-                                 <a:actionLink value="#{DocumentDetailsBean.rejectStepName}" image="/images/icons/reject.gif" padding="4"
-                                               actionListener="#{DocumentDetailsBean.reject}" action="browse">
-                                    <f:param name="id" value="#{DocumentDetailsBean.id}" />
-                                 </a:actionLink>
-                              </a:booleanEvaluator>
-                              
-                              <a:menu itemSpacing="4" image="/images/icons/more.gif" menuStyleClass="moreActionsMenu"
-                                      label="#{msg.more_options}" tooltip="#{msg.more_options_file}" style="padding-left:20px">
                                  <%-- edit and update --%>
                                  <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write">
                                     <a:booleanEvaluator value="#{(DocumentDetailsBean.locked == false && DocumentDetailsBean.workingCopy == false) || DocumentDetailsBean.owner == true}">
@@ -199,8 +200,12 @@
                               </a:menu>
                            </td>
                            
+                           
+                           <%-- TODO: FINISH --%>
+                           
+                           
                            <%-- Navigation --%>
-                           <td bgcolor="#465F7D" width=1></td>
+                           <td class="separator" width=1></td>
                            <td width=100>
                               <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.navigation}" /><br>
                               <a:actionLink value="#{msg.next_item}" image="/images/icons/NextItem.gif" padding="4" actionListener="#{DocumentDetailsBean.nextItem}" action="nextItem">

@@ -64,13 +64,12 @@
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
                      <table cellspacing="4" cellpadding="0" width="100%">
-                        <tr valign="top">
+                        <tr>
                            <td width="32">
                               <h:graphicImage id="wizard-logo" url="/images/icons/users_large.gif" />
                            </td>
                            <td>
-                              <div class="mainSubTitle"><h:outputText value='#{BrowseBean.actionSpace.name}' /></div>
-                              <div class="mainTitle"><h:outputText value="#{msg.manage_invited_users}" /></div>
+                              <div class="mainTitle"><h:outputText value="#{msg.manage_invited_users}" /> '<h:outputText value='#{BrowseBean.actionSpace.name}' />'</div>
                               <div class="mainSubText">
                                  <h:outputFormat value="#{msg.space_owner}" rendered="#{SpaceUsersBean.owner != null}">
                                     <f:param value="#{SpaceUsersBean.owner}" />
@@ -78,19 +77,18 @@
                               </div>
                               <div class="mainSubText"><h:outputText value="#{msg.manage_invited_users_description}" /></div>
                            </td>
-                           <td bgcolor="#465F7D" width=1></td>
-                           <td width=100 style="padding-left:2px">
+                           
+                           <td align=right>
                               <%-- Current object actions --%>
-                              <h:outputText style="padding-left:20px;" styleClass="mainSubTitle" value="#{msg.actions}" /><br/>
                               <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="ChangePermissions">
                                  <a:actionLink value="#{msg.invite}" image="/images/icons/invite.gif" padding="4" action="inviteUsers" actionListener="#{InviteSpaceUsersWizard.startWizard}" />
                               </r:permissionEvaluator>
                            </td>
-                           <td bgcolor="#465F7D" width=1></td>
-                           <td width=100 style="padding-left:2px">
+                           
+                           <td class="separator" width=1></td>
+                           <td width=100 valign=middle>
                               <%-- View mode settings --%>
-                              <h:outputText style="padding-left:26px" styleClass="mainSubTitle" value="#{msg.view}"/><br>
-                              <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight" selectedImage="/images/icons/Details.gif" value="0">
+                              <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight" selectedImage="/images/icons/Details.gif" value="0" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">
                                  <a:listItem value="0" label="#{msg.user_details}" />
                               </a:modeList>
                            </td>

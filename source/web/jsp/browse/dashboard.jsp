@@ -66,7 +66,7 @@
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
                      <table cellspacing=4 cellpadding=0 width=100%>
-                        <tr valign=top>
+                        <tr>
  
                            <%-- actions for browse mode --%>
                            <td width=32>
@@ -74,18 +74,16 @@
                            </td>
                            <td>
                               <%-- Summary --%>
-                              <div class="mainSubTitle"><h:outputText value="#{msg.product_name}" id="msg1" /></div>
                               <div class="mainTitle"><h:outputText value="#{NavigationBean.nodeProperties.name}" id="msg2" />&nbsp;<a:actionLink image="/images/icons/opennetwork.gif" value="#{msg.network_folder} #{NavigationBean.nodeProperties.cifsPathLabel}" showLink="false" href="#{NavigationBean.nodeProperties.cifsPath}" rendered="#{NavigationBean.nodeProperties.cifsPath != null}" target="new" id="cifs" /></div>
                               <div class="mainSubText"><h:outputText value="#{msg.view_description}" id="msg3" /></div>
                               <div class="mainSubText"><h:outputText value="#{NavigationBean.nodeProperties.description}" id="msg4" /></div>
                            </td>
                            
-                           <td bgcolor="#465F7D" width=1></td>
-                           <td width=110>
+                           <td class="separator" width=1></td>
+                           <td width=110 valign=middle>
                               <%-- View mode settings --%>
-                              <h:outputText style="padding-left:26px" styleClass="mainSubTitle" value="#{msg.view}"/><br>
-                              <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/Details.gif"
-                                    value="dashboard" actionListener="#{BrowseBean.viewModeChanged}">
+                              <a:modeList itemSpacing="4" iconColumnWidth="20" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/Details.gif"
+                                    value="dashboard" actionListener="#{BrowseBean.viewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">
                                  <a:listItem value="details" label="#{msg.details_view}" />
                                  <a:listItem value="icons" label="#{msg.view_icon}" />
                                  <a:listItem value="list" label="#{msg.view_browse}" />

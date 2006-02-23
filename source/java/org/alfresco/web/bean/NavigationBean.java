@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -95,6 +96,14 @@ public class NavigationBean
    public void setNamespaceService(NamespaceService namespaceService)
    {
       this.namespaceService = namespaceService;
+   }
+   
+   /**
+    * @param ruleService The ruleService to use
+    */
+   public void setRuleService(RuleService ruleService)
+   {
+      this.ruleService = ruleService;
    }
    
    /**
@@ -187,6 +196,15 @@ public class NavigationBean
    public void setHelpUrl(String helpUrl)
    {
       this.helpUrl = helpUrl;
+   }
+   
+   /**
+    * @return the number of rules associated with the current space
+    */
+   public int getRuleCount()
+   {
+       Node node = getCurrentNode();
+       return (node != null ? this.ruleService.countRules(node.getNodeRef()) : 0);
    }
    
    /**
@@ -361,7 +379,6 @@ public class NavigationBean
          Path path = this.nodeService.getPath(nodeRef);
          
          // resolve CIFS network folder location for this node
-         
          DiskSharedDevice diskShare = cifsServer.getConfiguration().getPrimaryFilesystem();
          
          if (diskShare != null)
@@ -649,6 +666,9 @@ public class NavigationBean
    
    /** NamespaceService bean reference */
    protected NamespaceService namespaceService;
+   
+   /** RuleService bean reference*/
+   protected RuleService ruleService;
    
    /** CIFSServer bean reference */
    protected CIFSServer cifsServer;

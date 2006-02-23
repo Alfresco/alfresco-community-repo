@@ -28,6 +28,7 @@ import javax.faces.context.ResponseWriter;
 
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
+import org.alfresco.web.ui.common.component.UIMenu;
 import org.alfresco.web.ui.common.component.UIModeList;
 
 /**
@@ -74,54 +75,137 @@ public class ModeListRenderer extends BaseRenderer
       
       ResponseWriter out = context.getResponseWriter();
 
-      // start outer table container the list items
       Map attrs = list.getAttributes();
-      out.write("<table cellspacing=1 cellpadding=0");
-      outputAttribute(out, attrs.get("styleClass"), "class");
-      outputAttribute(out, attrs.get("style"), "style");
-      outputAttribute(out, attrs.get("width"), "width");
-      out.write('>');
       
-      // horizontal rendering outputs a single row with each item as a column cell
-      if (list.isHorizontal() == true)
+      if (list.isMenu() == false)
       {
-         out.write("<tr>");
-      }
-      
-      // output title row if present
-      if (list.getLabel() != null)
-      {
-         // each row is an inner table with a single row and 2 columns
-         // first column contains an icon if present, second column contains text
-         if (list.isHorizontal() == false)
+         // start outer table container the list items
+         out.write("<table cellspacing=1 cellpadding=0");
+         outputAttribute(out, attrs.get("styleClass"), "class");
+         outputAttribute(out, attrs.get("style"), "style");
+         outputAttribute(out, attrs.get("width"), "width");
+         out.write('>');
+         
+         // horizontal rendering outputs a single row with each item as a column cell
+         if (list.isHorizontal() == true)
          {
             out.write("<tr>");
          }
          
-         out.write("<td><table cellpadding=0 width=100%");
-         outputAttribute(out, attrs.get("itemSpacing"), "cellspacing");
-         out.write("><tr>");
-         
-         // output icon column
-         if (list.getIconColumnWidth() != 0)
+         // output title row if present
+         if (list.getLabel() != null)
+         {
+            // each row is an inner table with a single row and 2 columns
+            // first column contains an icon if present, second column contains text
+            if (list.isHorizontal() == false)
+            {
+               out.write("<tr>");
+            }
+            
+            out.write("<td><table cellpadding=0 width=100%");
+            outputAttribute(out, attrs.get("itemSpacing"), "cellspacing");
+            out.write("><tr>");
+            
+            // output icon column
+            if (list.getIconColumnWidth() != 0)
+            {
+               out.write("<td");
+               outputAttribute(out, list.getIconColumnWidth(), "width");
+               out.write("></td>");
+            }
+            
+            // output title label
+            out.write("<td><span");
+            outputAttribute(out, attrs.get("labelStyle"), "style");
+            outputAttribute(out, attrs.get("labelStyleClass"), "class");
+            out.write('>');
+            out.write(Utils.encode(list.getLabel()));
+            out.write("</span></td></tr></table></td>");
+            
+            if (list.isHorizontal() == false)
+            {
+               out.write("</tr>");
+            }
+         }
+      }
+      else
+      {
+         // render as a pop-up menu
+         // TODO: show the image set for the individual item if available?
+         out.write("<table cellspacing=0 cellpadding=0 style='white-space:nowrap'><tr>");
+         String selectedImage = (String)attrs.get("selectedImage");
+         if (selectedImage != null)
          {
             out.write("<td");
-            outputAttribute(out, list.getIconColumnWidth(), "width");
-            out.write("></td>");
+            int colWidth = list.getIconColumnWidth();
+            if (colWidth != 0)
+            {
+               out.write(" width=");
+               out.write(Integer.toString(colWidth));
+            }
+            out.write('>');
+            out.write(Utils.buildImageTag(context, selectedImage, null, "absmiddle"));
+            out.write("</td>");
          }
          
-         // output title label
-         out.write("<td><span");
-         outputAttribute(out, attrs.get("labelStyle"), "style");
-         outputAttribute(out, attrs.get("labelStyleClass"), "class");
-         out.write('>');
-         out.write(Utils.encode(list.getLabel()));
-         out.write("</span></td></tr></table></td>");
+         String menuId = UIMenu.getNextMenuId(list, context);
+         out.write("<td><a href='#' onclick=\"javascript:_toggleMenu(event, '");
+         out.write(menuId);
+         out.write("');return false;\">");
          
-         if (list.isHorizontal() == false)
+         // use default label if available
+         String label = list.getLabel();
+         if (label == null || label.length() == 0)
          {
-            out.write("</tr>");
+            // else get the child components and walk to find the selected
+            for (Iterator i=list.getChildren().iterator(); i.hasNext(); /**/)
+            {
+               UIComponent child = (UIComponent)i.next();
+               if (child instanceof UIListItem && child.isRendered() == true)
+               {
+                  // found a valid UIListItem child to render
+                  UIListItem item = (UIListItem)child;
+                  
+                  // if selected render as the label
+                  if (item.getValue().equals(list.getValue()) == true)
+                  {
+                     label = item.getLabel();
+                     break;
+                  }
+               }
+            }
          }
+         
+         // render the label
+         if (label != null && label.length() != 0)
+         {
+            out.write("<span");
+            outputAttribute(out, attrs.get("labelStyle"), "style");
+            outputAttribute(out, attrs.get("labelStyleClass"), "class");
+            out.write('>');
+            out.write(Utils.encode(label));
+            out.write("</span>");
+         }
+         
+         // output image
+         if (list.getMenuImage() != null)
+         {
+            out.write(Utils.buildImageTag(context, list.getMenuImage(), null, "absmiddle"));
+         }
+         
+         out.write("</a></td></tr></table>");
+         
+         // output the hidden DIV section to contain the menu item table
+         out.write("<div id='");
+         out.write(menuId);
+         out.write("' style=\"position:absolute;display:none;padding-left:2px;\">");
+         
+         // start outer table container the list items
+         out.write("<table cellspacing=1 cellpadding=0");
+         outputAttribute(out, attrs.get("styleClass"), "class");
+         outputAttribute(out, attrs.get("style"), "style");
+         outputAttribute(out, attrs.get("width"), "width");
+         out.write('>');
       }
    }
    
@@ -263,11 +347,17 @@ public class ModeListRenderer extends BaseRenderer
       ResponseWriter out = context.getResponseWriter();
       
       // end outer table
-      if (((UIModeList)component).isHorizontal() == true)
+      UIModeList list = (UIModeList)component;
+      if (list.isHorizontal() == true)
       {
          out.write("</tr>");
       }
       out.write("</table>");
+      if (list.isMenu() == true)
+      {
+         // close menu hidden div section
+         out.write("</div>");
+      }
    }
 
    /**

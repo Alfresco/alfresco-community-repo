@@ -64,6 +64,8 @@ public class UIModeList extends UICommand
       this.horizontal = (Boolean)values[2];
       this.disabled = (Boolean)values[3];
       this.label = (String)values[4];
+      this.menu = (Boolean)values[5];
+      this.menuImage = (String)values[6];
    }
    
    /**
@@ -71,13 +73,15 @@ public class UIModeList extends UICommand
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[5];
+      Object values[] = new Object[7];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.iconColumnWidth;
       values[2] = this.horizontal;
       values[3] = this.disabled;
       values[4] = this.label;
+      values[5] = this.menu;
+      values[6] = this.menuImage;
       return (values);
    }
    
@@ -203,6 +207,40 @@ public class UIModeList extends UICommand
    }
    
    /**
+    * Returns the menu rendering flag
+    * 
+    * @return true if the menu rendering mode is to be used
+    */
+   public boolean isMenu()
+   {
+      ValueBinding vb = getValueBinding("menu");
+      if (vb != null)
+      {
+         this.menu = (Boolean)vb.getValue(getFacesContext());
+      }
+      
+      if (this.menu != null)
+      {
+         return this.menu.booleanValue();
+      }
+      else
+      {
+         // return the default
+         return false;
+      }
+   }
+
+   /**
+    * Sets whether the mode list is a menu
+    * 
+    * @param menu       the menu flag
+    */
+   public void setMenu(boolean menu)
+   {
+      this.menu = menu;
+   }
+   
+   /**
     * @return Returns the label.
     */
    public String getLabel()
@@ -224,6 +262,28 @@ public class UIModeList extends UICommand
       this.label = label;
    }
    
+   /**
+    * @return Returns the menu image.
+    */
+   public String getMenuImage()
+   {
+      ValueBinding vb = getValueBinding("menuImage");
+      if (vb != null)
+      {
+         this.menuImage = (String)vb.getValue(getFacesContext());
+      }
+      
+      return this.menuImage;
+   }
+
+   /**
+    * @param menuImage The menu image to set.
+    */
+   public void setMenuImage(String menuImage)
+   {
+      this.menuImage = menuImage;
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Private data 
@@ -236,6 +296,12 @@ public class UIModeList extends UICommand
    
    /** disabled flag */
    private Boolean disabled = null;
+   
+   /** menu rendering flag */
+   private Boolean menu = null;
+   
+   /** menu image to use */
+   private String menuImage = null;
    
    /** the label */
    private String label;

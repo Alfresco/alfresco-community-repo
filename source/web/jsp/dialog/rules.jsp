@@ -64,28 +64,24 @@
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
                      <table cellspacing="4" cellpadding="0" width="100%">
-                        <tr valign="top">
+                        <tr>
                            <td width="32">
                               <h:graphicImage id="wizard-logo" url="/images/icons/rule_large.gif" />
                            </td>
                            <td>
-                              <div class="mainSubTitle"><h:outputText value="#{BrowseBean.actionSpace.name}" /></div>
                               <div class="mainTitle"><h:outputText value="#{msg.content_rules}" /></div>
                               <div class="mainSubText"><h:outputText value="#{msg.space_rules_description}" /></div>
                            </td>
-                           <td bgcolor="#465F7D" width=1></td>
-                           <td width="100" style="padding-left:2px">
+                           <td align=right>
                               <%-- Current object actions --%>
-                              <h:outputText style="padding-left:20px;" styleClass="mainSubTitle" value="#{msg.actions}" /><br/>
                               <a:actionLink value="#{msg.create_rule}" image="/images/icons/new_rule.gif" padding="4" action="createRule" actionListener="#{NewRuleWizard.startWizard}" />
                            </td>
-                           <td bgcolor="#465F7D" width=1></td>
+                           <td class="separator" width=1></td>
                            <td width="125" style="padding-left:2px">
                               <%-- Filters --%>
-                              <h:outputText style="padding-left:26px;padding-bottom:4px;" styleClass="mainSubTitle" value="#{msg.filter_contents}" /><br/>
                               <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight"
-                                    value="#{RulesBean.viewMode}" actionListener="#{RulesBean.viewModeChanged}" 
-                                    selectedImage="/images/icons/Details.gif">
+                                    value="#{RulesBean.viewMode}" actionListener="#{RulesBean.viewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu"
+                                    selectedImage="/images/icons/Details.gif" label="#{msg.filter_contents}">
                                  <a:listItem value="inherited" label="#{msg.inherited}" />
                                  <a:listItem value="local" label="#{msg.local}" />
                               </a:modeList>

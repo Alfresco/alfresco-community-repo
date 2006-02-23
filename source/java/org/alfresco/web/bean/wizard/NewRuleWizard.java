@@ -111,8 +111,8 @@ public class NewRuleWizard extends BaseActionWizard
    private boolean editingAction;
    private boolean editingCondition;
 
-   private RuleService ruleService;
-   private RulesBean rulesBean;
+   protected RuleService ruleService;
+   protected RulesBean rulesBean;
    
    private List<SelectItem> modelTypes;
    private List<SelectItem> mimeTypes;

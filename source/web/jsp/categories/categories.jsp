@@ -64,12 +64,11 @@
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
                      <table cellspacing="4" cellpadding="0" width="100%">
-                        <tr valign="top">
+                        <tr>
                            <td width="32">
                               <h:graphicImage id="logo" url="/images/icons/category.gif" />
                            </td>
                            <td>
-                              <div class="mainSubTitle"><h:outputText value='#{NavigationBean.nodeProperties.name}' /></div>
                               <div class="mainTitle"><h:outputText value="#{msg.category_management}" /></div>
                               <div class="mainSubTitle">
                                  <%-- show either root message or the current category name --%>
@@ -78,26 +77,32 @@
                               </div>
                               <div class="mainSubText"><h:outputText value="#{msg.categories_description}" /></div>
                            </td>
-                           <td bgcolor="#465F7D" width=1></td>
-                           <td width=110 style="padding-left:2px">
-                              <%-- Current object actions --%>
-                              <h:outputText style="padding-left:20px;" styleClass="mainSubTitle" value="#{msg.actions}" /><br/>
-                              <a:actionLink value="#{msg.add_category}" image="/images/icons/add_category.gif" padding="4" action="addCategory" actionListener="#{CategoriesBean.clearCategoryAction}" />
-                              <a:booleanEvaluator value="#{CategoriesBean.currentCategoryId != null}">
-                                 <a:actionLink value="#{msg.edit_category}" image="/images/icons/edit_category.gif" padding="4" action="editCategory" actionListener="#{CategoriesBean.setupCategoryAction}">
-                                    <f:param name="id" value="#{CategoriesBean.currentCategoryId}" />
-                                 </a:actionLink>
-                                 <a:actionLink value="#{msg.delete_category}" image="/images/icons/delete_category.gif" padding="4" action="deleteCategory" actionListener="#{CategoriesBean.setupCategoryAction}">
-                                    <f:param name="id" value="#{CategoriesBean.currentCategoryId}" />
-                                 </a:actionLink>
-                              </a:booleanEvaluator>
+                           
+                           <td style="padding-left:4px" width=52>
+                              <%-- Create actions menu --%>
+                              <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
+                                 <a:actionLink value="#{msg.add_category}" image="/images/icons/add_category.gif" action="addCategory" actionListener="#{CategoriesBean.clearCategoryAction}" />
+                              </a:menu>
                            </td>
-                           <td bgcolor="#465F7D" width=1></td>
-                           <td width=100 style="padding-left:2px">
+                           <td style="padding-left:4px" width=80>
+                              <%-- More actions menu --%>
+                              <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
+                                 <a:booleanEvaluator value="#{CategoriesBean.currentCategoryId != null}">
+                                    <a:actionLink value="#{msg.edit_category}" image="/images/icons/edit_category.gif" action="editCategory" actionListener="#{CategoriesBean.setupCategoryAction}">
+                                       <f:param name="id" value="#{CategoriesBean.currentCategoryId}" />
+                                    </a:actionLink>
+                                    <a:actionLink value="#{msg.delete_category}" image="/images/icons/delete_category.gif" action="deleteCategory" actionListener="#{CategoriesBean.setupCategoryAction}">
+                                       <f:param name="id" value="#{CategoriesBean.currentCategoryId}" />
+                                    </a:actionLink>
+                                 </a:booleanEvaluator>
+                              </a:menu>
+                           </td>
+                           
+                           <td class="separator" width=1></td>
+                           <td width=110 valign=middle>
                               <%-- View mode settings --%>
-                              <h:outputText style="padding-left:26px" styleClass="mainSubTitle" value="#{msg.view}"/><br>
                               <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight" selectedImage="/images/icons/Details.gif"
-                                    value="#{CategoriesBean.viewMode}" actionListener="#{CategoriesBean.viewModeChanged}">
+                                    value="#{CategoriesBean.viewMode}" actionListener="#{CategoriesBean.viewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">
                                  <a:listItem value="icons" label="#{msg.category_icons}" />
                                  <a:listItem value="details" label="#{msg.category_details}" />
                               </a:modeList>

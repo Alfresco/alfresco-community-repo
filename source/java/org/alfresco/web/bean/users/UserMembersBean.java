@@ -99,6 +99,7 @@ public abstract class UserMembersBean
    /** roles for current person */
    private List<PermissionWrapper> personRoles = null;
    
+   
    // ------------------------------------------------------------------------------
    // Abstract methods
    
@@ -108,6 +109,7 @@ public abstract class UserMembersBean
     * @return The node to manage permissions for
     */
    public abstract Node getNode();
+   
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters

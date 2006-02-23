@@ -132,7 +132,7 @@ public class PersonServiceImpl implements PersonService
         String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("@cm\\:userName:" + userName);
+        sp.setQuery("TYPE:\\{http\\://www.alfresco.org/model/content/1.0\\}person +@cm\\:userName:\"" + userName + "\"");
         sp.addStore(storeRef);
         sp.excludeDataInTheCurrentTransaction(false);
 

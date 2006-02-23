@@ -23,7 +23,7 @@
 		</type>
 
 		<type name="sys:descriptor">
-		    <title>Descriptor</title>
+		   <title>Descriptor</title>
 			<parent>sys:base</parent>
 			<properties>
 				<property name="sys:versionMajor">
@@ -44,7 +44,7 @@
 				<property name="sys:versionSchema">
 					<type>d:int</type>
 					<mandatory>true</mandatory>
-                    <default>0</default>
+               <default>0</default>
 				</property>
 			</properties>
         </type>		

@@ -169,7 +169,7 @@ public class PatchServiceImpl implements PatchService
         String report = null;
         boolean success = false;
         // first check whether the patch is relevant to the repo
-        Descriptor repoDescriptor = descriptorService.getRepositoryDescriptor();
+        Descriptor repoDescriptor = descriptorService.getInstalledRepositoryDescriptor();
         boolean applies = applies(repoDescriptor, patch);
         if (!applies)
         {

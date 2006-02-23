@@ -33,10 +33,11 @@ public interface DescriptorService
     public Descriptor getServerDescriptor();
     
     /**
-     * Get descriptor for the repository
+     * Get descriptor for the repository as it was when first installed.  The current
+     * repository descriptor will always be the same as the
+     * {@link #getServerDescriptor() server descriptor}.
      * 
      * @return  repository descriptor
      */
-    public Descriptor getRepositoryDescriptor();
-    
+    public Descriptor getInstalledRepositoryDescriptor();
 }

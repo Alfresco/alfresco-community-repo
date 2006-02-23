@@ -88,7 +88,7 @@ public class DescriptorServiceTest extends BaseSpringTest
     {
         ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         DescriptorService descriptorService = registry.getDescriptorService();
-        Descriptor repoDescriptor = descriptorService.getRepositoryDescriptor();
+        Descriptor repoDescriptor = descriptorService.getInstalledRepositoryDescriptor();
         
         String major = repoDescriptor.getVersionMajor();
         String minor = repoDescriptor.getVersionMinor();

@@ -9,4 +9,12 @@
 		<sys:versionSchema>${version.schema}</sys:versionSchema>
 	</sys:descriptor>
 
+	<sys:descriptor view:childName="${system.descriptor.current.childname}">
+		<sys:versionMajor>${version.major}</sys:versionMajor>
+		<sys:versionMinor>${version.minor}</sys:versionMinor>
+		<sys:versionRevision>${version.revision}</sys:versionRevision>
+		<sys:versionLabel>${version.label}</sys:versionLabel>
+		<sys:versionSchema>${version.schema}</sys:versionSchema>
+	</sys:descriptor>
+
 </view:view>

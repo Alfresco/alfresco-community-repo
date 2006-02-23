@@ -18,14 +18,16 @@ package org.alfresco.repo.descriptor;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.service.cmr.repository.InvalidStoreRefException;
+import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -35,6 +37,8 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
@@ -49,6 +53,8 @@ import org.springframework.core.io.Resource;
  */
 public class DescriptorServiceImpl implements DescriptorService, ApplicationListener, InitializingBean
 {
+    private static Log logger = LogFactory.getLog(DescriptorServiceImpl.class);
+    
     private Properties serverProperties;
     
     private ImporterBootstrap systemBootstrap;
@@ -58,7 +64,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     private TransactionService transactionService;
 
     private Descriptor serverDescriptor;
-    private Descriptor repoDescriptor;
+    private Descriptor installedRepoDescriptor;
     
     
     
@@ -126,9 +132,9 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     /* (non-Javadoc)
      * @see org.alfresco.service.descriptor.DescriptorService#getRepositoryDescriptor()
      */
-    public Descriptor getRepositoryDescriptor()
+    public Descriptor getInstalledRepositoryDescriptor()
     {
-        return repoDescriptor;
+        return installedRepoDescriptor;
     }
 
     /**
@@ -138,15 +144,23 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     {
         if (event instanceof ContextRefreshedEvent)
         {
+            // initialise server descriptor
+            serverDescriptor = createServerDescriptor();
+            
             // initialise the repository descriptor
             // note: this requires that the repository schema has already been initialised
-            repoDescriptor = TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<Descriptor>()
+            TransactionWork<Descriptor> createDescriptorWork = new TransactionUtil.TransactionWork<Descriptor>()
             {
                 public Descriptor doWork()
                 {
-                    return createRepositoryDescriptor();
+                    // persist the server descriptor values
+                    updateCurrentRepositoryDescriptor(serverDescriptor);
+                    
+                    // return the repository installed descriptor
+                    return createInstalledRepositoryDescriptor();
                 }
-            });
+            };
+            installedRepoDescriptor = TransactionUtil.executeInUserTransaction(transactionService, createDescriptorWork);
         }
     }
 
@@ -155,8 +169,6 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
      */
     public void afterPropertiesSet() throws Exception
     {
-        // initialise server descriptor
-        serverDescriptor = createServerDescriptor();
     }
 
     /**
@@ -174,7 +186,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
      * 
      * @return  descriptor
      */
-    private Descriptor createRepositoryDescriptor()
+    private Descriptor createInstalledRepositoryDescriptor()
     {
         // retrieve system descriptor location
         StoreRef storeRef = systemBootstrap.getStoreRef();
@@ -182,30 +194,117 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
         String path = systemProperties.getProperty("system.descriptor.childname");
 
         // retrieve system descriptor
-        NodeRef descriptorRef = null;
-        try
-        {
-            NodeRef rootNode = nodeService.getRootNode(storeRef);
-            List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, "/" + path, null, namespaceService, false);
-            if (nodeRefs.size() > 0)
-            {
-                descriptorRef = nodeRefs.get(0);
-            }
-        }
-        catch(InvalidStoreRefException e)
-        {
-            // handle as system descriptor not found
-        }
-        
+        NodeRef descriptorNodeRef = getDescriptorNodeRef(storeRef, path, false);
         // create appropriate descriptor
-        if (descriptorRef != null)
+        if (descriptorNodeRef != null)
         {
-            Map<QName, Serializable> properties = nodeService.getProperties(descriptorRef);
+            Map<QName, Serializable> properties = nodeService.getProperties(descriptorNodeRef);
             return new RepositoryDescriptor(properties);
         }
+        else
+        {
+            // descriptor cannot be found
+            return new UnknownDescriptor();
+        }
+    }
+    
+    /**
+     * Push the current server descriptor properties into persistence.
+     * 
+     * @param serverDescriptor the current server descriptor
+     */
+    private void updateCurrentRepositoryDescriptor(Descriptor serverDescriptor)
+    {
+        // retrieve system descriptor location
+        StoreRef storeRef = systemBootstrap.getStoreRef();
+        Properties systemProperties = systemBootstrap.getConfiguration();
+        String path = systemProperties.getProperty("system.descriptor.current.childname");
 
-        // descriptor cannot be found
-        return new UnknownDescriptor(); 
+        // retrieve system descriptor
+        NodeRef currentDescriptorNodeRef = getDescriptorNodeRef(storeRef, path, true);
+        // if the node is missing but it should have been created
+        if (currentDescriptorNodeRef == null)
+        {
+            return;
+        }
+        // set the properties
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(17);
+        properties.put(ContentModel.PROP_SYS_VERSION_MAJOR, serverDescriptor.getVersionMajor());
+        properties.put(ContentModel.PROP_SYS_VERSION_MINOR, serverDescriptor.getVersionMinor());
+        properties.put(ContentModel.PROP_SYS_VERSION_REVISION, serverDescriptor.getVersionRevision());
+        properties.put(ContentModel.PROP_SYS_VERSION_LABEL, serverDescriptor.getVersionLabel());
+        properties.put(ContentModel.PROP_SYS_VERSION_SCHEMA, serverDescriptor.getSchema());
+        nodeService.setProperties(currentDescriptorNodeRef, properties);
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Updated current repository descriptor properties: \n" +
+                    "   node: " + currentDescriptorNodeRef + "\n" +
+                    "   descriptor: " + serverDescriptor);
+        }
+    }
+    
+    /**
+     * 
+     * @param storeRef the store to search
+     * @param path the path below the root node to search
+     * @param create true if the node must be created if missing.  No properties will be set.
+     * @return Returns the node for the path, or null
+     */
+    private NodeRef getDescriptorNodeRef(StoreRef storeRef, String path, boolean create)
+    {
+        // check for the store and create if necessary
+        if (!nodeService.exists(storeRef) && create)
+        {
+            storeRef = nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
+        }
+        
+        String searchPath = "/" + path;
+        NodeRef descriptorNodeRef = null;
+        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+        List<NodeRef> nodeRefs = searchService.selectNodes(rootNodeRef, searchPath, null, namespaceService, false);
+        if (nodeRefs.size() == 1)
+        {
+            descriptorNodeRef = nodeRefs.get(0);
+        }
+        else if (nodeRefs.size() == 0)
+        {
+        }
+        else if (nodeRefs.size() > 1)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Multiple descriptors: \n" +
+                        "   store: " + storeRef + "\n" +
+                        "   path: " + searchPath);
+            }
+            // get the first one
+            descriptorNodeRef = nodeRefs.get(0);
+        }
+        
+        if (descriptorNodeRef == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Descriptor not found: \n" +
+                        "   store: " + storeRef + "\n" +
+                        "   path: " + searchPath);
+            }
+            // create if necessary
+            if (create)
+            {
+                descriptorNodeRef = nodeService.createNode(
+                        rootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName(path, namespaceService),
+                        QName.createQName("sys:descriptor", namespaceService)).getChildRef();
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Created missing descriptor node: " + descriptorNodeRef);
+                }
+            }
+        }
+        return descriptorNodeRef;
     }
     
     /**

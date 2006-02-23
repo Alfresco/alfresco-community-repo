@@ -84,13 +84,22 @@ public class DescriptorStartupLog implements ApplicationListener
             if (logger.isInfoEnabled())
             {
                 Descriptor serverDescriptor = descriptorService.getServerDescriptor();
-                Descriptor repoDescriptor = descriptorService.getRepositoryDescriptor();
+                Descriptor installedRepoDescriptor = descriptorService.getInstalledRepositoryDescriptor();
                 String serverEdition = serverDescriptor.getEdition();
                 String serverVersion = serverDescriptor.getVersion();
-                String repoVersion = repoDescriptor.getVersion();
-                int schemaVersion = repoDescriptor.getSchema();
-                logger.info(String.format("Alfresco started (%s) - v%s; repository v%s; schema %d",
-                        serverEdition, serverVersion, repoVersion, schemaVersion));
+                int serverSchemaVersion = serverDescriptor.getSchema();
+                String installedRepoVersion = installedRepoDescriptor.getVersion();
+                int installedSchemaVersion = installedRepoDescriptor.getSchema();
+                logger.info(
+                        String.format(
+                                "Alfresco started (%s): " +
+                                "Current version %s schema %d - " +
+                                "Installed version %s schema %d",
+                                serverEdition,
+                                serverVersion,
+                                serverSchemaVersion,
+                                installedRepoVersion,
+                                installedSchemaVersion));
             }
         }
     }

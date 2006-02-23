@@ -16,16 +16,12 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.pdfbox.pdmodel.PDDocument;
 import org.pdfbox.util.PDFTextStripper;
 
@@ -37,8 +33,6 @@ import org.pdfbox.util.PDFTextStripper;
  */
 public class PdfBoxContentTransformer extends AbstractContentTransformer
 {
-    private static final Log logger = LogFactory.getLog(PdfBoxContentTransformer.class);
-    
     /**
      * Currently the only transformation performed is that of text extraction from PDF documents.
      */
@@ -58,7 +52,10 @@ public class PdfBoxContentTransformer extends AbstractContentTransformer
         }
     }
 
-    protected void transformInternal(ContentReader reader, ContentWriter writer,  Map<String, Object> options)
+    protected void transformInternal(
+            ContentReader reader,
+            ContentWriter writer,
+            Map<String, Object> options) throws Exception
     {
         PDDocument pdf = null;
         InputStream is = null;
@@ -73,11 +70,6 @@ public class PdfBoxContentTransformer extends AbstractContentTransformer
             
             // dump it all to the writer
             writer.putContent(text);
-        }
-        catch (IOException e)
-        {
-            throw new ContentIOException("PDF text stripping failed: \n" +
-                    "   reader: " + reader);
         }
         finally
         {

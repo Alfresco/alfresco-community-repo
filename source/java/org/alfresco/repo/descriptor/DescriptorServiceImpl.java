@@ -144,9 +144,6 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     {
         if (event instanceof ContextRefreshedEvent)
         {
-            // initialise server descriptor
-            serverDescriptor = createServerDescriptor();
-            
             // initialise the repository descriptor
             // note: this requires that the repository schema has already been initialised
             TransactionWork<Descriptor> createDescriptorWork = new TransactionUtil.TransactionWork<Descriptor>()
@@ -169,6 +166,8 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
      */
     public void afterPropertiesSet() throws Exception
     {
+        // initialise server descriptor
+        serverDescriptor = createServerDescriptor();
     }
 
     /**

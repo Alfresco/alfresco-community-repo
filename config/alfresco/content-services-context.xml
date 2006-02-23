@@ -73,8 +73,8 @@
             <bean class="org.alfresco.config.source.UrlConfigSource">
                 <constructor-arg>
                     <list>
-                        <value>alfresco/mimetype/mimetype-map.xml</value>
-                        <value>alfresco/mimetype/mimetype-map-openoffice.xml</value>
+                        <value>classpath:alfresco/mimetype/mimetype-map.xml</value>
+                        <value>classpath:alfresco/mimetype/mimetype-map-openoffice.xml</value>
                     </list>
                 </constructor-arg>
             </bean>

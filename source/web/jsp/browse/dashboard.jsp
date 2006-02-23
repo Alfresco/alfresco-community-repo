@@ -80,7 +80,7 @@
                            </td>
                            
                            <td class="separator" width=1></td>
-                           <td width=110 valign=middle>
+                           <td width=118 valign=middle>
                               <%-- View mode settings --%>
                               <a:modeList itemSpacing="4" iconColumnWidth="20" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/Details.gif"
                                     value="dashboard" actionListener="#{BrowseBean.viewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">

@@ -240,11 +240,17 @@ public class LoginBean
    public void validateUsername(FacesContext context, UIComponent component, Object value)
          throws ValidatorException
    {
-      String pass = (String) value;
-      if (pass.length() < 3 || pass.length() > 32)
+      String name = (String) value;
+      if (name.length() < 3 || name.length() > 32)
       {
          String err = MessageFormat.format(Application.getMessage(context, MSG_USERNAME_LENGTH),
                new Object[]{3, 32});
+         throw new ValidatorException(new FacesMessage(err));
+      }
+      if (name.indexOf('\'') != -1 || name.indexOf('"') != -1 || name.indexOf('\\') != -1)
+      {
+         String err = MessageFormat.format(Application.getMessage(context, MSG_USER_ERR),
+               new Object[]{"', \", \\"});
          throw new ValidatorException(new FacesMessage(err));
       }
    }
@@ -397,6 +403,7 @@ public class LoginBean
    private static final String MSG_USERNAME_LENGTH = "login_err_username_length";
    private static final String MSG_PASSWORD_CHARS = "login_err_password_chars";
    private static final String MSG_PASSWORD_LENGTH = "login_err_password_length";
+   private static final String MSG_USER_ERR = "user_err_user_name";
 
    public static final String LOGIN_REDIRECT_KEY = "_alfRedirect";
    public static final String LOGIN_EXTERNAL_AUTH= "_alfExternalAuth";

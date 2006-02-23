@@ -436,6 +436,22 @@ public class SMBSrvSession extends SrvSession implements Runnable
             }
         }
 
+        // Commit, or rollback, any active user transaction
+        
+        try
+        {
+            // Commit or rollback the transaction
+
+            endTransaction();
+        }
+        catch ( Exception ex)
+        {
+            // Debug
+            
+            if ( logger.isDebugEnabled())
+                logger.debug("Error committing transaction", ex);
+        }
+        
         // Check if there are active change notification requests
 
         if (m_notifyList != null && m_notifyList.numberOfRequests() > 0)

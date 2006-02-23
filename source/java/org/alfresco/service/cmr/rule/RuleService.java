@@ -117,7 +117,7 @@ public interface RuleService
     public List<Rule> getRules(NodeRef nodeRef, boolean includeInhertied);
     
     /**
-     * Get the rules associatied with an actionable node that are of a specific rule type.
+     * Get the rules associated with an actionable node that are of a specific rule type.
      * 
      * @param nodeRef					the node reference
      * @param includeInhertiedRuleType	indicates whether the inherited rules should be included in 
@@ -128,6 +128,14 @@ public interface RuleService
      */
     public List<Rule> getRules(NodeRef nodeRef, boolean includeInhertiedRuleType, String ruleTypeName);
 
+    /**
+     * Count the number of rules associated with an actionable node.
+     *  
+     * @param nodeRef                   the node reference
+     * @return                          a list of the rules associated with the node
+     */
+    public int countRules(NodeRef nodeRef);
+    
     /**
      * Get the rule given its id.
      * 

@@ -103,11 +103,6 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
      * The action service implementation which we need for some things.
      */
     RuntimeActionService runtimeActionService;
-    
-    /**
-     * The rule cahce (set by default to an inactive rule cache)
-     */
-    private RuleCache ruleCache = new InactiveRuleCache();
        
     /**
      * List of disabled node refs.  The rules associated with these nodes will node be added to the pending list, and
@@ -179,16 +174,6 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     public void setSearchService(SearchService searchService)
 	{
 		this.searchService = searchService;
-	}
-    
-    /**
-     * Set the rule cache
-     * 
-     * @param ruleCache  the rule cache
-     */
-    public void setRuleCache(RuleCache ruleCache)
-	{
-		this.ruleCache = ruleCache;
 	}
     
     /**
@@ -314,64 +299,83 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
      */
     public List<Rule> getRules(NodeRef nodeRef, boolean includeInherited, String ruleTypeName)
     {
-    	List<Rule> rules = new ArrayList<Rule>();
-    	
-    	if (this.runtimeNodeService.exists(nodeRef) == true && checkNodeType(nodeRef) == true)
-    	{
-    		if (includeInherited == true)
-    		{
-    			// Get any inherited rules
-    			for (Rule rule : getInheritedRules(nodeRef, ruleTypeName, null))
-				{
-    				// Ensure rules are not duplicated in the list
-    				if (rules.contains(rule) == false)
-    				{
-    					rules.add(rule);
-    				}
-				}
-    		}
-    		
-    		if (this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
-    		{
+        List<Rule> rules = new ArrayList<Rule>();
+        
+        if (this.runtimeNodeService.exists(nodeRef) == true && checkNodeType(nodeRef) == true)
+        {
+            if (includeInherited == true)
+            {
+                // Get any inherited rules
+                for (Rule rule : getInheritedRules(nodeRef, ruleTypeName, null))
+                {
+                    // Ensure rules are not duplicated in the list
+                    if (rules.contains(rule) == false)
+                    {
+                        rules.add(rule);
+                    }
+                }
+            }
+            
+            if (this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
+            {
                 NodeRef ruleFolder = getSavedRuleFolderRef(nodeRef);
                 if (ruleFolder != null)
                 {
-        			List<Rule> allRules = this.ruleCache.getRules(nodeRef);
-        			if (allRules == null)
-        			{
-        				allRules = new ArrayList<Rule>();
-        				
-    		    		// Get the rules for this node
-    		    		List<ChildAssociationRef> ruleChildAssocRefs = 
-    		    			this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES);
-    		    		for (ChildAssociationRef ruleChildAssocRef : ruleChildAssocRefs)
-    					{
-    		    			// Create the rule and add to the list
-    						NodeRef ruleNodeRef = ruleChildAssocRef.getChildRef();
-    						Rule rule = createRule(nodeRef, ruleNodeRef);
-    						allRules.add(rule);
-    					}
-    		    		
-    		    		// Add the list to the cache
-    		    		this.ruleCache.setRules(nodeRef, allRules);
-        			}
-        			
-        			// Build the list of rules that is returned to the client
-        			for (Rule rule : allRules)
-    				{					
-    					if ((rules.contains(rule) == false) &&
-    					    (ruleTypeName == null || ruleTypeName.equals(rule.getRuleTypeName()) == true))
-    					{
-    						rules.add(rule);						
-    					}
-    				}
+                    List<Rule> allRules = new ArrayList<Rule>();
+                    
+                    // Get the rules for this node
+                    List<ChildAssociationRef> ruleChildAssocRefs = 
+                        this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES);
+                    for (ChildAssociationRef ruleChildAssocRef : ruleChildAssocRefs)
+                    {
+                        // Create the rule and add to the list
+                        NodeRef ruleNodeRef = ruleChildAssocRef.getChildRef();
+                        Rule rule = createRule(nodeRef, ruleNodeRef);
+                        allRules.add(rule);
+                    }
+                    
+                    // Build the list of rules that is returned to the client
+                    for (Rule rule : allRules)
+                    {					
+                        if ((rules.contains(rule) == false) &&
+                                (ruleTypeName == null || ruleTypeName.equals(rule.getRuleTypeName()) == true))
+                        {
+                            rules.add(rule);						
+                        }
+                    }
                 }
-    		}
-    	}
-    	
-    	return rules;
+            }
+        }
+        
+        return rules;
     }
     
+    /**
+     * @see org.alfresco.service.cmr.rule.RuleService#countRules(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public int countRules(NodeRef nodeRef)
+    {
+        int ruleCount = 0;
+        
+        if (this.runtimeNodeService.exists(nodeRef) == true && checkNodeType(nodeRef) == true)
+        {
+            if (this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
+            {
+                NodeRef ruleFolder = getSavedRuleFolderRef(nodeRef);
+                if (ruleFolder != null)
+                {
+                    // Get the rules for this node
+                    List<ChildAssociationRef> ruleChildAssocRefs = 
+                        this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES);
+                    
+                    ruleCount = ruleChildAssocRefs.size();
+                }
+            }
+        }
+        
+        return ruleCount;
+    }
+
     /**
      * Looks at the type of the node and indicates whether the node can have rules associated with it
      * 
@@ -421,35 +425,28 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
 		{
 			visitedNodeRefs.add(nodeRef);
 			
-			List<Rule> allInheritedRules = this.ruleCache.getInheritedRules(nodeRef);
-			if (allInheritedRules == null)
+			List<Rule> allInheritedRules = new ArrayList<Rule>();
+			List<ChildAssociationRef> parents = this.runtimeNodeService.getParentAssocs(nodeRef);
+			for (ChildAssociationRef parent : parents)
 			{
-				allInheritedRules = new ArrayList<Rule>();
-				List<ChildAssociationRef> parents = this.runtimeNodeService.getParentAssocs(nodeRef);
-				for (ChildAssociationRef parent : parents)
+				List<Rule> rules = getRules(parent.getParentRef(), false);
+				for (Rule rule : rules)
 				{
-					List<Rule> rules = getRules(parent.getParentRef(), false);
-					for (Rule rule : rules)
+					// Add is we hanvn't already added and it should be applied to the children
+					if (rule.isAppliedToChildren() == true && allInheritedRules.contains(rule) == false)
 					{
-						// Add is we hanvn't already added and it should be applied to the children
-						if (rule.isAppliedToChildren() == true && allInheritedRules.contains(rule) == false)
-						{
-							allInheritedRules.add(rule);
-						}
-					}
-					
-					for (Rule rule : getInheritedRules(parent.getParentRef(), ruleTypeName, visitedNodeRefs))
-					{
-						// Ensure that we don't get any rule duplication (don't use a set cos we want to preserve order)
-						if (allInheritedRules.contains(rule) == false)
-						{
-							allInheritedRules.add(rule);
-						}
+						allInheritedRules.add(rule);
 					}
 				}
 				
-				// Add the list of inherited rules to the cache
-				this.ruleCache.setInheritedRules(nodeRef, allInheritedRules);
+				for (Rule rule : getInheritedRules(parent.getParentRef(), ruleTypeName, visitedNodeRefs))
+				{
+					// Ensure that we don't get any rule duplication (don't use a set cos we want to preserve order)
+					if (allInheritedRules.contains(rule) == false)
+					{
+						allInheritedRules.add(rule);
+					}
+				}
 			}
 			
 			if (ruleTypeName == null)
@@ -901,56 +898,6 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
 	        {
 	            return false;
 	        }
-		}
-	}	
-	
-	/**
-	 * Inactive rule cache
-	 * 
-	 * @author Roy Wetherall
-	 */
-	private class InactiveRuleCache implements RuleCache
-	{
-		/**
-		 * @see org.alfresco.repo.rule.RuleCache#getRules(org.alfresco.service.cmr.repository.NodeRef)
-		 */
-		public List<Rule> getRules(NodeRef nodeRef)
-		{
-			// do nothing
-			return null;
-		}
-
-		/**
-		 *  @see org.alfresco.repo.rule.RuleCache#setRules(org.alfresco.service.cmr.repository.NodeRef, List<Rule>)
-		 */
-		public void setRules(NodeRef nodeRef, List<Rule> rules)
-		{
-			// do nothing
-		}
-
-		/**
-		 * @see org.alfresco.repo.rule.RuleCache#dirtyRules(org.alfresco.service.cmr.repository.NodeRef)
-		 */
-		public void dirtyRules(NodeRef nodeRef)
-		{
-			// do nothing
-		}
-
-		/**
-		 * @see org.alfresco.repo.rule.RuleCache#getInheritedRules(org.alfresco.service.cmr.repository.NodeRef)
-		 */
-		public List<Rule> getInheritedRules(NodeRef nodeRef)
-		{
-			// do nothing
-			return null;
-		}
-
-		/**
-		 * @see org.alfresco.repo.rule.RuleCache#setInheritedRules(org.alfresco.service.cmr.repository.NodeRef, List<Rule>)
-		 */
-		public void setInheritedRules(NodeRef nodeRef, List<Rule> rules)
-		{
-			// do nothing
 		}
 	}
 }

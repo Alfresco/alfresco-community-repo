@@ -228,10 +228,6 @@ public abstract class SrvAuthenticator
         if ( m_authComponent == null)
             throw new InvalidConfigurationException("Authentication component not available");
         
-        if ( m_authComponent.getNTLMMode() != NTLMMode.MD4_PROVIDER &&
-                m_authComponent.getNTLMMode() != NTLMMode.PASS_THROUGH)
-            throw new InvalidConfigurationException("Required authentication mode not available");
-        
         // Get hold of various services
         
         m_nodeService = config.getNodeService();
@@ -242,8 +238,23 @@ public abstract class SrvAuthenticator
         // Set the guest user name
         
         setGuestUserName( m_authComponent.getGuestUserName());
+        
+        // Check that the authentication component is the required type for this authenticator
+        
+        if ( validateAuthenticationMode() == false)
+            throw new InvalidConfigurationException("Required authentication mode not available");
     }
 
+    /**
+     * Validate that the authentication component supports the required mode
+     * 
+     * @return boolean
+     */
+    protected boolean validateAuthenticationMode()
+    {
+        return true;
+    }
+    
     /**
      * Encrypt the plain text password with the specified encryption key using the specified
      * encryption algorithm.

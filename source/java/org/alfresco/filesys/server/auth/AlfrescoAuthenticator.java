@@ -48,6 +48,21 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
     }
 
     /**
+     * Validate that the authentication component supports the required mode
+     * 
+     * @return boolean
+     */
+    protected boolean validateAuthenticationMode()
+    {
+        // Make sure the authentication component supports MD4 hashed passwords or passthru mode
+        
+        if ( m_authComponent.getNTLMMode() != NTLMMode.MD4_PROVIDER &&
+                m_authComponent.getNTLMMode() != NTLMMode.PASS_THROUGH)
+            return false;
+        return true;
+    }
+    
+    /**
      * Authenticate a user
      * 
      * @param client Client information

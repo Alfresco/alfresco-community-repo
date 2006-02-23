@@ -73,6 +73,7 @@ import org.alfresco.filesys.smb.DialectSelector;
 import org.alfresco.filesys.smb.ServerType;
 import org.alfresco.filesys.util.IPAddress;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -516,7 +517,7 @@ public class ServerConfiguration implements ApplicationListener
         {
             // Configuration error
 
-            logger.error("CIFS server configuration error, " + ex.getMessage(), ex);
+            logger.error("File server configuration error, " + ex.getMessage(), ex);
 
             // Disable the CIFS server
 
@@ -1531,6 +1532,10 @@ public class ServerConfiguration implements ApplicationListener
             if (authType == null)
                 throw new AlfrescoRuntimeException("Authenticator type not specified");
 
+            // Get the authentication component type
+            
+            NTLMMode ntlmMode = m_authenticationComponent.getNTLMMode();
+            
             // Set the authenticator class to use
 
             SrvAuthenticator auth = null;
@@ -1538,6 +1543,11 @@ public class ServerConfiguration implements ApplicationListener
                 auth = new LocalAuthenticator();
             else if (authType.equalsIgnoreCase("passthru"))
             {
+                // Check if the appropriate authentication component type is configured
+                
+                if ( ntlmMode != NTLMMode.NONE)
+                    throw new AlfrescoRuntimeException("Wrong authentication setup for passthru authenticator");
+                
                 // Load the passthru authenticator dynamically
                 
                 auth = loadAuthenticatorClass("org.alfresco.filesys.server.auth.passthru.PassthruAuthenticator");
@@ -1554,6 +1564,11 @@ public class ServerConfiguration implements ApplicationListener
             }
             else if (authType.equalsIgnoreCase("alfresco"))
             {
+                // Standard authenticator requires MD4 or passthru based authentication
+                
+                if ( ntlmMode == NTLMMode.NONE)
+                    throw new AlfrescoRuntimeException("Wrong authentication setup for alfresco authenticator");
+                
                 // Load the Alfresco authenticator dynamically
                 
                 auth = loadAuthenticatorClass("org.alfresco.filesys.server.auth.ntlm.AlfrescoAuthenticator");

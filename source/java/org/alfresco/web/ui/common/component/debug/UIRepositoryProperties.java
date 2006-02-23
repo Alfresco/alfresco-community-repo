@@ -25,6 +25,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.repo.admin.patch.PatchInfo;
 import org.alfresco.repo.admin.patch.PatchService;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -59,8 +60,13 @@ public class UIRepositoryProperties extends BaseDebugComponent
       ServiceRegistry services = Repository.getServiceRegistry(fc);
       DescriptorService descriptorService = services.getDescriptorService();
       
-      properties.put("version", descriptorService.getRepositoryDescriptor().getVersion());
-      properties.put("schema", descriptorService.getRepositoryDescriptor().getSchema());
+      Descriptor installedRepoDescriptor = descriptorService.getInstalledRepositoryDescriptor();
+      properties.put("Installed Version", installedRepoDescriptor.getVersion());
+      properties.put("Installed Schema", installedRepoDescriptor.getSchema());
+      
+      Descriptor systemDescriptor = descriptorService.getServerDescriptor();
+      properties.put("Server Version", systemDescriptor.getVersion());
+      properties.put("Server Schema", systemDescriptor.getSchema());
       
       WebApplicationContext cx = FacesContextUtils.getRequiredWebApplicationContext(fc);
       PatchService patchService = (PatchService)cx.getBean("PatchService");

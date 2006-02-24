@@ -24,7 +24,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.exec.RuntimeExec;
 import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
@@ -63,7 +62,6 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
     private static Log logger = LogFactory.getLog(RuntimeExecutableContentTransformer.class);
     
     private boolean available;
-    private MimetypeService mimetypeService;
     private RuntimeExec checkCommand;
     private RuntimeExec transformCommand;
 
@@ -71,14 +69,6 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
     {
     }
     
-    /**
-     * @param mimetypeService the mapping from mimetype to extensions
-     */
-    public void setMimetypeService(MimetypeService mimetypeService)
-    {
-        this.mimetypeService = mimetypeService;
-    }
-
     /**
      * Set the runtime executer that will be called as part of the initialisation
      * to determine if the transformer is able to function.  This is optional, but allows
@@ -119,15 +109,12 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
      * being rendered unusable within the transformer registry, but may still be called
      * directly.
      */
-    public void init()
+    @Override
+    public void register()
     {
         if (transformCommand == null)
         {
             throw new AlfrescoRuntimeException("Mandatory property 'transformCommand' not set");
-        }
-        else if (mimetypeService == null)
-        {
-            throw new AlfrescoRuntimeException("Mandatory property 'mimetypeService' not set");
         }
         
         // execute the command
@@ -142,6 +129,8 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
             // no check - just assume it is available
             available = true;
         }
+        // call the base class to make sure that it gets registered
+        super.register();
     }
 
     /**
@@ -178,8 +167,8 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
         String targetMimetype = getMimetype(writer);
         
         // get the extensions to use
-        String sourceExtension = mimetypeService.getExtension(sourceMimetype);
-        String targetExtension = mimetypeService.getExtension(targetMimetype);
+        String sourceExtension = getMimetypeService().getExtension(sourceMimetype);
+        String targetExtension = getMimetypeService().getExtension(targetMimetype);
         if (sourceExtension == null || targetExtension == null)
         {
             throw new AlfrescoRuntimeException("Unknown extensions for mimetypes: \n" +

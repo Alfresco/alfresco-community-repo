@@ -141,12 +141,12 @@
                            
                            <%-- Navigation --%>
                            <td class="separator" width=1></td>
-                           <td width=100>
-                              <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.navigation}" /><br>
-                              <a:actionLink value="#{msg.next_item}" image="/images/icons/NextItem.gif" padding="4" actionListener="#{SpaceDetailsBean.nextItem}" action="nextItem">
+                           <td style="padding-left:4px" width=80>
+                              <a:actionLink value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{SpaceDetailsBean.previousItem}" action="previousItem">
                                  <f:param name="id" value="#{SpaceDetailsBean.id}" />
                               </a:actionLink>
-                              <a:actionLink value="#{msg.previous_item}" image="/images/icons/PreviousItem.gif" padding="4" actionListener="#{SpaceDetailsBean.previousItem}" action="previousItem">
+                              <img src="<%=request.getContextPath()%>/images/icons/nav_space.gif" width=24 height=24 align=absmiddle>
+                              <a:actionLink value="#{msg.next_item}" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{SpaceDetailsBean.nextItem}" action="nextItem">
                                  <f:param name="id" value="#{SpaceDetailsBean.id}" />
                               </a:actionLink>
                            </td>

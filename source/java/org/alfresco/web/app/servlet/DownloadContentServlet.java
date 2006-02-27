@@ -172,11 +172,11 @@ public class DownloadContentServlet extends BaseServlet
          if (attachment == true)
          {
             // set header based on filename - will force a Save As from the browse if it doesn't recognise it
-            // this is better than the default response of the browse trying to display the contents!
-            // TODO: make this configurable - and check it does not prevent streaming of large files
-            res.setHeader("Content-Disposition", "attachment;filename=\"" + URLDecoder.decode(filename, "UTF-8") + '"');
+            // this is better than the default response of the browser trying to display the contents
+            String encname = filename.replace('%', '=');
+            res.setHeader("Content-Disposition", "attachment;filename=\"=?ISO-8859-1?Q?" + encname + "?=\"");
          }
-      
+         
          // get the content reader
          ContentReader reader = contentService.getReader(nodeRef, propertyQName);
          // ensure that it is safe to use

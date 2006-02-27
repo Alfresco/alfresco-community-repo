@@ -81,14 +81,14 @@
                               <nobr>
                               <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="CheckOut">
                                  <a:booleanEvaluator value="#{DocumentDetailsBean.locked == false && DocumentDetailsBean.workingCopy == false}">
-                                    <a:actionLink value="#{msg.checkout}" image="/images/icons/CheckOut_icon.gif" padding="4" style="white-space:nowrap" 
+                                    <a:actionLink value="#{msg.checkout}" image="/images/icons/CheckOut_icon.gif" padding="2" style="white-space:nowrap" 
                                                   actionListener="#{CheckinCheckoutBean.setupContentAction}" action="checkoutFile">
                                        <f:param name="id" value="#{DocumentDetailsBean.id}" />
                                     </a:actionLink>
                                  </a:booleanEvaluator>
                               </r:permissionEvaluator>
                               <a:booleanEvaluator value="#{DocumentDetailsBean.document.properties.checkIn == true}">
-                                 <a:actionLink value="#{msg.checkin}" image="/images/icons/CheckIn_icon.gif" padding="4" style="white-space:nowrap" 
+                                 <a:actionLink value="#{msg.checkin}" image="/images/icons/CheckIn_icon.gif" padding="2" style="white-space:nowrap" 
                                                actionListener="#{CheckinCheckoutBean.setupContentAction}" action="checkinFile">
                                     <f:param name="id" value="#{DocumentDetailsBean.id}" />
                                  </a:actionLink>
@@ -200,18 +200,14 @@
                               </a:menu>
                            </td>
                            
-                           
-                           <%-- TODO: FINISH --%>
-                           
-                           
                            <%-- Navigation --%>
                            <td class="separator" width=1></td>
-                           <td width=100>
-                              <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.navigation}" /><br>
-                              <a:actionLink value="#{msg.next_item}" image="/images/icons/NextItem.gif" padding="4" actionListener="#{DocumentDetailsBean.nextItem}" action="nextItem">
+                           <td style="padding-left:4px" width=80>
+                              <a:actionLink value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{DocumentDetailsBean.previousItem}" action="previousItem">
                                  <f:param name="id" value="#{DocumentDetailsBean.id}" />
                               </a:actionLink>
-                              <a:actionLink value="#{msg.previous_item}" image="/images/icons/PreviousItem.gif" padding="4" actionListener="#{DocumentDetailsBean.previousItem}" action="previousItem">
+                              <img src="<%=request.getContextPath()%>/images/icons/nav_file.gif" width=24 height=24 align=absmiddle>
+                              <a:actionLink value="#{msg.next_item}" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{DocumentDetailsBean.nextItem}" action="nextItem">
                                  <f:param name="id" value="#{DocumentDetailsBean.id}" />
                               </a:actionLink>
                            </td>

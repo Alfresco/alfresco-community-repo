@@ -89,7 +89,7 @@
                               <td style="padding-right:4px" align=right>
                                  <nobr>
                                  <%-- Additional summary info --%>
-                                 <img src="<%=request.getContextPath()%>/images/icons/rule.gif" width=16 height=16> <h:outputText value="(#{NavigationBean.ruleCount})" id="rulemsg1" style="vertical-align:20%" />
+                                 <h:graphicImage id="img-rule" url="/images/icons/rule.gif" width="16" height="16" title="#{msg.rules_count}" /> <h:outputText value="(#{NavigationBean.ruleCount})" id="rulemsg1" style="vertical-align:20%" />
                                  </nobr>
                               </td>
                               <td class="separator" width=1></td>
@@ -97,7 +97,7 @@
                                  <%-- Quick upload action --%>
                                  <nobr>
                                  <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval2">
-                                    <a:actionLink value="#{msg.add_content}" image="/images/icons/add.gif" action="addContent" actionListener="#{AddContentWizard.startWizard}" style="white-space:nowrap" id="link3" />
+                                    <a:actionLink value="#{msg.add_content}" image="/images/icons/add.gif" padding="2" action="addContent" actionListener="#{AddContentWizard.startWizard}" style="white-space:nowrap" id="link3" />
                                  </r:permissionEvaluator>
                                  </nobr>
                               </td>

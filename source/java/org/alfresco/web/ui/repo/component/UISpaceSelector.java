@@ -86,26 +86,6 @@ public class UISpaceSelector extends AbstractItemSelector
       
       return id;
    }
-   
-   /**
-    * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#parentAccessable()
-    */
-   /*public boolean parentAccessable(FacesContext context)
-   {
-      boolean accessable = false;
-      try
-      {
-         ChildAssociationRef parentRef = getNodeService(context).getPrimaryParent(
-               new NodeRef(Repository.getStoreRef(), this.navigationId));
-         parentRef.getParentRef().getId();
-         accessable = true;
-      }
-      catch (AccessDeniedException accessErr)
-      {
-         // cannot navigate to parent id - not accessable
-      }
-      return accessable;
-   }*/
 
    /**
     * Returns the child spaces of the current space

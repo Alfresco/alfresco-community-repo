@@ -136,14 +136,7 @@ public class ModeListRenderer extends BaseRenderer
          String selectedImage = (String)attrs.get("selectedImage");
          if (selectedImage != null)
          {
-            out.write("<td");
-            int colWidth = list.getIconColumnWidth();
-            if (colWidth != 0)
-            {
-               out.write(" width=");
-               out.write(Integer.toString(colWidth));
-            }
-            out.write('>');
+            out.write("<td style='padding-right:4px'>");
             out.write(Utils.buildImageTag(context, selectedImage, null, "absmiddle"));
             out.write("</td>");
          }

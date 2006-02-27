@@ -86,10 +86,10 @@
                            </td>
                            
                            <td align=right>
-                              <a:actionLink value="#{msg.resetall}" image="/images/icons/delete.gif" padding="4" actionListener="#{AdvancedSearchBean.reset}" style="white-space:nowrap" />
+                              <a:actionLink value="#{msg.resetall}" image="/images/icons/delete.gif" padding="2" actionListener="#{AdvancedSearchBean.reset}" style="white-space:nowrap" />
                            </td>
                            <td class="separator" width=1></td>
-                           <td width=80 style="padding-left:4px">
+                           <td width=128 style="padding-left:4px">
                               <%-- Available Saved Searches --%>
                               <div style="padding-top:4px" style="white-space:nowrap">
                                  <a:modeList itemSpacing="3" iconColumnWidth="20" style="text-align:right" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/Details.gif"

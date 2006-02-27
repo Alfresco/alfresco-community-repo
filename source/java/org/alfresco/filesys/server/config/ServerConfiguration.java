@@ -2393,12 +2393,13 @@ public class ServerConfiguration implements ApplicationListener
                 // Get the NetBIOS name list from the browse master
 
                 NetBIOSNameList nbNameList = NetBIOSSession.FindNamesForAddress(nbName.getIPAddressString(0));
-                nbName = nbNameList.findName(NetBIOSName.MasterBrowser, false);
-
-                // Set the domain/workgroup name
-
-                if (nbName != null)
-                    domainName = nbName.getName();
+                if (nbNameList != null)
+                {
+                    nbName = nbNameList.findName(NetBIOSName.MasterBrowser, false);
+                    // Set the domain/workgroup name
+                    if (nbName != null)
+                        domainName = nbName.getName();
+                }
             }
             catch (IOException ex)
             {

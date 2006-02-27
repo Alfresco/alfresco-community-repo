@@ -54,7 +54,7 @@ public class RuntimeExecutableContentTransformerTest extends BaseAlfrescoTestCas
         transformer.setMimetypeService(serviceRegistry.getMimetypeService());
         
         // initialise so that it doesn't score 0
-        transformer.init();
+        transformer.register();
     }
 
     public void testCopyCommand() throws Exception

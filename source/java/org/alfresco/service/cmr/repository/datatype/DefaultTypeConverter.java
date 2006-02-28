@@ -29,6 +29,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -176,12 +177,15 @@ public class DefaultTypeConverter
         {
             public Date convert(String source)
             {
-                Date date = ISO8601DateFormat.parse(source);
-                if (date == null)
+                try
                 {
-                    throw new TypeConversionException("Failed to parse date " + source);
+                    Date date = ISO8601DateFormat.parse(source);
+                    return date;
                 }
-                return date;
+                catch(AlfrescoRuntimeException e)
+                {
+                    throw new TypeConversionException("Failed to convert date " + source + " to string", e);
+                }
             }
         });
 

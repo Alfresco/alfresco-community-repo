@@ -77,8 +77,6 @@
 
                            <td align=right>
                               <%-- Available Templates --%>
-                              <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.templates}" />
-                              
                               <div style="padding-top:4px">
                                  <%-- Templates drop-down selector --%>
                                  <h:selectOneMenu id="template" value="#{DocumentPreviewBean.template}" onchange="document.forms['preview-file'].submit(); return true;">

@@ -17,6 +17,7 @@
 package org.alfresco.web.ui.common.converter;
 
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import javax.faces.component.UIComponent;
@@ -69,11 +70,25 @@ public class XMLDateConverter extends DateTimeConverter
     * (non-Javadoc)
     * @see javax.faces.convert.DateTimeConverter#getTimeZone()
     */
+   @Override
    public TimeZone getTimeZone()
    {
        // Note: this forces the display of the date to the server's timezone - it does not
        //       take into account any client specific timezone
        return TimeZone.getDefault();
    }
+
+   /*
+    * (non-Javadoc)
+    * @see javax.faces.convert.DateTimeConverter#getLocale()
+    */
+   @Override
+   public Locale getLocale()
+   {
+       // Note: this forces the display of the date to the server's timezone - it does not
+       //       take into account any client specific timezone
+       return Locale.getDefault();
+   }
+   
    
 }

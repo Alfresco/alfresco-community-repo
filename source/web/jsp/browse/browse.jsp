@@ -141,7 +141,7 @@
                                        </a:actionLink>
                                     </r:permissionEvaluator>
                                     <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Write" id="eval7">
-                                       <a:actionLink value="#{msg.manage_rules}" image="/images/icons/rule.gif" action="manageRules" actionListener="#{BrowseBean.setupSpaceAction}" id="link10">
+                                       <a:actionLink value="#{msg.manage_rules}" image="/images/icons/rule.gif" action="dialog:manageRules" actionListener="#{BrowseBean.setupSpaceAction}" id="link10">
                                           <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param5" />
                                        </a:actionLink>
                                     </r:permissionEvaluator>

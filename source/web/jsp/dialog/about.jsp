@@ -65,12 +65,11 @@
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
                      <table cellspacing="4" cellpadding="0" width="100%">
-                        <tr valign="top">
+                        <tr>
                            <td width=32>
                               <h:graphicImage id="logo" url="/images/logo/AlfrescoLogo32.gif" width="32" height="32" />
                            </td>
                            <td>
-                              <div class="mainSubTitle"><h:outputText value='#{NavigationBean.nodeProperties.name}' /></div>
                               <div class="mainTitle"><h:outputText value="#{msg.title_about}" /></div>
                               <div class="mainSubText"><h:outputText value="#{msg.version}" />: <h:outputText value='#{version["version.edition"]} - v#{version["version.major"]}.#{version["version.minor"]}.#{version["version.revision"]}' /> <h:outputText rendered='#{version["version.label"] != ""}' value='(#{version["version.label"]})' /></div>
                            </td>

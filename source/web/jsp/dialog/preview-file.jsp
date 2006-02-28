@@ -74,8 +74,8 @@
                               </div>
                               <div class="mainSubText"><h:outputText value="#{msg.previewdocument_description}" /></div>
                            </td>
-                           <td class="separator" width=1></td>
-                           <td width=100 style="padding-left:2px">
+
+                           <td align=right>
                               <%-- Available Templates --%>
                               <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.templates}" />
                               
@@ -89,12 +89,12 @@
                            
                            <%-- Navigation --%>
                            <td class="separator" width=1></td>
-                           <td width=100>
-                              <h:outputText style="padding-left:20px" styleClass="mainSubTitle" value="#{msg.navigation}" /><br>
-                              <a:actionLink value="#{msg.next_item}" image="/images/icons/NextItem.gif" padding="4" actionListener="#{DocumentDetailsBean.nextItem}" action="nextItem">
+                           <td style="padding-left:4px" width=80>
+                              <a:actionLink value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{DocumentDetailsBean.previousItem}" action="previousItem">
                                  <f:param name="id" value="#{DocumentPreviewBean.id}" />
                               </a:actionLink>
-                              <a:actionLink value="#{msg.previous_item}" image="/images/icons/PreviousItem.gif" padding="4" actionListener="#{DocumentDetailsBean.previousItem}" action="previousItem">
+                              <img src="<%=request.getContextPath()%>/images/icons/nav_file.gif" width=24 height=24 align=absmiddle>
+                              <a:actionLink value="#{msg.next_item}" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{DocumentDetailsBean.nextItem}" action="nextItem">
                                  <f:param name="id" value="#{DocumentPreviewBean.id}" />
                               </a:actionLink>
                            </td>

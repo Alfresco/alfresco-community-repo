@@ -17,7 +17,6 @@
 package org.alfresco.repo.exporter;
 
 import java.io.InputStream;
-import java.util.Collection;
 
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -187,6 +186,22 @@ import org.alfresco.util.ParameterCheck;
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.Exporter#startValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    public void startValueCollection(NodeRef nodeRef, QName property)
+    {
+        exporter.startValueCollection(nodeRef, property);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.Exporter#endValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    public void endValueCollection(NodeRef nodeRef, QName property)
+    {
+        exporter.endValueCollection(nodeRef, property);
+    }
+    
+    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
      */
     public void value(NodeRef nodeRef, QName property, Object value)
@@ -195,21 +210,13 @@ import org.alfresco.util.ParameterCheck;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.util.Collection)
-     */
-    public void value(NodeRef nodeRef, QName property, Collection values)
-    {
-        exporter.value(nodeRef, property, values);
-    }
-    
-    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#content(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.InputStream)
      */
     public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData)
     {
         // Handle the stream by converting it to a URL and export the URL
         ContentData exportedContentData = streamHandler.exportContent(content, contentData);
-        value(nodeRef, property, exportedContentData.toString());
+        value(nodeRef, property, exportedContentData);
     }
 
     /* (non-Javadoc)

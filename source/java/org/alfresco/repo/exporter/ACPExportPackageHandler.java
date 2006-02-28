@@ -142,6 +142,12 @@ public class ACPExportPackageHandler
      */
     public ContentData exportContent(InputStream content, ContentData contentData)
     {
+        // if the content stream to output is empty, then just return content descriptor as is
+        if (content == null)
+        {
+            return contentData;
+        }
+        
         // create zip entry for stream to export
         String contentDirPath = contentDir.getPath();
         if (contentDirPath.indexOf(".") != -1)

@@ -113,6 +113,12 @@ public class FileExportPackageHandler
      */
     public ContentData exportContent(InputStream content, ContentData contentData)
     {
+        // if the content stream to output is empty, then just return content descriptor as is
+        if (content == null)
+        {
+            return contentData;
+        }
+        
         // Lazily create package directory
         try
         {

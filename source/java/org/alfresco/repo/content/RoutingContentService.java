@@ -236,22 +236,31 @@ public class RoutingContentService implements ContentService
     {
         return getReader(nodeRef, propertyQName, true);
     }
-    
+        
     private ContentReader getReader(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy)
     {
-        // ensure that the node property is of type content
-        PropertyDefinition contentPropDef = dictionaryService.getProperty(propertyQName);
-        if (contentPropDef == null || !contentPropDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+        // get the property value
+        ContentData contentData = null;
+        Serializable propValue = nodeService.getProperty(nodeRef, propertyQName);
+        if (propValue instanceof ContentData)
         {
-            throw new InvalidTypeException("The node property must be of type content: \n" +
-                    "   node: " + nodeRef + "\n" +
-                    "   property name: " + propertyQName + "\n" +
-                    "   property type: " + ((contentPropDef == null) ? "unknown" : contentPropDef.getDataType()),
-                    propertyQName);
+            contentData = (ContentData)propValue;
+        }
+
+        // ensure that the node property is of type content
+        if (contentData == null)
+        {
+            PropertyDefinition contentPropDef = dictionaryService.getProperty(propertyQName);
+            if (contentPropDef == null || !(contentPropDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                throw new InvalidTypeException("The node property must be of type content: \n" +
+                        "   node: " + nodeRef + "\n" +
+                        "   property name: " + propertyQName + "\n" +
+                        "   property type: " + ((contentPropDef == null) ? "unknown" : contentPropDef.getDataType()),
+                        propertyQName);
+            }
         }
         
-        // get the content property
-        ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, propertyQName);
         // check that the URL is available
         if (contentData == null || contentData.getContentUrl() == null)
         {

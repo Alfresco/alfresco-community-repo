@@ -458,6 +458,38 @@ import org.xml.sax.helpers.AttributesImpl;
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.Exporter#startValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    public void startValueCollection(NodeRef nodeRef, QName property)
+    {
+        try
+        {
+            // start collection
+            contentHandler.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUES_LOCALNAME, toPrefixString(VALUES_QNAME), EMPTY_ATTRIBUTES);
+        }
+        catch (SAXException e)
+        {
+            throw new ExporterException("Failed to process start collection event - nodeRef " + nodeRef + "; property " + toPrefixString(property), e);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.Exporter#endValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    public void endValueCollection(NodeRef nodeRef, QName property)
+    {
+        try
+        {
+            // end collection
+            contentHandler.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUES_LOCALNAME, toPrefixString(VALUES_QNAME));
+        }
+        catch (SAXException e)
+        {
+            throw new ExporterException("Failed to process end collection event - nodeRef " + nodeRef + "; property " + toPrefixString(property), e);
+        }
+    }
+    
+    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
      */
     public void value(NodeRef nodeRef, QName property, Object value)

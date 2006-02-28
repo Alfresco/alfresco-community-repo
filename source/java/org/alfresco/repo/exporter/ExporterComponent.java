@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -396,66 +397,16 @@ public class ExporterComponent
                 // start export of property
                 exporter.startProperty(nodeRef, property);
 
-                // get the property type
-                PropertyDefinition propertyDef = dictionaryService.getProperty(property);
-                boolean isContentProperty = (propertyDef == null) ? false : propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT);
-
-                if (isContentProperty)
+                if (value instanceof Collection)
                 {
-                    // export property of datatype CONTENT
-                    ContentReader reader = contentService.getReader(nodeRef, property);
-                    if (reader == null || reader.exists() == false)
+                    for (Object valueInCollection : (Collection)value)
                     {
-                        exporter.warning("Failed to read content for property " + property + " on node " + nodeRef);
-                    }
-                    else
-                    {
-                        // filter out content if not required
-                        if (parameters.isCrawlContent())
-                        {
-                            InputStream inputStream = reader.getContentInputStream();
-                            try
-                            {
-                                exporter.content(nodeRef, property, inputStream, reader.getContentData());
-                            }
-                            finally
-                            {
-                                try
-                                {
-                                    inputStream.close();
-                                }
-                                catch(IOException e)
-                                {
-                                    throw new ExporterException("Failed to export node content for node " + nodeRef, e);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // skip content values
-                            exporter.content(nodeRef, property, null, null);
-                        }
+                        walkProperty(nodeRef, property, valueInCollection, parameters, exporter);
                     }
                 }
                 else
                 {
-                    // Export all other datatypes
-                    try
-                    {
-                        if (value instanceof Collection)
-                        {
-                            exporter.value(nodeRef, property, (Collection)value);
-                        }
-                        else
-                        {
-                            exporter.value(nodeRef, property, value);
-                        }
-                    }
-                    catch(TypeConversionException e)
-                    {
-                        exporter.warning("Value of property " + property + " could not be converted to xml string");
-                        exporter.value(nodeRef, property, properties.get(property).toString());
-                    }
+                    walkProperty(nodeRef, property, value, parameters, exporter);
                 }
 
                 // end export of property
@@ -509,6 +460,81 @@ public class ExporterComponent
             
             // Signal end of node
             exporter.endNode(nodeRef);
+        }
+        
+        /**
+         * Export Property
+         * 
+         * @param nodeRef  
+         * @param property
+         * @param value
+         * @param parameters
+         * @param exporter
+         */
+        private void walkProperty(NodeRef nodeRef, QName property, Object value, ExporterCrawlerParameters parameters, Exporter exporter)
+        {
+            // determine data type of value
+            PropertyDefinition propDef = dictionaryService.getProperty(property);
+            DataTypeDefinition dataTypeDef = (propDef == null) ? null : propDef.getDataType();
+            QName valueDataType = null;
+            if (dataTypeDef == null || dataTypeDef.getName().equals(DataTypeDefinition.ANY))
+            {
+                dataTypeDef = (value == null) ? null : dictionaryService.getDataType(value.getClass());
+                if (dataTypeDef != null)
+                {
+                    valueDataType = dataTypeDef.getName();
+                }
+            }
+            else
+            {
+                valueDataType = dataTypeDef.getName();
+            }
+
+            if (valueDataType == null || !valueDataType.equals(DataTypeDefinition.CONTENT))
+            {
+                // Export non content data types
+                try
+                {
+                    exporter.value(nodeRef, property, value);
+                }
+                catch(TypeConversionException e)
+                {
+                    exporter.warning("Value of property " + property + " could not be converted to xml string");
+                    exporter.value(nodeRef, property, value.toString());
+                }
+            }
+            else
+            {
+                // export property of datatype CONTENT
+                ContentReader reader = contentService.getReader(nodeRef, property);
+                if (!parameters.isCrawlContent() || reader == null || reader.exists() == false)
+                {
+                    // export an empty url for the content
+                    ContentData contentData = (ContentData)value;
+                    ContentData noContentURL = new ContentData("", contentData.getMimetype(), contentData.getSize(), contentData.getEncoding());
+                    exporter.content(nodeRef, property, null, noContentURL);
+                    exporter.warning("Skipped content for property " + property + " on node " + nodeRef);
+                }
+                else
+                {
+                    InputStream inputStream = reader.getContentInputStream();
+                    try
+                    {
+                        exporter.content(nodeRef, property, inputStream, reader.getContentData());
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            inputStream.close();
+                        }
+                        catch(IOException e)
+                        {
+                            throw new ExporterException("Failed to export node content for node " + nodeRef, e);
+                        }
+                    }
+                }
+            }
         }
         
         /**

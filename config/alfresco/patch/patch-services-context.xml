@@ -265,5 +265,20 @@
             <ref bean="spacesBootstrap" />
         </property>
     </bean>
+    <bean id="patch.contentPermission" class="org.alfresco.repo.admin.patch.impl.ContentPermissionPatch" parent="basePatch" >
+        <property name="id"><value>patch.contentPermission</value></property>
+        <property name="description"><value>patch.contentPermission.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6</value></property>
+        <property name="targetSchema"><value>7</value></property>
+        <property name="sessionFactory">
+            <ref bean="sessionFactory" />
+        </property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.updateGuestPermission" />
+            </list>
+        </property>
+    </bean>
 
 </beans>

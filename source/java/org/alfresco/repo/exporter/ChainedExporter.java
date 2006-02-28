@@ -18,7 +18,6 @@ package org.alfresco.repo.exporter;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.service.cmr.repository.ContentData;
@@ -235,6 +234,28 @@ import org.alfresco.service.namespace.QName;
     }
     
     /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.Exporter#startValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    public void startValueCollection(NodeRef nodeRef, QName property)
+    {
+        for (Exporter exporter : exporters)
+        {
+            exporter.startValueCollection(nodeRef, property);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.Exporter#endValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    public void endValueCollection(NodeRef nodeRef, QName property)
+    {
+        for (Exporter exporter : exporters)
+        {
+            exporter.endValueCollection(nodeRef, property);
+        }
+    }
+    
+    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
      */
     public void value(NodeRef nodeRef, QName property, Object value)
@@ -242,17 +263,6 @@ import org.alfresco.service.namespace.QName;
         for (Exporter exporter : exporters)
         {
             exporter.value(nodeRef, property, value);
-        }
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.util.Collection)
-     */
-    public void value(NodeRef nodeRef, QName property, Collection values)
-    {
-        for (Exporter exporter : exporters)
-        {
-            exporter.value(nodeRef, property, values);
         }
     }
     

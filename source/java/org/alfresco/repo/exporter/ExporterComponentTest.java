@@ -20,7 +20,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.Collection;
 
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
@@ -151,14 +150,19 @@ public class ExporterComponentTest extends BaseSpringTest
 //            System.out.println("TestProgress: end property " + property);
         }
 
+        public void startValueCollection(NodeRef nodeRef, QName property)
+        {
+//          System.out.println("TestProgress: start value collection: node " + nodeRef + " , property " + property);
+        }
+
+        public void endValueCollection(NodeRef nodeRef, QName property)
+        {
+//          System.out.println("TestProgress: end value collection: node " + nodeRef + " , property " + property);
+        }
+        
         public void value(NodeRef nodeRef, QName property, Object value)
         {
 //            System.out.println("TestProgress: single value " + value);
-        }
-
-        public void value(NodeRef nodeRef, QName property, Collection values)
-        {
-//          System.out.println("TestProgress: multi value " + value);
         }
 
         public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData)

@@ -66,6 +66,7 @@
       <permissionGroup name="Write" expose="true" allowFullControl="false" />  
       <permissionGroup name="Delete" expose="true" allowFullControl="false" />  
       <permissionGroup name="AddChildren" expose="true" allowFullControl="false" />  
+      <permissionGroup name="Execute" allowFullControl="false" expose="false"/>
     
       <!-- =========== -->
       <!-- Permissions -->
@@ -120,6 +121,33 @@
       <!-- This check can be added but requires more work so the UI is not checking this -->
       <!-- permission just to show the delete icon.                                      -->
       <!--                                                                               -->
+      
+      <!-- The permission to read content.                                               -->
+      
+      <permission name="ReadContent" expose="false">
+         <grantedToGroup permissionGroup="Read"/>
+         <!-- Commented out parent permission check ...
+         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+         -->
+      </permission>
+
+      <!-- The permission to write content.                                              -->
+      
+      <permission name="WriteContent" expose="false">
+         <grantedToGroup permissionGroup="Write" />
+         <!-- Commented out parent permission check ...
+         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+         -->
+      </permission>
+      
+      <!-- Execute permission on content.                                                -->
+      
+      <permission name="ExecuteContent" expose="false">
+         <grantedToGroup permissionGroup="Execute" />
+         <!-- Commented out parent permission check ...
+         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+         -->
+      </permission>
       
       <permission name="DeleteNode" expose="true" >
          <grantedToGroup permissionGroup="Delete" />
@@ -264,41 +292,7 @@
    
    <permissionSet type="cm:content" expose="selected">
 
-      <!-- Extend some base permission groups to include permissoins related to content. -->
-      <permissionGroup name="Read" extends="true" expose="false"/>
-      <permissionGroup name="Write" extends="true" expose="false"/>
-      
-      <!-- Add an execute permission group.                                              -->
-      <permissionGroup name="Execute" allowFullControl="false" expose="false"/>
-      
-      <!-- Content specific low-level permissions.                                       -->
-      
-      <!-- The permission to read content.                                               -->
-      
-      <permission name="ReadContent" expose="false">
-         <grantedToGroup permissionGroup="Read"/>
-         <!-- Commented out parent permission check ...
-         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
-         -->
-      </permission>
-
-      <!-- The permission to write content.                                              -->
-      
-      <permission name="WriteContent" expose="false">
-         <grantedToGroup permissionGroup="Write" />
-         <!-- Commented out parent permission check ...
-         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
-         -->
-      </permission>
-      
-      <!-- Execute permission on content.                                                -->
-      
-      <permission name="ExecuteContent" expose="false">
-         <grantedToGroup permissionGroup="Execute" />
-         <!-- Commented out parent permission check ...
-         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
-         -->
-      </permission>
+      <!-- Content specific roles.                                                       -->
       
       <permissionGroup name="Coordinator" extends="true" expose="true"/>
       <permissionGroup name="Collaborator" extends="true" expose="true"/>

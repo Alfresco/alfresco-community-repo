@@ -190,6 +190,8 @@ public class PatchServiceImpl implements PatchService
                 // failed
                 report = e.getMessage();
                 success = false;
+                // dump the report to log
+                logger.error(report);
             }
         }
 

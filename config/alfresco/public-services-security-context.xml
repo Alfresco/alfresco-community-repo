@@ -503,6 +503,7 @@
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.checkout=ACL_NODE.0.cm:lockable.CheckOut,ACL_NODE.1.sys:base.CreateChildren
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.checkin=ACL_NODE.0.cm:lockable.CheckIn
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.cancelCheckout=ACL_NODE.0.cm:lockable.CancelCheckOut
+                org.alfresco.service.cmr.coci.CheckOutCheckInService.getWorkingCopy=ACL_NODE.0.sys:base.Read
             </value>
         </property>
     </bean> 

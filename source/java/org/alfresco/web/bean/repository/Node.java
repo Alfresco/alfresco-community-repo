@@ -25,7 +25,9 @@ import java.util.Set;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -54,6 +56,7 @@ public class Node implements Serializable
    private String id;
    private Set<QName> aspects = null;
    private Map<String, Boolean> permissions;
+   private Boolean locked = null;
    protected QNameNodeMap<String, Object> properties;
    protected boolean propsRetrieved = false;
    protected ServiceRegistry services = null;
@@ -380,6 +383,28 @@ public class Node implements Serializable
    }
    
    /**
+    * @return If the node is currently locked
+    */
+   public final boolean isLocked()
+   {
+      if (this.locked == null)
+      {
+         this.locked = Boolean.FALSE;
+         
+         if (hasAspect(ContentModel.ASPECT_LOCKABLE))
+         {
+            LockStatus lockStatus = getServiceRegistry().getLockService().getLockStatus(getNodeRef());
+            if (lockStatus == LockStatus.LOCKED || lockStatus == LockStatus.LOCK_OWNER)
+            {
+               locked = Boolean.TRUE;
+            }
+         }
+      }
+      
+      return this.locked.booleanValue();
+   }
+   
+   /**
     * Resets the state of the node to force re-retrieval of the data
     */
    public void reset()
@@ -387,6 +412,7 @@ public class Node implements Serializable
       this.name = null;
       this.type = null;
       this.path = null;
+      this.locked = null;
       this.properties.clear();
       this.propsRetrieved = false;
       this.aspects = null;

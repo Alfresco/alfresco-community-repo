@@ -662,7 +662,7 @@ public class BrowseBean implements IContextListener
          
          results = this.searchService.query(
                Repository.getStoreRef(), 
-               "lucene", query, null, null);
+               SearchService.LANGUAGE_LUCENE, query, null, null);
          if (logger.isDebugEnabled())
             logger.debug("Search results returned: " + results.length());
          
@@ -777,7 +777,7 @@ public class BrowseBean implements IContextListener
    
    public NodePropertyResolver resolverlocked = new NodePropertyResolver() {
       public Object get(Node node) {
-         return Repository.isNodeLocked(node, lockService);
+         return node.isLocked();
       }
    };
    

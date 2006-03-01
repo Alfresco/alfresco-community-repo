@@ -72,7 +72,17 @@
                               <div class="mainTitle">
                                  <h:outputText value="#{msg.details_of}" /> '<h:outputText value="#{DocumentDetailsBean.name}" />'<r:lockIcon value="#{DocumentDetailsBean.document.nodeRef}" align="absmiddle" />
                               </div>
-                              <div class="mainSubText"><h:outputText value="#{msg.location}" />: <r:nodePath value="#{DocumentDetailsBean.document.nodeRef}" breadcrumb="true" actionListener="#{BrowseBean.clickSpacePath}" /></div>
+                              <div class="mainSubText">
+                                 <h:outputText value="#{msg.location}" />: <r:nodePath value="#{DocumentDetailsBean.document.nodeRef}" breadcrumb="true" actionListener="#{BrowseBean.clickSpacePath}" />
+                              </div>
+                              <a:panel id="working-copy" rendered="#{DocumentDetailsBean.locked}">
+                                 <div class="mainSubText">
+                                    <h:outputText value="#{msg.working_copy_document}" />:
+                                    <a:actionLink value="#{DocumentDetailsBean.workingCopyDocument.properties.name}" actionListener="#{BrowseBean.setupContentAction}" action="showDocDetails">
+                                       <f:param name="id" value="#{DocumentDetailsBean.workingCopyDocument.id}" />
+                                    </a:actionLink>
+                                 </div>
+                              </a:panel>
                               <div class="mainSubText"><h:outputText value="#{msg.documentdetails_description}" /></div>
                            </td>
                            
@@ -81,14 +91,14 @@
                               <nobr>
                               <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="CheckOut">
                                  <a:booleanEvaluator value="#{DocumentDetailsBean.locked == false && DocumentDetailsBean.workingCopy == false}">
-                                    <a:actionLink value="#{msg.checkout}" image="/images/icons/CheckOut_icon.gif" padding="2" style="white-space:nowrap" 
+                                    <a:actionLink value="#{msg.checkout}" image="/images/icons/CheckOut_icon.gif" padding="2" style="white-space:nowrap"
                                                   actionListener="#{CheckinCheckoutBean.setupContentAction}" action="checkoutFile">
                                        <f:param name="id" value="#{DocumentDetailsBean.id}" />
                                     </a:actionLink>
                                  </a:booleanEvaluator>
                               </r:permissionEvaluator>
                               <a:booleanEvaluator value="#{DocumentDetailsBean.document.properties.checkIn == true}">
-                                 <a:actionLink value="#{msg.checkin}" image="/images/icons/CheckIn_icon.gif" padding="2" style="white-space:nowrap" 
+                                 <a:actionLink value="#{msg.checkin}" image="/images/icons/CheckIn_icon.gif" padding="2" style="white-space:nowrap"
                                                actionListener="#{CheckinCheckoutBean.setupContentAction}" action="checkinFile">
                                     <f:param name="id" value="#{DocumentDetailsBean.id}" />
                                  </a:actionLink>
@@ -310,9 +320,6 @@
                                     </tr>
                                  </table>
                               </a:panel>
-                              
-                              <br/>
-                              
                               <a:panel label="#{msg.properties}" id="properties-panel-locked" progressive="true"
                                        border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" rendered="#{DocumentDetailsBean.locked}"
                                        expanded='#{DocumentDetailsBean.panels["properties-panel-locked"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
@@ -345,6 +352,8 @@
                                     </tr>
                                  </table>
                               </a:panel>
+                              
+                              <br/>
                               
                               <h:panelGroup id="workflow-panel-facets">
                                  <f:facet name="title">

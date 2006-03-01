@@ -483,7 +483,7 @@
                                     <f:param name="id" value="#{r.id}" />
                                  </a:actionLink>
                               </a:booleanEvaluator>
-                           </r:permissionEvaluator>   
+                           </r:permissionEvaluator>
                            <a:booleanEvaluator value="#{r.checkIn == true}">
                               <a:actionLink value="#{msg.checkin}" image="/images/icons/CheckIn_icon.gif" showLink="false" styleClass="inlineAction" actionListener="#{CheckinCheckoutBean.setupContentAction}" action="checkinFile">
                                  <f:param name="id" value="#{r.id}" />

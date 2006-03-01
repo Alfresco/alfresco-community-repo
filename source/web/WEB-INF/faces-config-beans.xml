@@ -784,6 +784,10 @@
          <value>#{OwnableService}</value>
       </managed-property>
       <managed-property>
+         <property-name>checkOutCheckInService</property-name>
+         <value>#{CheckoutCheckinService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>navigator</property-name>
          <value>#{NavigationBean}</value>
       </managed-property>

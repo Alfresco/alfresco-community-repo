@@ -32,6 +32,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.CopyService;
@@ -85,6 +86,7 @@ public class DocumentDetailsBean
    protected VersionService versionService;
    protected OwnableService ownableService;
    protected NavigationBean navigator;
+   protected CheckOutCheckInService cociService;
    
    private Map<String, Boolean> panels = new HashMap<String, Boolean>(5, 1.0f);
    
@@ -1152,7 +1154,7 @@ public class DocumentDetailsBean
     */
    public boolean isLocked()
    {
-      return Repository.isNodeLocked(getDocument(), this.lockService);
+      return getDocument().isLocked();
    }
    
    /**
@@ -1163,6 +1165,25 @@ public class DocumentDetailsBean
    public boolean isWorkingCopy()
    {
       return getDocument().hasAspect(ContentModel.ASPECT_WORKING_COPY);
+   }
+   
+   /**
+    * @return the working copy document Node for this document if found or null if not
+    */
+   public Node getWorkingCopyDocument()
+   {
+      Node workingCopyNode = null;
+      
+      if (isLocked())
+      {
+         NodeRef workingCopyRef = this.cociService.getWorkingCopy(getDocument().getNodeRef());
+         if (workingCopyRef != null)
+         {
+            workingCopyNode = new Node(workingCopyRef);
+         }
+      }
+      
+      return workingCopyNode;
    }
    
    /**
@@ -1259,6 +1280,16 @@ public class DocumentDetailsBean
    public void setOwnableService(OwnableService ownableService)
    {
       this.ownableService = ownableService;
+   }
+   
+   /**
+    * Sets the checkincheckout service instance the bean should use
+    * 
+    * @param cociService The CheckOutCheckInService
+    */
+   public void setCheckOutCheckInService(CheckOutCheckInService cociService)
+   {
+      this.cociService = cociService;
    }
    
    /**

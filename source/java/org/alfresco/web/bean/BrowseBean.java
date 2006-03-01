@@ -818,15 +818,13 @@ public class BrowseBean implements IContextListener
    };
    
    public NodePropertyResolver resolverWebdavUrl = new NodePropertyResolver() {
-      public Object get(Node node) 
-      {
+      public Object get(Node node) {
          return Utils.generateURL(FacesContext.getCurrentInstance(), node, URLMode.WEBDAV); 
       }   
    };
    
    public NodePropertyResolver resolverCifsPath = new NodePropertyResolver() {
-      public Object get(Node node)
-      {
+      public Object get(Node node) {
          return Utils.generateURL(FacesContext.getCurrentInstance(), node, URLMode.CIFS);
       }
    };
@@ -851,7 +849,7 @@ public class BrowseBean implements IContextListener
    
    public NodePropertyResolver resolverDisplayPath = new NodePropertyResolver() {
       public Object get(Node node) {
-         // TODO: replace this with a method that shows the full display name - not QNames
+         // TODO: replace this with a method that shows the full display name - not QNames?
          return Repository.getDisplayPath( (Path)node.getProperties().get("path") );
       }
    };

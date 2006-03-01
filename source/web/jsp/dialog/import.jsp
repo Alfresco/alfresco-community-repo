@@ -73,7 +73,7 @@
                               <h:graphicImage id="wizard-logo" url="/images/icons/import_large.gif" />
                            </td>
                            <td>
-                              <div class="mainTitle"><h:outputText value="#{msg.import}" /></div>
+                              <div class="mainTitle"><h:outputText value="#{msg.import}" /> '<h:outputText value='#{NavigationBean.nodeProperties.name}' />'</div>
                               <div class="mainSubText"><h:outputText value="#{msg.import_info}" /></div>
                            </td>
                         </tr>

@@ -200,8 +200,8 @@ public class HibernatePermissionsDAO extends HibernateDaoSupport implements Perm
         {
             Set<org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntry> deletable = new HashSet<org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntry>();
 
-            for (org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntry current : found
-                    .getPermissionEntries())
+            Set<org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntry> entries = found.getPermissionEntries();
+            for (org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntry current : entries)
             {
                 if (permissionEntry.equals(createSimplePermissionEntry(current)))
                 {

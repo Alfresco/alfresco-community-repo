@@ -40,6 +40,18 @@ public class PermissionReferenceImpl implements PermissionReference
         super();
     }
     
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(128);
+        sb.append("PermissionReferenceImpl")
+          .append("[ typeUri=").append(getTypeUri())
+          .append(", typeName=").append(getTypeName())
+          .append(", name=").append(getName())
+          .append("]");
+        return sb.toString();
+    }
+    
     public String getTypeUri()
     {
         return typeUri;

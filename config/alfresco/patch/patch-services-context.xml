@@ -280,5 +280,21 @@
             </list>
         </property>
     </bean>
+    <bean id="patch.updateForumsIcons" class="org.alfresco.repo.admin.patch.impl.ForumsIconsPatch" parent="basePatch" >
+        <property name="id"><value>patch.forumsIcons</value></property>
+        <property name="description"><value>patch.forumsIcons.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>7</value></property>
+        <property name="targetSchema"><value>8</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="searchService">
+            <ref bean="searchService" />
+        </property>
+    </bean>
 
 </beans>

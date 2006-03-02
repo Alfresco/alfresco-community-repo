@@ -58,7 +58,6 @@ import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
-import org.alfresco.web.bean.repository.QNameNodeMap;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ViewsConfigElement;
 import org.alfresco.web.ui.common.Utils;
@@ -69,7 +68,6 @@ import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.alfresco.web.ui.common.renderer.data.IRichListRenderer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * Bean providing properties and behaviour for the forums screens.
@@ -472,7 +470,7 @@ public class ForumsBean implements IContextListener, NodeEventListener
                         // create our Node representation
                         MapNode node = new MapNode(nodeRef, this.nodeService, true);
                         node.addPropertyResolver("icon", this.browseBean.resolverSpaceIcon);
-                        node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
+                        node.addPropertyResolver("smallIcon", this.browseBean.resolverSmallIcon);
                         
                         this.forums.add(node);
                      }
@@ -481,7 +479,7 @@ public class ForumsBean implements IContextListener, NodeEventListener
                         // create our Node representation
                         MapNode node = new MapNode(nodeRef, this.nodeService, true);
                         node.addPropertyResolver("icon", this.browseBean.resolverSpaceIcon);
-                        node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
+                        node.addPropertyResolver("smallIcon", this.browseBean.resolverSmallIcon);
                         node.addPropertyResolver("replies", this.resolverReplies);
                         
                         this.topics.add(node);
@@ -492,7 +490,7 @@ public class ForumsBean implements IContextListener, NodeEventListener
                         MapNode node = new MapNode(nodeRef, this.nodeService, true);
                         
                         this.browseBean.setupCommonBindingProperties(node);
-                        node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
+                        node.addPropertyResolver("smallIcon", this.browseBean.resolverSmallIcon);
                         node.addPropertyResolver("message", this.resolverContent);
                         node.addPropertyResolver("replyTo", this.resolverReplyTo);
                         
@@ -612,15 +610,6 @@ public class ForumsBean implements IContextListener, NodeEventListener
       
       // add the forums specific action resolver
       node.addPropertyResolver("beingDiscussed", this.resolverBeingDiscussed);
-      
-      // override the small icon resolver if it's a forum model type 
-      if (type.equals(ForumModel.TYPE_FORUMS) ||
-          type.equals(ForumModel.TYPE_FORUM) ||
-          type.equals(ForumModel.TYPE_TOPIC))
-      {
-         // override icon handling for forum objects - as we have a specific small icon set
-         node.addPropertyResolver("smallIcon", resolverSmallIcon);
-      }
    }
    
    
@@ -912,24 +901,6 @@ public class ForumsBean implements IContextListener, NodeEventListener
          }
          
          return canCheckin;
-      }
-   };
-   
-   public NodePropertyResolver resolverSmallIcon = new NodePropertyResolver() {
-      public Object get(Node node) {
-         QNameNodeMap props = (QNameNodeMap)node.getProperties();
-         String icon = (String)props.getRaw("app:icon");
-         
-         if (icon != null)
-         {
-            icon = StringUtils.replace(icon, "_large", "");
-         }
-         else
-         {
-            icon = BrowseBean.SPACE_SMALL_DEFAULT;
-         }
-         
-         return icon;
       }
    };
    

@@ -143,7 +143,7 @@
    
    <config evaluator="string-compare" condition="Custom Folder Types">
       <folder-types>
-         <type name="fm:forums" icon="/images/icons/forums_large.gif" descriptionMsgId="forums_desc" />
+         <type name="fm:forums" icon="/images/icons/forums.gif" descriptionMsgId="forums_desc" />
       </folder-types>
    </config>
    
@@ -200,21 +200,21 @@
 
    <config evaluator="string-compare" condition="fm:forums icons">
       <icons>
-         <icon name="forums_large" path="/images/icons/forums_large.gif" />
+         <icon name="forums" path="/images/icons/forums.gif" />
       </icons>
    </config>
    
    <config evaluator="string-compare" condition="fm:forum icons">
       <icons>
-         <icon name="forum_large" path="/images/icons/forum_large.gif" />
+         <icon name="forum" path="/images/icons/forum.gif" />
       </icons>
    </config>
    
    <config evaluator="string-compare" condition="fm:topic icons">
       <icons>
-         <icon name="topic_large" path="/images/icons/topic_large.gif" />
-         <icon name="topic_exclamation_large" path="/images/icons/topic_exclamation_large.gif" />
-         <icon name="topic_question_large" path="/images/icons/topic_question_large.gif" />
+         <icon name="topic" path="/images/icons/topic.gif" />
+         <icon name="topic_exclamation" path="/images/icons/topic_exclamation.gif" />
+         <icon name="topic_question" path="/images/icons/topic_question.gif" />
       </icons>
    </config>
       

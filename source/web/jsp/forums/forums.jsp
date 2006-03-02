@@ -68,7 +68,7 @@
                            <%-- actions for forums --%>
                            <a:panel id="forums-actions">
                               <td width=32>
-                                 <h:graphicImage id="space-logo" url="/images/icons/forums_large.gif" width="32" height="32" />
+                                 <h:graphicImage id="space-logo" url="/images/icons/forums.gif" width="32" height="32" />
                               </td>
                               <td>
                                  <%-- Summary --%>

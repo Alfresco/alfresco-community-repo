@@ -296,5 +296,16 @@
             <ref bean="searchService" />
         </property>
     </bean>
+    <bean id="patch.emailTemplatesFolder" class="org.alfresco.repo.admin.patch.impl.EmailTemplatesFolderPatch" parent="patch.savedSearches.Base" >
+        <property name="id"><value>patch.emailTemplatesFolder</value></property>
+        <property name="description"><value>patch.emailTemplatesFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>8</value></property>
+        <property name="targetSchema"><value>9</value></property>
+        <!-- helper beans for execution -->
+        <property name="messageSource">
+            <ref bean="bootstrapSpacesMessageSource" />
+        </property>   
+    </bean>
 
 </beans>

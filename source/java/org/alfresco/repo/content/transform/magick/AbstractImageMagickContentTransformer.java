@@ -197,13 +197,6 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
                     "   target extension: " + targetExtension);
         }
         
-        // if the source mimetype is the same as the target's then just stream it
-        if (sourceMimetype.equals(targetMimetype))
-        {
-            writer.putContent(reader.getContentInputStream());
-            return;
-        }
-        
         // create required temp files
         File sourceFile = TempFileProvider.createTempFile(
                 getClass().getSimpleName() + "_source_",

@@ -17,16 +17,20 @@
 package org.alfresco.repo.content.transform;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.repo.content.transform.ContentTransformerRegistry.TransformationKey;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.BaseAlfrescoTestCase;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.exec.RuntimeExec;
+import org.apache.xml.security.transforms.TransformationException;
 
 /**
  * @see org.alfresco.repo.content.transform.RuntimeExecutableContentTransformer
@@ -52,6 +56,11 @@ public class RuntimeExecutableContentTransformerTest extends BaseAlfrescoTestCas
         transformCommand.setErrorCodes("1, 2");
         transformer.setTransformCommand(transformCommand);
         transformer.setMimetypeService(serviceRegistry.getMimetypeService());
+        // set the explicit transformations
+        List<TransformationKey> explicitTranformations = new ArrayList<TransformationKey>(1);
+        explicitTranformations.add(
+                new TransformationKey(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_XML));
+        transformer.setExplicitTransformations(explicitTranformations);
         
         // initialise so that it doesn't score 0
         transformer.register();

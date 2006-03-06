@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.content.transform;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
@@ -51,8 +52,6 @@ public class PoiHssfContentTransformer extends AbstractContentTransformer
      */
     private static final String LINE_BREAK = "\r\n";
     
-    private static final Log logger = LogFactory.getLog(PoiHssfContentTransformer.class);
-    
     /**
      * Currently the only transformation performed is that of text extraction from XLS documents.
      */
@@ -73,12 +72,13 @@ public class PoiHssfContentTransformer extends AbstractContentTransformer
     public void transformInternal(ContentReader reader, ContentWriter writer,  Map<String, Object> options)
             throws Exception
     {
+        InputStream is = reader.getContentInputStream();
         OutputStream os = writer.getContentOutputStream();
         String encoding = writer.getEncoding();
         try
         {
             // open the workbook
-            HSSFWorkbook workbook = new HSSFWorkbook(reader.getContentInputStream());
+            HSSFWorkbook workbook = new HSSFWorkbook(is);
             // how many sheets are there?
             int sheetCount = workbook.getNumberOfSheets();
             // transform each sheet
@@ -96,6 +96,10 @@ public class PoiHssfContentTransformer extends AbstractContentTransformer
         }
         finally
         {
+            if (is != null)
+            {
+                try { is.close(); } catch (Throwable e) {}
+            }
             if (os != null)
             {
                 try { os.close(); } catch (Throwable e) {}

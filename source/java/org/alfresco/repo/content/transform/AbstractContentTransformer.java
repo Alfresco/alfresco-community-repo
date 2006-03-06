@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.content.transform;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,7 @@ public abstract class AbstractContentTransformer implements ContentTransformer
     protected AbstractContentTransformer()
     {
         averageTime = 0.0;
+        explicitTransformations = new ArrayList<ContentTransformerRegistry.TransformationKey>(0);
     }
 
     /**
@@ -82,6 +84,14 @@ public abstract class AbstractContentTransformer implements ContentTransformer
     protected MimetypeService getMimetypeService()
     {
         return mimetypeService;
+    }
+
+    /**
+     * @return Returns the explicit transformations that were enabled for this transformer
+     */
+    protected List<ContentTransformerRegistry.TransformationKey> getExplicitTransformations()
+    {
+        return explicitTransformations;
     }
 
     /**
@@ -162,7 +172,8 @@ public abstract class AbstractContentTransformer implements ContentTransformer
     {
         String sourceMimetype = getMimetype(reader);
         String targetMimetype = getMimetype(writer);
-        if (getReliability(sourceMimetype, targetMimetype) <= 0.0)
+        double reliability = getReliability(sourceMimetype, targetMimetype);
+        if (reliability <= 0.0)
         {
             throw new AlfrescoRuntimeException("Zero scoring transformation attempted: \n" +
                     "   reader: " + reader + "\n" +

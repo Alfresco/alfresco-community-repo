@@ -18,9 +18,11 @@ package org.alfresco.repo.content.transform;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.transform.ContentTransformerRegistry.TransformationKey;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -48,6 +50,9 @@ import org.apache.commons.logging.LogFactory;
  * no effect, but may ultimately lead to the transformation failing.  This is
  * because the files provided are both temporary files that reside in a location
  * outside the system's content store.
+ * <p>
+ * This transformer <b>requires</b> the setting of the <b>explicitTransformations</b>
+ * property.
  * 
  * @see org.alfresco.util.exec.RuntimeExec
  * 
@@ -67,6 +72,16 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
 
     public RuntimeExecutableContentTransformer()
     {
+    }
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.getClass().getSimpleName())
+          .append("[ transform=").append(transformCommand).append("\n")
+          .append("]");
+        return sb.toString();
     }
     
     /**
@@ -134,10 +149,12 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
     }
 
     /**
-     * Unless otherwise configured, this component supports all mimetypes.
      * If the {@link #init() initialization} failed, then it returns 0.0.
+     * Otherwise the explicit transformations are checked for the reliability.
      * 
      * @return Returns 1.0 if initialization succeeded, otherwise 0.0.
+     * 
+     * @see AbstractContentTransformer#setExplicitTransformations(List)
      */
     public double getReliability(String sourceMimetype, String targetMimetype)
     {
@@ -145,9 +162,22 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
         {
             return 0.0;
         }
-        else
+        // check whether the transformation was one of the explicit transformations
+        TransformationKey transformationKey = new TransformationKey(sourceMimetype, targetMimetype);
+        List<TransformationKey> explicitTransformations = getExplicitTransformations();
+        if (explicitTransformations.size() == 0)
+        {
+            logger.warn(
+                    "Property 'explicitTransformations' should be set to enable this transformer: \n" +
+                    "   transformer: " + this);
+        }
+        if (explicitTransformations.contains(transformationKey))
         {
             return 1.0;
+        }
+        else
+        {
+            return 0.0;
         }
     }
     
@@ -176,13 +206,6 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
                     "   source extension: " + sourceExtension + "\n" +
                     "   target mimetype: " + targetMimetype + "\n" +
                     "   target extension: " + targetExtension);
-        }
-        
-        // if the source mimetype is the same as the target's then just stream it
-        if (sourceMimetype.equals(targetMimetype))
-        {
-            writer.putContent(reader.getContentInputStream());
-            return;
         }
         
         // create required temp files

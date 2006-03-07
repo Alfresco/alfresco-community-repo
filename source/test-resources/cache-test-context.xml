@@ -6,7 +6,7 @@
    
    <bean name="ehCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" >
       <property name="configLocation">
-         <value>classpath:ehcache.xml</value>
+         <value>classpath:alfresco/ehcache-default.xml</value>
       </property>
    </bean>
    

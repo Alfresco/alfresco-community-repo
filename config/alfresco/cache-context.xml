@@ -15,9 +15,15 @@
    
    <bean name="transactionalEHCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" >
       <property name="configLocation">
-         <value>classpath:ehcache-transactional.xml</value>
+         <value>classpath:alfresco/ehcache-transactional.xml</value>
       </property>
    </bean>
+   
+   <!-- ============================================ -->
+   <!-- EH Cache Manager to produce shared EH Caches -->
+   <!-- ============================================ -->
+   
+   <bean name="internalEHCacheManager" class="org.alfresco.repo.cache.InternalEhCacheManagerFactoryBean" />
    
    <!-- ================ -->
    <!-- Null permissions -->
@@ -28,8 +34,10 @@
    <bean name="nullPermissionSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
       <property name="cache">
          <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
             <property name="cacheName">
-               <!-- The name of the ehCache area -->
                <value>nullPermissionCache</value>
             </property>
             <property name="maxElementsInMemory">
@@ -51,7 +59,6 @@
       <property name="cacheManager" >
          <ref bean="transactionalEHCacheManager" />
       </property>
-      <!-- Eh cache area -->
       <property name="name">
          <value>nullPermissionTransactionalCache</value>
       </property>
@@ -69,8 +76,10 @@
    <bean name="userToAuthoritySharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
       <property name="cache">
          <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
             <property name="cacheName">
-               <!-- The name of the ehCache area -->
                <value>userToAuthorityCache</value>
             </property>
             <property name="maxElementsInMemory">
@@ -92,7 +101,6 @@
       <property name="cacheManager" >
          <ref bean="transactionalEHCacheManager" />
       </property>
-      <!-- Eh cache area -->
       <property name="name">
          <value>userToAuthorityTransactionalCache</value>
       </property>
@@ -110,8 +118,10 @@
    <bean name="permissionsAccessSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
       <property name="cache">
          <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
             <property name="cacheName">
-               <!-- The name of the ehCache area -->
                <value>permissionsAccessCache</value>
             </property>
             <property name="maxElementsInMemory">
@@ -151,8 +161,10 @@
    <bean name="nodeOwnerSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
       <property name="cache">
          <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
             <property name="cacheName">
-               <!-- The name of the ehCache area -->
                <value>nodeOwnerCache</value>
             </property>
             <property name="maxElementsInMemory">
@@ -174,7 +186,6 @@
       <property name="cacheManager" >
          <ref bean="transactionalEHCacheManager" />
       </property>
-      <!-- Eh cache area -->
       <property name="name">
          <value>nodeOwnerTransactionalCache</value>
       </property>

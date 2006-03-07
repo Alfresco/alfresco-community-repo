@@ -823,11 +823,4 @@
         </property>
     </bean>
 
-    <!-- caching -->
-    <bean name="ehCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
-        <property name="configLocation">
-            <value>classpath:ehcache.xml</value>
-        </property>
-    </bean>
-
 </beans>

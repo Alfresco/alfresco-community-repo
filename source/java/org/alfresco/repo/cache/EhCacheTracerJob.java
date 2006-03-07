@@ -26,8 +26,8 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
+import net.sf.ehcache.Status;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
@@ -115,7 +115,7 @@ public class EhCacheTracerJob implements Job
         public CacheAnalysis(Cache cache) throws CacheException
         {
             this.cache = cache;
-            if (this.cache.getStatus() == Cache.STATUS_ALIVE)
+            if (this.cache.getStatus().equals(Status.STATUS_ALIVE))
             {
                 try
                 {
@@ -163,21 +163,6 @@ public class EhCacheTracerJob implements Job
             finally
             {
                 try { oos.close(); } catch (IOException e) {}
-            }
-        }
-        
-        public String getStatusStr()
-        {
-            switch (cache.getStatus())
-            {
-                case Cache.STATUS_ALIVE:
-                    return "ALIVE";
-                case Cache.STATUS_DISPOSED:
-                    return "DISPOSED";
-                case Cache.STATUS_UNINITIALISED:
-                    return "UNINITIALIZED";
-                default:
-                    throw new AlfrescoRuntimeException("Unknown cache status: " + cache.getStatus());
             }
         }
         

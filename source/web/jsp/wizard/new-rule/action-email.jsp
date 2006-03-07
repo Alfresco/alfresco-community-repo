@@ -126,15 +126,19 @@
                                  <tr>
                                     <td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.set_action_values}" /></td>
                                  </tr>
+                                 
                                  <tr><td colspan="2" class="paddingRow"></td></tr>
                                  <tr>
                                     <td><h:outputText value="#{msg.subject}"/>:</td>
                                     <td width="90%">
                                        <h:inputText id="subject" value="#{NewRuleWizard.actionProperties.subject}" 
                                                     size="75" maxlength="1024" 
-                                                    onkeyup="javascript:checkButtonState();"/>
+                                                    onkeyup="javascript:checkButtonState();"/>&nbsp;*
                                     </td>
                                  </tr>
+                                 
+                                 <tr><td colspan="2" class="paddingRow"></td></tr>
+                                 <tr><td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.action_mail_message_text}"/></td></tr>
                                  <tr>
                                     <td valign="top"><h:outputText value="#{msg.message}"/>:</td>
                                     <td>
@@ -142,6 +146,19 @@
                                                         rows="5" cols="75" />
                                     </td>
                                  </tr>
+                                 <tr><td colspan="2" class="paddingRow"></td></tr>
+                                 <tr><td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.action_mail_template_text}"/></td></tr>
+                                 <tr>
+                                    <td valign="top"><h:outputText value="#{msg.action_mail_template}"/>:</td>
+                                    <td>
+                                       <%-- Templates drop-down selector --%>
+                                       <h:selectOneMenu value="#{NewRuleWizard.actionProperties.template}">
+                                          <f:selectItems value="#{NewRuleWizard.templates}" />
+                                       </h:selectOneMenu>
+                                    </td>
+                                 </tr>
+                                 
+                                 <tr><td colspan="2" class="paddingRow"></td></tr>
                                  <tr>
                                     <td valign="top"><h:outputText value="#{msg.to}"/>:</td>
                                     <td>
@@ -151,6 +168,7 @@
                                        </h:selectOneMenu>
                                     </td>
                                  </tr>
+                                 
                                  <tr><td class="paddingRow"></td></tr>
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>

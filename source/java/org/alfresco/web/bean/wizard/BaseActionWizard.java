@@ -41,6 +41,8 @@ import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.repo.action.executer.SpecialiseTypeActionExecuter;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
+import org.alfresco.repo.cache.ExpiringValueCache;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -85,10 +87,15 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    public static final String PROP_MESSAGE = "message";
    public static final String PROP_SUBJECT = "subject";
    public static final String PROP_TO = "to";
+   public static final String PROP_FROM = "from";
+   public static final String PROP_TEMPLATE = "template";
    public static final String PROP_OBJECT_TYPE = "objecttype";
    
    private static final Log logger = LogFactory.getLog(BaseActionWizard.class);
    private static final String IMPORT_ENCODING = "UTF-8";
+   
+   /** no selection marker for SelectItem lists */
+   private static final String NO_SELECTION = "none";
    
    // new rule/action wizard specific properties
    protected boolean multiActionMode = false;
@@ -105,6 +112,8 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    protected Map<String, String> actionDescriptions;
    protected Map<String, Serializable> currentActionProperties;
    protected List<SelectItem> objectTypes;
+   /** cache of email templates that last 10 seconds - enough for a couple of page refreshes */
+   protected ExpiringValueCache<List<SelectItem>> cachedTemplates = new ExpiringValueCache<List<SelectItem>>(1000*10);
    
    /**
     * Initialises the wizard
@@ -323,6 +332,17 @@ public abstract class BaseActionWizard extends AbstractWizardBean
          // add the subject for the email
          actionParams.put(MailActionExecuter.PARAM_SUBJECT,
                this.currentActionProperties.get(PROP_SUBJECT));
+         
+         // add the from address
+         String from = Application.getClientConfig(FacesContext.getCurrentInstance()).getFromEmailAddress();
+         actionParams.put(MailActionExecuter.PARAM_FROM, from);
+         
+         // add the template if one was selected by the user
+         String template = (String)this.currentActionProperties.get(PROP_TEMPLATE);
+         if (template != null && template.equals(NO_SELECTION) == false)
+         {
+            actionParams.put(MailActionExecuter.PARAM_TEMPLATE, new NodeRef(Repository.getStoreRef(), template));
+         }
       }
       else if (this.action.equals(ImporterActionExecuter.NAME))
       {
@@ -910,5 +930,63 @@ public abstract class BaseActionWizard extends AbstractWizardBean
       }
       
       return this.users;
+   }
+   
+   /**
+    * @return the list of available Content Templates that can be applied to the current document.
+    */
+   public List<SelectItem> getTemplates()
+   {
+      List<SelectItem> templates = cachedTemplates.get();
+      if (templates == null)
+      {
+         // get the template from the special Content Templates folder
+         FacesContext context = FacesContext.getCurrentInstance();
+         String xpath = Application.getRootPath(context) + "/" + 
+               Application.getGlossaryFolderName(context) + "/" +
+               Application.getEmailTemplatesFolderName(context) + "//*";
+         try
+         {
+            NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
+            NamespaceService resolver = Repository.getServiceRegistry(context).getNamespaceService();
+            List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, resolver, false);
+            
+            templates = new ArrayList<SelectItem>(results.size() + 1);
+            if (results.size() != 0)
+            {
+               DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
+               for (NodeRef ref : results)
+               {
+                  if (nodeService.exists(ref) == true)
+                  {
+                     Node childNode = new Node(ref);
+                     if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
+                     {
+                        templates.add(new SelectItem(childNode.getId(), childNode.getName()));
+                     }
+                  }
+               }
+               
+               // make sure the list is sorted by the label
+               QuickSort sorter = new QuickSort(templates, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+               sorter.sort();
+            }
+         }
+         catch (AccessDeniedException accessErr)
+         {
+            // ignore the result if we cannot access the root
+         }
+         
+         // add an entry (at the start) to instruct the user to select a template
+         if (templates == null)
+         {
+            templates = new ArrayList<SelectItem>(1);
+         }
+         templates.add(0, new SelectItem(NO_SELECTION, Application.getMessage(FacesContext.getCurrentInstance(), "select_a_template")));
+         
+         cachedTemplates.put(templates);
+      }
+      
+      return templates;
    }
 }

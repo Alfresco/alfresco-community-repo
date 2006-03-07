@@ -66,6 +66,7 @@ public class Application
    private static String glossaryFolderName;
    private static String spaceTemplatesFolderName;
    private static String contentTemplatesFolderName;
+   private static String emailTemplatesFolderName;
    private static String savedSearchesFolderName;
    
    /**
@@ -321,6 +322,22 @@ public class Application
    public static String getContentTemplatesFolderName(FacesContext context)
    {
       return getContentTemplatesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return Returns the Email templates folder name
+    */
+   public static String getEmailTemplatesFolderName(ServletContext context)
+   {
+      return getEmailTemplatesFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return Returns the Email templates folder name
+    */
+   public static String getEmailTemplatesFolderName(FacesContext context)
+   {
+      return getEmailTemplatesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
    }
    
    /**
@@ -632,6 +649,24 @@ public class Application
       }
       
       return contentTemplatesFolderName;
+   }
+   
+   /**
+    * Returns the Email Templates folder name
+    * 
+    * @param context The spring context
+    * @return The email folder name
+    */
+   private static String getEmailTemplatesFolderName(WebApplicationContext context)
+   {
+      if (emailTemplatesFolderName == null)
+      {
+         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
+         Properties configuration = bootstrap.getConfiguration();
+         emailTemplatesFolderName = configuration.getProperty("spaces.templates.email.childname");
+      }
+      
+      return emailTemplatesFolderName;
    }
    
    /**

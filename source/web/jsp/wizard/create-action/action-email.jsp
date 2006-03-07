@@ -146,9 +146,12 @@
                                     <td width="90%">
                                        <h:inputText id="subject" value="#{NewActionWizard.actionProperties.subject}" 
                                                     size="75" maxlength="1024" 
-                                                    onkeyup="javascript:checkButtonState();"/>
+                                                    onkeyup="javascript:checkButtonState();"/>&nbsp;*
                                     </td>
                                  </tr>
+                                 
+                                 <tr><td colspan="2" class="paddingRow"></td></tr>
+                                 <tr><td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.action_mail_message_text}"/></td></tr>
                                  <tr>
                                     <td valign="top"><h:outputText value="#{msg.message}"/>:</td>
                                     <td>
@@ -156,6 +159,19 @@
                                                         rows="5" cols="75" />
                                     </td>
                                  </tr>
+                                 <tr><td colspan="2" class="paddingRow"></td></tr>
+                                 <tr><td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.action_mail_template_text}"/></td></tr>
+                                 <tr>
+                                    <td valign="top"><h:outputText value="#{msg.action_mail_template}"/>:</td>
+                                    <td>
+                                       <%-- Templates drop-down selector --%>
+                                       <h:selectOneMenu value="#{NewActionWizard.actionProperties.template}">
+                                          <f:selectItems value="#{NewActionWizard.templates}" />
+                                       </h:selectOneMenu>
+                                    </td>
+                                 </tr>
+                                 
+                                 <tr><td colspan="2" class="paddingRow"></td></tr>
                                  <tr>
                                     <td valign="top"><h:outputText value="#{msg.to}"/>:</td>
                                     <td>

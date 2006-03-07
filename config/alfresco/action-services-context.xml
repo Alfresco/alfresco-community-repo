@@ -243,8 +243,20 @@
         <property name="mailService">
             <ref bean="mailService"></ref>
         </property>
+        <property name="templateService">
+            <ref bean="templateService"></ref>
+        </property>
+        <property name="personService">
+            <ref bean="personService"></ref>
+        </property>
+        <property name="authenticationService">
+            <ref bean="authenticationService"></ref>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"></ref>
+        </property>
     </bean>
-        
+    
     <bean id="set-property-value" class="org.alfresco.repo.action.executer.SetPropertyValueActionExecuter" parent="action-executer">
         <property name="publicAction">
             <value>false</value>

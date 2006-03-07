@@ -16,13 +16,20 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TemplateNode;
+import org.alfresco.service.cmr.repository.TemplateService;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.mail.SimpleMailMessage;
@@ -44,6 +51,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_TO = "to";
     public static final String PARAM_SUBJECT = "subject";
     public static final String PARAM_TEXT = "text";
+    public static final String PARAM_FROM = "from";
+    public static final String PARAM_TEMPLATE = "template";
     
     /**
      * From address
@@ -54,16 +63,66 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
 	 * The java mail sender
 	 */
 	private JavaMailSender javaMailSender;
+    
+    /**
+     * The Template service
+     */
+    private TemplateService templateService;
+    
+    /**
+     * The Person service
+     */
+    private PersonService personService;
+    
+    /**
+     * The Authentication service
+     */
+    private AuthenticationService authService;
+    
+    /**
+     * The Service registry
+     */
+    private ServiceRegistry serviceRegistry;
 	
 	/**
-	 * Set the java mail sender
-	 * 
-	 * @param javaMailSender  the java mail sender
+	 * @param javaMailSender    the java mail sender
 	 */
 	public void setMailService(JavaMailSender javaMailSender) 
 	{
 		this.javaMailSender = javaMailSender;
 	}
+    
+    /**
+     * @param templateService   the TemplateService
+     */
+    public void setTemplateService(TemplateService templateService)
+    {
+        this.templateService = templateService;
+    }
+    
+    /**
+     * @param personService     the PersonService
+     */
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
+    
+    /**
+     * @param authService       the AuthenticationService
+     */
+    public void setAuthenticationService(AuthenticationService authService)
+    {
+        this.authService = authService;
+    }
+    
+    /**
+     * @param serviceRegistry   the ServiceRegistry
+     */
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+        this.serviceRegistry = serviceRegistry;
+    }
 	
     /**
      * Execute the rule action
@@ -77,9 +136,39 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
 		SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
 		simpleMailMessage.setTo((String)ruleAction.getParameterValue(PARAM_TO));
 		simpleMailMessage.setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
-		simpleMailMessage.setText((String)ruleAction.getParameterValue(PARAM_TEXT));
-        simpleMailMessage.setFrom(FROM_ADDRESS);
-			
+		
+        // See if an email template has been specified
+        String text = null;
+        NodeRef templateRef = (NodeRef)ruleAction.getParameterValue(PARAM_TEMPLATE);
+        if (templateRef != null)
+        {
+            // build the email template model
+            Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
+            NodeRef person = personService.getPerson(authService.getCurrentUserName());
+            model.put("person", new TemplateNode(person, serviceRegistry, null));
+            model.put("document", new TemplateNode(actionedUponNodeRef, serviceRegistry, null));
+            NodeRef parent = serviceRegistry.getNodeService().getPrimaryParent(actionedUponNodeRef).getParentRef();
+            model.put("space", new TemplateNode(parent, serviceRegistry, null));
+            
+            // process the template against the model
+            text = templateService.processTemplate("freemarker", templateRef.toString(), model);
+        }
+        
+        if (text == null)
+        {
+            text = (String)ruleAction.getParameterValue(PARAM_TEXT);
+        }
+        simpleMailMessage.setText(text);
+        String from = (String)ruleAction.getParameterValue(PARAM_FROM);
+        if (from != null)
+        {
+            simpleMailMessage.setFrom(from);
+        }
+        else
+        {
+            simpleMailMessage.setFrom(FROM_ADDRESS);
+        }
+        
         try
         {
            // Send the message
@@ -101,6 +190,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_TO, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_TO)));
         paramList.add(new ParameterDefinitionImpl(PARAM_SUBJECT, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_SUBJECT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_TEXT, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_TEXT)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_FROM, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_FROM)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_TEMPLATE, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_TEMPLATE)));
 	}
-
 }

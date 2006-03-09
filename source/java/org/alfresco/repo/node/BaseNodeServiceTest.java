@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -44,6 +42,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -84,15 +83,15 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final String NAMESPACE = "http://www.alfresco.org/test/BaseNodeServiceTest";
     public static final String TEST_PREFIX = "test";
     public static final QName TYPE_QNAME_TEST_CONTENT = QName.createQName(NAMESPACE, "content");
+    public static final QName TYPE_QNAME_TEST_MANY_PROPERTIES = QName.createQName(NAMESPACE, "many-properties");
+    public static final QName TYPE_QNAME_EXTENDED_CONTENT = QName.createQName(NAMESPACE, "extendedcontent");
     public static final QName ASPECT_QNAME_TEST_TITLED = QName.createQName(NAMESPACE, "titled");
     public static final QName ASPECT_QNAME_TEST_MARKER = QName.createQName(NAMESPACE, "marker");
     public static final QName ASPECT_QNAME_TEST_MARKER2 = QName.createQName(NAMESPACE, "marker2");
     public static final QName ASPECT_QNAME_MANDATORY = QName.createQName(NAMESPACE, "mandatoryaspect");
+    public static final QName ASPECT_QNAME_WITH_DEFAULT_VALUE = QName.createQName(NAMESPACE, "withDefaultValue");
     public static final QName PROP_QNAME_TEST_TITLE = QName.createQName(NAMESPACE, "title");
     public static final QName PROP_QNAME_TEST_CONTENT = QName.createQName(NAMESPACE, "content");
-    public static final QName ASSOC_TYPE_QNAME_TEST_CHILDREN = ContentModel.ASSOC_CHILDREN;
-    public static final QName ASSOC_TYPE_QNAME_TEST_NEXT = QName.createQName(NAMESPACE, "next");
-    public static final QName TYPE_QNAME_TEST_MANY_PROPERTIES = QName.createQName(NAMESPACE, "many-properties");
     public static final QName PROP_QNAME_BOOLEAN_VALUE = QName.createQName(NAMESPACE, "booleanValue");
     public static final QName PROP_QNAME_INTEGER_VALUE = QName.createQName(NAMESPACE, "integerValue");
     public static final QName PROP_QNAME_LONG_VALUE = QName.createQName(NAMESPACE, "longValue");
@@ -108,10 +107,16 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName PROP_QNAME_CATEGORY_VALUE = QName.createQName(NAMESPACE, "categoryValue");
     public static final QName PROP_QNAME_NULL_VALUE = QName.createQName(NAMESPACE, "nullValue");
     public static final QName PROP_QNAME_MULTI_VALUE = QName.createQName(NAMESPACE, "multiValue");    
-    public static final QName TYPE_QNAME_EXTENDED_CONTENT = QName.createQName(NAMESPACE, "extendedcontent");
     public static final QName PROP_QNAME_PROP1 = QName.createQName(NAMESPACE, "prop1");
-    public static final QName ASPECT_QNAME_WITH_DEFAULT_VALUE = QName.createQName(NAMESPACE, "withDefaultValue");
     public static final QName PROP_QNAME_PROP2 = QName.createQName(NAMESPACE, "prop2");
+    public static final QName ASSOC_TYPE_QNAME_TEST_CHILDREN = ContentModel.ASSOC_CHILDREN;
+    public static final QName ASSOC_TYPE_QNAME_TEST_NEXT = QName.createQName(NAMESPACE, "next");
+    
+    public static final QName TYPE_QNAME_TEST_MULTIPLE_TESTER = QName.createQName(NAMESPACE, "multiple-tester");
+    public static final QName PROP_QNAME_STRING_PROP_SINGLE = QName.createQName(NAMESPACE, "stringprop-single");
+    public static final QName PROP_QNAME_STRING_PROP_MULTIPLE = QName.createQName(NAMESPACE, "stringprop-multiple");
+    public static final QName PROP_QNAME_ANY_PROP_SINGLE = QName.createQName(NAMESPACE, "anyprop-single");
+    public static final QName PROP_QNAME_ANY_PROP_MULTIPLE = QName.createQName(NAMESPACE, "anyprop-multiple");
     
     protected PolicyComponent policyComponent;
     protected DictionaryService dictionaryService;
@@ -207,7 +212,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
      * </pre>
      * 
      * @return Returns the implementation of <code>NodeService</code> to be
-     *      used for this test
+     *      used for this test.  It must have transaction demarcation.
      */
     protected abstract NodeService getNodeService();
     
@@ -923,6 +928,45 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         Serializable checkPropertyQname = checkProperties.get(PROP_QNAME_SERIALIZABLE_VALUE);
         assertTrue("Serialization/deserialization of ContentData failed", checkPropertyContentData instanceof ContentData);
         assertTrue("Serialization/deserialization failed", checkPropertyQname instanceof QName);
+    }
+    
+    public void testMultiProp() throws Exception
+    {
+        QName undeclaredPropQName = QName.createQName(NAMESPACE, getName());
+        // create node
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                TYPE_QNAME_TEST_MULTIPLE_TESTER).getChildRef();
+        // commit as we will be breaking the transaction in the test
+        setComplete();
+        endTransaction();
+        
+        // each of these tests will be in a new transaction started by the NodeService
+        
+        ArrayList<String> values = new ArrayList<String>(1);
+        values.add("ABC");
+        // test allowable conditions
+        nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_SINGLE, "ABC");
+        // nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_SINGLE, values); -- should fail
+        nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_MULTIPLE, "ABC");
+        nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_MULTIPLE, values);
+        nodeService.setProperty(nodeRef, PROP_QNAME_ANY_PROP_SINGLE, "ABC");
+        nodeService.setProperty(nodeRef, PROP_QNAME_ANY_PROP_SINGLE, values);
+        nodeService.setProperty(nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE, "ABC");
+        nodeService.setProperty(nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE, values);
+        nodeService.setProperty(nodeRef, undeclaredPropQName, "ABC");
+        nodeService.setProperty(nodeRef, undeclaredPropQName, values);
+        // this should fail as we are passing multiple values into a non-any that is multiple=false
+        try
+        {
+            nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_SINGLE, values);
+        }
+        catch (DictionaryException e)
+        {
+            // expected
+        }
     }
     
     /**

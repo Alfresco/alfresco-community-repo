@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy;
@@ -561,9 +560,15 @@ public abstract class AbstractNodeServiceImpl implements NodeService
             }
             else if (!isMultiValued && (value instanceof Collection))
             {
-                throw new DictionaryException("A single-valued property may not be a collection: \n" +
-                        "   Property: " + propertyDef + "\n" +
-                        "   Value: " + value);
+                // we only allow this case if the property type is ANY
+                if (!propertyTypeQName.equals(DataTypeDefinition.ANY))
+                {
+                    throw new DictionaryException(
+                            "A single-valued property of this type may not be a collection: \n" +
+                            "   Property: " + propertyDef + "\n" +
+                            "   Type: " + propertyTypeQName + "\n" +
+                            "   Value: " + value);
+                }
             }
         }
         try

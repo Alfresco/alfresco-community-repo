@@ -71,6 +71,33 @@
          </properties>
    	  </type>
       
+       <type name="test:multiple-tester">
+         <title>Type with ANY props</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:stringprop-single">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <multiple>false</multiple>
+            </property>
+            <property name="test:stringprop-multiple">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+            </property>
+            <property name="test:anyprop-single">
+               <type>d:any</type>
+               <mandatory>false</mandatory>
+               <multiple>false</multiple>
+            </property>
+            <property name="test:anyprop-multiple">
+               <type>d:any</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+            </property>
+         </properties>
+   	  </type>
+      
       <type name="test:multiprop">
          <title>MultiProp</title>
          <parent>sys:base</parent>

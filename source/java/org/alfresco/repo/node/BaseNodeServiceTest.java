@@ -78,6 +78,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Derek Hulley
  */
+@SuppressWarnings("unused") /* its just a test */
 public abstract class BaseNodeServiceTest extends BaseSpringTest
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/BaseNodeServiceTest";

@@ -45,7 +45,7 @@ public class NodeIndexerTest extends BaseNodeServiceTest
     @Override
     protected NodeService getNodeService()
     {
-        return (NodeService) applicationContext.getBean("nodeService");
+        return (NodeService) applicationContext.getBean("NodeService");
     }
     
     @Override

@@ -41,9 +41,16 @@ import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.evaluator.HasAspectEvaluator;
 import org.alfresco.repo.action.evaluator.InCategoryEvaluator;
 import org.alfresco.repo.action.evaluator.IsSubTypeEvaluator;
+import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.CheckInActionExecuter;
+import org.alfresco.repo.action.executer.CopyActionExecuter;
+import org.alfresco.repo.action.executer.ImageTransformActionExecuter;
+import org.alfresco.repo.action.executer.ImporterActionExecuter;
+import org.alfresco.repo.action.executer.LinkCategoryActionExecuter;
+import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.repo.action.executer.SpecialiseTypeActionExecuter;
+import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
@@ -1336,7 +1343,7 @@ public class NewRuleWizard extends BaseActionWizard
          summary.append(" ");
          
          // define a summary to be added for each action
-         if ("add-features".equals(actionName))
+         if (AddFeaturesActionExecuter.NAME.equals(actionName))
          {
             String aspect = (String)this.currentActionProperties.get(PROP_ASPECT);
             
@@ -1350,7 +1357,7 @@ public class NewRuleWizard extends BaseActionWizard
                }
             }
          }
-         else if ("simple-workflow".equals(actionName))
+         else if (SimpleWorkflowActionExecuter.NAME.equals(actionName))
          {
             // just leave the summary as the title for now
             String approveStepName = (String)this.currentActionProperties.get(PROP_APPROVE_STEP_NAME);
@@ -1382,13 +1389,13 @@ public class NewRuleWizard extends BaseActionWizard
                summary.append(rejectMsg);
             }
          }
-         else if ("link-category".equals(actionName))
+         else if (LinkCategoryActionExecuter.NAME.equals(actionName))
          {
             NodeRef cat = (NodeRef)this.currentActionProperties.get(PROP_CATEGORY);
             String name = Repository.getNameForNode(this.nodeService, cat);
             summary.append("'").append(name).append("'");
          }
-         else if ("transform".equals(actionName))
+         else if (TransformActionExecuter.NAME.equals(actionName))
          {
             NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
             String name = Repository.getNameForNode(this.nodeService, space);
@@ -1408,7 +1415,7 @@ public class NewRuleWizard extends BaseActionWizard
             String msg = MessageFormat.format(summary.toString(), new Object[] {name, transformer});
             summary = new StringBuilder(msg);
          }
-         else if ("transform-image".equals(actionName))
+         else if (ImageTransformActionExecuter.NAME.equals(actionName))
          {
             NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
             String name = Repository.getNameForNode(this.nodeService, space);
@@ -1429,18 +1436,38 @@ public class NewRuleWizard extends BaseActionWizard
             String msg = MessageFormat.format(summary.toString(), new Object[] {name, transformer, option});
             summary = new StringBuilder(msg);
          }
-         else if ("copy".equals(actionName) || "move".equals(actionName) || "check-out".equals(actionName))
+         else if (CopyActionExecuter.NAME.equals(actionName) || "move".equals(actionName) || "check-out".equals(actionName))
          {
             NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
             String spaceName = Repository.getNameForNode(this.nodeService, space);
             summary.append("'").append(spaceName).append("'");
          }
-         else if ("mail".equals(actionName))
+         else if (MailActionExecuter.NAME.equals(actionName))
          {
             String address = (String)this.currentActionProperties.get(PROP_TO);
-            summary.append("'").append(address).append("'");
+            if (address != null && address.length() != 0)
+            {
+               summary.append("'").append(address).append("'");
+            }
+            else
+            {
+               if (this.emailRecipients.size() != 0)
+               {
+                  summary.append("'");
+                  for (int i=0; i<this.emailRecipients.size(); i++)
+                  {
+                     RecipientWrapper wrapper = this.emailRecipients.get(i);
+                     if (i != 0)
+                     {
+                        summary.append(", ");
+                     }
+                     summary.append(wrapper.getName());
+                  }
+                  summary.append("'");
+               }
+            }
          }
-         else if ("check-in".equals(actionName))
+         else if (CheckInActionExecuter.NAME.equals(actionName))
          {
             String comment = (String)this.currentActionProperties.get(PROP_CHECKIN_DESC);
             Boolean minorChange = (Boolean)this.currentActionProperties.get(PROP_CHECKIN_MINOR);
@@ -1458,7 +1485,7 @@ public class NewRuleWizard extends BaseActionWizard
             String msg = MessageFormat.format(summary.toString(), new Object[] {change, comment});
             summary = new StringBuilder(msg);
          }
-         else if ("import".equals(actionName))
+         else if (ImporterActionExecuter.NAME.equals(actionName))
          {
             NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
             String spaceName = Repository.getNameForNode(this.nodeService, space);

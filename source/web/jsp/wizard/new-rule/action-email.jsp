@@ -39,8 +39,7 @@
    
    function checkButtonState()
    {
-      if (document.getElementById("new-rule-email:subject").value.length == 0 ||
-          document.getElementById("new-rule-email:address").value.length == 0)
+      if (document.getElementById("new-rule-email:subject").value.length == 0)
       {
          document.getElementById("new-rule-email:ok-button").disabled = true;
       }
@@ -131,9 +130,8 @@
                                  <tr>
                                     <td><h:outputText value="#{msg.subject}"/>:</td>
                                     <td width="90%">
-                                       <h:inputText id="subject" value="#{NewRuleWizard.actionProperties.subject}" 
-                                                    size="75" maxlength="1024" 
-                                                    onkeyup="javascript:checkButtonState();"/>&nbsp;*
+                                       <h:inputText id="subject" value="#{NewRuleWizard.actionProperties.subject}" size="75" maxlength="1024" 
+                                                    onkeyup="javascript:checkButtonState();" />&nbsp;*
                                     </td>
                                  </tr>
                                  
@@ -143,7 +141,7 @@
                                     <td valign="top"><h:outputText value="#{msg.message}"/>:</td>
                                     <td>
                                        <h:inputTextarea value="#{NewRuleWizard.actionProperties.message}" 
-                                                        rows="5" cols="75" />
+                                                        rows="4" cols="75" />
                                     </td>
                                  </tr>
                                  <tr><td colspan="2" class="paddingRow"></td></tr>
@@ -159,13 +157,46 @@
                                  </tr>
                                  
                                  <tr><td colspan="2" class="paddingRow"></td></tr>
+                                 <tr><td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.selected_recipients}" /></td></tr>
+                                 <tr>
+                                    <td></td>
+                                    <%-- Picker to select Users/Groups --%>
+                                    <td>
+                                       <a:genericPicker id="picker" filters="#{InviteSpaceUsersWizard.filters}"
+                                             queryCallback="#{InviteSpaceUsersWizard.pickerCallback}"
+                                             actionListener="#{NewRuleWizard.addRecipient}" />
+                                    </td>
+                                 </tr>
+                                 
                                  <tr>
                                     <td valign="top"><h:outputText value="#{msg.to}"/>:</td>
                                     <td>
-                                       <h:selectOneMenu id="address" value="#{NewRuleWizard.actionProperties.to}"
-                                                            onchange="javascript:checkButtonState();">
-                                          <f:selectItems value="#{NewRuleWizard.users}" />
-                                       </h:selectOneMenu>
+                                       <h:dataTable value="#{NewRuleWizard.emailRecipientsDataModel}" var="row"
+                                                    rowClasses="selectedItemsRow,selectedItemsRowAlt"
+                                                    styleClass="selectedItems" headerClass="selectedItemsHeader"
+                                                    cellspacing="0" cellpadding="4" 
+                                                    rendered="#{NewRuleWizard.emailRecipientsDataModel.rowCount != 0}">
+                                          <h:column>
+                                             <f:facet name="header">
+                                                <h:outputText value="#{msg.name}" />
+                                             </f:facet>
+                                             <h:outputText value="#{row.name}" />
+                                          </h:column>
+                                          <h:column>
+                                             <a:actionLink actionListener="#{NewRuleWizard.removeRecipient}" image="/images/icons/delete.gif"
+                                                           value="#{msg.remove}" showLink="false" style="padding-left:6px" />
+                                          </h:column>
+                                       </h:dataTable>
+                                       <a:panel id="no-items" rendered="#{NewRuleWizard.emailRecipientsDataModel.rowCount == 0}">
+                                          <table cellspacing='0' cellpadding='2' border='0' class='selectedItems'>
+                                             <tr>
+                                                <td colspan='2' class='selectedItemsHeader'><h:outputText id="no-items-name" value="#{msg.name}" /></td>
+                                             </tr>
+                                             <tr>
+                                                <td class='selectedItemsRow'><h:outputText id="no-items-msg" value="#{msg.no_selected_items}" /></td>
+                                             </tr>
+                                          </table>
+                                       </a:panel>
                                     </td>
                                  </tr>
                                  

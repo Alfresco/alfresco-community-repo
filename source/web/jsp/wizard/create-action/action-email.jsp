@@ -39,8 +39,7 @@
    
    function checkButtonState()
    {
-      if (document.getElementById("action-email:subject").value.length == 0 ||
-          document.getElementById("action-email:address").value.length == 0)
+      if (document.getElementById("action-email:subject").value.length == 0)
       {
          document.getElementById("action-email:next-button").disabled = true;
          document.getElementById("action-email:finish-button").disabled = true;
@@ -140,13 +139,13 @@
                                  <tr>
                                     <td colspan="2" class="mainSubTitle"><h:outputText value="#{NewActionWizard.stepTitle}" /></td>
                                  </tr>
+                                 
                                  <tr><td colspan="2" class="paddingRow"></td></tr>
                                  <tr>
                                     <td><h:outputText value="#{msg.subject}"/>:</td>
                                     <td width="90%">
-                                       <h:inputText id="subject" value="#{NewActionWizard.actionProperties.subject}" 
-                                                    size="75" maxlength="1024" 
-                                                    onkeyup="javascript:checkButtonState();"/>&nbsp;*
+                                       <h:inputText id="subject" value="#{NewActionWizard.actionProperties.subject}" size="75" maxlength="1024" 
+                                                    onkeyup="javascript:checkButtonState();" />&nbsp;*
                                     </td>
                                  </tr>
                                  
@@ -156,7 +155,7 @@
                                     <td valign="top"><h:outputText value="#{msg.message}"/>:</td>
                                     <td>
                                        <h:inputTextarea value="#{NewActionWizard.actionProperties.message}" 
-                                                        rows="5" cols="75" />
+                                                        rows="4" cols="75" />
                                     </td>
                                  </tr>
                                  <tr><td colspan="2" class="paddingRow"></td></tr>
@@ -172,15 +171,49 @@
                                  </tr>
                                  
                                  <tr><td colspan="2" class="paddingRow"></td></tr>
+                                 <tr><td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.selected_recipients}" /></td></tr>
+                                 <tr>
+                                    <td></td>
+                                    <%-- Picker to select Users/Groups --%>
+                                    <td>
+                                       <a:genericPicker id="picker" filters="#{InviteSpaceUsersWizard.filters}"
+                                             queryCallback="#{InviteSpaceUsersWizard.pickerCallback}"
+                                             actionListener="#{NewActionWizard.addRecipient}" />
+                                    </td>
+                                 </tr>
+                                 
                                  <tr>
                                     <td valign="top"><h:outputText value="#{msg.to}"/>:</td>
                                     <td>
-                                       <h:selectOneMenu id="address" value="#{NewActionWizard.actionProperties.to}"
-                                                            onchange="javascript:checkButtonState();">
-                                          <f:selectItems value="#{NewActionWizard.users}" />
-                                       </h:selectOneMenu>
+                                       <h:dataTable value="#{NewActionWizard.emailRecipientsDataModel}" var="row"
+                                                    rowClasses="selectedItemsRow,selectedItemsRowAlt"
+                                                    styleClass="selectedItems" headerClass="selectedItemsHeader"
+                                                    cellspacing="0" cellpadding="4" 
+                                                    rendered="#{NewActionWizard.emailRecipientsDataModel.rowCount != 0}">
+                                          <h:column>
+                                             <f:facet name="header">
+                                                <h:outputText value="#{msg.name}" />
+                                             </f:facet>
+                                             <h:outputText value="#{row.name}" />
+                                          </h:column>
+                                          <h:column>
+                                             <a:actionLink actionListener="#{NewActionWizard.removeRecipient}" image="/images/icons/delete.gif"
+                                                           value="#{msg.remove}" showLink="false" style="padding-left:6px" />
+                                          </h:column>
+                                       </h:dataTable>
+                                       <a:panel id="no-items" rendered="#{NewActionWizard.emailRecipientsDataModel.rowCount == 0}">
+                                          <table cellspacing='0' cellpadding='2' border='0' class='selectedItems'>
+                                             <tr>
+                                                <td colspan='2' class='selectedItemsHeader'><h:outputText id="no-items-name" value="#{msg.name}" /></td>
+                                             </tr>
+                                             <tr>
+                                                <td class='selectedItemsRow'><h:outputText id="no-items-msg" value="#{msg.no_selected_items}" /></td>
+                                             </tr>
+                                          </table>
+                                       </a:panel>
                                     </td>
                                  </tr>
+                                 
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
                                     <td colspan="2"><h:outputText value="#{NewActionWizard.stepInstructions}" /></td>
@@ -194,7 +227,7 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton id="next-button" value="#{msg.next_button}" action="#{NewActionWizard.next}" styleClass="wizardButton" />
+                                       <h:commandButton id="next-button" value="#{msg.next_button}" action="#{NewActionWizard.next}" styleClass="wizardButton" disabled="#{NewActionWizard.emailRecipientsDataModel.rowCount == 0}" />
                                     </td>
                                  </tr>
                                  <tr>

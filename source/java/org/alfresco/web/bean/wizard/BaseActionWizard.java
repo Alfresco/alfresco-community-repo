@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
+import javax.faces.model.DataModel;
+import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.config.Config;
@@ -50,6 +53,8 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
@@ -57,6 +62,7 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
+import org.alfresco.web.ui.common.component.UIGenericPicker;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -100,9 +106,13 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    // new rule/action wizard specific properties
    protected boolean multiActionMode = false;
    protected String action;
+   
    protected ActionService actionService;
    protected DictionaryService dictionaryService;
    protected MimetypeService mimetypeService;
+   protected PersonService personService;
+   protected AuthorityService authorityService;
+   
    protected List<SelectItem> actions;
    protected List<SelectItem> transformers;
    protected List<SelectItem> imageTransformers;
@@ -112,8 +122,18 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    protected Map<String, String> actionDescriptions;
    protected Map<String, Serializable> currentActionProperties;
    protected List<SelectItem> objectTypes;
-   /** cache of email templates that last 10 seconds - enough for a couple of page refreshes */
-   protected ExpiringValueCache<List<SelectItem>> cachedTemplates = new ExpiringValueCache<List<SelectItem>>(1000*10);
+   /** cache of email templates that last 30 seconds - enough for a few page refreshes */
+   protected ExpiringValueCache<List<SelectItem>> cachedTemplates = new ExpiringValueCache<List<SelectItem>>(1000*30);
+   
+   /** datamodel for table of selected email recipients */
+   protected DataModel emailRecipientsDataModel;
+   
+   /** selected email recipients */
+   protected List<RecipientWrapper> emailRecipients;
+   
+   
+   // ------------------------------------------------------------------------------
+   // Wizard implementation
    
    /**
     * Initialises the wizard
@@ -126,6 +146,8 @@ public abstract class BaseActionWizard extends AbstractWizardBean
       this.users = null;
       this.actions = null;
       this.actionDescriptions = null;
+      this.emailRecipientsDataModel = null;
+      this.emailRecipients = new ArrayList<RecipientWrapper>(4);
       
       this.currentActionProperties = new HashMap<String, Serializable>(3);
       
@@ -321,14 +343,20 @@ public abstract class BaseActionWizard extends AbstractWizardBean
       }
       else if (this.action.equals(MailActionExecuter.NAME))
       {
+         // add the person(s) it's going to as a list of authorities
+         List<String> recipients = new ArrayList<String>(emailRecipients.size());
+         for (int i=0; i<emailRecipients.size(); i++)
+         {
+            RecipientWrapper wrapper = emailRecipients.get(i);
+            recipients.add(wrapper.authority);
+         }
+         
+         actionParams.put(MailActionExecuter.PARAM_TO_MANY, (Serializable)recipients);
+         
          // add the actual email text to send
          actionParams.put(MailActionExecuter.PARAM_TEXT, 
-               this.currentActionProperties.get(PROP_MESSAGE));
-            
-         // add the person it's going to
-         actionParams.put(MailActionExecuter.PARAM_TO, 
-               this.currentActionProperties.get(PROP_TO));
-         
+         this.currentActionProperties.get(PROP_MESSAGE));    
+             
          // add the subject for the email
          actionParams.put(MailActionExecuter.PARAM_SUBJECT,
                this.currentActionProperties.get(PROP_SUBJECT));
@@ -459,8 +487,31 @@ public abstract class BaseActionWizard extends AbstractWizardBean
          String message = (String)actionProps.get(MailActionExecuter.PARAM_TEXT);
          this.currentActionProperties.put(PROP_MESSAGE, message);
          
+         // handle single email or multiple authority recipients
          String to = (String)actionProps.get(MailActionExecuter.PARAM_TO);
-         this.currentActionProperties.put(PROP_TO, to);
+         if (to != null)
+         {
+            this.currentActionProperties.put(PROP_TO, to);
+         }
+         else
+         {
+            List<String> recipients = (List<String>)actionProps.get(MailActionExecuter.PARAM_TO_MANY);
+            if (recipients != null && recipients.size() != 0)
+            {
+               // rebuild the list of RecipientWrapper objects from the stored action
+               for (String authority : recipients)
+               {
+                  this.emailRecipients.add(
+                          new RecipientWrapper(displayLabelForAuthority(authority), authority));
+               }
+            }
+         }
+         
+         NodeRef templateRef = (NodeRef)actionProps.get(MailActionExecuter.PARAM_TEMPLATE);
+         if (templateRef != null)
+         {
+            this.currentActionProperties.put(PROP_TEMPLATE, templateRef.getId());
+         }
       }
       else if (this.action.equals(ImporterActionExecuter.NAME))
       {
@@ -474,6 +525,10 @@ public abstract class BaseActionWizard extends AbstractWizardBean
       }
    }
 
+   
+   // ------------------------------------------------------------------------------
+   // Bean Getters and Setters
+   
    /**
     * @return Returns the selected action
     */
@@ -503,7 +558,7 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    /**
     * Sets the dictionary service
     * 
-    * @param dictionaryService  the dictionary service
+    * @param dictionaryService  The dictionary service
     */
    public void setDictionaryService(DictionaryService dictionaryService)
    {
@@ -513,13 +568,46 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    /**
     * Sets the mimetype service
     * 
-    * @param mimetypeService  The mimetype service
+    * @param mimetypeService    The mimetype service
     */
    public void setMimetypeService(MimetypeService mimetypeService)
    {
       this.mimetypeService = mimetypeService;
    }
+   
+   /**
+    * @param personService      The personService to set.
+    */
+   public void setPersonService(PersonService personService)
+   {
+      this.personService = personService;
+   }
+   
+   /**
+    * @param authorityService   The authorityService to set.
+    */
+   public void setAuthorityService(AuthorityService authorityService)
+   {
+      this.authorityService = authorityService;
+   }
 
+   /**
+    * Returns the properties for email recipients JSF DataModel
+    * 
+    * @return JSF DataModel wrapping the current email recipients
+    */
+   public DataModel getEmailRecipientsDataModel()
+   {
+      if (this.emailRecipientsDataModel == null)
+      {
+         this.emailRecipientsDataModel = new ListDataModel();
+      }
+      
+      this.emailRecipientsDataModel.setWrappedData(this.emailRecipients);
+      
+      return this.emailRecipientsDataModel;
+   }
+   
    /**
     * @return Returns the list of selectable actions
     */
@@ -988,5 +1076,113 @@ public abstract class BaseActionWizard extends AbstractWizardBean
       }
       
       return templates;
+   }
+   
+   
+   // ------------------------------------------------------------------------------
+   // Action event handlers
+   
+   /**
+    * Action handler called when the Add button is pressed to add an email recipient
+    */
+   public void addRecipient(ActionEvent event)
+   {
+      UIGenericPicker picker = (UIGenericPicker)event.getComponent();
+      String[] results = picker.getSelectedResults();
+      if (results != null && results.length != 0)
+      {
+         for (String authority : results)
+         {
+            // first check the authority has not already been added to the list
+            boolean alreadyAdded = false;
+            for (int i=0; i<emailRecipients.size(); i++)
+            {
+               RecipientWrapper wrapper = emailRecipients.get(i);
+               if (wrapper.getAuthority().equals(authority))
+               {
+                  alreadyAdded = true;
+                  break;
+               }
+            }
+            
+            if (alreadyAdded == false)
+            {
+               // find a display label for the authority if it is a known Person
+               String name = displayLabelForAuthority(authority);
+               
+               // add the recipient to the list
+               RecipientWrapper wrapper = new RecipientWrapper(name, authority);
+               this.emailRecipients.add(wrapper);
+            }
+         }
+      }
+   }
+   
+   protected String displayLabelForAuthority(String authority)
+   {
+       String label = authority;
+       
+       if (this.personService.personExists(authority))
+       {
+          // create the node ref, then our node representation
+          NodeRef ref = personService.getPerson(authority);
+          Node node = new Node(ref);
+          
+          // setup convience function for current user full name
+          label = (String)node.getProperties().get(ContentModel.PROP_FIRSTNAME) + ' ' +
+                  (String)node.getProperties().get(ContentModel.PROP_LASTNAME);
+       }
+       
+       return label;
+   }
+   
+   /**
+    * Action handler called when the Remove icon is pressed to remove an email recipient
+    */
+   public void removeRecipient(ActionEvent event)
+   {
+      RecipientWrapper wrapper = (RecipientWrapper)this.emailRecipientsDataModel.getRowData();
+      this.emailRecipients.remove(wrapper);
+   }
+   
+   
+   // ------------------------------------------------------------------------------
+   // Inner classes
+   
+   /**
+    * Simple wrapper class for email recipient fields
+    */
+   public static class RecipientWrapper
+   {
+      public RecipientWrapper(String name, String authority)
+      {
+         this.name = name;
+         this.authority = authority;
+      }
+      
+      public String getName()
+      {
+         return this.name;
+      }
+      
+      public String getAuthority()
+      {
+         return this.authority;
+      }
+      
+      public boolean equals(Object obj)
+      {
+         if (obj instanceof RecipientWrapper)
+         {
+            return this.authority.equals( ((RecipientWrapper)obj).getAuthority() );
+         }
+         else
+         {
+            return false;
+         }
+      }
+      
+      private String name;
+      private String authority;
    }
 }

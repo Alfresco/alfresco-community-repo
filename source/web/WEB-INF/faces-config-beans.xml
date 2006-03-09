@@ -470,6 +470,14 @@
          <property-name>rulesBean</property-name>
          <value>#{RulesBean}</value>
       </managed-property>
+      <managed-property>
+         <property-name>personService</property-name>
+         <value>#{PersonService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>authorityService</property-name>
+         <value>#{AuthorityService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -506,6 +514,14 @@
       <managed-property>
          <property-name>mimetypeService</property-name>
          <value>#{MimetypeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>personService</property-name>
+         <value>#{PersonService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>authorityService</property-name>
+         <value>#{AuthorityService}</value>
       </managed-property>
    </managed-bean>
    

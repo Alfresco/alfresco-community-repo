@@ -17,6 +17,7 @@
 package org.alfresco.repo.action.executer;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +25,15 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.template.DateCompareMethod;
+import org.alfresco.repo.template.HasAspectMethod;
+import org.alfresco.repo.template.I18NMessageMethod;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateNode;
@@ -228,12 +234,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         if (templateRef != null)
         {
             // build the email template model
-            Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
-            NodeRef person = personService.getPerson(authService.getCurrentUserName());
-            model.put("person", new TemplateNode(person, serviceRegistry, null));
-            model.put("document", new TemplateNode(actionedUponNodeRef, serviceRegistry, null));
-            NodeRef parent = serviceRegistry.getNodeService().getPrimaryParent(actionedUponNodeRef).getParentRef();
-            model.put("space", new TemplateNode(parent, serviceRegistry, null));
+            Map<String, Object> model = createEmailTemplateModel(actionedUponNodeRef);
             
             // process the template against the model
             text = templateService.processTemplate("freemarker", templateRef.toString(), model);
@@ -268,6 +269,32 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             logger.error("Failed to send email to " + (String)ruleAction.getParameterValue(PARAM_TO), e);
         }
     }
+
+   /**
+    * @param ref    The node representing the current document ref
+    * 
+    * @return Model map for email templates
+    */
+   private Map<String, Object> createEmailTemplateModel(NodeRef ref)
+   {
+      Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
+      
+      NodeRef person = personService.getPerson(authService.getCurrentUserName());
+      model.put("person", new TemplateNode(person, serviceRegistry, null));
+      model.put("document", new TemplateNode(ref, serviceRegistry, null));
+      NodeRef parent = serviceRegistry.getNodeService().getPrimaryParent(ref).getParentRef();
+      model.put("space", new TemplateNode(parent, serviceRegistry, null));
+      
+      // current date/time is useful to have and isn't supplied by FreeMarker by default
+      model.put("date", new Date());
+      
+      // add custom method objects
+      model.put("hasAspect", new HasAspectMethod());
+      model.put("message", new I18NMessageMethod());
+      model.put("dateCompare", new DateCompareMethod());
+      
+      return model;
+   }
     
     /**
      * Add the parameter definitions

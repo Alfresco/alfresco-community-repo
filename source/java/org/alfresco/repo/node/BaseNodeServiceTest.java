@@ -947,6 +947,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         
         ArrayList<String> values = new ArrayList<String>(1);
         values.add("ABC");
+        values.add("DEF");
         // test allowable conditions
         nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_SINGLE, "ABC");
         // nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_SINGLE, values); -- should fail

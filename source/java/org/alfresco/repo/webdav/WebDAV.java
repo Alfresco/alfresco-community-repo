@@ -17,12 +17,9 @@
 package org.alfresco.repo.webdav;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -198,12 +195,6 @@ public class WebDAV
     
     public static final String XML_CONTENT_TYPE = "text/xml; charset=UTF-8";
     
-    private static HashMap s_codeDescriptions = null;
-
-    // Path seperator
-
-    private static final String DIR_SEPERATOR = "\\";
-
     // Path seperator
     
     public static final String PathSeperator   = "/";

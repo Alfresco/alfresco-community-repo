@@ -16,19 +16,25 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,11 +50,12 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
 {
     private static Log logger = LogFactory.getLog(MailActionExecuter.class);
     
-	/**
-	 * Action executor constants
-	 */
-	public static final String NAME = "mail";
+    /**
+     * Action executor constants
+     */
+    public static final String NAME = "mail";
     public static final String PARAM_TO = "to";
+    public static final String PARAM_TO_MANY = "to_many";
     public static final String PARAM_SUBJECT = "subject";
     public static final String PARAM_TEXT = "text";
     public static final String PARAM_FROM = "from";
@@ -58,11 +65,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      * From address
      */
     public static final String FROM_ADDRESS = "alfresco_repository@alfresco.org";
-	
-	/**
-	 * The java mail sender
-	 */
-	private JavaMailSender javaMailSender;
+    
+    /**
+     * The java mail sender
+     */
+    private JavaMailSender javaMailSender;
     
     /**
      * The Template service
@@ -80,17 +87,27 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     private AuthenticationService authService;
     
     /**
+     * The Node Service
+     */
+    private NodeService nodeService;
+    
+    /**
+     * The Authority Service
+     */
+    private AuthorityService authorityService;
+    
+    /**
      * The Service registry
      */
     private ServiceRegistry serviceRegistry;
-	
-	/**
-	 * @param javaMailSender    the java mail sender
-	 */
-	public void setMailService(JavaMailSender javaMailSender) 
-	{
-		this.javaMailSender = javaMailSender;
-	}
+    
+    /**
+     * @param javaMailSender    the java mail sender
+     */
+    public void setMailService(JavaMailSender javaMailSender) 
+    {
+        this.javaMailSender = javaMailSender;
+    }
     
     /**
      * @param templateService   the TemplateService
@@ -123,20 +140,88 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     {
         this.serviceRegistry = serviceRegistry;
     }
-	
+    
+    /**
+     * @param authorityService  the AuthorityService
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
+    /**
+     * @param nodeService       the NodeService to set.
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
     /**
      * Execute the rule action
      */
-	@Override
-	protected void executeImpl(
-			Action ruleAction,
-			NodeRef actionedUponNodeRef) 
-	{
+    @Override
+    protected void executeImpl(
+            Action ruleAction,
+            NodeRef actionedUponNodeRef) 
+    {
         // Create the simple mail message
-		SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-		simpleMailMessage.setTo((String)ruleAction.getParameterValue(PARAM_TO));
-		simpleMailMessage.setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
-		
+        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+        
+        // set recipient
+        String to = (String)ruleAction.getParameterValue(PARAM_TO);
+        if (to != null && to.length() != 0)
+        {
+            simpleMailMessage.setTo(to);
+        }
+        else
+        {
+            // see if multiple recipients have been supplied - as a list of authorities
+            List<String> authorities = (List<String>)ruleAction.getParameterValue(PARAM_TO_MANY);
+            if (authorities != null && authorities.size() != 0)
+            {
+                List<String> recipients = new ArrayList<String>(authorities.size());
+                for (String authority : authorities)
+                {
+                    AuthorityType authType = AuthorityType.getAuthorityType(authority);
+                    if (authType.equals(AuthorityType.USER))
+                    {
+                        if (this.personService.personExists(authority) == true)
+                        {
+                            NodeRef person = this.personService.getPerson(authority);
+                            String address = (String)this.nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+                            if (address != null && address.length() != 0)
+                            {
+                                recipients.add(address);
+                            }
+                        }
+                    }
+                    else if (authType.equals(AuthorityType.GROUP))
+                    {
+                        // else notify all members of the group
+                        Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
+                        for (String userAuth : users)
+                        {
+                            if (this.personService.personExists(userAuth) == true)
+                            {
+                                NodeRef person = this.personService.getPerson(authority);
+                                String address = (String)this.nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+                                if (address != null && address.length() != 0)
+                                {
+                                    recipients.add(address);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                simpleMailMessage.setTo(recipients.toArray(new String[recipients.size()]));
+            }
+        }
+        
+        // set subject line
+        simpleMailMessage.setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
+        
         // See if an email template has been specified
         String text = null;
         NodeRef templateRef = (NodeRef)ruleAction.getParameterValue(PARAM_TEMPLATE);
@@ -154,11 +239,14 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             text = templateService.processTemplate("freemarker", templateRef.toString(), model);
         }
         
+        // set the text body of the message
         if (text == null)
         {
             text = (String)ruleAction.getParameterValue(PARAM_TEXT);
         }
         simpleMailMessage.setText(text);
+        
+        // set the from address - use the default if not set
         String from = (String)ruleAction.getParameterValue(PARAM_FROM);
         if (from != null)
         {
@@ -171,26 +259,27 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         
         try
         {
-           // Send the message
-           javaMailSender.send(simpleMailMessage);
+            // Send the message
+            javaMailSender.send(simpleMailMessage);
         }
         catch (Throwable e)
         {
-           // don't stop the action but let admins know email is not getting sent
-           logger.error("Failed to send email to " + (String)ruleAction.getParameterValue(PARAM_TO), e);
+            // don't stop the action but let admins know email is not getting sent
+            logger.error("Failed to send email to " + (String)ruleAction.getParameterValue(PARAM_TO), e);
         }
-	}
-
+    }
+    
     /**
      * Add the parameter definitions
      */
-	@Override
-	protected void addParameterDefintions(List<ParameterDefinition> paramList) 
-	{
-        paramList.add(new ParameterDefinitionImpl(PARAM_TO, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_TO)));
+    @Override
+    protected void addParameterDefintions(List<ParameterDefinition> paramList) 
+    {
+        paramList.add(new ParameterDefinitionImpl(PARAM_TO, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_TO)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_TO_MANY, DataTypeDefinition.ANY, false, getParamDisplayLabel(PARAM_TO_MANY)));
         paramList.add(new ParameterDefinitionImpl(PARAM_SUBJECT, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_SUBJECT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_TEXT, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_TEXT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_FROM, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_FROM)));
         paramList.add(new ParameterDefinitionImpl(PARAM_TEMPLATE, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_TEMPLATE)));
-	}
+    }
 }

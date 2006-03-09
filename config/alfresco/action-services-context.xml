@@ -252,6 +252,12 @@
         <property name="authenticationService">
             <ref bean="authenticationService"></ref>
         </property>
+        <property name="nodeService">
+            <ref bean="nodeService"></ref>
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService"></ref>
+        </property>
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"></ref>
         </property>

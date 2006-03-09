@@ -136,14 +136,14 @@
                                     </td>
                                  </tr>
                                  
+                                 <tr><td colspan="2" class="paddingRow"></td></tr>
+                                 <tr><td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.action_mail_message_text}"/></td></tr>
                                  <tr>
-                                    <td><h:outputText value="#{msg.body}" />:</td>
+                                    <td valign="top"><h:outputText value="#{msg.body}" />:</td>
                                     <td>
                                        <h:inputTextarea value="#{InviteContentUsersWizard.body}" rows="2" cols="48" />
                                     </td>
                                  </tr>
-                                 
-                                 <tr><td class="paddingRow"></td></tr>
                                  <tr>
                                     <td colspan=2>
                                        <table border=0 cellspacing=2 cellpadding=0>
@@ -156,6 +156,19 @@
                                              </td>
                                           </tr>
                                        </table>
+                                    </td>
+                                 </tr>
+                                 
+                                 <%-- template selector --%>
+                                 <tr><td colspan="2" class="paddingRow"></td></tr>
+                                 <tr><td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.action_mail_template_text}"/></td></tr>
+                                 <tr>
+                                    <td valign="top"><h:outputText value="#{msg.action_mail_template}"/>:</td>
+                                    <td>
+                                       <%-- Email templates drop-down selector --%>
+                                       <h:selectOneMenu value="#{InviteContentUsersWizard.template}">
+                                          <f:selectItems value="#{TemplateSupportBean.emailTemplates}" />
+                                       </h:selectOneMenu>
                                     </td>
                                  </tr>
                                  

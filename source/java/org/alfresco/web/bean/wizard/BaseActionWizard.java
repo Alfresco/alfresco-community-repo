@@ -44,8 +44,6 @@ import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.repo.action.executer.SpecialiseTypeActionExecuter;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
-import org.alfresco.repo.cache.ExpiringValueCache;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -58,6 +56,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.TemplateSupportBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
@@ -73,6 +72,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class BaseActionWizard extends AbstractWizardBean
 {
+   private static final Log logger = LogFactory.getLog(BaseActionWizard.class);
+   
    // parameter names for actions
    public static final String PROP_CATEGORY = "category";
    public static final String PROP_ASPECT = "aspect";
@@ -97,11 +98,7 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    public static final String PROP_TEMPLATE = "template";
    public static final String PROP_OBJECT_TYPE = "objecttype";
    
-   private static final Log logger = LogFactory.getLog(BaseActionWizard.class);
    private static final String IMPORT_ENCODING = "UTF-8";
-   
-   /** no selection marker for SelectItem lists */
-   private static final String NO_SELECTION = "none";
    
    // new rule/action wizard specific properties
    protected boolean multiActionMode = false;
@@ -122,8 +119,6 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    protected Map<String, String> actionDescriptions;
    protected Map<String, Serializable> currentActionProperties;
    protected List<SelectItem> objectTypes;
-   /** cache of email templates that last 30 seconds - enough for a few page refreshes */
-   protected ExpiringValueCache<List<SelectItem>> cachedTemplates = new ExpiringValueCache<List<SelectItem>>(1000*30);
    
    /** datamodel for table of selected email recipients */
    protected DataModel emailRecipientsDataModel;
@@ -367,7 +362,7 @@ public abstract class BaseActionWizard extends AbstractWizardBean
          
          // add the template if one was selected by the user
          String template = (String)this.currentActionProperties.get(PROP_TEMPLATE);
-         if (template != null && template.equals(NO_SELECTION) == false)
+         if (template != null && template.equals(TemplateSupportBean.NO_SELECTION) == false)
          {
             actionParams.put(MailActionExecuter.PARAM_TEMPLATE, new NodeRef(Repository.getStoreRef(), template));
          }
@@ -1018,64 +1013,6 @@ public abstract class BaseActionWizard extends AbstractWizardBean
       }
       
       return this.users;
-   }
-   
-   /**
-    * @return the list of available Content Templates that can be applied to the current document.
-    */
-   public List<SelectItem> getTemplates()
-   {
-      List<SelectItem> templates = cachedTemplates.get();
-      if (templates == null)
-      {
-         // get the template from the special Content Templates folder
-         FacesContext context = FacesContext.getCurrentInstance();
-         String xpath = Application.getRootPath(context) + "/" + 
-               Application.getGlossaryFolderName(context) + "/" +
-               Application.getEmailTemplatesFolderName(context) + "//*";
-         try
-         {
-            NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-            NamespaceService resolver = Repository.getServiceRegistry(context).getNamespaceService();
-            List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, resolver, false);
-            
-            templates = new ArrayList<SelectItem>(results.size() + 1);
-            if (results.size() != 0)
-            {
-               DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
-               for (NodeRef ref : results)
-               {
-                  if (nodeService.exists(ref) == true)
-                  {
-                     Node childNode = new Node(ref);
-                     if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
-                     {
-                        templates.add(new SelectItem(childNode.getId(), childNode.getName()));
-                     }
-                  }
-               }
-               
-               // make sure the list is sorted by the label
-               QuickSort sorter = new QuickSort(templates, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
-               sorter.sort();
-            }
-         }
-         catch (AccessDeniedException accessErr)
-         {
-            // ignore the result if we cannot access the root
-         }
-         
-         // add an entry (at the start) to instruct the user to select a template
-         if (templates == null)
-         {
-            templates = new ArrayList<SelectItem>(1);
-         }
-         templates.add(0, new SelectItem(NO_SELECTION, Application.getMessage(FacesContext.getCurrentInstance(), "select_a_template")));
-         
-         cachedTemplates.put(templates);
-      }
-      
-      return templates;
    }
    
    

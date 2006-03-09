@@ -35,6 +35,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
+import org.alfresco.web.bean.TemplateSupportBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
@@ -48,33 +49,15 @@ import org.alfresco.web.ui.common.Utils;
  */
 public abstract class BasePreviewBean
 {
-   private static final String NO_SELECTION = "none";
-
    /** BrowseBean instance */
    protected BrowseBean browseBean;
-   
-   /** NodeService instance */
-   protected NodeService nodeService;
-   
-   /** The SearchService instance */
-   protected SearchService searchService;
    
    /** The NavigationBean bean reference */
    protected NavigationBean navigator;
    
+   /** The selected Template Id */
    protected NodeRef template;
    
-   /** cache of templates that last 10 seconds - enough for a couple of page refreshes */
-   private ExpiringValueCache<List<SelectItem>> cachedTemplates = new ExpiringValueCache<List<SelectItem>>(1000*10);
-   
-   
-   /**
-    * @param nodeService The nodeService to set.
-    */
-   public void setNodeService(NodeService nodeService)
-   {
-      this.nodeService = nodeService;
-   }
 
    /**
     * @param browseBean The BrowseBean to set.
@@ -82,14 +65,6 @@ public abstract class BasePreviewBean
    public void setBrowseBean(BrowseBean browseBean)
    {
       this.browseBean = browseBean;
-   }
-   
-   /**
-    * @param searchService The searchService to set.
-    */
-   public void setSearchService(SearchService searchService)
-   {
-      this.searchService = searchService;
    }
    
    /**
@@ -125,64 +100,6 @@ public abstract class BasePreviewBean
    public String getName()
    {
       return getNode().getName();
-   }
-   
-   /**
-    * @return the list of available Content Templates that can be applied to the current document.
-    */
-   public List<SelectItem> getTemplates()
-   {
-      List<SelectItem> templates = cachedTemplates.get();
-      if (templates == null)
-      {
-         // get the template from the special Content Templates folder
-         FacesContext context = FacesContext.getCurrentInstance();
-         String xpath = Application.getRootPath(context) + "/" + 
-               Application.getGlossaryFolderName(context) + "/" +
-               Application.getContentTemplatesFolderName(context) + "//*";
-         try
-         {
-            NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-            NamespaceService resolver = Repository.getServiceRegistry(context).getNamespaceService();
-            List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, resolver, false);
-            
-            templates = new ArrayList<SelectItem>(results.size() + 1);
-            if (results.size() != 0)
-            {
-               DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
-               for (NodeRef ref : results)
-               {
-                  if (nodeService.exists(ref) == true)
-                  {
-                     Node childNode = new Node(ref);
-                     if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
-                     {
-                        templates.add(new SelectItem(childNode.getId(), childNode.getName()));
-                     }
-                  }
-               }
-               
-               // make sure the list is sorted by the label
-               QuickSort sorter = new QuickSort(templates, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
-               sorter.sort();
-            }
-         }
-         catch (AccessDeniedException accessErr)
-         {
-            // ignore the result if we cannot access the root
-         }
-         
-         // add an entry (at the start) to instruct the user to select a template
-         if (templates == null)
-         {
-            templates = new ArrayList<SelectItem>(1);
-         }
-         templates.add(0, new SelectItem(NO_SELECTION, Application.getMessage(FacesContext.getCurrentInstance(), "select_a_template")));
-         
-         cachedTemplates.put(templates);
-      }
-      
-      return templates;
    }
    
    /**
@@ -222,7 +139,7 @@ public abstract class BasePreviewBean
     */
    public void setTemplate(String template)
    {
-      if (template != null && template.equals(NO_SELECTION) == false)
+      if (template != null && template.equals(TemplateSupportBean.NO_SELECTION) == false)
       {
          this.template = new NodeRef(Repository.getStoreRef(), template);
       }

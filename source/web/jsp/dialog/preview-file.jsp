@@ -80,7 +80,7 @@
                               <div style="padding-top:4px">
                                  <%-- Templates drop-down selector --%>
                                  <h:selectOneMenu id="template" value="#{DocumentPreviewBean.template}" onchange="document.forms['preview-file'].submit(); return true;">
-                                    <f:selectItems value="#{DocumentPreviewBean.templates}" />
+                                    <f:selectItems value="#{TemplateSupportBean.contentTemplates}" />
                                  </h:selectOneMenu>
                               </div>
                            </td>

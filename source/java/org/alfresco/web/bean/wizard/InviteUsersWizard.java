@@ -20,6 +20,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -32,7 +33,9 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -40,12 +43,14 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
+import org.alfresco.web.bean.TemplateSupportBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.ui.common.SortableSelectItem;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIGenericPicker;
+import org.alfresco.web.ui.repo.component.template.DefaultModelHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.mail.SimpleMailMessage;
@@ -97,6 +102,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    private String body = null;
    private String internalSubject = null;
    private String automaticText = null;
+   private String template = null;
    
    /**
     * @return a cached list of available permissions for the type being dealt with
@@ -166,6 +172,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
       body = "";
       automaticText = "";
       internalSubject = null;
+      template = null;
    }
 
    /**
@@ -280,19 +287,31 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
       
       if (to != null && to.length() != 0)
       {
-         String msgRole = Application.getMessage(FacesContext.getCurrentInstance(), MSG_INVITED_ROLE);
-         String roleMessage = MessageFormat.format(msgRole, new Object[] {roleText});
+         FacesContext fc = FacesContext.getCurrentInstance();
          
-         // TODO: include External Authentication link to the invited node
-         //String args = node.getStoreRef().getProtocol() + '/' +
-         //   node.getStoreRef().getIdentifier() + '/' +
-         //   node.getId();
-         //String url = ExternalAccessServlet.generateExternalURL(LoginBean.OUTCOME_SPACEDETAILS, args);
-         
-         String body = this.internalSubject + "\r\n\r\n" + roleMessage + "\r\n\r\n";// + url + "\r\n\r\n";
-         if (this.body != null && this.body.length() != 0)
+         String body;
+         if (this.template == null || this.template.equals(TemplateSupportBean.NO_SELECTION) == true)
          {
-            body += this.body;
+            String msgRole = Application.getMessage(fc, MSG_INVITED_ROLE);
+            String roleMessage = MessageFormat.format(msgRole, new Object[] {roleText});
+            
+            body = this.internalSubject + "\r\n\r\n" + roleMessage + "\r\n\r\n";// + url + "\r\n\r\n";
+            if (this.body != null && this.body.length() != 0)
+            {
+               body += this.body;
+            }
+         }
+         else
+         {
+            // use template service to format the email
+            ServiceRegistry services = Repository.getServiceRegistry(fc);
+            Map<String, Object> model = DefaultModelHelper.buildDefaultModel(
+                  services, Application.getCurrentUser(fc));
+            model.put("role", roleText);
+            model.put("space", new TemplateNode(node, Repository.getServiceRegistry(fc), null));
+            
+            NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.template);
+            body = services.getTemplateService().processTemplate("freemarker", templateRef.toString(), model);
          }
          
          SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
@@ -598,6 +617,22 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    public void setSubject(String subject)
    {
       this.subject = subject;
+   }
+   
+   /**
+    * @return Returns the email template Id
+    */
+   public String getTemplate()
+   {
+      return this.template;
+   }
+
+   /**
+    * @param template The email template to set.
+    */
+   public void setTemplate(String template)
+   {
+      this.template = template;
    }
 
    /**

@@ -17,7 +17,6 @@
 package org.alfresco.web.bean;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,24 +24,19 @@ import java.util.Map;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.data.IDataContainer;
-import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -254,42 +248,6 @@ public class SpaceDetailsBean
       return model;
    }
    
-   /**
-    * @return the list of available Content Templates that can be applied to the current document.
-    */
-   public SelectItem[] getTemplates()
-   {
-      // get the template from the special Content Templates folder
-      FacesContext context = FacesContext.getCurrentInstance();
-      String xpath = Application.getRootPath(context) + "/" + 
-            Application.getGlossaryFolderName(context) + "/" +
-            Application.getContentTemplatesFolderName(context) + "//*";
-      NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-      NamespaceService resolver = Repository.getServiceRegistry(context).getNamespaceService();
-      List<NodeRef> results = Repository.getServiceRegistry(context).getSearchService().selectNodes(
-            rootNodeRef, xpath, null, resolver, false);
-      
-      List<SelectItem> templates = new ArrayList<SelectItem>(results.size());
-      if (results.size() != 0)
-      {
-         DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
-         for (NodeRef ref : results)
-         {
-            Node childNode = new Node(ref);
-            if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
-            {
-               templates.add(new SelectItem(childNode.getId(), childNode.getName()));
-            }
-         }
-         
-         // make sure the list is sorted by the label
-         QuickSort sorter = new QuickSort(templates, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
-         sorter.sort();
-      }
-      
-      return templates.toArray(new SelectItem[templates.size()]);
-   }
-   
    
    // ------------------------------------------------------------------------------
    // Action event handlers
@@ -299,27 +257,30 @@ public class SpaceDetailsBean
     */
    public String applyTemplate()
    {
-      try
+      if (this.template != null && this.template.equals(TemplateSupportBean.NO_SELECTION) == false)
       {
-         // apply the templatable aspect if required 
-         if (getSpace().hasAspect(ContentModel.ASPECT_TEMPLATABLE) == false)
+         try
          {
-            this.nodeService.addAspect(getSpace().getNodeRef(), ContentModel.ASPECT_TEMPLATABLE, null);
+            // apply the templatable aspect if required 
+            if (getSpace().hasAspect(ContentModel.ASPECT_TEMPLATABLE) == false)
+            {
+               this.nodeService.addAspect(getSpace().getNodeRef(), ContentModel.ASPECT_TEMPLATABLE, null);
+            }
+            
+            // get the selected template from the Template Picker
+            NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.template);
+            
+            // set the template NodeRef into the templatable aspect property
+            this.nodeService.setProperty(getSpace().getNodeRef(), ContentModel.PROP_TEMPLATE, templateRef); 
+            
+            // reset space details for next refresh of details page
+            getSpace().reset();
          }
-         
-         // get the selected template from the Template Picker
-         NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.template);
-         
-         // set the template NodeRef into the templatable aspect property
-         this.nodeService.setProperty(getSpace().getNodeRef(), ContentModel.PROP_TEMPLATE, templateRef); 
-         
-         // reset space details for next refresh of details page
-         getSpace().reset();
-      }
-      catch (Exception e)
-      {
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
+         catch (Exception e)
+         {
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
+         }
       }
       return OUTCOME_RETURN;
    }

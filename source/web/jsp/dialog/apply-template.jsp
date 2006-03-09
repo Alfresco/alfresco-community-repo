@@ -100,7 +100,7 @@
                                     <td width=100%>
                                        <%-- Templates drop-down selector --%>
                                        <h:selectOneMenu value="#{SpaceDetailsBean.template}">
-                                          <f:selectItems value="#{SpaceDetailsBean.templates}" />
+                                          <f:selectItems value="#{TemplateSupportBean.contentTemplates}" />
                                        </h:selectOneMenu>
                                     </td>
                                  </tr>

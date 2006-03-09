@@ -1,4 +1,4 @@
-A new document '${document.name}', is available in the '${space.name}' space, it was added by '${person.properties.firstName}<#if person.properties.lastName?exists> ${person.properties.lastName}</#if>'.
+A new document '${document.name}', is available in the '${space.name}' space, it was added by ${person.properties.firstName}<#if person.properties.lastName?exists> ${person.properties.lastName}</#if>.
 
 You can view it through this link:
 http://yourserver:8080/alfresco${document.url}

@@ -165,7 +165,7 @@
                                     <td>
                                        <%-- Templates drop-down selector --%>
                                        <h:selectOneMenu value="#{NewActionWizard.actionProperties.template}">
-                                          <f:selectItems value="#{NewActionWizard.templates}" />
+                                          <f:selectItems value="#{TemplateSupportBean.emailTemplates}" />
                                        </h:selectOneMenu>
                                     </td>
                                  </tr>

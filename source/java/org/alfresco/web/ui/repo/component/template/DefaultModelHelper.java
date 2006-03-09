@@ -58,7 +58,7 @@ public class DefaultModelHelper
     * 
     * @return Map containing the default model.
     */
-   public static Map buildDefaultModel(ServiceRegistry services, User user)
+   public static Map<String, Object> buildDefaultModel(ServiceRegistry services, User user)
    {
       if (services == null)
       {
@@ -70,7 +70,7 @@ public class DefaultModelHelper
       }
       
       // create FreeMarker default model and merge
-      Map root = new HashMap(16, 1.0f);
+      Map<String, Object> root = new HashMap<String, Object>(16, 1.0f);
       
       // supply the CompanyHome space as "companyhome"
       NodeRef companyRootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());

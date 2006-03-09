@@ -43,6 +43,11 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.apache.lucene.index.IndexWriter;
 import org.springframework.context.ApplicationContext;
 
+/**
+ * 
+ * @author Andy Hind
+ */
+@SuppressWarnings("unused")
 public class ConcurrentNodeServiceTest extends TestCase
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/BaseNodeServiceTest";

@@ -18,10 +18,8 @@ package org.alfresco.repo.node.index;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
@@ -36,16 +34,12 @@ public class FtsIndexRecoveryComponentTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private IndexRecovery indexRecoverer;
-    private NodeService nodeService;
     private TransactionService txnService;
-    private Indexer indexer;
     
     public void setUp() throws Exception
     {
         indexRecoverer = (IndexRecovery) ctx.getBean("indexRecoveryComponent");
         txnService = (TransactionService) ctx.getBean("transactionComponent");
-        nodeService = (NodeService) ctx.getBean("nodeService");
-        indexer = (Indexer) ctx.getBean("indexerComponent");
     }
     
     public void testReindexing() throws Exception

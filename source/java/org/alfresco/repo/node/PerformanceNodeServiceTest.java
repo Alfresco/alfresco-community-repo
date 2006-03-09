@@ -40,8 +40,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -62,7 +60,6 @@ public class PerformanceNodeServiceTest extends TestCase
     private int testStringPropertyCount = 10;
     private int testContentPropertyCount = 10;
     
-    private static Log logger = LogFactory.getLog(PerformanceNodeServiceTest.class);
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
     
     protected DictionaryService dictionaryService;

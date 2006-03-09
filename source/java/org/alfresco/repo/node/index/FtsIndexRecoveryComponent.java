@@ -24,7 +24,6 @@ import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,8 +45,6 @@ public class FtsIndexRecoveryComponent implements IndexRecovery
     private TransactionService transactionService;
     /** the FTS indexer that we will prompt to pick up on any un-indexed text */
     private FullTextSearchIndexer ftsIndexer;
-    /** the component providing searches of the indexed nodes */
-    private SearchService searcher;
     /** the component giving direct access to <b>node</b> instances */
     private NodeService nodeService;
     /** the workspaces to reindex */

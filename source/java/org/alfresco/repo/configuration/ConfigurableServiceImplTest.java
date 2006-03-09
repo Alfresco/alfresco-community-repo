@@ -32,10 +32,11 @@ import org.alfresco.util.BaseSpringTest;
  * 
  * @author Roy Wetherall
  */
+@SuppressWarnings("unused")
 public class ConfigurableServiceImplTest extends BaseSpringTest
 {
 	public NodeService nodeService;
-	private ServiceRegistry serviceRegistry;
+    private ServiceRegistry serviceRegistry;
 	private ConfigurableService configurableService;
 	private StoreRef testStoreRef;
 	private NodeRef rootNodeRef;

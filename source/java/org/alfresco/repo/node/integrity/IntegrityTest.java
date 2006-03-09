@@ -49,6 +49,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Derek Hulley
  */
+@SuppressWarnings("unused")
 public class IntegrityTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(IntegrityTest.class);

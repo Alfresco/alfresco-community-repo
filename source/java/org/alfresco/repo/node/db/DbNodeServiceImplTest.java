@@ -42,6 +42,7 @@ import org.alfresco.service.transaction.TransactionService;
  * 
  * @author Derek Hulley
  */
+@SuppressWarnings("unused")
 public class DbNodeServiceImplTest extends BaseNodeServiceTest
 {
     private TransactionService txnService;

@@ -143,7 +143,7 @@ public class CIFSServer implements ApplicationListener
                     logger.info("Starting server " + server.getProtocolName() + " ...");
 
                 // Start the server
-                
+                @SuppressWarnings("unused")
                 String serverName = server.getConfiguration().getServerName();
                 server.startServer();
             }

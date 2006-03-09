@@ -80,6 +80,7 @@ import org.springframework.context.ApplicationContext;
  * @author andyh
  * 
  */
+@SuppressWarnings("unused")
 public class LuceneTest extends TestCase
 {
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/lucenetest";

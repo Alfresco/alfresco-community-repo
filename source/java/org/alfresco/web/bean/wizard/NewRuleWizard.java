@@ -48,6 +48,7 @@ import org.alfresco.repo.action.executer.ImageTransformActionExecuter;
 import org.alfresco.repo.action.executer.ImporterActionExecuter;
 import org.alfresco.repo.action.executer.LinkCategoryActionExecuter;
 import org.alfresco.repo.action.executer.MailActionExecuter;
+import org.alfresco.repo.action.executer.RemoveFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.repo.action.executer.SpecialiseTypeActionExecuter;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
@@ -1343,7 +1344,7 @@ public class NewRuleWizard extends BaseActionWizard
          summary.append(" ");
          
          // define a summary to be added for each action
-         if (AddFeaturesActionExecuter.NAME.equals(actionName))
+         if (AddFeaturesActionExecuter.NAME.equals(actionName) || RemoveFeaturesActionExecuter.NAME.equals(actionName))
          {
             String aspect = (String)this.currentActionProperties.get(PROP_ASPECT);
             

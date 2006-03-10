@@ -41,6 +41,7 @@ import org.alfresco.repo.action.executer.ImporterActionExecuter;
 import org.alfresco.repo.action.executer.LinkCategoryActionExecuter;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
+import org.alfresco.repo.action.executer.RemoveFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.repo.action.executer.SpecialiseTypeActionExecuter;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
@@ -169,6 +170,11 @@ public abstract class BaseActionWizard extends AbstractWizardBean
       {
          QName aspect = Repository.resolveToQName((String)this.currentActionProperties.get(PROP_ASPECT));
          actionParams.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, aspect);
+      }
+      else if (this.action.equals(RemoveFeaturesActionExecuter.NAME))
+      {
+         QName aspect = Repository.resolveToQName((String)this.currentActionProperties.get(PROP_ASPECT));
+         actionParams.put(RemoveFeaturesActionExecuter.PARAM_ASPECT_NAME, aspect);
       }
       else if (this.action.equals(CopyActionExecuter.NAME))
       {
@@ -398,6 +404,11 @@ public abstract class BaseActionWizard extends AbstractWizardBean
       {
          QName aspect = (QName)actionProps.get(AddFeaturesActionExecuter.PARAM_ASPECT_NAME);
          this.currentActionProperties.put(PROP_ASPECT, aspect.toString());
+      }
+      else if (this.action.equals(RemoveFeaturesActionExecuter.NAME))
+      {
+          QName aspect = (QName)actionProps.get(RemoveFeaturesActionExecuter.PARAM_ASPECT_NAME);
+          this.currentActionProperties.put(PROP_ASPECT, aspect.toString());
       }
       else if (this.action.equals(CopyActionExecuter.NAME))
       {

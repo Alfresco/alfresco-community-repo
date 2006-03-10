@@ -804,6 +804,10 @@
          <to-view-id>/jsp/wizard/new-rule/action-add-features.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
+         <from-outcome>remove-features</from-outcome>
+         <to-view-id>/jsp/wizard/new-rule/action-remove-features.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
          <from-outcome>copy</from-outcome>
          <to-view-id>/jsp/wizard/new-rule/action-copy.jsp</to-view-id>
       </navigation-case>
@@ -887,6 +891,10 @@
       <navigation-case>
          <from-outcome>add-features</from-outcome>
          <to-view-id>/jsp/wizard/create-action/action-add-features.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>remove-features</from-outcome>
+         <to-view-id>/jsp/wizard/create-action/action-remove-features.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>copy</from-outcome>

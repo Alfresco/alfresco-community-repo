@@ -307,5 +307,28 @@
             <ref bean="bootstrapSpacesMessageSource" />
         </property>   
     </bean>
+    <bean id="patch.emailTemplatesContent" class="org.alfresco.repo.admin.patch.impl.EmailTemplatesContentPatch" parent="patch.savedSearches.Base" >
+        <property name="id"><value>patch.emailTemplatesContent</value></property>
+        <property name="description"><value>patch.emailTemplatesContent.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9</value></property>
+        <property name="targetSchema"><value>10</value></property>
+        <property name="templatesACP"><value>alfresco/templates/email_templates.acp</value></property>
+        <!-- helper beans for execution -->
+        <property name="messageSource">
+            <ref bean="bootstrapSpacesMessageSource" />
+        </property>
+        <property name="importerService">
+            <ref bean="importerComponent" />
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent" />
+        </property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.emailTemplatesFolder" />
+            </list>
+        </property>
+    </bean>
 
 </beans>

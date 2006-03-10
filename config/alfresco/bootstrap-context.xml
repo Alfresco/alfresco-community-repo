@@ -79,6 +79,10 @@
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</prop>
                     <prop key="location">alfresco/templates/content_template_examples.xml</prop>
                 </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
+                    <prop key="location">alfresco/templates/email_templates.acp</prop>
+                </props>
             </list>
         </property>
     </bean>

@@ -157,6 +157,12 @@
         </property>
     </bean>
     
+    <bean id="remove-features" class="org.alfresco.repo.action.executer.RemoveFeaturesActionExecuter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+    </bean>
+    
     <bean id="specialise-type" class="org.alfresco.repo.action.executer.SpecialiseTypeActionExecuter" parent="action-executer">
         <property name="nodeService">
             <ref bean="NodeService" />

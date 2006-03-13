@@ -22,6 +22,8 @@ import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Roy Wetherall
@@ -29,6 +31,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase 
                                         implements ContentServicePolicies.OnContentUpdatePolicy
 {
+    /**
+     * The logger
+     */
+    private static Log logger = LogFactory.getLog(OnContentUpdateRuleTrigger.class);
+    
     /** True trigger on new content, false otherwise */
     private boolean onNewContent = false;
     
@@ -76,6 +83,11 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
         {
             if (triggerParentRules == true)
             {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("OnContentUpdate rule triggered fired for content; nodeId=" + nodeRef.getId() + "; newContent=" + newContent);
+                }
+                
                 List<ChildAssociationRef> parentsAssocRefs = this.nodeService.getParentAssocs(nodeRef);
                 for (ChildAssociationRef parentAssocRef : parentsAssocRefs)
                 {

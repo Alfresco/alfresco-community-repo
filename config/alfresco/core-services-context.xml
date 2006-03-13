@@ -792,6 +792,9 @@
         <property name="authenticationService">
             <ref bean="authenticationService" />
         </property>
+        <property name="policyBehaviourFilter">
+            <ref bean="policyBehaviourFilter" />
+        </property>
     </bean>
 
     <!-- Referenceable -->

@@ -26,6 +26,8 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * On propety update trigger
@@ -35,6 +37,11 @@ import org.alfresco.service.namespace.QName;
 public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase 
                                         implements NodeServicePolicies.OnUpdatePropertiesPolicy
 {
+    /**
+     * The logger
+     */
+    private static Log logger = LogFactory.getLog(OnPropertyUpdateRuleTrigger.class);
+    
     /** True trigger parent rules, false otherwier */
     private boolean triggerParentRules = true;
     
@@ -60,10 +67,18 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
                 new JavaBehaviour(this, "onUpdateProperties"));
     }
 
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
+     */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        if (triggerParentRules == true)
+        if (logger.isDebugEnabled() == true)
         {
+            logger.debug("OnPropertyUpdate rule triggered fired; nodeRef=" + nodeRef.toString() + "; triggerParentRules=" + this.triggerParentRules);
+        }
+        
+        if (triggerParentRules == true)
+        {            
             List<ChildAssociationRef> parentsAssocRefs = this.nodeService.getParentAssocs(nodeRef);
             for (ChildAssociationRef parentAssocRef : parentsAssocRefs)
             {

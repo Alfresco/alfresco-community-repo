@@ -63,6 +63,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Provides common functionality for
@@ -77,6 +79,11 @@ import org.alfresco.util.GUID;
  */
 public abstract class AbstractNodeServiceImpl implements NodeService
 {
+    /**
+     * The logger
+     */
+    private static Log logger = LogFactory.getLog(AbstractNodeServiceImpl.class);
+    
     /** a uuid identifying this unique instance */
     private String uuid;
     /** controls policy delegates */
@@ -250,6 +257,43 @@ public abstract class AbstractNodeServiceImpl implements NodeService
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
+        
+        // Some logging so we can see which properties have been modified
+        if (logger.isDebugEnabled() == true)
+        {
+            if (before == null)
+            {
+                logger.debug("The properties are being set for the first time.  (nodeRef=" + nodeRef.toString() + ")");
+            }
+            else if (after == null)
+            {
+                logger.debug("All the properties are being cleared.  (nodeRef=" + nodeRef.toString() + ")");                
+            }
+            else
+            {
+                logger.debug("The following properties have been updated:  (nodeRef=" + nodeRef.toString() + ")");
+                for (Map.Entry<QName, Serializable> entry : after.entrySet())
+                {
+                    Serializable beforeValue = before.get(entry.getKey());
+                    if (beforeValue == null)
+                    {
+                        // Property has been set for the first time
+                        logger.debug("   - The property " + entry.getKey().toString() + " has been set for the first time.");
+                    }
+                    else
+                    {
+                        // Compare the before and after value
+                        if (beforeValue.equals(entry.getValue()) == false)
+                        {
+                            logger.debug("   - The property " + entry.getKey().toString() + " has been updated.");
+                        }
+                    }
+                    
+                }
+            }
+            
+        }
+                
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
         // execute policy for node type and aspects

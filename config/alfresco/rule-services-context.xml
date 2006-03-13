@@ -67,41 +67,18 @@
             <ref bean="on-create-node-trigger"/>
          	<ref bean="on-create-child-association-trigger"/>
          	<ref bean="on-content-create-trigger"/>
-         	<!-- NOTE: if you do not want hte inbound rule to rile on content update -->
-         	<!--       remove the following line -->
-         	<ref bean="on-content-update-trigger"/>
          </list>
       </constructor-arg>
    </bean>
-   
-   <!-- NOTE:  		Adding the following will provide an update policy.  This will cause -->
-   <!--        		rules to be fired on content or meta-data update.  -->
-   <!-- WARNING:  	This is at present working but not fully QA'ed. -->
-   <!--
-   <bean id="update" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">
+
+   <!-- Commented out for now -->
+   <!-- <bean id="update" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">
       <constructor-arg>
          <list>
             <ref bean="on-property-update-trigger"/>
          </list>
       </constructor-arg>
-   </bean>
-   -->
-   
-   <!-- NOTE: Multiple rule types are not currently support so if you require inbound and update -->
-   <!-- 	  behaviour then add the following rule type -->
-   <!--
-   <bean id="inboundAndUpdate" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">
-      <constructor-arg>
-         <list>
-            <ref bean="on-create-node-trigger"/>
-         	<ref bean="on-create-child-association-trigger"/>
-         	<ref bean="on-content-create-trigger"/>
-            <ref bean="on-update-node-trigger"/>
-            <ref bean="on-content-update-trigger"/>
-         </list>
-      </constructor-arg>
-   </bean>
-   -->
+   </bean> -->
    
    <bean id="outbound" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">
       <constructor-arg>

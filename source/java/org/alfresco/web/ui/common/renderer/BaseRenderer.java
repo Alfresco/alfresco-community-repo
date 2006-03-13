@@ -83,13 +83,13 @@ public abstract class BaseRenderer extends Renderer
     * 
     * @return a Map of name/value pairs or null if none found
     */
-   protected static Map<String, String> getParameterMap(UIComponent component)
+   protected static Map<String, String> getParameterComponents(UIComponent component)
    {
       Map<String, String> params = null;
       
       if (component.getChildCount() != 0)
       {
-         params = new HashMap<String, String>(3, 1.0f);
+         params = new HashMap<String, String>(component.getChildCount(), 1.0f);
          for (Iterator i=component.getChildren().iterator(); i.hasNext(); /**/)
          {
             UIComponent child = (UIComponent)i.next();

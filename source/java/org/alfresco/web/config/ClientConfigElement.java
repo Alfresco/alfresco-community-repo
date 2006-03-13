@@ -35,7 +35,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private boolean shelfVisible = true;
    private int searchMinimum = 3;
    private String helpUrl = null;
-   private String editLinkType = null;
+   private String editLinkType = "http";
    private String homeSpacePermission = null;
    
    /**

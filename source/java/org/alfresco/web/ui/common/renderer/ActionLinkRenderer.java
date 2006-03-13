@@ -27,16 +27,12 @@ import javax.faces.event.ActionEvent;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIMenu;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author kevinr
  */
 public class ActionLinkRenderer extends BaseRenderer
 {
-   private static Log logger = LogFactory.getLog(ActionLinkRenderer.class);
-   
    // ------------------------------------------------------------------------------
    // Renderer implementation 
    
@@ -55,8 +51,7 @@ public class ActionLinkRenderer extends BaseRenderer
          // on the request which match our params and set them into the component
          UIActionLink link = (UIActionLink)component;
          Map<String, String> destParams = link.getParameterMap();
-         destParams.clear();
-         Map<String, String> actionParams = getParameterMap(link);
+         Map<String, String> actionParams = getParameterComponents(link);
          if (actionParams != null)
          {
             for (String name : actionParams.keySet())
@@ -122,7 +117,7 @@ public class ActionLinkRenderer extends BaseRenderer
          {
             // generate JavaScript to set a hidden form field and submit
             // a form which request attributes that we can decode
-            linkBuf.append(Utils.generateFormSubmit(context, link, Utils.getActionHiddenFieldName(context, link), link.getClientId(context), getParameterMap(link)));
+            linkBuf.append(Utils.generateFormSubmit(context, link, Utils.getActionHiddenFieldName(context, link), link.getClientId(context), getParameterComponents(link)));
          }
          
          linkBuf.append('"');
@@ -270,7 +265,7 @@ public class ActionLinkRenderer extends BaseRenderer
       if (link.getHref() == null)
       {
          buf.append("<a href='#' onclick=\"");
-         buf.append(Utils.generateFormSubmit(context, link, Utils.getActionHiddenFieldName(context, link), link.getClientId(context), getParameterMap(link)));
+         buf.append(Utils.generateFormSubmit(context, link, Utils.getActionHiddenFieldName(context, link), link.getClientId(context), getParameterComponents(link)));
          buf.append('"');
       }
       else

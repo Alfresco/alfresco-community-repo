@@ -895,10 +895,6 @@ public class BrowseBean implements IContextListener
          {
             editLinkType = Application.getClientConfig(
                   FacesContext.getCurrentInstance()).getEditLinkType();
-            if (editLinkType == null)
-            {
-               editLinkType = "http";
-            }
          }
          
          return editLinkType;

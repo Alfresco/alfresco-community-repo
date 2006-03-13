@@ -12,6 +12,7 @@
          <element-reader element-name="languages" class="org.alfresco.web.config.LanguagesElementReader" />
          <element-reader element-name="advanced-search" class="org.alfresco.web.config.AdvancedSearchElementReader" />
          <element-reader element-name="views" class="org.alfresco.web.config.ViewsElementReader" />
+         <element-reader element-name="actions" class="org.alfresco.web.config.ActionsElementReader" />
       </element-readers>
    </plug-ins>
    

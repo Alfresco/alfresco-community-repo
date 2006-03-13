@@ -62,10 +62,9 @@ public class UIActionLink extends UICommand
       this.padding = (Integer)values[1];
       this.image = (String)values[2];
       this.showLink = (Boolean)values[3];
-      this.params = (Map)values[4];
-      this.href = (String)values[5];
-      this.tooltip = (String)values[6];
-      this.target = (String)values[7];
+      this.href = (String)values[4];
+      this.tooltip = (String)values[5];
+      this.target = (String)values[6];
    }
    
    /**
@@ -73,16 +72,15 @@ public class UIActionLink extends UICommand
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[8];
+      Object values[] = new Object[7];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.padding;
       values[2] = this.image;
       values[3] = this.showLink;
-      values[4] = this.params;
-      values[5] = this.href;
-      values[6] = this.tooltip;
-      values[7] = this.target;
+      values[4] = this.href;
+      values[5] = this.tooltip;
+      values[6] = this.target;
       return (values);
    }
 
@@ -100,7 +98,7 @@ public class UIActionLink extends UICommand
    {
       if (this.params == null)
       {
-         this.params = new HashMap<String, String>(3, 1.0f);
+         this.params = new HashMap<String, String>(1, 1.0f);
       }
       return this.params;
    }
@@ -328,6 +326,6 @@ public class UIActionLink extends UICommand
    /** the onclick handler */
    private String onclick = null;
    
-   /** Map of child param name/values pairs */
+   /** Transient map of currently set param name/values pairs */
    private Map<String, String> params = null;
 }

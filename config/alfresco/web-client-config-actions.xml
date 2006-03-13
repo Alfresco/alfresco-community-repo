@@ -1,0 +1,126 @@
+<alfresco-config>
+
+   <config evaluator="string-compare" condition="Actions">
+      <actions>
+         <!-- each action is defined individually and then referenced in an 'action-group' block
+              via an 'idref' attribute specifing the action definition to use -->
+         
+         <!-- full example -->
+         <action id="example1_edit_doc_http">
+            <!-- a list of permissions to evaluate action against before checking other preconditions -->
+            <permissions>
+               <!-- each permission can be an Allow or Deny check -->
+               <permission allow="true">Write</permission>
+               <permission allow="false">AddChildren</permission>
+            </permissions>
+            <!-- the evaluator is a class implementing the org.alfresco.web.action.ActionEvaluator contract,
+                 it will be executed passing in the context for the outer action component -->
+            <evaluator>org.alfresco.web.action.evaluator.EditDocHttpEvaluator</evaluator>
+            <!-- label and tooltip can be provided as text or preferable I18N message Id -->
+            <label>Edit</label>
+            <label-msg>edit</label-msg>
+            <tooltip>My Tooltip</tooltip>
+            <tooltip-msg>tooltip</tooltip-msg>
+            <!-- various presentation attributes - generally it is better to provide these as part of the
+                 parent 'actions' definition to give a consistent look-and-feel to a group of actions -->
+            <show-link>false</show-link>
+            <style>padding:4px</style>
+            <style-class>inlineAction</style-class>
+            <image>/images/icons/edit_icon.gif</image>
+            <!-- action, ActionLister, href and target action attributes supported -->
+            <actionListener>#{CheckinCheckoutBean.editFile}</actionListener>
+            <action>editDocument</action>
+            <href>http://...</href>
+            <target>new</target>
+            <!-- params specify the f:param tags to be generated as children of the action component -->
+            <!-- it is assumed that the context object for the action will have an appropriate getter method
+                 to reflect the value of the param e.g. getId() for a param value of "id" -->
+            <params>
+               <param name="id">id</param>
+            </params>
+         </action>
+         
+         <!-- Edit document action to open using normal HTTP access or inline Edit if set -->
+         <action id="edit_doc_http">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.EditDocHttpEvaluator</evaluator>
+            <label-msg>edit</label-msg>
+            <image>/images/icons/edit_icon.gif</image>
+            <action-listener>#{CheckinCheckoutBean.editFile}</action-listener>
+            <params>
+               <param name="id">id</param>
+            </params>
+            <!-- can also specify style, class etc. but this is better done in 'actions' element -->
+         </action>
+         
+         <!-- Edit document using WebDav access -->
+         <action id="edit_doc_webdav">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.EditDocWebDavEvaluator</evaluator>
+            <label-msg>edit</label-msg>
+            <image>/images/icons/edit_icon.gif</image>
+            <!-- NOTE: uses the special 'actioncontext' object supplied by the parent actions component -->
+            <onclick>javascript:openDoc('#{actioncontext.webdavUrl}');</onclick>
+         </action>
+         
+         <!-- Edit document using CIFS access -->
+         <action id="edit_doc_cifs">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.EditDocCIFSEvaluator</evaluator>
+            <label-msg>edit</label-msg>
+            <image>/images/icons/edit_icon.gif</image>
+            <!-- NOTE: uses the special 'actioncontext' object supplied by the parent actions component -->
+            <href>#{actioncontext.cifsPath}</href>
+            <target>cifs</target>
+         </action>
+         
+         <!-- Checkout document -->
+         <!--<action id="checkout_doc">
+            <permissions>
+               <permission allow="true">CheckOut</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.CheckoutDocEvaluator</evaluator>
+            <label-msg>checkout</label-msg>
+            <image>/images/icons/CheckOut_icon.gif</image>
+            <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
+            <action>checkoutFile</action>
+            <params>
+               <param name="id">id</param>
+            </params>
+         </action>-->
+         
+         
+         <!-- the 'actions' elements define unique blocks of actions that reference the actions
+              as defined above and can override or supply display elements for the group of actions -->
+         <!-- the element is allow responsible for making the context Node object available with name
+              of 'actioncontext' so the actions can access it directly to get properties -->
+         <action-group id="document_browse">
+            <show-link>false</show-link>
+            <style-class>inlineAction</style-class>
+            
+            <action idref="edit_doc_http" />
+            <action idref="edit_doc_webdav" />
+            <action idref="edit_doc_cifs" />
+            
+            <action id="specific_checkout_doc">
+               <permissions>
+                  <permission allow="true">CheckOut</permission>
+               </permissions>
+               <label-msg>checkout</label-msg>
+               <image>/images/icons/CheckOut_icon.gif</image>
+               <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
+               <action>checkoutFile</action>
+            </action>
+            
+         </action-group>
+         
+      </actions>
+   </config>
+
+</alfresco-config>

@@ -129,46 +129,39 @@
                                     </td>
                                  </tr>
                                  
+                                 <%-- Enter the message subject and body --%>
+                                 <tr><td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.email_message}" /></td></tr>
                                  <tr>
-                                    <td><h:outputText value="#{msg.subject}" />:</td>
+                                    <td style="padding-left:16px"><h:outputText value="#{msg.subject}"/>:</td>
                                     <td>
-                                       <h:inputText value="#{InviteSpaceUsersWizard.subject}" size="50" maxlength="256" />
+                                       <h:inputText id="subject" value="#{InviteSpaceUsersWizard.subject}" size="75" maxlength="1024" />&nbsp;*
                                     </td>
                                  </tr>
                                  
-                                 <tr><td colspan="2" class="paddingRow"></td></tr>
-                                 <tr><td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.action_mail_message_text}"/></td></tr>
                                  <tr>
-                                    <td valign="top"><h:outputText value="#{msg.body}" />:</td>
-                                    <td>
-                                       <h:inputTextarea value="#{InviteSpaceUsersWizard.body}" rows="2" cols="48" />
-                                    </td>
-                                 </tr>
-                                 <tr>
-                                    <td colspan=2>
-                                       <table border=0 cellspacing=2 cellpadding=0>
-                                          <tr valign="top">
+                                    <td></td>
+                                    <td valign="top">
+                                       <table cellspacing=0 cellpadding=2 border=0
+                                          <tr>
+                                             <td><h:outputText value="#{msg.action_mail_template}"/>:</td>
                                              <td>
-                                                <h:outputText value="#{msg.automatic_text}" />:
+                                                <%-- Templates drop-down selector --%>
+                                                <h:selectOneMenu value="#{InviteSpaceUsersWizard.template}">
+                                                   <f:selectItems value="#{TemplateSupportBean.emailTemplates}" />
+                                                </h:selectOneMenu>
                                              </td>
-                                             <td>
-                                                <h:outputText escape="false" value="#{InviteSpaceUsersWizard.automaticText}" />
-                                             </td>
+                                             <td><h:commandButton value="#{msg.insert_template}" actionListener="#{InviteSpaceUsersWizard.insertTemplate}" styleClass="wizardButton" /></td>
+                                             <td><h:commandButton value="#{msg.discard_template}" actionListener="#{InviteSpaceUsersWizard.discardTemplate}" styleClass="wizardButton" disabled="#{InviteSpaceUsersWizard.usingTemplate == null}" /></td>
                                           </tr>
                                        </table>
                                     </td>
                                  </tr>
                                  
-                                 <%-- template selector --%>
-                                 <tr><td colspan="2" class="paddingRow"></td></tr>
-                                 <tr><td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.action_mail_template_text}"/></td></tr>
                                  <tr>
-                                    <td valign="top"><h:outputText value="#{msg.action_mail_template}"/>:</td>
+                                    <td style="padding-left:16px"><h:outputText value="#{msg.message}"/>:</td>
                                     <td>
-                                       <%-- Email templates drop-down selector --%>
-                                       <h:selectOneMenu value="#{InviteSpaceUsersWizard.template}">
-                                          <f:selectItems value="#{TemplateSupportBean.emailTemplates}" />
-                                       </h:selectOneMenu>
+                                       <h:inputTextarea value="#{InviteSpaceUsersWizard.body}" 
+                                                        rows="4" cols="75" disabled="#{InviteSpaceUsersWizard.usingTemplate != null}" />
                                     </td>
                                  </tr>
                                  

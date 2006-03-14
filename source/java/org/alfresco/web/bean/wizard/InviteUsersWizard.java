@@ -34,6 +34,8 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -100,9 +102,9 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    private String notify = NOTIFY_YES;
    private String subject = null;
    private String body = null;
-   private String internalSubject = null;
    private String automaticText = null;
    private String template = null;
+   private String usingTemplate = null;
    
    /**
     * @return a cached list of available permissions for the type being dealt with
@@ -171,8 +173,8 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
       subject = "";
       body = "";
       automaticText = "";
-      internalSubject = null;
       template = null;
+      usingTemplate = null;
    }
 
    /**
@@ -190,12 +192,6 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
          
          tx = Repository.getUserTransaction(context);
          tx.begin();
-         
-         String subject = this.subject;
-         if (subject == null || subject.length() == 0)
-         {
-            subject = this.internalSubject;
-         }
          
          User user = Application.getCurrentUser(context);
          String from = (String)this.nodeService.getProperty(user.getPerson(), ContentModel.PROP_EMAIL);
@@ -287,22 +283,11 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
       
       if (to != null && to.length() != 0)
       {
-         FacesContext fc = FacesContext.getCurrentInstance();
-         
-         String body;
-         if (this.template == null || this.template.equals(TemplateSupportBean.NO_SELECTION) == true)
+         String body = this.body;
+         if (this.usingTemplate != null)
          {
-            String msgRole = Application.getMessage(fc, MSG_INVITED_ROLE);
-            String roleMessage = MessageFormat.format(msgRole, new Object[] {roleText});
+            FacesContext fc = FacesContext.getCurrentInstance();
             
-            body = this.internalSubject + "\r\n\r\n" + roleMessage + "\r\n\r\n";// + url + "\r\n\r\n";
-            if (this.body != null && this.body.length() != 0)
-            {
-               body += this.body;
-            }
-         }
-         else
-         {
             // use template service to format the email
             ServiceRegistry services = Repository.getServiceRegistry(fc);
             Map<String, Object> model = DefaultModelHelper.buildDefaultModel(
@@ -310,13 +295,13 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
             model.put("role", roleText);
             model.put("space", new TemplateNode(node, Repository.getServiceRegistry(fc), null));
             
-            NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.template);
+            NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.usingTemplate);
             body = services.getTemplateService().processTemplate("freemarker", templateRef.toString(), model);
          }
          
          SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
          simpleMailMessage.setTo(to);
-         simpleMailMessage.setSubject(subject);
+         simpleMailMessage.setSubject(this.subject);
          simpleMailMessage.setText(body);
          simpleMailMessage.setFrom(from);
          
@@ -556,6 +541,43 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    }
    
    /**
+    * Action handler called to insert a template as the email body
+    */
+   public void insertTemplate(ActionEvent event)
+   {
+      if (this.template != null && this.template.equals(TemplateSupportBean.NO_SELECTION) == false)
+      {
+         // get the content of the template so the user can get a basic preview of it
+         try
+         {
+            NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.template);
+            ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+            ContentReader reader = cs.getReader(templateRef, ContentModel.PROP_CONTENT);
+            if (reader != null && reader.exists())
+            {
+               this.body = reader.getContentString();
+               
+               this.usingTemplate = this.template;
+            }
+         }
+         catch (Throwable err)
+         {
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         }
+      }
+   }
+   
+   /**
+    * Action handler called to discard the template from the email body
+    */
+   public void discardTemplate(ActionEvent event)
+   {
+      this.body = this.automaticText;
+      usingTemplate = null;
+   }
+   
+   /**
     * @return Returns the notify listbox selection.
     */
    public String getNotify()
@@ -569,22 +591,6 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    public void setNotify(String notify)
    {
       this.notify = notify;
-   }
-
-   /**
-    * @return Returns the automaticText.
-    */
-   public String getAutomaticText()
-   {
-      return this.automaticText;
-   }
-
-   /**
-    * @param automaticText The automaticText to set.
-    */
-   public void setAutomaticText(String automaticText)
-   {
-      this.automaticText = automaticText;
    }
    
    /**
@@ -633,6 +639,22 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    public void setTemplate(String template)
    {
       this.template = template;
+   }
+   
+   /**
+    * @return Returns if a template has been inserted by a user for email body.
+    */
+   public String getUsingTemplate()
+   {
+      return this.usingTemplate;
+   }
+
+   /**
+    * @param usingTemplate Template that has been inserted by a user for the email body.
+    */
+   public void setUsingTemplate(String usingTemplate)
+   {
+      this.usingTemplate = usingTemplate;
    }
 
    /**
@@ -725,7 +747,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
       {
          FacesContext context = FacesContext.getCurrentInstance();
          
-         // prepare automatic text for email and screen
+         // prepare automatic text for email and display
          StringBuilder buf = new StringBuilder(256);
          
          String personName = Application.getCurrentUser(context).getFullName(getNodeService());
@@ -736,9 +758,11 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
                path + '/' + node.getName(),
                personName}) );
          
-         this.internalSubject = buf.toString();
+         // default the subject line to an informative message
+         this.subject = buf.toString();
          
-         buf.append("<br>");
+         // add the rest of the automatic body text
+         buf.append("\r\n\r\n");
          
          String msgRole = Application.getMessage(context, MSG_INVITED_ROLE);
          String roleText;
@@ -755,6 +779,9 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
          buf.append(roleText);
          
          this.automaticText = buf.toString();
+         
+         // default the body content to this text
+         this.body = this.automaticText;
       }
       
       return outcome;

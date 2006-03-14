@@ -17,6 +17,7 @@
 package org.alfresco.web.bean.wizard;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,8 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -62,6 +65,7 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
+import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIGenericPicker;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -104,6 +108,7 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    // new rule/action wizard specific properties
    protected boolean multiActionMode = false;
    protected String action;
+   protected String usingTemplate = null;
    
    protected ActionService actionService;
    protected DictionaryService dictionaryService;
@@ -144,6 +149,7 @@ public abstract class BaseActionWizard extends AbstractWizardBean
       this.actionDescriptions = null;
       this.emailRecipientsDataModel = null;
       this.emailRecipients = new ArrayList<RecipientWrapper>(4);
+      this.usingTemplate = null;
       
       this.currentActionProperties = new HashMap<String, Serializable>(3);
       
@@ -367,10 +373,9 @@ public abstract class BaseActionWizard extends AbstractWizardBean
          actionParams.put(MailActionExecuter.PARAM_FROM, from);
          
          // add the template if one was selected by the user
-         String template = (String)this.currentActionProperties.get(PROP_TEMPLATE);
-         if (template != null && template.equals(TemplateSupportBean.NO_SELECTION) == false)
+         if (this.usingTemplate != null)
          {
-            actionParams.put(MailActionExecuter.PARAM_TEMPLATE, new NodeRef(Repository.getStoreRef(), template));
+            actionParams.put(MailActionExecuter.PARAM_TEMPLATE, new NodeRef(Repository.getStoreRef(), this.usingTemplate));
          }
       }
       else if (this.action.equals(ImporterActionExecuter.NAME))
@@ -517,6 +522,7 @@ public abstract class BaseActionWizard extends AbstractWizardBean
          if (templateRef != null)
          {
             this.currentActionProperties.put(PROP_TEMPLATE, templateRef.getId());
+            this.usingTemplate = templateRef.getId();
          }
       }
       else if (this.action.equals(ImporterActionExecuter.NAME))
@@ -1026,6 +1032,22 @@ public abstract class BaseActionWizard extends AbstractWizardBean
       return this.users;
    }
    
+   /**
+    * @return Returns if a template has been inserted by a user for email body.
+    */
+   public String getUsingTemplate()
+   {
+      return this.usingTemplate;
+   }
+
+   /**
+    * @param usingTemplate Template that has been inserted by a user for the email body.
+    */
+   public void setUsingTemplate(String usingTemplate)
+   {
+      this.usingTemplate = usingTemplate;
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Action event handlers
@@ -1091,6 +1113,44 @@ public abstract class BaseActionWizard extends AbstractWizardBean
    {
       RecipientWrapper wrapper = (RecipientWrapper)this.emailRecipientsDataModel.getRowData();
       this.emailRecipients.remove(wrapper);
+   }
+   
+   /**
+    * Action handler called to insert a template as the email body
+    */
+   public void insertTemplate(ActionEvent event)
+   {
+      String template = (String)this.currentActionProperties.get(PROP_TEMPLATE);
+      if (template != null && template.equals(TemplateSupportBean.NO_SELECTION) == false)
+      {
+         // get the content of the template so the user can get a basic preview of it
+         try
+         {
+            NodeRef templateRef = new NodeRef(Repository.getStoreRef(), template);
+            ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+            ContentReader reader = cs.getReader(templateRef, ContentModel.PROP_CONTENT);
+            if (reader != null && reader.exists())
+            {
+               this.currentActionProperties.put(PROP_MESSAGE, reader.getContentString());
+               
+               usingTemplate = template;
+            }
+         }
+         catch (Throwable err)
+         {
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         }
+      }
+   }
+   
+   /**
+    * Action handler called to discard the template from the email body
+    */
+   public void discardTemplate(ActionEvent event)
+   {
+      this.currentActionProperties.put(PROP_MESSAGE, "");
+      usingTemplate = null;
    }
    
    

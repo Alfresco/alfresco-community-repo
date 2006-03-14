@@ -91,6 +91,9 @@
          <mimetype mimetype="application/msword" display="Microsoft Word">
             <extension>doc</extension>
          </mimetype>
+         <mimetype mimetype="application/wordperfect" display="WordPerfect">
+            <extension>wpd</extension>
+         </mimetype>
          <mimetype mimetype="text/xml" display="XML">
             <extension default="true">xml</extension>
             <extension display="DTD">dtd</extension>

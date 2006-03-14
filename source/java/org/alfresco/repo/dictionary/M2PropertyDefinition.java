@@ -16,11 +16,18 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 
@@ -33,49 +40,85 @@ import org.alfresco.service.namespace.QName;
 /*package*/ class M2PropertyDefinition implements PropertyDefinition
 {
     private ClassDefinition classDef;
-    private M2Property property;
+    private M2Property m2Property;
     private QName name;
     private QName propertyTypeName;
     private DataTypeDefinition dataType;
+    private List<ConstraintDefinition> constraints = new ArrayList<ConstraintDefinition>(5);
+    private Map<QName, ConstraintDefinition> constraintsByQName = new HashMap<QName, ConstraintDefinition>(7);
     
-    
-    /*package*/ M2PropertyDefinition(ClassDefinition classDef, M2Property m2Property, NamespacePrefixResolver resolver)
+    /*package*/ M2PropertyDefinition(
+            ClassDefinition classDef,
+            M2Property m2Property,
+            NamespacePrefixResolver prefixResolver)
     {
         this.classDef = classDef;
-        this.property = m2Property;
+        this.m2Property = m2Property;
 
         // Resolve Names
-        this.name = QName.createQName(property.getName(), resolver);
-        this.propertyTypeName = QName.createQName(property.getType(), resolver);
+        this.name = QName.createQName(m2Property.getName(), prefixResolver);
+        this.propertyTypeName = QName.createQName(m2Property.getType(), prefixResolver);
     }
     
     
-    /*package*/ M2PropertyDefinition(ClassDefinition classDef, PropertyDefinition propertyDef, M2PropertyOverride override)
+    /*package*/ M2PropertyDefinition(
+            ClassDefinition classDef,
+            PropertyDefinition propertyDef,
+            M2PropertyOverride override)
     {
         this.classDef = classDef;
-        this.property = createOverriddenProperty(propertyDef, override);
+        this.m2Property = createOverriddenProperty(propertyDef, override);
         this.name = propertyDef.getName();
         this.dataType = propertyDef.getDataType();
         this.propertyTypeName = this.dataType.getName();
     }
     
     
-    /*package*/ void resolveDependencies(ModelQuery query)
+    /*package*/ void resolveDependencies(
+            ModelQuery query,
+            NamespacePrefixResolver prefixResolver,
+            Map<QName, ConstraintDefinition> modelConstraints)
     {
         if (propertyTypeName == null)
         {
-            throw new DictionaryException("Property type of property " + name.toPrefixString() + " must be specified");
+            throw new DictionaryException(
+                    "d_dictionary.property.err.property_type_not_specified",
+                    name.toPrefixString());
         }
         dataType = query.getDataType(propertyTypeName);
         if (dataType == null)
         {
-            throw new DictionaryException("Property type " + propertyTypeName.toPrefixString() + " of property " + name.toPrefixString() + " is not found");
+            throw new DictionaryException(
+                    "d_dictionary.property.err.property_type_not_found",
+                    propertyTypeName.toPrefixString(), name.toPrefixString());
         }
         
         // ensure content properties are not multi-valued
         if (propertyTypeName.equals(DataTypeDefinition.CONTENT) && isMultiValued())
         {
-            throw new DictionaryException("Content properties must be single-valued");
+            throw new DictionaryException("d_dictionary.property.err.single_valued_content");
+        }
+
+        // Construct constraints
+        for (M2Constraint constraint : m2Property.getConstraints())
+        {
+            ConstraintDefinition def = new M2ConstraintDefinition(this, constraint, prefixResolver);
+            QName qname = def.getName();
+            if (constraintsByQName.containsKey(qname))
+            {
+                throw new DictionaryException(
+                        "d_dictionary.property.err.duplicate_constraint_on_property",
+                        def.getName().toPrefixString(), name.toPrefixString());
+            }
+            else if (modelConstraints.containsKey(qname))
+            {
+                throw new DictionaryException(
+                        "d_dictionary.model.err.duplicate_constraint_on_model",
+                        def.getName().toPrefixString());
+            }
+            constraintsByQName.put(qname, def);
+            constraints.add(def);
+            modelConstraints.put(qname, def);
         }
     }
     
@@ -153,7 +196,7 @@ import org.alfresco.service.namespace.QName;
         String value = M2Label.getLabel(classDef.getModel(), "property", name, "title"); 
         if (value == null)
         {
-            value = property.getTitle();
+            value = m2Property.getTitle();
         }
         return value;
     }
@@ -167,7 +210,7 @@ import org.alfresco.service.namespace.QName;
         String value = M2Label.getLabel(classDef.getModel(), "property", name, "description"); 
         if (value == null)
         {
-            value = property.getDescription();
+            value = m2Property.getDescription();
         }
         return value;
     }
@@ -178,7 +221,7 @@ import org.alfresco.service.namespace.QName;
      */
     public String getDefaultValue()
     {
-        return property.getDefaultValue();
+        return m2Property.getDefaultValue();
     }
 
     
@@ -205,7 +248,7 @@ import org.alfresco.service.namespace.QName;
      */
     public boolean isMultiValued()
     {
-        return property.isMultiValued();
+        return m2Property.isMultiValued();
     }
 
     
@@ -214,7 +257,7 @@ import org.alfresco.service.namespace.QName;
      */
     public boolean isMandatory()
     {
-        return property.isMandatory();
+        return m2Property.isMandatory();
     }
     
 
@@ -223,7 +266,7 @@ import org.alfresco.service.namespace.QName;
      */
     public boolean isProtected()
     {
-        return property.isProtected();
+        return m2Property.isProtected();
     }
     
 
@@ -232,7 +275,7 @@ import org.alfresco.service.namespace.QName;
      */
     public boolean isIndexed()
     {
-        return property.isIndexed();
+        return m2Property.isIndexed();
     }
     
 
@@ -241,7 +284,7 @@ import org.alfresco.service.namespace.QName;
      */
     public boolean isStoredInIndex()
     {
-        return property.isStoredInIndex();
+        return m2Property.isStoredInIndex();
     }
     
 
@@ -250,7 +293,7 @@ import org.alfresco.service.namespace.QName;
      */
     public boolean isIndexedAtomically()
     {
-        return property.isIndexedAtomically();
+        return m2Property.isIndexedAtomically();
     }
     
 
@@ -259,7 +302,11 @@ import org.alfresco.service.namespace.QName;
      */
     public boolean isTokenisedInIndex()
     {
-        return property.isTokenisedInIndex();
+        return m2Property.isTokenisedInIndex();
     }
-    
+
+    public List<ConstraintDefinition> getConstraints()
+    {
+        return Collections.unmodifiableList(constraints);
+    }
 }

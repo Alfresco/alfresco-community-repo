@@ -19,6 +19,7 @@ package org.alfresco.repo.dictionary;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -147,5 +148,17 @@ import org.alfresco.service.namespace.QName;
         }
         return def;
     }
-    
+
+    /* (non-Javadoc)
+     * @see ModelQuery#getConstraint(QName)
+     */
+    public ConstraintDefinition getConstraint(QName name)
+    {
+        ConstraintDefinition def = query.getConstraint(name);
+        if (def == null)
+        {
+            def = delegate.getConstraint(name);
+        }
+        return def;
+    }
 }

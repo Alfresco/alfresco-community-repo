@@ -27,6 +27,7 @@ import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -166,7 +167,10 @@ import org.alfresco.service.namespace.QName;
     }
     
     
-    /*package*/ void resolveDependencies(ModelQuery query)
+    /*package*/ void resolveDependencies(
+            ModelQuery query,
+            NamespacePrefixResolver prefixResolver,
+            Map<QName, ConstraintDefinition> modelConstraints)
     {
         if (parentName != null)
         {
@@ -179,7 +183,7 @@ import org.alfresco.service.namespace.QName;
         
         for (PropertyDefinition def : properties.values())
         {
-            ((M2PropertyDefinition)def).resolveDependencies(query);
+            ((M2PropertyDefinition)def).resolveDependencies(query, prefixResolver, modelConstraints);
         }
         for (AssociationDefinition def : associations.values())
         {

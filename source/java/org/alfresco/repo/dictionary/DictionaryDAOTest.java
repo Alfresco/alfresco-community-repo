@@ -21,7 +21,11 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.dictionary.constraint.RegexConstraint;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.Constraint;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -33,15 +37,20 @@ import org.alfresco.service.namespace.QName;
 
 public class DictionaryDAOTest extends TestCase
 {
-    
+    public static final String TEST_RESOURCE_MESSAGES = "alfresco/messages/dictionary-messages";
+
+    private static final String TEST_URL = "http://www.alfresco.org/test/dictionarydaotest/1.0";
     private static final String TEST_MODEL = "org/alfresco/repo/dictionary/dictionarydaotest_model.xml";
     private static final String TEST_BUNDLE = "org/alfresco/repo/dictionary/dictionarydaotest_model";
-    private DictionaryService service; 
+    private DictionaryService service;
     
     
     @Override
     public void setUp()
     {
+        // register resource bundles for messages
+        I18NUtil.registerResourceBundle(TEST_RESOURCE_MESSAGES);
+        
         // Instantiate Dictionary Service
         NamespaceDAO namespaceDAO = new NamespaceDAOImpl();
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl(namespaceDAO);
@@ -90,34 +99,59 @@ public class DictionaryDAOTest extends TestCase
 
     public void testLabels()
     {
-        QName model = QName.createQName("http://www.alfresco.org/test/dictionarydaotest/1.0", "dictionarydaotest");
+        QName model = QName.createQName(TEST_URL, "dictionarydaotest");
         ModelDefinition modelDef = service.getModel(model);
         assertEquals("Model Description", modelDef.getDescription());
-        QName type = QName.createQName("http://www.alfresco.org/test/dictionarydaotest/1.0", "base");
+        QName type = QName.createQName(TEST_URL, "base");
         TypeDefinition typeDef = service.getType(type);
         assertEquals("Base Title", typeDef.getTitle());
         assertEquals("Base Description", typeDef.getDescription());
-        QName prop = QName.createQName("http://www.alfresco.org/test/dictionarydaotest/1.0", "prop1");
+        QName prop = QName.createQName(TEST_URL, "prop1");
         PropertyDefinition propDef = service.getProperty(prop);
         assertEquals("Prop1 Title", propDef.getTitle());
         assertEquals("Prop1 Description", propDef.getDescription());
-        QName assoc = QName.createQName("http://www.alfresco.org/test/dictionarydaotest/1.0", "assoc1");
+        QName assoc = QName.createQName(TEST_URL, "assoc1");
         AssociationDefinition assocDef = service.getAssociation(assoc);
         assertEquals("Assoc1 Title", assocDef.getTitle());
         assertEquals("Assoc1 Description", assocDef.getDescription());
-        QName datatype = QName.createQName("http://www.alfresco.org/test/dictionarydaotest/1.0", "datatype");
+        QName datatype = QName.createQName(TEST_URL, "datatype");
         DataTypeDefinition datatypeDef = service.getDataType(datatype);
         assertEquals("Datatype Analyser", datatypeDef.getAnalyserClassName());
+    }
+    
+    public void testConstraints()
+    {
+        // get the constraints for a property without constraints
+        QName propNoConstraintsQName = QName.createQName(TEST_URL, "fileprop");
+        PropertyDefinition propNoConstraintsDef = service.getProperty(propNoConstraintsQName);
+        assertNotNull("Property without constraints returned empty list", propNoConstraintsDef.getConstraints());
+        
+        // get the constraints defined for the property
+        QName prop1QName = QName.createQName(TEST_URL, "prop1");
+        PropertyDefinition propDef = service.getProperty(prop1QName);
+        List<ConstraintDefinition> constraints = propDef.getConstraints();
+        assertNotNull("Null constraints list", constraints);
+        assertEquals("Incorrect number of constraints", 1, constraints.size());
+        
+        // check the individual constraints
+        ConstraintDefinition constraintDef = constraints.get(0);
+        assertTrue("Constraint anonymous name incorrect", constraintDef.getName().getLocalName().startsWith("prop1_anon"));
+        // check that the constraint implementation is valid (it used a reference)
+        Constraint constraint = constraintDef.getConstraint();
+        assertNotNull("Reference constraint has no implementation", constraint);
+        
+        // make sure it is the correct type of constraint
+        assertTrue("Expected type REGEX constraint", constraint instanceof RegexConstraint);
     }
     
     
     public void testSubClassOf()
     {
-        QName invalid = QName.createQName("http://www.alfresco.org/test/dictionarydaotest/1.0", "invalid");
-        QName base = QName.createQName("http://www.alfresco.org/test/dictionarydaotest/1.0", "base");
-        QName file = QName.createQName("http://www.alfresco.org/test/dictionarydaotest/1.0", "file");
-        QName folder = QName.createQName("http://www.alfresco.org/test/dictionarydaotest/1.0", "folder");
-        QName referenceable = QName.createQName("http://www.alfresco.org/test/dictionarydaotest/1.0", "referenceable");
+        QName invalid = QName.createQName(TEST_URL, "invalid");
+        QName base = QName.createQName(TEST_URL, "base");
+        QName file = QName.createQName(TEST_URL, "file");
+        QName folder = QName.createQName(TEST_URL, "folder");
+        QName referenceable = QName.createQName(TEST_URL, "referenceable");
 
         // Test invalid args
         try

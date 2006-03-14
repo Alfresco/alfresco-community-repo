@@ -19,31 +19,16 @@ package org.alfresco.service.cmr.dictionary;
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Base Exception of Data Dictionary Exceptions.
+ * Thrown when property value fails to meet a property constraint.
  * 
- * @author David Caruana
+ * @author Derek Hulley
  */
-public class DictionaryException extends AlfrescoRuntimeException
+public class ConstraintException extends AlfrescoRuntimeException
 {
-    private static final long serialVersionUID = 3257008761007847733L;
+    private static final long serialVersionUID = -3925105163386197586L;
 
-    public DictionaryException(String msg)
-    {
-       super(msg);
-    }
-    
-    public DictionaryException(String msg, Throwable cause)
-    {
-       super(msg, cause);
-    }
-
-    public DictionaryException(String msgId, Object ... args)
+    public ConstraintException(String msgId, Object ... args)
     {
         super(msgId, args);
-    }
-
-    public DictionaryException(String msgId, Throwable cause, Object ... args)
-    {
-        super(msgId, args, cause);
     }
 }

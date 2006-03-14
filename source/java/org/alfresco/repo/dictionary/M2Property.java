@@ -16,6 +16,9 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.util.Collections;
+import java.util.List;
+
 
 /**
  * Property Definition
@@ -37,7 +40,7 @@ public class M2Property
     private boolean isIndexedAtomically = true;
     private boolean isStoredInIndex = false;
     private boolean isTokenisedInIndex = true;
-    
+    private List<M2Constraint> constraints;
 
     /*package*/ M2Property()
     {
@@ -192,5 +195,17 @@ public class M2Property
     {
         this.isTokenisedInIndex = isTokenisedInIndex;
     }
-    
+
+
+    public List<M2Constraint> getConstraints()
+    {
+        if (constraints == null)
+        {
+            return Collections.emptyList();
+        }
+        else
+        {
+            return constraints;
+        }
+    }
 }

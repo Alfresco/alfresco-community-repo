@@ -24,6 +24,7 @@ import java.util.Map;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
@@ -144,7 +145,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         if (model == null)
         {
             // TODO: Load model from persistent store 
-            throw new DictionaryException("Model " + modelName + " does not exist");
+            throw new DictionaryException("d_dictionary.model.err.no_model", modelName);
         }
         return model;
     }
@@ -226,6 +227,11 @@ public class DictionaryDAOImpl implements DictionaryDAO
         return (model == null) ? null : model.getProperty(propertyName);
     }
     
+    public ConstraintDefinition getConstraint(QName constraintQName)
+    {
+        CompiledModel model = getCompiledModelForNamespace(constraintQName.getNamespaceURI());
+        return (model == null) ? null : model.getConstraint(constraintQName);
+    }
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.impl.ModelQuery#getAssociation(org.alfresco.repo.ref.QName)
@@ -288,7 +294,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         TypeDefinition typeDef = getType(type);
         if (typeDef == null)
         {
-            throw new DictionaryException("Failed to create anonymous type as specified type " + type + " not found");
+            throw new DictionaryException("d_dictionary.model.err.type_not_found", type);
         }
         Collection<AspectDefinition> aspectDefs = new ArrayList<AspectDefinition>();
         if (aspects != null)
@@ -298,7 +304,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
                 AspectDefinition aspectDef = getAspect(aspect);
                 if (typeDef == null)
                 {
-                    throw new DictionaryException("Failed to create anonymous type as specified aspect " + aspect + " not found");
+                    throw new DictionaryException("d_dictionary.model.err.aspect_not_found", aspect);
                 }
                 aspectDefs.add(aspectDef);
             }

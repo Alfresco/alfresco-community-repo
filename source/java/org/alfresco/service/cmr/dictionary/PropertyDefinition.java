@@ -16,6 +16,8 @@
  */
 package org.alfresco.service.cmr.dictionary;
 
+import java.util.List;
+
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -98,4 +100,10 @@ public interface PropertyDefinition
      */
     public boolean isIndexedAtomically();
     
+    /**
+     * Get all constraints that apply to the property value
+     * 
+     * @return Returns a list of property constraint definitions
+     */
+    public List<ConstraintDefinition> getConstraints();
 }

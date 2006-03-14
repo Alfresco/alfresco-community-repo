@@ -71,6 +71,7 @@
     			<value>alfresco.messages.template-service</value>
     			<value>alfresco.messages.lock-service</value>
     			<value>alfresco.messages.patch-service</value>
+    			<value>alfresco.messages.dictionary-messages</value>
     		</list>
     	</property>
     </bean>

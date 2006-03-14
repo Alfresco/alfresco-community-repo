@@ -21,6 +21,12 @@
       </data-type>
 
    </data-types>
+   
+   <constraints>
+      <constraint name="test:regex1" type="REGEX">
+         <parameter name="expression">[A-Z]*</parameter>
+      </constraint>
+   </constraints>
 
    <types>
       
@@ -34,6 +40,9 @@
                <type>d:text</type>
                <protected>true</protected>
                <default></default>
+               <constraints>
+                  <constraint ref="test:regex1"/>
+               </constraints>
             </property>
          </properties>
          

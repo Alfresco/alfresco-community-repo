@@ -41,6 +41,10 @@
          </collection>
       </structure>
 
+      <structure name="constraints" usage="optional">
+         <collection field="constraints" item-type="org.alfresco.repo.dictionary.M2Constraint" factory="org.alfresco.repo.dictionary.M2Model.createList"/>
+      </structure>
+      
       <structure name="types" usage="optional">
          <collection field="types" item-type="org.alfresco.repo.dictionary.M2Type" factory="org.alfresco.repo.dictionary.M2Model.createList"/>
       </structure>
@@ -102,6 +106,24 @@
          <value name="stored" field="isStoredInIndex" usage="optional"/>
          <value name="tokenised" field="isTokenisedInIndex" usage="optional"/>
       </structure>
+      <structure name="constraints" usage="optional">
+         <collection field="constraints" item-type="org.alfresco.repo.dictionary.M2Constraint" factory="org.alfresco.repo.dictionary.M2Model.createList"/>
+      </structure>
+   </mapping>
+
+   <mapping abstract="true" class="org.alfresco.repo.dictionary.M2NamedValue">
+      <value style="attribute" name="name" field="name" />
+      <value style="text" field="value"/>
+   </mapping>
+
+   <mapping name="constraint" class="org.alfresco.repo.dictionary.M2Constraint">
+      <value style="attribute" name="name" field="name" usage="optional"/>
+      <value style="attribute" name="type" field="type" usage="optional"/>
+      <value style="attribute" name="ref" field="ref" usage="optional"/>
+      <value name="description" field="description" usage="optional"/>
+      <collection field="parameters" factory="org.alfresco.repo.dictionary.M2Model.createList" usage="optional">
+         <structure name="parameter" type="org.alfresco.repo.dictionary.M2NamedValue" />
+      </collection>
    </mapping>
 
    <mapping class="org.alfresco.repo.dictionary.M2ClassAssociation" abstract="true">

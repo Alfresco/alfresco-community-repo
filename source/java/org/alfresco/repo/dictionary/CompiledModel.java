@@ -26,6 +26,7 @@ import java.util.TreeMap;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -66,7 +67,7 @@ import org.apache.commons.logging.LogFactory;
     private Map<QName, AspectDefinition> aspects = new HashMap<QName, AspectDefinition>();
     private Map<QName, PropertyDefinition> properties = new HashMap<QName, PropertyDefinition>();
     private Map<QName, AssociationDefinition> associations = new HashMap<QName, AssociationDefinition>();
-    
+    private Map<QName, ConstraintDefinition> constraints = new HashMap<QName, ConstraintDefinition>();
     
     /**
      * Construct
@@ -82,11 +83,11 @@ import org.apache.commons.logging.LogFactory;
             // Phase 1: Construct model definitions from model entries
             //          resolving qualified names
             this.model = model;
-            constructDefinitions(model, dictionaryDAO, namespaceDAO);
+            constructDefinitions(model, namespaceDAO);
     
             // Phase 2: Resolve dependencies between model definitions
             ModelQuery query = new DelegateModelQuery(this, dictionaryDAO);
-            resolveDependencies(query);
+            resolveDependencies(query, namespaceDAO);
             
             // Phase 3: Resolve inheritance of values within class hierachy
             resolveInheritance(query);
@@ -111,10 +112,9 @@ import org.apache.commons.logging.LogFactory;
      * Construct compiled definitions
      * 
      * @param model model definition
-     * @param dictionaryDAO dictionary DAO
      * @param namespaceDAO namespace DAO
      */
-    private void constructDefinitions(M2Model model, DictionaryDAO dictionaryDAO, NamespaceDAO namespaceDAO)
+    private void constructDefinitions(M2Model model, NamespaceDAO namespaceDAO)
     {
         NamespacePrefixResolver localPrefixes = createLocalPrefixResolver(model, namespaceDAO);
     
@@ -154,6 +154,18 @@ import org.apache.commons.logging.LogFactory;
             }
             classes.put(def.getName(), def);
             aspects.put(def.getName(), def);
+        }
+        
+        // Construct Constraint Definitions
+        for (M2Constraint constraint : model.getConstraints())
+        {
+            M2ConstraintDefinition def = new M2ConstraintDefinition(modelDefinition, null, constraint, localPrefixes);
+            QName qname = def.getName();
+            if (constraints.containsKey(qname))
+            {
+                throw new DictionaryException("Found duplicate constraint definition " + constraint.getName() + " (an aspect)");
+            }
+            constraints.put(qname, def);
         }
     }    
     
@@ -196,15 +208,21 @@ import org.apache.commons.logging.LogFactory;
      * 
      * @param query support for querying other items in model
      */
-    private void resolveDependencies(ModelQuery query)
+    private void resolveDependencies(ModelQuery query, NamespaceDAO namespaceDAO)
     {
+        NamespacePrefixResolver prefixResolver = createLocalPrefixResolver(model, namespaceDAO);
+        
         for (DataTypeDefinition def : dataTypes.values())
         {
             ((M2DataTypeDefinition)def).resolveDependencies(query);
         }
         for (ClassDefinition def : classes.values())
         {
-            ((M2ClassDefinition)def).resolveDependencies(query);
+            ((M2ClassDefinition)def).resolveDependencies(query, prefixResolver, constraints);
+        }
+        for (ConstraintDefinition def : constraints.values())
+        {
+            ((M2ConstraintDefinition)def).resolveDependencies(query);
         }
     }
         
@@ -363,4 +381,11 @@ import org.apache.commons.logging.LogFactory;
         return associations.get(name);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.impl.ModelQuery#getConstraint(QName)
+     */
+    public ConstraintDefinition getConstraint(QName name)
+    {
+        return constraints.get(name);
+    }
 }

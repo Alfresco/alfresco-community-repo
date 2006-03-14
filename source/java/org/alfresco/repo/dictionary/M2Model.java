@@ -50,7 +50,7 @@ public class M2Model
     private List<M2DataType> dataTypes = new ArrayList<M2DataType>();
     private List<M2Type> types = new ArrayList<M2Type>();
     private List<M2Aspect> aspects = new ArrayList<M2Aspect>();
-    
+    private List<M2Constraint> constraints = new ArrayList<M2Constraint>();
 
     private M2Model()
     {
@@ -379,8 +379,13 @@ public class M2Model
         return null;
     }
 
-    
+    public List<M2Constraint> getConstraints()
+    {
+        return Collections.unmodifiableList(constraints);
+    }
+
     // Do not delete: referenced by m2binding.xml
+    @SuppressWarnings("unused")
     private static List createList()
     {
         return new ArrayList();

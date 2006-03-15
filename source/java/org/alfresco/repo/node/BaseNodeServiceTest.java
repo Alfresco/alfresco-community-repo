@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
@@ -39,8 +38,6 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -1490,58 +1487,5 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 "   nodes per graph: " + nodesPerGraph + "\n" +
                 "   total nodes: " + totalNodes + "\n" +
                 "   total assocs: " + totalAssocs);
-    }
-    
-    /**
-     * Builds N node graphs, flushing after each build.  Checks that memory is being cleared
-     * adequately.
-     * <p>
-     * This is also a good test of performance, so that is dumped.
-     * 
-     * @see BaseNodeServiceTest#buildNodeGraph()
-     */
-    public void testFlush() throws Exception
-    {
-        setComplete();
-        endTransaction();
-        
-        final int testCount = 500;
-        
-        garbageCollect();
-        
-        final long startBytes = Runtime.getRuntime().freeMemory();
-        final long startTime = System.nanoTime();
-        
-        TransactionWork<Map<QName, ChildAssociationRef>> buildWork = new TransactionWork<Map<QName, ChildAssociationRef>>()
-        {
-            public Map<QName, ChildAssociationRef> doWork()
-            {
-                Map<QName, ChildAssociationRef> nodeGraph = Collections.emptyMap();
-                try
-                {
-                    for (int i = 0; i < testCount; i++)
-                    {
-                        nodeGraph = buildNodeGraph();
-                        AlfrescoTransactionSupport.flush();
-                    }
-                    
-                    // report
-                    reportFlushPerformance("Statistics pre-commit", nodeGraph, testCount, startBytes, startTime);
-                }
-                catch (OutOfMemoryError e)
-                {
-                    fail("Flush not clearing memory");
-                }
-                catch (Exception e)
-                {
-                    throw new AlfrescoRuntimeException("Node graph building failed", e);
-                }
-                return nodeGraph;
-            }
-        };
-        Map<QName, ChildAssociationRef> nodeGraph = TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, buildWork);
-        
-        // report post-commit stats
-        reportFlushPerformance("Statistics post-commit", nodeGraph, testCount, startBytes, startTime);
     }
 }

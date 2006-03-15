@@ -14,6 +14,12 @@
       <namespace uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
    </namespaces>
 
+   <constraints>
+      <constraint name="cm:filename" type="REGEX">
+         <parameter name="expression"><![CDATA[[^\"\*\\\>\<\?\/\:\|\¬\£\%\&\+\;]+]]></parameter>
+         <parameter name="requiresMatch">true</parameter>
+      </constraint>
+   </constraints>
    
    <types>
    
@@ -25,6 +31,9 @@
                <title>Name</title>
                <type>d:text</type>
                <mandatory>true</mandatory>
+               <constraints>
+                  <constraint ref="cm:filename" />
+               </constraints>
             </property>
          </properties>
          <mandatory-aspects>

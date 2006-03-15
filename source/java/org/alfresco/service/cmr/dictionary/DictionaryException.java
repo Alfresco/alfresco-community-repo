@@ -27,14 +27,14 @@ public class DictionaryException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = 3257008761007847733L;
 
-    public DictionaryException(String msg)
+    public DictionaryException(String msgId)
     {
-       super(msg);
+       super(msgId);
     }
     
-    public DictionaryException(String msg, Throwable cause)
+    public DictionaryException(String msgId, Throwable cause)
     {
-       super(msg, cause);
+       super(msgId, cause);
     }
 
     public DictionaryException(String msgId, Object ... args)

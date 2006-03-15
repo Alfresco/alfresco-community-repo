@@ -23,10 +23,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.Constraint;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -52,11 +54,8 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
     
     public void checkIntegrity(List<IntegrityRecord> eventResults)
     {
-        try
-        {
-            checkAllProperties(getNodeRef(), eventResults);
-        }
-        catch (InvalidNodeRefException e)
+        NodeRef nodeRef = getNodeRef();
+        if (!nodeService.exists(nodeRef))
         {
             // node has gone
             if (logger.isDebugEnabled())
@@ -65,6 +64,10 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
             }
             eventResults.clear();
             return;
+        }
+        else
+        {
+            checkAllProperties(getNodeRef(), eventResults);
         }
     }
 
@@ -123,7 +126,6 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
         for (PropertyDefinition propertyDef : propertyDefs)
         {
             QName propertyQName = propertyDef.getName();
-            Serializable propertyValue = nodeProperties.get(propertyQName);
             // check that mandatory properties are set
             if (propertyDef.isMandatory() && !nodeProperties.containsKey(propertyQName))
             {
@@ -136,7 +138,30 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
                 // next one
                 continue;
             }
-            // TODO: Incorporate value constraint checks - JIRA AR166
+            Serializable propertyValue = nodeProperties.get(propertyQName);
+            // check constraints
+            List<ConstraintDefinition> constraintDefs = propertyDef.getConstraints();
+            for (ConstraintDefinition constraintDef : constraintDefs)
+            {
+                // get the constraint implementation
+                Constraint constraint = constraintDef.getConstraint();
+                try
+                {
+                    constraint.evaluate(propertyValue);
+                }
+                catch (ConstraintException e)
+                {
+                    IntegrityRecord result = new IntegrityRecord(
+                            "Invalid property value: \n" +
+                            "   Node: " + nodeRef + "\n" +
+                            "   Type: " + typeQName + "\n" +
+                            "   Property: " + propertyQName + "\n" +
+                            "   Constraint: " + e.getMessage());
+                    eventResults.add(result);
+                    // next one
+                    continue;
+                }
+            }
         }
     }
 }

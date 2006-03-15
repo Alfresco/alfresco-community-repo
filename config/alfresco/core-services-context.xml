@@ -400,7 +400,7 @@
     	<property name="dictionaryDAO"><ref local="dictionaryDAO"/></property>
     </bean>
     
-    <bean id="dictionaryBootstrap" parent="dictionaryModelBootstrap">
+    <bean id="dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="resourceBundles">
         <property name="models">
             <list>
                 <value>alfresco/model/dictionaryModel.xml</value>

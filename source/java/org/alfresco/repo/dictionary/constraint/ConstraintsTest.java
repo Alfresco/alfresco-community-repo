@@ -23,9 +23,11 @@ import junit.framework.TestCase;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.dictionary.DictionaryDAOTest;
-import org.alfresco.service.cmr.dictionary.DictionaryException;
+import org.alfresco.service.cmr.dictionary.ConstraintException;
 
 /**
+ * <b>This file must be saved using UTF-8.</b>
+ * 
  * @see org.alfresco.service.cmr.dictionary.Constraint
  * @see org.alfresco.repo.dictionary.constraint.AbstractConstraint
  * @see org.alfresco.repo.dictionary.constraint.RegexConstraint
@@ -58,7 +60,7 @@ public class ConstraintsTest extends TestCase
             constraint.evaluate(dummyObjects);
             fail("Failed to detected constraint violation in collection");
         }
-        catch (DictionaryException e)
+        catch (ConstraintException e)
         {
             // expected
         }
@@ -70,6 +72,7 @@ public class ConstraintsTest extends TestCase
     {
         RegexConstraint constraint = new RegexConstraint();
         constraint.setExpression("[A-Z]*");
+        constraint.setRequiresMatch(true);
         constraint.initialize();
         
         // do some successful stuff
@@ -82,7 +85,7 @@ public class ConstraintsTest extends TestCase
             constraint.evaluate("abc");
             fail("Regular expression evaluation should have failed: abc");
         }
-        catch (DictionaryException e)
+        catch (ConstraintException e)
         {
             String msg = e.getMessage();
             assertFalse("I18N of constraint message failed", msg.startsWith("d_dictionary.constraint"));
@@ -96,9 +99,56 @@ public class ConstraintsTest extends TestCase
             constraint.evaluate(DummyEnum.abc);
             fail("Regular expression evaluation should have failed for enum: " + DummyEnum.abc);
         }
-        catch (DictionaryException e)
+        catch (ConstraintException e)
         {
         }
+        
+        // now switch the requiresMatch around
+        constraint.setRequiresMatch(false);
+        constraint.initialize();
+        
+        constraint.evaluate(DummyEnum.abc);
+    }
+    
+    public void testRegexConstraintFilename() throws Exception
+    {
+        // we assume UTF-8
+        String expression = "[^\\\"\\*\\\\\\>\\<\\?\\/\\:\\|\\¬\\£\\%\\&\\+\\;]+";
+        String invalidChars = "\"*\\><?/:|¬£%&+;";
+        
+        RegexConstraint constraint = new RegexConstraint();
+        constraint.setExpression(expression);
+        constraint.setRequiresMatch(true);
+        constraint.initialize();
+        
+        // check that all the invalid chars cause failures
+        for (int i = 0; i < invalidChars.length(); i++)
+        {
+            String invalidStr = invalidChars.substring(i, i+1);
+            try
+            {
+                constraint.evaluate(invalidStr);
+                fail("Regex constraint failed to detect illegal characters: \n" +
+                        "   constraint: " + constraint + "\n" +
+                        "   invalid string: " + invalidStr);
+            }
+            catch (ConstraintException e)
+            {
+                // expected
+            }
+        }
+        // check a bogus filename
+        try
+        {
+            constraint.evaluate("Bogus<>.txt");
+            fail("Failed to detect invalid filename");
+        }
+        catch (ConstraintException e)
+        {
+            // expected
+        }
+        // ... and a valid one
+        constraint.evaluate("Company Home");
     }
     
     private enum DummyEnum
@@ -135,7 +185,7 @@ public class ConstraintsTest extends TestCase
             }
             else
             {
-                throw new DictionaryException("Non-String value");
+                throw new ConstraintException("Non-String value");
             }
         }
     }

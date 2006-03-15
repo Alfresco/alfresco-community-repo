@@ -19,6 +19,7 @@ package org.alfresco.repo.dictionary.constraint;
 import java.util.Collection;
 
 import org.alfresco.service.cmr.dictionary.Constraint;
+import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 
 /**
@@ -28,8 +29,8 @@ import org.alfresco.service.cmr.dictionary.DictionaryException;
  */
 public abstract class AbstractConstraint implements Constraint
 {
-    public static final String ERR_PROP_NOT_SET = "d_dictionary.model.err.property_not_set";
-    public static final String ERR_EVALUATE_EXCEPTION = "d_dictionary.model.err.evaluate_exception";
+    public static final String ERR_PROP_NOT_SET = "d_dictionary.constraint.err.property_not_set";
+    public static final String ERR_EVALUATE_EXCEPTION = "d_dictionary.constraint.err.evaluate_exception";
 
     /**
      * @see #evaluateSingleValue(Object)
@@ -51,7 +52,7 @@ public abstract class AbstractConstraint implements Constraint
                 evaluateSingleValue(value);
             }
         }
-        catch (DictionaryException e)
+        catch (ConstraintException e)
         {
             // this can go
             throw e;
@@ -82,7 +83,7 @@ public abstract class AbstractConstraint implements Constraint
      * Support for evaluation of properties.  The value passed in will never be a
      * collection.
      * 
-     * @throws DictionaryException throw this when the evaluation fails
+     * @throws ConstraintException throw this when the evaluation fails
      */
     protected abstract void evaluateSingleValue(Object value);
 }

@@ -27,6 +27,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.TypeMismatchException;
 
 /**
  * Compiled Property Constraint
@@ -35,13 +36,14 @@ import org.springframework.beans.BeanWrapperImpl;
  */
 /*package*/ class M2ConstraintDefinition implements ConstraintDefinition
 {
-    public static final String ERR_CYCLIC_REF = "d_dictionary.model.err.cyclic_ref";
+    public static final String ERR_CYCLIC_REF = "d_dictionary.constraint.err.cyclic_ref";
     public static final String ERR_TYPE_AND_REF = "d_dictionary.constraint.err.type_and_ref";
     public static final String ERR_TYPE_OR_REF = "d_dictionary.constraint.err.type_or_ref";
     public static final String ERR_REF_NOT_FOUND = "d_dictionary.constraint.err.ref_not_found";
     public static final String ERR_ANON_NEEDS_PROPERTY = "d_dictionary.constraint.err.anon_needs_property";
     public static final String ERR_INVALID_TYPE = "d_dictionary.constraint.err.invalid_type";
     public static final String ERR_CONSTRUCT_FAILURE = "d_dictionary.constraint.err.construct_failure";
+    public static final String ERR_PROPERTY_MISMATCH = "d_dictionary.constraint.err.property_mismatch";
 
     private static int anonPropCount = 0;
     
@@ -174,7 +176,14 @@ import org.springframework.beans.BeanWrapperImpl;
             List<M2NamedValue> constraintNamedValues = m2Constraint.getParameters();
             for (M2NamedValue namedValue : constraintNamedValues)
             {
-                beanWrapper.setPropertyValue(namedValue.getName(), namedValue.getValue());
+                try
+                {
+                    beanWrapper.setPropertyValue(namedValue.getName(), namedValue.getValue());
+                }
+                catch (TypeMismatchException e)
+                {
+                    throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, namedValue.getName(), shortName);
+                }
             }
             // now initialize
             constraint.initialize();

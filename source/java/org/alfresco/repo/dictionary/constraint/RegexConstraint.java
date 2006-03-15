@@ -16,7 +16,10 @@
  */
 package org.alfresco.repo.dictionary.constraint;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
@@ -25,16 +28,35 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
  * Where possible, the {@link org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter type converter}
  * will be used to first convert the value to a <code>String</code>, so the evaluation
  * will be against the value's <code>String</code> equivalent.
+ * <p>
+ * The failure condition can be changed to occur either on a match or on a non-match by using
+ * the {@link #setRequiresMatch(boolean) requiresMatch} property.  The default is <tt>true</tt>, i.e.
+ * failures will occur if the object value does not match the given expression.
  * 
  * @see java.lang.String#matches(java.lang.String)
+ * @see java.util.regex.Pattern
  * 
  * @author Derek Hulley
  */
 public class RegexConstraint extends AbstractConstraint
 {
     public static final String CONSTRAINT_REGEX_NO_MATCH = "d_dictionary.constraint.regex.no_match";
+    public static final String CONSTRAINT_REGEX_MATCH = "d_dictionary.constraint.regex.match";
 
     private String expression;
+    private Pattern patternMatcher;
+    private boolean requiresMatch = true;
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(80);
+        sb.append("RegexConstraint")
+          .append("[ expression=").append(expression)
+          .append(", requiresMatch=").append(requiresMatch)
+          .append("]");
+        return sb.toString();
+    }
 
     /**
      * Set the regular expression used to evaluate string values
@@ -44,6 +66,11 @@ public class RegexConstraint extends AbstractConstraint
     {
         this.expression = expression;
     }
+    
+    public void setRequiresMatch(boolean requiresMatch)
+    {
+        this.requiresMatch = requiresMatch;
+    }
 
     public void initialize()
     {
@@ -51,16 +78,25 @@ public class RegexConstraint extends AbstractConstraint
         {
             throw new DictionaryException(AbstractConstraint.ERR_PROP_NOT_SET, "expression");
         }
+        this.patternMatcher = Pattern.compile(expression);
     }
 
-    public void evaluateSingleValue(Object value)
+    protected void evaluateSingleValue(Object value)
     {
         // convert the value to a String
         String valueStr = DefaultTypeConverter.INSTANCE.convert(String.class, value);
-        boolean matches = valueStr.matches(expression);
-        if (!matches)
+        Matcher matcher = patternMatcher.matcher(valueStr);
+        boolean matches = matcher.matches();
+        if (matches != requiresMatch)
         {
-            throw new DictionaryException(RegexConstraint.CONSTRAINT_REGEX_NO_MATCH, value, expression);
+            if (requiresMatch)
+            {
+                throw new ConstraintException(RegexConstraint.CONSTRAINT_REGEX_NO_MATCH, value, expression);
+            }
+            else
+            {
+                throw new ConstraintException(RegexConstraint.CONSTRAINT_REGEX_MATCH, value, expression);
+            }
         }
     }
 }

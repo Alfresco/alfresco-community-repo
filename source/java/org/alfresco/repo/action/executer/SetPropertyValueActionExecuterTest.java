@@ -73,9 +73,6 @@ public class SetPropertyValueActionExecuterTest extends BaseSpringTest
      */
     public void testExecution()
     {
-        // Check that the property is empty
-        assertNull(this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_NAME));
-        
         // Execute the action
         ActionImpl action = new ActionImpl(ID, SetPropertyValueActionExecuter.NAME, null);
         action.setParameterValue(SetPropertyValueActionExecuter.PARAM_PROPERTY, ContentModel.PROP_NAME);

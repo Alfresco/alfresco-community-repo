@@ -1,0 +1,78 @@
+<alfresco-config>   
+
+   <plug-ins>
+      <element-readers>
+         <element-reader element-name="dialogs" class="org.alfresco.web.config.DialogsElementReader"/>
+         <element-reader element-name="wizards" class="org.alfresco.web.config.WizardsElementReader"/>
+      </element-readers>
+   </plug-ins>
+   
+   <config evalutor="string-compare" condition="Dialogs">
+      <dialog-container>/jsp/dialog/container.jsp</dialog-container>
+
+      <dialogs>
+         <dialog name="createSpace" page="/jsp/dialog/create-space.jsp" managed-bean="NewSpaceDialog"
+                 title-id="create_space_title" description-id="create_space_description" 
+                 actions-config-id="space-actions" />
+                 
+         <dialog name="spaceDetails" page="/jsp/dialog/space-details.jsp" managed-bean="SpaceDetailsDialog"
+                 title="Space Details Dialog" description="Space Details Dialog Decsription" 
+                 actions-config-id="space-actions" />
+                 
+      </dialogs>
+   </config>
+   
+   <config evalutor="string-compare" condition="Wizards">
+      <wizard-container>/jsp/wizard/container.jsp</wizard-container>
+   
+      <wizards>
+   
+         <!-- example wizard -->
+         <wizard  name="exampleWizard" managed-bean="ExampleWizard"
+                  title="Example Wizard Title" description="Example Wizard Description">
+            <step name="details">
+               <page path="/jsp/wizard/example/details.jsp"
+                     title="Step Title" description="Step Description"
+                     instruction="Step Instruction" />
+            </step>      
+            <step name="summary">
+               <page path="/jsp/wizard/example/summary.jsp"
+                     title="Summary Title" description="Summary Description"
+                     instruction="Click Finish" />
+            </step>
+         </wizard>
+         
+         <!-- Definition of an advanced space wizard  -->
+         <wizard name="createSpace" managed-bean="AdvancedSpaceWizard"
+                 title-id="advanced_space_details_title" 
+                 description-id="advanced_space_details_description">
+            <step name="details">
+               <page path="/jsp/wizard/new-space/create-from.jsp"
+                     title-id="create_space_details_title" 
+                     description-id="create_space_details_desc"
+                     instruction-id="create_space_details_instruction" />
+            </step>
+            <step name="properties">
+               <condition if="#{AdvancedSpaceWizard.createFrom == 'template'}">
+                  <page path="/jsp/wizard/new-space/from-template.jsp" 
+                        title-id="create_space_template_title" 
+                        description-id="create_space_template_desc" 
+                        instruction-id="create_space_template_instruction" />
+               </condition>
+               
+               <page path="/jsp/wizard/new-space/from-scratch.jsp" 
+                     title-id="create_space_scratch_title" 
+                     description-id="create_space_scratch_desc" 
+                     instruction-id="create_space_scratch_instruction" />
+            </step>
+            <step name="summary">
+               <page path="/jsp/wizard/new-space/summary.jsp"
+                     title-id="create_space_summary_title" 
+                     description-id="create_space_summary_desc" 
+                     instruction-id="create_space_summary_instruction" />
+            </step>
+         </wizard>
+      </wizards>
+   </config>
+   
+</alfresco-config>

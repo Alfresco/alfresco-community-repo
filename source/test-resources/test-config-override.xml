@@ -76,4 +76,20 @@
       </views>
    </config>
    
+   <config evaluator="string-compare" condition="space-aspect">
+      <property-sheet>
+         <show-property name="size" readOnly="true" />
+         <show-property name="icon" readOnly="true" showInEditMode="false" />
+      </property-sheet>
+   </config>
+   
+   <config evalutor="string-compare" condition="Dialogs">
+      <dialog-container>/custom/my-container.jsp</dialog-container>
+
+      <dialogs>
+         <dialog name="createSpace" page="/custom/my-create-space.jsp" managed-bean="MyNewSpaceDialog"
+                 title-id="create_space_title" description-id="create_space_description" />
+      </dialogs>
+   </config>
+   
 </alfresco-config>

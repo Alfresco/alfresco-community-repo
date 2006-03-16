@@ -17,8 +17,7 @@
 package org.alfresco.web.config;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,12 +35,18 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
    // TODO: Currently this object just deals with properties and associations to show,
    //       in the future it will also deal with properties and associations to hide.
    
-   private List<ItemConfig> items = new ArrayList<ItemConfig>();
-   private List<ItemConfig> editableItems = new ArrayList<ItemConfig>();
-   private Map<String, ItemConfig> itemsMap = new HashMap<String, ItemConfig>();
-   private Map<String, ItemConfig> editableItemsMap = new HashMap<String, ItemConfig>();
-   private List<String> itemNames = new ArrayList<String>();
-   private List<String> editableItemNames = new ArrayList<String>();
+   public static final String CONFIG_ELEMENT_ID = "property-sheet";
+   
+   protected Map<String, ItemConfig> items = new LinkedHashMap<String, ItemConfig>(8, 10f);
+   protected Map<String, ItemConfig> editableItems = new LinkedHashMap<String, ItemConfig>(8, 10f);
+   
+   
+   //private List<ItemConfig> items = new ArrayList<ItemConfig>();
+   //private List<ItemConfig> editableItems = new ArrayList<ItemConfig>();
+   //private Map<String, ItemConfig> itemsMap = new HashMap<String, ItemConfig>();
+   //private Map<String, ItemConfig> editableItemsMap = new HashMap<String, ItemConfig>();
+   //private List<String> itemNames = new ArrayList<String>();
+   //private List<String> editableItemNames = new ArrayList<String>();
    private boolean kidsPopulated = false;
    
    /**
@@ -49,7 +54,7 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     */
    public PropertySheetConfigElement()
    {
-      super("property-sheet");
+      super(CONFIG_ELEMENT_ID);
    }
    
    /**
@@ -76,10 +81,8 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
       {
          if (this.kidsPopulated == false)
          {
-            Iterator<ItemConfig> items = this.items.iterator();
-            while (items.hasNext())
+            for (ItemConfig pc : this.items.values())
             {
-               ItemConfig pc = items.next();
                GenericConfigElement ce = null;
                if (pc instanceof PropertyConfig)
                {
@@ -120,17 +123,15 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
       PropertySheetConfigElement combined = new PropertySheetConfigElement();
       
       // add all the existing properties
-      Iterator<ItemConfig> items = this.getItemsToShow().iterator();
-      while (items.hasNext())
+      for (ItemConfig item : this.getItemsToShow().values())
       {
-         combined.addItem(items.next());
+         combined.addItem(item);
       }
       
       // add all the properties from the given element
-      items = ((PropertySheetConfigElement)configElement).getItemsToShow().iterator();
-      while (items.hasNext())
+      for (ItemConfig item : ((PropertySheetConfigElement)configElement).getItemsToShow().values())
       {
-         combined.addItem(items.next());
+         combined.addItem(item);
       }
       
       return combined;
@@ -143,18 +144,19 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     */
    /*package*/ void addItem(ItemConfig itemConfig)
    {
-      if (this.itemsMap.containsKey(itemConfig.getName()) == false)
+      this.items.put(itemConfig.getName(), itemConfig);
+        
+      // remove the item from the map if it is no longer editable
+      if (itemConfig.isShownInEditMode())
       {
-         this.items.add(itemConfig);
-         this.itemsMap.put(itemConfig.getName(), itemConfig);
-         this.itemNames.add(itemConfig.getName());
-         
-         // also add to the edit items collections if necessary
-         if (itemConfig.isShownInEditMode())
+         this.editableItems.put(itemConfig.getName(), itemConfig);
+      }
+      else
+      {
+         // if the item was added previously as editable it should be removed
+         if (editableItems.containsKey(itemConfig.getName()))
          {
-            this.editableItems.add(itemConfig);
-            this.editableItemsMap.put(itemConfig.getName(), itemConfig);
-            this.editableItemNames.add(itemConfig.getName());
+            this.editableItems.remove(itemConfig.getName());
          }
       }
    }
@@ -216,23 +218,22 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     */
    public List<String> getItemNamesToShow()
    {
-      return this.itemNames;
-   }
-   
-   /**
-    * @return Returns the list of item config objects that represent those to display
-    */
-   public List<ItemConfig> getItemsToShow()
-   {
-      return this.items;
+      List<String> propNames = new ArrayList<String>(this.items.size());
+      
+      for (String name : this.items.keySet())
+      {
+         propNames.add(name);
+      }
+      
+      return propNames;
    }
    
    /**
     * @return Returns a map of the item names to show
     */
-   public Map<String, ItemConfig> getItemsMapToShow()
+   public Map<String, ItemConfig> getItemsToShow()
    {
-      return this.itemsMap;
+      return this.items;
    }
    
    /**
@@ -240,23 +241,22 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     */
    public List<String> getEditableItemNamesToShow()
    {
-      return this.editableItemNames;
-   }
-   
-   /**
-    * @return Returns the list of item config objects that represent those to display
-    */
-   public List<ItemConfig> getEditableItemsToShow()
-   {
-      return this.editableItems;
+      List<String> propNames = new ArrayList<String>(this.editableItems.size());
+      
+      for (String name : this.editableItems.keySet())
+      {
+         propNames.add(name);
+      }
+      
+      return propNames;
    }
    
    /**
     * @return Returns a map of the item names to show
     */
-   public Map<String, ItemConfig> getEditableItemsMapToShow()
+   public Map<String, ItemConfig> getEditableItemsToShow()
    {
-      return this.editableItemsMap;
+      return this.editableItems;
    }
    
    /**

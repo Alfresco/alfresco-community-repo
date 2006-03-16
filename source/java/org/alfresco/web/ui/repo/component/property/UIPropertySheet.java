@@ -17,8 +17,8 @@
 package org.alfresco.web.ui.repo.component.property;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.faces.component.NamingContainer;
@@ -120,18 +120,18 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
             
             if (itemsToDisplay != null)
             {
-               List<ItemConfig> itemsToRender = null;
+               Collection<ItemConfig> itemsToRender = null;
                
                if (this.getMode().equalsIgnoreCase(EDIT_MODE))
                {
-                  itemsToRender = itemsToDisplay.getEditableItemsToShow();
+                  itemsToRender = itemsToDisplay.getEditableItemsToShow().values();
                   
                   if (logger.isDebugEnabled())
                      logger.debug("Items to render: " + itemsToDisplay.getEditableItemNamesToShow());
                }
                else
                {
-                  itemsToRender = itemsToDisplay.getItemsToShow();
+                  itemsToRender = itemsToDisplay.getItemsToShow().values();
                   
                   if (logger.isDebugEnabled())
                      logger.debug("Items to render: " + itemsToDisplay.getItemNamesToShow());
@@ -439,10 +439,10 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
     * in an external config file.
     * 
     * @param context JSF context
-    * @param properties List of properties to render (driven from configuration) 
+    * @param properties Collection of properties to render (driven from configuration) 
     * @throws IOException
     */
-   private void createComponentsFromConfig(FacesContext context, List<ItemConfig> items)
+   private void createComponentsFromConfig(FacesContext context, Collection<ItemConfig> items)
       throws IOException
    {
       // **********************************

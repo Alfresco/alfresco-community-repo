@@ -17,6 +17,7 @@
 package org.alfresco.web.config;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +28,12 @@ import org.alfresco.config.source.FileConfigSource;
 import org.alfresco.config.xml.XMLConfigService;
 import org.alfresco.util.BaseTest;
 import org.alfresco.web.config.AdvancedSearchConfigElement.CustomProperty;
+import org.alfresco.web.config.DialogsConfigElement.DialogConfig;
 import org.alfresco.web.config.PropertySheetConfigElement.ItemConfig;
+import org.alfresco.web.config.WizardsConfigElement.ConditionalPageConfig;
+import org.alfresco.web.config.WizardsConfigElement.PageConfig;
+import org.alfresco.web.config.WizardsConfigElement.StepConfig;
+import org.alfresco.web.config.WizardsConfigElement.WizardConfig;
 
 /**
  * JUnit tests to exercise the capabilities added to the web client config
@@ -79,7 +85,7 @@ public class WebClientConfigTest extends BaseTest
       assertTrue("There should be 6 properties in the list", propNames.size() == 6);
 
       // make sure the property sheet config has come back with the correct data
-      Map<String, ItemConfig> props = spacePropConfig.getItemsMapToShow();
+      Map<String, ItemConfig> props = spacePropConfig.getItemsToShow();
       ItemConfig descProp = props.get("description");
       assertNotNull("description property config should not be null", descProp);
       assertEquals("display label for description should be 'Description'", descProp.getDisplayLabel(), 
@@ -186,7 +192,7 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("third property name", "icon", itemNamesToEdit.get(2));
       
       // make sure the map has the correct number of items
-      Map<String, ItemConfig> itemsToEditMap = propSheet.getEditableItemsMapToShow();
+      Map<String, ItemConfig> itemsToEditMap = propSheet.getEditableItemsToShow();
       assertNotNull("itemsToEditMap should not be null", itemsToEditMap);
       assertEquals("Number of properties", 3, itemsToEditMap.size());
       
@@ -200,9 +206,43 @@ public class WebClientConfigTest extends BaseTest
       assertNull("size should be null", item);
       
       // make sure the list has the correct numbe of items
-      List<ItemConfig> itemsToEdit = propSheet.getEditableItemsToShow();
+      Collection<ItemConfig> itemsToEdit = propSheet.getEditableItemsToShow().values();
       assertNotNull("itemsToEdit should not be null", itemsToEdit);
       assertEquals("Number of properties", 3, itemsToEdit.size());
+   }
+   
+   public void testPropertyOverride()
+   {
+      // setup the config service
+      List<String> configFiles = new ArrayList<String>(2);
+      configFiles.add(getResourcesDir() + "test-config.xml");
+      configFiles.add(getResourcesDir() + "test-config-override.xml");
+      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
+      svc.init();
+      
+      // get the config for the size property in the space-aspect property sheet
+      PropertySheetConfigElement propSheet = ((PropertySheetConfigElement)svc.getConfig("space-aspect").
+            getConfigElement(PropertySheetConfigElement.CONFIG_ELEMENT_ID));
+      assertNotNull("propSheet should not be null", propSheet);
+      
+      // make sure the list and map numbers are correct
+      assertEquals("prop names to show size", 6, propSheet.getItemNamesToShow().size());
+      assertEquals("props to show size", 6, propSheet.getItemsToShow().size());
+      assertEquals("edit prop names to show size", 5, propSheet.getEditableItemNamesToShow().size());
+      assertEquals("edit props to show size", 5, propSheet.getEditableItemsToShow().size());
+      
+      PropertySheetConfigElement.PropertyConfig propConfig = 
+         (PropertySheetConfigElement.PropertyConfig)propSheet.getItemsToShow().get("size");
+      assertNotNull("propConfig should not be null", propConfig);
+      
+      // make sure config has been overridden
+      assertTrue("size should be shown in edit mode", propConfig.isShownInEditMode());
+      assertTrue("size property should be read only", propConfig.isReadOnly());
+      assertNotNull("size property should be in edit map", propSheet.getEditableItemsToShow().get("size"));
+      
+      // get the icon 
+      propConfig = (PropertySheetConfigElement.PropertyConfig)propSheet.getItemsToShow().get("icon");
+      assertNotNull("propConfig should not be null", propConfig);
    }
    
    /**
@@ -541,5 +581,189 @@ public class WebClientConfigTest extends BaseTest
       {
          // expected
       }
+   }
+   
+   public void testDialogs()
+   {
+      // setup the config service
+      String configFiles = getResourcesDir() + "test-config-dialogs-wizards.xml";
+      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
+      svc.init();
+      
+      // get Dialogs config section
+      Config dialogsConfig = svc.getConfig("Dialogs");
+      assertNotNull("dialogsConfig should not be null", dialogsConfig);
+      
+      // make sure the dialog-container is correct
+      assertEquals("dialog container", "/jsp/dialog/container.jsp", 
+            dialogsConfig.getConfigElement("dialog-container").getValue());
+      
+      // make sure a non existent dialog returns null
+      assertNull("non existent dialog test should return null", 
+            dialogsConfig.getConfigElement("Non Existent Dialog"));
+      
+      // get the dialogs element
+      DialogsConfigElement dialogsElement = (DialogsConfigElement)dialogsConfig.
+            getConfigElement(DialogsConfigElement.CONFIG_ELEMENT_ID);
+      assertNotNull("dialogsElement should not be null", dialogsElement);
+      
+      // make sure there are 2 items in the list and map
+      assertEquals("map size", 2, dialogsElement.getDialogs().size());
+      
+      // get the 'createSpace' dialog
+      DialogConfig dialog = dialogsElement.getDialog("createSpace");
+      assertNotNull("createSpace dialog config should not be null", dialog);
+      
+      // make sure the info on the dialog is correct
+      assertEquals("name", "createSpace", dialog.getName());
+      assertEquals("page", "/jsp/dialog/create-space.jsp", dialog.getPage());
+      assertEquals("managed-bean", "NewSpaceDialog", dialog.getManagedBean());
+      assertEquals("title-id", "create_space_title", dialog.getTitleId());
+      assertEquals("description-id", "create_space_description", dialog.getDescriptionId());
+      assertNull("title should be null", dialog.getTitle());
+      assertNull("description should be null", dialog.getDescription());
+      
+      // get the 'spaceDetails' dialog
+      dialog = dialogsElement.getDialog("spaceDetails");
+      assertNotNull("spaceDetails dialog config should not be null", dialog);
+      
+      // make sure the info on the dialog is correct
+      assertEquals("name", "spaceDetails", dialog.getName());
+      assertEquals("page", "/jsp/dialog/space-details.jsp", dialog.getPage());
+      assertEquals("managed-bean", "SpaceDetailsDialog", dialog.getManagedBean());
+      assertEquals("title", "Space Details Dialog", dialog.getTitle());
+      assertEquals("description", "Space Details Dialog Decsription", dialog.getDescription());
+      assertNull("title-id should be null", dialog.getTitleId());
+      assertNull("description-id should be null", dialog.getDescriptionId());
+   }
+   
+   public void testDialogOverride()
+   {
+      // setup the config service
+      List<String> configFiles = new ArrayList<String>(2);
+      configFiles.add(getResourcesDir() + "test-config-dialogs-wizards.xml");
+      configFiles.add(getResourcesDir() + "test-config-override.xml");
+      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
+      svc.init();
+      
+      // get the 'dialogs' element
+      DialogsConfigElement dialogsElement = ((DialogsConfigElement)svc.getConfig("Dialogs").
+            getConfigElement(DialogsConfigElement.CONFIG_ELEMENT_ID));
+      
+      // make sure there are 2 items in the list and map
+      assertEquals("map size", 2, dialogsElement.getDialogs().size());
+      
+      // get the 'createSpace' dialog
+      DialogConfig dialog = dialogsElement.getDialog("createSpace");
+      assertNotNull("createSpace dialog should not be null", dialog);
+      
+      // make sure the page and managed bean attributes have been overridden
+      assertEquals("page", "/custom/my-create-space.jsp", dialog.getPage());
+      assertEquals("managed-bean", "MyNewSpaceDialog", dialog.getManagedBean());
+      assertEquals("title-id", "create_space_title", dialog.getTitleId());
+      assertEquals("description-id", "create_space_description", dialog.getDescriptionId());
+   }
+   
+   public void testWizards()
+   {
+      // setup the config service
+      String configFiles = getResourcesDir() + "test-config-dialogs-wizards.xml";
+      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
+      svc.init();
+      
+      // get Dialogs config section
+      Config wizardsConfig = svc.getConfig("Wizards");
+      assertNotNull("wizardsConfig should not be null", wizardsConfig);
+      
+      // make sure the wizard-container is correct
+      assertEquals("wizard container", "/jsp/wizard/container.jsp", 
+            wizardsConfig.getConfigElement("wizard-container").getValue());
+      
+      // make sure a non existent wizard returns null
+      assertNull("non existent wizard should not be null", 
+            wizardsConfig.getConfigElement("Non Existent Wizard"));
+      
+      // get the wizards element
+      WizardsConfigElement wizardsElement = (WizardsConfigElement)wizardsConfig.
+            getConfigElement(WizardsConfigElement.CONFIG_ELEMENT_ID);
+      assertNotNull("wizardsElement should not be null", wizardsElement);
+      
+      // make sure there are 2 items in the map
+      assertEquals("map size", 2, wizardsElement.getWizards().size());
+      
+      // get the 'exampleWizard' wizard
+      WizardConfig wizard = wizardsElement.getWizard("exampleWizard");
+      assertNotNull("exampleWizard wizard should not be null", wizard);
+            
+      // make sure data is correct
+      assertEquals("name", "exampleWizard", wizard.getName());
+      assertEquals("exampleWizard steps", 2, wizard.getNumberSteps());
+      assertEquals("managed-bean", "ExampleWizard", wizard.getManagedBean());
+      assertEquals("title", "Example Wizard Title", wizard.getTitle());
+      assertEquals("description", "Example Wizard Description", wizard.getDescription());
+      assertNull("title-id should be null", wizard.getTitleId());
+      assertNull("description-id should be null", wizard.getDescriptionId());
+      
+      // get the 'createSpace' wizard and ensure all the data is correct
+      wizard = wizardsElement.getWizard("createSpace");
+      assertEquals("name", "createSpace", wizard.getName());
+      assertEquals("createSpace steps", 3, wizard.getNumberSteps());
+      assertEquals("managed-bean", "AdvancedSpaceWizard", wizard.getManagedBean());
+      assertEquals("title-id", "advanced_space_details_title", wizard.getTitleId());
+      assertEquals("description-id", "advanced_space_details_description", wizard.getDescriptionId());
+      assertNull("title should be null", wizard.getTitle());
+      assertNull("description should be null", wizard.getDescription());
+      List<StepConfig> steps = wizard.getSteps();
+      assertNotNull("steps should not be null", steps);
+      
+      // retrieve step1 information and check it is correct
+      StepConfig step1 = steps.get(0);
+      assertEquals("step 1 name", "details", step1.getName());
+      assertFalse("step 1 should not have conditional pages", step1.hasConditionalPages());
+      PageConfig step1Page = step1.getDefaultPage();
+      assertNotNull("step1Page should not be null", step1Page);
+      assertEquals("step 1 page", "/jsp/wizard/new-space/create-from.jsp", step1Page.getPath());
+      assertEquals("step 1 title-id", "create_space_details_title", step1Page.getTitleId());
+      assertEquals("step 1 description-id", "create_space_details_desc", step1Page.getDescriptionId());
+      assertEquals("step 1 instruction-id", "create_space_details_instruction", step1Page.getInstructionId());
+      assertNull("step 1 title should be null", step1Page.getTitle());
+      assertNull("step 1 description should be null", step1Page.getDescription());
+      
+      // check the conditional step2 data
+      StepConfig step2 = steps.get(1);
+      assertEquals("step 2 name", "properties", step2.getName());
+      assertTrue("step 2 should have conditional pages", step2.hasConditionalPages());
+      PageConfig step2DefaultPage = step2.getDefaultPage();
+      assertNotNull("step 2 default page should not be null", step2DefaultPage);
+      assertEquals("step 2 default page", "/jsp/wizard/new-space/from-scratch.jsp", step2DefaultPage.getPath());
+      assertEquals("step 2 default title-id", "create_space_scratch_title", step2DefaultPage.getTitleId());
+      assertEquals("step 2 default description-id", "create_space_scratch_desc", step2DefaultPage.getDescriptionId());
+      assertEquals("step 2 default instruction-id", "create_space_scratch_instruction", step2DefaultPage.getInstructionId());
+      assertNull("step 2 default title should be null", step2DefaultPage.getTitle());
+      assertNull("step 2 default description should be null", step2DefaultPage.getDescription());
+      List<ConditionalPageConfig> conditionalPages = step2.getConditionalPages();
+      assertEquals("number of conditional pages for step 2", 1, conditionalPages.size());
+      ConditionalPageConfig step2CondPage = conditionalPages.get(0);
+      assertNotNull("step 2 cond page should not be null", step2CondPage);
+      assertEquals("step 2 conditon", "#{AdvancedSpaceWizard.createFrom == 'template'}", step2CondPage.getCondition());
+      assertEquals("step 2 cond page", "/jsp/wizard/new-space/from-template.jsp", step2CondPage.getPath());
+      assertEquals("step 2 cond title-id", "create_space_template_title", step2CondPage.getTitleId());
+      assertEquals("step 2 cond description-id", "create_space_template_desc", step2CondPage.getDescriptionId());
+      assertEquals("step 2 cond instruction-id", "create_space_template_instruction", step2CondPage.getInstructionId());
+      assertNull("step 2 cond title should be null", step2CondPage.getTitle());
+      assertNull("step 2 cond description should be null", step2CondPage.getDescription());
+      
+      // check step 3 data
+      StepConfig step3 = steps.get(2);
+      assertEquals("step 3 name", "summary", step3.getName());
+      assertFalse("step 3 should not have conditional pages", step3.hasConditionalPages());
+      PageConfig step3Page = step3.getDefaultPage();
+      assertNotNull("step3Page should not be null", step3Page);
+      assertEquals("step 3 page", "/jsp/wizard/new-space/summary.jsp", step3Page.getPath());
+      assertEquals("step 3 title-id", "create_space_summary_title", step3Page.getTitleId());
+      assertEquals("step 3 description-id", "create_space_summary_desc", step3Page.getDescriptionId());
+      assertEquals("step 3 instruction-id", "create_space_summary_instruction", step3Page.getInstructionId());
+      assertNull("step 3 title should be null", step3Page.getTitle());
+      assertNull("step 3 description should be null", step3Page.getDescription());
    }
 }

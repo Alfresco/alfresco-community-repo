@@ -28,6 +28,7 @@ public final class ComponentConstants
    public static final String JAVAX_FACES_PANEL          = "javax.faces.Panel";
    public static final String JAVAX_FACES_CHECKBOX       = "javax.faces.Checkbox";
    public static final String JAVAX_FACES_SELECT_BOOLEAN = "javax.faces.SelectBoolean";
+   public static final String JAVAX_FACES_PARAMETER      = "javax.faces.Parameter";
 
    /**
     * Private constructor

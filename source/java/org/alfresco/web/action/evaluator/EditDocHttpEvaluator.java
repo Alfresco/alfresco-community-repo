@@ -19,16 +19,16 @@ package org.alfresco.web.action.evaluator;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
 
 /**
+ * UI Action Evaluator - Edit document via HTTP or inline edit.
+ * 
  * @author Kevin Roast
  */
-public class EditDocHttpEvaluator implements ActionEvaluator
+public final class EditDocHttpEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -42,11 +42,8 @@ public class EditDocHttpEvaluator implements ActionEvaluator
       if (node.hasAspect(ContentModel.ASPECT_INLINEEDITABLE) == true ||
           "http".equals(Application.getClientConfig(fc).getEditLinkType()))
       {
-         LockService lockService =
-            Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getLockService();
-         
-         if (Repository.isNodeOwner(node, lockService) == true ||
-             (node.isLocked() == false && node.hasAspect(ContentModel.ASPECT_WORKING_COPY)))
+         if (node.isWorkingCopyOwner() == true ||
+             (node.isLocked() == false && node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false))
          {
             return true;
          }

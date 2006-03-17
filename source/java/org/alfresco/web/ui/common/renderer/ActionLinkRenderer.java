@@ -27,6 +27,7 @@ import javax.faces.event.ActionEvent;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIMenu;
+import org.alfresco.web.ui.repo.component.UIActions;
 
 /**
  * @author kevinr
@@ -78,10 +79,17 @@ public class ActionLinkRenderer extends BaseRenderer
          
          UIActionLink link = (UIActionLink)component;
          
-         if (isInMenu(link) == true)
+         UIComponent verticalContiner = getVerticalContainer(link);
+         if (verticalContiner != null)
          {
-            // render as menu item
-            out.write( renderMenuAction(context, link) );
+            int padding = link.getPadding();
+            
+            if (verticalContiner instanceof UIActions)
+            {
+               padding = ((UIActions)verticalContiner).getVerticalSpacing();
+            }
+            // render as menu item style action link
+            out.write( renderMenuAction(context, link, padding) );
          }
          else
          {
@@ -239,7 +247,7 @@ public class ActionLinkRenderer extends BaseRenderer
     * 
     * @return action link HTML
     */
-   private String renderMenuAction(FacesContext context, UIActionLink link)
+   private String renderMenuAction(FacesContext context, UIActionLink link, int padding)
    {
       StringBuilder buf = new StringBuilder(256);
       
@@ -252,7 +260,6 @@ public class ActionLinkRenderer extends BaseRenderer
       }
       
       buf.append("</td><td");
-      int padding = link.getPadding();
       if (padding != 0)
       {
          buf.append(" style=\"padding:")
@@ -314,23 +321,24 @@ public class ActionLinkRenderer extends BaseRenderer
    // Private helpers
    
    /**
-    * Return true if the action link is present within a UIMenu component container
+    * Return any vertically rendered container component the action link is present within 
     * 
     * @param link    The ActionLink to test
     * 
-    * @return true if the action link is present within a UIMenu component
+    * @return UIComponent vertically rendered component
     */
-   private static boolean isInMenu(UIActionLink link)
+   private static UIComponent getVerticalContainer(UIActionLink link)
    {
       UIComponent parent = link.getParent();
       while (parent != null)
       {
-         if (parent instanceof UIMenu)
+         if (parent instanceof UIMenu ||
+             (parent instanceof UIActions && ((UIActions)parent).getVerticalSpacing() != 0))
          {
             break;
          }
          parent = parent.getParent();
       }
-      return (parent != null);
+      return parent;
    }
 }

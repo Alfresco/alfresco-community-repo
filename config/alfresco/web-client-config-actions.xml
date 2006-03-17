@@ -18,9 +18,9 @@
             <evaluator>org.alfresco.web.action.evaluator.EditDocHttpEvaluator</evaluator>
             <!-- label and tooltip can be provided as text or preferable I18N message Id -->
             <label>Edit</label>
-            <label-msg>edit</label-msg>
+            <label-id>edit</label-id>
             <tooltip>My Tooltip</tooltip>
-            <tooltip-msg>tooltip</tooltip-msg>
+            <tooltip-id>tooltip</tooltip-id>
             <!-- various presentation attributes - generally it is better to provide these as part of the
                  parent 'actions' definition to give a consistent look-and-feel to a group of actions -->
             <show-link>false</show-link>
@@ -28,7 +28,7 @@
             <style-class>inlineAction</style-class>
             <image>/images/icons/edit_icon.gif</image>
             <!-- action, ActionLister, href and target action attributes supported -->
-            <actionListener>#{CheckinCheckoutBean.editFile}</actionListener>
+            <action-listener>#{CheckinCheckoutBean.editFile}</action-listener>
             <action>editDocument</action>
             <href>http://...</href>
             <target>new</target>
@@ -36,7 +36,7 @@
             <!-- it is assumed that the context object for the action will have an appropriate getter method
                  to reflect the value of the param e.g. getId() for a param value of "id" -->
             <params>
-               <param name="id">id</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
          </action>
          
@@ -46,11 +46,11 @@
                <permission allow="true">Write</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.EditDocHttpEvaluator</evaluator>
-            <label-msg>edit</label-msg>
+            <label-id>edit</label-id>
             <image>/images/icons/edit_icon.gif</image>
             <action-listener>#{CheckinCheckoutBean.editFile}</action-listener>
             <params>
-               <param name="id">id</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
             <!-- can also specify style, class etc. but this is better done in 'actions' element -->
          </action>
@@ -61,10 +61,10 @@
                <permission allow="true">Write</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.EditDocWebDavEvaluator</evaluator>
-            <label-msg>edit</label-msg>
+            <label-id>edit</label-id>
             <image>/images/icons/edit_icon.gif</image>
-            <!-- NOTE: uses the special 'actioncontext' object supplied by the parent actions component -->
-            <onclick>javascript:openDoc('#{actioncontext.webdavUrl}');</onclick>
+            <!-- NOTE: uses the special 'actionContext' object supplied by the parent actions component -->
+            <onclick>javascript:openDoc('#{actionContext.webdavUrl}');</onclick>
          </action>
          
          <!-- Edit document using CIFS access -->
@@ -73,33 +73,394 @@
                <permission allow="true">Write</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.EditDocCIFSEvaluator</evaluator>
-            <label-msg>edit</label-msg>
+            <label-id>edit</label-id>
             <image>/images/icons/edit_icon.gif</image>
-            <!-- NOTE: uses the special 'actioncontext' object supplied by the parent actions component -->
-            <href>#{actioncontext.cifsPath}</href>
+            <!-- NOTE: uses the special 'actionContext' object supplied by the parent actions component -->
+            <href>#{actionContext.cifsPath}</href>
             <target>cifs</target>
          </action>
          
+         <!-- TODO: need an overridden version of this actions in the Forums actions XML
+           as the checkin evaluator has additional logic needed for Forums -->
+         <!-- Checkin document -->
+         <action id="checkin_doc">
+            <evaluator>org.alfresco.web.action.evaluator.CheckinDocEvaluator</evaluator>
+            <label-id>checkin</label-id>
+            <image>/images/icons/CheckIn_icon.gif</image>
+            <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
+            <action>checkinFile</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
          <!-- Checkout document -->
-         <!--<action id="checkout_doc">
-            <permissions>
-               <permission allow="true">CheckOut</permission>
-            </permissions>
+         <action id="checkout_doc">
             <evaluator>org.alfresco.web.action.evaluator.CheckoutDocEvaluator</evaluator>
-            <label-msg>checkout</label-msg>
+            <label-id>checkout</label-id>
             <image>/images/icons/CheckOut_icon.gif</image>
             <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
             <action>checkoutFile</action>
             <params>
-               <param name="id">id</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
-         </action>-->
+         </action>
+         
+         <!-- Cancel checkout document -->
+         <action id="cancelcheckout_doc">
+            <evaluator>org.alfresco.web.action.evaluator.CancelCheckoutDocEvaluator</evaluator>
+            <label-id>undocheckout</label-id>
+            <image>/images/icons/undo_checkout.gif</image>
+            <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
+            <action>undoCheckoutFile</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- TODO: move to Forums actions XML - override the document/space_browse groups? -->
+         <!-- Discuss document or space e.g. jump to Forums view for this node -->
+         <action id="discuss_node">
+            <evaluator>org.alfresco.web.action.evaluator.DiscussNodeEvaluator</evaluator>
+            <label-id>discuss</label-id>
+            <image>/images/icons/forum-16.gif</image>
+            <action-listener>#{ForumsBean.discuss}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- TODO: move to Forums actions XML - override the document/space_browse groups? -->
+         <!-- Discuss document or space e.g. jump to Forums view for this node -->
+         <action id="create_forum_node">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.CreateForumNodeEvaluator</evaluator>
+            <label-id>start_discussion</label-id>
+            <image>/images/icons/create_forum.gif</image>
+            <action-listener>#{CreateDiscussionDialog.startWizard}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- View document details -->
+         <action id="details_doc">
+            <label-id>view_details</label-id>
+            <image>/images/icons/View_details.gif</image>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <action>dialog:showDocDetails</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- View space details -->
+         <action id="details_space">
+            <label-id>view_details</label-id>
+            <image>/images/icons/View_details.gif</image>
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <action>dialog:showSpaceDetails</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Preview document in template -->
+         <action id="preview_doc">
+            <label-id>preview</label-id>
+            <image>/images/icons/preview.gif</image>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <action>previewContent</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Preview space in template -->
+         <action id="preview_space">
+            <label-id>preview</label-id>
+            <image>/images/icons/preview.gif</image>
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <action>previewSpace</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Delete document -->
+         <action id="delete_doc">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.DeleteDocEvaluator</evaluator>
+            <label-id>delete</label-id>
+            <image>/images/icons/delete.gif</image>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <action>dialog:deleteFile</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Delete space -->
+         <action id="delete_space">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <label-id>delete</label-id>
+            <image>/images/icons/delete.gif</image>
+            <action-listener>#{BrowseBean.setupDeleteAction}</action-listener>
+            <action>dialog:deleteSpace</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Update document -->
+         <action id="update_doc">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.UpdateDocEvaluator</evaluator>
+            <label-id>update</label-id>
+            <image>/images/icons/update.gif</image>
+            <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
+            <action>updateFile</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- 'Approve' workflow step for document -->
+         <action id="approve_doc">
+            <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
+            <label>#{actionContext["app:approveStep"]}</label>
+            <image>/images/icons/approve.gif</image>
+            <action-listener>#{DocumentDetailsBean.approve}</action-listener>
+            <action>browse</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- 'Reject' workflow step for document -->
+         <action id="reject_doc">
+            <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
+            <label>#{actionContext["app:rejectStep"]}</label>
+            <image>/images/icons/reject.gif</image>
+            <action-listener>#{DocumentDetailsBean.reject}</action-listener>
+            <action>browse</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- 'Approve' workflow step for document details page -->
+         <action id="approve_doc_details">
+            <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
+            <label>#{actionContext.properties["app:approveStep"]}</label>
+            <image>/images/icons/approve.gif</image>
+            <action-listener>#{DocumentDetailsBean.approve}</action-listener>
+            <action>browse</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- 'Reject' workflow step for document details page-->
+         <action id="reject_doc_details">
+            <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
+            <label>#{actionContext.properties["app:rejectStep"]}</label>
+            <image>/images/icons/reject.gif</image>
+            <action-listener>#{DocumentDetailsBean.reject}</action-listener>
+            <action>browse</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Cut a document or space to the clipboard -->
+         <action id="cut_node">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <label-id>cut</label-id>
+            <image>/images/icons/cut.gif</image>
+            <action-listener>#{ClipboardBean.cutNode}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Copy a document or space to the clipboard -->
+         <action id="copy_node">
+            <label-id>copy</label-id>
+            <image>/images/icons/copy.gif</image>
+            <action-listener>#{ClipboardBean.copyNode}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Paste All clipboard items into a space -->
+         <action id="paste_all">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <label-id>paste_all</label-id>
+            <image>/images/icons/paste.gif</image>
+            <action-listener>#{ClipboardBean.pasteAll}</action-listener>
+         </action>
+         
+         <!-- Create content -->
+         <action id="create_content">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>create_content</label-id>
+            <image>/images/icons/new_content.gif</image>
+            <action>createContent</action>
+            <action-listener>#{CreateContentWizard.startWizard}</action-listener>
+         </action>
+         
+         <!-- Create space -->
+         <action id="create_space">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>new_space</label-id>
+            <image>/images/icons/create_space.gif</image>
+            <action>createSpace</action>
+            <action-listener>#{NewSpaceDialog.startWizard}</action-listener>
+         </action>
+         
+         <!-- Create Advanced Space Wizard -->
+         <action id="create_space_wizard">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>advanced_space_wizard</label-id>
+            <image>/images/icons/create_space.gif</image>
+            <action>createAdvancedSpace</action>
+            <action-listener>#{NewSpaceWizard.startWizard}</action-listener>
+         </action>
+         
+         <!-- Manage Space Users -->
+         <action id="manage_space_users">
+            <permissions>
+               <permission allow="true">ChangePermissions</permission>
+            </permissions>
+            <label-id>manage_invited_users</label-id>
+            <image>/images/icons/invite.gif</image>
+            <action>dialog:manageInvitedUsers</action>
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Manage Space Rules -->
+         <action id="manage_space_rules">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <label-id>manage_rules</label-id>
+            <image>/images/icons/rule.gif</image>
+            <action>dialog:manageRules</action>
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Take Ownership of document -->
+         <action id="take_ownership_doc">
+            <permissions>
+               <permission allow="true">TakeOwnership</permission>
+            </permissions>
+            <label-id>take_ownership</label-id>
+            <image>/images/icons/take_ownership.gif</image>
+            <action-listener>#{DocumentDetailsBean.takeOwnership}</action-listener>
+         </action>
+         
+         <!-- Take Ownership of space -->
+         <action id="take_ownership_space">
+            <permissions>
+               <permission allow="true">TakeOwnership</permission>
+            </permissions>
+            <label-id>take_ownership</label-id>
+            <image>/images/icons/take_ownership.gif</image>
+            <action-listener>#{SpaceDetailsBean.takeOwnership}</action-listener>
+         </action>
+         
+         <!-- Manage Content Users -->
+         <action id="manage_content_users">
+            <permissions>
+               <permission allow="true">ChangePermissions</permission>
+            </permissions>
+            <label-id>manage_content_users</label-id>
+            <image>/images/icons/invite.gif</image>
+            <action>dialog:manageContentUsers</action>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Create Shortcut -->
+         <action id="create_shortcut">
+            <evaluator>org.alfresco.web.action.evaluator.ShortcutNodeEvaluator</evaluator>
+            <label-id>create_shortcut</label-id>
+            <image>/images/icons/shortcut.gif</image>
+            <action-listener>#{UserShortcutsBean.createShortcut}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Run Other Action (e.g. repo action) -->
+         <action id="run_action">
+            <label-id>other_action</label-id>
+            <image>/images/icons/action.gif</image>
+            <action>createAction</action>
+            <action-listener>#{NewActionWizard.startWizard}</action-listener>
+         </action>
+         
+         <!-- Import into Space -->
+         <action id="import_space">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <label-id>import</label-id>
+            <image>/images/icons/import.gif</image>
+            <action>dialog:import</action>
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Export from Space -->
+         <action id="export_space">
+            <label-id>export</label-id>
+            <image>/images/icons/export.gif</image>
+            <action>dialog:export</action>
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
          
          
          <!-- the 'actions' elements define unique blocks of actions that reference the actions
               as defined above and can override or supply display elements for the group of actions -->
-         <!-- the element is allow responsible for making the context Node object available with name
-              of 'actioncontext' so the actions can access it directly to get properties -->
+         <!-- the component is responsible for making the context Node object available with name
+              of 'actionContext' so the actions can access it directly to get properties -->
+         
+         <!-- TODO: add overriden doc browse actions for forum module? -->
+         <!-- Actions for a document in the Browse screen -->
          <action-group id="document_browse">
             <show-link>false</show-link>
             <style-class>inlineAction</style-class>
@@ -107,17 +468,113 @@
             <action idref="edit_doc_http" />
             <action idref="edit_doc_webdav" />
             <action idref="edit_doc_cifs" />
+            <action idref="checkout_doc" />
+            <action idref="checkin_doc" />
+            <action idref="discuss_node" />
+            <action idref="details_doc" />
+            <action idref="preview_doc" />
             
-            <action id="specific_checkout_doc">
+            <!-- Example action defined inline rather than by reference
+            <action id="example2_checkout_doc">
                <permissions>
                   <permission allow="true">CheckOut</permission>
                </permissions>
-               <label-msg>checkout</label-msg>
+               <evaluator>org.alfresco.web.action.evaluator.CheckoutDocEvaluator</evaluator>
+               <label-id>checkout</label-id>
                <image>/images/icons/CheckOut_icon.gif</image>
                <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
                <action>checkoutFile</action>
-            </action>
+            </action>-->
             
+         </action-group>
+         
+         <!-- Actions Menu for a document in the Browse screen -->
+         <action-group id="document_browse_menu">
+            <action idref="delete_doc" />
+            <action idref="update_doc" />
+            <action idref="cancelcheckout_doc" />
+            <action idref="approve_doc" />
+            <action idref="reject_doc" />
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="create_forum_node" />
+         </action-group>
+         
+         <!-- Actions for a space in the Browse screen -->
+         <action-group id="space_browse">
+            <show-link>false</show-link>
+            <style-class>inlineAction</style-class>
+            
+            <action idref="preview_space" />
+            <action idref="discuss_node" />
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="details_space" />
+         </action-group>
+         
+         <!-- Actions Menu for a space in the Browse screen -->
+         <action-group id="space_browse_menu">
+            <action idref="delete_space" />
+            <action idref="create_forum_node" />
+         </action-group>
+         
+         <!-- Actions Menu for Create in Browse screen -->
+         <action-group id="browse_create_menu">
+            <action idref="create_content" />
+            <action idref="create_space" />
+            <action idref="create_space_wizard" />
+         </action-group>
+         
+         <!-- Actions Menu for More Actions in Browse screen -->
+         <action-group id="browse_actions_menu">
+            <action idref="details_space" />
+            <action idref="delete_space" />
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="paste_all" />
+            <action idref="manage_space_users" />
+            <action idref="manage_space_rules" />
+         </action-group>
+         
+         <!-- Actions Menu for Document Details screen -->
+         <action-group id="doc_details_actions">
+            <action idref="checkout_doc" />
+            <action idref="checkin_doc" />
+            <action idref="cancelcheckout_doc" />
+            <action idref="approve_doc_details" />
+            <action idref="reject_doc_details" />
+            <action idref="edit_doc_http" />
+            <!-- TODO: add these once the appropriate props (webdavUrl and cifsPath) are added
+                       to the node bean as resolvers (probably need to change valuebindings also)
+            <action idref="edit_doc_webdav" />
+            <action idref="edit_doc_cifs" />
+            -->
+            <action idref="update_doc" />
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_doc" />
+            <action idref="take_ownership_doc" />
+            <action idref="manage_content_users" />
+            <action idref="create_shortcut" />
+            <action idref="discuss_node" />
+            <action idref="create_forum_node" />
+            <action idref="preview_doc" />
+            <action idref="run_action" />
+         </action-group>
+         
+         <!-- Actions Menu for Space Details screen -->
+         <action-group id="space_details_actions">
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_space" />
+            <action idref="import_space" />
+            <action idref="export_space" />
+            <action idref="create_shortcut" />
+            <action idref="take_ownership_space" />
+            <action idref="manage_space_rules" />
+            <action idref="discuss_node" />
+            <action idref="create_forum_node" />
+            <action idref="preview_space" />
          </action-group>
          
       </actions>

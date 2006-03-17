@@ -30,5 +30,13 @@ import org.alfresco.web.bean.repository.Node;
  */
 public interface ActionEvaluator
 {
+   /**
+    * The evaluator should decide if the action precondition is valid based on the appropriate
+    * logic and the properties etc. of the Node context and return the result.
+    * 
+    * @param node    Node context for the action
+    * 
+    * @return result of whether the action can proceed.
+    */
    public boolean evaluate(Node node);
 }

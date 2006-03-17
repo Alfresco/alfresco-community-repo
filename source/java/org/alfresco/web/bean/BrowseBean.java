@@ -783,7 +783,7 @@ public class BrowseBean implements IContextListener
    
    public NodePropertyResolver resolverOwner = new NodePropertyResolver() {
       public Object get(Node node) {
-         return Repository.isNodeOwner(node, lockService);
+         return getDocument().isWorkingCopyOwner();
       }
    };
    

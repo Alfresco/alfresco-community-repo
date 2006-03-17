@@ -56,6 +56,8 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
    public static final String PREFIX_DATE_TO    = "to_";
    public static final String PREFIX_DATE_FROM  = "from_";
    
+   private static final String VALUE = "value";
+   
    private static final String MSG_TO   = "to";
    private static final String MSG_FROM = "from";
    
@@ -252,12 +254,12 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
       {
          control = (UISelectBoolean)facesApp.createComponent(ComponentConstants.JAVAX_FACES_SELECT_BOOLEAN);
          control.setRendererType(ComponentConstants.JAVAX_FACES_CHECKBOX);
-         control.setValueBinding("value", vb);
+         control.setValueBinding(VALUE, vb);
       }
       else if (typeName.equals(DataTypeDefinition.CATEGORY))
       {
          control = (UICategorySelector)facesApp.createComponent(RepoConstants.ALFRESCO_FACES_CATEGORY_SELECTOR);
-         control.setValueBinding("value", vb);
+         control.setValueBinding(VALUE, vb);
       }
       else if (typeName.equals(DataTypeDefinition.DATETIME) || typeName.equals(DataTypeDefinition.DATE))
       {
@@ -275,7 +277,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          checkbox.setId(context.getViewRoot().createUniqueId());
          ValueBinding vbCheckbox = facesApp.createValueBinding(
             "#{" + beanBinding + "[\"" + propDef.getName().toString() + "\"]}");
-         checkbox.setValueBinding("value", vbCheckbox);
+         checkbox.setValueBinding(VALUE, vbCheckbox);
          control.getChildren().add(checkbox);
          
          // main display label
@@ -300,7 +302,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          inputFromDate.getAttributes().put("showTime", showTime);
          ValueBinding vbFromDate = facesApp.createValueBinding(
             "#{" + beanBinding + "[\"" + PREFIX_DATE_FROM + propDef.getName().toString() + "\"]}");
-         inputFromDate.setValueBinding("value", vbFromDate);
+         inputFromDate.setValueBinding(VALUE, vbFromDate);
          control.getChildren().add(inputFromDate);
          
          // to date label
@@ -318,13 +320,13 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          inputToDate.getAttributes().put("showTime", showTime);
          ValueBinding vbToDate = facesApp.createValueBinding(
             "#{" + beanBinding + "[\"" + PREFIX_DATE_TO + propDef.getName().toString() + "\"]}");
-         inputToDate.setValueBinding("value", vbToDate);
+         inputToDate.setValueBinding(VALUE, vbToDate);
          control.getChildren().add(inputToDate);
       }
       else if (typeName.equals(DataTypeDefinition.NODE_REF))
       {
          control = (UISpaceSelector)facesApp.createComponent(RepoConstants.ALFRESCO_FACES_SPACE_SELECTOR);
-         control.setValueBinding("value", vb);
+         control.setValueBinding(VALUE, vb);
       }
       else
       {
@@ -333,7 +335,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          control.setRendererType(ComponentConstants.JAVAX_FACES_TEXT);
          control.getAttributes().put("size", "28");
          control.getAttributes().put("maxlength", "1024");
-         control.setValueBinding("value", vb);
+         control.setValueBinding(VALUE, vb);
       }
       
       // set up the common aspects of the control

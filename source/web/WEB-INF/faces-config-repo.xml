@@ -109,6 +109,17 @@
       <component-class>org.alfresco.web.ui.repo.component.UIMultiValueEditor</component-class>
    </component>
    
+   <component>
+      <component-type>org.alfresco.faces.Actions</component-type>
+      <component-class>org.alfresco.web.ui.repo.component.UIActions</component-class>
+   </component>
+   
+   <component>
+      <component-type>org.alfresco.faces.ActionInstanceEvaluator</component-type>
+      <component-class>org.alfresco.web.ui.repo.component.evaluator.ActionInstanceEvaluator</component-class>
+   </component>
+   
+   
    <!-- ==================== CONVERTERS ==================== -->
    <component>
       <component-type>org.alfresco.faces.PermissionEvaluator</component-type>
@@ -119,7 +130,8 @@
       <converter-id>org.alfresco.faces.MimeTypeConverter</converter-id>
       <converter-class>org.alfresco.web.ui.repo.converter.MimeTypeConverter</converter-class>
    </converter>
-
+   
+   
    <!-- ==================== RENDERERS ==================== -->
    <render-kit>
       <renderer>

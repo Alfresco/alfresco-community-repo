@@ -31,7 +31,7 @@
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
-   <h:form acceptCharset="UTF-8" id="document-details">
+   <h:form acceptCharset="UTF-8" id="space-details">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
@@ -74,79 +74,8 @@
                               <div class="mainSubText"><h:outputText value="#{msg.spacedetails_description}" /></div>
                            </td>
                            
-                           <td align=right>
-                              <%-- Actions menu --%>
-                              <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.actions}" image="/images/icons/menu.gif"
-                                    menuStyleClass="moreActionsMenu" style="white-space:nowrap" tooltip="#{msg.more_options_space}">
-                              
-                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Delete">
-                                    <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" actionListener="#{ClipboardBean.cutNode}">
-                                       <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                    </a:actionLink>
-                                 </r:permissionEvaluator>
-                                 
-                                 <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" actionListener="#{ClipboardBean.copyNode}">
-                                    <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                 </a:actionLink>
-                                 
-                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Delete">
-                                    <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" action="dialog:deleteSpace" actionListener="#{BrowseBean.setupSpaceAction}">
-                                       <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                    </a:actionLink>
-                                 </r:permissionEvaluator>
-                                 
-                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
-                                    <a:actionLink value="#{msg.import}" image="/images/icons/import.gif" action="dialog:import" actionListener="#{BrowseBean.setupSpaceAction}">
-                                       <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                    </a:actionLink>
-                                 </r:permissionEvaluator>
-                                 
-                                 <a:actionLink value="#{msg.export}" image="/images/icons/export.gif" action="dialog:export" actionListener="#{BrowseBean.setupSpaceAction}">
-                                    <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                 </a:actionLink>
-                                 
-                                 <a:actionLink value="#{msg.create_shortcut}" image="/images/icons/shortcut.gif" actionListener="#{UserShortcutsBean.createShortcut}" rendered="#{NavigationBean.isGuest == false}">
-                                    <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                 </a:actionLink>
-                                 
-                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="TakeOwnership">
-                                    <a:actionLink value="#{msg.take_ownership}" image="/images/icons/take_ownership.gif" actionListener="#{SpaceDetailsBean.takeOwnership}" id="takeOwnership" />
-                                 </r:permissionEvaluator>
-                                 
-                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="ChangePermissions">
-                                    <a:actionLink value="#{msg.manage_invited_users}" image="/images/icons/invite.gif" action="dialog:manageInvitedUsers" actionListener="#{BrowseBean.setupSpaceAction}">
-                                       <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                    </a:actionLink>
-                                 </r:permissionEvaluator>
-                                 
-                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
-                                    <a:actionLink value="#{msg.manage_rules}" image="/images/icons/rule.gif" action="dialog:manageRules" actionListener="#{BrowseBean.setupSpaceAction}">
-                                       <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                    </a:actionLink>
-                                 </r:permissionEvaluator>
-                                 
-                                 <a:booleanEvaluator value='#{SpaceDetailsBean.space.properties["beingDiscussed"] == true}'>
-                                    <a:actionLink value="#{msg.discuss}" image="/images/icons/forum.gif" actionListener="#{ForumsBean.discuss}">
-                                       <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                    </a:actionLink>
-                                 </a:booleanEvaluator>
-                                 <a:booleanEvaluator value='#{SpaceDetailsBean.space.properties["beingDiscussed"] == false}'>
-                                    <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="CreateChildren">
-   	                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
-   	                                    <f:param name="id" value="#{SpaceDetailsBean.id}" />
-   	                                 </a:actionLink>
-                                    </r:permissionEvaluator>
-                                 </a:booleanEvaluator>
-                                 
-                                 <a:actionLink value="#{msg.preview}" image="/images/icons/preview.gif" actionListener="#{BrowseBean.setupSpaceAction}" action="previewSpace">
-                                    <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                 </a:actionLink>
-                              </a:menu>
-                           </td>
-                           
                            <%-- Navigation --%>
-                           <td class="separator" width=1></td>
-                           <td style="padding-left:4px" width=80>
+                           <td align="right">
                               <a:actionLink value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{SpaceDetailsBean.previousItem}" action="previousItem">
                                  <f:param name="id" value="#{SpaceDetailsBean.id}" />
                               </a:actionLink>
@@ -240,7 +169,7 @@
                                                          columns="1" mode="view" labelStyleClass="propertiesLabel" 
                                                          externalConfig="true" />
                                           <h:messages globalOnly="true" styleClass="errorMessage" layout="table" />
-                                          <h:message for="takeOwnership" styleClass="statusMessage" />
+                                          <h:message for="space-props" styleClass="statusMessage" />
                                        </td>
                                     </tr>
                                  </table>
@@ -271,7 +200,7 @@
                               <h:column id="rules-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
-                                       <a:actionLink id="titleLink2" value="#{msg.modify}" showLink="false" image="/images/icons/rule.gif" action="manageRules" />
+                                       <a:actionLink id="titleLink2" value="#{msg.modify}" showLink="false" image="/images/icons/rule.gif" action="dialog:manageRules" />
                                     </r:permissionEvaluator>
                                  </f:facet>
                               </h:column>
@@ -357,7 +286,7 @@
                            
                            <td valign="top">
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
-                              <table cellpadding="1" cellspacing="1" border="0">
+                              <table cellpadding="1" cellspacing="1" border="0" width="100%">
                                  <tr>
                                     <td align="center">
                                        <h:commandButton value="#{msg.close}" action="#{SpaceDetailsBean.closeDialog}" styleClass="wizardButton" />
@@ -365,6 +294,13 @@
                                  </tr>
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+                              
+                              <div style="padding:4px"></div>
+                              
+                              <%-- Space Actions --%>
+                              <a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" style="text-align:center" progressive="true">
+                                 <r:actions id="actions_space" value="space_details_actions" context="#{SpaceDetailsBean.space}" verticalSpacing="3" style="white-space:nowrap" />
+                              </a:panel>
                            </td>
                         </tr>
                      </table>

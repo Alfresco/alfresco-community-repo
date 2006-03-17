@@ -324,7 +324,7 @@ public class SpaceDetailsBean
          FacesContext context = FacesContext.getCurrentInstance();
          String msg = Application.getMessage(context, MSG_SUCCESS_OWNERSHIP);
          FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         context.addMessage(event.getComponent().getClientId(context), facesMsg);
+         context.addMessage("space-details:space-props", facesMsg);
          
          // commit the transaction
          tx.commit();

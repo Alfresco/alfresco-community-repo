@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.web.app.Application;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -57,6 +58,7 @@ public class Node implements Serializable
    private Set<QName> aspects = null;
    private Map<String, Boolean> permissions;
    private Boolean locked = null;
+   private Boolean workingCopyOwner = null;
    protected QNameNodeMap<String, Object> properties;
    protected boolean propsRetrieved = false;
    protected ServiceRegistry services = null;
@@ -405,6 +407,32 @@ public class Node implements Serializable
    }
    
    /**
+    * @return whether a the Node is a WorkingCopy owned by the current User
+    */
+   public final boolean isWorkingCopyOwner()
+   {
+      if (this.workingCopyOwner == null)
+      {
+         this.workingCopyOwner = Boolean.FALSE;
+         
+         if (hasAspect(ContentModel.ASPECT_WORKING_COPY))
+         {
+            Object obj = getProperties().get(ContentModel.PROP_WORKING_COPY_OWNER);
+            if (obj instanceof String)
+            {
+               User user = Application.getCurrentUser(FacesContext.getCurrentInstance());
+               if ( ((String)obj).equals(user.getUserName()))
+               {
+                  this.workingCopyOwner = Boolean.TRUE;
+               }
+            }
+         }
+      }
+      
+      return workingCopyOwner.booleanValue();
+   }
+   
+   /**
     * Resets the state of the node to force re-retrieval of the data
     */
    public void reset()
@@ -413,6 +441,7 @@ public class Node implements Serializable
       this.type = null;
       this.path = null;
       this.locked = null;
+      this.workingCopyOwner = null;
       this.properties.clear();
       this.propsRetrieved = false;
       this.aspects = null;

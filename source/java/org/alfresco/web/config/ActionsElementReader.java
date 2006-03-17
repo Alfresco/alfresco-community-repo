@@ -39,14 +39,15 @@ public class ActionsElementReader implements ConfigElementReader
    public static final String ELEMENT_PERMISSION = "permission";
    public static final String ELEMENT_EVALUATOR = "evaluator";
    public static final String ELEMENT_LABEL = "label";
-   public static final String ELEMENT_LABELMSG = "label-msg";
+   public static final String ELEMENT_LABELMSG = "label-id";
    public static final String ELEMENT_TOOLTIP = "tooltip";
-   public static final String ELEMENT_TOOLTIPMSG = "tooltip-msg";
+   public static final String ELEMENT_TOOLTIPMSG = "tooltip-id";
    public static final String ELEMENT_SHOWLINK = "show-link";
    public static final String ELEMENT_STYLE = "style";
    public static final String ELEMENT_STYLECLASS = "style-class";
    public static final String ELEMENT_IMAGE = "image";
    public static final String ELEMENT_ACTIONLISTENER = "action-listener";
+   public static final String ELEMENT_ONCLICK = "onclick";
    public static final String ELEMENT_HREF = "href";
    public static final String ELEMENT_TARGET = "target";
    public static final String ELEMENT_PARAMS = "params";
@@ -250,6 +251,7 @@ public class ActionsElementReader implements ConfigElementReader
       actionDef.Target = actionElement.elementTextTrim(ELEMENT_TARGET);
       actionDef.Action = actionElement.elementTextTrim(ELEMENT_ACTION);
       actionDef.ActionListener = actionElement.elementTextTrim(ELEMENT_ACTIONLISTENER);
+      actionDef.Onclick = actionElement.elementTextTrim(ELEMENT_ONCLICK);
       actionDef.Image = actionElement.elementTextTrim(ELEMENT_IMAGE);
       actionDef.Style = actionElement.elementTextTrim(ELEMENT_STYLE);
       actionDef.StyleClass = actionElement.elementTextTrim(ELEMENT_STYLECLASS);

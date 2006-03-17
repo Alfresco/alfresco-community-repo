@@ -16,42 +16,28 @@
  */
 package org.alfresco.web.action.evaluator;
 
-import javax.faces.context.FacesContext;
-
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.action.ActionEvaluator;
-import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 
 /**
- * UI Action Evaluator - Edit document via CIFS.
+ * UI Action Evaluator - 'Reject' workflow step for document.
  * 
  * @author Kevin Roast
  */
-public final class EditDocCIFSEvaluator implements ActionEvaluator
+public final class RejectDocEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */
    public boolean evaluate(Node node)
    {
-      FacesContext fc = FacesContext.getCurrentInstance();
-      
-      // if the node is inline editable, the default http behaviour should always be used
-      if (node.hasAspect(ContentModel.ASPECT_INLINEEDITABLE) == false &&
-          "webdav".equals(Application.getClientConfig(fc).getEditLinkType()))
-      {
-         if (node.isWorkingCopyOwner() == true ||
-             (node.isLocked() == false && node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false))
-         {
-            return true;
-         }
-      }
-      
-      return false;
+      return (node.getProperties().get("app:rejectStep") != null &&
+              node.isLocked() == false &&
+              node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false);
    }
 }
 /*
-<a:booleanEvaluator value="#{(r.locked == false && r.workingCopy == false) || r.owner == true}">
-   <a:booleanEvaluator value="#{r.editLinkType == 'webdav'}">
+<a:booleanEvaluator value='#{r["app:rejectStep"] != null && r.workingCopy == false && r.locked == false}'>
 */

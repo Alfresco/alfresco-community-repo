@@ -72,11 +72,18 @@ public class ActionsConfigElement extends ConfigElementAdapter
       ActionsConfigElement existingElement = (ActionsConfigElement)configElement;
       ActionsConfigElement combinedElement = new ActionsConfigElement();
       
+      combinedElement.actionDefs.putAll(this.actionDefs);
+      combinedElement.actionDefs.putAll(existingElement.actionDefs);
+      
+      combinedElement.actionGroups.putAll(this.actionGroups);
+      combinedElement.actionGroups.putAll(existingElement.actionGroups);
+      
       //
-      // TODO: implement to allow override of config elements
+      // TODO: do we need to check all groups here and update ActionDefinition references incase they
+      //       have changed? e.g. if an actiondef ID is overriden, a group using it will not know!
       //
       
-      return null;
+      return combinedElement;
    }
    
    /*package*/ void addActionDefinition(ActionDefinition actionDef)
@@ -173,7 +180,7 @@ public class ActionsConfigElement extends ConfigElementAdapter
       public String LabelMsg;
       public String Tooltip;
       public String TooltipMsg;
-      public boolean ShowLink;
+      public boolean ShowLink = true;
       public String Style;
       public String StyleClass;
       public String Image;
@@ -181,6 +188,7 @@ public class ActionsConfigElement extends ConfigElementAdapter
       public String Action;
       public String Href;
       public String Target;
+      public String Onclick;
    }
    
    

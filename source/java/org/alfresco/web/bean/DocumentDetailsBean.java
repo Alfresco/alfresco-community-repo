@@ -1087,7 +1087,7 @@ public class DocumentDetailsBean
          FacesContext context = FacesContext.getCurrentInstance();
          String msg = Application.getMessage(context, MSG_SUCCESS_OWNERSHIP);
          FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         context.addMessage(event.getComponent().getClientId(context), facesMsg);
+         context.addMessage("document-details:document-props", facesMsg);
          
          // commit the transaction
          tx.commit();
@@ -1193,7 +1193,7 @@ public class DocumentDetailsBean
     */
    public boolean isOwner()
    {
-      return Repository.isNodeOwner(getDocument(), this.lockService);
+      return getDocument().isWorkingCopyOwner();
    }
    
    /**

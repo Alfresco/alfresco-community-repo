@@ -104,47 +104,14 @@
                               <td style="padding-left:4px" width=52>
                                  <%-- Create actions menu --%>
                                  <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
-                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval3">
-                                       <a:actionLink value="#{msg.create_content}" image="/images/icons/new_content.gif" id="link3_1" action="createContent" actionListener="#{CreateContentWizard.startWizard}" />
-                                    </r:permissionEvaluator>
-                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval1">
-                                       <a:actionLink value="#{msg.new_space}" image="/images/icons/create_space.gif" action="createSpace" actionListener="#{NewSpaceDialog.startWizard}" id="link1" />
-                                    </r:permissionEvaluator>
-                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval6">
-                                       <a:actionLink value="#{msg.advanced_space_wizard}" image="/images/icons/create_space.gif" action="createAdvancedSpace" actionListener="#{NewSpaceWizard.startWizard}" id="link9" />
-                                    </r:permissionEvaluator>
+                                    <r:actions id="acts_create" value="browse_create_menu" context="#{NavigationBean.currentNode}" />
                                  </a:menu>
                               </td>
                               <td style="padding-left:4px" width=80>
                                  <%-- More actions menu --%>
                                  <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
-                                    <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" action="dialog:showSpaceDetails" actionListener="#{BrowseBean.setupSpaceAction}" id="link5">
-                                       <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param6" />
-                                    </a:actionLink>
-                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval4">
-                                       <a:actionLink value="#{msg.delete_space}" image="/images/icons/delete.gif" action="dialog:deleteSpace" actionListener="#{BrowseBean.setupDeleteAction}" id="link2">
-                                          <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param1" />
-                                       </a:actionLink>
-                                       <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" id="link6" actionListener="#{ClipboardBean.cutNode}">
-                                          <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param3" />
-                                       </a:actionLink>
-                                    </r:permissionEvaluator>
-                                    <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" id="link7" actionListener="#{ClipboardBean.copyNode}">
-                                       <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param4" />
-                                    </a:actionLink>
-                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Write" id="eval5">
-                                       <a:actionLink value="#{msg.paste_all}" image="/images/icons/paste.gif" actionListener="#{ClipboardBean.pasteAll}" id="link8" />
-                                    </r:permissionEvaluator>
-                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="ChangePermissions" id="eval3_1">
-                                       <a:actionLink value="#{msg.manage_invited_users}" image="/images/icons/invite.gif" id="link4" action="dialog:manageInvitedUsers" actionListener="#{BrowseBean.setupSpaceAction}">
-                                          <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param6_1" />
-                                       </a:actionLink>
-                                    </r:permissionEvaluator>
-                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Write" id="eval7">
-                                       <a:actionLink value="#{msg.manage_rules}" image="/images/icons/rule.gif" action="dialog:manageRules" actionListener="#{BrowseBean.setupSpaceAction}" id="link10">
-                                          <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param5" />
-                                       </a:actionLink>
-                                    </r:permissionEvaluator>
+                                    <r:actions id="acts_browse" value="browse_actions_menu" context="#{NavigationBean.currentNode}" />
+                                    
                                     <%-- admin user only actions --%>
                                     <a:booleanEvaluator value="#{NavigationBean.currentUser.admin == true}" id="eval8">
                                        <a:actionLink value="#{msg.admin_console}" image="/images/icons/admin_console.gif" action="adminConsole" id="link11" />
@@ -315,39 +282,13 @@
                            <f:facet name="header">
                               <h:outputText value="#{msg.actions}"/>
                            </f:facet>
-                           <a:actionLink value="#{msg.preview}" image="/images/icons/preview.gif" showLink="false" styleClass="inlineAction" actionListener="#{BrowseBean.setupSpaceAction}" action="previewSpace">
-                              <f:param name="id" value="#{r.id}" />
-                           </a:actionLink>
-                           <a:booleanEvaluator value="#{r.beingDiscussed == true}">
-                              <a:actionLink value="#{msg.discuss}" image="/images/icons/forum.gif" showLink="false" styleClass="inlineAction" actionListener="#{ForumsBean.discuss}">
-                                 <f:param name="id" value="#{r.id}" />
-                              </a:actionLink>
-                           </a:booleanEvaluator>
-                           <r:permissionEvaluator value="#{r}" allow="Delete">
-                              <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" showLink="false" styleClass="inlineAction" actionListener="#{ClipboardBean.cutNode}">
-                                 <f:param name="id" value="#{r.id}" />
-                              </a:actionLink>
-                           </r:permissionEvaluator>
-                           <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" showLink="false" styleClass="inlineAction" actionListener="#{ClipboardBean.copyNode}">
-                              <f:param name="id" value="#{r.id}" />
-                           </a:actionLink>
-                           <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" showLink="false" styleClass="inlineAction" action="dialog:showSpaceDetails" actionListener="#{BrowseBean.setupSpaceAction}">
-                              <f:param name="id" value="#{r.id}" />
-                           </a:actionLink>
+                           
+                           <%-- actions are configured in web-client-config-actions.xml --%>
+                           <r:actions id="acts1" value="space_browse" context="#{r}" showLink="false" styleClass="inlineAction" />
+                           
                            <%-- More actions menu --%>
                            <a:menu itemSpacing="4" image="/images/icons/more.gif" tooltip="#{msg.more_actions}" menuStyleClass="moreActionsMenu">
-                              <r:permissionEvaluator value="#{r}" allow="Delete">
-	                              <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" action="dialog:deleteSpace" actionListener="#{BrowseBean.setupDeleteAction}">
-	                                 <f:param name="id" value="#{r.id}" />
-	                              </a:actionLink>
-                           	</r:permissionEvaluator>
-                           	<r:permissionEvaluator value="#{r}" allow="CreateChildren">
-	                              <a:booleanEvaluator value="#{r.beingDiscussed == false}">
-	                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
-	                                    <f:param name="id" value="#{r.id}" />
-	                                 </a:actionLink>
-	                              </a:booleanEvaluator>
-                              </r:permissionEvaluator>
+                              <r:actions id="acts2" value="space_browse_menu" context="#{r}" />
                            </a:menu>
                         </a:column>
                         
@@ -462,90 +403,13 @@
                            <f:facet name="header">
                               <h:outputText value="#{msg.actions}"/>
                            </f:facet>
-                           <r:permissionEvaluator value="#{r}" allow="Write">
-                              <a:booleanEvaluator value="#{(r.locked == false && r.workingCopy == false) || r.owner == true}">
-                                 <a:booleanEvaluator value="#{r.editLinkType == 'http'}">
-                                    <a:actionLink value="#{msg.edit}" image="/images/icons/edit_icon.gif" showLink="false" styleClass="inlineAction" actionListener="#{CheckinCheckoutBean.editFile}">
-                                       <f:param name="id" value="#{r.id}" />
-                                    </a:actionLink>
-                                 </a:booleanEvaluator>
-                                 <a:booleanEvaluator value="#{r.editLinkType == 'webdav'}">
-                                    <a:actionLink value="#{msg.edit}" image="/images/icons/edit_icon.gif" showLink="false" styleClass="inlineAction" onclick="javascript:openDoc('#{r.webdavUrl}');" />
-                                 </a:booleanEvaluator>
-                                 <a:booleanEvaluator value="#{r.editLinkType == 'cifs'}">
-                                    <a:actionLink value="#{msg.edit}" image="/images/icons/edit_icon.gif" showLink="false" styleClass="inlineAction" href="#{r.cifsPath}" target="new" />
-                                 </a:booleanEvaluator>
-                              </a:booleanEvaluator>
-                           </r:permissionEvaluator>
-                           <r:permissionEvaluator value="#{r}" allow="CheckOut">
-                              <a:booleanEvaluator value="#{r.locked == false && r.workingCopy == false}">
-                                 <a:actionLink value="#{msg.checkout}" image="/images/icons/CheckOut_icon.gif" showLink="false" styleClass="inlineAction" actionListener="#{CheckinCheckoutBean.setupContentAction}" action="checkoutFile">
-                                    <f:param name="id" value="#{r.id}" />
-                                 </a:actionLink>
-                              </a:booleanEvaluator>
-                           </r:permissionEvaluator>
-                           <a:booleanEvaluator value="#{r.checkIn == true}">
-                              <a:actionLink value="#{msg.checkin}" image="/images/icons/CheckIn_icon.gif" showLink="false" styleClass="inlineAction" actionListener="#{CheckinCheckoutBean.setupContentAction}" action="checkinFile">
-                                 <f:param name="id" value="#{r.id}" />
-                             </a:actionLink>
-                           </a:booleanEvaluator>
-                           <a:booleanEvaluator value="#{r.beingDiscussed == true}">
-                              <a:actionLink value="#{msg.discuss}" image="/images/icons/forum.gif" showLink="false" styleClass="inlineAction" actionListener="#{ForumsBean.discuss}">
-                                 <f:param name="id" value="#{r.id}" />
-                              </a:actionLink>
-                           </a:booleanEvaluator>
-                           <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" showLink="false" styleClass="inlineAction" actionListener="#{BrowseBean.setupContentAction}" action="dialog:showDocDetails">
-                              <f:param name="id" value="#{r.id}" />
-                           </a:actionLink>
-                           <a:actionLink value="#{msg.preview}" image="/images/icons/preview.gif" showLink="false" styleClass="inlineAction" actionListener="#{BrowseBean.setupContentAction}" action="previewContent">
-                              <f:param name="id" value="#{r.id}" />
-                           </a:actionLink>
+                           
+                           <%-- actions are configured in web-client-config-actions.xml --%>
+                           <r:actions id="acts3" value="document_browse" context="#{r}" showLink="false" styleClass="inlineAction" />
+                           
                            <%-- More actions menu --%>
                            <a:menu itemSpacing="4" image="/images/icons/more.gif" tooltip="#{msg.more_actions}" menuStyleClass="moreActionsMenu">
-                              <r:permissionEvaluator value="#{r}" allow="Delete">
-	                              <a:booleanEvaluator value="#{r.locked == false && r.workingCopy == false}">
-	                                 <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" actionListener="#{BrowseBean.setupContentAction}" action="dialog:deleteFile">
-	                                    <f:param name="id" value="#{r.id}" />
-	                                 </a:actionLink>
-	                              </a:booleanEvaluator>
-                              </r:permissionEvaluator>
-                              <r:permissionEvaluator value="#{r}" allow="Write">
-                                 <a:booleanEvaluator value="#{(r.locked == false && r.workingCopy == false) || r.owner == true}">
-                                    <a:actionLink value="#{msg.update}" image="/images/icons/update.gif" actionListener="#{CheckinCheckoutBean.setupContentAction}" action="updateFile">
-                                       <f:param name="id" value="#{r.id}" />
-                                    </a:actionLink>
-                                 </a:booleanEvaluator>
-                              </r:permissionEvaluator>
-                              <a:booleanEvaluator value="#{r.cancelCheckOut == true}">
-                                 <a:actionLink value="#{msg.undocheckout}" image="/images/icons/undo_checkout.gif" actionListener="#{CheckinCheckoutBean.setupContentAction}" action="undoCheckoutFile">
-                                    <f:param name="id" value="#{r.id}" />
-                                 </a:actionLink>
-                              </a:booleanEvaluator>
-                              <a:booleanEvaluator value='#{r["app:approveStep"] != null && r.workingCopy == false && r.locked == false}'>
-                                 <a:actionLink value='#{r["app:approveStep"]}' image="/images/icons/approve.gif" actionListener="#{DocumentDetailsBean.approve}">
-                                    <f:param name="id" value="#{r.id}" />
-                                 </a:actionLink>
-                              </a:booleanEvaluator>
-                              <a:booleanEvaluator value='#{r["app:rejectStep"] != null && r.workingCopy == false && r.locked == false}'>
-                                 <a:actionLink value='#{r["app:rejectStep"]}' image="/images/icons/reject.gif" actionListener="#{DocumentDetailsBean.reject}">
-                                    <f:param name="id" value="#{r.id}" />
-                                 </a:actionLink>
-                              </a:booleanEvaluator>
-                              <r:permissionEvaluator value="#{r}" allow="Delete">
-                                 <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" actionListener="#{ClipboardBean.cutNode}">
-                                    <f:param name="id" value="#{r.id}" />
-                                 </a:actionLink>
-                              </r:permissionEvaluator>
-                              <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" actionListener="#{ClipboardBean.copyNode}">
-                                 <f:param name="id" value="#{r.id}" />
-                              </a:actionLink>
-                              <r:permissionEvaluator value="#{r}" allow="CreateChildren">
-	                              <a:booleanEvaluator value="#{r.beingDiscussed == false && r.locked == false}">
-	                                 <a:actionLink value="#{msg.start_discussion}" image="/images/icons/create_forum.gif" actionListener="#{CreateDiscussionDialog.startWizard}">
-	                                    <f:param name="id" value="#{r.id}" />
-	                                 </a:actionLink>
-	                              </a:booleanEvaluator>
-	                           </r:permissionEvaluator>
+                              <r:actions id="acts4" value="document_browse_menu" context="#{r}" />
                            </a:menu>
                         </a:column>
                         

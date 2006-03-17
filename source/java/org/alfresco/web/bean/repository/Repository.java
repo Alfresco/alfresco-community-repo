@@ -220,34 +220,6 @@ public final class Repository
    }
    
    /**
-    * Return whether a WorkingCopy Node is owned by the current User
-    * 
-    * @param node             The Node wrapper to test against
-    * @param lockService      The LockService to use
-    * 
-    * @return whether a WorkingCopy Node is owned by the current User
-    */
-   public static Boolean isNodeOwner(Node node, LockService lockService)
-   {
-      Boolean locked = Boolean.FALSE;
-      
-      if (node.hasAspect(ContentModel.ASPECT_WORKING_COPY))
-      {
-         Object obj = node.getProperties().get("workingCopyOwner");
-         if (obj instanceof String)
-         {
-            User user = Application.getCurrentUser(FacesContext.getCurrentInstance());
-            if ( ((String)obj).equals(user.getUserName()))
-            {
-               locked = Boolean.TRUE;
-            }
-         }
-      }
-      
-      return locked;
-   }
-   
-   /**
     * Return the human readable form of the specified node Path. Fast version of the method that
     * simply converts QName localname components to Strings.
     * 

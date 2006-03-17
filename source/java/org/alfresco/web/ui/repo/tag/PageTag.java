@@ -44,7 +44,7 @@ public class PageTag extends TagSupport
    private final static String ALF_URL   = "http://www.alfresco.com";
    private final static String ALF_LOGO  = "/images/logo/alfresco_logo.gif";
    private final static String ALF_TEXT  = "Content managed by Alfresco";
-   private final static String ALF_COPY  = "Alfresco Software Inc. © 2005 All rights reserved.";
+   private final static String ALF_COPY  = "Alfresco Software Inc. (C) 2005-2006 All rights reserved.";
    
    private static Log logger = LogFactory.getLog(PageTag.class);
    private static String alfresco = null;

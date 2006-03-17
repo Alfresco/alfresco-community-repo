@@ -355,42 +355,6 @@ public class RichListRenderer extends BaseRenderer
       public void renderListBefore(FacesContext context, UIRichList richList, UIColumn[] columns)
             throws IOException
       {
-//         ResponseWriter out = context.getResponseWriter();
-         
-         // render column headers as labels
-         // TODO: add "showHeaders" to RichList to allow hiding of header facets for some view modes
-         /*
-         out.write("<tr");
-         outputAttribute(out, richList.getAttributes().get("headerStyleClass"), "class");
-         out.write('>');
-         for (int i=0; i<columns.length; i++)
-         {
-            UIColumn column = columns[i];
-            
-            if (column.isRendered() == true)
-            {
-               out.write("<th");
-               outputAttribute(out, column.getAttributes().get("width"), "width");
-               outputAttribute(out, column.getAttributes().get("style"), "style");
-               outputAttribute(out, column.getAttributes().get("styleClass"), "class");
-               out.write('>');
-               
-               // output the header facet if any
-               UIComponent header = column.getHeader();
-               if (header != null)
-               {
-                  header.encodeBegin(context);
-                  header.encodeChildren(context);
-                  header.encodeEnd(context);
-               }
-            }
-            
-            // we don't render child controls for the header row
-            out.write("</th>");
-         }
-         out.write("</tr>");
-         */
-         
          this.rowIndex = 0;
       }
       

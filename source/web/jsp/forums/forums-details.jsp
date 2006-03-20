@@ -74,28 +74,8 @@
                               <div class="mainSubText"><h:outputText value="#{msg.forums_details_description}" /></div>
                            </td>
                            
-                           <td align=right width=80>
-                              <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.actions}" image="/images/icons/menu.gif"
-                                    menuStyleClass="moreActionsMenu" style="white-space:nowrap">
-                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Delete">
-                                    <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" actionListener="#{ClipboardBean.cutNode}">
-                                       <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                    </a:actionLink>
-                                 </r:permissionEvaluator>
-                                 <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" actionListener="#{ClipboardBean.copyNode}">
-                                    <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                 </a:actionLink>
-                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Delete">
-                                    <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" action="dialog:deleteSpace" actionListener="#{BrowseBean.setupSpaceAction}">
-                                       <f:param name="id" value="#{SpaceDetailsBean.id}" />
-                                    </a:actionLink>
-                                 </r:permissionEvaluator>
-                              </a:menu>
-                           </td>
-                           
                            <%-- Navigation --%>
-                           <td class="separator" width=1></td>
-                           <td style="padding-left:4px" width=80>
+                           <td align=right>
                               <a:actionLink value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{SpaceDetailsBean.previousItem}" action="previousItem">
                                  <f:param name="id" value="#{SpaceDetailsBean.id}" />
                               </a:actionLink>
@@ -164,10 +144,11 @@
                                     </tr>
                                  </table>
                               </a:panel>
+                           </td>
                            
                            <td valign="top">
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
-                              <table cellpadding="1" cellspacing="1" border="0">
+                              <table cellpadding="1" cellspacing="1" border="0" width="100%">
                                  <tr>
                                     <td align="center">
                                        <h:commandButton value="#{msg.close}" action="#{SpaceDetailsBean.closeDialog}" styleClass="wizardButton" />
@@ -175,7 +156,15 @@
                                  </tr>
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+                              
+                              <div style="padding:4px"></div>
+                              
+                              <%-- Actions Panel --%>
+                              <a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" style="text-align:center" progressive="true">
+                                 <r:actions id="actions_forums" value="forums_details_actions" context="#{SpaceDetailsBean.space}" verticalSpacing="3" style="white-space:nowrap" />
+                              </a:panel>
                            </td>
+
                         </tr>
                      </table>
                   </td>

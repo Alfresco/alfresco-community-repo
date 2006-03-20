@@ -4,7 +4,7 @@
       <actions>
          
          <!-- Forums overrides the checkin document action - as it has more complex evaluation
-              logic which takes into account any child forums attached to a node. -->
+              logic which takes into account any child forums attached to the node. -->
          <!-- Checkin document -->
          <action id="checkin_doc">
             <evaluator>org.alfresco.web.action.evaluator.ForumsCheckinDocEvaluator</evaluator>
@@ -134,6 +134,27 @@
             <action idref="discuss_node" />
             <action idref="create_forum_node" />
             <action idref="preview_space" />
+         </action-group>
+         
+         <!-- Actions Menu for Forums Details page -->
+         <action-group id="forums_details_actions">
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_space" />
+         </action-group>
+         
+         <!-- Actions Menu for Forum Details page -->
+         <action-group id="forum_details_actions">
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_space" />
+         </action-group>
+         
+         <!-- Actions Menu for Topic Details page -->
+         <action-group id="topic_details_actions">
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_space" />
          </action-group>
          
       </actions>

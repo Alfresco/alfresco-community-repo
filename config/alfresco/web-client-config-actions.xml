@@ -80,8 +80,6 @@
             <target>cifs</target>
          </action>
          
-         <!-- TODO: need an overridden version of this actions in the Forums actions XML
-           as the checkin evaluator has additional logic needed for Forums -->
          <!-- Checkin document -->
          <action id="checkin_doc">
             <evaluator>org.alfresco.web.action.evaluator.CheckinDocEvaluator</evaluator>
@@ -113,33 +111,6 @@
             <image>/images/icons/undo_checkout.gif</image>
             <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
             <action>undoCheckoutFile</action>
-            <params>
-               <param name="id">#{actionContext.id}</param>
-            </params>
-         </action>
-         
-         <!-- TODO: move to Forums actions XML - override the document/space_browse groups? -->
-         <!-- Discuss document or space e.g. jump to Forums view for this node -->
-         <action id="discuss_node">
-            <evaluator>org.alfresco.web.action.evaluator.DiscussNodeEvaluator</evaluator>
-            <label-id>discuss</label-id>
-            <image>/images/icons/forum-16.gif</image>
-            <action-listener>#{ForumsBean.discuss}</action-listener>
-            <params>
-               <param name="id">#{actionContext.id}</param>
-            </params>
-         </action>
-         
-         <!-- TODO: move to Forums actions XML - override the document/space_browse groups? -->
-         <!-- Discuss document or space e.g. jump to Forums view for this node -->
-         <action id="create_forum_node">
-            <permissions>
-               <permission allow="true">CreateChildren</permission>
-            </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.CreateForumNodeEvaluator</evaluator>
-            <label-id>start_discussion</label-id>
-            <image>/images/icons/create_forum.gif</image>
-            <action-listener>#{CreateDiscussionDialog.startWizard}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -459,7 +430,6 @@
          <!-- the component is responsible for making the context Node object available with name
               of 'actionContext' so the actions can access it directly to get properties -->
          
-         <!-- TODO: add overriden doc browse actions for forum module? -->
          <!-- Actions for a document in the Browse screen -->
          <action-group id="document_browse">
             <show-link>false</show-link>
@@ -470,11 +440,10 @@
             <action idref="edit_doc_cifs" />
             <action idref="checkout_doc" />
             <action idref="checkin_doc" />
-            <action idref="discuss_node" />
             <action idref="details_doc" />
             <action idref="preview_doc" />
             
-            <!-- Example action defined inline rather than by reference
+            <!-- Example action defined in-line rather than by reference
             <action id="example2_checkout_doc">
                <permissions>
                   <permission allow="true">CheckOut</permission>
@@ -497,7 +466,6 @@
             <action idref="reject_doc" />
             <action idref="cut_node" />
             <action idref="copy_node" />
-            <action idref="create_forum_node" />
          </action-group>
          
          <!-- Actions for a space in the Browse screen -->
@@ -506,7 +474,6 @@
             <style-class>inlineAction</style-class>
             
             <action idref="preview_space" />
-            <action idref="discuss_node" />
             <action idref="cut_node" />
             <action idref="copy_node" />
             <action idref="details_space" />
@@ -515,7 +482,6 @@
          <!-- Actions Menu for a space in the Browse screen -->
          <action-group id="space_browse_menu">
             <action idref="delete_space" />
-            <action idref="create_forum_node" />
          </action-group>
          
          <!-- Actions Menu for Create in Browse screen -->
@@ -556,8 +522,6 @@
             <action idref="take_ownership_doc" />
             <action idref="manage_content_users" />
             <action idref="create_shortcut" />
-            <action idref="discuss_node" />
-            <action idref="create_forum_node" />
             <action idref="preview_doc" />
             <action idref="run_action" />
          </action-group>
@@ -572,8 +536,6 @@
             <action idref="create_shortcut" />
             <action idref="take_ownership_space" />
             <action idref="manage_space_rules" />
-            <action idref="discuss_node" />
-            <action idref="create_forum_node" />
             <action idref="preview_space" />
          </action-group>
          

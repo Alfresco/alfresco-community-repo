@@ -116,9 +116,10 @@
    
    <config evaluator="string-compare" condition="Node Event Listeners">
       <!-- Managed beans that wish to be notified of Node events from the BrowseBean -->
+      <!-- Example - bean must implement org.alfresco.web.bean.NodeEventListener
       <node-event-listeners>
          <listener>ForumsBean</listener>
-      </node-event-listeners>
+      </node-event-listeners> -->
    </config>
    
    <config evaluator="string-compare" condition="Advanced Search">

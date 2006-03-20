@@ -30,6 +30,7 @@ import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
 import org.alfresco.config.Config;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.config.ActionsConfigElement;
@@ -149,7 +150,7 @@ public class UIActions extends SelfRenderingComponent
                   // render the action group component tree
                   if (logger.isDebugEnabled())
                      logger.debug("-constructing ActionGroup: " + groupId);
-                  buildActionGroup(context, actionGroup);
+                  buildActionGroup(context, actionConfig, actionGroup);
                }
                else
                {
@@ -221,7 +222,7 @@ public class UIActions extends SelfRenderingComponent
     * @param context
     * @param actionGroup
     */
-   private void buildActionGroup(FacesContext context, ActionGroup actionGroup)
+   private void buildActionGroup(FacesContext context, ActionsConfigElement config, ActionGroup actionGroup)
       throws IOException
    {
       javax.faces.application.Application facesApp = context.getApplication();
@@ -238,10 +239,16 @@ public class UIActions extends SelfRenderingComponent
       }
       
       // process each ActionDefinition in the order they were defined
-      for (ActionDefinition actionDef : actionGroup)
+      for (String actionId : actionGroup)
       {
          if (logger.isDebugEnabled())
-            logger.debug("---processing ActionDefinition: " + actionDef.getId());
+            logger.debug("---processing ActionDefinition: " + actionId);
+         
+         ActionDefinition actionDef = config.getActionDefinition(actionId);
+         if (actionDef == null)
+         {
+            throw new AlfrescoRuntimeException("Unable to find configured ActionDefinition Id: " + actionId);
+         }
          
          UIComponent currentParent = this;  
          
@@ -433,7 +440,7 @@ public class UIActions extends SelfRenderingComponent
          }
          
          if (logger.isDebugEnabled())
-            logger.debug("-----adding UIActionLink component for: " + actionDef.getId());
+            logger.debug("-----adding UIActionLink component for: " + actionId);
          currentParent.getChildren().add(control);
       }
    }

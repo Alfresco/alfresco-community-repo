@@ -47,7 +47,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -74,7 +73,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-public class ForumsBean implements IContextListener, NodeEventListener
+public class ForumsBean implements IContextListener
 {
    private static Log logger = LogFactory.getLog(ForumsBean.class);
    private static final String PAGE_NAME_FORUMS = "forums";
@@ -595,25 +594,6 @@ public class ForumsBean implements IContextListener, NodeEventListener
    
    
    // ------------------------------------------------------------------------------
-   // NodeEventListener implementation
-   
-   /**
-    * @see org.alfresco.web.bean.NodeEventListener#created(org.alfresco.web.bean.repository.Node, org.alfresco.service.namespace.QName)
-    */
-   public void created(Node node, QName type)
-   {
-      // override the checkin resolver if appropriate
-      if (node.containsPropertyResolver("checkIn") == true)
-      {
-         node.addPropertyResolver("checkIn", this.resolverCheckIn);
-      }
-      
-      // add the forums specific action resolver
-      node.addPropertyResolver("beingDiscussed", this.resolverBeingDiscussed);
-   }
-   
-   
-   // ------------------------------------------------------------------------------
    // Navigation action event handlers 
 
    /**
@@ -872,44 +852,6 @@ public class ForumsBean implements IContextListener, NodeEventListener
    // ------------------------------------------------------------------------------
    // Property Resolvers
    
-   public NodePropertyResolver resolverCheckIn = new NodePropertyResolver() {
-      public Object get(Node node) 
-      {
-         boolean canCheckin = false;
-         
-         // if the working copy has a discussion the user will also need to have
-         // contributor permission on the locked node
-         if (node.hasAspect(ContentModel.ASPECT_WORKING_COPY))
-         {
-            if (node.hasAspect(ForumModel.ASPECT_DISCUSSABLE))
-            {
-               // get the original locked node (via the copiedfrom aspect)
-               NodeRef lockedNodeRef = (NodeRef)nodeService.getProperty(node.getNodeRef(), ContentModel.PROP_COPY_REFERENCE);
-               if (lockedNodeRef != null)
-               {
-                  Node lockedNode = new Node(lockedNodeRef);
-                  canCheckin = node.hasPermission(PermissionService.CHECK_IN) && 
-                               lockedNode.hasPermission(PermissionService.CONTRIBUTOR);
-               }
-            }
-            else
-            {
-               // there is no discussion so just check they have checkin permission
-               // for the node
-               canCheckin = node.hasPermission(PermissionService.CHECK_IN);
-            }
-         }
-         
-         return canCheckin;
-      }
-   };
-   
-   public NodePropertyResolver resolverBeingDiscussed = new NodePropertyResolver() {
-      public Object get(Node node) {
-         return node.hasAspect(ForumModel.ASPECT_DISCUSSABLE);
-      }
-   };
-   
    public NodePropertyResolver resolverReplies = new NodePropertyResolver() {
       public Object get(Node node) 
       {
@@ -942,7 +884,6 @@ public class ForumsBean implements IContextListener, NodeEventListener
          // get the content property from the node and retrieve the 
          // full content as a string (obviously should only be used
          // for small amounts of content)
-         
          ContentReader reader = contentService.getReader(node.getNodeRef(), 
                ContentModel.PROP_CONTENT);
          
@@ -960,7 +901,6 @@ public class ForumsBean implements IContextListener, NodeEventListener
       {
          // determine if this node is a reply to another post, if so find
          // the creator of the original poster
-         
          String replyTo = null;
          
          List<AssociationRef> assocs = nodeService.getTargetAssocs(node.getNodeRef(),

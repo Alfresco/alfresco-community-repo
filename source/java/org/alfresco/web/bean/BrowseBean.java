@@ -412,7 +412,8 @@ public class BrowseBean implements IContextListener
     * Setup the common properties required at data-binding time.
     * <p>
     * These are properties used by components on the page when iterating over the nodes.
-    * Information such as whether the node is locked, a working copy, download URL etc.
+    * The properties are available as the Node is a Map so they can be accessed directly
+    * by name. Information such as download URL, size and filetype are provided etc.
     * <p>
     * We use a set of anonymous inner classes to provide the implemention for the property
     * getters. The interfaces are only called when the properties are first requested. 
@@ -422,15 +423,10 @@ public class BrowseBean implements IContextListener
    public void setupCommonBindingProperties(Node node)
    {
       // special properties to be used by the value binding components on the page
-      node.addPropertyResolver("locked", this.resolverlocked);
-      node.addPropertyResolver("owner", this.resolverOwner);
-      node.addPropertyResolver("workingCopy", this.resolverWorkingCopy);
       node.addPropertyResolver("url", this.resolverUrl);
       node.addPropertyResolver("fileType16", this.resolverFileType16);
       node.addPropertyResolver("fileType32", this.resolverFileType32);
       node.addPropertyResolver("size", this.resolverSize);
-      node.addPropertyResolver("cancelCheckOut", this.resolverCancelCheckOut);
-      node.addPropertyResolver("checkIn", this.resolverCheckIn);
       node.addPropertyResolver("editLinkType", this.resolverEditLinkType);
       node.addPropertyResolver("webdavUrl", this.resolverWebdavUrl);
       node.addPropertyResolver("cifsPath", this.resolverCifsPath);
@@ -775,36 +771,36 @@ public class BrowseBean implements IContextListener
    // ------------------------------------------------------------------------------
    // Property Resolvers
    
-   public NodePropertyResolver resolverlocked = new NodePropertyResolver() {
+   /*public NodePropertyResolver resolverlocked = new NodePropertyResolver() {
       public Object get(Node node) {
          return node.isLocked();
       }
-   };
+   };*/
    
-   public NodePropertyResolver resolverOwner = new NodePropertyResolver() {
+   /*public NodePropertyResolver resolverOwner = new NodePropertyResolver() {
       public Object get(Node node) {
          return getDocument().isWorkingCopyOwner();
       }
-   };
+   };*/
    
-   public NodePropertyResolver resolverCancelCheckOut = new NodePropertyResolver() {
+   /*public NodePropertyResolver resolverCancelCheckOut = new NodePropertyResolver() {
       public Object get(Node node) {
          return node.hasAspect(ContentModel.ASPECT_WORKING_COPY) && node.hasPermission(PermissionService.CANCEL_CHECK_OUT);
       }
-   };
+   };*/
    
-   public NodePropertyResolver resolverCheckIn = new NodePropertyResolver() {
+   /*public NodePropertyResolver resolverCheckIn = new NodePropertyResolver() {
       public Object get(Node node) {
          return node.hasAspect(ContentModel.ASPECT_WORKING_COPY) && node.hasPermission(PermissionService.CHECK_IN);
       }
-   };
+   };*/
    
-   public NodePropertyResolver resolverWorkingCopy = new NodePropertyResolver() {
+   /*public NodePropertyResolver resolverWorkingCopy = new NodePropertyResolver() {
       public Object get(Node node) {
          return node.hasAspect(ContentModel.ASPECT_WORKING_COPY);
       }
-   };
    
+   };*/
    public NodePropertyResolver resolverDownload = new NodePropertyResolver() {
       public Object get(Node node) {
          return DownloadContentServlet.generateDownloadURL(node.getNodeRef(), node.getName());
@@ -1152,8 +1148,6 @@ public class BrowseBean implements IContextListener
             node.addPropertyResolver("fileType32", this.resolverFileType32);
             node.addPropertyResolver("mimetype", this.resolverMimetype);
             node.addPropertyResolver("size", this.resolverSize);
-            node.addPropertyResolver("cancelCheckOut", this.resolverCancelCheckOut);
-            node.addPropertyResolver("checkIn", this.resolverCheckIn);
             
             for (NodeEventListener listener : getNodeEventListeners())
             {

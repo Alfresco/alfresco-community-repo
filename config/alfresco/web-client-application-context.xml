@@ -10,6 +10,7 @@
             <value>classpath:alfresco/web-client-config-properties.xml</value>
             <value>classpath:alfresco/web-client-config-navigation.xml</value>
             <value>classpath:alfresco/web-client-config-actions.xml</value>
+            <value>classpath:alfresco/web-client-config-forum-actions.xml</value>
             <value>classpath:alfresco/extension/web-client-config-custom.xml</value>
          </list>
       </constructor-arg>

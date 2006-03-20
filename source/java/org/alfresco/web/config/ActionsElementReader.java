@@ -107,30 +107,24 @@ public class ActionsElementReader implements ConfigElementReader
                Element actionRefElement = actionRefItr.next();
                
                // look for an action referred to be Id - this is the common use-case
-               ActionDefinition def = null;
                String idRef = actionRefElement.attributeValue(ATTRIBUTE_IDREF);
-               if (idRef != null && idRef.length() != 0)
-               {
-                  // try to find the referenced action by Id
-                  def = configElement.getActionDefinition(idRef);
-                  if (def == null)
-                  {
-                     throw new ConfigException("Action group '" + groupId +
-                           "' cannot find action definition referenced by '" + idRef + "'");
-                  }
-               }
-               else
+               if (idRef == null || idRef.length() == 0)
                {
                   // look for an action defined directly rather than referenced by Id
                   String id = actionRefElement.attributeValue(ATTRIBUTE_ID);
                   if (id != null && id.length() != 0)
                   {
-                     def = parseActionDefinition(actionRefElement);
+                     ActionDefinition def = parseActionDefinition(actionRefElement);
+                     // override action definition ID based on the group name to avoid conflicts
+                     def.id = actionGroup.getId() + '_' + def.getId();
+                     configElement.addActionDefinition(def);
+                     actionGroup.addAction(def.getId());
                   }
                }
-               if (def != null)
+               else
                {
-                  actionGroup.addAction(def);
+                  // add the action definition ID to the group
+                  actionGroup.addAction(idRef);
                }
             }
             

@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigException;
@@ -77,11 +79,6 @@ public class ActionsConfigElement extends ConfigElementAdapter
       
       combinedElement.actionGroups.putAll(this.actionGroups);
       combinedElement.actionGroups.putAll(existingElement.actionGroups);
-      
-      //
-      // TODO: do we need to check all groups here and update ActionDefinition references incase they
-      //       have changed? e.g. if an actiondef ID is overriden, a group using it will not know!
-      //
       
       return combinedElement;
    }
@@ -170,7 +167,7 @@ public class ActionsConfigElement extends ConfigElementAdapter
          return params;
       }
       
-      private String id;
+      String id;
       private List<String> permissionAllow = null;
       private List<String> permissionDeny = null;
       private Map<String, String> params = null;
@@ -197,7 +194,7 @@ public class ActionsConfigElement extends ConfigElementAdapter
     * 
     * @author Kevin Roast
     */
-   public static class ActionGroup implements Iterable<ActionDefinition>
+   public static class ActionGroup implements Iterable<String>
    {
       public ActionGroup(String id)
       {
@@ -213,24 +210,24 @@ public class ActionsConfigElement extends ConfigElementAdapter
          return id;
       }
       
-      public void addAction(ActionDefinition actionDef)
+      public void addAction(String actionId)
       {
-         actions.put(actionDef.getId(), actionDef);
+         actions.add(actionId);
       }
       
       /**
-       * @return Iterator to the ActionDefinition objects referenced by this group 
+       * @return Iterator over the ActionDefinition IDs referenced by this group 
        */
-      public Iterator<ActionDefinition> iterator()
+      public Iterator<String> iterator()
       {
-         return actions.values().iterator();
+         return actions.iterator();
       }
       
       private String id;
       
-      /** the action definitions, we use a linked hashmap to ensure we do not have more 
+      /** the action definitions, we use a Linked HashSet to ensure we do not have more 
           than one action with the same Id and that the insertion order is preserved */
-      private Map<String, ActionDefinition> actions = new LinkedHashMap(8, 1.0f);
+      private Set<String> actions = new LinkedHashSet<String>(16, 1.0f);
       
       public boolean ShowLink;
       public String Style;

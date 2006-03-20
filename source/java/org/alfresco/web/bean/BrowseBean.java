@@ -427,7 +427,6 @@ public class BrowseBean implements IContextListener
       node.addPropertyResolver("fileType16", this.resolverFileType16);
       node.addPropertyResolver("fileType32", this.resolverFileType32);
       node.addPropertyResolver("size", this.resolverSize);
-      node.addPropertyResolver("editLinkType", this.resolverEditLinkType);
       node.addPropertyResolver("webdavUrl", this.resolverWebdavUrl);
       node.addPropertyResolver("cifsPath", this.resolverCifsPath);
    }
@@ -770,37 +769,7 @@ public class BrowseBean implements IContextListener
    
    // ------------------------------------------------------------------------------
    // Property Resolvers
-   
-   /*public NodePropertyResolver resolverlocked = new NodePropertyResolver() {
-      public Object get(Node node) {
-         return node.isLocked();
-      }
-   };*/
-   
-   /*public NodePropertyResolver resolverOwner = new NodePropertyResolver() {
-      public Object get(Node node) {
-         return getDocument().isWorkingCopyOwner();
-      }
-   };*/
-   
-   /*public NodePropertyResolver resolverCancelCheckOut = new NodePropertyResolver() {
-      public Object get(Node node) {
-         return node.hasAspect(ContentModel.ASPECT_WORKING_COPY) && node.hasPermission(PermissionService.CANCEL_CHECK_OUT);
-      }
-   };*/
-   
-   /*public NodePropertyResolver resolverCheckIn = new NodePropertyResolver() {
-      public Object get(Node node) {
-         return node.hasAspect(ContentModel.ASPECT_WORKING_COPY) && node.hasPermission(PermissionService.CHECK_IN);
-      }
-   };*/
-   
-   /*public NodePropertyResolver resolverWorkingCopy = new NodePropertyResolver() {
-      public Object get(Node node) {
-         return node.hasAspect(ContentModel.ASPECT_WORKING_COPY);
-      }
-   
-   };*/
+
    public NodePropertyResolver resolverDownload = new NodePropertyResolver() {
       public Object get(Node node) {
          return DownloadContentServlet.generateDownloadURL(node.getNodeRef(), node.getName());
@@ -877,23 +846,6 @@ public class BrowseBean implements IContextListener
       public Object get(Node node) {
          ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
          return (content != null ? new Long(content.getSize()) : null);
-      }
-   };
-   
-   public NodePropertyResolver resolverEditLinkType = new NodePropertyResolver() {
-      public Object get(Node node)
-      {
-         String editLinkType = "http";
-         
-         // if the node is inline editable, the default http behaviour should 
-         // always be used otherwise the configured approach is used
-         if (node.hasAspect(ContentModel.ASPECT_INLINEEDITABLE) == false)
-         {
-            editLinkType = Application.getClientConfig(
-                  FacesContext.getCurrentInstance()).getEditLinkType();
-         }
-         
-         return editLinkType;
       }
    };
    

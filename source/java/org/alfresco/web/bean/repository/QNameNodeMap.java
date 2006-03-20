@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
 public final class QNameNodeMap<K,V> extends QNameMap implements Map, Cloneable
 {
    private Node parent = null;
-   private Map<String, NodePropertyResolver> resolvers = new HashMap<String, NodePropertyResolver>(16, 1.0f);
+   private Map<String, NodePropertyResolver> resolvers = new HashMap<String, NodePropertyResolver>(8, 1.0f);
    
    /**
     * Constructor

@@ -158,7 +158,7 @@ public class WizardsConfigElement extends ConfigElementAdapter
    {
       protected String name;
       protected String managedBean;
-      protected List<StepConfig> steps = new ArrayList<StepConfig>(4);
+      protected Map<String, StepConfig> steps = new LinkedHashMap<String, StepConfig>(4);
       
       public WizardConfig(String name, String bean, 
                           String title, String titleId,
@@ -185,7 +185,7 @@ public class WizardsConfigElement extends ConfigElementAdapter
       
       public void addStep(StepConfig step)
       {
-         this.steps.add(step);
+         this.steps.put(step.getName(), step);
       }
       
       public int getNumberSteps()
@@ -193,25 +193,26 @@ public class WizardsConfigElement extends ConfigElementAdapter
          return this.steps.size();
       }
       
-      public List<StepConfig> getSteps()
+      public Map<String, StepConfig> getSteps()
       {
          return this.steps;
       }
       
-      public StepConfig getStepByName(String name)
+      public List<StepConfig> getStepsAsList()
       {
-         StepConfig step = null;
+         List<StepConfig> stepList = new ArrayList<StepConfig>(this.steps.size());
          
-         for (StepConfig currentStep : this.steps)
+         for (StepConfig stepCfg : this.steps.values())
          {
-            if (currentStep.getName().equals(name))
-            {
-               step = currentStep;
-               break;
-            }
+            stepList.add(stepCfg);
          }
          
-         return step;
+         return stepList;
+      }
+      
+      public StepConfig getStepByName(String name)
+      {
+         return this.steps.get(name);
       }
       
       /**

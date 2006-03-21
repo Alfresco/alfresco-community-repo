@@ -713,7 +713,7 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("description-id", "advanced_space_details_description", wizard.getDescriptionId());
       assertNull("title should be null", wizard.getTitle());
       assertNull("description should be null", wizard.getDescription());
-      List<StepConfig> steps = wizard.getSteps();
+      List<StepConfig> steps = wizard.getStepsAsList();
       assertNotNull("steps should not be null", steps);
       
       // retrieve step1 information and check it is correct

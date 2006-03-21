@@ -508,38 +508,41 @@ public abstract class BaseContentWizard extends AbstractWizardBean
                for (ConfigElement child : typesCfg.getChildren())
                {
                   QName idQName = Repository.resolveToQName(child.getAttribute("name"));
-                  TypeDefinition typeDef = this.dictionaryService.getType(idQName);
-                  
-                  if (typeDef != null &&
-                      this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT))
+                  if (idQName != null)
                   {
-                     // look for a client localized string
-                     String label = null;
-                     String msgId = child.getAttribute("displayLabelId");
-                     if (msgId != null)
-                     {
-                        label = Application.getMessage(context, msgId);
-                     }
+                     TypeDefinition typeDef = this.dictionaryService.getType(idQName);
                      
-                     // if there wasn't an externalized string look for one in the config
-                     if (label == null)
+                     if (typeDef != null &&
+                         this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT))
                      {
-                        label = child.getAttribute("displayLabel");
+                        // look for a client localized string
+                        String label = null;
+                        String msgId = child.getAttribute("displayLabelId");
+                        if (msgId != null)
+                        {
+                           label = Application.getMessage(context, msgId);
+                        }
+                        
+                        // if there wasn't an externalized string look for one in the config
+                        if (label == null)
+                        {
+                           label = child.getAttribute("displayLabel");
+                        }
+      
+                        // if there wasn't a client based label try and get it from the dictionary
+                        if (label == null)
+                        {
+                           label = typeDef.getTitle();
+                        }
+                        
+                        // finally, just use the localname
+                        if (label == null)
+                        {
+                           label = idQName.getLocalName();
+                        }
+                        
+                        this.objectTypes.add(new SelectItem(idQName.toString(), label));
                      }
-   
-                     // if there wasn't a client based label try and get it from the dictionary
-                     if (label == null)
-                     {
-                        label = typeDef.getTitle();
-                     }
-                     
-                     // finally, just use the localname
-                     if (label == null)
-                     {
-                        label = idQName.getLocalName();
-                     }
-                     
-                     this.objectTypes.add(new SelectItem(idQName.toString(), label));
                   }
                }
                

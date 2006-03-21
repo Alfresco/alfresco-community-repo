@@ -57,6 +57,13 @@
          <fileset dir="${dir.config.webclient}" excludes="**/*.sample" />
       </copy>
       
+      <!-- clean up previously generated properties files -->
+      <delete>
+         <fileset dir="${dir.assemble}/WEB-INF/classes/alfresco/messages">
+            <include name="*_en_US.properties" />
+         </fileset>
+      </delete>
+      
       <copy todir="${dir.assemble}/WEB-INF/classes/alfresco/messages">
          <fileset dir="${dir.assemble}/WEB-INF/classes/alfresco/messages"/>
          <mapper type="glob" from="*.properties" to="*_en_US.properties"/>

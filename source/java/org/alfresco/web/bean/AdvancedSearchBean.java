@@ -584,20 +584,23 @@ public class AdvancedSearchBean
             for (String type : types)
             {
                QName idQName = Repository.resolveToQName(type);
-               TypeDefinition typeDef = dictionaryService.getType(idQName);
-               
-               if (typeDef != null && dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT))
+               if (idQName != null)
                {
-                  // try and get label from the dictionary
-                  String label = typeDef.getTitle();
+                  TypeDefinition typeDef = dictionaryService.getType(idQName);
                   
-                  // else just use the localname
-                  if (label == null)
+                  if (typeDef != null && dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT))
                   {
-                     label = idQName.getLocalName();
+                     // try and get label from the dictionary
+                     String label = typeDef.getTitle();
+                     
+                     // else just use the localname
+                     if (label == null)
+                     {
+                        label = idQName.getLocalName();
+                     }
+                     
+                     this.contentTypes.add(new SelectItem(idQName.toString(), label));
                   }
-                  
-                  this.contentTypes.add(new SelectItem(idQName.toString(), label));
                }
             }
             

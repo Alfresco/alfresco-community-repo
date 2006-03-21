@@ -27,6 +27,7 @@ public class M2PropertyOverride
 {
     private String name;
     private Boolean isMandatory;
+    private boolean isMandatoryEnforced = false;
     private String defaultValue;
     
     
@@ -58,6 +59,10 @@ public class M2PropertyOverride
         this.isMandatory = isMandatory;
     }
     
+    public boolean isMandatoryEnforced()
+    {
+        return isMandatoryEnforced;
+    }
     
     public String getDefaultValue()
     {

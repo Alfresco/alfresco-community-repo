@@ -139,15 +139,27 @@ import org.alfresco.service.namespace.QName;
         property.setDefaultValue(defaultValue == null ? propertyDef.getDefaultValue() : defaultValue);
 
         // Process Mandatory Value
-        Boolean isMandatory = override.isMandatory();
-        if (isMandatory != null)
+        Boolean isOverrideMandatory = override.isMandatory();
+        boolean isOverrideMandatoryEnforced = override.isMandatoryEnforced();
+        if (isOverrideMandatory != null && propertyDef.isMandatory())
         {
-            if (propertyDef.isMandatory() == true && isMandatory == false)
+            // the override specified whether the property should be mandatory or not
+            // check that the mandatory enforcement is not relaxed
+            if (!isOverrideMandatory)
             {
-                throw new DictionaryException("Cannot relax mandatory attribute of property " + propertyDef.getName().toPrefixString());
+                throw new DictionaryException(
+                        "d_dictionary.property.err.cannot_relax_mandatory",
+                        propertyDef.getName().toPrefixString());
+            }
+            else if (!isOverrideMandatoryEnforced && propertyDef.isMandatoryEnforced())
+            {
+                throw new DictionaryException(
+                        "d_dictionary.property.err.cannot_relax_mandatory_enforcement",
+                        propertyDef.getName().toPrefixString());
             }
         }
-        property.setMandatory(isMandatory == null ? propertyDef.isMandatory() : isMandatory);
+        property.setMandatory(isOverrideMandatory == null ? propertyDef.isMandatory() : isOverrideMandatory);
+        property.setMandatoryEnforced(isOverrideMandatoryEnforced);
 
         // Copy all other properties as they are
         property.setDescription(propertyDef.getDescription());
@@ -260,7 +272,11 @@ import org.alfresco.service.namespace.QName;
         return m2Property.isMandatory();
     }
     
-
+    public boolean isMandatoryEnforced()
+    {
+        return m2Property.isMandatoryEnforced();
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.PropertyDefinition#isProtected()
      */

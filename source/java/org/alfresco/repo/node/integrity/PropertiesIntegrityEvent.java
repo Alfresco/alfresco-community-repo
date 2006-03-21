@@ -126,8 +126,8 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
         for (PropertyDefinition propertyDef : propertyDefs)
         {
             QName propertyQName = propertyDef.getName();
-            // check that mandatory properties are set
-            if (propertyDef.isMandatory() && !nodeProperties.containsKey(propertyQName))
+            // check that enforced, mandatoryproperties are set
+            if (propertyDef.isMandatory() && propertyDef.isMandatoryEnforced() && !nodeProperties.containsKey(propertyQName))
             {
                 IntegrityRecord result = new IntegrityRecord(
                         "Mandatory property not set: \n" +

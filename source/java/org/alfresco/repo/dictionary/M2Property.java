@@ -34,6 +34,7 @@ public class M2Property
     private String propertyType = null;
     private boolean isProtected = false;
     private boolean isMandatory = false;
+    private boolean isMandatoryEnforced = false;
     private boolean isMultiValued = false;
     private String defaultValue = null;
     private boolean isIndexed = true;
@@ -118,12 +119,20 @@ public class M2Property
         return isMandatory;
     }
     
-    
     public void setMandatory(boolean isMandatory)
     {
         this.isMandatory = isMandatory;
     }
     
+    public boolean isMandatoryEnforced()
+    {
+        return isMandatoryEnforced;
+    }
+    
+    public void setMandatoryEnforced(boolean isMandatoryEnforced)
+    {
+        this.isMandatoryEnforced = isMandatoryEnforced;
+    }
     
     public boolean isMultiValued()
     {

@@ -29,6 +29,8 @@ public interface TransactionListener
      * Allows the listener to flush any consuming resources.  This mechanism is
      * used primarily during long-lived transactions to ensure that system resources
      * are not used up.
+     * <p>
+     * This method must not be used for implementing business logic.
      */
     void flush();
     

@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -39,12 +38,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Implementation of the {@link org.alfresco.repo.integrity.IntegrityService integrity service}
- * that uses the domain persistence mechanism to store and recall integrity events.
+ * Component that generates and processes integrity events, enforcing the dictionary
+ * model's node structure.
  * <p>
  * In order to fulfill the contract of the interface, this class registers to receive notifications
  * pertinent to changes in the node structure.  These are then store away in the persistent
@@ -172,12 +172,9 @@ public class IntegrityChecker
     public void init()
     {
         // check that required properties have been set
-        if (dictionaryService == null)
-            throw new AlfrescoRuntimeException("IntegrityChecker property not set: dictionaryService");
-        if (nodeService == null)
-            throw new AlfrescoRuntimeException("IntegrityChecker property not set: nodeService");
-        if (policyComponent == null)
-            throw new AlfrescoRuntimeException("IntegrityChecker property not set: policyComponent");
+        PropertyCheck.mandatory("IntegrityChecker", "dictionaryService", dictionaryService);
+        PropertyCheck.mandatory("IntegrityChecker", "nodeService", nodeService);
+        PropertyCheck.mandatory("IntegrityChecker", "policyComponent", policyComponent);
 
         if (enabled)  // only register behaviour if integrity checking is on
         {
@@ -276,6 +273,8 @@ public class IntegrityChecker
 
     /**
      * @see PropertiesIntegrityEvent
+     * @see AssocTargetRoleIntegrityEvent
+     * @see AssocTargetMultiplicityIntegrityEvent
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
@@ -344,6 +343,7 @@ public class IntegrityChecker
 
     /**
      * @see PropertiesIntegrityEvent
+     * @see AssocTargetMultiplicityIntegrityEvent
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
@@ -382,6 +382,13 @@ public class IntegrityChecker
     {
     }
 
+    /**
+     * @see AssocSourceTypeIntegrityEvent
+     * @see AssocTargetTypeIntegrityEvent
+     * @see AssocSourceMultiplicityIntegrityEvent
+     * @see AssocTargetMultiplicityIntegrityEvent
+     * @see AssocTargetRoleIntegrityEvent
+     */
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef)
     {
         IntegrityEvent event = null;
@@ -426,7 +433,8 @@ public class IntegrityChecker
     }
 
     /**
-     * @see CreateChildAssocIntegrityEvent
+     * @see AssocSourceMultiplicityIntegrityEvent
+     * @see AssocTargetMultiplicityIntegrityEvent
      */
     public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
@@ -450,7 +458,10 @@ public class IntegrityChecker
     }
 
     /**
-     * @see AbstractAssocIntegrityEvent
+     * @see AssocSourceTypeIntegrityEvent
+     * @see AssocTargetTypeIntegrityEvent
+     * @see AssocSourceMultiplicityIntegrityEvent
+     * @see AssocTargetMultiplicityIntegrityEvent
      */
     public void onCreateAssociation(AssociationRef nodeAssocRef)
     {
@@ -488,7 +499,8 @@ public class IntegrityChecker
     }
 
     /**
-     * @see AbstractAssocIntegrityEvent
+     * @see AssocSourceMultiplicityIntegrityEvent
+     * @see AssocTargetMultiplicityIntegrityEvent
      */
     public void onDeleteAssociation(AssociationRef nodeAssocRef)
     {
@@ -583,7 +595,7 @@ public class IntegrityChecker
     private List<IntegrityRecord> processAllEvents()
     {
         // the results
-        ArrayList<IntegrityRecord> allIntegrityResults = new ArrayList<IntegrityRecord>(0); // generally unused
+        ArrayList<IntegrityRecord> allIntegrityResults = new ArrayList<IntegrityRecord>(0); // generally empty
 
         // get all the events for the transaction (or unit of work)
         // duplicates have been elimiated

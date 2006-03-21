@@ -28,22 +28,22 @@
 			<properties>
 				<property name="sys:versionMajor">
 					<type>d:text</type>
-					<mandatory>true</mandatory>
+					<mandatory enforced="true">true</mandatory>
 				</property>
 				<property name="sys:versionMinor">
 					<type>d:text</type>
-					<mandatory>true</mandatory>
+					<mandatory enforced="true">true</mandatory>
 				</property>
 				<property name="sys:versionRevision">
 					<type>d:text</type>
-					<mandatory>true</mandatory>
+					<mandatory enforced="true">true</mandatory>
 				</property>
 				<property name="sys:versionLabel">
 					<type>d:text</type>
 				</property>
 				<property name="sys:versionSchema">
 					<type>d:int</type>
-					<mandatory>true</mandatory>
+					<mandatory enforced="true">true</mandatory>
                <default>0</default>
 				</property>
 			</properties>
@@ -81,7 +81,7 @@
 			<properties>
 				<property name="sys:reference">
 					<type>d:noderef</type>
-					<mandatory>true</mandatory>
+					<mandatory enforced="true">true</mandatory>
 				</property>
 			</properties>
 		</type>
@@ -101,17 +101,22 @@
 			<properties>
 				<property name="sys:store-protocol">
 					<type>d:text</type>
-					<mandatory>true</mandatory>
+					<mandatory enforced="true">true</mandatory>
 				</property>
 				<property name="sys:store-identifier">
 					<type>d:text</type>
-					<mandatory>true</mandatory>
+					<mandatory enforced="true">true</mandatory>
 				</property>
 				<property name="sys:node-uuid">
 					<type>d:text</type>
-					<mandatory>true</mandatory>
+					<mandatory enforced="true">true</mandatory>
 				</property>
 			</properties>
+		</aspect>
+
+		<!-- aspect to tag incomplete nodes -->
+		<aspect name="sys:incomplete">
+			<title>Incomplete</title>
 		</aspect>
 
 	</aspects>

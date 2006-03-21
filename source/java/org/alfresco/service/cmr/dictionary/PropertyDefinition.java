@@ -73,6 +73,13 @@ public interface PropertyDefinition
     public boolean isMandatory();
     
     /**
+     * @return Returns true if the system enforces the presence of
+     *      {@link #isMandatory() mandatory} properties, or false if the system
+     *      just marks objects that don't have all mandatory properties present.  
+     */
+    public boolean isMandatoryEnforced();
+    
+    /**
      * @return  true => system maintained, false => client may maintain 
      */
     public boolean isProtected();

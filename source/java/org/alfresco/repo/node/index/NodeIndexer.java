@@ -65,7 +65,7 @@ public class NodeIndexer
     /**
      * Registers the policy behaviour methods
      */
-    private void init()
+    public void init()
     {
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateStore"),

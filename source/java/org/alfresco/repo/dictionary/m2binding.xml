@@ -71,7 +71,10 @@
          <collection field="propertyOverrides" item-type="org.alfresco.repo.dictionary.M2PropertyOverride" factory="org.alfresco.repo.dictionary.M2Model.createList">
             <structure name="property" type="org.alfresco.repo.dictionary.M2PropertyOverride" usage="optional">
                <value style="attribute" name="name" field="name"/>
-               <value name="mandatory" field="isMandatory" usage="optional"/>
+               <structure name="mandatory" usage="optional">
+                  <value style="attribute" name="enforced" field="isMandatoryEnforced" usage="optional" />
+                  <value style="text" field="isMandatory" />
+               </structure>
                <value name="default" field="defaultValue" usage="optional"/>
             </structure>
          </collection>
@@ -97,7 +100,10 @@
       <value name="description" field="description" usage="optional"/>
       <value name="type" field="propertyType"/>
       <value name="protected" field="isProtected" usage="optional"/>
-      <value name="mandatory" field="isMandatory" usage="optional"/>
+      <structure name="mandatory" usage="optional">
+         <value style="attribute" name="enforced" field="isMandatoryEnforced" usage="optional"/>
+         <value style="text" field="isMandatory" />
+      </structure>
       <value name="multiple" field="isMultiValued" usage="optional"/>
       <value name="default" field="defaultValue" usage="optional"/>
       <structure name="index" usage="optional">

@@ -27,10 +27,14 @@
          <properties>
             <property name="test:prop-text-a">
                <type>d:text</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="test:prop-text-b">
                <type>d:text</type>
+            </property>
+            <property name="test:prop-text-c">
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
             </property>
          </properties>
       </type>
@@ -115,6 +119,10 @@
             </property>
             <property name="test:prop-int-b">
                <type>d:int</type>
+            </property>
+            <property name="test:prop-int-c">
+               <type>d:int</type>
+               <mandatory enforced="false">true</mandatory>
             </property>
          </properties>
       </aspect>

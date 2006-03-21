@@ -18,12 +18,14 @@ package org.alfresco.repo.dictionary;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.dictionary.constraint.RegexConstraint;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -144,6 +146,42 @@ public class DictionaryDAOTest extends TestCase
         assertTrue("Expected type REGEX constraint", constraint instanceof RegexConstraint);
     }
     
+    public void testMandatoryEnforced()
+    {
+        // get the properties for the test type
+        QName testEnforcedQName = QName.createQName(TEST_URL, "enforced");
+        ClassDefinition testEnforcedClassDef = service.getClass(testEnforcedQName);
+        Map<QName, PropertyDefinition> testEnforcedPropertyDefs = testEnforcedClassDef.getProperties();
+        
+        PropertyDefinition propertyDef = null;
+
+        QName testMandatoryEnforcedQName = QName.createQName(TEST_URL, "mandatory-enforced");
+        propertyDef = testEnforcedPropertyDefs.get(testMandatoryEnforcedQName);
+        assertNotNull("Property not found: " + testMandatoryEnforcedQName,
+                propertyDef);
+        assertTrue("Expected property to be mandatory: " + testMandatoryEnforcedQName,
+                propertyDef.isMandatory());
+        assertTrue("Expected property to be mandatory-enforced: " + testMandatoryEnforcedQName,
+                propertyDef.isMandatoryEnforced());
+
+        QName testMandatoryNotEnforcedQName = QName.createQName(TEST_URL, "mandatory-not-enforced");
+        propertyDef = testEnforcedPropertyDefs.get(testMandatoryNotEnforcedQName);
+        assertNotNull("Property not found: " + testMandatoryNotEnforcedQName,
+                propertyDef);
+        assertTrue("Expected property to be mandatory: " + testMandatoryNotEnforcedQName,
+                propertyDef.isMandatory());
+        assertFalse("Expected property to be mandatory-not-enforced: " + testMandatoryNotEnforcedQName,
+                propertyDef.isMandatoryEnforced());
+
+        QName testMandatoryDefaultEnforcedQName = QName.createQName(TEST_URL, "mandatory-default-enforced");
+        propertyDef = testEnforcedPropertyDefs.get(testMandatoryDefaultEnforcedQName);
+        assertNotNull("Property not found: " + testMandatoryDefaultEnforcedQName,
+                propertyDef);
+        assertTrue("Expected property to be mandatory: " + testMandatoryDefaultEnforcedQName,
+                propertyDef.isMandatory());
+        assertFalse("Expected property to be mandatory-not-enforced: " + testMandatoryDefaultEnforcedQName,
+                propertyDef.isMandatoryEnforced());
+    }
     
     public void testSubClassOf()
     {

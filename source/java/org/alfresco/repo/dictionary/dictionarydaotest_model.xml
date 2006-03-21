@@ -121,16 +121,31 @@
 
       <type name="test:folder">
          <parent>test:base</parent>
-         
          <properties>
             <property name="test:folderprop">
                <type>d:text</type>
                <protected>true</protected>
                <default></default>
             </property>
-
          </properties>
-
+      </type>
+      
+      <type name="test:enforced">
+         <parent>test:base</parent>
+         <properties>
+            <property name="test:mandatory-enforced">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="test:mandatory-not-enforced">
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="test:mandatory-default-enforced">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
       </type>
       
    </types>

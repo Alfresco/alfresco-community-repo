@@ -74,8 +74,10 @@ public class IntegrityTest extends TestCase
     
     public static final QName TEST_PROP_TEXT_A = QName.createQName(NAMESPACE, "prop-text-a");
     public static final QName TEST_PROP_TEXT_B = QName.createQName(NAMESPACE, "prop-text-b");
+    public static final QName TEST_PROP_TEXT_C = QName.createQName(NAMESPACE, "prop-text-c");
     public static final QName TEST_PROP_INT_A = QName.createQName(NAMESPACE, "prop-int-a");
     public static final QName TEST_PROP_INT_B = QName.createQName(NAMESPACE, "prop-int-b");
+    public static final QName TEST_PROP_INT_C = QName.createQName(NAMESPACE, "prop-int-c");
     
     private static ApplicationContext ctx;
     static

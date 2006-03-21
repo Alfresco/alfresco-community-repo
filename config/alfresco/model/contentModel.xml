@@ -30,7 +30,7 @@
             <property name="cm:name">
                <title>Name</title>
                <type>d:text</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
                <constraints>
                   <constraint ref="cm:filename" />
                </constraints>
@@ -356,34 +356,42 @@
             <property name="cm:publisher">
                <title>Publisher</title>
                <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
             </property>
             <property name="cm:contributor">
                <title>Contributor</title>
                <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
             </property>
             <property name="cm:type">
                <title>Type</title>
                <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
             </property>
             <property name="cm:identifier">
                <title>Identifier</title>
                <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
             </property>
             <property name="cm:dcsource">
                <title>Source</title>
                <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
             </property>
             <property name="cm:coverage">
                <title>Coverage</title>
                <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
             </property>
             <property name="cm:rights">
                <title>Rights</title>
                <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
             </property>
             <property name="cm:subject">
                <title>Subject</title>
                <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
             </property>
          </properties>
          <mandatory-aspects>
@@ -391,20 +399,6 @@
             <aspect>cm:author</aspect>
          </mandatory-aspects>
       </aspect>
-   
-      <!--
-      <aspect name="cm:subjectable">
-         <title>Subjectable</title>
-         <mandatory-aspects>
-            <aspect>cm:auditable</aspect>
-         </mandatory-aspects>
-         <properties>
-            <property name="cm:subject">
-               <type>d:text</type>
-            </property>
-         </properties>
-      </aspect>
-      -->
    
       <aspect name="cm:basable">
          <title>Basable</title>

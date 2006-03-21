@@ -111,5 +111,18 @@
          <value>5</value>  <!-- limit output (exception and log) to the first N violation messages -->
       </property>
    </bean>
+
+   <!-- tags nodes that are incomplete w.r.t. properties-->   
+   <bean id="incompleteNodeTagger" class="org.alfresco.repo.node.integrity.IncompleteNodeTagger" init-method="init">
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>
+   </bean>
    
 </beans>

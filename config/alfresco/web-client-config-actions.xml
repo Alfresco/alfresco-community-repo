@@ -27,14 +27,13 @@
             <style>padding:4px</style>
             <style-class>inlineAction</style-class>
             <image>/images/icons/edit_icon.gif</image>
-            <!-- action, ActionLister, href and target action attributes supported -->
+            <!-- action, action-listener, onclick, href and target action attributes supported -->
             <action-listener>#{CheckinCheckoutBean.editFile}</action-listener>
             <action>editDocument</action>
             <href>http://...</href>
             <target>new</target>
+            <onclick>javascript:myhandler</onclick>
             <!-- params specify the f:param tags to be generated as children of the action component -->
-            <!-- it is assumed that the context object for the action will have an appropriate getter method
-                 to reflect the value of the param e.g. getId() for a param value of "id" -->
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -535,6 +534,7 @@
             <action idref="export_space" />
             <action idref="create_shortcut" />
             <action idref="take_ownership_space" />
+            <action idref="manage_space_users" />
             <action idref="manage_space_rules" />
             <action idref="preview_space" />
          </action-group>

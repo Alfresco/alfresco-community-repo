@@ -85,6 +85,10 @@ public class ImporterBootstrap implements ApplicationListener
     private Locale locale = null;
     private AuthenticationComponent authenticationComponent;
     
+    // Bootstrap performed?
+    private boolean bootstrapPerformed = false;
+    
+    
     /**
      * Set whether we write or not
      * 
@@ -263,6 +267,16 @@ public class ImporterBootstrap implements ApplicationListener
     {
         this.logEnabled = logEnabled;
     }
+
+    /**
+     * Determine if bootstrap was performed?
+     * 
+     * @return  true => bootstrap was performed
+     */
+    public boolean hasPerformedBootstrap()
+    {
+        return bootstrapPerformed;
+    }
     
     /**
      * Boostrap the Repository
@@ -394,6 +408,9 @@ public class ImporterBootstrap implements ApplicationListener
                         }
                     }
                 }
+                
+                // a bootstrap was performed
+                bootstrapPerformed = !useExistingStore;
             }
             userTransaction.commit();
         }

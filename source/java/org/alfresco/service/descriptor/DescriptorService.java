@@ -44,9 +44,9 @@ public interface DescriptorService
     public Descriptor getInstalledRepositoryDescriptor();
     
     /**
-     * Gets the License Service
+     * Gets the License Descriptor
      * 
-     * @return  the license service
+     * @return  the license descriptor
      */
     public LicenseDescriptor getLicenseDescriptor();
     

@@ -160,7 +160,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
      */
     public LicenseDescriptor getLicenseDescriptor()
     {
-        return licenseService.getLicense();
+        return (licenseService == null) ? null : licenseService.getLicense();
     }
 
     /**
@@ -176,6 +176,9 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
             {
                 public Descriptor doWork()
                 {
+                    // initialise license service (if installed)
+                    initialiseLicenseService();
+                    
                     // verify license, but only if license component is installed
                     licenseService.verifyLicense();
                     
@@ -197,9 +200,6 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     {
         // initialise server descriptor
         serverDescriptor = createServerDescriptor();
-        
-        // initialise license service (if installed)
-        initialiseLicenseService();
     }
 
     /**
@@ -223,6 +223,33 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
         StoreRef storeRef = systemBootstrap.getStoreRef();
         Properties systemProperties = systemBootstrap.getConfiguration();
         String path = systemProperties.getProperty("system.descriptor.childname");
+
+        // retrieve system descriptor
+        NodeRef descriptorNodeRef = getDescriptorNodeRef(storeRef, path, false);
+        // create appropriate descriptor
+        if (descriptorNodeRef != null)
+        {
+            Map<QName, Serializable> properties = nodeService.getProperties(descriptorNodeRef);
+            return new RepositoryDescriptor(properties);
+        }
+        else
+        {
+            // descriptor cannot be found
+            return new UnknownDescriptor();
+        }
+    }
+    
+    /**
+     * Create current repository descriptor
+     * 
+     * @return  descriptor
+     */
+    private Descriptor createCurrentRepositoryDescriptor()
+    {
+        // retrieve system descriptor location
+        StoreRef storeRef = systemBootstrap.getStoreRef();
+        Properties systemProperties = systemBootstrap.getConfiguration();
+        String path = systemProperties.getProperty("system.descriptor.current.childname");
 
         // retrieve system descriptor
         NodeRef descriptorNodeRef = getDescriptorNodeRef(storeRef, path, false);
@@ -284,33 +311,32 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
      */
     private NodeRef getDescriptorNodeRef(StoreRef storeRef, String path, boolean create)
     {
-        // check for the store and create if necessary
-        if (!nodeService.exists(storeRef) && create)
-        {
-            storeRef = nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
-        }
-        
-        String searchPath = "/" + path;
         NodeRef descriptorNodeRef = null;
-        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-        List<NodeRef> nodeRefs = searchService.selectNodes(rootNodeRef, searchPath, null, namespaceService, false);
-        if (nodeRefs.size() == 1)
+        String searchPath = "/" + path;
+
+        // check for the store
+        if (nodeService.exists(storeRef))
         {
-            descriptorNodeRef = nodeRefs.get(0);
-        }
-        else if (nodeRefs.size() == 0)
-        {
-        }
-        else if (nodeRefs.size() > 1)
-        {
-            if (logger.isDebugEnabled())
+            NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+            List<NodeRef> nodeRefs = searchService.selectNodes(rootNodeRef, searchPath, null, namespaceService, false);
+            if (nodeRefs.size() == 1)
             {
-                logger.debug("Multiple descriptors: \n" +
-                        "   store: " + storeRef + "\n" +
-                        "   path: " + searchPath);
+                descriptorNodeRef = nodeRefs.get(0);
             }
-            // get the first one
-            descriptorNodeRef = nodeRefs.get(0);
+            else if (nodeRefs.size() == 0)
+            {
+            }
+            else if (nodeRefs.size() > 1)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Multiple descriptors: \n" +
+                            "   store: " + storeRef + "\n" +
+                            "   path: " + searchPath);
+                }
+                // get the first one
+                descriptorNodeRef = nodeRefs.get(0);
+            }
         }
         
         if (descriptorNodeRef == null)
@@ -321,9 +347,12 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
                         "   store: " + storeRef + "\n" +
                         "   path: " + searchPath);
             }
+
             // create if necessary
             if (create)
             {
+                storeRef = nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
+                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);                
                 descriptorNodeRef = nodeService.createNode(
                         rootNodeRef,
                         ContentModel.ASSOC_CHILDREN,
@@ -348,8 +377,8 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
             // NOTE: We could tie in the License Component via Spring configuration, but then it could
             //       be declaratively taken out in an installed environment.
             Class licenseComponentClass = Class.forName("org.alfresco.license.LicenseComponent");
-            Constructor constructor = licenseComponentClass.getConstructor(new Class[] { ApplicationContext.class} );
-            licenseService = (LicenseService)constructor.newInstance(new Object[] { applicationContext } );            
+            Constructor constructor = licenseComponentClass.getConstructor(new Class[] { ApplicationContext.class, Descriptor.class} );
+            licenseService = (LicenseService)constructor.newInstance(new Object[] { applicationContext, createCurrentRepositoryDescriptor() } );            
         }
         catch (ClassNotFoundException e)
         {

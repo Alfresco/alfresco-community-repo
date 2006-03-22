@@ -79,7 +79,7 @@ public class IntegrityTest extends TestCase
     public static final QName TEST_PROP_INT_B = QName.createQName(NAMESPACE, "prop-int-b");
     public static final QName TEST_PROP_INT_C = QName.createQName(NAMESPACE, "prop-int-c");
     
-    private static ApplicationContext ctx;
+    public static ApplicationContext ctx;
     static
     {
         ctx = ApplicationContextHelper.getApplicationContext();

@@ -33,11 +33,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Checks that tagging of <i>incomplete</i> nodes is done properly.
@@ -48,12 +46,6 @@ import org.springframework.context.ApplicationContext;
 public class IncompleteNodeTaggerTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(IncompleteNodeTaggerTest.class);
-
-    private static ApplicationContext ctx;
-    static
-    {
-        ctx = ApplicationContextHelper.getApplicationContext();
-    }
     
     private IncompleteNodeTagger tagger;
     private ServiceRegistry serviceRegistry;
@@ -65,7 +57,7 @@ public class IncompleteNodeTaggerTest extends TestCase
     
     public void setUp() throws Exception
     {
-        DictionaryDAO dictionaryDao = (DictionaryDAO) ctx.getBean("dictionaryDAO");
+        DictionaryDAO dictionaryDao = (DictionaryDAO) IntegrityTest.ctx.getBean("dictionaryDAO");
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
         // load the test model
         InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/node/integrity/IntegrityTest_model.xml");
@@ -73,11 +65,11 @@ public class IncompleteNodeTaggerTest extends TestCase
         M2Model model = M2Model.createModel(modelStream);
         dictionaryDao.putModel(model);
 
-        tagger = (IncompleteNodeTagger) ctx.getBean("incompleteNodeTagger");
+        tagger = (IncompleteNodeTagger) IntegrityTest.ctx.getBean("incompleteNodeTagger");
 
-        serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        serviceRegistry = (ServiceRegistry) IntegrityTest.ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         nodeService = serviceRegistry.getNodeService();
-        this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
+        this.authenticationComponent = (AuthenticationComponent)IntegrityTest.ctx.getBean("authenticationComponent");
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
         

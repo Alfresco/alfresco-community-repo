@@ -115,7 +115,7 @@
          <properties>
             <property name="test:prop-int-a">
                <type>d:int</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="test:prop-int-b">
                <type>d:int</type>

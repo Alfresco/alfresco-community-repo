@@ -216,7 +216,10 @@ public class IncompleteNodeTagger
         // process each node
         for (NodeRef nodeRef : nodeRefs)
         {
-            processNode(nodeRef);
+            if (nodeService.exists(nodeRef))
+            {
+                processNode(nodeRef);
+            }
         }
     }
 

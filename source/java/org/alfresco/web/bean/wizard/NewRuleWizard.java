@@ -136,99 +136,108 @@ public class NewRuleWizard extends BaseActionWizard
    private DataModel allActionsDataModel;
    private DataModel allConditionsDataModel;
    
+   private boolean isFinished = false;
+   
    /**
     * Deals with the finish button being pressed
     * 
     * @return outcome
     */
-   public String finish()
+   public synchronized String finish()
    {
       String outcome = FINISH_OUTCOME;
       
-      UserTransaction tx = null;
-   
-      try
+      if (isFinished == false)
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
-         // get hold of the space the rule will apply to and make sure
-         // it is actionable
-         Node currentSpace = browseBean.getActionSpace();
-         
-         Rule rule = null;
-         
-         if (this.editMode)
-         {
-            // update the existing rule in the repository
-            rule = this.rulesBean.getCurrentRule();
-                        
-            // remove all the conditions and actions from the current rule
-            rule.removeAllActionConditions();
-            rule.removeAllActions();
-         }
-         else
-         {
-            rule = this.ruleService.createRule(this.getType());
-         }
-
-         // setup the rule and add it to the space
-         rule.setTitle(this.title);
-         rule.setDescription(this.description);
-         rule.applyToChildren(this.applyToSubSpaces);
-         rule.setExecuteAsynchronously(this.runInBackground);
-         
-         // add all the conditions to the rule
-         for (Map<String, Serializable> condParams : this.allConditionsProperties)
-         {
-            Map<String, Serializable> repoCondParams = buildConditionParams(condParams);
-            
-            // add the condition to the rule
-            ActionCondition condition = this.actionService.createActionCondition(
-                  (String)condParams.get(PROP_CONDITION_NAME));
-            condition.setParameterValues(repoCondParams);
-            
-            // specify whether the condition result should be inverted
-            Boolean not = (Boolean)condParams.get(PROP_CONDITION_NOT);
-            condition.setInvertCondition(((Boolean)not).booleanValue());
-            
-            rule.addActionCondition(condition);
-         }
-         
-         // add all the actions to the rule
-         for (Map<String, Serializable> actionParams : this.allActionsProperties)
-         {
-            // use the base class version of buildActionParams(), but for this we need 
-            // to setup the currentActionProperties and action variables
-            String actionName = (String)actionParams.get(PROP_ACTION_NAME);
-            this.action = actionName;
-            this.currentActionProperties = actionParams;
-            Map<String, Serializable> repoActionParams = buildActionParams();
-            
-            // add the action to the rule
-            Action action = this.actionService.createAction(actionName);
-            action.setParameterValues(repoActionParams);
-            rule.addAction(action);
-         }
-         
-         // Save the rule
-         this.ruleService.saveRule(currentSpace.getNodeRef(), rule);
-         
-         if (logger.isDebugEnabled())
-         {
-            logger.debug(this.editMode ? "Updated" : "Added" + " rule '" + this.title + "'");
-         }
-         
-         // commit the transaction
-         tx.commit();
-      }
-      catch (Throwable e)
-      {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), ERROR), e.getMessage()), e);
-         outcome = null;
+    	  isFinished = true;
+    	  
+	      UserTransaction tx = null;
+	   
+	      try
+	      {
+	         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
+	         tx.begin();
+	         
+	         // get hold of the space the rule will apply to and make sure
+	         // it is actionable
+	         Node currentSpace = browseBean.getActionSpace();
+	         
+	         Rule rule = null;
+	         
+	         if (this.editMode)
+	         {
+	            // update the existing rule in the repository
+	            rule = this.rulesBean.getCurrentRule();
+	                        
+	            // remove all the conditions and actions from the current rule
+	            rule.removeAllActionConditions();
+	            rule.removeAllActions();
+	         }
+	         else
+	         {
+	            rule = this.ruleService.createRule(this.getType());
+	         }
+	
+	         // setup the rule and add it to the space
+	         rule.setTitle(this.title);
+	         rule.setDescription(this.description);
+	         rule.applyToChildren(this.applyToSubSpaces);
+	         rule.setExecuteAsynchronously(this.runInBackground);
+	         
+	         // add all the conditions to the rule
+	         for (Map<String, Serializable> condParams : this.allConditionsProperties)
+	         {
+	            Map<String, Serializable> repoCondParams = buildConditionParams(condParams);
+	            
+	            // add the condition to the rule
+	            ActionCondition condition = this.actionService.createActionCondition(
+	                  (String)condParams.get(PROP_CONDITION_NAME));
+	            condition.setParameterValues(repoCondParams);
+	            
+	            // specify whether the condition result should be inverted
+	            Boolean not = (Boolean)condParams.get(PROP_CONDITION_NOT);
+	            condition.setInvertCondition(((Boolean)not).booleanValue());
+	            
+	            rule.addActionCondition(condition);
+	         }
+	         
+	         // add all the actions to the rule
+	         for (Map<String, Serializable> actionParams : this.allActionsProperties)
+	         {
+	            // use the base class version of buildActionParams(), but for this we need 
+	            // to setup the currentActionProperties and action variables
+	            String actionName = (String)actionParams.get(PROP_ACTION_NAME);
+	            this.action = actionName;
+	            this.currentActionProperties = actionParams;
+	            Map<String, Serializable> repoActionParams = buildActionParams();
+	            
+	            // add the action to the rule
+	            Action action = this.actionService.createAction(actionName);
+	            action.setParameterValues(repoActionParams);
+	            rule.addAction(action);
+	         }
+	         
+	         // Save the rule
+	         this.ruleService.saveRule(currentSpace.getNodeRef(), rule);
+	         
+	         if (logger.isDebugEnabled())
+	         {
+	            logger.debug(this.editMode ? "Updated" : "Added" + " rule '" + this.title + "'");
+	         }
+	         
+	         // commit the transaction
+	         tx.commit();
+	      }
+	      catch (Throwable e)
+	      {
+	         // rollback the transaction
+	         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+	         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+	               FacesContext.getCurrentInstance(), ERROR), e.getMessage()), e);
+	         outcome = null;
+	         
+	         isFinished = false;
+	      }
       }
       
       return outcome;
@@ -678,6 +687,8 @@ public class NewRuleWizard extends BaseActionWizard
       
       this.allConditionsProperties = new ArrayList<Map<String, Serializable>>();
       this.allActionsProperties = new ArrayList<Map<String, Serializable>>();
+      
+      this.isFinished = false;
    }
    
    /**

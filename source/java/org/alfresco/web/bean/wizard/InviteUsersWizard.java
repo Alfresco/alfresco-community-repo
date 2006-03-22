@@ -397,7 +397,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
             int offset = PermissionService.GROUP_PREFIX.length();
             for (String group : groups)
             {
-               if (group.toLowerCase().indexOf(containsLower) != -1)
+               if (group.toLowerCase().indexOf(containsLower, offset) != -1)
                {
                   results.add(new SortableSelectItem(group, group.substring(offset), group));
                }

@@ -362,5 +362,4 @@
     <!-- Note: targetSchema 11 is allocated for patching in an enterprise trial license -->
     <!--       A patch bean is not provided as this is handled by the license component internally (enterprise only) -->
     
->>>>>>> .merge-right.r2569
 </beans>

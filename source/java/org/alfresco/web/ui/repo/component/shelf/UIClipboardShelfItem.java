@@ -122,6 +122,7 @@ public class UIClipboardShelfItem extends UIShelfItem
                
                case ACTION_PASTE_ALL:
                case ACTION_PASTE_ITEM:
+               case ACTION_PASTE_LINK:
                   Utils.processActionMethod(getFacesContext(), getPasteActionListener(), clipEvent);
                   break;
             }
@@ -158,7 +159,7 @@ public class UIClipboardShelfItem extends UIShelfItem
             ClipboardItem item = items.get(i);
             
             // start row with cut/copy state icon
-            out.write("<tr><td>");
+            out.write("<tr><td width=16>");
             if (item.Mode == ClipboardStatus.COPY)
             {
                out.write(Utils.buildImageTag(context, WebResources.IMAGE_COPY, 14, 16, bundle.getString(MSG_COPY), null, "absmiddle"));
@@ -167,17 +168,26 @@ public class UIClipboardShelfItem extends UIShelfItem
             {
                out.write(Utils.buildImageTag(context, WebResources.IMAGE_CUT, 13, 16, bundle.getString(MSG_CUT), null, "absmiddle"));
             }
-            out.write("</td><td>");
+            out.write("</td><td width=16>");
             
             if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_FOLDER))
             {
-               // start row with Space icon
-               out.write(Utils.buildImageTag(context, WebResources.IMAGE_SPACE, 16, 16, null, null, "absmiddle"));
+               // start row with correct node icon
+               String icon = (String)item.Node.getProperties().get("app:icon");
+               if (icon != null)
+               {
+                  icon = "/images/icons/" + icon + "-16.gif";
+               }
+               else
+               {
+                  icon = WebResources.IMAGE_SPACE;
+               }
+               out.write(Utils.buildImageTag(context, icon, 16, 16, null, null, "absmiddle"));
             }
             else if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT))
             {
                String image = Utils.getFileTypeImage(item.Node.getName(), true);
-               out.write(Utils.buildImageTag(context, image, 16, 16, null, null, "absmiddle"));
+               out.write(Utils.buildImageTag(context, image, null, "absmiddle"));
             }
             
             // output cropped item label - we also output with no breaks, this is ok
@@ -190,6 +200,11 @@ public class UIClipboardShelfItem extends UIShelfItem
             out.write(buildActionLink(ACTION_REMOVE_ITEM, i, bundle.getString(MSG_REMOVE_ITEM), WebResources.IMAGE_REMOVE));
             out.write("&nbsp;");
             out.write(buildActionLink(ACTION_PASTE_ITEM, i, bundle.getString(MSG_PASTE_ITEM), WebResources.IMAGE_PASTE));
+            //if (item.Mode == ClipboardStatus.COPY)
+            //{
+            //   out.write("&nbsp;");
+            //   out.write(buildActionLink(ACTION_PASTE_LINK, i, bundle.getString(MSG_PASTE_LINK), WebResources.IMAGE_PASTE_LINK));
+            //}
             
             // end actions cell and end row
             out.write("</nobr></td></tr>");
@@ -337,17 +352,19 @@ public class UIClipboardShelfItem extends UIShelfItem
    // Private data
    
    /** I18N messages */
-   private static final String MSG_REMOVE_ALL = "remove_all";
-   private static final String MSG_PASTE_ALL = "paste_all";
-   private static final String MSG_PASTE_ITEM = "paste_item";
+   private static final String MSG_REMOVE_ALL  = "remove_all";
+   private static final String MSG_PASTE_ALL   = "paste_all";
+   private static final String MSG_PASTE_ITEM  = "paste_item";
+   private static final String MSG_PASTE_LINK  = "paste_link";
    private static final String MSG_REMOVE_ITEM = "remove_item";
    private static final String MSG_CUT = "cut";
    private static final String MSG_COPY = "copy";
    
-   private final static int ACTION_REMOVE_ITEM = 0;
-   private final static int ACTION_REMOVE_ALL = 1;
-   private final static int ACTION_PASTE_ITEM = 2;
-   private final static int ACTION_PASTE_ALL = 3;
+   public final static int ACTION_REMOVE_ITEM = 0;
+   public final static int ACTION_REMOVE_ALL = 1;
+   public final static int ACTION_PASTE_ITEM = 2;
+   public final static int ACTION_PASTE_ALL = 3;
+   public final static int ACTION_PASTE_LINK = 4;
    
    /** the current list of clipboard items */
    private List<ClipboardItem> collections;

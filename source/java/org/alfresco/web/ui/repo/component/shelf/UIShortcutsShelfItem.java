@@ -179,16 +179,25 @@ public class UIShortcutsShelfItem extends UIShelfItem
          {
             Node item = items.get(i);
             
-            out.write("<tr><td>");
+            out.write("<tr><td width=16>");
             if (dd.isSubClass(item.getType(), ContentModel.TYPE_FOLDER))
             {
-               // start row with Space icon
-               out.write(Utils.buildImageTag(context, WebResources.IMAGE_SPACE, 16, 16, null, null, "absmiddle"));
+               // start row with correct node icon
+               String icon = (String)item.getProperties().get("app:icon");
+               if (icon != null)
+               {
+                  icon = "/images/icons/" + icon + "-16.gif";
+               }
+               else
+               {
+                  icon = WebResources.IMAGE_SPACE;
+               }
+               out.write(Utils.buildImageTag(context, icon, 16, 16, null, null, "absmiddle"));
             }
             else if (dd.isSubClass(item.getType(), ContentModel.TYPE_CONTENT))
             {
                String image = Utils.getFileTypeImage(item.getName(), true);
-               out.write(Utils.buildImageTag(context, image, 16, 16, null, null, "absmiddle"));
+               out.write(Utils.buildImageTag(context, image, null, "absmiddle"));
             }
             
             // output cropped item label - we also output with no breaks, this is ok

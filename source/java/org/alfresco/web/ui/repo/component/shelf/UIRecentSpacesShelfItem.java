@@ -153,9 +153,18 @@ public class UIRecentSpacesShelfItem extends UIShelfItem
       {
          Node item = items.get(i);
          
-         // start row with Space icon
-         out.write("<tr><td>");
-         out.write(Utils.buildImageTag(context, WebResources.IMAGE_SPACE, 16, 16, null, null, "absmiddle"));
+         // start row with correct node icon
+         out.write("<tr><td width=16>");
+         String icon = (String)item.getProperties().get("app:icon");
+         if (icon != null)
+         {
+            icon = "/images/icons/" + icon + "-16.gif";
+         }
+         else
+         {
+            icon = WebResources.IMAGE_SPACE;
+         }
+         out.write(Utils.buildImageTag(context, icon, 16, 16, null, null, "absmiddle"));
          
          // output cropped item label - we also output with no breaks, this is ok
          // as the copped label will ensure a sensible maximum width

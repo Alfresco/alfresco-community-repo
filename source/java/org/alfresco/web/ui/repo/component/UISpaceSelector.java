@@ -141,8 +141,17 @@ public class UISpaceSelector extends AbstractItemSelector
    /**
     * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getItemIcon()
     */
-   public String getItemIcon()
+   public String getItemIcon(FacesContext context, NodeRef ref)
    {
-      return WebResources.IMAGE_SPACE;
+      String icon = (String)getNodeService(context).getProperty(ref, ContentModel.PROP_ICON);
+      if (icon != null)
+      {
+         icon = "/images/icons/" + icon + "-16.gif";
+      }
+      else
+      {
+         icon = WebResources.IMAGE_SPACE;
+      }
+      return icon;
    }
 }

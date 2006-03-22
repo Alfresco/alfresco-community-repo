@@ -144,7 +144,7 @@ public class UICategorySelector extends AbstractItemSelector
    /**
     * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getItemIcon()
     */
-   public String getItemIcon()
+   public String getItemIcon(FacesContext context, NodeRef ref)
    {
       return WebResources.IMAGE_CATEGORY;
    }

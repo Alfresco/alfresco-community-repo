@@ -79,38 +79,14 @@
                               <td align=right>
                                  <%-- Create actions menu --%>
                                  <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
-                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval1">
-                                       <a:actionLink value="#{msg.create_topic}" image="/images/icons/create_topic.gif" action="dialog:createTopic" actionListener="#{CreateTopicDialog.startWizard}" id="link1" />
-                                    </r:permissionEvaluator>
+                                    <r:actions id="actions_create" value="forum_create_menu" context="#{NavigationBean.currentNode}" />
                                  </a:menu>
                               </td>
+                              
                               <td style="padding-left:4px" width=80>
                                  <%-- More actions menu --%>
                                  <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
-                                    <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" action="dialog:showForumDetails" actionListener="#{BrowseBean.setupSpaceAction}" id="link2">
-                                       <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param1" />
-                                    </a:actionLink>
-                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval2">
-                                       <a:actionLink value="#{msg.delete_forum}" image="/images/icons/delete_forum.gif" action="dialog:deleteForum" actionListener="#{BrowseBean.setupDeleteAction}" id="link3">
-                                          <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param2" />
-                                       </a:actionLink>
-                                    </r:permissionEvaluator>
-                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Delete" id="eval3">
-                                       <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" actionListener="#{ClipboardBean.cutNode}" id="link4">
-                                          <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param3" />
-                                       </a:actionLink>
-                                    </r:permissionEvaluator>
-                                    <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" actionListener="#{ClipboardBean.copyNode}" id="link5">
-                                       <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param4" />
-                                    </a:actionLink>
-                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="Write" id="eval4">
-                                       <a:actionLink value="#{msg.paste_all}" image="/images/icons/paste.gif" actionListener="#{ClipboardBean.pasteAll}" id="link6" />
-                                    </r:permissionEvaluator>
-                                    <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="ChangePermissions" id="eval5">
-                                       <a:actionLink value="#{msg.manage_invited_users}" image="/images/icons/invite.gif" action="dialog:manageInvitedUsers" actionListener="#{BrowseBean.setupSpaceAction}" id="link7">
-                                          <f:param name="id" value="#{NavigationBean.currentNodeId}" id="param5" />
-                                       </a:actionLink>
-                                    </r:permissionEvaluator>
+                                    <r:actions id="actions_more" value="forum_actions_menu" context="#{NavigationBean.currentNode}" />
                                  </a:menu>
                               </td>
                            </a:panel>
@@ -183,22 +159,9 @@
                            <f:facet name="header">
                               <h:outputText value="#{msg.actions}"/>
                            </f:facet>
-                           <r:permissionEvaluator value="#{r}" allow="Delete">
-                              <a:actionLink value="#{msg.cut}" image="/images/icons/cut.gif" showLink="false" styleClass="inlineAction" actionListener="#{ClipboardBean.cutNode}">
-                                 <f:param name="id" value="#{r.id}" />
-                              </a:actionLink>
-                           </r:permissionEvaluator>
-                           <a:actionLink value="#{msg.copy}" image="/images/icons/copy.gif" showLink="false" styleClass="inlineAction" actionListener="#{ClipboardBean.copyNode}">
-                              <f:param name="id" value="#{r.id}" />
-                           </a:actionLink>
-                           <r:permissionEvaluator value="#{r}" allow="Delete">
-                              <a:actionLink value="#{msg.delete_topic}" image="/images/icons/delete.gif" showLink="false" styleClass="inlineAction" action="dialog:deleteTopic" actionListener="#{BrowseBean.setupDeleteAction}">
-                                 <f:param name="id" value="#{r.id}" />
-                              </a:actionLink>
-                           </r:permissionEvaluator>
-                           <a:actionLink value="#{msg.view_details}" image="/images/icons/View_details.gif" showLink="false" styleClass="inlineAction" action="dialog:showTopicDetails" actionListener="#{BrowseBean.setupSpaceAction}">
-                              <f:param name="id" value="#{r.id}" />
-                           </a:actionLink>
+                           
+                           <%-- actions are configured in web-client-config-forum-actions.xml --%>
+                           <r:actions id="actions" value="forum_actions" context="#{r}" showLink="false" styleClass="inlineAction" />
                         </a:column>
                         
                         <a:dataPager styleClass="pager" />

@@ -111,8 +111,8 @@
          <value>#{NodeService}</value>
       </managed-property>
       <managed-property>
-         <property-name>nodeOperationsService</property-name>
-         <value>#{CopyService}</value>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
       </managed-property>
    </managed-bean>
    

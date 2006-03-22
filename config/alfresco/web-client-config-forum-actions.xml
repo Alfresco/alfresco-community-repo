@@ -42,8 +42,136 @@
             </params>
          </action>
          
+         <!-- Create a Forums space -->
+         <action id="create_forums">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>create_forums</label-id>
+            <image>/images/icons/create_forums.gif</image>
+            <action>dialog:createForums</action>
+            <action-listener>#{CreateForumsDialog.startWizard}</action-listener>
+         </action>
          
-         <!-- the 'actions' elements define unique blocks of actions that reference the actions
+         <!-- Create a Forum -->
+         <action id="create_forum">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>create_forum</label-id>
+            <image>/images/icons/create_forum.gif</image>
+            <action>dialog:createForum</action>
+            <action-listener>#{CreateForumDialog.startWizard}</action-listener>
+         </action>
+         
+         <!-- Delete a Forums space -->
+         <action id="delete_forums">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <label-id>delete_forums</label-id>
+            <image>/images/icons/delete_forums.gif</image>
+            <action>dialog:deleteForums</action>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Delete a Forum space -->
+         <action id="delete_forum">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <label-id>delete_forum</label-id>
+            <image>/images/icons/delete_forum.gif</image>
+            <action>dialog:deleteForum</action>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Create a Topic -->
+         <action id="create_topic">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>create_topic</label-id>
+            <image>/images/icons/create_topic.gif</image>
+            <action>dialog:createTopic</action>
+            <action-listener>#{CreateTopicDialog.startWizard}</action-listener>
+         </action>
+         
+         <!-- Delete a Topic -->
+         <action id="delete_topic">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <label-id>delete_topic</label-id>
+            <image>/images/icons/delete_topic.gif</image>
+            <action>dialog:deleteTopic</action>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Create a Topic -->
+         <action id="create_post">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>post_to_topic</label-id>
+            <image>/images/icons/create_post.gif</image>
+            <action>dialog:createPost</action>
+            <action-listener>#{CreatePostDialog.startWizard}</action-listener>
+         </action>
+         
+         <!-- Post a reply to a Topic -->
+         <action id="post_reply">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>post_reply</label-id>
+            <image>/images/icons/post_reply.gif</image>
+            <action>dialog:createReply</action>
+            <action-listener>#{CreateReplyDialog.startWizard}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Edit an existing Post -->
+         <action id="edit_post">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <label-id>edit_post</label-id>
+            <image>/images/icons/edit_post.gif</image>
+            <action>dialog:editPost</action>
+            <action-listener>#{EditPostDialog.startWizardForEdit}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Delete a Post -->
+         <action id="delete_post">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <label-id>delete_post</label-id>
+            <image>/images/icons/delete.gif</image>
+            <action>dialog:deletePost</action>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         
+         <!-- the 'action-group' elements define unique blocks of actions that reference the actions
               as defined above and can override or supply display elements for the group of actions -->
          <!-- the component is responsible for making the context Node object available with name
               of 'actionContext' so the actions can access it directly to get properties -->
@@ -141,6 +269,7 @@
             <action idref="cut_node" />
             <action idref="copy_node" />
             <action idref="delete_space" />
+            <action idref="create_shortcut" />
          </action-group>
          
          <!-- Actions Menu for Forum Details page -->
@@ -148,6 +277,7 @@
             <action idref="cut_node" />
             <action idref="copy_node" />
             <action idref="delete_space" />
+            <action idref="create_shortcut" />
          </action-group>
          
          <!-- Actions Menu for Topic Details page -->
@@ -155,6 +285,87 @@
             <action idref="cut_node" />
             <action idref="copy_node" />
             <action idref="delete_space" />
+            <action idref="create_shortcut" />
+         </action-group>
+         
+         <!-- Create Actions Menu for Forums view -->
+         <action-group id="forums_create_menu">
+            <action idref="create_forums" />
+            <action idref="create_forum" />
+         </action-group>
+         
+         <!-- More Actions Menu for Forums view -->
+         <action-group id="forums_actions_menu">
+            <action idref="details_space" />
+            <action idref="delete_forums" />
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="paste_all" />
+            <action idref="manage_space_users" />
+            <action idref="import_space" />
+            <action idref="export_space" />
+         </action-group>
+         
+         <!-- Actions for a Forums Space or Forum in Forums view -->
+         <action-group id="forums_actions">
+            <show-link>false</show-link>
+            <style-class>inlineAction</style-class>
+            
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_space" />
+            <action idref="details_space" />
+         </action-group>
+         
+         <!-- Create Actions Menu for Forum view -->
+         <action-group id="forum_create_menu">
+            <action idref="create_topic" />
+         </action-group>
+         
+         <!-- More Actions Menu for Forum view -->
+         <action-group id="forum_actions_menu">
+            <action idref="details_space" />
+            <action idref="delete_forum" />
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="paste_all" />
+            <action idref="manage_space_users" />
+         </action-group>
+         
+         <!-- Actions for topics in Forum view -->
+         <action-group id="forum_actions">
+            <show-link>false</show-link>
+            <style-class>inlineAction</style-class>
+            
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_topic" />
+            <action idref="details_space" />
+         </action-group>
+         
+         <!-- Create Actions Menu for Topic view -->
+         <action-group id="topic_create_menu">
+            <action idref="create_post" />
+         </action-group>
+         
+         <!-- More Actions Menu for Topic view -->
+         <action-group id="topic_actions_menu">
+            <action idref="details_space" />
+            <action idref="delete_topic" />
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="paste_all" />
+            <action idref="manage_space_users" />
+         </action-group>
+         
+         <!-- Actions for topics in Topic view -->
+         <action-group id="topic_actions">
+            <show-link>false</show-link>
+            <style-class>inlineAction</style-class>
+            
+            <action idref="post_reply" />
+            <action idref="edit_post" />
+            <action idref="delete_post" />
          </action-group>
          
       </actions>

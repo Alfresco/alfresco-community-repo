@@ -26,9 +26,10 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.model.FileExistsException;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -50,14 +51,6 @@ public class ClipboardBean
 {
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
-   
-   /**
-    * @return Returns the NodeService.
-    */
-   public NodeService getNodeService()
-   {
-      return this.nodeService;
-   }
 
    /**
     * @param nodeService The NodeService to set.
@@ -66,29 +59,12 @@ public class ClipboardBean
    {
       this.nodeService = nodeService;
    }
-   
    /**
-    * @return Returns the NodeOperationsService.
+    * @param fileFolderService   The FileFolderService to set.
     */
-   public CopyService getNodeOperationsService()
+   public void setFileFolderService(FileFolderService fileFolderService)
    {
-      return this.nodeOperationsService;
-   }
-
-   /**
-    * @param nodeOperationsService   The NodeOperationsService to set.
-    */
-   public void setNodeOperationsService(CopyService nodeOperationsService)
-   {
-      this.nodeOperationsService = nodeOperationsService;
-   }
-   
-   /**
-    * @return Returns the navigation bean instance.
-    */
-   public NavigationBean getNavigator()
-   {
-      return this.navigator;
+      this.fileFolderService = fileFolderService;
    }
    
    /**
@@ -152,7 +128,7 @@ public class ClipboardBean
     */
    public void pasteAll(ActionEvent event)
    {
-      performPasteItems(-1);
+      performPasteItems(-1, UIClipboardShelfItem.ACTION_PASTE_ALL);
    }
    
    /**
@@ -168,15 +144,16 @@ public class ClipboardBean
          throw new IllegalStateException("Clipboard attempting paste a non existent item index: " + index);
       }
       
-      performPasteItems(index);
+      performPasteItems(index, clipEvent.Action);
    }
    
    /**
     * Perform a paste for the specified clipboard item(s)
     * 
     * @param index      of clipboard item to paste or -1 for all
+    * @param action     the clipboard action to perform (see UIClipboardShelfItem)
     */
-   private void performPasteItems(int index)
+   private void performPasteItems(int index, int action)
    {
       UserTransaction tx = null;
       try
@@ -189,7 +166,7 @@ public class ClipboardBean
             // paste all
             for (int i=0; i<this.items.size(); i++)
             {
-               performClipboardOperation(this.items.get(i));
+               performClipboardOperation(this.items.get(i), action);
             }
             // remove the cut operation item from the clipboard
             List<ClipboardItem> newItems = new ArrayList<ClipboardItem>(this.items.size());
@@ -208,7 +185,7 @@ public class ClipboardBean
          {
             // single paste operation
             ClipboardItem item = this.items.get(index);
-            performClipboardOperation(item);
+            performClipboardOperation(item, action);
             if (item.Mode == ClipboardStatus.CUT)
             {
                this.items.remove(index);
@@ -233,45 +210,56 @@ public class ClipboardBean
    /**
     * Perform the operation for the specified clipboard item
     * 
-    * @param item
+    * @param item       the ClipboardItem
+    * @param action     the clipboard action to perform (see UIClipboardShelfItem)
     */
-   private void performClipboardOperation(ClipboardItem item)
+   private void performClipboardOperation(ClipboardItem item, int action)
+      throws FileExistsException, FileNotFoundException
    {
-      NodeRef parentRef = new NodeRef(Repository.getStoreRef(), 
-            this.navigator.getCurrentNodeId());
+      NodeRef destRef = new NodeRef(Repository.getStoreRef(), this.navigator.getCurrentNodeId());
       
-      // TODO: should we use primary parent here?
-      //       The problem is we can't pass round ChildAssocRefs as form params etc. in the UI!
-      //       It's tricky if we need to pass childassocref around everywhere...!
+      // TODO: Should we use primary parent here?
+      //       We are assuming that the item exists in only a single parent and that the source for
+      //       the clipboard operation (e.g. the source folder) is specifically that parent node.
+      //       This does not allow for more than one possible parent node - or for linked objects!
       ChildAssociationRef assocRef = this.nodeService.getPrimaryParent(item.Node.getNodeRef());
       
       if (item.Mode == ClipboardStatus.COPY)
       {
-         if (logger.isDebugEnabled())
-            logger.debug("Trying to copy node ID: " + item.Node.getId() + " into node ID: " + parentRef.getId());
-         
-         // call the node ops service to initiate the copy
-         // TODO: should the assoc qname be derived from the type...?
-         DictionaryService dd = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDictionaryService();
-         boolean copyChildren = dd.isSubClass(item.Node.getType(), ContentModel.TYPE_FOLDER);
-         NodeRef copyRef = this.nodeOperationsService.copy(
-               item.Node.getNodeRef(),
-               parentRef,
-               ContentModel.ASSOC_CONTAINS,
-               assocRef.getQName(),
-               copyChildren);
+         if (action == UIClipboardShelfItem.ACTION_PASTE_LINK)
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("Attempting to link node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
+            
+            // copy as link was specifically requested by the user
+            this.nodeService.addChild(
+                  destRef,
+                  item.Node.getNodeRef(),
+                  ContentModel.ASSOC_CONTAINS,
+                  assocRef.getQName());
+         }
+         else
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("Attempting to copy node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
+                     
+            // call the node ops service to initiate the copy
+            this.fileFolderService.copy(
+                  item.Node.getNodeRef(),
+                  destRef,
+                  null);      // TODO: could add "Copy of ..." here if copy fails
+         }
       }
       else
       {
          if (logger.isDebugEnabled())
-            logger.debug("Trying to move node ID: " + item.Node.getId() + " into node ID: " + parentRef.getId());
+            logger.debug("Attempting to move node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
          
          // move the node
-         this.nodeService.moveNode(
+         this.fileFolderService.move(
                item.Node.getNodeRef(),
-               parentRef,
-               ContentModel.ASSOC_CONTAINS,
-               assocRef.getQName());
+               destRef,
+               null);      // TODO: could add "Copy of ..." here if move fails
       }
    }
    
@@ -325,8 +313,8 @@ public class ClipboardBean
    /** The NodeService to be used by the bean */
    protected NodeService nodeService;
    
-   /** The NodeOperationsService to be used by the bean */
-   protected CopyService nodeOperationsService;
+   /** The FileFolderService to be used by the bean */
+   protected FileFolderService fileFolderService;
    
    /** The NavigationBean reference */
    protected NavigationBean navigator;

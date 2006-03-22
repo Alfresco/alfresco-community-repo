@@ -128,9 +128,11 @@ public abstract class AbstractItemSelector extends UIInput
    public abstract Collection<NodeRef> getRootChildren(FacesContext context);
    
    /**
-    * @return The icon image to display next to the item links, or null for no icon 
+    * @param ref     NodeRef to the item to get the icon for
+    * 
+    * @return The icon image to display next to the item links, or null for no icon
     */
-   public abstract String getItemIcon();
+   public abstract String getItemIcon(FacesContext context, NodeRef ref);
    
    /**
     * @see javax.faces.component.StateHolder#restoreState(javax.faces.context.FacesContext, java.lang.Object)
@@ -277,12 +279,6 @@ public abstract class AbstractItemSelector extends UIInput
          Map attrs = this.getAttributes();
          boolean showValueInHiddenField = false;
          NodeRef value = null;
-         
-         String image = null;
-         if (getItemIcon() != null)
-         {
-            image = "<span style='padding-right:4px'>" + Utils.buildImageTag(context, getItemIcon(), null, "absmiddle") + "</span>";
-         }
          
          switch (this.mode)
          {
@@ -486,7 +482,15 @@ public abstract class AbstractItemSelector extends UIInput
                      // get the name for the child and output as link
                      NodeRef childNodeRef = new NodeRef(Repository.getStoreRef(), childId);
                      String name = Repository.getNameForNode(service, childNodeRef);
-                     renderNodeLink(context, childId, name, image, buf);
+                     String prefixHtml = null;
+                     String icon = getItemIcon(context, childNodeRef);
+                     if (icon != null)
+                     {
+                        prefixHtml = "<span style='padding-right:4px'>" +
+                                     Utils.buildImageTag(context, icon, null, "absmiddle") +
+                                     "</span>";
+                     }
+                     renderNodeLink(context, childId, name, prefixHtml, buf);
                      buf.append("</td></tr>");
                   }
                   

@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -41,7 +41,6 @@ import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 
 public class PersonServiceImpl implements PersonService
 {
@@ -148,8 +147,9 @@ public class PersonServiceImpl implements PersonService
                 NodeRef nodeRef = row.getNodeRef();
                 if (nodeService.exists(nodeRef))
                 {
-                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
-                            nodeRef, ContentModel.PROP_USERNAME));
+                    String realUserName = DefaultTypeConverter.INSTANCE.convert(
+                            String.class,
+                            nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
                     realUserName = userNamesAreCaseSensitive ? realUserName : realUserName.toLowerCase();
                     if (realUserName.equals(userName))
                     {
@@ -235,47 +235,26 @@ public class PersonServiceImpl implements PersonService
                 .get(ContentModel.PROP_USERNAME));
         String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
         properties.put(ContentModel.PROP_USERNAME, userName);
-        return nodeService.createNode(getPeopleContainer(), ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_PERSON,
-                ContentModel.TYPE_PERSON, properties).getChildRef();
+        return nodeService.createNode(
+                getPeopleContainer(),
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_PERSON,
+                ContentModel.TYPE_PERSON,
+                properties).getChildRef();
     }
 
     public NodeRef getPeopleContainer()
     {
         NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-        List<NodeRef> results = searchService.selectNodes(rootNodeRef, PEOPLE_FOLDER, null, namespacePrefixResolver,
+        List<NodeRef> results = searchService.selectNodes(
+                rootNodeRef,
+                PEOPLE_FOLDER,
+                null,
+                namespacePrefixResolver,
                 false);
-        NodeRef typesNode = null;
         if (results.size() == 0)
         {
-
-            List<ChildAssociationRef> result = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL,
-                    QName.createQName("sys", "system", namespacePrefixResolver));
-            NodeRef sysNode = null;
-            if (result.size() == 0)
-            {
-                sysNode = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
-                        QName.createQName("sys", "system", namespacePrefixResolver), ContentModel.TYPE_CONTAINER)
-                        .getChildRef();
-            }
-            else
-            {
-                sysNode = result.get(0).getChildRef();
-            }
-            result = nodeService.getChildAssocs(sysNode, RegexQNamePattern.MATCH_ALL, QName.createQName("sys",
-                    "people", namespacePrefixResolver));
-
-            if (result.size() == 0)
-            {
-                typesNode = nodeService.createNode(sysNode, ContentModel.ASSOC_CHILDREN,
-                        QName.createQName("sys", "people", namespacePrefixResolver), ContentModel.TYPE_CONTAINER)
-                        .getChildRef();
-                return typesNode;
-            }
-            else
-            {
-                return result.get(0).getChildRef();
-            }
-
+            throw new AlfrescoRuntimeException("Required people system path not found: " + PEOPLE_FOLDER);
         }
         else
         {

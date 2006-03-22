@@ -153,9 +153,9 @@
          <grantedToGroup permissionGroup="Delete" />
          <!-- Commented out parent permission check ...
          <requiredPermission on="parent" name="ReadChildren" implies="false"/>
-         -->
          <requiredPermission on="parent" name="DeleteChildren" implies="false"/>
          <requiredPermission on="node" name="DeleteChildren" implies="false"/>
+         -->
          <!-- Remove the recursive check for now for performance -->
          <!-- TODO: have one permission to check for delete on an item and one to check  -->
          <!--       child permissions when delete is called on the node service          --> 

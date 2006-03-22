@@ -77,11 +77,19 @@
     <!-- Helper beans -->
     <!--              -->
     
-    <bean id="patch.savedSearches.Base" abstract="true" parent="basePatch" >
-        <!-- helper beans for execution -->
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
+    <bean id="patch.genericBootstrap.Base" abstract="true" parent="basePatch" >
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
         </property>
+        <property name="searchService">
+            <ref bean="searchService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+    </bean>
+    
+    <bean id="patch.savedSearches.Base" abstract="true" parent="basePatch" >
         <property name="namespaceService">
             <ref bean="namespaceService" />
         </property>
@@ -105,6 +113,26 @@
     <!-- Patch definitions -->
     <!--                   -->
     
+    <bean id="patch.authoritiesFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="patch.genericBootstrap.Base" >
+        <property name="id"><value>patch.authoritiesFolder</value></property>
+        <property name="description"><value>patch.authoritiesFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>0</value></property>
+        <property name="targetSchema"><value>6</value></property>
+        <!-- bootstrap view -->
+        <property name="importerBootstrap">
+            <ref bean="userBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${alfresco_user_store.system_container.childname}/${alfresco_user_store.authorities_container.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${alfresco_user_store.system_container.childname}</prop>
+                <prop key="location">alfresco/bootstrap/alfrescoAuthorityStore.xml</prop>
+            </props>
+        </property>
+    </bean>
     <bean id="patch.savedSearchesFolder" class="org.alfresco.repo.admin.patch.impl.SavedSearchFolderPatch" parent="patch.savedSearches.Base" >
         <property name="id"><value>patch.savedSearchesFolder</value></property>
         <property name="description"><value>patch.savedSearchesFolder.description</value></property>

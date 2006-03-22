@@ -29,16 +29,14 @@ import net.sf.acegisecurity.providers.dao.User;
 import net.sf.acegisecurity.providers.dao.UsernameNotFoundException;
 import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.QueryParameterDefImpl;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -50,10 +48,7 @@ import org.springframework.dao.DataAccessException;
 
 public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 {
-
-    private static final String SYSTEM_FOLDER = "/sys:system";
-
-    private static final String PEOPLE_FOLDER = SYSTEM_FOLDER + "/sys:people";
+    private static final StoreRef STOREREF_USERS = new StoreRef("user", "alfrescoUserStore");
 
     private NodeService nodeService;
 
@@ -64,8 +59,6 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     private SearchService searchService;
 
     private PasswordEncoder passwordEncoder;
-
-    private StoreRef userStoreRef;
 
     private boolean userNamesAreCaseSensitive;
 
@@ -132,7 +125,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("@usr\\:username:" + userName);
-        sp.addStore(getUserStoreRef());
+        sp.addStore(STOREREF_USERS);
         sp.excludeDataInTheCurrentTransaction(false);
 
         ResultSet rs = null;
@@ -175,7 +168,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         {
             throw new AuthenticationException("User already exists: " + userName);
         }
-        NodeRef typesNode = getOrCreateTypeLocation();
+        NodeRef typesNode = getUserFolderLocation();
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USER_USERNAME, userName);
         String salt = null; // GUID.generate();
@@ -185,41 +178,47 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         properties.put(ContentModel.PROP_CREDENTIALS_EXPIRE, Boolean.valueOf(false));
         properties.put(ContentModel.PROP_ENABLED, Boolean.valueOf(true));
         properties.put(ContentModel.PROP_ACCOUNT_LOCKED, Boolean.valueOf(false));
-        nodeService.createNode(typesNode, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_USER, ContentModel.TYPE_USER,
+        nodeService.createNode(
+                typesNode,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_USER,
+                ContentModel.TYPE_USER,
                 properties);
 
     }
 
-    private NodeRef getOrCreateTypeLocation()
+    private NodeRef getUserFolderLocation()
     {
-        NodeRef rootNode = nodeService.getRootNode(getUserStoreRef());
-        List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNode, RegexQNamePattern.MATCH_ALL, QName
-                .createQName("sys", "system", namespacePrefixResolver));
-        NodeRef sysNode = null;
+        QName qnameAssocSystem = QName.createQName("sys", "system", namespacePrefixResolver);
+        QName qnameAssocUsers = QName.createQName("sys", "people", namespacePrefixResolver);  // see AR-527
+        NodeRef rootNode = nodeService.getRootNode(STOREREF_USERS);
+        List<ChildAssociationRef> results = nodeService.getChildAssocs(
+                rootNode,
+                RegexQNamePattern.MATCH_ALL,
+                qnameAssocSystem);
+        NodeRef sysNodeRef = null;
         if (results.size() == 0)
         {
-            sysNode = nodeService.createNode(rootNode, ContentModel.ASSOC_CHILDREN,
-                    QName.createQName("sys", "system", namespacePrefixResolver), ContentModel.TYPE_CONTAINER)
-                    .getChildRef();
+            throw new AlfrescoRuntimeException("Required authority system folder path not found: " + qnameAssocSystem);
         }
         else
         {
-            sysNode = results.get(0).getChildRef();
+            sysNodeRef = results.get(0).getChildRef();
         }
-        results = nodeService.getChildAssocs(sysNode, RegexQNamePattern.MATCH_ALL, QName.createQName("sys", "people",
-                namespacePrefixResolver));
-        NodeRef typesNode = null;
+        results = nodeService.getChildAssocs(
+                sysNodeRef,
+                RegexQNamePattern.MATCH_ALL,
+                qnameAssocUsers);
+        NodeRef userNodeRef = null;
         if (results.size() == 0)
         {
-            typesNode = nodeService.createNode(sysNode, ContentModel.ASSOC_CHILDREN,
-                    QName.createQName("sys", "people", namespacePrefixResolver), ContentModel.TYPE_CONTAINER)
-                    .getChildRef();
+            throw new AlfrescoRuntimeException("Required user folder path not found: " + qnameAssocUsers);
         }
         else
         {
-            typesNode = results.get(0).getChildRef();
+            userNodeRef = results.get(0).getChildRef();
         }
-        return typesNode;
+        return userNodeRef;
     }
 
     public void updateUser(String userName, char[] rawPassword) throws AuthenticationException
@@ -246,20 +245,6 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
             throw new AuthenticationException("User name does not exist: " + userName);
         }
         nodeService.deleteNode(userRef);
-    }
-
-    public synchronized StoreRef getUserStoreRef()
-    {
-        if (userStoreRef == null)
-        {
-            userStoreRef = new StoreRef("user", "alfrescoUserStore");
-        }
-        if (!nodeService.exists(userStoreRef))
-        {
-            nodeService.createStore(userStoreRef.getProtocol(), userStoreRef.getIdentifier());
-        }
-
-        return userStoreRef;
     }
 
     public Object getSalt(UserDetails userDetails)

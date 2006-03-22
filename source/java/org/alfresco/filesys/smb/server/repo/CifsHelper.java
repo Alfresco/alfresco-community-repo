@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -382,9 +383,13 @@ public class CifsHelper
                     "   Path Root: " + pathRootNodeRef + "\n" +
                     "   Path Element: " + pathElement);
         }
-        
+        // escape for the Lucene syntax search
+        String escapedPathElement = SearchLanguageConversion.convertCifsToLucene(pathElement);
         // do the lookup
-        List<org.alfresco.service.cmr.model.FileInfo> childInfos = fileFolderService.search(pathRootNodeRef, pathElement, false);
+        List<org.alfresco.service.cmr.model.FileInfo> childInfos = fileFolderService.search(
+                pathRootNodeRef,
+                escapedPathElement,
+                false);
         // convert to noderefs
         List<NodeRef> results = new ArrayList<NodeRef>(childInfos.size());
         for (org.alfresco.service.cmr.model.FileInfo info : childInfos)

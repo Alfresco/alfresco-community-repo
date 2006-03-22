@@ -16,10 +16,12 @@
  */
 package org.alfresco.repo.descriptor;
 
+import java.util.Date;
 import java.util.Map;
 
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.license.LicenseDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
@@ -79,6 +81,27 @@ public class DescriptorStartupLog implements ApplicationListener
                     logger.warn(String.format("Alfresco JVM - WARNING - maximum heap size %.3fMB is less than recommended 512MB", maxHeapMB));
                 }
             }
+
+            // Log License Descriptors (if applicable)
+            LicenseDescriptor license = descriptorService.getLicenseDescriptor();
+            if (license != null && logger.isInfoEnabled())
+            {
+                String subject = license.getSubject();
+                String msg = "Alfresco license: " + subject;
+                Date validUntil = license.getValidUntil();
+                if (validUntil != null)
+                {
+                    Integer days = license.getDays();
+                    Integer remainingDays = license.getRemainingDays();
+                    
+                    msg += " limited to " + days + " days expiring " + validUntil + " (" + remainingDays + " days remaining)";
+                }
+                else
+                {
+                    msg += " (does not expire)";
+                }
+                logger.info(msg);
+            }
             
             // Log Repository Descriptors
             if (logger.isInfoEnabled())
@@ -90,16 +113,8 @@ public class DescriptorStartupLog implements ApplicationListener
                 int serverSchemaVersion = serverDescriptor.getSchema();
                 String installedRepoVersion = installedRepoDescriptor.getVersion();
                 int installedSchemaVersion = installedRepoDescriptor.getSchema();
-                logger.info(
-                        String.format(
-                                "Alfresco started (%s): " +
-                                "Current version %s schema %d - " +
-                                "Installed version %s schema %d",
-                                serverEdition,
-                                serverVersion,
-                                serverSchemaVersion,
-                                installedRepoVersion,
-                                installedSchemaVersion));
+                logger.info(String.format("Alfresco started (%s): Current version %s schema %d - Installed version %s schema %d",
+                   serverEdition, serverVersion, serverSchemaVersion, installedRepoVersion, installedSchemaVersion));
             }
         }
     }

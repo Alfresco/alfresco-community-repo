@@ -18,8 +18,6 @@
                     </usr:user>
                 </sys:children>
             </sys:container>
-            <sys:container view:childName="${alfresco_user_store.authorities_container.childname}">
-            </sys:container>
         </sys:children>
     </sys:container>           
            

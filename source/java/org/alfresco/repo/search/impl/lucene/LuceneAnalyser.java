@@ -108,29 +108,17 @@ public class LuceneAnalyser extends Analyzer
         {
             analyser = new WhitespaceAnalyzer();
         }
+        else if (fieldName.equals("TEXT"))
+        {
+            DataTypeDefinition dataType = dictionaryService.getDataType(DataTypeDefinition.TEXT);
+            analyser = loadAnalyzer(dataType);
+        }
         else if (fieldName.startsWith("@"))
         {
             QName propertyQName = QName.createQName(fieldName.substring(1));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
             DataTypeDefinition dataType = (propertyDef == null) ? dictionaryService.getDataType(DataTypeDefinition.TEXT) : propertyDef.getDataType();
-            String analyserClassName = dataType.getAnalyserClassName();
-            try
-            {
-                Class<?> clazz = Class.forName(analyserClassName);
-                analyser = (Analyzer)clazz.newInstance();
-            }
-            catch (ClassNotFoundException e)
-            {
-                throw new RuntimeException("Unable to load analyser for property " + fieldName.substring(1) + " of type " + dataType.getName() + " using " + analyserClassName);
-            }
-            catch (InstantiationException e)
-            {
-                throw new RuntimeException("Unable to load analyser for property " + fieldName.substring(1) + " of type " + dataType.getName() + " using " + analyserClassName);
-            }
-            catch (IllegalAccessException e)
-            {
-                throw new RuntimeException("Unable to load analyser for property " + fieldName.substring(1) + " of type " + dataType.getName() + " using " + analyserClassName);
-            }
+            analyser = loadAnalyzer(dataType);
         }
         else
         {
@@ -139,4 +127,28 @@ public class LuceneAnalyser extends Analyzer
         analysers.put(fieldName, analyser);
         return analyser;
     }
+    
+    private Analyzer loadAnalyzer(DataTypeDefinition dataType)
+    {
+        String analyserClassName = dataType.getAnalyserClassName();
+        try
+        {
+            Class<?> clazz = Class.forName(analyserClassName);
+            Analyzer analyser = (Analyzer)clazz.newInstance();
+            return analyser;
+        }
+        catch (ClassNotFoundException e)
+        {
+            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using " + analyserClassName);
+        }
+        catch (InstantiationException e)
+        {
+            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using " + analyserClassName);
+        }
+        catch (IllegalAccessException e)
+        {
+            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using " + analyserClassName);
+        }
+    }
+    
 }

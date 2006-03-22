@@ -26,7 +26,7 @@ import org.alfresco.service.namespace.QName;
 
 public class PermissionModelTest extends AbstractPermissionTest
 {
-    
+     
     public PermissionModelTest()
     {
         super();
@@ -38,6 +38,30 @@ public class PermissionModelTest extends AbstractPermissionTest
                 namespacePrefixResolver), "Consumer"));
 
         assertEquals(5, grantees.size());
+    }
+    
+    public void testIncludePermissionGroups2()
+    {
+        Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(new SimplePermissionReference(QName.createQName("cm", "cmobject",
+                namespacePrefixResolver), "Contributor"));
+
+        assertEquals(11, grantees.size());
+    }
+    
+    public void testIncludePermissionGroups3()
+    {
+        Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(new SimplePermissionReference(QName.createQName("cm", "cmobject",
+                namespacePrefixResolver), "Editor"));
+
+        assertEquals(11, grantees.size());
+    }
+    
+    public void testIncludePermissionGroups4()
+    {
+        Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(new SimplePermissionReference(QName.createQName("cm", "cmobject",
+                namespacePrefixResolver), "Collaborator"));
+
+        assertEquals(16, grantees.size());
     }
     
     public void testGetGrantingPermissions()

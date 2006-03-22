@@ -72,6 +72,7 @@ public class ImporterBootstrap implements ApplicationListener
 
     // Dependencies
     private boolean allowWrite = true;
+    private boolean useExistingStore = false;
     private TransactionService transactionService;
     private NamespaceService namespaceService;
     private NodeService nodeService;
@@ -92,6 +93,18 @@ public class ImporterBootstrap implements ApplicationListener
     public void setAllowWrite(boolean write)
     {
         this.allowWrite = write;
+    }
+
+    /**
+     * Set whether the importer bootstrap should only perform an import if the store
+     * being referenced doesn't already exist.
+     * 
+     * @param useExistingStore true to allow imports into an existing store,
+     *      otherwise false (default) to only import if the store doesn't exist.
+     */
+    public void setUseExistingStore(boolean useExistingStore)
+    {
+        this.useExistingStore = useExistingStore;
     }
 
     /**
@@ -305,11 +318,13 @@ public class ImporterBootstrap implements ApplicationListener
             }
             else
             {
-                // create the store           
-                storeRef = nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
-       
-                if (logger.isDebugEnabled())
-                    logger.debug("Created store: " + storeRef);
+                // create the store if necessary
+                if (!nodeService.exists(storeRef))
+                {
+                    storeRef = nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
+                    if (logger.isDebugEnabled())
+                        logger.debug("Created store: " + storeRef);
+                }
     
                 // bootstrap the store contents
                 if (bootstrapViews != null)
@@ -538,12 +553,16 @@ public class ImporterBootstrap implements ApplicationListener
      */
     private boolean performBootstrap()
     {
-        if (nodeService.exists(storeRef))
+        if (useExistingStore)
+        {
+            // it doesn't matter if the store exists or not
+            return true;
+        }
+        else if (nodeService.exists(storeRef))
         {
             return false;
         }
-        
-        if (mustNotExistStoreUrls != null)
+        else if (mustNotExistStoreUrls != null)
         {
             for (String storeUrl : mustNotExistStoreUrls)
             {

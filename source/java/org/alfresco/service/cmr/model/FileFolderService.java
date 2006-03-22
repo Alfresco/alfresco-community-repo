@@ -61,6 +61,14 @@ public interface FileFolderService
      * Searches for all files and folders with the matching name pattern,
      * using wildcard characters <b>*</b> and <b>?</b>.
      * 
+     * @param contextNodeRef the context of the search.  This node will never be returned
+     *      as part of the search results.
+     * @param namePattern the name of the file or folder to search for, or a
+     *      {@link org.alfresco.util.SearchLanguageConversion#DEF_LUCENE wildcard} pattern
+     *      to search for.
+     * @param includeSubFolders true to search the entire hierarchy below the search context
+     * @return Returns a list of file or folder matches
+     *
      * @see #search(NodeRef, String, boolean, boolean, boolean)
      */
     public List<FileInfo> search(

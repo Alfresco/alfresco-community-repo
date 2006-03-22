@@ -58,6 +58,7 @@ public interface ContentModel
     static final QName PROP_SYS_VERSION_REVISION = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "versionRevision");
     static final QName PROP_SYS_VERSION_LABEL = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "versionLabel");
     static final QName PROP_SYS_VERSION_SCHEMA = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "versionSchema");
+    static final QName PROP_SYS_LICENSE = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "license");
     
     //
     // Content Model Definitions

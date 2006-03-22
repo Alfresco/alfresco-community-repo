@@ -18,6 +18,8 @@ package org.alfresco.repo.descriptor;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +36,18 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.license.LicenseDescriptor;
+import org.alfresco.service.license.LicenseException;
+import org.alfresco.service.license.LicenseService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -51,9 +59,11 @@ import org.springframework.core.io.Resource;
  * 
  * @author David Caruana
  */
-public class DescriptorServiceImpl implements DescriptorService, ApplicationListener, InitializingBean
+public class DescriptorServiceImpl implements DescriptorService, ApplicationListener, InitializingBean, ApplicationContextAware
 {
     private static Log logger = LogFactory.getLog(DescriptorServiceImpl.class);
+    
+    private ApplicationContext applicationContext;
     
     private Properties serverProperties;
     
@@ -62,11 +72,19 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     private NodeService nodeService;
     private SearchService searchService;
     private TransactionService transactionService;
+    private LicenseService licenseService = null;
 
     private Descriptor serverDescriptor;
     private Descriptor installedRepoDescriptor;
+
     
-    
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = applicationContext;
+    }
     
     /**
      * Sets the server descriptor from a resource file
@@ -120,7 +138,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     {
         this.searchService = searchService;
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.descriptor.DescriptorService#getDescriptor()
      */
@@ -137,6 +155,14 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
         return installedRepoDescriptor;
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.service.descriptor.DescriptorService#getLicenseDescriptor()
+     */
+    public LicenseDescriptor getLicenseDescriptor()
+    {
+        return licenseService.getLicense();
+    }
+
     /**
      * @param event
      */
@@ -150,9 +176,12 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
             {
                 public Descriptor doWork()
                 {
+                    // verify license, but only if license component is installed
+                    licenseService.verifyLicense();
+                    
                     // persist the server descriptor values
                     updateCurrentRepositoryDescriptor(serverDescriptor);
-                    
+
                     // return the repository installed descriptor
                     return createInstalledRepositoryDescriptor();
                 }
@@ -168,6 +197,9 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     {
         // initialise server descriptor
         serverDescriptor = createServerDescriptor();
+        
+        // initialise license service (if installed)
+        initialiseLicenseService();
     }
 
     /**
@@ -304,6 +336,77 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
             }
         }
         return descriptorNodeRef;
+    }
+    
+    /**
+     * Initialise License Service
+     */
+    private void initialiseLicenseService()
+    {
+        try
+        {
+            // NOTE: We could tie in the License Component via Spring configuration, but then it could
+            //       be declaratively taken out in an installed environment.
+            Class licenseComponentClass = Class.forName("org.alfresco.license.LicenseComponent");
+            Constructor constructor = licenseComponentClass.getConstructor(new Class[] { ApplicationContext.class} );
+            licenseService = (LicenseService)constructor.newInstance(new Object[] { applicationContext } );            
+        }
+        catch (ClassNotFoundException e)
+        {
+            licenseService = new NOOPLicenseService();
+        }
+        catch (SecurityException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to initialise license service", e);
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to initialise license service", e);
+        }
+        catch (NoSuchMethodException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to initialise license service", e);
+        }
+        catch (InvocationTargetException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to initialise license service", e);
+        }
+        catch (InstantiationException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to initialise license service", e);
+        }
+        catch (IllegalAccessException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to initialise license service", e);
+        }
+    }
+
+    /**
+     * Dummy License Service
+     */
+    private class NOOPLicenseService implements LicenseService
+    {
+        /* (non-Javadoc)
+         * @see org.alfresco.service.license.LicenseService#install()
+         */
+        public void installLicense() throws LicenseException
+        {
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.service.license.LicenseService#verify()
+         */
+        public void verifyLicense() throws LicenseException
+        {
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.service.license.LicenseService#getLicense()
+         */
+        public LicenseDescriptor getLicense() throws LicenseException
+        {
+            return null;
+        }
     }
     
     /**

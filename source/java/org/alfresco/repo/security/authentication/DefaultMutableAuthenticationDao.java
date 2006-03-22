@@ -81,16 +81,6 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
     
     /**
-     * Get the store ref where user objects are persisted.
-     * 
-     * @return
-     */
-    public StoreRef getUserStoreRef()
-    {
-        throw new AlfrescoRuntimeException("Not implemented");
-    }
-    
-    /**
      * Enable/disable a user.
      * 
      * @param userName

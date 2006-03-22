@@ -115,11 +115,15 @@ public class RulesAspect
         this.ruleService.disableRules(nodeRef);
         try
         {
-			this.nodeService.createNode(
-                    nodeRef,
-			        RuleModel.ASSOC_RULE_FOLDER,
-					RuleModel.ASSOC_RULE_FOLDER,
-					ContentModel.TYPE_SYSTEM_FOLDER);
+        	int count = this.nodeService.getChildAssocs(nodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).size();
+            if (count == 0)
+            {
+    			this.nodeService.createNode(
+                        nodeRef,
+    			        RuleModel.ASSOC_RULE_FOLDER,
+    					RuleModel.ASSOC_RULE_FOLDER,
+    					ContentModel.TYPE_SYSTEM_FOLDER);
+            }
         }
         finally
         {

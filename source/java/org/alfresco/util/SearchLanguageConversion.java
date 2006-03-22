@@ -49,6 +49,16 @@ public class SearchLanguageConversion
      * Lucene syntax summary: {@link QueryParser#escape(String) Lucene Query Parser}
      */
     public static LanguageDefinition DEF_LUCENE = new LuceneLanguageDef();
+    /**
+     * CIFS name patch query language summary:
+     * <ul>
+     *   <li>Escape: \  (but not used)</li>
+     *   <li>Single char search: ?</li>
+     *   <li>Multiple char search: *</li>
+     *   <li>Reserved: "*\<>?/:|¬£%&+;</li>
+     * </ul>
+     */
+    public static LanguageDefinition DEF_CIFS = new SimpleLanguageDef('\\', "*", "?", "\"*\\<>?/:|¬£%&+;");
 
     /**
      * Escape a string according to the <b>XPath</b> like function syntax.
@@ -126,6 +136,18 @@ public class SearchLanguageConversion
     public static String convertXPathLikeToLucene(String xpathLikeClause)
     {
         return convert(DEF_XPATH_LIKE, DEF_LUCENE, xpathLikeClause);
+    }
+    
+    /**
+     * Convert a <b>CIFS</b> name path into the equivalent <b>Lucene</b> query.
+     * 
+     * @param cifsNamePath the CIFS named path
+     * @return Returns a valid <b>Lucene</b> expression that is equivalent to the
+     *      given CIFS name path
+     */
+    public static String convertCifsToLucene(String cifsNamePath)
+    {
+        return convert(DEF_CIFS, DEF_LUCENE, cifsNamePath);
     }
     
     public static String convert(LanguageDefinition from, LanguageDefinition to, String query)

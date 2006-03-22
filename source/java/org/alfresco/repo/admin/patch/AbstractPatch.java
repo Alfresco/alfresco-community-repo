@@ -37,6 +37,15 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class AbstractPatch implements Patch
 {
+    /**
+     * I18N message when properties nto set.
+     * <ul>
+     *   <li>{0} = property name</li>
+     *   <li>{1} = patch instance</li>
+     * </ul>
+     */
+    public static final String ERR_PROPERTY_NOT_SET = "patch.general.property_not_set";
+    
     private static Log logger = LogFactory.getLog(AbstractPatch.class);
     
     private String id;
@@ -215,28 +224,36 @@ public abstract class AbstractPatch implements Patch
     {
         return ((this.fixesFromSchema <= version) && (version <= fixesToSchema));
     }
+    
+    /**
+     * Performs a null check on the supplied value.
+     * 
+     * @param value value to check
+     * @param name name of the property to report
+     */
+    protected final void checkPropertyNotNull(Object value, String name)
+    {
+        if (value == null)
+        {
+            throw new PatchException(ERR_PROPERTY_NOT_SET, "bootstrapView", this);
+        }
+    }
 
     /**
-     * Check that the schema version properties have been set appropriately
+     * Check that the schema version properties have been set appropriately.
+     * Derived classes can override this method to perform their own validation provided
+     * that this method is called by the derived class.
      */
-    private void checkProperties()
+    protected void checkProperties()
     {
         // check that the necessary properties have been set
-        if (id == null || description == null)
-        {
-            throw new AlfrescoRuntimeException(
-                    "Patch properties 'id', 'fixesFromSchema' and 'description' have not all been set on this patch: \n" +
-                    "   patch: " + this);
-        }
-        else if (fixesFromSchema == -1 || fixesToSchema == -1 || targetSchema == -1)
+        checkPropertyNotNull(id, "id");
+        checkPropertyNotNull(description, "description");
+        checkPropertyNotNull(transactionService, "transactionService");
+        if (fixesFromSchema == -1 || fixesToSchema == -1 || targetSchema == -1)
         {
             throw new AlfrescoRuntimeException(
                     "Patch properties 'fixesFromSchema', 'fixesToSchema' and 'targetSchema' have not all been set on this patch: \n" +
-                    "   patch: " + this);
-        }
-        else if (transactionService == null)
-        {
-            throw new AlfrescoRuntimeException("'transactionService' property has not been set: \n" +
                     "   patch: " + this);
         }
     }

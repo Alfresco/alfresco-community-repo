@@ -27,21 +27,20 @@ public class PatchException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = 7022368915143884315L;
 
-    private String report;
-    
     /**
-     * @param report the patch failure report
+     * @param msgId the patch failure message ID
      */
-    public PatchException(String report)
+    public PatchException(String msgId)
     {
-        super(report);
+        super(msgId);
     }
 
     /**
-     * @return Returns the patch failure report
+     * @param msgId the patch failure message ID
+     * @param args variable number of message arguments
      */
-    public String getReport()
+    public PatchException(String msgId, Object ... args)
     {
-        return report;
+        super(msgId, args);
     }
 }

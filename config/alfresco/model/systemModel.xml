@@ -44,7 +44,10 @@
 				<property name="sys:versionSchema">
 					<type>d:int</type>
 					<mandatory enforced="true">true</mandatory>
-               <default>0</default>
+					<default>0</default>
+				</property>
+				<property name="sys:license">
+				    <type>d:content</type>
 				</property>
 			</properties>
         </type>		

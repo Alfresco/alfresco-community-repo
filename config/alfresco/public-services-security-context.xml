@@ -337,7 +337,7 @@
                org.alfresco.service.cmr.repository.NodeService.getNodeStatus=ACL_NODE.0.sys:base.Read
                org.alfresco.service.cmr.repository.NodeService.getRootNode=ACL_NODE.0.sys:base.Read
                org.alfresco.service.cmr.repository.NodeService.createNode=ACL_NODE.0.sys:base.CreateChildren
-               org.alfresco.service.cmr.repository.NodeService.moveNode=ACL_NODE.0.sys:base.WriteProperties,ACL_PARENT.0.sys:base.DeleteChildren,ACL_NODE.1.sys:base.CreateChildren
+               org.alfresco.service.cmr.repository.NodeService.moveNode=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.CreateChildren
                org.alfresco.service.cmr.repository.NodeService.setChildAssociationIndex=ACL_PARENT.0.sys:base.WriteProperties
                org.alfresco.service.cmr.repository.NodeService.getType=ACL_NODE.0.sys:base.Read
                org.alfresco.service.cmr.repository.NodeService.setType=ACL_NODE.0.sys:base.Write
@@ -345,9 +345,9 @@
                org.alfresco.service.cmr.repository.NodeService.removeAspect=ACL_NODE.0.sys:base.Write
                org.alfresco.service.cmr.repository.NodeService.hasAspect=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.getAspects=ACL_NODE.0.sys:base.ReadProperties
-               org.alfresco.service.cmr.repository.NodeService.deleteNode=ACL_NODE.0.sys:base.Delete
+               org.alfresco.service.cmr.repository.NodeService.deleteNode=ACL_NODE.0.sys:base.DeleteNode
                org.alfresco.service.cmr.repository.NodeService.addChild=ACL_NODE.0.sys:base.CreateChildren,ACL_NODE.1.sys:base.ReadProperties
-               org.alfresco.service.cmr.repository.NodeService.removeChild=ACL_NODE.1.sys:base.Delete
+               org.alfresco.service.cmr.repository.NodeService.removeChild=ACL_NODE.1.sys:base.DeleteChildren
                org.alfresco.service.cmr.repository.NodeService.getProperties=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.getProperty=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.setProperties=ACL_NODE.0.sys:base.WriteProperties

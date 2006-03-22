@@ -16,6 +16,8 @@
  */
 package org.alfresco.service.descriptor;
 
+import org.alfresco.service.license.LicenseDescriptor;
+
 
 /**
  * Service for retrieving meta-data about Alfresco stack.
@@ -40,4 +42,12 @@ public interface DescriptorService
      * @return  repository descriptor
      */
     public Descriptor getInstalledRepositoryDescriptor();
+    
+    /**
+     * Gets the License Service
+     * 
+     * @return  the license service
+     */
+    public LicenseDescriptor getLicenseDescriptor();
+    
 }

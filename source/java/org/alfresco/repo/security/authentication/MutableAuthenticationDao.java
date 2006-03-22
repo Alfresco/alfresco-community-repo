@@ -21,8 +21,6 @@ import java.util.Date;
 import net.sf.acegisecurity.providers.dao.AuthenticationDao;
 import net.sf.acegisecurity.providers.dao.SaltSource;
 
-import org.alfresco.service.cmr.repository.StoreRef;
-
 /**
  * A service provider interface to provide both acegi integration via AuthenticationDao and SaltSource
  * and mutability support for user definitions. 
@@ -64,14 +62,6 @@ public interface MutableAuthenticationDao extends AuthenticationDao, SaltSource
      * @return
      */
     public boolean userExists(String userName);
-    
-    
-    /**
-     * Get the store ref where user objects are persisted.
-     * 
-     * @return
-     */
-    public StoreRef getUserStoreRef();
     
     /**
      * Enable/disable a user.

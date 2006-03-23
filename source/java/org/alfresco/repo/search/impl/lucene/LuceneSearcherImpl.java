@@ -255,7 +255,7 @@ public class LuceneSearcherImpl extends LuceneBase implements LuceneSearcher
                 }
 
                 return new LuceneResultSet(hits, searcher, nodeService, searchParameters.getAttributePaths().toArray(
-                        new Path[0]));
+                        new Path[0]), searchParameters);
 
             }
             catch (ParseException e)
@@ -290,7 +290,7 @@ public class LuceneSearcherImpl extends LuceneBase implements LuceneSearcher
                 }
                 Hits hits = searcher.search(query);
                 return new LuceneResultSet(hits, searcher, nodeService, searchParameters.getAttributePaths().toArray(
-                        new Path[0]));
+                        new Path[0]), searchParameters);
             }
             catch (SAXPathException e)
             {

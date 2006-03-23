@@ -21,11 +21,16 @@ import java.io.IOException;
 import org.alfresco.repo.search.AbstractResultSet;
 import org.alfresco.repo.search.ResultSetRowIterator;
 import org.alfresco.repo.search.SearcherException;
+import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.PermissionEvaluationMode;
+import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Searcher;
@@ -47,18 +52,21 @@ public class LuceneResultSet extends AbstractResultSet
     
     private NodeService nodeService;
 
+    SearchParameters searchParameters;
+    
     /**
      * Wrap a lucene seach result with node support
      * 
      * @param storeRef
      * @param hits
      */
-    public LuceneResultSet(Hits hits, Searcher searcher, NodeService nodeService, Path[]propertyPaths)
+    public LuceneResultSet(Hits hits, Searcher searcher, NodeService nodeService, Path[]propertyPaths, SearchParameters searchParameters)
     {
         super(propertyPaths);
         this.hits = hits;
         this.searcher = searcher;
         this.nodeService = nodeService;
+        this.searchParameters = searchParameters;
     }
 
     /*
@@ -148,5 +156,11 @@ public class LuceneResultSet extends AbstractResultSet
     public ChildAssociationRef getChildAssocRef(int n)
     {
        return getRow(n).getChildAssocRef();
+    }
+
+    
+    public ResultSetMetaData getResultSetMetaData()
+    {
+        return new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, searchParameters);
     }
 }

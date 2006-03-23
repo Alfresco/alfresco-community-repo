@@ -24,8 +24,12 @@ import java.util.List;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
 
 public class EmptyResultSet implements ResultSet
 {
@@ -86,5 +90,10 @@ public class EmptyResultSet implements ResultSet
     {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException();
+    }
+
+    public ResultSetMetaData getResultSetMetaData()
+    {
+        return new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, new SearchParameters());
     }
 }

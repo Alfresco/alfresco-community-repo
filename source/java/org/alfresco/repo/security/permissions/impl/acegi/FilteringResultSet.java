@@ -25,6 +25,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 
 public class FilteringResultSet extends ACLEntryAfterInvocationProvider implements ResultSet
@@ -32,6 +33,8 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     private ResultSet unfiltered;
 
     private BitSet inclusionMask;
+    
+    private ResultSetMetaData resultSetMetaData;
 
     FilteringResultSet(ResultSet unfiltered)
     {
@@ -244,4 +247,15 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
 
     }
 
+    public ResultSetMetaData getResultSetMetaData()
+    {
+        return resultSetMetaData;
+    }
+
+    public void setResultSetMetaData(ResultSetMetaData resultSetMetaData)
+    {
+        this.resultSetMetaData = resultSetMetaData;
+    }
+
+    
 }

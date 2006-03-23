@@ -31,11 +31,14 @@ import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
 
+import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -336,25 +339,55 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             ResultSet returnedObject) throws AccessDeniedException
 
     {
-        FilteringResultSet filteringResultSet = new FilteringResultSet((ResultSet) returnedObject);
-
         if (returnedObject == null)
         {
             return null;
         }
+        
+        FilteringResultSet filteringResultSet = new FilteringResultSet(returnedObject);
 
+       
         List<ConfigAttributeDefintion> supportedDefinitions = extractSupportedDefinitions(config);
 
+        Integer maxSize = null;
+        if(returnedObject.getResultSetMetaData().getSearchParameters().getLimitBy() == LimitBy.FINAL_SIZE)
+        {
+            maxSize = new Integer(returnedObject.getResultSetMetaData().getSearchParameters().getLimit());
+        }
+        
         if (supportedDefinitions.size() == 0)
         {
-            return returnedObject;
+            if(maxSize == null)
+            {
+               return returnedObject;
+            }
+            else if (returnedObject.length() > maxSize.intValue())
+            {
+                for(int i = 0; i < maxSize.intValue(); i++)
+                {
+                    filteringResultSet.setIncluded(i, true);
+                }
+                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData().getSearchParameters()));
+            }
+            else
+            {
+                for(int i = 0; i < maxSize.intValue(); i++)
+                {
+                    filteringResultSet.setIncluded(i, true);
+                }
+                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData().getSearchParameters()));
+            }
         }
 
+       
+        
         for (int i = 0; i < returnedObject.length(); i++)
         {
+            // All permission checks must pass
+            filteringResultSet.setIncluded(i, true);
+            
             for (ConfigAttributeDefintion cad : supportedDefinitions)
             {
-                filteringResultSet.setIncluded(i, true);
                 NodeRef testNodeRef = null;
                 if (cad.typeString.equals(AFTER_ACL_NODE))
                 {
@@ -365,15 +398,25 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     testNodeRef = returnedObject.getChildAssocRef(i).getParentRef();
                 }
 
-                if (filteringResultSet.getIncluded(i)
+                if (filteringResultSet.getIncluded(i) 
                         && (testNodeRef != null)
                         && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
                 {
                     filteringResultSet.setIncluded(i, false);
                 }
             }
+            
+            // Bug out if we are limiting by size
+            
+            if((maxSize != null) && (filteringResultSet.length() > maxSize.intValue()))
+            {
+                // Renove the last match to fix the correct size
+                filteringResultSet.setIncluded(i, false);
+                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData().getSearchParameters()));
+                return filteringResultSet;
+            }
         }
-
+        filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData().getSearchParameters()));
         return filteringResultSet;
     }
 

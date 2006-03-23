@@ -60,6 +60,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ISO9075;
@@ -1689,7 +1690,7 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                     throw new LuceneIndexException(
                             "Failed to execute query to find content which needs updating in the index", e);
                 }
-                results = new LuceneResultSet(hits, searcher, nodeService, null);
+                results = new LuceneResultSet(hits, searcher, nodeService, null, new SearchParameters());
 
                 for (ResultSetRow row : results)
                 {

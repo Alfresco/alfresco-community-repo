@@ -32,27 +32,53 @@ public class SearchStatement
         super();
     }
     
+    /**
+     * A constructor that takes both arguments.
+     * 
+     * @param language
+     * @param query
+     */
     SearchStatement(String language, String query)
     {
         this.language = language;
         this.query = query;
     }
 
+    /**
+     * Get the query language. 
+     * 
+     * @return
+     */
     public String getLanguage()
     {
         return language;
     }
 
+    /**
+     * Get the query.
+     * 
+     * @return
+     */
     public String getQuery()
     {
         return query;
     }
 
+    /**
+     * Set the query language.
+     * 
+     * @param language - the query language.
+     */
     public void setLanguage(String language)
     {
         this.language = language;
     }
 
+    /**
+     * Set the query string.
+     * 
+     * @param query - the query string.
+     */
     public void setQuery(String query)
     {
         this.query = query;

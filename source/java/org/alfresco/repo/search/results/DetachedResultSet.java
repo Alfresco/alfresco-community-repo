@@ -21,19 +21,26 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.alfresco.repo.search.AbstractResultSet;
+import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 
 public class DetachedResultSet extends AbstractResultSet
 {
     List<ResultSetRow> rows = null;
     
+    ResultSetMetaData rsmd;
+    
     public DetachedResultSet(ResultSet resultSet, Path[] propertyPaths)
     {
         super(propertyPaths);
+        rsmd = resultSet.getResultSetMetaData();
         rows = new ArrayList<ResultSetRow>(resultSet.length());
         for (ResultSetRow row : resultSet)
         {
@@ -64,6 +71,11 @@ public class DetachedResultSet extends AbstractResultSet
     public ChildAssociationRef getChildAssocRef(int n)
     {
         return rows.get(n).getChildAssocRef();
+    }
+
+    public ResultSetMetaData getResultSetMetaData()
+    {
+        return new SimpleResultSetMetaData(rsmd.getLimitedBy(), PermissionEvaluationMode.EAGER, rsmd.getSearchParameters());
     }
 
 }

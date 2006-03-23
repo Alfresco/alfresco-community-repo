@@ -53,26 +53,45 @@ public interface ResultSet extends Iterable<ResultSetRow> // Specfic iterator
     float getScore(int n);
 
     /**
-     * Generate the XML form of this result set
+     * Close the result set.
+     * This must be called to allow the release of underlying resources.
      */
-    // Dom getXML(int page, int pageSize, boolean includeMetaData);
-    /**
-     * Generate as XML for Reading
-     */
-    // Stream getStream(int page, int pageSize, boolean includeMetaData);
-    /**
-     * toString() as above but for the whole set
-     */
-    // String toString();
-    // ResultSetMetaData getMetaData();
     
     void close();
     
+    /**
+     * Get a row from the result set by row index, starting at 0.
+     * 
+     * @param i
+     * @return
+     */
     ResultSetRow getRow(int i);
     
+    /**
+     * Get a list of all the node refs in the result set
+     * @return
+     */
     List<NodeRef> getNodeRefs();
     
+    /**
+     * Get a list of all the child associations in the results set.
+     * 
+     * @return
+     */
     List<ChildAssociationRef> getChildAssocRefs();
     
+    /**
+     * Get the child assoc ref for a particular row.
+     * 
+     * @param n
+     * @return
+     */
     ChildAssociationRef getChildAssocRef(int n);
+    
+    /**
+     * Get the meta data for the results set.
+     * 
+     * @return
+     */
+    ResultSetMetaData getResultSetMetaData();
 }

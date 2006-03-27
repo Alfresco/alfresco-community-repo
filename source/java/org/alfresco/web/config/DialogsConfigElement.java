@@ -124,13 +124,14 @@ public class DialogsConfigElement extends ConfigElementAdapter
       protected String name;
       protected String page;
       protected String managedBean;
+      protected String icon;
       protected String title;
       protected String titleId;
       protected String description;
       protected String descriptionId;
       
       public DialogConfig(String name, String page, String bean, 
-                          String title, String titleId,
+                          String icon, String title, String titleId,
                           String description, String descriptionId)
       {
          // check the mandatory parameters are present
@@ -141,6 +142,7 @@ public class DialogsConfigElement extends ConfigElementAdapter
          this.name = name;
          this.page = page;
          this.managedBean = bean;
+         this.icon = icon;
          this.title = title;
          this.titleId = titleId;
          this.description = description;
@@ -172,6 +174,11 @@ public class DialogsConfigElement extends ConfigElementAdapter
          return this.page;
       }
       
+      public String getIcon()
+      {
+         return this.icon;
+      }
+      
       public String getTitle()
       {
          return this.title;
@@ -192,6 +199,7 @@ public class DialogsConfigElement extends ConfigElementAdapter
          buffer.append(" (name=").append(this.name);
          buffer.append(" page=").append(this.page);
          buffer.append(" managed-bean=").append(this.managedBean);
+         buffer.append(" icon=").append(this.icon);
          buffer.append(" title=").append(this.title);
          buffer.append(" titleId=").append(this.titleId);
          buffer.append(" description=").append(this.description);

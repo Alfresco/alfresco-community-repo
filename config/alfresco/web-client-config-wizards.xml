@@ -1,0 +1,10 @@
+<alfresco-config>
+
+	<config evalutor="string-compare" condition="Wizards">
+      <wizard-container>/jsp/dialog/container.jsp</wizard-container>
+      
+      <wizards>
+      </wizards>
+   </config>
+   
+</alfresco-config>

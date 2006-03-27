@@ -7,6 +7,8 @@
       <constructor-arg>
          <list>
             <value>classpath:alfresco/web-client-config.xml</value>
+            <value>classpath:alfresco/web-client-config-dialogs.xml</value>
+            <value>classpath:alfresco/web-client-config-wizards.xml</value>
             <value>classpath:alfresco/web-client-config-properties.xml</value>
             <value>classpath:alfresco/web-client-config-navigation.xml</value>
             <value>classpath:alfresco/web-client-config-actions.xml</value>

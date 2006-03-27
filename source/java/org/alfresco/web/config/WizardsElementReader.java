@@ -41,6 +41,7 @@ public class WizardsElementReader implements ConfigElementReader
    
    public static final String ATTR_NAME = "name";
    public static final String ATTR_MANAGED_BEAN = "managed-bean";
+   public static final String ATTR_ICON = "icon";
    public static final String ATTR_TITLE = "title";
    public static final String ATTR_TITLE_ID = "title-id";
    public static final String ATTR_DESCRIPTION = "description";
@@ -77,6 +78,7 @@ public class WizardsElementReader implements ConfigElementReader
             
             String name = wizard.attributeValue(ATTR_NAME);
             String bean = wizard.attributeValue(ATTR_MANAGED_BEAN);
+            String icon = wizard.attributeValue(ATTR_ICON);
             String title = wizard.attributeValue(ATTR_TITLE);
             String titleId = wizard.attributeValue(ATTR_TITLE_ID);
             String description = wizard.attributeValue(ATTR_DESCRIPTION);
@@ -84,7 +86,7 @@ public class WizardsElementReader implements ConfigElementReader
             
             // create the wizard config object
             WizardsConfigElement.WizardConfig wizardCfg = new WizardsConfigElement.WizardConfig(
-                  name, bean, title, titleId, description, descriptionId);
+                  name, bean, icon, title, titleId, description, descriptionId);
             
             Iterator<Element> steps = wizard.elementIterator(ELEMENT_STEP);
             while (steps.hasNext())

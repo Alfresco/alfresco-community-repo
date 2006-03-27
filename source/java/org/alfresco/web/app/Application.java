@@ -36,8 +36,11 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.ErrorBean;
+import org.alfresco.web.bean.dialog.DialogManager;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.bean.wizard.WizardManager;
 import org.alfresco.web.config.ClientConfigElement;
 import org.apache.commons.logging.Log;
 import org.springframework.web.context.WebApplicationContext;
@@ -162,6 +165,26 @@ public class Application
             throw new ServletException(error);
          }
       }
+   }
+   
+   /**
+    * Retrieves the DialogManager managed bean 
+    * 
+    * @return DialogManager bean
+    */
+   public static DialogManager getDialogManager()
+   {
+      return (DialogManager)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "DialogManager");
+   }
+   
+   /**
+    * Retrieves the WizardManager managed bean 
+    * 
+    * @return WizardManager bean
+    */
+   public static WizardManager getWizardManager()
+   {
+      return (WizardManager)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "WizardManager");
    }
    
    /**

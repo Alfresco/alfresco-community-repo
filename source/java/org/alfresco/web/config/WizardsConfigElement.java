@@ -158,9 +158,10 @@ public class WizardsConfigElement extends ConfigElementAdapter
    {
       protected String name;
       protected String managedBean;
+      protected String icon;
       protected Map<String, StepConfig> steps = new LinkedHashMap<String, StepConfig>(4);
       
-      public WizardConfig(String name, String bean, 
+      public WizardConfig(String name, String bean, String icon,
                           String title, String titleId,
                           String description, String descriptionId)
       {
@@ -171,6 +172,7 @@ public class WizardsConfigElement extends ConfigElementAdapter
          
          this.name = name;
          this.managedBean = bean;
+         this.icon = icon;
       }
       
       public String getName()
@@ -181,6 +183,11 @@ public class WizardsConfigElement extends ConfigElementAdapter
       public String getManagedBean()
       {
          return this.managedBean;
+      }
+      
+      public String getIcon()
+      {
+         return this.icon;
       }
       
       public void addStep(StepConfig step)
@@ -224,6 +231,7 @@ public class WizardsConfigElement extends ConfigElementAdapter
          StringBuilder buffer = new StringBuilder(super.toString());
          buffer.append(" (name=").append(this.name);
          buffer.append(" managed-bean=").append(this.managedBean);
+         buffer.append(" icon=").append(this.icon);
          buffer.append(" title=").append(this.title);
          buffer.append(" titleId=").append(this.titleId);
          buffer.append(" description=").append(this.description);

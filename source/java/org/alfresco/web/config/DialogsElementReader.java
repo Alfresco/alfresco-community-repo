@@ -35,6 +35,7 @@ public class DialogsElementReader implements ConfigElementReader
    public static final String ATTR_NAME = "name";
    public static final String ATTR_PAGE = "page";
    public static final String ATTR_MANAGED_BEAN = "managed-bean";
+   public static final String ATTR_ICON = "icon";
    public static final String ATTR_TITLE = "title";
    public static final String ATTR_TITLE_ID = "title-id";
    public static final String ATTR_DESCRIPTION = "description";
@@ -68,13 +69,14 @@ public class DialogsElementReader implements ConfigElementReader
             String name = item.attributeValue(ATTR_NAME);
             String page = item.attributeValue(ATTR_PAGE);
             String bean = item.attributeValue(ATTR_MANAGED_BEAN);
+            String icon = item.attributeValue(ATTR_ICON);
             String title = item.attributeValue(ATTR_TITLE);
             String titleId = item.attributeValue(ATTR_TITLE_ID);
             String description = item.attributeValue(ATTR_DESCRIPTION);
             String descriptionId = item.attributeValue(ATTR_DESCRIPTION_ID);
             
             DialogsConfigElement.DialogConfig cfg = new DialogsConfigElement.DialogConfig(
-                  name, page, bean, title, titleId, description, descriptionId);
+                  name, page, bean, icon, title, titleId, description, descriptionId);
             
             configElement.addDialog(cfg);
          }

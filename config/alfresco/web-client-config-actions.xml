@@ -329,8 +329,8 @@
             </permissions>
             <label-id>new_space</label-id>
             <image>/images/icons/create_space.gif</image>
-            <action>createSpace</action>
-            <action-listener>#{NewSpaceDialog.startWizard}</action-listener>
+            <action>dialog:createSpace</action>
+            <!-- <action-listener>#{NewSpaceDialog.startWizard}</action-listener> -->
          </action>
          
          <!-- Create Advanced Space Wizard -->

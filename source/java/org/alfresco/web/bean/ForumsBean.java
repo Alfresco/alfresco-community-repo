@@ -737,7 +737,7 @@ public class ForumsBean implements IContextListener
       {
          // return an overidden outcome which closes the dialog with an outcome
          outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
-                   AlfrescoNavigationHandler.DIALOG_SEPARATOR + outcomeOverride;
+                   AlfrescoNavigationHandler.OUTCOME_SEPARATOR + outcomeOverride;
       }
 
       return outcome;
@@ -788,7 +788,7 @@ public class ForumsBean implements IContextListener
       {
          // return an overidden outcome which closes the dialog with an outcome
          outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
-                   AlfrescoNavigationHandler.DIALOG_SEPARATOR + outcomeOverride;
+                   AlfrescoNavigationHandler.OUTCOME_SEPARATOR + outcomeOverride;
       }
       
       return outcome;
@@ -823,7 +823,7 @@ public class ForumsBean implements IContextListener
       if (outcome != null)
       {
          outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
-                   AlfrescoNavigationHandler.DIALOG_SEPARATOR + outcomeOverride;
+                   AlfrescoNavigationHandler.OUTCOME_SEPARATOR + outcomeOverride;
       }
       
       return outcome;

@@ -1197,7 +1197,7 @@ public class BrowseBean implements IContextListener
             
             // setting the outcome will show the browse view again
             outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
-                      AlfrescoNavigationHandler.DIALOG_SEPARATOR + "browse";
+                      AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
          }
          catch (Throwable err)
          {
@@ -1237,7 +1237,7 @@ public class BrowseBean implements IContextListener
             
             // setting the outcome will show the browse view again
             outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
-                      AlfrescoNavigationHandler.DIALOG_SEPARATOR + "browse";
+                      AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
          }
          catch (Throwable err)
          {

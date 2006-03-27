@@ -154,7 +154,7 @@ public class NewTopicWizard extends NewSpaceWizard
             // outcome of 'showTopic'
             this.browseBean.clickSpace(this.createdNode);
             
-            outcome = outcome + AlfrescoNavigationHandler.DIALOG_SEPARATOR + "showTopic";
+            outcome = outcome + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "showTopic";
          }
       }
       

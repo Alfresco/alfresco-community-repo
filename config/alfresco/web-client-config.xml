@@ -13,6 +13,8 @@
          <element-reader element-name="advanced-search" class="org.alfresco.web.config.AdvancedSearchElementReader" />
          <element-reader element-name="views" class="org.alfresco.web.config.ViewsElementReader" />
          <element-reader element-name="actions" class="org.alfresco.web.config.ActionsElementReader" />
+         <element-reader element-name="dialogs" class="org.alfresco.web.config.DialogsElementReader"/>
+         <element-reader element-name="wizards" class="org.alfresco.web.config.WizardsElementReader"/>
       </element-readers>
    </plug-ins>
    

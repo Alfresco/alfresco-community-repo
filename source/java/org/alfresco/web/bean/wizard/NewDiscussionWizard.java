@@ -173,7 +173,7 @@ public class NewDiscussionWizard extends NewTopicWizard
       // to the browse screen, this also makes sure we don't end up in the forum that
       // just got deleted!
       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
-             AlfrescoNavigationHandler.DIALOG_SEPARATOR + "browse";
+             AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
    }
    
    

@@ -424,11 +424,11 @@ public class BrowseBean implements IContextListener
    {
       // special properties to be used by the value binding components on the page
       node.addPropertyResolver("url", this.resolverUrl);
+      node.addPropertyResolver("webdavUrl", this.resolverWebdavUrl);
+      node.addPropertyResolver("cifsPath", this.resolverCifsPath);
       node.addPropertyResolver("fileType16", this.resolverFileType16);
       node.addPropertyResolver("fileType32", this.resolverFileType32);
       node.addPropertyResolver("size", this.resolverSize);
-      node.addPropertyResolver("webdavUrl", this.resolverWebdavUrl);
-      node.addPropertyResolver("cifsPath", this.resolverCifsPath);
    }
    
    
@@ -557,35 +557,59 @@ public class BrowseBean implements IContextListener
                
                if (typeDef != null)
                {
-                  // look for Space or File nodes
+                  MapNode node = null;
+                  
+                  // look for Space folder node
                   if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true && 
                   	 this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                   {
                      // create our Node representation
-                     MapNode node = new MapNode(nodeRef, this.nodeService, true);
+                     node = new MapNode(nodeRef, this.nodeService, false);
                      node.addPropertyResolver("icon", this.resolverSpaceIcon);
                      node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                      
-                     for (NodeEventListener listener : getNodeEventListeners())
-                     {
-                        listener.created(node, type);
-                     }
-                     
                      this.containerNodes.add(node);
                   }
+                  // look for File content node
                   else if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
                   {
                      // create our Node representation
-                     MapNode node = new MapNode(nodeRef, this.nodeService, true);
-                     
+                     node = new MapNode(nodeRef, this.nodeService, false);
                      setupCommonBindingProperties(node);
                      
+                     this.contentNodes.add(node);
+                  }
+                  // look for File Link object node
+                  else if (ContentModel.TYPE_FILELINK.equals(type))
+                  {
+                     // create our File Link Node representation
+                     node = new MapNode(nodeRef, this.nodeService, false);
+                     node.addPropertyResolver("url", this.resolverLinkUrl);
+                     node.addPropertyResolver("webdavUrl", this.resolverLinkWebdavUrl);
+                     node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
+                     node.addPropertyResolver("fileType16", this.resolverFileType16);
+                     node.addPropertyResolver("fileType32", this.resolverFileType32);
+                     node.addPropertyResolver("size", this.resolverSize);
+                     
+                     this.contentNodes.add(node);
+                  }
+                  else if (ContentModel.TYPE_FOLDERLINK.equals(type))
+                  {
+                     // create our Folder Link Node representation
+                     node = new MapNode(nodeRef, this.nodeService, false);
+                     node.addPropertyResolver("icon", this.resolverSpaceIcon);
+                     node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
+                     
+                     this.containerNodes.add(node);
+                  }
+                  
+                  // inform any listeners that a Node wrapper has been created
+                  if (node != null)
+                  {
                      for (NodeEventListener listener : getNodeEventListeners())
                      {
                         listener.created(node, type);
                      }
-                     
-                     this.contentNodes.add(node);
                   }
                }
                else
@@ -680,41 +704,69 @@ public class BrowseBean implements IContextListener
                
                   if (typeDef != null)
                   {
+                     MapNode node = null;
+                     
                      // look for Space or File nodes
                      if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) && 
                          this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                      {
                         // create our Node representation
-                        MapNode node = new MapNode(nodeRef, this.nodeService, true);
+                        node = new MapNode(nodeRef, this.nodeService, false);
                         
                         node.addPropertyResolver("path", this.resolverPath);
                         node.addPropertyResolver("displayPath", this.resolverDisplayPath);
                         node.addPropertyResolver("icon", this.resolverSpaceIcon);
                         node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                         
-                        for (NodeEventListener listener : getNodeEventListeners())
-                        {
-                           listener.created(node, type);
-                        }
-                        
                         this.containerNodes.add(node);
                      }
                      else if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
                      {
                         // create our Node representation
-                        MapNode node = new MapNode(nodeRef, this.nodeService, true);
+                        node = new MapNode(nodeRef, this.nodeService, false);
                         
                         setupCommonBindingProperties(node);
                         
                         node.addPropertyResolver("path", this.resolverPath);
                         node.addPropertyResolver("displayPath", this.resolverDisplayPath);
                         
+                        this.contentNodes.add(node);
+                     }
+                     // look for File Link object node
+                     else if (ContentModel.TYPE_FILELINK.equals(type))
+                     {
+                        // create our File Link Node representation
+                        node = new MapNode(nodeRef, this.nodeService, false);
+                        node.addPropertyResolver("url", this.resolverLinkUrl);
+                        node.addPropertyResolver("webdavUrl", this.resolverLinkWebdavUrl);
+                        node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
+                        node.addPropertyResolver("fileType16", this.resolverFileType16);
+                        node.addPropertyResolver("fileType32", this.resolverFileType32);
+                        node.addPropertyResolver("size", this.resolverSize);
+                        node.addPropertyResolver("path", this.resolverPath);
+                        node.addPropertyResolver("displayPath", this.resolverDisplayPath);
+                        
+                        this.contentNodes.add(node);
+                     }
+                     else if (ContentModel.TYPE_FOLDERLINK.equals(type))
+                     {
+                        // create our Folder Link Node representation
+                        node = new MapNode(nodeRef, this.nodeService, false);
+                        node.addPropertyResolver("icon", this.resolverSpaceIcon);
+                        node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
+                        node.addPropertyResolver("path", this.resolverPath);
+                        node.addPropertyResolver("displayPath", this.resolverDisplayPath);
+                        
+                        this.containerNodes.add(node);
+                     }
+                     
+                     // inform any listeners that a Node wrapper has been created
+                     if (node != null)
+                     {
                         for (NodeEventListener listener : getNodeEventListeners())
                         {
                            listener.created(node, type);
                         }
-                        
-                        this.contentNodes.add(node);
                      }
                   }
                   else
@@ -794,6 +846,36 @@ public class BrowseBean implements IContextListener
       }
    };
    
+   public NodePropertyResolver resolverLinkDownload = new NodePropertyResolver() {
+      public Object get(Node node) {
+         NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
+         String destName = Repository.getNameForNode(nodeService, destRef);
+         return DownloadContentServlet.generateDownloadURL(node.getNodeRef(), destName);
+      }
+   };
+   
+   public NodePropertyResolver resolverLinkUrl = new NodePropertyResolver() {
+      public Object get(Node node) {
+         NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
+         String destName = Repository.getNameForNode(nodeService, destRef);
+         return DownloadContentServlet.generateBrowserURL(destRef, destName);
+      }
+   };
+   
+   public NodePropertyResolver resolverLinkWebdavUrl = new NodePropertyResolver() {
+      public Object get(Node node) {
+         NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
+         return Utils.generateURL(FacesContext.getCurrentInstance(), new Node(destRef), URLMode.WEBDAV); 
+      }   
+   };
+   
+   public NodePropertyResolver resolverLinkCifsPath = new NodePropertyResolver() {
+      public Object get(Node node) {
+         NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
+         return Utils.generateURL(FacesContext.getCurrentInstance(), new Node(destRef), URLMode.CIFS);
+      }
+   };
+   
    public NodePropertyResolver resolverFileType16 = new NodePropertyResolver() {
       public Object get(Node node) {
          return Utils.getFileTypeImage(node.getName(), true);
@@ -845,7 +927,7 @@ public class BrowseBean implements IContextListener
    public NodePropertyResolver resolverSize = new NodePropertyResolver() {
       public Object get(Node node) {
          ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
-         return (content != null ? new Long(content.getSize()) : null);
+         return (content != null ? new Long(content.getSize()) : 0L);
       }
    };
    
@@ -889,6 +971,13 @@ public class BrowseBean implements IContextListener
          try
          {
             NodeRef ref = new NodeRef(Repository.getStoreRef(), id);
+            
+            // handle special folder link node case
+            if (ContentModel.TYPE_FOLDERLINK.equals(this.nodeService.getType(ref)))
+            {
+               ref = (NodeRef)this.nodeService.getProperty(ref, ContentModel.PROP_LINK_DESTINATION);
+            }
+            
             clickSpace(ref);
          }
          catch (InvalidNodeRefException refErr)
@@ -1096,7 +1185,14 @@ public class BrowseBean implements IContextListener
             Node node = new Node(ref);
             
             // store the URL to for downloading the content
-            node.addPropertyResolver("url", this.resolverDownload);
+            if (ContentModel.TYPE_FILELINK.equals(node.getType()))
+            {
+               node.addPropertyResolver("url", this.resolverLinkDownload);
+            }
+            else
+            {
+               node.addPropertyResolver("url", this.resolverDownload);
+            }
             node.addPropertyResolver("fileType32", this.resolverFileType32);
             node.addPropertyResolver("mimetype", this.resolverMimetype);
             node.addPropertyResolver("size", this.resolverSize);

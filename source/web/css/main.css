@@ -272,11 +272,13 @@ a.headbarLink
 .recordSetRow
 {
    background-color: #FFFFFF;
+   vertical-align: top;
 }
 
 .recordSetRowAlt
 {
    background-color: #DEE5EC;
+   vertical-align: top;
 }
 
 .recordSetHeader

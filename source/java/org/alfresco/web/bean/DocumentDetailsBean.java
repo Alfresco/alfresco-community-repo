@@ -156,7 +156,8 @@ public class DocumentDetailsBean
     */
    public String getBrowserUrl()
    {
-      return Utils.generateURL(FacesContext.getCurrentInstance(), getDocument(), URLMode.HTTP_INLINE);
+      Node doc = getLinkResolvedDocument();
+      return Utils.generateURL(FacesContext.getCurrentInstance(), doc, URLMode.HTTP_INLINE);
    }
 
    /**
@@ -166,7 +167,8 @@ public class DocumentDetailsBean
     */
    public String getDownloadUrl()
    {
-      return Utils.generateURL(FacesContext.getCurrentInstance(), getDocument(), URLMode.HTTP_DOWNLOAD);
+      Node doc = getLinkResolvedDocument();
+      return Utils.generateURL(FacesContext.getCurrentInstance(), doc, URLMode.HTTP_DOWNLOAD);
    }
    
    /**
@@ -176,7 +178,19 @@ public class DocumentDetailsBean
     */
    public String getWebdavUrl()
    {
-      return Utils.generateURL(FacesContext.getCurrentInstance(), getDocument(), URLMode.WEBDAV);
+      Node doc = getLinkResolvedDocument();
+      return Utils.generateURL(FacesContext.getCurrentInstance(), doc, URLMode.WEBDAV);
+   }
+   
+   /**
+    * Returns the CIFS path for the current document
+    * 
+    * @return The CIFS path
+    */
+   public String getCifsPath()
+   {
+      Node doc = getLinkResolvedDocument();
+      return Utils.generateURL(FacesContext.getCurrentInstance(), doc, URLMode.CIFS);
    }
    
    /**
@@ -190,13 +204,19 @@ public class DocumentDetailsBean
    }
    
    /**
-    * Returns the CIFS path for the current document
+    * Resolve the actual document Node from any Link object that may be proxying it
     * 
-    * @return The CIFS path
+    * @return current document Node or document Node resolved from any Link object
     */
-   public String getCifsPath()
+   private Node getLinkResolvedDocument()
    {
-      return Utils.generateURL(FacesContext.getCurrentInstance(), getDocument(), URLMode.CIFS);
+      Node document = getDocument();
+      if (ContentModel.TYPE_FILELINK.equals(document.getType()))
+      {
+         NodeRef destRef = (NodeRef)document.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
+         document = new Node(destRef);
+      }
+      return document;
    }
    
    /**
@@ -1075,19 +1095,21 @@ public class DocumentDetailsBean
     */
    public void takeOwnership(ActionEvent event)
    {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      
       UserTransaction tx = null;
       
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
+         tx = Repository.getUserTransaction(fc);
          tx.begin();
          
          this.ownableService.takeOwnership(getDocument().getNodeRef());
          
-         FacesContext context = FacesContext.getCurrentInstance();
-         String msg = Application.getMessage(context, MSG_SUCCESS_OWNERSHIP);
+         String msg = Application.getMessage(fc, MSG_SUCCESS_OWNERSHIP);
          FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         context.addMessage("document-details:document-props", facesMsg);
+         String formId = Utils.getParentForm(fc, event.getComponent()).getClientId(fc);
+         fc.addMessage(formId + ":document-props", facesMsg);
          
          // commit the transaction
          tx.commit();
@@ -1097,7 +1119,7 @@ public class DocumentDetailsBean
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
+               fc, Repository.ERROR_GENERIC), e.getMessage()), e);
       }
    }
    
@@ -1125,7 +1147,7 @@ public class DocumentDetailsBean
     */
    public Map getTemplateModel()
    {
-      HashMap model = new HashMap(3, 1.0f);
+      HashMap model = new HashMap(2, 1.0f);
       
       FacesContext fc = FacesContext.getCurrentInstance();
       TemplateNode documentNode = new TemplateNode(getDocument().getNodeRef(),

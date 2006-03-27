@@ -523,12 +523,14 @@ public final class Utils
     * The supported values for the usage parameter are of URLMode enum type
     * @see URLMode
     * 
-    * @param context Faces context
-    * @param node The node to generate the URL for
-    * @param usage What the URL is going to be used for 
+    * @param context    Faces context
+    * @param node       The node to generate the URL for
+    * @param name       Name to use for the download file part of the link if any
+    * @param usage      What the URL is going to be used for
+    * 
     * @return The URL for the requested usage without the context path
     */
-   public static String generateURL(FacesContext context, Node node, URLMode usage)
+   public static String generateURL(FacesContext context, Node node, String name, URLMode usage)
    {
       String url = null;
       
@@ -612,13 +614,13 @@ public final class Utils
          
          case HTTP_DOWNLOAD:
          {
-            url = DownloadContentServlet.generateDownloadURL(node.getNodeRef(), node.getName());
+            url = DownloadContentServlet.generateDownloadURL(node.getNodeRef(), name);
             break;
          }
          
          case HTTP_INLINE:
          {
-            url = DownloadContentServlet.generateBrowserURL(node.getNodeRef(), node.getName());
+            url = DownloadContentServlet.generateBrowserURL(node.getNodeRef(), name);
             break;
          }
          
@@ -653,6 +655,23 @@ public final class Utils
    }
    
    /**
+    * Generates a URL for the given usage for the given node.
+    * 
+    * The supported values for the usage parameter are of URLMode enum type
+    * @see URLMode
+    * 
+    * @param context    Faces context
+    * @param node       The node to generate the URL for
+    * @param usage      What the URL is going to be used for
+    * 
+    * @return The URL for the requested usage without the context path
+    */
+   public static String generateURL(FacesContext context, Node node, URLMode usage)
+   {
+      return generateURL(context, node, node.getName(), usage);
+   }
+   
+   /**
     * Build a context path safe image tag for the supplied image path.
     * Image path should be supplied with a leading slash '/'.
     * 
@@ -665,7 +684,8 @@ public final class Utils
     * 
     * @return Populated <code>img</code> tag
     */
-   public static String buildImageTag(FacesContext context, String image, int width, int height, String alt, String onclick)
+   public static String buildImageTag(FacesContext context, String image, int width, int height,
+         String alt, String onclick)
    {
       return buildImageTag(context, image, width, height, alt, onclick, null);
    }
@@ -684,7 +704,8 @@ public final class Utils
     * 
     * @return Populated <code>img</code> tag
     */
-   public static String buildImageTag(FacesContext context, String image, int width, int height, String alt, String onclick, String align)
+   public static String buildImageTag(FacesContext context, String image, int width, int height,
+         String alt, String onclick, String align)
    {
       StringBuilder buf = new StringBuilder(200);
       

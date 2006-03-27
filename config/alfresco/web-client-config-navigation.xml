@@ -26,5 +26,23 @@
          <override from-outcome="deleteSpace" to-view-id="/jsp/forums/delete-topic.jsp" />
       </navigation>
    </config>
-      
+   
+   <config evaluator="node-type" condition="app:filelink">
+      <navigation>
+         <override from-view-id="/jsp/dialog/document-details.jsp" to-view-id="/jsp/dialog/filelink-details.jsp" />
+         <override from-outcome="showDocDetails" to-view-id="/jsp/dialog/filelink-details.jsp" />
+         <override from-outcome="cancelEdit" to-view-id="/jsp/dialog/filelink-details.jsp" />
+         <override from-outcome="finishEdit" to-view-id="/jsp/dialog/filelink-details.jsp" />
+      </navigation>
+   </config>
+   
+   <config evaluator="node-type" condition="app:folderlink">
+      <navigation>
+         <override from-view-id="/jsp/dialog/space-details.jsp" to-view-id="/jsp/dialog/spacelink-details.jsp" />
+         <override from-outcome="showSpaceDetails" to-view-id="/jsp/dialog/spacelink-details.jsp" />
+         <override from-outcome="cancelEdit" to-view-id="/jsp/dialog/spacelink-details.jsp" />
+         <override from-outcome="finishEdit" to-view-id="/jsp/dialog/spacelink-details.jsp" />
+      </navigation>
+   </config>
+   
 </alfresco-config>

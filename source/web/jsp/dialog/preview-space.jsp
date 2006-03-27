@@ -88,11 +88,11 @@
                            <%-- Navigation --%>
                            <td class="separator" width=1></td>
                            <td style="padding-left:4px" width=80>
-                              <a:actionLink value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{SpaceDetailsBean.previousItem}" action="previousItem">
+                              <a:actionLink value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{SpaceDetailsBean.previousItem}">
                                  <f:param name="id" value="#{SpacePreviewBean.id}" />
                               </a:actionLink>
                               <img src="<%=request.getContextPath()%>/images/icons/nav_space.gif" width=24 height=24 align=absmiddle>
-                              <a:actionLink value="#{msg.next_item}" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{SpaceDetailsBean.nextItem}" action="nextItem">
+                              <a:actionLink value="#{msg.next_item}" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{SpaceDetailsBean.nextItem}">
                                  <f:param name="id" value="#{SpacePreviewBean.id}" />
                               </a:actionLink>
                            </td>

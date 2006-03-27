@@ -261,7 +261,7 @@
             <action-listener>#{ClipboardBean.cutNode}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
-               <param name="parent">#{NavigationBean.currentNodeId}</param>
+               <!--<param name="parent">#{NavigationBean.currentNodeId}</param>-->
             </params>
          </action>
          
@@ -272,12 +272,12 @@
             <action-listener>#{ClipboardBean.copyNode}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
-               <param name="parent">#{NavigationBean.currentNodeId}</param>
+               <!--<param name="parent">#{NavigationBean.currentNodeId}</param>-->
             </params>
          </action>
          
          <!-- Cut a document or space to the clipboard, from space details screen -->
-         <action id="cut_space_details">
+         <!--<action id="cut_space_details">
             <permissions>
                <permission allow="true">Delete</permission>
             </permissions>
@@ -288,10 +288,10 @@
                <param name="id">#{actionContext.id}</param>
                <param name="parent">#{SpaceDetailsBean.space}</param>
             </params>
-         </action>
+         </action>-->
          
          <!-- Copy a document or space to the clipboard, from space details screen -->
-         <action id="copy_space_details">
+         <!--<action id="copy_space_details">
             <label-id>copy</label-id>
             <image>/images/icons/copy.gif</image>
             <action-listener>#{ClipboardBean.copyNode}</action-listener>
@@ -299,7 +299,7 @@
                <param name="id">#{actionContext.id}</param>
                <param name="parent">#{SpaceDetailsBean.space}</param>
             </params>
-         </action>
+         </action>-->
          
          <!-- Paste All clipboard items into a space -->
          <action id="paste_all">
@@ -564,6 +564,24 @@
             <action idref="manage_space_users" />
             <action idref="manage_space_rules" />
             <action idref="preview_space" />
+         </action-group>
+         
+         <!-- Actions Menu for File Link Details screen -->
+         <action-group id="filelink_details_actions">
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_doc" />
+            <action idref="take_ownership_doc" />
+            <action idref="manage_content_users" />
+         </action-group>
+         
+         <!-- Actions Menu for Folder Link Details screen -->
+         <action-group id="spacelink_details_actions">
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_doc" />
+            <action idref="take_ownership_space" />
+            <action idref="manage_content_users" />
          </action-group>
          
       </actions>

@@ -264,14 +264,6 @@
          <to-view-id>/jsp/dialog/delete-space.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>nextItem</from-outcome>
-         <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>previousItem</from-outcome>
-         <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>import</from-outcome>
          <to-view-id>/jsp/dialog/import.jsp</to-view-id>
       </navigation-case>
@@ -356,14 +348,6 @@
          <to-view-id>/jsp/wizard/create-action/action.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>nextItem</from-outcome>
-         <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>previousItem</from-outcome>
-         <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>previewContent</from-outcome>
          <to-view-id>/jsp/dialog/preview-file.jsp</to-view-id>
       </navigation-case>
@@ -442,6 +426,53 @@
       <navigation-case>
          <from-outcome>browse</from-outcome>
          <to-view-id>/jsp/dialog/rules.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <!-- File Link object details page navigation -->
+   <navigation-rule>
+      <from-view-id>/jsp/dialog/filelink-details.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>editLinkProperties</from-outcome>
+         <to-view-id>/jsp/dialog/edit-link-properties.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>manageContentUsers</from-outcome>
+         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>deleteFile</from-outcome>
+         <to-view-id>/jsp/dialog/delete-file.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <!-- Space Link object details page navigation -->
+   <navigation-rule>
+      <from-view-id>/jsp/dialog/spacelink-details.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>editLinkProperties</from-outcome>
+         <to-view-id>/jsp/dialog/edit-link-properties.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>manageContentUsers</from-outcome>
+         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>deleteFile</from-outcome>
+         <to-view-id>/jsp/dialog/delete-file.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <!-- Edit Link object properties page navigation -->
+   <navigation-rule>
+      <from-view-id>/jsp/dialog/edit-link-properties.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>cancelEdit</from-outcome>
+         <to-view-id>/jsp/dialog/filelink-details.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>finishEdit</from-outcome>
+         <to-view-id>/jsp/dialog/filelink-details.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -1112,42 +1143,6 @@
       <navigation-case>
          <from-outcome>showTopic</from-outcome>
          <to-view-id>/jsp/forums/topic.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/forums-details.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>nextItem</from-outcome>
-         <to-view-id>/jsp/forums/forums-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>previousItem</from-outcome>
-         <to-view-id>/jsp/forums/forums-details.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/forum-details.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>nextItem</from-outcome>
-         <to-view-id>/jsp/forums/forum-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>previousItem</from-outcome>
-         <to-view-id>/jsp/forums/forum-details.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-
-   <navigation-rule>
-      <from-view-id>/jsp/forums/topic-details.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>nextItem</from-outcome>
-         <to-view-id>/jsp/forums/topic-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>previousItem</from-outcome>
-         <to-view-id>/jsp/forums/topic-details.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

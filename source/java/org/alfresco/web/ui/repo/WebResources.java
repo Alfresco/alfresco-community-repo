@@ -30,6 +30,7 @@ public class WebResources extends org.alfresco.web.ui.common.WebResources
    public static final String IMAGE_COPY        = "/images/icons/copy.gif";
    public static final String IMAGE_CUT         = "/images/icons/cut.gif";
    public static final String IMAGE_PASTE       = "/images/icons/paste.gif";
+   public static final String IMAGE_PASTE_LINK  = "/images/icons/paste_link.gif";
    public static final String IMAGE_LOCK        = "/images/icons/locked.gif";
    public static final String IMAGE_LOCK_OWNER  = "/images/icons/locked_owner.gif";
    public static final String IMAGE_PERSON      = "/images/icons/person.gif";

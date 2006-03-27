@@ -155,7 +155,19 @@ public class SpaceDetailsBean
     */
    public String getWebdavUrl()
    {
-      return Utils.generateURL(FacesContext.getCurrentInstance(), getSpace(), URLMode.WEBDAV);
+      Node space = getLinkResolvedSpace();
+      return Utils.generateURL(FacesContext.getCurrentInstance(), space, URLMode.WEBDAV);
+   }
+   
+   /**
+    * Returns the CIFS path for the current space
+    * 
+    * @return The CIFS path
+    */
+   public String getCifsPath()
+   {
+      Node space = getLinkResolvedSpace();
+      return Utils.generateURL(FacesContext.getCurrentInstance(), space, URLMode.CIFS);
    }
 
    /**
@@ -169,13 +181,19 @@ public class SpaceDetailsBean
    }
    
    /**
-    * Returns the CIFS path for the current space
+    * Resolve the actual space Node from any Link object that may be proxying it
     * 
-    * @return The CIFS path
+    * @return current space Node or space Node resolved from any Link object
     */
-   public String getCifsPath()
+   private Node getLinkResolvedSpace()
    {
-      return Utils.generateURL(FacesContext.getCurrentInstance(), getSpace(), URLMode.CIFS);
+      Node space = getSpace();
+      if (ContentModel.TYPE_FOLDERLINK.equals(space.getType()))
+      {
+         NodeRef destRef = (NodeRef)space.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
+         space = new Node(destRef);
+      }
+      return space;
    }
    
    /**
@@ -312,20 +330,22 @@ public class SpaceDetailsBean
     */
    public void takeOwnership(ActionEvent event)
    {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      
       UserTransaction tx = null;
       
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
+         tx = Repository.getUserTransaction(fc);
          tx.begin();
          
          this.ownableService.takeOwnership(getSpace().getNodeRef());
          
-         FacesContext context = FacesContext.getCurrentInstance();
-         String msg = Application.getMessage(context, MSG_SUCCESS_OWNERSHIP);
+         String msg = Application.getMessage(fc, MSG_SUCCESS_OWNERSHIP);
          FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         context.addMessage("space-details:space-props", facesMsg);
-         
+         String formId = Utils.getParentForm(fc, event.getComponent()).getClientId(fc);
+         fc.addMessage(formId + ":space-props", facesMsg);
+            
          // commit the transaction
          tx.commit();
       }
@@ -334,7 +354,7 @@ public class SpaceDetailsBean
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
+               fc, Repository.ERROR_GENERIC), e.getMessage()), e);
       }
    }
    

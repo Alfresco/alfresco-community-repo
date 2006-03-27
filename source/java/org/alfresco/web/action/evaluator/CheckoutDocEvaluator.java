@@ -16,10 +16,14 @@
  */
 package org.alfresco.web.action.evaluator;
 
+import javax.faces.context.FacesContext;
+
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
  * UI Action Evaluator - Checkout document.
@@ -33,9 +37,13 @@ public final class CheckoutDocEvaluator implements ActionEvaluator
     */
    public boolean evaluate(Node node)
    {
-      return (node.hasPermission(PermissionService.CHECK_OUT) &&
+      DictionaryService dd = Repository.getServiceRegistry(
+            FacesContext.getCurrentInstance()).getDictionaryService();
+      
+      return dd.isSubClass(node.getType(), ContentModel.TYPE_CONTENT) && 
+             ((node.hasPermission(PermissionService.CHECK_OUT) &&
               (node.isLocked() == false &&
-               node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false));
+               node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false)));
    }
 }
 /*

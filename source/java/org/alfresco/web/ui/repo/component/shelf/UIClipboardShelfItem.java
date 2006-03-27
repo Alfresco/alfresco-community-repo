@@ -184,7 +184,7 @@ public class UIClipboardShelfItem extends UIShelfItem
                }
                out.write(Utils.buildImageTag(context, icon, 16, 16, null, null, "absmiddle"));
             }
-            else if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT))
+            else
             {
                String image = Utils.getFileTypeImage(item.Node.getName(), true);
                out.write(Utils.buildImageTag(context, image, null, "absmiddle"));
@@ -200,11 +200,11 @@ public class UIClipboardShelfItem extends UIShelfItem
             out.write(buildActionLink(ACTION_REMOVE_ITEM, i, bundle.getString(MSG_REMOVE_ITEM), WebResources.IMAGE_REMOVE));
             out.write("&nbsp;");
             out.write(buildActionLink(ACTION_PASTE_ITEM, i, bundle.getString(MSG_PASTE_ITEM), WebResources.IMAGE_PASTE));
-            //if (item.Mode == ClipboardStatus.COPY)
-            //{
-            //   out.write("&nbsp;");
-            //   out.write(buildActionLink(ACTION_PASTE_LINK, i, bundle.getString(MSG_PASTE_LINK), WebResources.IMAGE_PASTE_LINK));
-            //}
+            if (item.Mode == ClipboardStatus.COPY)
+            {
+               out.write("&nbsp;");
+               out.write(buildActionLink(ACTION_PASTE_LINK, i, bundle.getString(MSG_PASTE_LINK), WebResources.IMAGE_PASTE_LINK));
+            }
             
             // end actions cell and end row
             out.write("</nobr></td></tr>");

@@ -88,11 +88,11 @@
                            
                            <%-- Navigation --%>
                            <td align=right>
-                              <a:actionLink value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{DocumentDetailsBean.previousItem}" action="previousItem">
+                              <a:actionLink value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{DocumentDetailsBean.previousItem}" action="showDocDetails">
                                  <f:param name="id" value="#{DocumentDetailsBean.id}" />
                               </a:actionLink>
                               <img src="<%=request.getContextPath()%>/images/icons/nav_file.gif" width=24 height=24 align=absmiddle>
-                              <a:actionLink value="#{msg.next_item}" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{DocumentDetailsBean.nextItem}" action="nextItem">
+                              <a:actionLink value="#{msg.next_item}" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{DocumentDetailsBean.nextItem}" action="showDocDetails">
                                  <f:param name="id" value="#{DocumentDetailsBean.id}" />
                               </a:actionLink>
                            </td>
@@ -218,8 +218,7 @@
                                        </td>
                                        <td>
                                           <r:propertySheetGrid id="document-props-locked" value="#{DocumentDetailsBean.document}" var="documentProps" 
-                                                      columns="1" mode="view" labelStyleClass="propertiesLabel" 
-                                                      externalConfig="true" />
+                                                      columns="1" mode="view" labelStyleClass="propertiesLabel" externalConfig="true" />
                                           <h:outputText id="no-inline-msg2" value="<br/>#{msg.not_inline_editable}<br/>"
                                                rendered="#{DocumentDetailsBean.inlineEditable == false}" escape="false" />
                                           <h:messages id="props-locked-msgs" styleClass="errorMessage" layout="table" />
@@ -240,8 +239,7 @@
                               <a:panel label="#{msg.workflow}" id="workflow-panel" facetsId="workflow-panel-facets" progressive="true"
                                        border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" rendered="#{DocumentDetailsBean.approveStepName != null}"
                                        expanded='#{DocumentDetailsBean.panels["workflow-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
-                                 <h:outputText id="workflow-overview" value="#{DocumentDetailsBean.workflowOverviewHTML}" 
-                                               escape="false" />
+                                 <h:outputText id="workflow-overview" value="#{DocumentDetailsBean.workflowOverviewHTML}" escape="false" />
                               </a:panel>
                               <a:panel label="#{msg.workflow}" id="no-workflow-panel" progressive="true"
                                        border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" rendered="#{DocumentDetailsBean.approveStepName == null}"
@@ -338,8 +336,7 @@
                                        border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
                                        rendered="#{DocumentDetailsBean.versionable == false}"
                                        expanded='#{DocumentDetailsBean.panels["version-history-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
-                                 <h:outputText id="no-history-msg" value="#{msg.not_versioned}<br/><br/>" 
-                                               escape="false" />
+                                 <h:outputText id="no-history-msg" value="#{msg.not_versioned}<br/><br/>" escape="false" />
                                  <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write" id="eval_ver">
                                     <a:actionLink id="make-versionable" value="#{msg.allow_versioning}"
                                                   action="#{DocumentDetailsBean.applyVersionable}" 

@@ -44,6 +44,18 @@
       </property-sheet>
    </config>
    
+   <config evaluator="node-type" condition="app:filelink">
+      <property-sheet>
+         <show-property name="destination" converter="org.alfresco.faces.DisplayPathConverter"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="app:folderlink">
+      <property-sheet>
+         <show-property name="destination" converter="org.alfresco.faces.DisplayPathConverter"/>
+      </property-sheet>
+   </config>
+   
    <config evaluator="aspect-name" condition="complianceable">
       <property-sheet>
          <show-property name="removeAfter"/>

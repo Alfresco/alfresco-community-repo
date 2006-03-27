@@ -274,7 +274,10 @@ public final class Repository
       // ignore root node check if not passed in
       boolean foundRoot = (rootNode == null);
       
-      buf.append(prefix);
+      if (prefix != null)
+      {
+         buf.append(prefix);
+      }
       
       // skip first element as it represents repo root '/'
       for (int i=1; i<path.size(); i++)

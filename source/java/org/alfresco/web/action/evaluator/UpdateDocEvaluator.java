@@ -16,9 +16,13 @@
  */
 package org.alfresco.web.action.evaluator;
 
+import javax.faces.context.FacesContext;
+
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
  * UI Action Evaluator - Update document content.
@@ -32,9 +36,13 @@ public final class UpdateDocEvaluator implements ActionEvaluator
     */
    public boolean evaluate(Node node)
    {
-      return (node.isWorkingCopyOwner() == true ||
+      DictionaryService dd = Repository.getServiceRegistry(
+            FacesContext.getCurrentInstance()).getDictionaryService();
+      
+      return dd.isSubClass(node.getType(), ContentModel.TYPE_CONTENT) && 
+             ((node.isWorkingCopyOwner() == true ||
               (node.isLocked() == false &&
-               node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false));
+               node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false)));
    }
 }
 /*

@@ -19,9 +19,11 @@ package org.alfresco.web.action.evaluator;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
  * UI Action Evaluator - Edit document via Webdav.
@@ -36,19 +38,25 @@ public final class EditDocWebDavEvaluator implements ActionEvaluator
    public boolean evaluate(Node node)
    {
       FacesContext fc = FacesContext.getCurrentInstance();
+      DictionaryService dd = Repository.getServiceRegistry(fc).getDictionaryService();
+      
+      boolean result = false;
       
       // if the node is inline editable, the default http behaviour should always be used
-      if (node.hasAspect(ContentModel.ASPECT_INLINEEDITABLE) == false &&
-          "cifs".equals(Application.getClientConfig(fc).getEditLinkType()))
+      if (dd.isSubClass(node.getType(), ContentModel.TYPE_CONTENT))
       {
-         if (node.isWorkingCopyOwner() == true ||
-             (node.isLocked() == false && node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false))
+         if (node.hasAspect(ContentModel.ASPECT_INLINEEDITABLE) == false &&
+             "cifs".equals(Application.getClientConfig(fc).getEditLinkType()))
          {
-            return true;
+            if (node.isWorkingCopyOwner() == true ||
+                  (node.isLocked() == false && node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false))
+            {
+               result = true;
+            }
          }
       }
       
-      return false;
+      return result;
    }
 }
 /*

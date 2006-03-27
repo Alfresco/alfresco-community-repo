@@ -16,8 +16,10 @@
  */
 package org.alfresco.web.bean.clipboard;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,13 +28,16 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.NavigationBean;
@@ -65,6 +70,14 @@ public class ClipboardBean
    public void setFileFolderService(FileFolderService fileFolderService)
    {
       this.fileFolderService = fileFolderService;
+   }
+   
+   /**
+    * @param nodeOperationsService   The NodeOperationsService to set.
+    */
+   public void setNodeOperationsService(CopyService nodeOperationsService)
+   {
+      this.nodeOperationsService = nodeOperationsService;
    }
    
    /**
@@ -218,48 +231,132 @@ public class ClipboardBean
    {
       NodeRef destRef = new NodeRef(Repository.getStoreRef(), this.navigator.getCurrentNodeId());
       
-      // TODO: Should we use primary parent here?
+      DictionaryService dd = Repository.getServiceRegistry(
+            FacesContext.getCurrentInstance()).getDictionaryService();
+      
+      // TODO: Should we be using primary parent here?
       //       We are assuming that the item exists in only a single parent and that the source for
       //       the clipboard operation (e.g. the source folder) is specifically that parent node.
-      //       This does not allow for more than one possible parent node - or for linked objects!
+      //       So does not allow for more than one possible parent node - or for linked objects!
+      //       This code should be refactored to use a parent ID when appropriate. 
       ChildAssociationRef assocRef = this.nodeService.getPrimaryParent(item.Node.getNodeRef());
       
-      if (item.Mode == ClipboardStatus.COPY)
+      // initial name to attempt the copy of the item with
+      String name = item.Node.getName();
+      
+      boolean operationComplete = false;
+      while (operationComplete == false)
       {
-         if (action == UIClipboardShelfItem.ACTION_PASTE_LINK)
+         try
          {
-            if (logger.isDebugEnabled())
-               logger.debug("Attempting to link node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
-            
-            // copy as link was specifically requested by the user
-            this.nodeService.addChild(
-                  destRef,
-                  item.Node.getNodeRef(),
-                  ContentModel.ASSOC_CONTAINS,
-                  assocRef.getQName());
-         }
-         else
-         {
-            if (logger.isDebugEnabled())
-               logger.debug("Attempting to copy node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
+            if (item.Mode == ClipboardStatus.COPY)
+            {
+               if (action == UIClipboardShelfItem.ACTION_PASTE_LINK)
+               {
+                  if (logger.isDebugEnabled())
+                     logger.debug("Attempting to link node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
+                  
+                  // copy as link was specifically requested by the user
+                  
+                  // we create a special Link Object node that has a property to reference the original
+                  // use FileFolderService to check if already exists as using nodeService directly here
+                  String linkTo = Application.getMessage(FacesContext.getCurrentInstance(), MSG_LINK_TO);
+                  
+                  // create the node using the nodeService (can only use FileFolderService for content)
+                  Map<QName, Serializable> props = new HashMap<QName, Serializable>(4, 1.0f);
+                  String linkName = linkTo + ' ' + name;
+                  props.put(ContentModel.PROP_NAME, linkName + ".lnk");
+                  props.put(ContentModel.PROP_LINK_DESTINATION, item.Node.getNodeRef());
+                  if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT))
+                  {
+                     // create File Link node
+                     ChildAssociationRef childRef = this.nodeService.createNode(
+                           destRef,
+                           ContentModel.ASSOC_CONTAINS,
+                           assocRef.getQName(),
+                           ContentModel.TYPE_FILELINK,
+                           props);
                      
-            // call the node ops service to initiate the copy
-            this.fileFolderService.copy(
-                  item.Node.getNodeRef(),
-                  destRef,
-                  null);      // TODO: could add "Copy of ..." here if copy fails
+                     // apply the titled aspect - title and description
+                     Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(2, 1.0f);
+                     titledProps.put(ContentModel.PROP_TITLE, linkName);
+                     titledProps.put(ContentModel.PROP_DESCRIPTION, linkName);
+                     this.nodeService.addAspect(childRef.getChildRef(), ContentModel.ASPECT_TITLED, titledProps);
+                  }
+                  else
+                  {
+                     // create Folder link node
+                     ChildAssociationRef childRef = this.nodeService.createNode(
+                           destRef,
+                           ContentModel.ASSOC_CONTAINS,
+                           assocRef.getQName(),
+                           ContentModel.TYPE_FOLDERLINK,
+                           props);
+                     
+                     // apply the uifacets aspect - icon, title and description props
+                     Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(3, 1.0f);
+                     uiFacetsProps.put(ContentModel.PROP_ICON, "space-icon-link");
+                     uiFacetsProps.put(ContentModel.PROP_TITLE, linkName);
+                     uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, linkName);
+                     this.nodeService.addAspect(childRef.getChildRef(), ContentModel.ASPECT_UIFACETS, uiFacetsProps);
+                  }
+               }
+               else
+               {
+                  if (logger.isDebugEnabled())
+                     logger.debug("Attempting to copy node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
+                  
+                  if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT))
+                  {
+                     // call the node ops service to initiate the copy
+                     this.fileFolderService.copy(
+                           item.Node.getNodeRef(),
+                           destRef,
+                           name);
+                  }
+                  else
+                  {
+                     this.nodeOperationsService.copy(
+                           item.Node.getNodeRef(),
+                           destRef,
+                           ContentModel.ASSOC_CONTAINS,
+                           assocRef.getQName(),
+                           true);
+                  }
+               }
+            }
+            else
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("Attempting to move node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
+               
+               if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT))
+               {
+                  // move the node
+                  this.fileFolderService.move(
+                        item.Node.getNodeRef(),
+                        destRef,
+                        name);      // TODO: could add "Copy of ..." here if move fails
+               }
+               else
+               {
+                  // move the node
+                  this.nodeService.moveNode(
+                        item.Node.getNodeRef(),
+                        destRef,
+                        ContentModel.ASSOC_CONTAINS,
+                        assocRef.getQName());
+               }
+            }
+            
+            // if we get here without an exception, the clipboard operation was successful
+            operationComplete = true;
          }
-      }
-      else
-      {
-         if (logger.isDebugEnabled())
-            logger.debug("Attempting to move node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
-         
-         // move the node
-         this.fileFolderService.move(
-               item.Node.getNodeRef(),
-               destRef,
-               null);      // TODO: could add "Copy of ..." here if move fails
+         catch (FileExistsException fileExistsErr)
+         {
+            String copyOf = Application.getMessage(FacesContext.getCurrentInstance(), MSG_COPY_OF);
+            name = copyOf + ' ' + name;
+         }
       }
    }
    
@@ -308,13 +405,18 @@ public class ClipboardBean
    private static Log logger = LogFactory.getLog(ClipboardBean.class);
    
    /** I18N messages */
-   private static final String MSG_ERROR_PASTE = "error_paste";
+   private static final String MSG_ERROR_PASTE  = "error_paste";
+   private static final String MSG_COPY_OF      = "copy_of";
+   private static final String MSG_LINK_TO      = "link_to";
    
    /** The NodeService to be used by the bean */
    protected NodeService nodeService;
    
    /** The FileFolderService to be used by the bean */
    protected FileFolderService fileFolderService;
+   
+   /** The NodeOperationsService to be used by the bean */
+   protected CopyService nodeOperationsService;
    
    /** The NavigationBean reference */
    protected NavigationBean navigator;

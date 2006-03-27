@@ -60,6 +60,7 @@ public interface ContentModel
     static final QName PROP_SYS_VERSION_SCHEMA = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "versionSchema");
     static final QName PROP_SYS_LICENSE = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "license");
     
+    
     //
     // Content Model Definitions
     //
@@ -114,8 +115,8 @@ public interface ContentModel
     public final static QName PROP_EXPIRY_DATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "expiryDate");
 	
     // version aspect
-	static final QName ASPECT_VERSIONABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "versionable");
-	static final QName PROP_VERSION_LABEL = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "versionLabel");
+	 static final QName ASPECT_VERSIONABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "versionable");
+	 static final QName PROP_VERSION_LABEL = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "versionLabel");
     static final QName PROP_INITIAL_VERSION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "initialVersion");
     static final QName PROP_AUTO_VERSION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "autoVersion");
 
@@ -142,10 +143,8 @@ public interface ContentModel
     static final QName ASPECT_TEMPLATABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "templatable");
     static final QName PROP_TEMPLATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "template");
     
-    // Dictionary model content type
-    
+    // Dictionary model
     public static final QName TYPE_DICTIONARY_MODEL = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "dictionaryModel");
-    
     public static final QName PROP_MODEL_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelName");
     public static final QName PROP_MODEL_DESCRIPTION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelDescription");
     public static final QName PROP_MODEL_AUTHOR = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelAuthor");
@@ -157,18 +156,22 @@ public interface ContentModel
     public static final QName ASPECT_REFERENCING = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "referencing");
     public static final QName ASSOC_REFERENCES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "references");
     
+    // link object
+    public static final QName TYPE_LINK = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "link");
+    public static final QName PROP_LINK_DESTINATION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "destination");
+    
     //
     // Application Model Definitions
     //
     
-	// workflow
-	static final QName ASPECT_SIMPLE_WORKFLOW = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "simpleworkflow");
-	static final QName PROP_APPROVE_STEP = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "approveStep");
-	static final QName PROP_APPROVE_FOLDER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "approveFolder");
-	static final QName PROP_APPROVE_MOVE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "approveMove");
-	static final QName PROP_REJECT_STEP = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "rejectStep");
-	static final QName PROP_REJECT_FOLDER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "rejectFolder");
-	static final QName PROP_REJECT_MOVE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "rejectMove");
+	 // workflow
+	 static final QName ASPECT_SIMPLE_WORKFLOW = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "simpleworkflow");
+	 static final QName PROP_APPROVE_STEP = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "approveStep");
+	 static final QName PROP_APPROVE_FOLDER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "approveFolder");
+	 static final QName PROP_APPROVE_MOVE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "approveMove");
+	 static final QName PROP_REJECT_STEP = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "rejectStep");
+	 static final QName PROP_REJECT_FOLDER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "rejectFolder");
+	 static final QName PROP_REJECT_MOVE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "rejectMove");
 	
     // ui facets aspect
     static final QName ASPECT_UIFACETS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "uifacets");
@@ -182,7 +185,11 @@ public interface ContentModel
     static final QName ASPECT_CONFIGURABLE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "configurable");
     static final QName TYPE_CONFIGURATIONS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "configurations");
     static final QName ASSOC_CONFIGURATIONS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "configurations");
-        
+    
+    // object links
+    static final QName TYPE_FILELINK = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "filelink");
+    static final QName TYPE_FOLDERLINK = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "folderlink");
+    
 
     //
     // User Model Definitions
@@ -208,6 +215,4 @@ public interface ContentModel
     static final QName PROP_AUTHORITY_NAME = QName.createQName(USER_MODEL_URI, "authorityName");
     static final QName ASSOC_MEMBER = QName.createQName(USER_MODEL_URI, "member");
     static final QName PROP_MEMBERS = QName.createQName(USER_MODEL_URI, "members");
-    
-    
 }

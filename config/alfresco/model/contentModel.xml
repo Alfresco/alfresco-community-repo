@@ -82,53 +82,55 @@
          </properties>
       </type>
       
-  	 <type name="cm:dictionaryModel">
-		 <title>Dictionary Model</title>
-		 <parent>cm:content</parent>
-		 <properties>
-	         <property name="cm:modelName">
-	            <title>Model name</title>
-	            <type>d:qname</type>
-	            <protected>true</protected>
-	         </property>
-	         <property name="cm:modelDescription">
-	            <title>Description</title>
-	            <type>d:text</type>
-	            <protected>true</protected>
-	         </property>
-	         <property name="cm:modelAuthor">
-	            <title>Author</title>
-	            <type>d:text</type>
-	            <protected>true</protected>
-	         </property>
-	         <property name="cm:modelPublishedDate">
-	            <title>Published Date</title>
-	            <type>d:date</type>
-	            <protected>true</protected>
-	         </property>
-	         <property name="cm:modelVersion">
-	            <title>Version</title>
-	            <type>d:text</type>
-	            <protected>true</protected>
-	         </property>
-	         <property name="cm:modelActive">
-	         	<title>Model Active</title>
-	         	<type>d:boolean</type>
-	         	<default>false</default>
-	         </property>	          
-	 	 </properties>
-	 </type>
-
-      <type name="cm:linkfile">
-         <title>Link File</title>
-         <parent>cm:cmobject</parent>
+      <type name="cm:dictionaryModel">
+         <title>Dictionary Model</title>
+         <parent>cm:content</parent>
          <properties>
-            <property name="cm:path">
-               <type>d:path</type>
+            <property name="cm:modelName">
+               <title>Model name</title>
+               <type>d:qname</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:modelDescription">
+               <title>Description</title>
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:modelAuthor">
+               <title>Author</title>
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:modelPublishedDate">
+               <title>Published Date</title>
+               <type>d:date</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:modelVersion">
+               <title>Version</title>
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:modelActive">
+               <title>Model Active</title>
+               <type>d:boolean</type>
+               <default>false</default>
             </property>
          </properties>
       </type>
-
+      
+      <type name="cm:link">
+         <title>Link Object</title>
+         <parent>cm:cmobject</parent>
+         <properties>
+            <property name="cm:destination">
+               <title>Link Destination</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </type>
+      
       <type name="cm:savedquery">
          <title>Saved Query</title>
          <parent>cm:content</parent>

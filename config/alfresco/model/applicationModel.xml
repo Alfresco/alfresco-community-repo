@@ -39,6 +39,16 @@
          <title>Configurations</title>
          <parent>cm:systemfolder</parent>
       </type>
+      
+      <type name="app:filelink">
+         <title>File Link Object</title>
+         <parent>cm:link</parent>
+      </type>
+      
+      <type name="app:folderlink">
+         <title>Folder Link Object</title>
+         <parent>cm:link</parent>
+      </type>
 
 	</types>
 

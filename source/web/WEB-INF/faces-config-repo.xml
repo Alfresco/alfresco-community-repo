@@ -131,6 +131,11 @@
       <converter-class>org.alfresco.web.ui.repo.converter.MimeTypeConverter</converter-class>
    </converter>
    
+   <converter>
+      <converter-id>org.alfresco.faces.DisplayPathConverter</converter-id>
+      <converter-class>org.alfresco.web.ui.repo.converter.DisplayPathConverter</converter-class>
+   </converter>
+   
    
    <!-- ==================== RENDERERS ==================== -->
    <render-kit>

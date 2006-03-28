@@ -145,7 +145,7 @@
                                  </table>
                               </a:panel>
                               
-                              <br/>
+                              <div style="padding:4px"></div>
                               
                               <h:panelGroup id="props-panel-facets">
                                  <f:facet name="title">
@@ -227,7 +227,7 @@
                                  </table>
                               </a:panel>
                               
-                              <br/>
+                              <div style="padding:4px"></div>
                               
                               <h:panelGroup id="workflow-panel-facets">
                                  <f:facet name="title">
@@ -247,7 +247,7 @@
                                  <h:outputText id="no-workflow-msg" value="#{msg.not_in_workflow}" />
                               </a:panel>
                               
-                              <br/>
+                              <div style="padding:4px"></div>
                               
                               <h:panelGroup id="category-panel-facets">
                                  <f:facet name="title">
@@ -276,7 +276,7 @@
                                  </r:permissionEvaluator>
                               </a:panel>
                               
-                              <br/>
+                              <div style="padding:4px"></div>
                               
                               <a:panel label="#{msg.version_history}" id="version-history-panel" progressive="true"
                                        border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" rendered="#{DocumentDetailsBean.versionable}"
@@ -343,7 +343,6 @@
                                                   rendered="#{DocumentDetailsBean.locked == false}" />
                                  </r:permissionEvaluator>
                               </a:panel>
-                              <br/>
                            </td>
                            
                            <td valign="top">

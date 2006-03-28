@@ -40,6 +40,7 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
 
 /**
  * Back bean provided access to the details of a Space
@@ -69,6 +70,21 @@ public class SpaceDetailsBean
    
    /** Selected template Id */
    private String template;
+   
+   private Map<String, Boolean> panels = new HashMap<String, Boolean>(4, 1.0f);
+   
+   
+   // ------------------------------------------------------------------------------
+   // Construction
+   
+   /**
+    * Default constructor
+    */
+   public SpaceDetailsBean()
+   {
+      // initial state of some panels that don't use the default
+      panels.put("rules-panel", false);
+   }
    
    
    // ------------------------------------------------------------------------------
@@ -116,6 +132,22 @@ public class SpaceDetailsBean
    public void setOwnableService(OwnableService ownableService)
    {
       this.ownableService = ownableService;
+   }
+   
+   /**
+    * @return Returns the panels expanded state map.
+    */
+   public Map<String, Boolean> getPanels()
+   {
+      return this.panels;
+   }
+
+   /**
+    * @param panels The panels expanded state map.
+    */
+   public void setPanels(Map<String, Boolean> panels)
+   {
+      this.panels = panels;
    }
    
    /**
@@ -355,6 +387,18 @@ public class SpaceDetailsBean
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                fc, Repository.ERROR_GENERIC), e.getMessage()), e);
+      }
+   }
+   
+   /**
+    * Save the state of the panel that was expanded/collapsed
+    */
+   public void expandPanel(ActionEvent event)
+   {
+      if (event instanceof ExpandedEvent)
+      {
+         String id = event.getComponent().getId();
+         this.panels.put(id, ((ExpandedEvent)event).State);
       }
    }
    

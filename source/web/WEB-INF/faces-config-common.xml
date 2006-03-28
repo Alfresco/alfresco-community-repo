@@ -161,11 +161,6 @@
       <converter-class>org.alfresco.web.ui.common.converter.ByteSizeConverter</converter-class>
    </converter>
    
-   <converter>
-      <converter-id>org.alfresco.faces.DisplayPathConverter</converter-id>
-      <converter-class>org.alfresco.web.ui.common.converter.DisplayPathConverter</converter-class>
-   </converter>
-   
    
    <!-- ==================== RENDERERS ==================== -->
    <render-kit>

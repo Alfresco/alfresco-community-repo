@@ -37,6 +37,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.Utils.URLMode;
 
 /**
  * Backing bean for the edit link properties dialog
@@ -89,6 +90,28 @@ public class LinkPropertiesBean
       NodeRef destRef = (NodeRef)this.editableNode.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
       return Repository.getNamePath(
             this.nodeService, this.nodeService.getPath(destRef), null, "/", null);
+   }
+   
+   /**
+    * Returns the URL to access the details page for the current document link object
+    * 
+    * @return The bookmark URL
+    */
+   public String getFileLinkBookmarkUrl()
+   {
+      NodeRef destRef = (NodeRef)this.browseBean.getDocument().getProperties().get(ContentModel.PROP_LINK_DESTINATION);
+      return Utils.generateURL(FacesContext.getCurrentInstance(), new Node(destRef), URLMode.SHOW_DETAILS);
+   }
+   
+   /**
+    * Returns the URL to access the details page for the current document link object
+    * 
+    * @return The bookmark URL
+    */
+   public String getSpaceLinkDestinationUrl()
+   {
+      NodeRef destRef = (NodeRef)this.browseBean.getActionSpace().getProperties().get(ContentModel.PROP_LINK_DESTINATION);
+      return Utils.generateURL(FacesContext.getCurrentInstance(), new Node(destRef), URLMode.SHOW_DETAILS);
    }
    
    /**

@@ -105,6 +105,33 @@
                         <tr>
                            <td width="100%" valign="top">
                               
+                              <a:panel label="#{msg.links}" id="preview-panel" progressive="true" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       expanded='#{SpaceDetailsBean.panels["links-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
+                                 <table width="100%" cellspacing="2" cellpadding="2" border="0" align="center">
+                                    <tr>
+                                       <td>
+                                          <a:actionLink value="#{msg.view_in_webdav}" href="#{SpaceDetailsBean.webdavUrl}" target="new" id="link1" />
+                                       </td>
+                                       <td>
+                                          <a:actionLink value="#{msg.view_in_cifs}" href="#{SpaceDetailsBean.cifsPath}" target="new" id="link2" />
+                                       </td>
+                                       <td>
+                                          <a href='<%=request.getContextPath()%><a:outputText value="#{SpaceDetailsBean.bookmarkUrl}" id="out1" />' onclick="return false;"><a:outputText value="#{msg.details_page_bookmark}" id="out2" /></a>
+                                       </td>
+                                       <td>
+                                          <a href='<a:outputText value="#{SpaceDetailsBean.nodeRefUrl}" id="out3" />' onclick="return false;"><a:outputText value="#{msg.noderef_link}" id="out4" /></a>
+                                       </td>
+                                    </tr>
+                                    <tr>
+                                       <td colspan=4>
+                                          <a href='<%=request.getContextPath()%><a:outputText value="#{LinkPropertiesBean.spaceLinkDestinationUrl}" id="out5" />'><a:outputText value="#{msg.link_destination_details}" id="out6" /></a>
+                                       </td>
+                                    </tr>
+                                 </table>
+                              </a:panel>
+                              
+                              <div style="padding:4px"></div>
+                              
                               <%-- wrapper comment used by the panel to add additional component facets --%>
                               <h:panelGroup id="props-panel-facets">
                                  <f:facet name="title">
@@ -115,7 +142,8 @@
                                  </f:facet>
                               </h:panelGroup>
                               <a:panel label="#{msg.properties}" id="properties-panel" facetsId="props-panel-facets"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true">
+                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true"
+                                       expanded='#{SpaceDetailsBean.panels["properties-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                     <tr>
                                        <td width=80 align=center>
@@ -146,27 +174,6 @@
                                  </table>
                               </a:panel>
                               
-                              <br/>
-                              <a:panel label="#{msg.links}" id="preview-panel" progressive="true"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE">
-                                 <table width="100%" cellspacing="2" cellpadding="2" border="0" align="center">
-                                    <tr>
-                                       <td>
-                                          <a:actionLink value="#{msg.view_in_webdav}" href="#{SpaceDetailsBean.webdavUrl}" target="new" id="link1" />
-                                       </td>
-                                       <td>
-                                          <a:actionLink value="#{msg.view_in_cifs}" href="#{SpaceDetailsBean.cifsPath}" target="new" id="link2" />
-                                       </td>
-                                       <td>
-                                          <a href='<%=request.getContextPath()%><a:outputText value="#{SpaceDetailsBean.bookmarkUrl}" id="out1" />' onclick="return false;"><a:outputText value="#{msg.details_page_bookmark}" id="out2" /></a>
-                                       </td>
-                                       <td>
-                                          <a href='<a:outputText value="#{SpaceDetailsBean.nodeRefUrl}" id="out3" />' onclick="return false;"><a:outputText value="#{msg.noderef_link}" id="out4" /></a>
-                                       </td>
-                                    </tr>
-                                 </table>
-                              </a:panel>
-                              
                            </td>
                            
                            <td valign="top">
@@ -183,7 +190,8 @@
                               <div style="padding:4px"></div>
                               
                               <%-- Space Actions --%>
-                              <a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" style="text-align:center" progressive="true">
+                              <a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" style="text-align:center" progressive="true"
+                                    expanded='#{SpaceDetailsBean.panels["actions-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <r:actions id="actions_space" value="spacelink_details_actions" context="#{SpaceDetailsBean.space}" verticalSpacing="3" style="white-space:nowrap" />
                               </a:panel>
                            </td>

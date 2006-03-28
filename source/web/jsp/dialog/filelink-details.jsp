@@ -134,10 +134,15 @@
                                           <a href='<a:outputText value="#{DocumentDetailsBean.nodeRefUrl}" id="out3" />' onclick="return false;"><a:outputText value="#{msg.noderef_link}" id="out4" /></a>
                                        </td>
                                     </tr>
+                                    <tr>
+                                       <td colspan=3>
+                                          <a href='<%=request.getContextPath()%><a:outputText value="#{LinkPropertiesBean.fileLinkBookmarkUrl}" id="out5" />'><a:outputText value="#{msg.link_destination_details}" id="out6" /></a>
+                                       </td>
+                                    </tr>
                                  </table>
                               </a:panel>
                               
-                              <br>
+                              <div style="padding:4px"></div>
                               
                               <h:panelGroup id="props-panel-facets">
                                  <f:facet name="title">

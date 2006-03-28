@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.ui.common.converter;
+package org.alfresco.web.ui.repo.converter;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;

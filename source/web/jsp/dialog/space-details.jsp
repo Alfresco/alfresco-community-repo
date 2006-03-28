@@ -114,7 +114,8 @@
                                  </f:facet>
                               </h:panelGroup>
                               <a:panel label="#{msg.dashboard_view}" id="dashboard-panel" progressive="true" facetsId="dashboard-panel-facets"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE">
+                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       expanded='#{SpaceDetailsBean.panels["dashboard-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <table width=100% cellspacing=0 cellpadding=0 border=0>
                                     <tr>
                                        <td align=left>
@@ -132,7 +133,30 @@
                                  </table>
                               </a:panel>
                               
-                              <br/>
+                              <div style="padding:4px"></div>
+                              
+                              <a:panel label="#{msg.links}" id="links-panel" progressive="true"
+                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       expanded='#{SpaceDetailsBean.panels["links-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
+                                 <table width="100%" cellspacing="2" cellpadding="2" border="0" align="center">
+                                    <tr>
+                                       <td>
+                                          <a:actionLink value="#{msg.view_in_webdav}" href="#{SpaceDetailsBean.webdavUrl}" target="new" id="link1" />
+                                       </td>
+                                       <td>
+                                          <a:actionLink value="#{msg.view_in_cifs}" href="#{SpaceDetailsBean.cifsPath}" target="new" id="link2" />
+                                       </td>
+                                       <td>
+                                          <a href='<%=request.getContextPath()%><a:outputText value="#{SpaceDetailsBean.bookmarkUrl}" id="out1" />' onclick="return false;"><a:outputText value="#{msg.details_page_bookmark}" id="out2" /></a>
+                                       </td>
+                                       <td>
+                                          <a href='<a:outputText value="#{SpaceDetailsBean.nodeRefUrl}" id="out3" />' onclick="return false;"><a:outputText value="#{msg.noderef_link}" id="out4" /></a>
+                                       </td>
+                                    </tr>
+                                 </table>
+                              </a:panel>
+                              
+                              <div style="padding:4px"></div>
                               
                               <%-- wrapper comment used by the panel to add additional component facets --%>
                               <h:panelGroup id="props-panel-facets">
@@ -144,7 +168,8 @@
                                  </f:facet>
                               </h:panelGroup>
                               <a:panel label="#{msg.properties}" id="properties-panel" facetsId="props-panel-facets"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true">
+                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true"
+                                       expanded='#{SpaceDetailsBean.panels["properties-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                     <tr>
                                        <td width=80 align=center>
@@ -175,28 +200,8 @@
                                  </table>
                               </a:panel>
                               
-                              <br/>
-                              <a:panel label="#{msg.links}" id="preview-panel" progressive="true"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE">
-                                 <table width="100%" cellspacing="2" cellpadding="2" border="0" align="center">
-                                    <tr>
-                                       <td>
-                                          <a:actionLink value="#{msg.view_in_webdav}" href="#{SpaceDetailsBean.webdavUrl}" target="new" id="link1" />
-                                       </td>
-                                       <td>
-                                          <a:actionLink value="#{msg.view_in_cifs}" href="#{SpaceDetailsBean.cifsPath}" target="new" id="link2" />
-                                       </td>
-                                       <td>
-                                          <a href='<%=request.getContextPath()%><a:outputText value="#{SpaceDetailsBean.bookmarkUrl}" id="out1" />' onclick="return false;"><a:outputText value="#{msg.details_page_bookmark}" id="out2" /></a>
-                                       </td>
-                                       <td>
-                                          <a href='<a:outputText value="#{SpaceDetailsBean.nodeRefUrl}" id="out3" />' onclick="return false;"><a:outputText value="#{msg.noderef_link}" id="out4" /></a>
-                                       </td>
-                                    </tr>
-                                 </table>
-                              </a:panel>
+                              <div style="padding:4px"></div>
                               
-                              <br/>
                               <h:column id="rules-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
@@ -205,7 +210,8 @@
                                  </f:facet>
                               </h:column>
                               <a:panel label="#{msg.rules}" id="rules-panel" facetsId="rules-panel-facets" progressive="true"
-                                       expanded="false" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE">
+                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       expanded='#{SpaceDetailsBean.panels["rules-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <a:richList id="rulesList" viewMode="details" value="#{RulesBean.rules}" var="r"
                                           styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" 
                                           altRowStyleClass="recordSetRowAlt" width="100%" pageSize="10"
@@ -260,7 +266,6 @@
                                     <a:dataPager styleClass="pager" />
                                  </a:richList>
                               </a:panel>
-                              <br/>
                               
                               <%-- TODO: implement this - but READONLY details only! Manage Space Users for edits...
                                          need support for panel with facets - so can hide edit link unless edit permissions
@@ -272,7 +277,7 @@
                                     
                                  </table>
                               </a:panel>
-                              <br/>
+                              <div style="padding:4px"></div>
                               --%>
                               
                               <%-- TBD
@@ -280,7 +285,6 @@
                                        border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE">
                                  <div></div>
                               </a:panel>
-                              <br/>
                               --%>
                            </td>
                            
@@ -298,7 +302,8 @@
                               <div style="padding:4px"></div>
                               
                               <%-- Space Actions --%>
-                              <a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" style="text-align:center" progressive="true">
+                              <a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" style="text-align:center" progressive="true"
+                                    expanded='#{SpaceDetailsBean.panels["actions-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <r:actions id="actions_space" value="space_details_actions" context="#{SpaceDetailsBean.space}" verticalSpacing="3" style="white-space:nowrap" />
                               </a:panel>
                            </td>

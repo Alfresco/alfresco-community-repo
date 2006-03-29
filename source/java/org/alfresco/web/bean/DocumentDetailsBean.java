@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
@@ -37,10 +36,7 @@ import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
-import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
@@ -56,7 +52,6 @@ import org.alfresco.web.bean.wizard.NewRuleWizard;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
-import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
 import org.apache.log4j.Logger;
 
 /**
@@ -64,9 +59,10 @@ import org.apache.log4j.Logger;
  * 
  * @author gavinc
  */
-public class DocumentDetailsBean
+public class DocumentDetailsBean extends BaseDetailsBean
 {
-   private static final String MSG_SUCCESS_OWNERSHIP = "success_ownership";
+   private static final String OUTCOME_RETURN = "showDocDetails";
+   
    private static final String MSG_HAS_FOLLOWING_CATEGORIES = "has_following_categories";
    private static final String MSG_NO_CATEGORIES_APPLIED = "no_categories_applied";
    private static final String MSG_ERROR_ASPECT_INLINEEDITABLE = "error_aspect_inlineeditable";
@@ -79,22 +75,19 @@ public class DocumentDetailsBean
 
    private static Logger logger = Logger.getLogger(DocumentDetailsBean.class);
    
-   protected BrowseBean browseBean;
-   protected NodeService nodeService;
    protected LockService lockService;
    protected CopyService copyService;
    protected VersionService versionService;
-   protected OwnableService ownableService;
-   protected NavigationBean navigator;
    protected CheckOutCheckInService cociService;
-   
-   private Map<String, Boolean> panels = new HashMap<String, Boolean>(5, 1.0f);
    
    private Map<String, Serializable> workflowProperties;
    private NodeRef addedCategory;
    private List categories;
 
 
+   // ------------------------------------------------------------------------------
+   // Construction 
+   
    /**
     * Default constructor
     */
@@ -105,6 +98,10 @@ public class DocumentDetailsBean
       panels.put("category-panel", false);
       panels.put("version-history-panel", false);
    }
+   
+   
+   // ------------------------------------------------------------------------------
+   // Bean property getters and setters 
    
    /**
     * Resets any state that may be held by this bean
@@ -117,26 +114,6 @@ public class DocumentDetailsBean
       // reset the category caches
       this.categories = null;
       this.addedCategory = null;
-   }
-   
-   /**
-    * Returns the id of the current document
-    * 
-    * @return The id
-    */
-   public String getId()
-   {
-      return getDocument().getId();
-   }
-   
-   /**
-    * Returns the name of the current document
-    * 
-    * @return Name of the current document
-    */
-   public String getName()
-   {
-      return getDocument().getName();
    }
    
    /**
@@ -156,7 +133,7 @@ public class DocumentDetailsBean
     */
    public String getBrowserUrl()
    {
-      Node doc = getLinkResolvedDocument();
+      Node doc = getLinkResolvedNode();
       return Utils.generateURL(FacesContext.getCurrentInstance(), doc, URLMode.HTTP_INLINE);
    }
 
@@ -167,40 +144,8 @@ public class DocumentDetailsBean
     */
    public String getDownloadUrl()
    {
-      Node doc = getLinkResolvedDocument();
+      Node doc = getLinkResolvedNode();
       return Utils.generateURL(FacesContext.getCurrentInstance(), doc, URLMode.HTTP_DOWNLOAD);
-   }
-   
-   /**
-    * Returns the WebDAV URL for the current document
-    * 
-    * @return The WebDAV url
-    */
-   public String getWebdavUrl()
-   {
-      Node doc = getLinkResolvedDocument();
-      return Utils.generateURL(FacesContext.getCurrentInstance(), doc, URLMode.WEBDAV);
-   }
-   
-   /**
-    * Returns the CIFS path for the current document
-    * 
-    * @return The CIFS path
-    */
-   public String getCifsPath()
-   {
-      Node doc = getLinkResolvedDocument();
-      return Utils.generateURL(FacesContext.getCurrentInstance(), doc, URLMode.CIFS);
-   }
-   
-   /**
-    * Returns the URL to access the details page for the current document
-    * 
-    * @return The bookmark URL
-    */
-   public String getBookmarkUrl()
-   {
-      return Utils.generateURL(FacesContext.getCurrentInstance(), getDocument(), URLMode.SHOW_DETAILS);
    }
    
    /**
@@ -208,7 +153,7 @@ public class DocumentDetailsBean
     * 
     * @return current document Node or document Node resolved from any Link object
     */
-   private Node getLinkResolvedDocument()
+   protected Node getLinkResolvedNode()
    {
       Node document = getDocument();
       if (ContentModel.TYPE_FILELINK.equals(document.getType()))
@@ -217,16 +162,6 @@ public class DocumentDetailsBean
          document = new Node(destRef);
       }
       return document;
-   }
-   
-   /**
-    * Return the Alfresco NodeRef URL for the current document
-    * 
-    * @return the Alfresco NodeRef URL
-    */
-   public String getNodeRefUrl()
-   {
-      return getDocument().getNodeRef().toString();
    }
    
    /**
@@ -307,7 +242,7 @@ public class DocumentDetailsBean
       {
          // we know for now that the general classifiable aspect only will be
          // applied so we can retrive the categories property direclty
-         Collection categories = (Collection)this.nodeService.getProperty(this.browseBean.getDocument().getNodeRef(), 
+         Collection categories = (Collection)this.nodeService.getProperty(getDocument().getNodeRef(), 
                ContentModel.PROP_CATEGORIES);
          
          if (categories == null || categories.size() == 0)
@@ -348,7 +283,7 @@ public class DocumentDetailsBean
     */
    public void setupCategoriesForEdit(ActionEvent event)
    {
-      this.categories = (List)this.nodeService.getProperty(this.browseBean.getDocument().getNodeRef(), 
+      this.categories = (List)this.nodeService.getProperty(getDocument().getNodeRef(), 
                ContentModel.PROP_CATEGORIES);
    }
    
@@ -582,8 +517,7 @@ public class DocumentDetailsBean
    }
    
    /**
-    * 
-    * @return
+    * Cancel Workflow Edit dialog
     */
    public String cancelWorkflowEdit()
    {
@@ -1006,7 +940,7 @@ public class DocumentDetailsBean
       }
       
       // force recreation of the details view - this means the properties sheet component will reinit
-      return "showDocDetails";
+      return OUTCOME_RETURN;
    }
    
    /**
@@ -1091,53 +1025,19 @@ public class DocumentDetailsBean
    }
    
    /**
-    * Action Handler to take Ownership of the current document
+    * @see org.alfresco.web.bean.BaseDetailsBean#getPropertiesPanelId()
     */
-   public void takeOwnership(ActionEvent event)
+   protected String getPropertiesPanelId()
    {
-      FacesContext fc = FacesContext.getCurrentInstance();
-      
-      UserTransaction tx = null;
-      
-      try
-      {
-         tx = Repository.getUserTransaction(fc);
-         tx.begin();
-         
-         this.ownableService.takeOwnership(getDocument().getNodeRef());
-         
-         String msg = Application.getMessage(fc, MSG_SUCCESS_OWNERSHIP);
-         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         String formId = Utils.getParentForm(fc, event.getComponent()).getClientId(fc);
-         fc.addMessage(formId + ":document-props", facesMsg);
-         
-         // commit the transaction
-         tx.commit();
-      }
-      catch (Throwable e)
-      {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               fc, Repository.ERROR_GENERIC), e.getMessage()), e);
-      }
+      return "document-props";
    }
-   
+
    /**
-    * Save the state of the panel that was expanded/collapsed
+    * @see org.alfresco.web.bean.BaseDetailsBean#getReturnOutcome()
     */
-   public void expandPanel(ActionEvent event)
+   protected String getReturnOutcome()
    {
-      if (event instanceof ExpandedEvent)
-      {
-         String id = event.getComponent().getId();
-         // we prefix some panels with "no-" which we remove to give consistent behaviour in the UI
-         if (id.startsWith("no-") == true)
-         {
-            id = id.substring(3);
-         }
-         this.panels.put(id, ((ExpandedEvent)event).State);
-      }
+      return OUTCOME_RETURN;
    }
    
    /**
@@ -1147,7 +1047,7 @@ public class DocumentDetailsBean
     */
    public Map getTemplateModel()
    {
-      HashMap model = new HashMap(2, 1.0f);
+      Map<String, Object> model = new HashMap<String, Object>(2, 1.0f);
       
       FacesContext fc = FacesContext.getCurrentInstance();
       TemplateNode documentNode = new TemplateNode(getDocument().getNodeRef(),
@@ -1159,15 +1059,6 @@ public class DocumentDetailsBean
       
       return model;
    }
-   
-   /** Template Image resolver helper */
-   private TemplateImageResolver imageResolver = new TemplateImageResolver()
-   {
-       public String resolveImagePathForName(String filename, boolean small)
-       {
-           return Utils.getFileTypeImage(filename, small);
-       }
-   };
    
    /**
     * Returns whether the current document is locked
@@ -1219,49 +1110,23 @@ public class DocumentDetailsBean
    }
    
    /**
+    * Returns the Node this bean is currently representing
+    * 
+    * @return The Node
+    */
+   public Node getNode()
+   {
+      return this.browseBean.getDocument();
+   }
+   
+   /**
     * Returns the document this bean is currently representing
     * 
     * @return The document Node
     */
    public Node getDocument()
    {
-      return this.browseBean.getDocument();
-   }
-   
-   /**
-    * @return Returns the panels expanded state map.
-    */
-   public Map<String, Boolean> getPanels()
-   {
-      return this.panels;
-   }
-
-   /**
-    * @param panels The panels expanded state map.
-    */
-   public void setPanels(Map<String, Boolean> panels)
-   {
-      this.panels = panels;
-   }
-   
-   /**
-    * Sets the BrowseBean instance to use to retrieve the current document
-    * 
-    * @param browseBean BrowseBean instance
-    */
-   public void setBrowseBean(BrowseBean browseBean)
-   {
-      this.browseBean = browseBean;
-   }
-
-   /**
-    * Sets the node service instance the bean should use
-    * 
-    * @param nodeService The NodeService
-    */
-   public void setNodeService(NodeService nodeService)
-   {
-      this.nodeService = nodeService;
+      return this.getNode();
    }
 
    /**
@@ -1295,16 +1160,6 @@ public class DocumentDetailsBean
    }
    
    /**
-    * Sets the ownable service instance the bean should use
-    * 
-    * @param ownableService The OwnableService
-    */
-   public void setOwnableService(OwnableService ownableService)
-   {
-      this.ownableService = ownableService;
-   }
-   
-   /**
     * Sets the checkincheckout service instance the bean should use
     * 
     * @param cociService The CheckOutCheckInService
@@ -1312,13 +1167,5 @@ public class DocumentDetailsBean
    public void setCheckOutCheckInService(CheckOutCheckInService cociService)
    {
       this.cociService = cociService;
-   }
-   
-   /**
-    * @param navigator The NavigationBean to set.
-    */
-   public void setNavigator(NavigationBean navigator)
-   {
-      this.navigator = navigator;
    }
 }

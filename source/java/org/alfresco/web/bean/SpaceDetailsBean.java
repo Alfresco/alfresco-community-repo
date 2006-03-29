@@ -43,35 +43,16 @@ import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
 
 /**
- * Back bean provided access to the details of a Space
+ * Backing bean provided access to the details of a Space
  * 
  * @author Kevin Roast
  */
-public class SpaceDetailsBean
+public class SpaceDetailsBean extends BaseDetailsBean
 {
-   private static final String MSG_SUCCESS_OWNERSHIP = "success_ownership";
-   
    private static final String OUTCOME_RETURN = "showSpaceDetails";
 
-   /** BrowseBean instance */
-   protected BrowseBean browseBean;
-   
-   /** The NavigationBean bean reference */
-   protected NavigationBean navigator;
-   
    /** PermissionService bean reference */
    protected PermissionService permissionService;
-   
-   /** OwnableService bean reference */
-   protected OwnableService ownableService;
-   
-   /** NodeServuce bean reference */
-   protected NodeService nodeService;
-   
-   /** Selected template Id */
-   private String template;
-   
-   private Map<String, Boolean> panels = new HashMap<String, Boolean>(4, 1.0f);
    
    
    // ------------------------------------------------------------------------------
@@ -91,32 +72,6 @@ public class SpaceDetailsBean
    // Bean property getters and setters 
    
    /**
-    * Sets the BrowseBean instance to use to retrieve the current Space
-    * 
-    * @param browseBean BrowseBean instance
-    */
-   public void setBrowseBean(BrowseBean browseBean)
-   {
-      this.browseBean = browseBean;
-   }
-   
-   /**
-    * @param navigator The NavigationBean to set.
-    */
-   public void setNavigator(NavigationBean navigator)
-   {
-      this.navigator = navigator;
-   }
-   
-   /**
-    * @param nodeService   The NodeService to set
-    */
-   public void setNodeService(NodeService nodeService)
-   {
-      this.nodeService = nodeService;
-   }
-   
-   /**
     * @param permissionService      The PermissionService to set.
     */
    public void setPermissionService(PermissionService permissionService)
@@ -125,29 +80,13 @@ public class SpaceDetailsBean
    }
    
    /**
-    * Sets the ownable service instance the bean should use
+    * Returns the Node this bean is currently representing
     * 
-    * @param ownableService The OwnableService
+    * @return The Node
     */
-   public void setOwnableService(OwnableService ownableService)
+   public Node getNode()
    {
-      this.ownableService = ownableService;
-   }
-   
-   /**
-    * @return Returns the panels expanded state map.
-    */
-   public Map<String, Boolean> getPanels()
-   {
-      return this.panels;
-   }
-
-   /**
-    * @param panels The panels expanded state map.
-    */
-   public void setPanels(Map<String, Boolean> panels)
-   {
-      this.panels = panels;
+      return this.browseBean.getActionSpace();
    }
    
    /**
@@ -157,67 +96,15 @@ public class SpaceDetailsBean
     */
    public Node getSpace()
    {
-      return this.browseBean.getActionSpace();
+      return getNode();
    }
    
    /**
-    * Returns the id of the current space
+    * Resolve the actual document Node from any Link object that may be proxying it
     * 
-    * @return The id
+    * @return current document Node or document Node resolved from any Link object
     */
-   public String getId()
-   {
-      return getSpace().getId();
-   }
-   
-   /**
-    * Returns the name of the current space
-    * 
-    * @return Name of the current space
-    */
-   public String getName()
-   {
-      return getSpace().getName();
-   }
-   
-   /**
-    * Returns the WebDAV URL for the current space
-    * 
-    * @return The WebDAV url
-    */
-   public String getWebdavUrl()
-   {
-      Node space = getLinkResolvedSpace();
-      return Utils.generateURL(FacesContext.getCurrentInstance(), space, URLMode.WEBDAV);
-   }
-   
-   /**
-    * Returns the CIFS path for the current space
-    * 
-    * @return The CIFS path
-    */
-   public String getCifsPath()
-   {
-      Node space = getLinkResolvedSpace();
-      return Utils.generateURL(FacesContext.getCurrentInstance(), space, URLMode.CIFS);
-   }
-
-   /**
-    * Returns the URL to access the details page for the current space
-    * 
-    * @return The bookmark URL
-    */
-   public String getBookmarkUrl()
-   {
-      return Utils.generateURL(FacesContext.getCurrentInstance(), getSpace(), URLMode.SHOW_DETAILS);
-   }
-   
-   /**
-    * Resolve the actual space Node from any Link object that may be proxying it
-    * 
-    * @return current space Node or space Node resolved from any Link object
-    */
-   private Node getLinkResolvedSpace()
+   protected Node getLinkResolvedNode()
    {
       Node space = getSpace();
       if (ContentModel.TYPE_FOLDERLINK.equals(space.getType()))
@@ -226,54 +113,6 @@ public class SpaceDetailsBean
          space = new Node(destRef);
       }
       return space;
-   }
-   
-   /**
-    * Return the Alfresco NodeRef URL for the current space
-    * 
-    * @return the Alfresco NodeRef URL
-    */
-   public String getNodeRefUrl()
-   {
-      return getSpace().getNodeRef().toString();
-   }
-
-   /**
-    * @return Returns the template Id.
-    */
-   public String getTemplate()
-   {
-      // return current template if it exists
-      NodeRef ref = (NodeRef)getSpace().getProperties().get(ContentModel.PROP_TEMPLATE);
-      return ref != null ? ref.getId() : this.template;
-   }
-
-   /**
-    * @param template The template Id to set.
-    */
-   public void setTemplate(String template)
-   {
-      this.template = template;
-   }
-   
-   /**
-    * @return true if the current document has the 'templatable' aspect applied and
-    *         references a template that currently exists in the system.
-    */
-   public boolean isTemplatable()
-   {
-      NodeRef templateRef = (NodeRef)getSpace().getProperties().get(ContentModel.PROP_TEMPLATE);
-      return (getSpace().hasAspect(ContentModel.ASPECT_TEMPLATABLE) &&
-              templateRef != null && nodeService.exists(templateRef));
-   }
-   
-   /**
-    * @return String of the NodeRef for the dashboard template used by the space if any 
-    */
-   public String getTemplateRef()
-   {
-      NodeRef ref = (NodeRef)getSpace().getProperties().get(ContentModel.PROP_TEMPLATE);
-      return ref != null ? ref.toString() : null;
    }
    
    /**
@@ -287,120 +126,32 @@ public class SpaceDetailsBean
       HashMap model = new HashMap(1, 1.0f);
       
       FacesContext fc = FacesContext.getCurrentInstance();
-      TemplateNode spaceNode = new TemplateNode(getSpace().getNodeRef(), Repository.getServiceRegistry(fc),
-            new TemplateImageResolver() {
-               public String resolveImagePathForName(String filename, boolean small) {
-                  return Utils.getFileTypeImage(filename, small);
-               }
-            });
+      TemplateNode spaceNode = new TemplateNode(getSpace().getNodeRef(),
+              Repository.getServiceRegistry(fc), imageResolver);
       model.put("space", spaceNode);
       
       return model;
    }
    
+   /**
+    * @see org.alfresco.web.bean.BaseDetailsBean#getPropertiesPanelId()
+    */
+   protected String getPropertiesPanelId()
+   {
+      return "space-props";
+   }
+
+   /**
+    * @see org.alfresco.web.bean.BaseDetailsBean#getReturnOutcome()
+    */
+   protected String getReturnOutcome()
+   {
+      return OUTCOME_RETURN;
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Action event handlers
-   
-   /**
-    * Action handler to apply the selected Template and Templatable aspect to the current Space
-    */
-   public String applyTemplate()
-   {
-      if (this.template != null && this.template.equals(TemplateSupportBean.NO_SELECTION) == false)
-      {
-         try
-         {
-            // apply the templatable aspect if required 
-            if (getSpace().hasAspect(ContentModel.ASPECT_TEMPLATABLE) == false)
-            {
-               this.nodeService.addAspect(getSpace().getNodeRef(), ContentModel.ASPECT_TEMPLATABLE, null);
-            }
-            
-            // get the selected template from the Template Picker
-            NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.template);
-            
-            // set the template NodeRef into the templatable aspect property
-            this.nodeService.setProperty(getSpace().getNodeRef(), ContentModel.PROP_TEMPLATE, templateRef); 
-            
-            // reset space details for next refresh of details page
-            getSpace().reset();
-         }
-         catch (Exception e)
-         {
-            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
-         }
-      }
-      return OUTCOME_RETURN;
-   }
-   
-   /**
-    * Action handler to remove a dashboard template from the current Space
-    */
-   public String removeTemplate()
-   {
-      try
-      {
-         // clear template property
-         this.nodeService.setProperty(getSpace().getNodeRef(), ContentModel.PROP_TEMPLATE, null);
-         this.nodeService.removeAspect(getSpace().getNodeRef(), ContentModel.ASPECT_TEMPLATABLE);
-         
-         // reset space details for next refresh of details page
-         getSpace().reset();
-      }
-      catch (Exception e)
-      {
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
-      }
-      return OUTCOME_RETURN;
-   }
-   
-   /**
-    * Action Handler to take Ownership of the current Space
-    */
-   public void takeOwnership(ActionEvent event)
-   {
-      FacesContext fc = FacesContext.getCurrentInstance();
-      
-      UserTransaction tx = null;
-      
-      try
-      {
-         tx = Repository.getUserTransaction(fc);
-         tx.begin();
-         
-         this.ownableService.takeOwnership(getSpace().getNodeRef());
-         
-         String msg = Application.getMessage(fc, MSG_SUCCESS_OWNERSHIP);
-         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         String formId = Utils.getParentForm(fc, event.getComponent()).getClientId(fc);
-         fc.addMessage(formId + ":space-props", facesMsg);
-            
-         // commit the transaction
-         tx.commit();
-      }
-      catch (Throwable e)
-      {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               fc, Repository.ERROR_GENERIC), e.getMessage()), e);
-      }
-   }
-   
-   /**
-    * Save the state of the panel that was expanded/collapsed
-    */
-   public void expandPanel(ActionEvent event)
-   {
-      if (event instanceof ExpandedEvent)
-      {
-         String id = event.getComponent().getId();
-         this.panels.put(id, ((ExpandedEvent)event).State);
-      }
-   }
    
    /**
     * Navigates to next item in the list of Spaces

@@ -273,7 +273,7 @@
       </navigation-case>
       <navigation-case>
          <from-outcome>applyTemplate</from-outcome>
-         <to-view-id>/jsp/dialog/apply-template.jsp</to-view-id>
+         <to-view-id>/jsp/dialog/apply-space-template.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>previewSpace</from-outcome>
@@ -358,6 +358,10 @@
       <navigation-case>
          <from-outcome>manageContentUsers</from-outcome>
          <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>applyTemplate</from-outcome>
+         <to-view-id>/jsp/dialog/apply-doc-template.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

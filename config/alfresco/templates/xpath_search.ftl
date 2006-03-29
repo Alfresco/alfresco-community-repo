@@ -1,8 +1,8 @@
 <#-- Shows use of the childByNamePath, childrenByXPath and childrenByLuceneSearch API -->
 
-<h3>Template Documents in 'Company Home/Data Dictionary/Content Templates':</h3>
+<h3>Template Documents in 'Company Home/Data Dictionary/Presentation Templates':</h3>
 <table>
-<#list companyhome.childByNamePath["Data Dictionary/Content Templates"].children as child>
+<#list companyhome.childByNamePath["Data Dictionary/Presentation Templates"].children as child>
    <#if child.isDocument>
       <tr><td><a href="/alfresco${child.url}" target="new">${child.properties.name}</a></td></tr>
    </#if>

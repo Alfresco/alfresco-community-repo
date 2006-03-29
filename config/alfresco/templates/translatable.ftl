@@ -4,9 +4,11 @@
    <#if hasAspect(document, "cm:translatable") = 1>
       Yes<br>
       <table>
-      <#list document.assocs["cm:translations"] as t>
-         <tr><td>${t.content}</td></tr>
-      </#list>
+      <#if document.assocs["cm:translations"]?exists>
+         <#list document.assocs["cm:translations"] as t>
+            <tr><td>${t.content}</td></tr>
+         </#list>
+      </#if>
       </table>
    <#else>
       No<br>

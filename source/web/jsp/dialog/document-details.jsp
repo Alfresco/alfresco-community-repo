@@ -116,6 +116,37 @@
                      <table cellspacing="0" cellpadding="3" border="0" width="100%">
                         <tr>
                            <td width="100%" valign="top">
+                              <%-- wrapper comment used by the panel to add additional component facets --%>
+                              <h:panelGroup id="dashboard-panel-facets">
+                                 <f:facet name="title">
+                                    <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write" id="evalChange">
+                                       <a:actionLink id="actModify" value="#{msg.modify}" action="applyTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
+                                       <a:actionLink id="actRemove" value="#{msg.remove}" action="#{DocumentDetailsBean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
+                                    </r:permissionEvaluator>
+                                 </f:facet>
+                              </h:panelGroup>
+                              <a:panel label="#{msg.dashboard_view}" id="dashboard-panel" progressive="true" facetsId="dashboard-panel-facets"
+                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       expanded='#{DocumentDetailsBean.panels["dashboard-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
+                                 <table width=100% cellspacing=0 cellpadding=0 border=0>
+                                    <tr>
+                                       <td align=left>
+                                          <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write" id="evalApply">
+                                             <a:actionLink id="actDashboard" value="#{msg.apply_dashboard}" rendered="#{DocumentDetailsBean.templatable == false}"
+                                                   action="applyTemplate" />
+                                          </r:permissionEvaluator>
+                                          <a:panel id="template-panel" rendered="#{DocumentDetailsBean.templatable == true}">
+                                             <div style="padding:4px;border: 1px dashed #cccccc">
+                                                <r:template id="dashboard" template="#{DocumentDetailsBean.templateRef}" model="#{DocumentDetailsBean.templateModel}" />
+                                             </div>
+                                          </a:panel>
+                                       </td>
+                                    </tr>
+                                 </table>
+                              </a:panel>
+                              
+                              <div style="padding:4px"></div>
+                              
                               <a:panel label="#{msg.view_links}" id="preview-panel" progressive="true"
                                        border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
                                        expanded='#{DocumentDetailsBean.panels["preview-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">

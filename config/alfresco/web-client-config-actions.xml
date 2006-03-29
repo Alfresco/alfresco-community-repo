@@ -142,7 +142,7 @@
             <label-id>preview</label-id>
             <image>/images/icons/preview.gif</image>
             <action-listener>#{BrowseBean.setupContentAction}</action-listener>
-            <action>previewContent</action>
+            <action>dialog:previewContent</action>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -153,7 +153,7 @@
             <label-id>preview</label-id>
             <image>/images/icons/preview.gif</image>
             <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
-            <action>previewSpace</action>
+            <action>dialog:previewSpace</action>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>

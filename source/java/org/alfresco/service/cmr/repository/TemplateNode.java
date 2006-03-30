@@ -66,6 +66,7 @@ public final class TemplateNode implements Serializable
     private final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
     private final static String CONTENT_DEFAULT_URL = "/download/direct/{0}/{1}/{2}/{3}";
     private final static String CONTENT_PROP_URL    = "/download/direct/{0}/{1}/{2}/{3}?property={4}";
+    private final static String FOLDER_BROWSE_URL   = "/navigate/browse/{0}/{1}/{2}";
     
     /** The children of this node */
     private List<TemplateNode> children = null;
@@ -502,22 +503,34 @@ public final class TemplateNode implements Serializable
     }
     
     /**
-     * @return url to the content stream for this node for the default content property
-     *         (@see ContentModel.PROP_CONTENT)
+     * @return For a content document, this method returns the URL to the content stream for
+     *         the default content property (@see ContentModel.PROP_CONTENT)
+     *         <p>
+     *         For a container node, this method return the URL to browse to the folder in the web-client
      */
     public String getUrl()
     {
-        try
+        if (getIsDocument() == true)
         {
-            return MessageFormat.format(CONTENT_DEFAULT_URL, new Object[] {
-                    nodeRef.getStoreRef().getProtocol(),
-                    nodeRef.getStoreRef().getIdentifier(),
-                    nodeRef.getId(),
-                    StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") } );
+           try
+           {
+               return MessageFormat.format(CONTENT_DEFAULT_URL, new Object[] {
+                       nodeRef.getStoreRef().getProtocol(),
+                       nodeRef.getStoreRef().getIdentifier(),
+                       nodeRef.getId(),
+                       StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") } );
+           }
+           catch (UnsupportedEncodingException err)
+           {
+               throw new TemplateException("Failed to encode content URL for node: " + nodeRef, err);
+           }
         }
-        catch (UnsupportedEncodingException err)
+        else
         {
-            throw new TemplateException("Failed to encode content URL for node: " + nodeRef, err);
+           return MessageFormat.format(FOLDER_BROWSE_URL, new Object[] {
+                       nodeRef.getStoreRef().getProtocol(),
+                       nodeRef.getStoreRef().getIdentifier(),
+                       nodeRef.getId() } );
         }
     }
     

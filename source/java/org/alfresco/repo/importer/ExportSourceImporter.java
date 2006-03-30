@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.view.ImporterBinding;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
 import org.dom4j.io.OutputFormat;
@@ -200,6 +201,11 @@ public class ExportSourceImporter implements ImporterJobSPI
         public boolean allowReferenceWithinTransaction()
         {
             return false;
+        }
+
+        public QName[] getExcludedClasses()
+        {
+            return null;
         }
 
     };

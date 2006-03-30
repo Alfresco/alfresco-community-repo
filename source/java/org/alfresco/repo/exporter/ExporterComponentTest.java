@@ -160,12 +160,12 @@ public class ExporterComponentTest extends BaseSpringTest
 //          System.out.println("TestProgress: end value collection: node " + nodeRef + " , property " + property);
         }
         
-        public void value(NodeRef nodeRef, QName property, Object value)
+        public void value(NodeRef nodeRef, QName property, Object value, int index)
         {
 //            System.out.println("TestProgress: single value " + value);
         }
 
-        public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData)
+        public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData, int index)
         {
 //            System.out.println("TestProgress: content stream ");
         }

@@ -401,6 +401,7 @@ public class ImporterComponent
         private ImportPackageHandler streamHandler;
         private NodeImporterStrategy importStrategy;
         private UpdateExistingNodeImporterStrategy updateStrategy;
+        private QName[] excludedClasses;
 
         // Import tracking
         private List<ImportedNodeRef> nodeRefs = new ArrayList<ImportedNodeRef>();
@@ -422,6 +423,16 @@ public class ImporterComponent
             this.streamHandler = streamHandler;
             this.importStrategy = createNodeImporterStrategy(binding == null ? null : binding.getUUIDBinding());
             this.updateStrategy = new UpdateExistingNodeImporterStrategy();
+
+            // initialise list of content models to exclude from import
+            if (binding == null || binding.getExcludedClasses() == null)
+            {
+                this.excludedClasses = new QName[] { ContentModel.ASPECT_REFERENCEABLE, ContentModel.ASPECT_VERSIONABLE };
+            }
+            else
+            {
+                this.excludedClasses = binding.getExcludedClasses();
+            }
         }
 
         /**
@@ -439,6 +450,10 @@ public class ImporterComponent
             else if (uuidBinding.equals(UUID_BINDING.CREATE_NEW))
             {
                 return new CreateNewNodeImporterStrategy(true);
+            }
+            else if (uuidBinding.equals(UUID_BINDING.CREATE_NEW_WITH_UUID))
+            {
+                return new CreateNewNodeImporterStrategy(false);
             }
             else if (uuidBinding.equals(UUID_BINDING.REMOVE_EXISTING))
             {
@@ -652,6 +667,22 @@ public class ImporterComponent
             }
             return referencedRef;
         }
+
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.repo.importer.Importer#isExcludedClass(org.alfresco.service.namespace.QName)
+         */
+        public boolean isExcludedClass(QName className)
+        {
+            for (QName excludedClass : excludedClasses)
+            {
+                if (excludedClass.equals(className))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         
         /* (non-Javadoc)
          * @see org.alfresco.repo.importer.Importer#end()
@@ -670,13 +701,16 @@ public class ImporterComponent
                         List<NodeRef> resolvedRefs = new ArrayList<NodeRef>(unresolvedRefs.size());
                         for (String unresolvedRef : unresolvedRefs)
                         {
-                            NodeRef nodeRef = resolveImportedNodeRef(importedRef.context.getNodeRef(), unresolvedRef);
-                            if (nodeRef == null)
+                            if (unresolvedRef != null)
                             {
-                                // TODO: Probably need an alternative mechanism here e.g. report warning
-                                throw new ImporterException("Failed to find item referenced (in property " + importedRef.property + ") as " + importedRef.value);
+                                NodeRef nodeRef = resolveImportedNodeRef(importedRef.context.getNodeRef(), unresolvedRef);
+                                if (nodeRef == null)
+                                {
+                                    // TODO: Probably need an alternative mechanism here e.g. report warning
+                                    throw new ImporterException("Failed to find item referenced (in property " + importedRef.property + ") as " + importedRef.value);
+                                }
+                                resolvedRefs.add(nodeRef);
                             }
-                            resolvedRefs.add(nodeRef); 
                         }
                         refProperty = (Serializable)resolvedRefs;
                     }
@@ -998,19 +1032,11 @@ public class ImporterComponent
                 }
                 catch(XPathException e)
                 {
-                    // attempt to resolve as a node reference
-                    try
-                    {
-                        NodeRef directRef = new NodeRef(importedRef);
-                        if (nodeService.exists(directRef))
-                        {
-                            nodeRef = directRef;
-                        }
-                    }
-                    catch(AlfrescoRuntimeException e1)
-                    {
-                        // Note: Invalid reference format
-                    }
+                    nodeRef = new NodeRef(importedRef);
+                }
+                catch(AlfrescoRuntimeException e1)
+                {
+                    // Note: Invalid reference format - try path search instead
                 }
             }
             

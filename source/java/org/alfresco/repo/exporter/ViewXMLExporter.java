@@ -17,7 +17,7 @@
 package org.alfresco.repo.exporter;
 
 import java.io.InputStream;
-import java.util.Collection;
+import java.util.List;
 
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -28,6 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.view.Exporter;
@@ -98,6 +99,7 @@ import org.xml.sax.helpers.AttributesImpl;
     // Service dependencies
     private NamespaceService namespaceService;
     private NodeService nodeService;
+    private SearchService searchService;
     private DictionaryService dictionaryService;
     private PermissionService permissionService;
     
@@ -113,11 +115,12 @@ import org.xml.sax.helpers.AttributesImpl;
      * @param nodeService  node service
      * @param contentHandler  content handler
      */
-    ViewXMLExporter(NamespaceService namespaceService, NodeService nodeService,
+    ViewXMLExporter(NamespaceService namespaceService, NodeService nodeService, SearchService searchService,
             DictionaryService dictionaryService, PermissionService permissionService, ContentHandler contentHandler)
     {
         this.namespaceService = namespaceService;
         this.nodeService = nodeService;
+        this.searchService = searchService;
         this.dictionaryService = dictionaryService;
         this.permissionService = permissionService;
         this.contentHandler = contentHandler;
@@ -492,7 +495,7 @@ import org.xml.sax.helpers.AttributesImpl;
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
      */
-    public void value(NodeRef nodeRef, QName property, Object value)
+    public void value(NodeRef nodeRef, QName property, Object value, int index)
     {
         try
         {
@@ -512,12 +515,16 @@ import org.xml.sax.helpers.AttributesImpl;
             // convert node references to paths
             if (value instanceof NodeRef)
             {
-                Path nodeRefPath = createRelativePath(context.getExportOf(), nodeRef, (NodeRef)value);
-                value = (nodeRefPath == null) ? null : nodeRefPath.toPrefixString(namespaceService);
+                NodeRef valueNodeRef = (NodeRef)value;
+                if (nodeRef.getStoreRef().equals(valueNodeRef.getStoreRef()))
+                {
+                    Path nodeRefPath = createRelativePath(context.getExportOf(), nodeRef, valueNodeRef);
+                    value = (nodeRefPath == null) ? null : nodeRefPath.toPrefixString(namespaceService);
+                }
             }
             
-            // output value wrapper if value is null or property data type is ANY
-            if (value == null || valueDataType != null)
+            // output value wrapper if value is null or property data type is ANY or value is part of collection
+            if (value == null || valueDataType != null || index != -1)
             {
                 AttributesImpl attrs = new AttributesImpl();
                 if (value == null)
@@ -539,7 +546,7 @@ import org.xml.sax.helpers.AttributesImpl;
             }
 
             // output value wrapper if property data type is any
-            if (value == null || valueDataType != null)
+            if (value == null || valueDataType != null || index != -1)
             {
                 contentHandler.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUE_LOCALNAME, toPrefixString(VALUE_QNAME));
             }
@@ -551,73 +558,9 @@ import org.xml.sax.helpers.AttributesImpl;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.util.Collection)
-     */
-    public void value(NodeRef nodeRef, QName property, Collection values)
-    {
-        try
-        {
-            PropertyDefinition propDef = dictionaryService.getProperty(property);
-            DataTypeDefinition dataTypeDef = (propDef == null) ? null : propDef.getDataType();
-            
-            // start collection
-            contentHandler.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUES_LOCALNAME, toPrefixString(VALUES_QNAME), EMPTY_ATTRIBUTES);
-            
-            for (Object value : values)
-            {
-                // determine data type of value
-                QName valueDataType = null;
-                if (dataTypeDef == null || dataTypeDef.getName().equals(DataTypeDefinition.ANY))
-                {
-                    dataTypeDef = (value == null) ? null : dictionaryService.getDataType(value.getClass());
-                    if (dataTypeDef != null)
-                    {
-                        valueDataType = dataTypeDef.getName();
-                    }
-                }
-
-                // output value wrapper with datatype
-                AttributesImpl attrs = new AttributesImpl();
-                if (value == null)
-                {
-                    attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_PREFIX, ISNULL_LOCALNAME, ISNULL_QNAME.toPrefixString(), null, "true");
-                }
-                if (valueDataType != null)
-                {
-                    attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_PREFIX, DATATYPE_LOCALNAME, DATATYPE_QNAME.toPrefixString(), null, toPrefixString(valueDataType));
-                }
-                contentHandler.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUE_LOCALNAME, toPrefixString(VALUE_QNAME), attrs);
-
-                // convert node references to paths
-                if (value instanceof NodeRef)
-                {
-                    value = createRelativePath(context.getExportOf(), nodeRef, (NodeRef)value).toPrefixString(namespaceService);
-                }
-                
-                // output value
-                String strValue = (String)DefaultTypeConverter.INSTANCE.convert(String.class, value);
-                if (strValue != null)
-                {
-                    contentHandler.characters(strValue.toCharArray(), 0, strValue.length());
-                }
-
-                // output value wrapper if property data type is any
-                contentHandler.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUE_LOCALNAME, toPrefixString(VALUE_QNAME));
-            }
-
-            // end collection
-            contentHandler.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUES_LOCALNAME, toPrefixString(VALUES_QNAME));
-        }
-        catch (SAXException e)
-        {
-            throw new ExporterException("Failed to process multi-value event - nodeRef " + nodeRef + "; property " + toPrefixString(property), e);
-        }
-    }
-    
-    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#content(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.InputStream)
      */
-    public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData)
+    public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData, int index)
     {
         // TODO: Base64 encode content and send out via Content Handler
     }
@@ -770,9 +713,9 @@ import org.xml.sax.helpers.AttributesImpl;
             return null;
         }
         
-        Path rootPath = nodeService.getPath(rootRef);
-        Path fromPath = nodeService.getPath(fromRef);
-        Path toPath = nodeService.getPath(toRef);
+        Path rootPath = createIndexedPath(rootRef, nodeService.getPath(rootRef));
+        Path fromPath = createIndexedPath(fromRef, nodeService.getPath(fromRef));
+        Path toPath = createIndexedPath(toRef, nodeService.getPath(toRef));
         Path relativePath = null;
 
         try
@@ -840,4 +783,43 @@ import org.xml.sax.helpers.AttributesImpl;
         return relativePath;
     }
 
+
+    /**
+     * Helper to convert a path into an indexed path which uniquely identifies a node
+     * 
+     * @param nodeRef
+     * @param path
+     * @return
+     */
+    private Path createIndexedPath(NodeRef nodeRef, Path path)
+    {
+        // Add indexes for same name siblings
+        // TODO: Look at more efficient approach
+        for (int i = path.size() - 1; i >= 0; i--)
+        {
+            Path.Element pathElement = path.get(i);
+            if (i > 0 && pathElement instanceof Path.ChildAssocElement)
+            {
+                int index = 1;  // for xpath index compatibility
+                String searchPath = path.subPath(i).toPrefixString(namespaceService);
+                List<NodeRef> siblings = searchService.selectNodes(nodeRef, searchPath, null, namespaceService, false);
+                if (siblings.size() > 1)
+                {
+                    ChildAssociationRef childAssoc = ((Path.ChildAssocElement)pathElement).getRef();
+                    NodeRef childRef = childAssoc.getChildRef();
+                    for (NodeRef sibling : siblings)
+                    {
+                        if (sibling.equals(childRef))
+                        {
+                            childAssoc.setNthSibling(index);
+                            break;
+                        }
+                        index++;
+                    }
+                }
+            }
+        }
+        
+        return path;
+    }
 }

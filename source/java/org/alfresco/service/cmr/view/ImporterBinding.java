@@ -16,6 +16,8 @@
  */
 package org.alfresco.service.cmr.view;
 
+import org.alfresco.service.namespace.QName;
+
 
 /**
  * Encapsulation of Import binding parameters
@@ -30,7 +32,7 @@ public interface ImporterBinding
      */
     public enum UUID_BINDING
     {
-        CREATE_NEW, REMOVE_EXISTING, REPLACE_EXISTING, UPDATE_EXISTING, THROW_ON_COLLISION
+        CREATE_NEW, CREATE_NEW_WITH_UUID, REMOVE_EXISTING, REPLACE_EXISTING, UPDATE_EXISTING, THROW_ON_COLLISION
     }
 
     /**
@@ -56,4 +58,11 @@ public interface ImporterBinding
      */
     public String getValue(String key);
 
+    /**
+     * Gets the list of content model classes to exclude from import
+     * 
+     * @return  list of model class qnames to exclude (return null to indicate use of default list)
+     */
+    public QName[] getExcludedClasses();
+    
 }

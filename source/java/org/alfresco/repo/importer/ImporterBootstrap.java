@@ -313,7 +313,7 @@ public class ImporterBootstrap implements ApplicationListener
         }
         
         UserTransaction userTransaction = transactionService.getUserTransaction();
-        authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+        authenticationComponent.setSystemUserAsCurrentUser();
 
         try
         {
@@ -550,7 +550,7 @@ public class ImporterBootstrap implements ApplicationListener
         public UUID_BINDING getUUIDBinding()
         {
             // always use create new strategy for bootstrap import
-            return UUID_BINDING.CREATE_NEW;
+            return UUID_BINDING.CREATE_NEW_WITH_UUID;
         }
 
         /*
@@ -560,6 +560,16 @@ public class ImporterBootstrap implements ApplicationListener
         public boolean allowReferenceWithinTransaction()
         {
             return true;
+        }
+
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterBinding#getExcludedClasses()
+         */
+        public QName[] getExcludedClasses()
+        {
+            // Note: Do not exclude any classes, we want to import all
+            return new QName[] {};
         }
     }
 

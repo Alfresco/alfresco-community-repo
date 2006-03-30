@@ -17,6 +17,7 @@
 package org.alfresco.repo.content;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -241,17 +242,28 @@ public class RoutingContentService implements ContentService
     {
         // get the property value
         ContentData contentData = null;
+        
         Serializable propValue = nodeService.getProperty(nodeRef, propertyQName);
+        if (propValue instanceof Collection)
+        {
+            Collection colPropValue = (Collection)propValue;
+            if (colPropValue.size() > 0)
+            {
+                propValue = (Serializable)colPropValue.iterator().next();
+            }
+        }
         if (propValue instanceof ContentData)
         {
             contentData = (ContentData)propValue;
         }
 
-        // ensure that the node property is of type content
         if (contentData == null)
         {
+            // if no value or a value other content, and a property definition has been provided, ensure that it's CONTENT or ANY
             PropertyDefinition contentPropDef = dictionaryService.getProperty(propertyQName);
-            if (contentPropDef == null || !(contentPropDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            if (contentPropDef != null && 
+                (!(contentPropDef.getDataType().getName().equals(DataTypeDefinition.CONTENT) ||
+                   contentPropDef.getDataType().getName().equals(DataTypeDefinition.ANY))))
             {
                 throw new InvalidTypeException("The node property must be of type content: \n" +
                         "   node: " + nodeRef + "\n" +

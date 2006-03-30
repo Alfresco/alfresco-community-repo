@@ -258,22 +258,22 @@ import org.alfresco.service.namespace.QName;
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
      */
-    public void value(NodeRef nodeRef, QName property, Object value)
+    public void value(NodeRef nodeRef, QName property, Object value, int index)
     {
         for (Exporter exporter : exporters)
         {
-            exporter.value(nodeRef, property, value);
+            exporter.value(nodeRef, property, value, index);
         }
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#content(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.InputStream)
      */
-    public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData)
+    public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData, int index)
     {
         for (Exporter exporter : exporters)
         {
-            exporter.content(nodeRef, property, content, contentData);
+            exporter.content(nodeRef, property, content, contentData, index);
         }
     }
     

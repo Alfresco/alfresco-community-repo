@@ -215,7 +215,7 @@ public class ExporterComponent
         try
         {
             XMLWriter writer = new XMLWriter(viewWriter, format);
-            return new ViewXMLExporter(namespaceService, nodeService, dictionaryService, permissionService, writer);
+            return new ViewXMLExporter(namespaceService, nodeService, searchService, dictionaryService, permissionService, writer);
         }
         catch (UnsupportedEncodingException e)        
         {
@@ -399,14 +399,18 @@ public class ExporterComponent
 
                 if (value instanceof Collection)
                 {
+                    exporter.startValueCollection(nodeRef, property);
+                    int index = 0;
                     for (Object valueInCollection : (Collection)value)
                     {
-                        walkProperty(nodeRef, property, valueInCollection, parameters, exporter);
+                        walkProperty(nodeRef, property, valueInCollection, index, parameters, exporter);
+                        index++;
                     }
+                    exporter.endValueCollection(nodeRef, property);
                 }
                 else
                 {
-                    walkProperty(nodeRef, property, value, parameters, exporter);
+                    walkProperty(nodeRef, property, value, -1, parameters, exporter);
                 }
 
                 // end export of property
@@ -468,10 +472,11 @@ public class ExporterComponent
          * @param nodeRef  
          * @param property
          * @param value
+         * @param index
          * @param parameters
          * @param exporter
          */
-        private void walkProperty(NodeRef nodeRef, QName property, Object value, ExporterCrawlerParameters parameters, Exporter exporter)
+        private void walkProperty(NodeRef nodeRef, QName property, Object value, int index, ExporterCrawlerParameters parameters, Exporter exporter)
         {
             // determine data type of value
             PropertyDefinition propDef = dictionaryService.getProperty(property);
@@ -495,12 +500,12 @@ public class ExporterComponent
                 // Export non content data types
                 try
                 {
-                    exporter.value(nodeRef, property, value);
+                    exporter.value(nodeRef, property, value, index);
                 }
                 catch(TypeConversionException e)
                 {
                     exporter.warning("Value of property " + property + " could not be converted to xml string");
-                    exporter.value(nodeRef, property, value.toString());
+                    exporter.value(nodeRef, property, value.toString(), index);
                 }
             }
             else
@@ -512,7 +517,7 @@ public class ExporterComponent
                     // export an empty url for the content
                     ContentData contentData = (ContentData)value;
                     ContentData noContentURL = new ContentData("", contentData.getMimetype(), contentData.getSize(), contentData.getEncoding());
-                    exporter.content(nodeRef, property, null, noContentURL);
+                    exporter.content(nodeRef, property, null, noContentURL, index);
                     exporter.warning("Skipped content for property " + property + " on node " + nodeRef);
                 }
                 else
@@ -520,7 +525,7 @@ public class ExporterComponent
                     InputStream inputStream = reader.getContentInputStream();
                     try
                     {
-                        exporter.content(nodeRef, property, inputStream, reader.getContentData());
+                        exporter.content(nodeRef, property, inputStream, reader.getContentData(), index);
                     }
                     finally
                     {

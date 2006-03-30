@@ -171,14 +171,26 @@ public interface Exporter
     public void startValueCollection(NodeRef nodeRef, QName property);
 
     /**
-     * Export single valued property
+     * Export property value
      * 
      * @param nodeRef  the node reference
      * @param property  the property name
      * @param value  the value
+     * @param index  value index (or -1, if not part of multi-valued collection)
      */
-    public void value(NodeRef nodeRef, QName property, Object value);
+    public void value(NodeRef nodeRef, QName property, Object value, int index);
 
+    /**
+     * Export content stream property value
+     * 
+     * @param nodeRef  the node reference
+     * @param property  the property name
+     * @param content  the content stream
+     * @param contentData  content descriptor
+     * @param index  value index (or -1, if not part of multi-valued collection)
+     */
+    public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData, int index);
+    
     /**
      * Export end of value collection
      * 
@@ -186,16 +198,6 @@ public interface Exporter
      * @param property  the property name
      */
     public void endValueCollection(NodeRef nodeRef, QName property);
-    
-    /**
-     * Export content stream property
-     * 
-     * @param nodeRef  the node reference
-     * @param property  the property name
-     * @param content  the content stream
-     * @param contentData  content descriptor
-     */
-    public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData);
     
     /**
      * Start export of associations

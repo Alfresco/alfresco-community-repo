@@ -76,6 +76,14 @@ public interface Importer
     public NodeRef resolvePath(String path);
     
     /**
+     * Is excluded Content Model Class?
+     * 
+     * @param  QName  the class name to test
+     * @return  true => the provided class is excluded from import
+     */
+    public boolean isExcludedClass(QName className);
+    
+    /**
      * Signal completion of node import
      * 
      * @param nodeRef  the node ref of the imported node

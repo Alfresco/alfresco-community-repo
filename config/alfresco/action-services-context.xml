@@ -322,5 +322,14 @@
             <ref bean="ContentService" />
         </property>
     </bean>
-
+    
+    <bean id="repository-export" class="org.alfresco.repo.action.executer.RepositoryExporterActionExecuter" parent="action-executer">
+        <property name="publicAction">
+            <value>false</value>
+        </property>
+        <property name="repositoryExporterService">
+            <ref bean="repositoryExporterComponent"/>
+        </property>
+    </bean>
+    
 </beans>

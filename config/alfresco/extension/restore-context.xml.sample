@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <bean id="userBootstrap" parent="userStoreImporter">
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/extension/restore/export_users.acp</prop>
+                </props>
+            </list>
+        </property>
+        <property name="log"><value>true</value></property>
+    </bean>
+
+    <bean id="systemBootstrap" parent="systemStoreImporter">
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/extension/restore/export_system.acp</prop>
+                </props>
+            </list>
+        </property>
+        <property name="log"><value>true</value></property>
+    </bean>
+
+    <bean id="versionBootstrap" parent="versionStoreImporter">
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/extension/restore/export_versions.acp</prop>
+                </props>
+            </list>
+        </property>
+        <property name="log"><value>true</value></property>
+    </bean>
+
+    <bean id="spacesBootstrap" parent="spacesStoreImporter">
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/extension/restore/export_spaces.acp</prop>
+                </props>
+            </list>
+        </property>
+        <property name="log"><value>true</value></property>
+    </bean>
+
+</beans>

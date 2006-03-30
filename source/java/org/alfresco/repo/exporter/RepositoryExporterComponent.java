@@ -1,0 +1,420 @@
+/*
+ * Copyright (C) 2005 Alfresco, Inc.
+ *
+ * Licensed under the Mozilla Public License version 1.1 
+ * with a permitted attribution clause. You may obtain a
+ * copy of the License at
+ *
+ *   http://www.alfresco.org/legal/license.txt
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License.
+ */
+package org.alfresco.repo.exporter;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.model.FileExistsException;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.view.Exporter;
+import org.alfresco.service.cmr.view.ExporterCrawlerParameters;
+import org.alfresco.service.cmr.view.ExporterException;
+import org.alfresco.service.cmr.view.ExporterService;
+import org.alfresco.service.cmr.view.Location;
+import org.alfresco.service.cmr.view.RepositoryExporterService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.TempFileProvider;
+
+
+/**
+ * Full Repository Export Service
+ *  
+ * @author davidc
+ */
+public class RepositoryExporterComponent implements RepositoryExporterService
+{
+    private static final String STOREREF_KEY = "storeRef";
+    private static final String PACKAGENAME_KEY = "packageName";
+    
+    // component dependencies
+    private ExporterService exporterService;
+    private MimetypeService mimetypeService;
+    private FileFolderService fileFolderService;
+    private NodeService nodeService;
+    private List<Properties> exportStores;
+    
+
+    public void setExporterService(ExporterService exporterService)
+    {
+        this.exporterService = exporterService;
+    }
+    
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
+    }
+    
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    public void setStores(List<Properties> exportStores)
+    {
+        this.exportStores = exportStores;
+    }
+    
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.RepositoryExporterService#export()
+     */
+    public FileExportHandle[] export(String packageName)
+    {
+        List<FileExportHandle> exportHandles = exportStores(exportStores, packageName, new TempFileExporter());
+        return exportHandles.toArray(new FileExportHandle[exportHandles.size()]);
+    }
+
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.RepositoryExporterService#export(java.io.File)
+     */
+    public FileExportHandle[] export(File directoryDestination, String packageName)
+    {
+        ParameterCheck.mandatory("directoryDestination", directoryDestination);
+        if (!directoryDestination.isDirectory())
+        {
+            throw new ExporterException("Export location " + directoryDestination.getAbsolutePath() + " is not a directory");
+        }
+        
+        List<FileExportHandle> exportHandles = exportStores(exportStores, packageName, new FileExporter(directoryDestination));
+        return exportHandles.toArray(new FileExportHandle[exportHandles.size()]);
+    }
+
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.view.RepositoryExporterService#export(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public RepositoryExportHandle[] export(NodeRef repositoryDestination, String packageName)
+    {
+        ParameterCheck.mandatory("repositoryDestination", repositoryDestination);
+        FileInfo destInfo = fileFolderService.getFileInfo(repositoryDestination);
+        if (destInfo == null || !destInfo.isFolder())
+        {
+            throw new ExporterException("Repository destination " + repositoryDestination + " is not a folder.");
+        }
+
+        List<FileExportHandle> exportHandles = exportStores(exportStores, packageName, new TempFileExporter());
+        List<RepositoryExportHandle> repoExportHandles = new ArrayList<RepositoryExportHandle>(exportHandles.size());
+        for (FileExportHandle exportHandle : exportHandles)
+        {
+            String description = I18NUtil.getMessage("export.store.package.description", new Object[] { exportHandle.storeRef.getIdentifier() });
+            NodeRef repoExportFile = addExportFile(repositoryDestination, exportHandle.packageName, description, exportHandle.exportFile);
+            RepositoryExportHandle handle = new RepositoryExportHandle();
+            handle.storeRef = exportHandle.storeRef;
+            handle.packageName = exportHandle.packageName;
+            handle.exportFile = repoExportFile;
+            repoExportHandles.add(handle);
+        }
+        
+        return repoExportHandles.toArray(new RepositoryExportHandle[repoExportHandles.size()]);
+    }
+
+
+    /**
+     * Add a file system based .acp file into the repository
+     *
+     * @param repoDestination  location within repository to place .acp file
+     * @param packageName  acp package name
+     * @param packageDescription  acp package description  
+     * @param exportFile  the .acp file
+     * @return  node reference to import .acp file
+     */
+    private NodeRef addExportFile(NodeRef repoDestination, String packageName, String packageDescription, File exportFile)
+    {
+        //
+        // import temp file into repository
+        //
+    
+        // determine if file already exists
+        String fileName = packageName + "." + ACPExportPackageHandler.ACP_EXTENSION;
+        List<String> paths = new ArrayList<String>();
+        paths.add(fileName);
+        try
+        {
+            FileInfo fileInfo = fileFolderService.resolveNamePath(repoDestination, paths);
+            // Note: file already exists - delete 
+            fileFolderService.delete(fileInfo.getNodeRef());
+        }
+        catch (org.alfresco.service.cmr.model.FileNotFoundException e)
+        {
+            // Note: file does not exist - no need to delete
+        }
+        
+        // create acp file in repository
+        NodeRef exportFileNodeRef = null;
+        try
+        {
+            FileInfo fileInfo = fileFolderService.create(repoDestination, fileName, ContentModel.TYPE_CONTENT);
+            ContentWriter writer = fileFolderService.getWriter(fileInfo.getNodeRef());
+            writer.setMimetype(MimetypeMap.MIMETYPE_ACP);
+            writer.putContent(exportFile);
+            exportFileNodeRef = fileInfo.getNodeRef();
+    
+            // add a title for Web Client viewing
+            Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(3, 1.0f);
+            titledProps.put(ContentModel.PROP_TITLE, packageName);
+            titledProps.put(ContentModel.PROP_DESCRIPTION, packageDescription);
+            nodeService.addAspect(exportFileNodeRef, ContentModel.ASPECT_TITLED, titledProps);
+            
+        }
+        catch (FileExistsException e)
+        {
+            // Note: shouldn't get here
+        }
+        
+        return exportFileNodeRef;
+    }
+    
+
+    /**
+     * Contract for exporting a store
+     * 
+     * @author davidc
+     *
+     * @param <ExportHandleType>
+     */
+    private interface ExportStore<ExportHandleType extends ExportHandle>
+    {
+        public ExportHandleType exportStore(ExporterCrawlerParameters exportParameters, String packageName, Exporter progress);
+    }
+    
+    
+    /**
+     * Enumerate list of pre-configured Stores and export one by one
+     * 
+     * @param <ExportHandle>  type of export file handle
+     * @param stores  the list of stores to export
+     * @param exportStore  the exporter call-back for handling the actual export
+     * @return  the list export file handles
+     */
+    private <ExportHandleType extends ExportHandle> List<ExportHandleType> exportStores(List<Properties> stores, String packageName, ExportStore<ExportHandleType> exportStore)
+    {
+        List<ExportHandleType> exportHandles = new ArrayList<ExportHandleType>(stores.size());
+        for (Properties store : stores)
+        {
+            // retrieve store reference to export
+            String storeRefStr = (String)store.get(STOREREF_KEY);
+            if (storeRefStr == null || storeRefStr.length() == 0)
+            {
+                throw new ExporterException("Store Reference has not been provided.");
+            }
+            StoreRef storeRef = new StoreRef(storeRefStr);
+
+            // retrieve package name to export into
+            String storePackageName = (String)store.get(PACKAGENAME_KEY);
+            if (storePackageName == null || storePackageName.length() == 0)
+            {
+                storePackageName = storeRef.getIdentifier();
+            }
+            String completePackageName = (packageName == null) ? storePackageName : packageName + "_" + storePackageName;
+
+            // now export
+            // NOTE: For now, do not provide exporter progress
+            ExporterCrawlerParameters exportParameters = getExportParameters(storeRef);
+            ExportHandleType exportHandle = exportStore.exportStore(exportParameters, completePackageName, null);
+            exportHandles.add(exportHandle);
+        }
+        
+        return exportHandles;
+    }
+    
+    
+    /**
+     * Get export parameters for exporting a complete store
+     *  
+     * @param storeRef  store reference to export
+     * @return  the parameters for exporting the complete store
+     */
+    private ExporterCrawlerParameters getExportParameters(StoreRef storeRef)
+    {
+        ExporterCrawlerParameters parameters = new ExporterCrawlerParameters();
+        parameters.setExportFrom(new Location(storeRef));
+        parameters.setCrawlSelf(true);
+        parameters.setCrawlChildNodes(true);
+        parameters.setCrawlContent(true);
+        parameters.setCrawlAssociations(true);
+        parameters.setCrawlNullProperties(true);
+        parameters.setExcludeNamespaceURIs(new String[] {});
+        return parameters;
+    }
+    
+    
+    /**
+     * Export a Store to a temporary file
+     *  
+     * @author davidc
+     */
+    private class TempFileExporter implements ExportStore<FileExportHandle>
+    {
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.exporter.RepositoryExporterComponent.ExportStore#exportStore(org.alfresco.service.cmr.view.ExporterCrawlerParameters, java.lang.String, org.alfresco.service.cmr.view.Exporter)
+         */
+        public FileExportHandle exportStore(ExporterCrawlerParameters exportParameters, String packageName, Exporter progress)
+        {
+            // create a temporary file to hold the acp export
+            File tempFile = TempFileProvider.createTempFile("repoExp", "." + ACPExportPackageHandler.ACP_EXTENSION);
+
+            // create acp export handler around the temp file
+            File dataFile = new File(packageName);
+            File contentDir = new File(packageName);
+            try
+            {
+                OutputStream outputStream = new FileOutputStream(tempFile);
+                ACPExportPackageHandler acpHandler = new ACPExportPackageHandler(outputStream, dataFile, contentDir, mimetypeService);
+
+                // export the store
+                exporterService.exportView(acpHandler, exportParameters, progress);
+            }
+            catch(FileNotFoundException e)
+            {
+                tempFile.delete();
+                throw new ExporterException("Failed to create temporary file for holding export of store " + exportParameters.getExportFrom().getStoreRef());
+            }
+                
+            // return handle onto temp file
+            FileExportHandle handle = new FileExportHandle();
+            handle.storeRef = exportParameters.getExportFrom().getStoreRef();
+            handle.packageName = packageName;
+            handle.exportFile = tempFile;
+            return handle;
+        };
+    };
+    
+    
+    /**
+     * Export a Store to a file in a specified folder
+     *  
+     * @author davidc
+     */
+    private class FileExporter implements ExportStore<FileExportHandle>
+    {
+        private File directoryDestination;
+        
+        /**
+         * Construct
+         * 
+         * @param directoryDestination  destination file system folder to create export file
+         */
+        public FileExporter(File directoryDestination)
+        {
+            this.directoryDestination = directoryDestination;
+        }
+        
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.exporter.RepositoryExporterComponent.ExportStore#exportStore(org.alfresco.service.cmr.view.ExporterCrawlerParameters, java.lang.String, org.alfresco.service.cmr.view.Exporter)
+         */
+        public FileExportHandle exportStore(ExporterCrawlerParameters exportParameters, String packageName, Exporter progress)
+        {
+            // create a file to hold the acp export
+            File file = new File(directoryDestination, packageName + "." + ACPExportPackageHandler.ACP_EXTENSION);
+
+            // create acp export handler around the temp file
+            File dataFile = new File(packageName);
+            File contentDir = new File(packageName);
+            try
+            {
+                OutputStream outputStream = new FileOutputStream(file);
+                ACPExportPackageHandler acpHandler = new ACPExportPackageHandler(outputStream, dataFile, contentDir, mimetypeService);
+
+                // export the store
+                exporterService.exportView(acpHandler, exportParameters, progress);
+            }
+            catch(FileNotFoundException e)
+            {
+                file.delete();
+                throw new ExporterException("Failed to create file " + file.getAbsolutePath() + " for holding the export of store " + exportParameters.getExportFrom().getStoreRef());
+            }
+                
+            // return handle onto temp file
+            FileExportHandle handle = new FileExportHandle();
+            handle.storeRef = exportParameters.getExportFrom().getStoreRef();
+            handle.packageName = packageName;
+            handle.exportFile = file;
+            return handle;
+        };
+    };
+    
+    
+    /**
+     * Export a store to Repository File
+     * 
+     * @author davidc
+     */
+    private class RepositoryFileExporter implements ExportStore<RepositoryExportHandle>
+    {
+        private TempFileExporter tempFileExporter = new TempFileExporter();
+        private NodeRef repoDestination;
+        
+        /**
+         * Construct
+         * 
+         * @param repoDestination  destination within repository to create export file
+         */
+        public RepositoryFileExporter(NodeRef repoDestination)
+        {
+            this.repoDestination = repoDestination;
+        }
+        
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.exporter.RepositoryExporterComponent.ExportStore#exportStore(org.alfresco.service.cmr.view.ExporterCrawlerParameters, java.lang.String, org.alfresco.service.cmr.view.Exporter)
+         */
+        public RepositoryExportHandle exportStore(ExporterCrawlerParameters exportParameters, String packageName, Exporter progress)
+        {
+            // export acp to temporary file
+            FileExportHandle tempFile = tempFileExporter.exportStore(exportParameters, packageName, progress);
+
+            String description = I18NUtil.getMessage("export.store.package.description", new Object[] { tempFile.storeRef.getIdentifier() });
+            NodeRef repoExportFile = addExportFile(repoDestination, packageName, description, tempFile.exportFile);
+            RepositoryExportHandle handle = new RepositoryExportHandle();
+            handle.storeRef = exportParameters.getExportFrom().getStoreRef();
+            handle.packageName = packageName;
+            handle.exportFile = repoExportFile;
+            return handle;
+        }
+    };
+    
+}

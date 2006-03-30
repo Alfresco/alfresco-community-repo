@@ -459,8 +459,7 @@ public class NodeContext extends ElementContext
      */
     private boolean isImportableClass(QName className)
     {
-        return !(className.equals(ContentModel.ASPECT_REFERENCEABLE) ||
-                 className.equals(ContentModel.ASPECT_VERSIONABLE));
+        return !getImporter().isExcludedClass(className);
     }
     
     /* (non-Javadoc)

@@ -178,7 +178,7 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
             // Otherwise, determine the apropriate implementation to invoke for
             // the service interface method
             Object binding = null;
-            StoreRef storeRef = getStoreRef(args);
+            StoreRef storeRef = getStoreRef(method.getParameterTypes(), args);
             if (storeRef == null)
             {
                 binding = StoreRedirectorProxyFactory.this.defaultBinding;
@@ -224,7 +224,7 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
          * @param args the method arguments
          * @return the store type (or null, if one is not specified)
          */
-        private StoreRef getStoreRef(Object[] args)
+        private StoreRef getStoreRef(Class[] argTypes, Object[] args)
         {
             StoreRef storeRef = null;
 
@@ -233,17 +233,17 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
                 return null;
             }
             
-            for (Object arg : args)
+            for (int i = 0; i < argTypes.length; i++)
             {
                 // Extract store type from argument, if store type provided
                 StoreRef argStoreRef = null;
-                if (arg instanceof NodeRef)
+                if (argTypes[i].equals(NodeRef.class))
                 {
-                    argStoreRef = ((NodeRef) arg).getStoreRef();
+                    argStoreRef = ((NodeRef) args[i]).getStoreRef();
                 }
-                else if (arg instanceof StoreRef)
+                else if (argTypes[i].equals(StoreRef.class))
                 {
-                    argStoreRef = ((StoreRef) arg);
+                    argStoreRef = ((StoreRef) args[i]);
                 }
 
                 // Only allow one store type

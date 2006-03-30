@@ -53,6 +53,17 @@
         </property>
     </bean>
 
+    <bean id="versionBootstrap" parent="versionStoreImporter">
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/lightWeightVersionStore.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
     <bean id="spacesBootstrap" parent="spacesStoreImporter">
         <property name="bootstrapViews">
             <list>
@@ -90,11 +101,6 @@
             </list>
         </property>
     </bean>
-
-<!-- 
-    <bean id="versionBootstrap" parent="versionStoreImporter">
-    </bean>
--->
 
     <!-- Descriptor Service -->
 

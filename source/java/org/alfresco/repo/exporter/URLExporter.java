@@ -204,19 +204,19 @@ import org.alfresco.util.ParameterCheck;
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
      */
-    public void value(NodeRef nodeRef, QName property, Object value)
+    public void value(NodeRef nodeRef, QName property, Object value, int index)
     {
-        exporter.value(nodeRef, property, value);
+        exporter.value(nodeRef, property, value, index);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#content(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.InputStream)
      */
-    public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData)
+    public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData, int index)
     {
         // Handle the stream by converting it to a URL and export the URL
         ContentData exportedContentData = streamHandler.exportContent(content, contentData);
-        value(nodeRef, property, exportedContentData);
+        value(nodeRef, property, exportedContentData, index);
     }
 
     /* (non-Javadoc)

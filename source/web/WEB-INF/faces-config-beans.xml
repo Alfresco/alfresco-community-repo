@@ -162,7 +162,7 @@
          <value>#{FileFolderService}</value>
       </managed-property>
       <managed-property>
-         <property-name>nodeOperationsService</property-name>
+         <property-name>copyService</property-name>
          <value>#{CopyService}</value>
       </managed-property>
    </managed-bean>

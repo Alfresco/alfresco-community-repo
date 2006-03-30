@@ -151,6 +151,11 @@
    </servlet>
    
    <servlet>
+      <servlet-name>workflowAction</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.WorkflowActionServlet</servlet-class>
+   </servlet>
+   
+   <servlet>
       <servlet-name>axis</servlet-name>
       <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
       <load-on-startup>5</load-on-startup>
@@ -193,6 +198,11 @@
    <servlet-mapping>
       <servlet-name>templateContent</servlet-name>
       <url-pattern>/template/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>workflowAction</servlet-name>
+      <url-pattern>/workflow/*</url-pattern>
    </servlet-mapping>
    
    <servlet-mapping>

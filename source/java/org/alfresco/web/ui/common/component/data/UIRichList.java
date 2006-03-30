@@ -62,11 +62,10 @@ public class UIRichList extends UIComponentBase implements IDataContainer
          {
             Class clazz = Class.forName(view);
             IRichListRenderer renderer = (IRichListRenderer)clazz.newInstance();
-            UIRichList.viewRenderers.put(renderer.getViewModeID(), renderer);
+            viewRenderers.put(renderer.getViewModeID(), renderer);
             
             if (logger.isDebugEnabled())
-               logger.debug("Added view '" + renderer.getViewModeID() + 
-                            "' to UIRichList");
+               logger.debug("Added view '" + renderer.getViewModeID() + "' to UIRichList");
          }
          catch (Exception e)
          {
@@ -449,7 +448,7 @@ public class UIRichList extends UIComponentBase implements IDataContainer
       IRichListRenderer renderer = null;
       if (getViewMode() != null)
       {
-         renderer = (IRichListRenderer)UIRichList.viewRenderers.get(getViewMode());
+         renderer = (IRichListRenderer)viewRenderers.get(getViewMode());
       }
       return renderer;
    }
@@ -509,7 +508,7 @@ public class UIRichList extends UIComponentBase implements IDataContainer
    // Private data
    
    /** map of available IRichListRenderer instances */
-   private final static Map<String, IRichListRenderer> viewRenderers = new HashMap<String, IRichListRenderer>(5);
+   private final Map<String, IRichListRenderer> viewRenderers = new HashMap<String, IRichListRenderer>(4, 1.0f);
    
    // component state
    private int currentPage = 0;

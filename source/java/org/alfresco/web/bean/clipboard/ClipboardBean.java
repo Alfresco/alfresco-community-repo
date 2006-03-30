@@ -73,11 +73,11 @@ public class ClipboardBean
    }
    
    /**
-    * @param nodeOperationsService   The NodeOperationsService to set.
+    * @param copyService   The CopyService to set.
     */
-   public void setNodeOperationsService(CopyService nodeOperationsService)
+   public void setCopyService(CopyService copyService)
    {
-      this.nodeOperationsService = nodeOperationsService;
+      this.copyService = copyService;
    }
    
    /**
@@ -316,7 +316,7 @@ public class ClipboardBean
                   }
                   else
                   {
-                     this.nodeOperationsService.copy(
+                     this.copyService.copy(
                            item.Node.getNodeRef(),
                            destRef,
                            ContentModel.ASSOC_CONTAINS,
@@ -415,8 +415,8 @@ public class ClipboardBean
    /** The FileFolderService to be used by the bean */
    protected FileFolderService fileFolderService;
    
-   /** The NodeOperationsService to be used by the bean */
-   protected CopyService nodeOperationsService;
+   /** The CopyService to be used by the bean */
+   protected CopyService copyService;
    
    /** The NavigationBean reference */
    protected NavigationBean navigator;

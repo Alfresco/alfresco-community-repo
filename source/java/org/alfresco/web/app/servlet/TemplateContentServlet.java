@@ -103,7 +103,7 @@ public class TemplateContentServlet extends BaseServlet
       int tokenCount = t.countTokens();
       if (tokenCount < 5)
       {
-         throw new IllegalArgumentException("Download URL did not contain all required args: " + uri); 
+         throw new IllegalArgumentException("Template Servlet URL did not contain all required args: " + uri); 
       }
       
       t.nextToken();    // skip web app name

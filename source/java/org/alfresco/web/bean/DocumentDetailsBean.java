@@ -40,7 +40,6 @@ import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
@@ -662,18 +661,6 @@ public class DocumentDetailsBean extends BaseDetailsBean
       }
       
       NodeRef docNodeRef = new NodeRef(Repository.getStoreRef(), id);
-      Node docNode = new Node(docNodeRef);
-      
-      if (docNode.hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW) == false)
-      {
-         throw new AlfrescoRuntimeException("You can not approve a document that is not part of a workflow");
-      }
-      
-      // get the simple workflow aspect properties
-      Map<String, Object> props = docNode.getProperties();
-      
-      Boolean approveMove = (Boolean)props.get(ContentModel.PROP_APPROVE_MOVE.toString());
-      NodeRef approveFolder = (NodeRef)props.get(ContentModel.PROP_APPROVE_FOLDER.toString());
       
       UserTransaction tx = null;
       try
@@ -681,23 +668,8 @@ public class DocumentDetailsBean extends BaseDetailsBean
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
          tx.begin();
          
-         // first we need to take off the simpleworkflow aspect
-         this.nodeService.removeAspect(docNodeRef, ContentModel.ASPECT_SIMPLE_WORKFLOW);
-         
-         if (approveMove.booleanValue())
-         {
-            // move the document to the specified folder
-            String qname = QName.createValidLocalName(docNode.getName());
-            this.nodeService.moveNode(docNodeRef, approveFolder, ContentModel.ASSOC_CONTAINS,
-                  QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, qname));
-         }
-         else
-         {
-            // copy the document to the specified folder
-            String qname = QName.createValidLocalName(docNode.getName());
-            this.copyService.copy(docNodeRef, approveFolder, ContentModel.ASSOC_CONTAINS,
-                  QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, qname));
-         }
+         // call the service to perform the approve
+         WorkflowUtil.approve(docNodeRef, this.nodeService, this.copyService);
          
          // commit the transaction
          tx.commit();
@@ -710,13 +682,6 @@ public class DocumentDetailsBean extends BaseDetailsBean
          
          // also make sure the UI will get refreshed
          UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
-         
-         if (logger.isDebugEnabled())
-         {
-            String movedCopied = approveMove ? "moved" : "copied";
-            logger.debug("Document has been approved and " + movedCopied + " to folder with id of " + 
-                  approveFolder.getId());
-         }
       }
       catch (Throwable e)
       {
@@ -761,24 +726,6 @@ public class DocumentDetailsBean extends BaseDetailsBean
       }
       
       NodeRef docNodeRef = new NodeRef(Repository.getStoreRef(), id);
-      Node docNode = new Node(docNodeRef);
-      
-      if (docNode.hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW) == false)
-      {
-         throw new AlfrescoRuntimeException("You can not reject a document that is not part of a workflow");
-      }
-      
-      // get the simple workflow aspect properties
-      Map<String, Object> props = docNode.getProperties();
-      
-      String rejectStep = (String)props.get(ContentModel.PROP_REJECT_STEP.toString());
-      Boolean rejectMove = (Boolean)props.get(ContentModel.PROP_REJECT_MOVE.toString());
-      NodeRef rejectFolder = (NodeRef)props.get(ContentModel.PROP_REJECT_FOLDER.toString());
-      
-      if (rejectStep == null && rejectMove == null && rejectFolder == null)
-      {
-         throw new AlfrescoRuntimeException("The workflow does not have a reject step defined");
-      }
       
       UserTransaction tx = null;
       try
@@ -786,23 +733,8 @@ public class DocumentDetailsBean extends BaseDetailsBean
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
          tx.begin();
          
-         // first we need to take off the simpleworkflow aspect
-         this.nodeService.removeAspect(docNodeRef, ContentModel.ASPECT_SIMPLE_WORKFLOW);
-         
-         if (rejectMove.booleanValue())
-         {
-            // move the document to the specified folder
-            String qname = QName.createValidLocalName(docNode.getName());
-            this.nodeService.moveNode(docNodeRef, rejectFolder, ContentModel.ASSOC_CONTAINS,
-                  QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, qname));
-         }
-         else
-         {
-            // copy the document to the specified folder
-            String qname = QName.createValidLocalName(docNode.getName());
-            this.copyService.copy(docNodeRef, rejectFolder, ContentModel.ASSOC_CONTAINS,
-                  QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, qname));
-         }
+         // call the service to perform the reject
+         WorkflowUtil.reject(docNodeRef, this.nodeService, this.copyService);
          
          // commit the transaction
          tx.commit();
@@ -815,13 +747,6 @@ public class DocumentDetailsBean extends BaseDetailsBean
          
          // also make sure the UI will get refreshed
          UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
-         
-         if (logger.isDebugEnabled())
-         {
-            String movedCopied = rejectMove ? "moved" : "copied";
-            logger.debug("Document has been rejected and " + movedCopied + " to folder with id of " + 
-                  rejectFolder.getId());
-         }
       }
       catch (Throwable e)
       {

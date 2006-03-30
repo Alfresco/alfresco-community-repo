@@ -26,6 +26,7 @@ import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.action.executer.ExporterActionExecuter;
+import org.alfresco.repo.action.executer.RepositoryExporterActionExecuter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -82,37 +83,38 @@ public class ExportBean
       {
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
          tx.begin();
-         
-         // build the action params map based on the bean's current state
-         Map<String, Serializable> params = new HashMap<String, Serializable>(5);
-         params.put(ExporterActionExecuter.PARAM_STORE, Repository.getStoreRef().toString());
-         params.put(ExporterActionExecuter.PARAM_PACKAGE_NAME, this.packageName);
-         params.put(ExporterActionExecuter.PARAM_ENCODING, this.encoding);
-         params.put(ExporterActionExecuter.PARAM_DESTINATION_FOLDER, this.destination);
-         params.put(ExporterActionExecuter.PARAM_INCLUDE_CHILDREN, new Boolean(includeChildren));
-         params.put(ExporterActionExecuter.PARAM_INCLUDE_SELF, new Boolean(includeSelf));
-          
-         // build the action to execute
-         Action action = this.actionService.createAction(ExporterActionExecuter.NAME, params);
-         action.setExecuteAsynchronously(this.runInBackground);
+
+         // construct appropriate action to execute
+         Action action = null;
+         NodeRef startNode = this.browseBean.getActionSpace().getNodeRef();
          
          // get the appropriate node
-         NodeRef startNode = null;
          if (this.mode.equals(ALL_SPACES))
          {
-            startNode = this.nodeService.getRootNode(Repository.getStoreRef());
+             Map<String, Serializable> params = new HashMap<String, Serializable>(5);
+             params.put(ExporterActionExecuter.PARAM_PACKAGE_NAME, this.packageName);
+             params.put(ExporterActionExecuter.PARAM_DESTINATION_FOLDER, this.destination);
+             action = this.actionService.createAction(RepositoryExporterActionExecuter.NAME, params);
          }
          else
          {
-            startNode = this.browseBean.getActionSpace().getNodeRef();
+             Map<String, Serializable> params = new HashMap<String, Serializable>(5);
+             params.put(ExporterActionExecuter.PARAM_STORE, Repository.getStoreRef().toString());
+             params.put(ExporterActionExecuter.PARAM_PACKAGE_NAME, this.packageName);
+             params.put(ExporterActionExecuter.PARAM_ENCODING, this.encoding);
+             params.put(ExporterActionExecuter.PARAM_DESTINATION_FOLDER, this.destination);
+             params.put(ExporterActionExecuter.PARAM_INCLUDE_CHILDREN, new Boolean(includeChildren));
+             params.put(ExporterActionExecuter.PARAM_INCLUDE_SELF, new Boolean(includeSelf));
+             action = this.actionService.createAction(ExporterActionExecuter.NAME, params);
          }
-         
-         // execute the action on the relevant node
+
+         // execute action
+         action.setExecuteAsynchronously(this.runInBackground);
          this.actionService.executeAction(action, startNode);
-         
+
          if (logger.isDebugEnabled())
          {
-            logger.debug("Executed export action with action params of " + params);
+            logger.debug("Executed space export action with action params of " + action.getParameterValues());
          }
          
          // commit the transaction

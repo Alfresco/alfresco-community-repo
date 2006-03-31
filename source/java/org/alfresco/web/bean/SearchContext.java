@@ -158,27 +158,30 @@ public final class SearchContext implements Serializable
                text = text.substring(1);
             }
             
-            // prepend NOT operator if supplied
-            if (operatorNOT)
+            if (text.length() != 0)
             {
-               fullTextBuf.append(OP_NOT);
-               nameAttrBuf.append(OP_NOT);
-            }
-            
-            // simple single word text search
-            if (text.charAt(0) != OP_WILDCARD)
-            {
-               // escape characters and append the wildcard character
-               String safeText = QueryParser.escape(text);
-               fullTextBuf.append("TEXT:").append(safeText).append(OP_WILDCARD);
-               nameAttrBuf.append("@").append(nameAttr).append(":").append(safeText).append(OP_WILDCARD);
-            }
-            else
-            {
-               // found a leading wildcard - prepend it again after escaping the other characters
-               String safeText = QueryParser.escape(text.substring(1));
-               fullTextBuf.append("TEXT:*").append(safeText).append(OP_WILDCARD);
-               nameAttrBuf.append("@").append(nameAttr).append(":*").append(safeText).append(OP_WILDCARD);
+               // prepend NOT operator if supplied
+               if (operatorNOT)
+               {
+                  fullTextBuf.append(OP_NOT);
+                  nameAttrBuf.append(OP_NOT);
+               }
+               
+               // simple single word text search
+               if (text.charAt(0) != OP_WILDCARD)
+               {
+                  // escape characters and append the wildcard character
+                  String safeText = QueryParser.escape(text);
+                  fullTextBuf.append("TEXT:").append(safeText).append(OP_WILDCARD);
+                  nameAttrBuf.append("@").append(nameAttr).append(":").append(safeText).append(OP_WILDCARD);
+               }
+               else
+               {
+                  // found a leading wildcard - prepend it again after escaping the other characters
+                  String safeText = QueryParser.escape(text.substring(1));
+                  fullTextBuf.append("TEXT:*").append(safeText).append(OP_WILDCARD);
+                  nameAttrBuf.append("@").append(nameAttr).append(":*").append(safeText).append(OP_WILDCARD);
+               }
             }
          }
          else
@@ -198,6 +201,8 @@ public final class SearchContext implements Serializable
                
                fullTextBuf.append('(');
                nameAttrBuf.append('(');
+               
+               int termCount = 0;
                int tokenCount = t.countTokens();
                for (int i=0; i<tokenCount; i++)
                {
@@ -215,7 +220,7 @@ public final class SearchContext implements Serializable
                   if (term.length() != 0)
                   {
                      // operators such as AND and OR are only make sense for full text searching 
-                     if (i != 0 && !operatorAND)
+                     if (termCount != 0 && !operatorAND)
                      {
                         fullTextBuf.append("OR ");
                         nameAttrBuf.append("OR ");
@@ -248,6 +253,8 @@ public final class SearchContext implements Serializable
                      }
                      fullTextBuf.append(' ');
                      nameAttrBuf.append(' ');
+                     
+                     termCount++;
                   }
                }
                fullTextBuf.append(')');

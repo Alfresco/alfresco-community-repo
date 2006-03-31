@@ -17,7 +17,7 @@
          &nbsp;&nbsp;Reject Step: <a href="/alfresco/workflow/reject/${workspace}/${storenode}">${document.properties["app:rejectStep"]}</a><br>
       </#if>
       <#if document.properties["app:rejectFolder"]?exists>
-         &nbsp;&nbsp;Reject Folder: <a href="/alfresco${document.properties["app:rejectFolder"].url}">{document.properties["app:rejectFolder"].name}</a><br>
+         &nbsp;&nbsp;Reject Folder: <a href="/alfresco${document.properties["app:rejectFolder"].url}">${document.properties["app:rejectFolder"].name}</a><br>
       </#if>
    <#else>
       This document has no workflow.<br>

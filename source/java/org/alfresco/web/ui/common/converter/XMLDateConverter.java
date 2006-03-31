@@ -66,29 +66,32 @@ public class XMLDateConverter extends DateTimeConverter
       return str;
    }
 
-   /*
-    * (non-Javadoc)
+   /**
     * @see javax.faces.convert.DateTimeConverter#getTimeZone()
     */
    @Override
    public TimeZone getTimeZone()
    {
-       // Note: this forces the display of the date to the server's timezone - it does not
-       //       take into account any client specific timezone
-       return TimeZone.getDefault();
+      // Note: this forces the display of the date to the server's timezone - it does not
+      //       take into account any client specific timezone
+      return TimeZone.getDefault();
    }
 
-   /*
-    * (non-Javadoc)
+   /**
     * @see javax.faces.convert.DateTimeConverter#getLocale()
     */
    @Override
    public Locale getLocale()
    {
-       // Note: this forces the display of the date to the server's timezone - it does not
-       //       take into account any client specific timezone
-       return Locale.getDefault();
+      // get the locale set in the client
+      FacesContext context = FacesContext.getCurrentInstance();
+      Locale locale = context.getViewRoot().getLocale();
+      if (locale == null)
+      {
+         // else use server locale as the default
+         locale = Locale.getDefault();
+      }
+      
+      return locale;
    }
-   
-   
 }

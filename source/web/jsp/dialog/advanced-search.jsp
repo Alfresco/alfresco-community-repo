@@ -92,7 +92,7 @@
                            <td width=128 style="padding-left:4px">
                               <%-- Available Saved Searches --%>
                               <div style="padding-top:4px" style="white-space:nowrap">
-                                 <a:modeList itemSpacing="3" iconColumnWidth="20" style="text-align:right" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/Details.gif"
+                                 <a:modeList itemSpacing="3" iconColumnWidth="20" style="text-align:right" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/filter.gif"
                                        value="#{AdvancedSearchBean.savedSearchMode}" actionListener="#{AdvancedSearchBean.savedSearchModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu" label="#{msg.saved_searches}">
                                     <a:listItem value="user" label="#{msg.user_searches}" />
                                     <a:listItem value="global" label="#{msg.global_searches}" />

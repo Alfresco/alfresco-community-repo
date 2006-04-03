@@ -81,7 +81,7 @@
                               <%-- Filters --%>
                               <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight"
                                     value="#{RulesBean.viewMode}" actionListener="#{RulesBean.viewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu"
-                                    selectedImage="/images/icons/Details.gif" label="#{msg.filter_contents}">
+                                    selectedImage="/images/icons/filter.gif">
                                  <a:listItem value="inherited" label="#{msg.inherited}" />
                                  <a:listItem value="local" label="#{msg.local}" />
                               </a:modeList>

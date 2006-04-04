@@ -5,7 +5,7 @@
          <#assign ref=document.nodeRef>
          <#assign workspace=ref[0..ref?index_of("://")-1]>
          <#assign storenode=ref[ref?index_of("://")+3..]>
-         &nbsp;&nbsp;Approve Step: <a href="/alfresco/workflow/approve/${workspace}/${storenode}">${document.properties["app:approveStep"]}</a><br>
+         &nbsp;&nbsp;Approve Step: <a href="/alfresco/command/workflow/approve/${workspace}/${storenode}">${document.properties["app:approveStep"]}</a><br>
       </#if>
       <#if document.properties["app:approveFolder"]?exists>
          &nbsp;&nbsp;Approve Folder: <a href="/alfresco${document.properties["app:approveFolder"].url}">${document.properties["app:approveFolder"].name}</a><br>
@@ -14,7 +14,7 @@
          <#assign ref=document.nodeRef>
          <#assign workspace=ref[0..ref?index_of("://")-1]>
          <#assign storenode=ref[ref?index_of("://")+3..]>
-         &nbsp;&nbsp;Reject Step: <a href="/alfresco/workflow/reject/${workspace}/${storenode}">${document.properties["app:rejectStep"]}</a><br>
+         &nbsp;&nbsp;Reject Step: <a href="/alfresco/command/workflow/reject/${workspace}/${storenode}">${document.properties["app:rejectStep"]}</a><br>
       </#if>
       <#if document.properties["app:rejectFolder"]?exists>
          &nbsp;&nbsp;Reject Folder: <a href="/alfresco${document.properties["app:rejectFolder"].url}">${document.properties["app:rejectFolder"].name}</a><br>

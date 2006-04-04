@@ -10,6 +10,7 @@
          <element-reader element-name="property-sheet" class="org.alfresco.web.config.PropertySheetElementReader"/>
          <element-reader element-name="navigation" class="org.alfresco.web.config.NavigationElementReader" />
          <element-reader element-name="languages" class="org.alfresco.web.config.LanguagesElementReader" />
+         <element-reader element-name="command-servlet" class="org.alfresco.web.config.CommandServletElementReader" />
          <element-reader element-name="advanced-search" class="org.alfresco.web.config.AdvancedSearchElementReader" />
          <element-reader element-name="views" class="org.alfresco.web.config.ViewsElementReader" />
          <element-reader element-name="actions" class="org.alfresco.web.config.ActionsElementReader" />
@@ -60,9 +61,10 @@
       <!-- the list of available language files -->
       <languages>
          <language locale="en_US">English</language>
-         <!-- <language locale="fr_FR">French</language> -->
-         <!-- <language locale="de_DE">German</language> -->
-         <!-- <language locale="ja_JP">Japanese</language> -->
+         <language locale="fr_FR">French</language>
+         <language locale="de_DE">German</language>
+         <language locale="ja_JP">Japanese</language>
+         <language locale="th_TH">Thailand</language>
       </languages>
    </config>
    
@@ -122,6 +124,16 @@
       <node-event-listeners>
          <listener>ForumsBean</listener>
       </node-event-listeners> -->
+   </config>
+   
+   <config evaluator="string-compare" condition="Command Servlet">
+      <!-- The list registed servlet command processors -->
+      <!-- Command processors implement org.alfresco.web.app.servlet.command.CommandProcessor -->
+      <!-- They are registered against a name and all calls to the command servlet -->
+      <!-- which match the name are forwared to the class instance -->
+      <command-servlet>
+         <command-processor name="workflow" class="org.alfresco.web.app.servlet.command.WorkflowCommandProcessor" />
+      </command-servlet>
    </config>
    
    <config evaluator="string-compare" condition="Advanced Search">

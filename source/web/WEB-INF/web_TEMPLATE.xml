@@ -151,8 +151,8 @@
    </servlet>
    
    <servlet>
-      <servlet-name>workflowAction</servlet-name>
-      <servlet-class>org.alfresco.web.app.servlet.WorkflowActionServlet</servlet-class>
+      <servlet-name>commandServlet</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.CommandServlet</servlet-class>
    </servlet>
    
    <servlet>
@@ -201,8 +201,8 @@
    </servlet-mapping>
    
    <servlet-mapping>
-      <servlet-name>workflowAction</servlet-name>
-      <url-pattern>/workflow/*</url-pattern>
+      <servlet-name>commandServlet</servlet-name>
+      <url-pattern>/command/*</url-pattern>
    </servlet-mapping>
    
    <servlet-mapping>

@@ -574,6 +574,19 @@ public class Application
    }
    
    /**
+    * Helper to get the ConfigService instance
+    * 
+    * @param context        ServletContext
+    * 
+    * @return ConfigService
+    */
+   public static ConfigService getConfigService(ServletContext context)
+   {
+      return (ConfigService)WebApplicationContextUtils.getRequiredWebApplicationContext(context).getBean(
+            Application.BEAN_CONFIG_SERVICE);
+   }
+   
+   /**
     * Helper to get the client config element from the config service
     * 
     * @param context FacesContext

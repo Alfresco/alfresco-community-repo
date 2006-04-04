@@ -83,6 +83,7 @@ import org.springframework.context.ApplicationContext;
 @SuppressWarnings("unused")
 public class LuceneTest extends TestCase
 {
+    
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/lucenetest";
 
     private static final QName ASSOC_TYPE_QNAME = QName.createQName(TEST_NAMESPACE, "assoc");
@@ -2058,7 +2059,7 @@ public class LuceneTest extends TestCase
 
     public void testAddEscapedChild() throws Exception
     {
-        String COMPLEX_LOCAL_NAME = " `¬¦!\"£$%^&*()-_=+\t\n\\\u0000[]{};'#:@~,./<>?\\|\u0123\u4567\u8900\uabcd\uefff_xT65A_";
+        String COMPLEX_LOCAL_NAME = " `Â¬Â¦!\"Â£$%^&*()-_=+\t\n\\\u0000[]{};'#:@~,./<>?\\|\u0123\u4567\u8900\uabcd\uefff_xT65A_";
 
         luceneFTS.pause();
         buildBaseIndex();
@@ -2831,7 +2832,7 @@ public class LuceneTest extends TestCase
                 .query(
                         rootNodeRef.getStoreRef(),
                         "lucene",
-                        "( +TYPE:\"{http://www.alfresco.org/model/content/1.0}linkfile\" +@\\{http\\://www.alfresco.org/model/content/1.0\\}name:\"content woof\") OR  TEXT:\"content\"",
+                        "( +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" +@\\{http\\://www.alfresco.org/model/content/1.0\\}name:\"content woof\") OR  TEXT:\"content\"",
                         null, null);
 
         luceneFTS.resume();

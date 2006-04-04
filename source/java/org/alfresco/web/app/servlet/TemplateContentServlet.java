@@ -49,9 +49,9 @@ import org.apache.commons.logging.LogFactory;
  * to the response stream.
  * <p>
  * The URL to the servlet should be generated thus:
- * <pre>/alfresco/template/workspace/SpacesStore/0000-0000-0000-0000
+ * <pre>/alfresco/template/workspace/SpacesStore/0000-0000-0000-0000</pre>
  * or
- * <pre>/alfresco/template/workspace/SpacesStore/0000-0000-0000-0000/workspace/SpacesStore/0000-0000-0000-0000
+ * <pre>/alfresco/template/workspace/SpacesStore/0000-0000-0000-0000/workspace/SpacesStore/0000-0000-0000-0000</pre>
  * <p>
  * The store protocol, followed by the store ID, followed by the content Node Id used to
  * identify the node to execute the default template for. The second set of elements encode

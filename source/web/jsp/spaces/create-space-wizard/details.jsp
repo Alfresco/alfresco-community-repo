@@ -113,13 +113,14 @@
          <f:verbatim>
       </td>
       <td>
-         <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
+         <table border="0" cellpadding="0" cellspacing="0"><tr><td>
          </f:verbatim>
-         <a:imagePickerRadio id="space-icon" columns="6" spacing="4" value="#{WizardManager.bean.icon}">
+         <a:imagePickerRadioPanel id="space-icon" columns="6" spacing="4" value="#{WizardManager.bean.icon}"
+                                  panelBorder="blue" panelBgcolor="#D3E6FE">
             <a:listItems value="#{WizardManager.bean.icons}" />
-         </a:imagePickerRadio>
+         </a:imagePickerRadioPanel>
          <f:verbatim>
-         <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+         </td></tr></table>
       </td>
    </tr>
    <%--

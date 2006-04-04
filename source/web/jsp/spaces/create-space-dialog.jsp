@@ -101,13 +101,12 @@
      	</td>
       <td>
          <table border="0" cellpadding="0" cellspacing="0"><tr><td>
-         <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
          </f:verbatim>
-         <a:imagePickerRadio id="space-icon" columns="6" spacing="4" value="#{DialogManager.bean.icon}" >
+         <a:imagePickerRadioPanel id="space-icon" columns="6" spacing="4" value="#{DialogManager.bean.icon}" 
+                                  panelBorder="blue" panelBgcolor="#D3E6FE">
             <a:listItems value="#{DialogManager.bean.icons}" />
-         </a:imagePickerRadio>
+         </a:imagePickerRadioPanel>
          <f:verbatim>
-         <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
          </td></tr></table>
       </td>
    </tr>

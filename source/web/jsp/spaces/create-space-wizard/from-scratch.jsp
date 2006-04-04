@@ -33,14 +33,12 @@
    </tr>
    <tr>
       <td>
-         <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
          </f:verbatim>
-         <a:imagePickerRadio id="space-type" columns="4" spacing="4" value="#{WizardManager.bean.spaceType}"
-                             onclick="javascript:itemSelected(this);">
+         <a:imagePickerRadioPanel id="space-type" columns="4" spacing="4" value="#{WizardManager.bean.spaceType}"
+                             onclick="javascript:itemSelected(this);" panelBorder="blue" panelBgcolor="#D3E6FE">
             <a:listItems value="#{WizardManager.bean.folderTypes}" />
-         </a:imagePickerRadio>
+         </a:imagePickerRadioPanel>
          <f:verbatim>
-         <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
       </td>
    </tr>
    <tr>

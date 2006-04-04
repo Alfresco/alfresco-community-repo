@@ -4,9 +4,9 @@
       <dialog-container>/jsp/dialog/container.jsp</dialog-container>
 
       <dialogs>
-         <dialog name="createSpace" page="/jsp/spaces/create-space-details.jsp" managed-bean="CreateSpaceDialog"
-                 actions-config-id="space-actions" icon="/images/icons/create_space_large.gif"
-                 title-id="new_space" description-id="newspace_description" />
+         <dialog name="createSpace" page="/jsp/spaces/create-space-dialog.jsp" managed-bean="CreateSpaceDialog"
+                 icon="/images/icons/create_space_large.gif" title-id="new_space" 
+                 description-id="newspace_description" />
       </dialogs>
    </config>
    

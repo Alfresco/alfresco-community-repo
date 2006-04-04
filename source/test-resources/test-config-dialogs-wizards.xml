@@ -12,12 +12,12 @@
 
       <dialogs>
          <dialog name="createSpace" page="/jsp/dialog/create-space.jsp" managed-bean="NewSpaceDialog"
-                 title-id="create_space_title" description-id="create_space_description" 
-                 actions-config-id="space-actions" />
+                 actions-config-id="space-actions" icon="/images/icons/create_space_large.gif"
+                 title-id="create_space_title" description-id="create_space_description" />
                  
          <dialog name="spaceDetails" page="/jsp/dialog/space-details.jsp" managed-bean="SpaceDetailsDialog"
                  title="Space Details Dialog" description="Space Details Dialog Decsription" 
-                 actions-config-id="space-actions" />
+                 actions-config-id="space-actions" icon="/images/icons/create_space_large.gif" />
                  
       </dialogs>
    </config>
@@ -29,13 +29,15 @@
    
          <!-- example wizard -->
          <wizard  name="exampleWizard" managed-bean="ExampleWizard"
+                  icon="/images/icons/example-logo.gif"
+                  actions-config-id="example-wizard-actions"
                   title="Example Wizard Title" description="Example Wizard Description">
-            <step name="details">
+            <step name="details" title="Details">
                <page path="/jsp/wizard/example/details.jsp"
                      title="Step Title" description="Step Description"
                      instruction="Step Instruction" />
             </step>      
-            <step name="summary">
+            <step name="summary" title="Summary">
                <page path="/jsp/wizard/example/summary.jsp"
                      title="Summary Title" description="Summary Description"
                      instruction="Click Finish" />
@@ -44,15 +46,17 @@
          
          <!-- Definition of an advanced space wizard  -->
          <wizard name="createSpace" managed-bean="AdvancedSpaceWizard"
+                 icon="/images/icons/create_space_large.gif"
+                 actions-config-id="create-space-actions"
                  title-id="advanced_space_details_title" 
                  description-id="advanced_space_details_description">
-            <step name="details">
+            <step name="details" title-id="starting_space">
                <page path="/jsp/wizard/new-space/create-from.jsp"
                      title-id="create_space_details_title" 
                      description-id="create_space_details_desc"
                      instruction-id="create_space_details_instruction" />
             </step>
-            <step name="properties">
+            <step name="properties" title-id="space_options">
                <condition if="#{AdvancedSpaceWizard.createFrom == 'template'}">
                   <page path="/jsp/wizard/new-space/from-template.jsp" 
                         title-id="create_space_template_title" 
@@ -65,7 +69,7 @@
                      description-id="create_space_scratch_desc" 
                      instruction-id="create_space_scratch_instruction" />
             </step>
-            <step name="summary">
+            <step name="summary" title-id="summary">
                <page path="/jsp/wizard/new-space/summary.jsp"
                      title-id="create_space_summary_title" 
                      description-id="create_space_summary_desc" 

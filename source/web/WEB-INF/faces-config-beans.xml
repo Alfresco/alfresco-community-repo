@@ -114,7 +114,7 @@
          The bean that backs up the Create Space Dialog
       </description>
       <managed-bean-name>CreateSpaceDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.dialog.SpaceDialog</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.spaces.CreateSpaceDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -135,6 +135,43 @@
       <managed-property>
          <property-name>browseBean</property-name>
          <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Create Space Wizard
+      </description>
+      <managed-bean-name>CreateSpaceWizard</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.spaces.CreateSpaceWizard</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
       </managed-property>
       <managed-property>
          <property-name>namespaceService</property-name>
@@ -273,109 +310,6 @@
       <managed-property>
          <property-name>categoryService</property-name>
          <value>#{CategoryService}</value>
-      </managed-property>
-   </managed-bean>
-   
-   <managed-bean>
-      <description>
-         The bean that backs up the New Space Wizard
-      </description>
-      <managed-bean-name>NewSpaceWizard</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewSpaceWizard</managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>fileFolderService</property-name>
-         <value>#{FileFolderService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>navigator</property-name>
-         <value>#{NavigationBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>browseBean</property-name>
-         <value>#{BrowseBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>dictionaryService</property-name>
-         <value>#{DictionaryService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>namespaceService</property-name>
-         <value>#{NamespaceService}</value>
-      </managed-property>
-   </managed-bean>
-   
-   <managed-bean>
-      <description>
-         The bean that backs up the New Space Dialog
-      </description>
-      <managed-bean-name>NewSpaceDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewSpaceWizard</managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>fileFolderService</property-name>
-         <value>#{FileFolderService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>navigator</property-name>
-         <value>#{NavigationBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>browseBean</property-name>
-         <value>#{BrowseBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>namespaceService</property-name>
-         <value>#{NamespaceService}</value>
-      </managed-property>
-   </managed-bean>
-   
-   <managed-bean>
-      <description>
-         The bean that backs up the Edit Space Dialog
-      </description>
-      <managed-bean-name>EditSpaceDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewSpaceWizard</managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>fileFolderService</property-name>
-         <value>#{FileFolderService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>navigator</property-name>
-         <value>#{NavigationBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>browseBean</property-name>
-         <value>#{BrowseBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>namespaceService</property-name>
-         <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
    

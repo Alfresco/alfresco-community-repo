@@ -90,14 +90,6 @@
    <navigation-rule>
       <from-view-id>/jsp/browse/browse.jsp</from-view-id>
       <navigation-case>
-         <from-outcome>createSpace</from-outcome>
-         <to-view-id>/jsp/dialog/new-space.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>createAdvancedSpace</from-outcome>
-         <to-view-id>/jsp/wizard/new-space/create-from.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>deleteSpace</from-outcome>
          <to-view-id>/jsp/dialog/delete-space.jsp</to-view-id>
       </navigation-case>

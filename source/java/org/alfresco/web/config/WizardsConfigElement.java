@@ -86,16 +86,6 @@ public class WizardsConfigElement extends ConfigElementAdapter
    }
    
    /**
-    * Adds a wizard
-    * 
-    * @param wizardConfig A pre-configured wizard config object
-    */
-   /*package*/ void addWizard(WizardConfig wizardConfig)
-   {
-      this.wizards.put(wizardConfig.getName(), wizardConfig);
-   }
-   
-   /**
     * Returns the named wizard
     * 
     * @param name The name of the wizard to retrieve
@@ -112,6 +102,16 @@ public class WizardsConfigElement extends ConfigElementAdapter
    public Map<String, WizardConfig> getWizards()
    {
       return this.wizards;
+   }
+   
+   /**
+    * Adds a wizard
+    * 
+    * @param wizardConfig A pre-configured wizard config object
+    */
+   /*package*/ void addWizard(WizardConfig wizardConfig)
+   {
+      this.wizards.put(wizardConfig.getName(), wizardConfig);
    }
    
    public abstract static class AbstractConfig
@@ -159,9 +159,11 @@ public class WizardsConfigElement extends ConfigElementAdapter
       protected String name;
       protected String managedBean;
       protected String icon;
+      protected String actionsConfigId;
       protected Map<String, StepConfig> steps = new LinkedHashMap<String, StepConfig>(4);
       
-      public WizardConfig(String name, String bean, String icon,
+      public WizardConfig(String name, String bean, 
+                          String actionsConfigId, String icon,
                           String title, String titleId,
                           String description, String descriptionId)
       {
@@ -173,6 +175,7 @@ public class WizardsConfigElement extends ConfigElementAdapter
          this.name = name;
          this.managedBean = bean;
          this.icon = icon;
+         this.actionsConfigId = actionsConfigId;
       }
       
       public String getName()
@@ -190,9 +193,9 @@ public class WizardsConfigElement extends ConfigElementAdapter
          return this.icon;
       }
       
-      public void addStep(StepConfig step)
+      public String getActionsConfigId()
       {
-         this.steps.put(step.getName(), step);
+         return this.actionsConfigId;
       }
       
       public int getNumberSteps()
@@ -222,6 +225,11 @@ public class WizardsConfigElement extends ConfigElementAdapter
          return this.steps.get(name);
       }
       
+      /*package*/ void addStep(StepConfig step)
+      {
+         this.steps.put(step.getName(), step);
+      }
+      
       /**
        * @see java.lang.Object#toString()
        */
@@ -231,6 +239,7 @@ public class WizardsConfigElement extends ConfigElementAdapter
          StringBuilder buffer = new StringBuilder(super.toString());
          buffer.append(" (name=").append(this.name);
          buffer.append(" managed-bean=").append(this.managedBean);
+         buffer.append(" actions-config-id=").append(this.actionsConfigId);
          buffer.append(" icon=").append(this.icon);
          buffer.append(" title=").append(this.title);
          buffer.append(" titleId=").append(this.titleId);
@@ -347,17 +356,27 @@ public class WizardsConfigElement extends ConfigElementAdapter
     * Represents the configuration of a step in a wizard
     * i.e. the &lt;step&gt; element.
     */
-   public static class StepConfig
+   public static class StepConfig extends AbstractConfig
    {
       protected String name;
       protected PageConfig defaultPage;
       protected List<ConditionalPageConfig> conditionalPages = 
          new ArrayList<ConditionalPageConfig>(3);
       
-      public StepConfig(String name)
+      public StepConfig(String name,
+                        String title, String titleId,
+                        String description, String descriptionId)
       {
+         super(title, titleId, description, descriptionId);
+         
          // check we have a name
          ParameterCheck.mandatoryString("name", name);
+         
+         // check we have a title
+         if (this.title == null && this.titleId == null)
+         {
+            throw new IllegalArgumentException("A title or title-id attribute must be supplied for a step");
+         }
          
          this.name = name;
       }
@@ -365,11 +384,6 @@ public class WizardsConfigElement extends ConfigElementAdapter
       public String getName()
       {
          return this.name;
-      }
-      
-      public void setDefaultPage(PageConfig page)
-      {
-         this.defaultPage = page;
       }
       
       public PageConfig getDefaultPage()
@@ -382,14 +396,19 @@ public class WizardsConfigElement extends ConfigElementAdapter
          return (this.conditionalPages.size() > 0);
       }
       
-      public void addConditionalPage(ConditionalPageConfig conditionalPage)
+      public List<ConditionalPageConfig> getConditionalPages()
+      {
+         return this.conditionalPages;
+      }
+      
+      /*package*/ void addConditionalPage(ConditionalPageConfig conditionalPage)
       {
          this.conditionalPages.add(conditionalPage);
       }
       
-      public List<ConditionalPageConfig> getConditionalPages()
+      /*package*/ void setDefaultPage(PageConfig page)
       {
-         return this.conditionalPages;
+         this.defaultPage = page;
       }
 
       /**
@@ -400,6 +419,10 @@ public class WizardsConfigElement extends ConfigElementAdapter
       {
          StringBuilder buffer = new StringBuilder(super.toString());
          buffer.append(" (name=").append(this.name);
+         buffer.append(" title=").append(this.title);
+         buffer.append(" titleId=").append(this.titleId);
+         buffer.append(" description=").append(this.description);
+         buffer.append(" descriptionId=").append(this.descriptionId);
          buffer.append(" defaultPage=").append(this.defaultPage);
          buffer.append(" conditionalPages=").append(this.conditionalPages).append(")");
          return buffer.toString();

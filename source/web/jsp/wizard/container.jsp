@@ -22,40 +22,17 @@
 
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
+<%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
-<r:page titleId="title_create_space">
-
-<script language="JavaScript1.2">
-
-   window.onload = pageLoaded;
-   
-   function pageLoaded()
-   {
-      document.getElementById("new-space:name").focus();
-      checkButtonState();
-   }
-   
-   function checkButtonState()
-   {
-      if (document.getElementById("new-space:name").value.length == 0 )
-      {
-         document.getElementById("new-space:ok-button").disabled = true;
-      }
-      else
-      {
-         document.getElementById("new-space:ok-button").disabled = false;
-      }
-   }
-
-</script>
+<r:page title="<%=Application.getWizardManager().getTitle() %>">
 
 <f:view>
    
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
-   
-   <h:form acceptCharset="UTF-8" id="new-space">
+
+   <h:form acceptCharset="UTF-8" id="wizard">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
@@ -90,11 +67,11 @@
                      <table cellspacing="4" cellpadding="0" width="100%">
                         <tr>
                            <td width="32">
-                              <h:graphicImage id="wizard-logo" url="/images/icons/create_space_large.gif" />
+                              <h:graphicImage id="wizard-logo" url="#{WizardManager.icon}" />
                            </td>
                            <td>
-                              <div class="mainTitle"><h:outputText value="#{msg.new_space}" /></div>
-                              <div class="mainSubText"><h:outputText value="#{msg.newspace_description}" /></div>
+                              <div class="mainTitle"><h:outputText value="#{WizardManager.title}" /></div>
+                              <div class="mainSubText"><h:outputText value="#{WizardManager.description}" /></div>
                            </td>
                         </tr>
                      </table>
@@ -111,52 +88,50 @@
                </tr>
                
                <%-- Details --%>
-               <tr valign=top>                  
+               <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width="4"></td>
                   <td>
                      <table cellspacing="0" cellpadding="3" border="0" width="100%">
                         <tr>
+                           <td width="20%" valign="top">
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
+                              <h:outputText styleClass="mainSubTitle" value="#{msg.steps}"/><br>
+                              <a:modeList itemSpacing="3" iconColumnWidth="2" selectedStyleClass="statusListHighlight"
+                                    value="#{WizardManager.currentStepAsString}" disabled="true">
+                                 <%--
+                                 <a:listItem value="1" label="1. #{msg.starting_space}" />
+                                 <a:listItem value="2" label="2. #{msg.space_options}" />
+                                 <a:listItem value="3" label="3. #{msg.space_details}" />
+                                 <a:listItem value="4" label="4. #{msg.summary}" />
+                                 --%>
+                                 <a:listItems value="#{WizardManager.stepItems}" />
+                              </a:modeList>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+                           </td>
+                           
                            <td width="100%" valign="top">
-                              
-                              <a:errors message="#{msg.error_create_space_dialog}" styleClass="errorMessage" />
-                              
+                           
+                              <a:errors message="#{msg.error_wizard}" styleClass="errorMessage" />
+                           
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <table cellpadding="2" cellspacing="2" border="0" width="100%">
                                  <tr>
-                                    <td colspan="2" class="wizardSectionHeading"><h:outputText value="#{msg.space_props}" /></td>
+                                    <td class="mainSubTitle"><h:outputText value="#{WizardManager.stepTitle}" /></td>
                                  </tr>
                                  <tr>
-                                    <td><h:outputText value="#{msg.name}" />:</td>
-                                    <td>
-                                       <h:inputText id="name" value="#{NewSpaceDialog.name}" size="35" maxlength="1024" 
-                                                    onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState();"/>&nbsp;*
-                                    </td>
+                                    <td class="mainSubText"><h:outputText value="#{WizardManager.stepDescription}" /></td>
                                  </tr>
+                                 <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td><h:outputText value="#{msg.description}" />:</td>
-                                    <td>
-                                       <h:inputText value="#{NewSpaceDialog.description}" size="35" maxlength="1024" />
+                                    <td width="100%" valign="top">
+                                       <f:subview id="wizard-body">
+                              				<jsp:include page="<%=Application.getWizardManager().getPage() %>" />
+                              			</f:subview>
                                     </td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td colspan="2" class="wizardSectionHeading">&nbsp;<h:outputText value="#{msg.other_options}" /></td>
-                                 </tr>
-                                 <tr>
-                                    <td><h:outputText value="#{msg.choose_space_icon}" />:</td>
-                                    <td>
-                                       <table border="0" cellpadding="0" cellspacing="0"><tr><td>
-                                       <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
-                                       <a:imagePickerRadio columns="6" spacing="4" value="#{NewSpaceDialog.icon}">
-                                          <a:listItems value="#{NewSpaceDialog.icons}" />
-                                       </a:imagePickerRadio>
-                                       <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
-                                       </td></tr></table>
-                                    </td>
-                                 </tr>
-                                 <tr><td class="paddingRow"></td></tr>
-                                 <tr>
-                                    <td colspan="2"><h:outputText value="#{msg.create_space_finish}" /></td>
+                                    <td><h:outputText value="#{WizardManager.stepInstructions}" /></td>
                                  </tr>
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
@@ -167,13 +142,34 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton id="ok-button" value="#{msg.new_space}" action="#{NewSpaceDialog.finish}" 
-                                                        styleClass="wizardButton" disabled="true" />
+                                       <h:commandButton id="next-button" styleClass="wizardButton" 
+                                                        value="#{WizardManager.nextButtonLabel}" 
+                                                        action="#{WizardManager.next}" 
+                                                        disabled="#{WizardManager.nextButtonDisabled}" />
                                     </td>
                                  </tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel}" action="#{NewSpaceDialog.cancel}" styleClass="wizardButton" />
+                                       <h:commandButton id="back-button" styleClass="wizardButton" 
+                                                        value="#{WizardManager.backButtonLabel}" 
+                                                        action="#{WizardManager.back}" 
+                                                        disabled="#{WizardManager.backButtonDisabled}" />
+                                    </td>
+                                 </tr>
+                                 <tr>
+                                    <td align="center">
+                                       <h:commandButton id="finish-button" styleClass="wizardButton"
+                                                        value="#{WizardManager.finishButtonLabel}" 
+                                                        action="#{WizardManager.finish}" 
+                                                        disabled="#{WizardManager.finishButtonDisabled}" />
+                                    </td>
+                                 </tr>
+                                 <tr><td class="wizardButtonSpacing"></td></tr>
+                                 <tr>
+                                    <td align="center">
+                                       <h:commandButton id="cancel-button" styleClass="wizardButton"
+                                                        value="#{WizardManager.cancelButtonLabel}" 
+                                                        action="#{WizardManager.cancel}" />
                                     </td>
                                  </tr>
                               </table>

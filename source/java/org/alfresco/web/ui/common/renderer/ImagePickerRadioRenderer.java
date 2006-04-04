@@ -175,7 +175,10 @@ public class ImagePickerRadioRenderer extends BaseRenderer
                   while (iter.hasNext())
                   {
                      UIListItem item = (UIListItem)iter.next();
-                     renderItem(context, out, imagePicker, item, onclick);
+                     if (item.isRendered())
+                     {
+                        renderItem(context, out, imagePicker, item, onclick);
+                     }
                   }
                }
             }

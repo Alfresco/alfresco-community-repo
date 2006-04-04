@@ -1,10 +1,56 @@
 <alfresco-config>
 
 	<config evalutor="string-compare" condition="Wizards">
-      <wizard-container>/jsp/dialog/container.jsp</wizard-container>
+      <wizard-container>/jsp/wizard/container.jsp</wizard-container>
       
       <wizards>
+      	
+      	<!-- Definition of an advanced space wizard  -->
+         <wizard name="createSpace" managed-bean="CreateSpaceWizard"
+                 title-id="new_space_title" description-id="new_space_desc"
+                 icon="/images/icons/create_space_large.gif">
+            <step name="create-from" title-id="starting_space" description-id="new_space_step1_desc">
+               <page path="/jsp/spaces/create-space-wizard/create-from.jsp"
+                     title-id="new_space_step1_title" 
+                     description-id="new_space_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="options" title-id="space_options" description-id="new_space_step2_desc">
+               <condition if="#{CreateSpaceWizard.createFrom == 'scratch'}">
+                  <page path="/jsp/spaces/create-space-wizard/from-scratch.jsp" 
+                        title-id="new_space_step2_title" 
+                        description-id="new_space_step2_desc" 
+                        instruction-id="default_instruction" />
+               </condition>
+               <condition if="#{CreateSpaceWizard.createFrom == 'existing'}">
+                  <page path="/jsp/spaces/create-space-wizard/from-existing.jsp" 
+                        title-id="new_space_step2_title" 
+                        description-id="new_space_step2_desc" 
+                        instruction-id="default_instruction" />
+               </condition>
+               <condition if="#{CreateSpaceWizard.createFrom == 'template'}">
+                  <page path="/jsp/spaces/create-space-wizard/from-template.jsp" 
+                        title-id="new_space_step2_title" 
+                        description-id="new_space_step2_desc" 
+                        instruction-id="default_instruction" />
+               </condition>
+            </step>
+            <step name="details" title-id="space_details" description-id="new_space_step3_desc">
+               <page path="/jsp/spaces/create-space-wizard/details.jsp"
+                     title-id="new_space_step3_title" 
+                     description-id="new_space_step3_desc" 
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_desc">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary" 
+                     description-id="summary_desc" 
+                     instruction-id="new_space_finish_instruction" />
+            </step>
+         </wizard>
+
       </wizards>
    </config>
    
 </alfresco-config>
+

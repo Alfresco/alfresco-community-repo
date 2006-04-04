@@ -618,6 +618,8 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("name", "createSpace", dialog.getName());
       assertEquals("page", "/jsp/dialog/create-space.jsp", dialog.getPage());
       assertEquals("managed-bean", "NewSpaceDialog", dialog.getManagedBean());
+      assertEquals("actions-config-id", "space-actions", dialog.getActionsConfigId());
+      assertEquals("icon", "/images/icons/create_space_large.gif", dialog.getIcon());
       assertEquals("title-id", "create_space_title", dialog.getTitleId());
       assertEquals("description-id", "create_space_description", dialog.getDescriptionId());
       assertNull("title should be null", dialog.getTitle());
@@ -631,6 +633,8 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("name", "spaceDetails", dialog.getName());
       assertEquals("page", "/jsp/dialog/space-details.jsp", dialog.getPage());
       assertEquals("managed-bean", "SpaceDetailsDialog", dialog.getManagedBean());
+      assertEquals("actions-config-id", "space-actions", dialog.getActionsConfigId());
+      assertEquals("icon", "/images/icons/create_space_large.gif", dialog.getIcon());
       assertEquals("title", "Space Details Dialog", dialog.getTitle());
       assertEquals("description", "Space Details Dialog Decsription", dialog.getDescription());
       assertNull("title-id should be null", dialog.getTitleId());
@@ -699,16 +703,27 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("name", "exampleWizard", wizard.getName());
       assertEquals("exampleWizard steps", 2, wizard.getNumberSteps());
       assertEquals("managed-bean", "ExampleWizard", wizard.getManagedBean());
+      assertEquals("actions-config-id", "example-wizard-actions", wizard.getActionsConfigId());
+      assertEquals("icon", "/images/icons/example-logo.gif", wizard.getIcon());
       assertEquals("title", "Example Wizard Title", wizard.getTitle());
       assertEquals("description", "Example Wizard Description", wizard.getDescription());
       assertNull("title-id should be null", wizard.getTitleId());
       assertNull("description-id should be null", wizard.getDescriptionId());
+      
+      // retrive step 1 config and check it is correct
+      Map<String, StepConfig> stepsMap = wizard.getSteps();
+      StepConfig step1 = stepsMap.get("details");
+      assertNotNull("step 1 of example wizard should not be null", step1);
+      assertEquals("step title", "Details", step1.getTitle());
+      assertNull("step 1 title-id should be null", step1.getTitleId());
       
       // get the 'createSpace' wizard and ensure all the data is correct
       wizard = wizardsElement.getWizard("createSpace");
       assertEquals("name", "createSpace", wizard.getName());
       assertEquals("createSpace steps", 3, wizard.getNumberSteps());
       assertEquals("managed-bean", "AdvancedSpaceWizard", wizard.getManagedBean());
+      assertEquals("actions-config-id", "create-space-actions", wizard.getActionsConfigId());
+      assertEquals("icon", "/images/icons/create_space_large.gif", wizard.getIcon());
       assertEquals("title-id", "advanced_space_details_title", wizard.getTitleId());
       assertEquals("description-id", "advanced_space_details_description", wizard.getDescriptionId());
       assertNull("title should be null", wizard.getTitle());
@@ -717,8 +732,9 @@ public class WebClientConfigTest extends BaseTest
       assertNotNull("steps should not be null", steps);
       
       // retrieve step1 information and check it is correct
-      StepConfig step1 = steps.get(0);
+      step1 = steps.get(0);
       assertEquals("step 1 name", "details", step1.getName());
+      assertEquals("step 1 title-id", "starting_space", step1.getTitleId());
       assertFalse("step 1 should not have conditional pages", step1.hasConditionalPages());
       PageConfig step1Page = step1.getDefaultPage();
       assertNotNull("step1Page should not be null", step1Page);
@@ -732,6 +748,7 @@ public class WebClientConfigTest extends BaseTest
       // check the conditional step2 data
       StepConfig step2 = steps.get(1);
       assertEquals("step 2 name", "properties", step2.getName());
+      assertEquals("step 2 title-id", "space_options", step2.getTitleId());
       assertTrue("step 2 should have conditional pages", step2.hasConditionalPages());
       PageConfig step2DefaultPage = step2.getDefaultPage();
       assertNotNull("step 2 default page should not be null", step2DefaultPage);
@@ -756,6 +773,7 @@ public class WebClientConfigTest extends BaseTest
       // check step 3 data
       StepConfig step3 = steps.get(2);
       assertEquals("step 3 name", "summary", step3.getName());
+      assertEquals("step 3 title-id", "summary", step3.getTitleId());
       assertFalse("step 3 should not have conditional pages", step3.hasConditionalPages());
       PageConfig step3Page = step3.getDefaultPage();
       assertNotNull("step3Page should not be null", step3Page);

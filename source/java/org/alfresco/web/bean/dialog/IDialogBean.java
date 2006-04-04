@@ -13,18 +13,25 @@ public interface IDialogBean
    public void init();
    
    /**
+    * Method handler called when the cancel button of the dialog is pressed
+    * 
+    * @return The outcome to return
+    */
+   public String cancel();
+   
+   /**
     * Method handler called when the finish button of the dialog is pressed
     * 
-    * @return The outcome to return (normally dialog:close)
+    * @return The outcome to return
     */
    public String finish();
    
    /**
-    * Method handler called when the cancel button of the dialog is pressed
+    * Returns the label to use for the cancel button
     * 
-    * @return The outcome to return (normally dialog:close)
+    * @return The cancel button label
     */
-   public String cancel();
+   public String getCancelButtonLabel();
    
    /**
     * Returns the label to use for the finish button

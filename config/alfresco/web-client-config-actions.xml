@@ -340,8 +340,8 @@
             </permissions>
             <label-id>advanced_space_wizard</label-id>
             <image>/images/icons/create_space.gif</image>
-            <action>createAdvancedSpace</action>
-            <action-listener>#{NewSpaceWizard.startWizard}</action-listener>
+            <action>wizard:createSpace</action>
+            <!-- <action-listener>#{NewSpaceWizard.startWizard}</action-listener> -->
          </action>
          
          <!-- Manage Space Users -->

@@ -17,6 +17,7 @@
 package org.alfresco.web.ui.common.renderer;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import javax.faces.context.ResponseWriter;
 
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
+import org.alfresco.web.ui.common.component.UIListItems;
 import org.alfresco.web.ui.common.component.UIMenu;
 import org.alfresco.web.ui.common.component.UIModeList;
 
@@ -213,116 +215,35 @@ public class ModeListRenderer extends BaseRenderer
       }
       
       UIModeList list = (UIModeList)component;
-      Map attrs = list.getAttributes();
-      
       ResponseWriter out = context.getResponseWriter();
-      
-      String selectedImage = (String)attrs.get("selectedImage");
       
       // get the child components
       for (Iterator i=list.getChildren().iterator(); i.hasNext(); /**/)
       {
          UIComponent child = (UIComponent)i.next();
-         if (child instanceof UIListItem && child.isRendered() == true)
+         if (child instanceof UIListItems)
+         {
+            // get the value of the list items component and iterate
+            // through it's collection
+            Object listItems = ((UIListItems)child).getValue();
+            if (listItems instanceof Collection)
+            {
+               Iterator iter = ((Collection)listItems).iterator();
+               while (iter.hasNext())
+               {
+                  UIListItem item = (UIListItem)iter.next();
+                  if (item.isRendered())
+                  {
+                     renderItem(context, out, list, item);
+                  }
+               }
+            }
+         }
+         else if (child instanceof UIListItem && child.isRendered() == true)
          {
             // found a valid UIListItem child to render
             UIListItem item = (UIListItem)child;
-            
-            // each row is an inner table with a single row and 2 columns
-            // first column contains an icon if present, second column contains text
-            if (list.isHorizontal() == false)
-            {
-               out.write("<tr>");
-            }
-            
-            out.write("<td><table cellpadding=0 width=100%");
-            outputAttribute(out, attrs.get("itemSpacing"), "cellspacing");
-            
-            // if selected value render different style for the item
-            boolean selected = item.getValue().equals(list.getValue());
-            if (selected == true)
-            {
-               outputAttribute(out, attrs.get("selectedStyleClass"), "class");
-               outputAttribute(out, attrs.get("selectedStyle"), "style");
-            }
-            else
-            {
-               outputAttribute(out, attrs.get("itemStyleClass"), "class");
-               outputAttribute(out, attrs.get("itemStyle"), "style");
-            }
-            out.write("><tr>");
-            
-            // output icon column
-            if (list.getIconColumnWidth() != 0)
-            {
-               out.write("<td");
-               outputAttribute(out, list.getIconColumnWidth(), "width");
-               out.write(">");
-               
-               // if the "selectedImage" property is set and this item is selected then show it
-               if (selected == true && selectedImage != null)
-               {
-                  out.write( Utils.buildImageTag(context, selectedImage, item.getTooltip()) );
-               }
-               else
-               {
-                  // else show the image set for the individual item 
-                  String image = (String)child.getAttributes().get("image"); 
-                  if (image != null)
-                  {
-                     out.write( Utils.buildImageTag(context, image, item.getTooltip()) );
-                  }
-               }
-               
-               out.write("</td>");
-            }
-            
-            // output item link
-            out.write("<td>");
-            if (!list.isDisabled() && !item.isDisabled())
-            {
-               out.write("<a href='#' onclick=\"");
-               // generate javascript to submit the value of the child component
-               String value = list.getClientId(context) + NamingContainer.SEPARATOR_CHAR + (String)child.getAttributes().get("value");
-               out.write(Utils.generateFormSubmit(context, list, getHiddenFieldName(context, list), value));
-               out.write('"');
-            }
-            else
-            {
-               out.write("<span");
-               outputAttribute(out, attrs.get("disabledStyleClass"), "class");
-               outputAttribute(out, attrs.get("disabledStyle"), "style");
-            }
-            
-            // render style for the item link
-            if (item.getValue().equals(list.getValue()))
-            {
-               outputAttribute(out, attrs.get("selectedLinkStyleClass"), "class");
-               outputAttribute(out, attrs.get("selectedLinkStyle"), "style");
-            }
-            else
-            {
-               outputAttribute(out, attrs.get("itemLinkStyleClass"), "class");
-               outputAttribute(out, attrs.get("itemLinkStyle"), "style");
-            }
-            
-            outputAttribute(out, child.getAttributes().get("tooltip"), "title");
-            out.write('>');
-            out.write(Utils.encode(item.getLabel()));
-            if (!list.isDisabled() && !item.isDisabled())
-            {
-               out.write("</a>");
-            }
-            else
-            {
-               out.write("</span>");
-            }
-            out.write("</td></tr></table></td>");
-            
-            if (list.isHorizontal() == false)
-            {
-               out.write("</tr>");
-            }
+            renderItem(context, out, list, item);
          }
       }
    }
@@ -359,6 +280,118 @@ public class ModeListRenderer extends BaseRenderer
    public boolean getRendersChildren()
    {
       return true;
+   }
+   
+   /**
+    * Renders the given item for the given list
+    * 
+    * @param context FacesContext
+    * @param out ResponseWriter to write to
+    * @param list The parent list
+    * @param item The item to render
+    * @throws IOException
+    */
+   protected void renderItem(FacesContext context, ResponseWriter out,
+         UIModeList list, UIListItem item) throws IOException
+   {
+      Map attrs = list.getAttributes();
+      String selectedImage = (String)attrs.get("selectedImage");
+      
+      // each row is an inner table with a single row and 2 columns
+      // first column contains an icon if present, second column contains text
+      if (list.isHorizontal() == false)
+      {
+         out.write("<tr>");
+      }
+      
+      out.write("<td><table cellpadding=0 width=100%");
+      outputAttribute(out, attrs.get("itemSpacing"), "cellspacing");
+      
+      // if selected value render different style for the item
+      boolean selected = item.getValue().equals(list.getValue());
+      if (selected == true)
+      {
+         outputAttribute(out, attrs.get("selectedStyleClass"), "class");
+         outputAttribute(out, attrs.get("selectedStyle"), "style");
+      }
+      else
+      {
+         outputAttribute(out, attrs.get("itemStyleClass"), "class");
+         outputAttribute(out, attrs.get("itemStyle"), "style");
+      }
+      out.write("><tr>");
+      
+      // output icon column
+      if (list.getIconColumnWidth() != 0)
+      {
+         out.write("<td");
+         outputAttribute(out, list.getIconColumnWidth(), "width");
+         out.write(">");
+         
+         // if the "selectedImage" property is set and this item is selected then show it
+         if (selected == true && selectedImage != null)
+         {
+            out.write( Utils.buildImageTag(context, selectedImage, item.getTooltip()) );
+         }
+         else
+         {
+            // else show the image set for the individual item 
+            String image = (String)item.getAttributes().get("image"); 
+            if (image != null)
+            {
+               out.write( Utils.buildImageTag(context, image, item.getTooltip()) );
+            }
+         }
+         
+         out.write("</td>");
+      }
+      
+      // output item link
+      out.write("<td>");
+      if (!list.isDisabled() && !item.isDisabled())
+      {
+         out.write("<a href='#' onclick=\"");
+         // generate javascript to submit the value of the child component
+         String value = list.getClientId(context) + NamingContainer.SEPARATOR_CHAR + (String)item.getAttributes().get("value");
+         out.write(Utils.generateFormSubmit(context, list, getHiddenFieldName(context, list), value));
+         out.write('"');
+      }
+      else
+      {
+         out.write("<span");
+         outputAttribute(out, attrs.get("disabledStyleClass"), "class");
+         outputAttribute(out, attrs.get("disabledStyle"), "style");
+      }
+      
+      // render style for the item link
+      if (item.getValue().equals(list.getValue()))
+      {
+         outputAttribute(out, attrs.get("selectedLinkStyleClass"), "class");
+         outputAttribute(out, attrs.get("selectedLinkStyle"), "style");
+      }
+      else
+      {
+         outputAttribute(out, attrs.get("itemLinkStyleClass"), "class");
+         outputAttribute(out, attrs.get("itemLinkStyle"), "style");
+      }
+      
+      outputAttribute(out, item.getAttributes().get("tooltip"), "title");
+      out.write('>');
+      out.write(Utils.encode(item.getLabel()));
+      if (!list.isDisabled() && !item.isDisabled())
+      {
+         out.write("</a>");
+      }
+      else
+      {
+         out.write("</span>");
+      }
+      out.write("</td></tr></table></td>");
+      
+      if (list.isHorizontal() == false)
+      {
+         out.write("</tr>");
+      }
    }
    
    /**

@@ -40,6 +40,16 @@ public class DialogManager
    }
    
    /**
+    * Returns the config for the current dialog
+    * 
+    * @return The current dialog config
+    */
+   public DialogConfig getCurrentDialog()
+   {
+      return this.currentDialogConfig;
+   }
+   
+   /**
     * Returns the current dialog bean being managed
     * 
     * @return The current managed bean
@@ -109,6 +119,16 @@ public class DialogManager
    public String getPage()
    {
       return this.currentDialogConfig.getPage();
+   }
+   
+   /**
+    * Returns the label to use for the cancel button
+    * 
+    * @return The cancel button label
+    */
+   public String getCancelButtonLabel()
+   {
+      return this.currentDialog.getCancelButtonLabel();
    }
    
    /**

@@ -26,7 +26,6 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
-import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.dialog.DialogManager;
 import org.alfresco.web.bean.repository.Node;
@@ -35,6 +34,7 @@ import org.alfresco.web.config.DialogsConfigElement;
 import org.alfresco.web.config.NavigationConfigElement;
 import org.alfresco.web.config.NavigationElementReader;
 import org.alfresco.web.config.NavigationResult;
+import org.alfresco.web.config.WizardsConfigElement;
 import org.alfresco.web.config.DialogsConfigElement.DialogConfig;
 import org.alfresco.web.config.WizardsConfigElement.WizardConfig;
 import org.apache.commons.logging.Log;
@@ -96,7 +96,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
          
          if (dialogWizardClosing)
          {
-            handleDialogOrWizardClose(context, fromAction, outcome);
+            handleDialogOrWizardClose(context, fromAction, outcome, isDialog);
          }
          else
          {
@@ -108,15 +108,22 @@ public class AlfrescoNavigationHandler extends NavigationHandler
             {
                handleWizardOpen(context, fromAction, outcome);
             }
-            
-            if (logger.isDebugEnabled())
-               logger.debug("view stack: " + getViewStack(context));
          }
       }
       else
       {
-         handleDispatch(context, fromAction, outcome);
+         if (isWizardStep(fromAction))
+         {
+            goToView(context, getWizardContainer(context));
+         }
+         else
+         {
+            handleDispatch(context, fromAction, outcome);
+         }
       }
+      
+      if (logger.isDebugEnabled())
+         logger.debug("view stack: " + getViewStack(context));
    }
    
    /**
@@ -174,6 +181,26 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       }
       
       return closing;
+   }
+   
+   /**
+    * Determines whether the given fromAction represents a step in the wizard
+    * i.e. next or back
+    * 
+    * @param fromAction The fromAction
+    * @return true if the from action represents a wizard step
+    */
+   protected boolean isWizardStep(String fromAction)
+   {
+      boolean wizardStep = false;
+      
+      if (fromAction != null && 
+          (fromAction.equals("#{WizardManager.next}") || fromAction.equals("#{WizardManager.back}")))
+      {
+         wizardStep = true;
+      }
+      
+      return wizardStep;
    }
    
    /**
@@ -281,7 +308,39 @@ public class AlfrescoNavigationHandler extends NavigationHandler
     */
    protected WizardConfig getWizardConfig(FacesContext context, String name, Node dispatchContext)
    {
-      return null;
+      WizardConfig wizardConfig = null;
+      ConfigService configSvc = Application.getConfigService(context);
+      
+      if (dispatchContext != null)
+      {
+         Config config = configSvc.getConfig(dispatchContext);
+         if (config != null)
+         {
+            WizardsConfigElement wizardsCfg = (WizardsConfigElement)config.getConfigElement(
+                  WizardsConfigElement.CONFIG_ELEMENT_ID);
+            if (wizardsCfg != null)
+            {
+               wizardConfig = wizardsCfg.getWizard(name);
+            }
+         }
+      }
+      
+      // if we didn't find a dialog via the dispatch look it up in the 'global' wizards config
+      if (wizardConfig == null)
+      {
+         Config config = configSvc.getConfig(CONFIG_WIZARDS);
+         if (config != null)
+         {
+            WizardsConfigElement wizardsCfg = (WizardsConfigElement)config.getConfigElement(
+                  WizardsConfigElement.CONFIG_ELEMENT_ID);
+            if (wizardsCfg != null)
+            {
+               wizardConfig = wizardsCfg.getWizard(name);
+            }
+         }
+      }
+      
+      return wizardConfig;
    }
    
    /**
@@ -511,10 +570,17 @@ public class AlfrescoNavigationHandler extends NavigationHandler
    
    /**
     * Closes the current dialog or wizard
+    * 
+    * @param context FacesContext
+    * @param fromAction The fromAction
+    * @param outcome The outcome
+    * @param dialog true if a dialog is being closed, false if a wizard is being closed
     */
-   protected void handleDialogOrWizardClose(FacesContext context, String fromAction, String outcome)
+   protected void handleDialogOrWizardClose(FacesContext context, String fromAction, String outcome, boolean dialog)
    {
-      // if we are closing the dialog take the view off the 
+      String closingItem = dialog ? "dialog" : "wizard";
+      
+      // if we are closing a wizard or dialog take the view off the 
       // top of the stack then decide whether to use the view
       // or any overridden outcome that may be present
       if (getViewStack(context).empty() == false)
@@ -527,7 +593,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
          {
             // there isn't an overidden outcome so go back to the previous view
             if (logger.isDebugEnabled())
-               logger.debug("Closing dialog, going back to view id: " + newViewId);
+               logger.debug("Closing " + closingItem + ", going back to view id: " + newViewId);
          
             goToView(context, newViewId);
          }
@@ -538,7 +604,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
             getViewStack(context).clear();
             
             if (logger.isDebugEnabled())
-               logger.debug("Closing dialog with an overridden outcome of '" + overriddenOutcome + "'");
+               logger.debug("Closing " + closingItem + " with an overridden outcome of '" + overriddenOutcome + "'");
             
             navigate(context, fromAction, overriddenOutcome);
          }
@@ -549,7 +615,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
          // log a warning and return a null outcome to stay on the same page
          if (logger.isWarnEnabled())
          {
-            logger.warn("Attempting to close a dialog with an empty view stack, returning null outcome");
+            logger.warn("Attempting to close a " + closingItem + " with an empty view stack, returning null outcome");
          }
          
          navigate(context, fromAction, null);
@@ -565,8 +631,8 @@ public class AlfrescoNavigationHandler extends NavigationHandler
     */
    protected void addCurrentViewToStack(FacesContext context)
    {
-      // if we are opening a dialog push the current view id 
-      // on to the stack, but only if it is different than the 
+      // if we are opening a wizard or dialog push the current view
+      // id on to the stack, but only if it is different than the 
       // current view at the top (you can't launch a dialog from
       // the same page 2 times in a row!)
       

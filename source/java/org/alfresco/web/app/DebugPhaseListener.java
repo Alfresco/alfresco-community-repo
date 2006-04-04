@@ -48,7 +48,12 @@ public class DebugPhaseListener implements PhaseListener
    {
       if (logger.isDebugEnabled())
       {
-         printComponentTree(FacesContext.getCurrentInstance().getViewRoot());
+         if (event.getPhaseId() == PhaseId.RENDER_RESPONSE)
+         {
+            printComponentTree(FacesContext.getCurrentInstance().getViewRoot());
+         }
+         
+         logger.debug("********** Exiting phase: " + event.getPhaseId().toString());
       }
    }
    
@@ -57,6 +62,8 @@ public class DebugPhaseListener implements PhaseListener
     */
    public void beforePhase(PhaseEvent event)
    {
+      if (logger.isDebugEnabled())
+         logger.debug("********** Entering phase: " + event.getPhaseId().toString());
    }
    
    /**
@@ -64,29 +71,33 @@ public class DebugPhaseListener implements PhaseListener
     */
    public PhaseId getPhaseId()
    {
-      return PhaseId.RENDER_RESPONSE;
+      return PhaseId.ANY_PHASE;
    }
    
-   public void printComponentTree(UIComponent comp){
+   public void printComponentTree(UIComponent comp)
+   {
       printComponentInfo(comp);
       
       List complist = comp.getChildren();
       if (complist.size()>0)
          indent++;
-      for   (int i = 0; i < complist.size(); i++) {
+      for   (int i = 0; i < complist.size(); i++) 
+      {
          UIComponent uicom = (UIComponent) complist.get(i);
          printComponentTree(uicom);
          if (i+1 == complist.size())
             indent--;
       }
-      
    }
    
-   public void printComponentInfo(UIComponent comp){
-      
-      if (comp.getId() == null){
+   public void printComponentInfo(UIComponent comp)
+   {
+      if (comp.getId() == null)
+      {
          logger.debug("UIViewRoot" + " " + "(" + comp.getClass().getName() + ")");
-      } else {
+      } 
+      else 
+      {
          logger.debug(getIndent() + "|");
          logger.debug(getIndent() + comp.getId() + " " + "(" + comp.getClass().getName() + ")");
       }  
@@ -99,6 +110,7 @@ public class DebugPhaseListener implements PhaseListener
       {
          indent += INDENT;
       }
+      
       return indent;         
    } 
 }

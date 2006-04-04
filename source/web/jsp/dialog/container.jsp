@@ -25,11 +25,7 @@
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
-<%-- ***************************************************************************** --%>
-<%-- TODO: Find a way to dynamically drive the container title for automated tests --%>
-<%-- ***************************************************************************** --%>
-
-<r:page title="Dialog Container">
+<r:page title="<%=Application.getDialogManager().getTitle() %>">
 
 <f:view>
    
@@ -117,7 +113,7 @@
                                  <tr>
                                     <td align="center">
                                        <h:commandButton id="cancel-button" styleClass="wizardButton"
-                                                        value="#{msg.cancel}" 
+                                                        value="#{DialogManager.cancelButtonLabel}" 
                                                         action="#{DialogManager.cancel}" />
                                     </td>
                                  </tr>

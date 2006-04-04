@@ -85,16 +85,6 @@ public class DialogsConfigElement extends ConfigElementAdapter
    }
    
    /**
-    * Adds a dialog
-    * 
-    * @param dialogConfig A pre-configured dialog config object
-    */
-   /*package*/ void addDialog(DialogConfig dialogConfig)
-   {
-      this.dialogs.put(dialogConfig.getName(), dialogConfig);
-   }
-   
-   /**
     * Returns the named dialog
     * 
     * @param name The name of the dialog to retrieve
@@ -115,6 +105,16 @@ public class DialogsConfigElement extends ConfigElementAdapter
    }
    
    /**
+    * Adds a dialog
+    * 
+    * @param dialogConfig A pre-configured dialog config object
+    */
+   /*package*/ void addDialog(DialogConfig dialogConfig)
+   {
+      this.dialogs.put(dialogConfig.getName(), dialogConfig);
+   }
+   
+   /**
     * Inner class representing the configuration of a single dialog
     * 
     * @author gavinc
@@ -124,14 +124,16 @@ public class DialogsConfigElement extends ConfigElementAdapter
       protected String name;
       protected String page;
       protected String managedBean;
+      protected String actionsConfigId;
       protected String icon;
       protected String title;
       protected String titleId;
       protected String description;
       protected String descriptionId;
       
-      public DialogConfig(String name, String page, String bean, 
-                          String icon, String title, String titleId,
+      public DialogConfig(String name, String page, String bean,
+                          String actionsConfigId, String icon, 
+                          String title, String titleId,
                           String description, String descriptionId)
       {
          // check the mandatory parameters are present
@@ -142,6 +144,7 @@ public class DialogsConfigElement extends ConfigElementAdapter
          this.name = name;
          this.page = page;
          this.managedBean = bean;
+         this.actionsConfigId = actionsConfigId;
          this.icon = icon;
          this.title = title;
          this.titleId = titleId;
@@ -162,6 +165,11 @@ public class DialogsConfigElement extends ConfigElementAdapter
       public String getManagedBean()
       {
          return this.managedBean;
+      }
+      
+      public String getActionsConfigId()
+      {
+         return this.actionsConfigId;
       }
       
       public String getName()
@@ -199,6 +207,7 @@ public class DialogsConfigElement extends ConfigElementAdapter
          buffer.append(" (name=").append(this.name);
          buffer.append(" page=").append(this.page);
          buffer.append(" managed-bean=").append(this.managedBean);
+         buffer.append(" actions-config-id=").append(this.actionsConfigId);
          buffer.append(" icon=").append(this.icon);
          buffer.append(" title=").append(this.title);
          buffer.append(" titleId=").append(this.titleId);

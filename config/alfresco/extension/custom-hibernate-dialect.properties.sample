@@ -1,0 +1,18 @@
+#
+# Sample Hibernate configuration for changing Database dialect
+#
+
+#
+# MySQL dialect (default)
+#
+#hibernate.dialect=org.hibernate.dialect.MySQLDialect
+
+#
+# Oracle dialect
+#
+#hibernate.dialect=org.hibernate.dialect.Oracle9Dialect
+
+#
+# Sybase dialect
+#
+#hibernate.dialect=org.hibernate.dialect.SybaseAnywhereDialect

@@ -1,0 +1,24 @@
+#
+# Sample database connection properties
+#
+
+#db.username=alfresco
+#db.password=alfresco
+
+#
+# MySQL connection (This is default and requires mysql-connector-java-3.1.12-bin.jar, which ships with the Alfresco server)
+#
+#db.driver=org.gjt.mm.mysql.Driver
+#db.url=jdbc:mysql://localhost/alfresco
+
+#
+# Oracle connection (requires ojdbc14_g.jar or equivalent jar in shared libraries location)
+#
+#db.driver=oracle.jdbc.OracleDriver
+#db.url=jdbc:oracle:thin:@localhost:1521:alfresco
+
+#
+# Sybase connection (requires jconn2d.jar or equivalent jar in shared libraries location)
+#
+#db.driver=com.sybase.jdbc2.jdbc.SybDriver
+#db.url=jdbc:sybase:Tds:localhost:2638/alfresco

@@ -140,11 +140,11 @@
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td><nobr><h:outputText value="#{msg.export_from}"/>:</nobr></td>
+                                    <td><nobr><h:outputText value="#{msg.export_from}:" rendered="#{NavigationBean.currentUser.admin == true}"/></nobr></td>
                                     <td>
-                                       <h:selectOneRadio value="#{ExportDialog.mode}" layout="pageDirection">
-                                          <f:selectItem itemValue="current" itemLabel="#{msg.current_space}" />
+                                       <h:selectOneRadio value="#{ExportDialog.mode}" layout="pageDirection" rendered="#{NavigationBean.currentUser.admin == true}">
                                           <f:selectItem itemValue="all" itemLabel="#{msg.all_spaces_root}" />
+                                          <f:selectItem itemValue="current" itemLabel="#{msg.current_space}" />
                                        </h:selectOneRadio>
                                     </td>
                                  </tr>
@@ -161,6 +161,7 @@
                                  <tr>
                                     <td>&nbsp;</td>
                                     <td>
+                                       <h:outputText value="<span style='padding-left: 24px'/>" escape="false" rendered="#{NavigationBean.currentUser.admin == true}"/>
                                        <h:selectBooleanCheckbox value="#{ExportDialog.includeChildren}"/>&nbsp;
                                        <span style="vertical-align:20%"><h:outputText value="#{msg.include_children}"/></span>
                                     </td>
@@ -168,6 +169,7 @@
                                  <tr>
                                     <td>&nbsp;</td>
                                     <td>
+                                       <h:outputText value="<span style='padding-left: 24px'/>" escape="false" rendered="#{NavigationBean.currentUser.admin == true}"/>
                                        <h:selectBooleanCheckbox value="#{ExportDialog.includeSelf}"/>&nbsp;
                                        <span style="vertical-align:20%"><h:outputText value="#{msg.include_self}"/></span>
                                     </td>
@@ -175,6 +177,7 @@
                                  <tr>
                                     <td>&nbsp;</td>
                                     <td>
+                                       <h:outputText value="<span style='padding-left: 5px'/>" escape="false" rendered="#{NavigationBean.currentUser.admin == true}"/>
                                        <h:selectBooleanCheckbox value="#{ExportDialog.runInBackground}" />&nbsp;
                                        <span style="vertical-align:20%"><h:outputText value="#{msg.run_export_in_background}"/></span>
                                     </td>
@@ -182,7 +185,7 @@
                                  <tr>
                                     <td>&nbsp;</td>
                                     <td>
-                                       <div id="error-info" style="padding-left: 24px;">
+                                       <div id="error-info" style="padding-left: 30px;">
                                           <h:graphicImage alt="" value="/images/icons/info_icon.gif" style="vertical-align: middle;"/>&nbsp;
                                           <h:outputText value="#{msg.export_error_info}"/>
                                        </div>

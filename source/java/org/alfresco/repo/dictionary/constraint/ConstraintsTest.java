@@ -17,13 +17,16 @@
 package org.alfresco.repo.dictionary.constraint;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.dictionary.DictionaryDAOTest;
+import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintException;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
 
 /**
  * <b>This file must be saved using UTF-8.</b>
@@ -63,9 +66,111 @@ public class ConstraintsTest extends TestCase
         catch (ConstraintException e)
         {
             // expected
+            checkI18NofExceptionMessage(e);
         }
         // check that the two strings were properly dealt with
         assertEquals("String values not checked", 2, constraint.tested.size());
+    }
+    
+    public void testNull() throws Exception
+    {
+        DummyConstraint constraint = new DummyConstraint();
+        constraint.initialize();
+        
+        // a null always passes
+        constraint.evaluate(null);
+    }
+    
+    private void checkI18NofExceptionMessage(Throwable e)
+    {
+        String msg = e.getMessage();
+        assertFalse("I18N of constraint message failed", msg.startsWith("d_dictionary.constraint"));
+    }
+    
+    private void evaluate(Constraint constraint, Object value, boolean expectFailure) throws Exception
+    {
+        try
+        {
+            constraint.evaluate(value);
+            if (expectFailure)
+            {
+                // it should have failed
+                fail("Failure did not occur: \n" +
+                        "   constraint: " + constraint + "\n" +
+                        "   value: " + value);
+            }
+        }
+        catch (ConstraintException e)
+        {
+            // check if we expect an error
+            if (expectFailure)
+            {
+                // expected - check message I18N
+                checkI18NofExceptionMessage(e);
+            }
+            else
+            {
+                // didn't expect it
+                throw e;
+            }
+        }
+    }
+    
+    public void testStringLengthConstraint() throws Exception
+    {
+        StringLengthConstraint constraint = new StringLengthConstraint();
+        try
+        {
+            constraint.setMinLength(-1);
+        }
+        catch (DictionaryException e)
+        {
+            // expected
+            checkI18NofExceptionMessage(e);
+        }
+        try
+        {
+            constraint.setMaxLength(-1);
+        }
+        catch (DictionaryException e)
+        {
+            // expected
+            checkI18NofExceptionMessage(e);
+        }
+        constraint.setMinLength(3);
+        constraint.setMaxLength(6);
+        
+        evaluate(constraint, "abc", false);
+        evaluate(constraint, "abcdef", false);
+        evaluate(constraint, Arrays.asList("abc", "abcdef"), false);
+        evaluate(constraint, "ab", true);
+        evaluate(constraint, "abcdefg", true);
+        evaluate(constraint, Arrays.asList("abc", "abcdefg"), true);
+    }
+    
+    public void testNumericRangeConstraint() throws Exception
+    {
+        NumericRangeConstraint constraint = new NumericRangeConstraint();
+        constraint.initialize();
+        
+        // check that Double.MIN_VALUE and Double.MAX_VALUE are allowed by default
+        constraint.evaluate(Double.MIN_VALUE);
+        constraint.evaluate(Double.MAX_VALUE);
+        
+        // check that Double.NaN is not allowed by default
+        evaluate(constraint, Double.NaN, true);
+        
+        // set some limits and check
+        constraint.setMinValue(-5.0D);
+        constraint.setMaxValue(+5.0D);
+        constraint.initialize();
+        
+        evaluate(constraint, "-1.0", false);
+        evaluate(constraint, "+1.0", false);
+        evaluate(constraint, Arrays.asList(-1, 0, 1), false);
+        evaluate(constraint, "abc", true);
+        evaluate(constraint, 56.453E4, true);
+        evaluate(constraint, Arrays.asList(-1, 6), true);
     }
     
     public void testRegexConstraint() throws Exception
@@ -76,38 +181,22 @@ public class ConstraintsTest extends TestCase
         constraint.initialize();
         
         // do some successful stuff
-        constraint.evaluate("ABC");
-        constraint.evaluate("DEF");
+        evaluate(constraint, "ABC", false);
+        evaluate(constraint, "DEF", false);
         
         // now some failures
-        try
-        {
-            constraint.evaluate("abc");
-            fail("Regular expression evaluation should have failed: abc");
-        }
-        catch (ConstraintException e)
-        {
-            String msg = e.getMessage();
-            assertFalse("I18N of constraint message failed", msg.startsWith("d_dictionary.constraint"));
-        }
+        evaluate(constraint, "abc", true);
         
         // now a case of passing in an object that could be a string
-        constraint.evaluate(DummyEnum.ABC);
-        constraint.evaluate(DummyEnum.DEF);
-        try
-        {
-            constraint.evaluate(DummyEnum.abc);
-            fail("Regular expression evaluation should have failed for enum: " + DummyEnum.abc);
-        }
-        catch (ConstraintException e)
-        {
-        }
+        evaluate(constraint, DummyEnum.ABC, false);
+        evaluate(constraint, DummyEnum.DEF, false);
+        evaluate(constraint, DummyEnum.abc, true);
         
         // now switch the requiresMatch around
         constraint.setRequiresMatch(false);
         constraint.initialize();
         
-        constraint.evaluate(DummyEnum.abc);
+        evaluate(constraint, DummyEnum.abc, false);
     }
     
     public void testRegexConstraintFilename() throws Exception
@@ -125,30 +214,12 @@ public class ConstraintsTest extends TestCase
         for (int i = 0; i < invalidChars.length(); i++)
         {
             String invalidStr = invalidChars.substring(i, i+1);
-            try
-            {
-                constraint.evaluate(invalidStr);
-                fail("Regex constraint failed to detect illegal characters: \n" +
-                        "   constraint: " + constraint + "\n" +
-                        "   invalid string: " + invalidStr);
-            }
-            catch (ConstraintException e)
-            {
-                // expected
-            }
+            evaluate(constraint, invalidStr, true);
         }
         // check a bogus filename
-        try
-        {
-            constraint.evaluate("Bogus<>.txt");
-            fail("Failed to detect invalid filename");
-        }
-        catch (ConstraintException e)
-        {
-            // expected
-        }
+        evaluate(constraint, "Bogus<>.txt", true);
         // ... and a valid one
-        constraint.evaluate("Company Home");
+        evaluate(constraint, "Company Home", false);
     }
     
     private enum DummyEnum

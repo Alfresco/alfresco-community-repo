@@ -21,6 +21,7 @@ import java.util.Collection;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**
  * Base services for constraints.
@@ -39,12 +40,17 @@ public abstract class AbstractConstraint implements Constraint
     @SuppressWarnings("unchecked")
     public final void evaluate(Object value)
     {
+        if (value == null)
+        {
+            // null values are never evaluated
+            return;
+        }
         try
         {
-            // check for collection
-            if (value instanceof Collection)
+            // ensure that we can handle collections
+            if (DefaultTypeConverter.INSTANCE.isMultiValued(value))
             {
-                Collection collection = (Collection) value;
+                Collection collection = DefaultTypeConverter.INSTANCE.getCollection(Object.class, value);
                 evaluateCollection(collection);
             }
             else
@@ -75,13 +81,18 @@ public abstract class AbstractConstraint implements Constraint
     {
         for (Object value : collection)
         {
+            if (value == null)
+            {
+                // contract states that it will always pass
+                continue;
+            }
             evaluateSingleValue(value);
         }
     }
     
     /**
      * Support for evaluation of properties.  The value passed in will never be a
-     * collection.
+     * <tt>Collection</tt> and will never be <tt>null</tt>.
      * 
      * @throws ConstraintException throw this when the evaluation fails
      */

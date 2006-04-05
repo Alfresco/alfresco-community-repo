@@ -133,7 +133,7 @@ public class DictionaryDAOTest extends TestCase
         PropertyDefinition propDef = service.getProperty(prop1QName);
         List<ConstraintDefinition> constraints = propDef.getConstraints();
         assertNotNull("Null constraints list", constraints);
-        assertEquals("Incorrect number of constraints", 1, constraints.size());
+        assertEquals("Incorrect number of constraints", 2, constraints.size());
         
         // check the individual constraints
         ConstraintDefinition constraintDef = constraints.get(0);

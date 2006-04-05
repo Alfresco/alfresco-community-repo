@@ -59,14 +59,37 @@ public class RegexConstraint extends AbstractConstraint
     }
 
     /**
-     * Set the regular expression used to evaluate string values
-     * @param expression similar to the {@link String#matches(java.lang.String) argument
+     * @return Returns the regular expression similar to the {@link String#matches(java.lang.String)}
+     */
+    public String getExpression()
+    {
+        return expression;
+    }
+
+    /**
+     * Set the regular expression used to evaluate String values
+     * @param regular expression similar to the {@link String#matches(java.lang.String)} argument
      */
     public void setExpression(String expression)
     {
         this.expression = expression;
     }
-    
+
+    /**
+     * @return Returns <tt>true</tt> if the value must match the regular expression
+     *      or <tt>false</tt> if the value must not match the regular expression
+     */
+    public boolean getRequiresMatch()
+    {
+        return requiresMatch;
+    }
+
+    /**
+     * Set whether the regular expression must be matched or not
+     * 
+     * @param requiresMatch Set to <tt>true</tt> if the value must match the regular expression
+     *      or <tt>false</tt> if the value must not match the regular expression
+     */
     public void setRequiresMatch(boolean requiresMatch)
     {
         this.requiresMatch = requiresMatch;

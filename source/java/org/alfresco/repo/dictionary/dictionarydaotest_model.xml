@@ -27,6 +27,14 @@
          <parameter name="expression">[A-Z]*</parameter>
          <parameter name="requiresMatch">false</parameter>
       </constraint>
+      <constraint name="test:stringLength1" type="LENGTH">
+         <parameter name="minLength">0</parameter>
+         <parameter name="maxLength">256</parameter>
+      </constraint>
+      <constraint name="test:minMax1" type="MINMAX">
+         <parameter name="minValue">0</parameter>
+         <parameter name="maxValue">256</parameter>
+      </constraint>
    </constraints>
 
    <types>
@@ -43,6 +51,7 @@
                <default></default>
                <constraints>
                   <constraint ref="test:regex1"/>
+                  <constraint ref="test:stringLength1"/>
                </constraints>
             </property>
          </properties>
@@ -165,6 +174,9 @@
                   <atomic>true</atomic>
                   <stored>false</stored>
                </index>
+               <constraints>
+                  <constraint ref="test:minMax1"/>
+               </constraints>
             </property>
          </properties>
       </aspect>

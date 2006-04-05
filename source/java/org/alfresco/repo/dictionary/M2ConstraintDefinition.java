@@ -18,7 +18,9 @@ package org.alfresco.repo.dictionary;
 
 import java.util.List;
 
+import org.alfresco.repo.dictionary.constraint.NumericRangeConstraint;
 import org.alfresco.repo.dictionary.constraint.RegexConstraint;
+import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
@@ -225,6 +227,22 @@ import org.springframework.beans.TypeMismatchException;
             protected Constraint newInstance()
             {
                 return new RegexConstraint();
+            }
+        },
+        MINMAX
+        {
+            @Override
+            protected Constraint newInstance()
+            {
+                return new NumericRangeConstraint();
+            }
+        },
+        LENGTH
+        {
+            @Override
+            protected Constraint newInstance()
+            {
+                return new StringLengthConstraint();
             }
         };
 

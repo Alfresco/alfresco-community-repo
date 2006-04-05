@@ -246,7 +246,7 @@ public class NodeContext extends ElementContext
         PropertyDefinition propDef = getDictionaryService().getProperty(property);
 
         // Process Alfresco UUID
-        if (propDef != null && propDef.getName().equals(ContentModel.PROP_NODE_UUID))
+        if (uuid == null && propDef != null && propDef.getName().equals(ContentModel.PROP_NODE_UUID))
         {
             uuid = value;
         }
@@ -311,6 +311,25 @@ public class NodeContext extends ElementContext
         return nodeProperties;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.importer.ImportNode#getPropertyDataType(org.alfresco.service.namespace.QName)
+     */
+    public DataTypeDefinition getPropertyDataType(QName propertyName)
+    {
+        // get property datatype
+        DataTypeDefinition valueDataType = propertyDatatypes.get(propertyName);
+        if (valueDataType == null)
+        {
+            PropertyDefinition propDef = getDictionaryService().getProperty(propertyName);
+            if (propDef != null)
+            {
+                valueDataType = propDef.getDataType();
+            }
+        }
+        return valueDataType;
+    }
+        
     /**
      * Adds an aspect to the node
      * 
@@ -517,5 +536,5 @@ public class NodeContext extends ElementContext
             return null;
         }
     }
-    
+
 }

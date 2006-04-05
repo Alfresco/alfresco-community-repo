@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.view.ExporterCrawlerParameters;
 import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.Location;
+import org.alfresco.service.cmr.view.ReferenceType;
 import org.alfresco.service.cmr.view.RepositoryExporterService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
@@ -276,6 +277,7 @@ public class RepositoryExporterComponent implements RepositoryExporterService
         parameters.setCrawlAssociations(true);
         parameters.setCrawlNullProperties(true);
         parameters.setExcludeNamespaceURIs(new String[] {});
+        parameters.setReferenceType(ReferenceType.NODEREF);
         return parameters;
     }
     
@@ -294,7 +296,7 @@ public class RepositoryExporterComponent implements RepositoryExporterService
         public FileExportHandle exportStore(ExporterCrawlerParameters exportParameters, String packageName, Exporter progress)
         {
             // create a temporary file to hold the acp export
-            File tempFile = TempFileProvider.createTempFile("repoExp", "." + ACPExportPackageHandler.ACP_EXTENSION);
+            File tempFile = TempFileProvider.createTempFile("repoExp" + packageName, "." + ACPExportPackageHandler.ACP_EXTENSION);
 
             // create acp export handler around the temp file
             File dataFile = new File(packageName);
@@ -383,6 +385,7 @@ public class RepositoryExporterComponent implements RepositoryExporterService
      * 
      * @author davidc
      */
+    @SuppressWarnings("unused")
     private class RepositoryFileExporter implements ExportStore<RepositoryExportHandle>
     {
         private TempFileExporter tempFileExporter = new TempFileExporter();

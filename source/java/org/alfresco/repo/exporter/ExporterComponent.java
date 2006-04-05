@@ -53,6 +53,7 @@ import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.Location;
+import org.alfresco.service.cmr.view.ReferenceType;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -158,7 +159,7 @@ public class ExporterComponent
         ParameterCheck.mandatory("View Writer", viewWriter);
         
         // Construct a basic XML Exporter
-        Exporter xmlExporter = createXMLExporter(viewWriter);
+        Exporter xmlExporter = createXMLExporter(viewWriter, parameters.getReferenceType());
 
         // Export
         exportView(xmlExporter, parameters, progress);
@@ -174,7 +175,7 @@ public class ExporterComponent
         // create exporter around export handler
         exportHandler.startExport();
         OutputStream dataFile = exportHandler.createDataStream();
-        Exporter xmlExporter = createXMLExporter(dataFile);
+        Exporter xmlExporter = createXMLExporter(dataFile, parameters.getReferenceType());
         URLExporter urlExporter = new URLExporter(xmlExporter, exportHandler);
 
         // export        
@@ -201,9 +202,10 @@ public class ExporterComponent
      * output stream in xml format.
      * 
      * @param viewWriter  the output stream to write to
+     * @param referenceType  the format of references to export
      * @return  the xml exporter
      */
-    private Exporter createXMLExporter(OutputStream viewWriter)
+    private Exporter createXMLExporter(OutputStream viewWriter, ReferenceType referenceType)
     {
         // Define output format
         OutputFormat format = OutputFormat.createPrettyPrint();
@@ -215,9 +217,15 @@ public class ExporterComponent
         try
         {
             XMLWriter writer = new XMLWriter(viewWriter, format);
-            return new ViewXMLExporter(namespaceService, nodeService, searchService, dictionaryService, permissionService, writer);
+            ViewXMLExporter exporter = new ViewXMLExporter(namespaceService, nodeService, searchService, dictionaryService, permissionService, writer);
+            exporter.setReferenceType(referenceType);
+            return exporter;
         }
         catch (UnsupportedEncodingException e)        
+        {
+            throw new ExporterException("Failed to create XML Writer for export", e);            
+        }
+        catch (Exception e)        
         {
             throw new ExporterException("Failed to create XML Writer for export", e);            
         }
@@ -254,12 +262,12 @@ public class ExporterComponent
             
             // determine if root repository node
             NodeRef nodeRef = context.getExportOf();
-            boolean rootNode = nodeService.getRootNode(nodeRef.getStoreRef()).equals(nodeRef);
-            if (parameters.isCrawlSelf() && !rootNode)
+            if (parameters.isCrawlSelf())
             {
                 // export root node of specified export location
                 walkStartNamespaces(parameters, exporter);
-                walkNode(nodeRef, parameters, exporter);
+                boolean rootNode = nodeService.getRootNode(nodeRef.getStoreRef()).equals(nodeRef);
+                walkNode(nodeRef, parameters, exporter, rootNode);
                 walkEndNamespaces(parameters, exporter);
             }
             else if (parameters.isCrawlChildNodes())
@@ -269,7 +277,7 @@ public class ExporterComponent
                 for (ChildAssociationRef childAssoc : childAssocs)
                 {
                     walkStartNamespaces(parameters, exporter);
-                    walkNode(childAssoc.getChildRef(), parameters, exporter);
+                    walkNode(childAssoc.getChildRef(), parameters, exporter, false);
                     walkEndNamespaces(parameters, exporter);
                 }
             }
@@ -335,7 +343,7 @@ public class ExporterComponent
          * 
          * @param nodeRef  the node to navigate
          */
-        private void walkNode(NodeRef nodeRef, ExporterCrawlerParameters parameters, Exporter exporter)
+        private void walkNode(NodeRef nodeRef, ExporterCrawlerParameters parameters, Exporter exporter, boolean exportAsRef)
         {
             // Export node (but only if it's not excluded from export)
             QName type = nodeService.getType(nodeRef);
@@ -343,8 +351,16 @@ public class ExporterComponent
             {
                 return;
             }
-            
-            exporter.startNode(nodeRef);
+
+            // export node as reference to node, or as the actual node
+            if (exportAsRef)
+            {
+                exporter.startReference(nodeRef, null);
+            }
+            else
+            {
+                exporter.startNode(nodeRef);
+            }
 
             // Export node aspects
             exporter.startAspects(nodeRef);
@@ -361,7 +377,7 @@ public class ExporterComponent
             
             // Export node permissions
             AccessStatus readPermission = permissionService.hasPermission(nodeRef, PermissionService.READ_PERMISSIONS);
-            if (readPermission.equals(AccessStatus.ALLOWED))
+            if (authenticationService.isCurrentUserTheSystemUser() || readPermission.equals(AccessStatus.ALLOWED))
             {
                 Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
                 boolean inheritPermissions = permissionService.getInheritParentPermissions(nodeRef);
@@ -442,7 +458,7 @@ public class ExporterComponent
                     }
                     if (!isExcludedURI(parameters.getExcludeNamespaceURIs(), childAssoc.getQName().getNamespaceURI()))
                     {
-                        walkNode(childAssoc.getChildRef(), parameters, exporter);
+                        walkNode(childAssoc.getChildRef(), parameters, exporter, false);
                     }
                     if (i == childAssocs.size() - 1 || childAssocs.get(i + 1).getTypeQName().equals(childAssocType) == false)
                     {
@@ -463,7 +479,15 @@ public class ExporterComponent
             }
             
             // Signal end of node
-            exporter.endNode(nodeRef);
+            // export node as reference to node, or as the actual node
+            if (exportAsRef)
+            {
+                exporter.endReference(nodeRef);
+            }
+            else
+            {
+                exporter.endNode(nodeRef);
+            }            
         }
         
         /**

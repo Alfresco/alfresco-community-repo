@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.view.Exporter;
 import org.alfresco.service.cmr.view.ExporterContext;
 import org.alfresco.service.cmr.view.ExporterException;
+import org.alfresco.service.cmr.view.ReferenceType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.xml.sax.ContentHandler;
@@ -72,6 +73,7 @@ import org.xml.sax.helpers.AttributesImpl;
     private static final String INHERITPERMISSIONS_LOCALNAME  = "inherit";
     private static final String REFERENCE_LOCALNAME = "reference";
     private static final String PATHREF_LOCALNAME = "pathref";
+    private static final String NODEREF_LOCALNAME = "noderef";
     private static QName VIEW_QNAME;
     private static QName VALUES_QNAME;
     private static QName VALUE_QNAME;
@@ -94,6 +96,7 @@ import org.xml.sax.helpers.AttributesImpl;
     private static QName INHERITPERMISSIONS_QNAME;
     private static QName REFERENCE_QNAME;
     private static QName PATHREF_QNAME;
+    private static QName NODEREF_QNAME;
     private static final AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
     
     // Service dependencies
@@ -106,6 +109,10 @@ import org.xml.sax.helpers.AttributesImpl;
     // View context
     private ContentHandler contentHandler;
     private ExporterContext context;
+    
+    // Configuration
+    private ReferenceType referenceType;
+    
     
 
     /**
@@ -147,6 +154,18 @@ import org.xml.sax.helpers.AttributesImpl;
         INHERITPERMISSIONS_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, INHERITPERMISSIONS_LOCALNAME, namespaceService);
         REFERENCE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, REFERENCE_LOCALNAME, namespaceService);
         PATHREF_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, PATHREF_LOCALNAME, namespaceService);
+        NODEREF_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, NODEREF_LOCALNAME, namespaceService);
+    }
+    
+    
+    /**
+     * Set Reference Type to export with
+     * 
+     * @param referenceType  reference type to export
+     */
+    public void setReferenceType(ReferenceType referenceType)
+    {
+        this.referenceType = referenceType;
     }
     
     
@@ -518,7 +537,7 @@ import org.xml.sax.helpers.AttributesImpl;
                 NodeRef valueNodeRef = (NodeRef)value;
                 if (nodeRef.getStoreRef().equals(valueNodeRef.getStoreRef()))
                 {
-                    Path nodeRefPath = createRelativePath(context.getExportOf(), nodeRef, valueNodeRef);
+                    Path nodeRefPath = createPath(context.getExportOf(), nodeRef, valueNodeRef);
                     value = (nodeRefPath == null) ? null : nodeRefPath.toPrefixString(namespaceService);
                 }
             }
@@ -632,9 +651,24 @@ import org.xml.sax.helpers.AttributesImpl;
     {
         try
         {
-            Path path = createRelativePath(context.getExportParent(), context.getExportParent(), nodeRef);            
+            // determine format of reference e.g. node or path based
+            ReferenceType referenceFormat = referenceType;
+            if (nodeRef.equals(nodeService.getRootNode(nodeRef.getStoreRef())))
+            {
+                referenceFormat = ReferenceType.PATHREF;
+            }
+
+            // output reference
             AttributesImpl attrs = new AttributesImpl(); 
-            attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, PATHREF_LOCALNAME, PATHREF_QNAME.toPrefixString(), null, path.toPrefixString(namespaceService));
+            if (referenceFormat.equals(ReferenceType.PATHREF))
+            {
+                Path path = createPath(context.getExportParent(), context.getExportParent(), nodeRef);            
+                attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, PATHREF_LOCALNAME, PATHREF_QNAME.toPrefixString(), null, path.toPrefixString(namespaceService));
+            }
+            else
+            {
+                attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, NODEREF_LOCALNAME, NODEREF_QNAME.toPrefixString(), null, nodeRef.toString());
+            }
             if (childName != null)
             {
                 attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, CHILDNAME_LOCALNAME, CHILDNAME_QNAME.toPrefixString(), null, childName.toPrefixString(namespaceService));
@@ -704,7 +738,7 @@ import org.xml.sax.helpers.AttributesImpl;
      * @param toRef  to reference
      * @return  path
      */    
-    private Path createRelativePath(NodeRef rootRef, NodeRef fromRef, NodeRef toRef)
+    private Path createPath(NodeRef rootRef, NodeRef fromRef, NodeRef toRef)
     {
         // Check that item exists first
         if (!nodeService.exists(toRef))
@@ -713,6 +747,14 @@ import org.xml.sax.helpers.AttributesImpl;
             return null;
         }
         
+        // Check whether item is the root node of the store
+        // If so, always return absolute path
+        if (toRef.equals(nodeService.getRootNode(toRef.getStoreRef())))
+        {
+            return nodeService.getPath(toRef);
+        }
+        
+        // construct relative path
         Path rootPath = createIndexedPath(rootRef, nodeService.getPath(rootRef));
         Path fromPath = createIndexedPath(fromRef, nodeService.getPath(fromRef));
         Path toPath = createIndexedPath(toRef, nodeService.getPath(toRef));

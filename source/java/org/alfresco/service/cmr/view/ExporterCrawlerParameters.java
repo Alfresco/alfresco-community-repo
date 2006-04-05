@@ -35,6 +35,7 @@ public class ExporterCrawlerParameters
     private boolean crawlAssociations = true;
     private boolean crawlContent = true;
     private boolean crawlNullProperties = true;
+    private ReferenceType referenceType = ReferenceType.PATHREF;
     private String[] excludeNamespaceURIs = new String[] { NamespaceService.REPOSITORY_VIEW_1_0_URI };
 
     
@@ -137,7 +138,7 @@ public class ExporterCrawlerParameters
     {
         this.crawlNullProperties = crawlNullProperties;
     }
-
+    
     /**
      * Gets the list of namespace URIs to exlude from the Export
      * 
@@ -176,6 +177,26 @@ public class ExporterCrawlerParameters
     public void setExportFrom(Location exportFrom)
     {
         this.exportFrom = exportFrom;
+    }
+
+    /**
+     * Gets the format of exported references
+     * 
+     * @return  reference type
+     */
+    public ReferenceType getReferenceType()
+    {
+        return referenceType;
+    }
+    
+    /**
+     * Sets the format of exported references (child and association references)
+     * 
+     * @param  reference type
+     */
+    public void setReferenceType(ReferenceType referenceType)
+    {
+        this.referenceType = referenceType;
     }
 
 }

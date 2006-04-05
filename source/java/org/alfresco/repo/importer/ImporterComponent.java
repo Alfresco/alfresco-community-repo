@@ -36,7 +36,6 @@ import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -548,8 +547,9 @@ public class ImporterComponent
             // import content, if applicable
             for (Map.Entry<QName,Serializable> property : context.getProperties().entrySet())
             {
-                PropertyDefinition propertyDef = dictionaryService.getProperty(property.getKey());
-                if (propertyDef != null && propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+                // filter out content properties (they're imported later)
+                DataTypeDefinition valueDataType = context.getPropertyDataType(property.getKey());
+                if (valueDataType != null && valueDataType.getName().equals(DataTypeDefinition.CONTENT))
                 {
                     importContent(nodeRef, property.getKey(), (String)property.getValue());
                 }
@@ -627,10 +627,10 @@ public class ImporterComponent
         private void importContent(NodeRef nodeRef, QName propertyName, String importContentData)
         {
             // bind import content data description
-            DataTypeDefinition dataTypeDef = dictionaryService.getDataType(DataTypeDefinition.CONTENT);
             importContentData = bindPlaceHolder(importContentData, binding);
             if (importContentData != null && importContentData.length() > 0)
             {
+                DataTypeDefinition dataTypeDef = dictionaryService.getDataType(DataTypeDefinition.CONTENT);
                 ContentData contentData = (ContentData)DefaultTypeConverter.INSTANCE.convert(dataTypeDef, importContentData);
                 String contentUrl = contentData.getContentUrl();
                 if (contentUrl != null && contentUrl.length() > 0)
@@ -898,29 +898,20 @@ public class ImporterComponent
         private Map<QName, Serializable> bindProperties(ImportNode context)
         {
             Map<QName, Serializable> properties = context.getProperties();
-            Map<QName, DataTypeDefinition> datatypes = context.getPropertyDatatypes();
             Map<QName, Serializable> boundProperties = new HashMap<QName, Serializable>(properties.size());
             for (QName property : properties.keySet())
             {
-                // get property value
-                Serializable value = properties.get(property);
-
                 // get property datatype
-                DataTypeDefinition valueDataType = datatypes.get(property);
-                if (valueDataType == null)
-                {
-                    PropertyDefinition propDef = dictionaryService.getProperty(property);
-                    if (propDef != null)
-                    {
-                        valueDataType = propDef.getDataType();
-                    }
-                }
+                DataTypeDefinition valueDataType = context.getPropertyDataType(property);
 
                 // filter out content properties (they're imported later)
                 if (valueDataType != null && valueDataType.getName().equals(DataTypeDefinition.CONTENT))
                 {
                     continue;
                 }
+
+                // get property value
+                Serializable value = properties.get(property);
                 
                 // bind property value to configuration and convert to appropriate type
                 if (value instanceof Collection)

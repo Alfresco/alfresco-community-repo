@@ -228,7 +228,7 @@ public class RoutingContentService implements ContentService
             // Fire the content update policy
             Set<QName> types = new HashSet<QName>(this.nodeService.getAspects(nodeRef));
             types.add(this.nodeService.getType(nodeRef));
-            OnContentUpdatePolicy policy = this.onContentUpdateDelegate.get(types);
+            OnContentUpdatePolicy policy = this.onContentUpdateDelegate.get(nodeRef, types);
             policy.onContentUpdate(nodeRef, newContent);
         }
     }
@@ -294,7 +294,7 @@ public class RoutingContentService implements ContentService
             // Fire the content update policy
             Set<QName> types = new HashSet<QName>(this.nodeService.getAspects(nodeRef));
             types.add(this.nodeService.getType(nodeRef));
-            OnContentReadPolicy policy = this.onContentReadDelegate.get(types);
+            OnContentReadPolicy policy = this.onContentReadDelegate.get(nodeRef, types);
             policy.onContentRead(nodeRef);
         }
         

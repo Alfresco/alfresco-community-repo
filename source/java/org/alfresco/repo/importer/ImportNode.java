@@ -74,11 +74,12 @@ public interface ImportNode
     public Map<QName,Serializable> getProperties();
 
     /**
-     * Gets all property datatypes for the node
+     * Gets the property data type
      * 
-     * @return the property datatypes
+     * @param propertyName  name of property
+     * @return  data type of named property
      */
-    public Map<QName,DataTypeDefinition> getPropertyDatatypes();
+    public DataTypeDefinition getPropertyDataType(QName propertyName);
     
     /**
      * @return  the aspects of this node

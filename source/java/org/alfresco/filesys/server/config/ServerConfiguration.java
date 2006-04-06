@@ -72,6 +72,7 @@ import org.alfresco.filesys.smb.Dialect;
 import org.alfresco.filesys.smb.DialectSelector;
 import org.alfresco.filesys.smb.ServerType;
 import org.alfresco.filesys.util.IPAddress;
+import org.alfresco.filesys.util.X64;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -972,6 +973,19 @@ public class ServerConfiguration implements ApplicationListener
                 // Set the NetBIOS API to use
                 
                 setWin32WinsockNetBIOS( useWinsock);
+            }
+            
+            // Force the older NetBIOS API code to be used on 64Bit Windows
+            
+            if ( useWinsockNetBIOS() == true && X64.isWindows64())
+            {
+                // Log a warning
+                
+                logger.warn("Using older Netbios() API code");
+                
+                // Use the older NetBIOS API code
+                
+                setWin32WinsockNetBIOS( false);
             }
             
             // Check if the current operating system is supported by the Win32

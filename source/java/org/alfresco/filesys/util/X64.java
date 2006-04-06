@@ -17,8 +17,6 @@
 
 package org.alfresco.filesys.util;
 
-import java.util.Properties;
-
 /**
  * X64 Class
  * 

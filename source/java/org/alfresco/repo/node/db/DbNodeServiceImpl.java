@@ -348,7 +348,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 continue;
             }
 
-            // TODO what other conversions are nessesary here for other types of default values ?
+            // TODO: what other conversions are necessary here for other types of default values ?
             
             // ensure that we deliver the property in the correct form
             if (DataTypeDefinition.BOOLEAN.equals(prop.getDataType().getName()) == true)

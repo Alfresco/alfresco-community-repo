@@ -121,6 +121,7 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
     /* (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
+    @SuppressWarnings("unchecked")
     public void afterPropertiesSet() throws ServiceException
     {
         ParameterCheck.mandatory("Proxy Interface", proxyInterface);
@@ -228,7 +229,7 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
         {
             StoreRef storeRef = null;
 
-            if(args == null)
+            if (args == null)
             {
                 return null;
             }
@@ -239,7 +240,10 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
                 StoreRef argStoreRef = null;
                 if (argTypes[i].equals(NodeRef.class))
                 {
-                    argStoreRef = ((NodeRef) args[i]).getStoreRef();
+                    if (args[i] != null)
+                    {
+                        argStoreRef = ((NodeRef) args[i]).getStoreRef();
+                    }
                 }
                 else if (argTypes[i].equals(StoreRef.class))
                 {

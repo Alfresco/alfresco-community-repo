@@ -55,7 +55,7 @@
 
     <bean id="daoAuthenticationProvider" class="net.sf.acegisecurity.providers.dao.DaoAuthenticationProvider">
         <property name="authenticationDao">
-            <ref bean="alfDaoImpl" />
+            <ref bean="authenticationDao" />
         </property>
         <property name="saltSource">
             <ref bean="saltSource" />
@@ -122,19 +122,6 @@
 
     <bean id="passwordEncoder" class="org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl"></bean>
 
-<!--
-    <bean id="userType" class="org.alfresco.repo.security.authentication.UserType" init-method="init">
-        <property name="policyComponent">
-            <ref bean="policyComponent" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="passwordEncoder">
-            <ref bean="passwordEncoder" />
-        </property>
-    </bean>
--->
 
     <!-- A transactional wrapper around the implementation.                 -->
     <!-- TODO: This should be removed.                                      -->              
@@ -166,7 +153,7 @@
     
     <bean id="authenticationServiceImpl" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
         <property name="authenticationDao">
-            <ref bean="alfDaoImpl" />
+            <ref bean="authenticationDao" />
         </property>
         <property name="ticketComponent">
             <ref bean="ticketComponent" />
@@ -199,7 +186,7 @@
 
     <bean id="authenticationComponentImpl" class="org.alfresco.repo.security.authentication.AuthenticationComponentImpl">
         <property name="authenticationDao">
-            <ref bean="alfDaoImpl" />
+            <ref bean="authenticationDao" />
         </property>
         <property name="authenticationManager">
             <ref bean="authenticationManager" />

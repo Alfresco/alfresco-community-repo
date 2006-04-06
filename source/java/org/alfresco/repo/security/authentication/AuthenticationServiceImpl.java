@@ -16,6 +16,9 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.alfresco.service.cmr.security.AuthenticationService;
 
 public class AuthenticationServiceImpl implements AuthenticationService
@@ -25,6 +28,14 @@ public class AuthenticationServiceImpl implements AuthenticationService
     AuthenticationComponent authenticationComponent;
     
     TicketComponent ticketComponent;
+    
+    private String domain;
+    
+    private boolean allowsUserCreation = true;
+    
+    private boolean allowsUserDeletion = true;
+    
+    private boolean allowsUserPasswordChange = true;
     
     public AuthenticationServiceImpl()
     {
@@ -142,6 +153,90 @@ public class AuthenticationServiceImpl implements AuthenticationService
     {
         authenticationComponent.setGuestUserAsCurrentUser();
     }
+    
+
+    public boolean getAllowsUserCreation()
+    {
+        return allowsUserCreation;
+    }
+
+    public void setAllowsUserCreation(boolean allowsUserCreation)
+    {
+        this.allowsUserCreation = allowsUserCreation;
+    }
+
+    public boolean getAllowsUserDeletion()
+    {
+        return allowsUserDeletion;
+    }
+
+    public void setAllowsUserDeletion(boolean allowsUserDeletion)
+    {
+        this.allowsUserDeletion = allowsUserDeletion;
+    }
+
+    public boolean getAllowsUserPasswordChange()
+    {
+        return allowsUserPasswordChange;
+    }
+
+    public void setAllowsUserPasswordChange(boolean allowsUserPasswordChange)
+    {
+        this.allowsUserPasswordChange = allowsUserPasswordChange;
+    }
+
+    public String getDomain()
+    {
+        return domain;
+    }
+
+    public void setDomain(String domain)
+    {
+        this.domain = domain;
+    }
+
+    public Set<String> getDomains()
+    {
+       return Collections.singleton(getDomain());
+    }
+
+    public Set<String> getDomainsThatAllowUserCreation()
+    {
+        if(getAllowsUserCreation())
+        {
+            return Collections.singleton(getDomain()); 
+        }
+        else
+        {
+            return Collections.<String>emptySet();
+        }
+    }
+
+    public Set<String> getDomainsThatAllowUserDeletion()
+    {
+        if(getAllowsUserDeletion())
+        {
+            return Collections.singleton(getDomain()); 
+        }
+        else
+        {
+            return Collections.<String>emptySet();
+        }
+    }
+
+    public Set<String> getDomiansThatAllowUserPasswordChanges()
+    {
+        if(getAllowsUserPasswordChange())
+        {
+            return Collections.singleton(getDomain()); 
+        }
+        else
+        {
+            return Collections.<String>emptySet();
+        }
+    }
+
+   
 
     
 }

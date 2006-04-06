@@ -16,6 +16,8 @@
  */
 package org.alfresco.service.cmr.security;
 
+import java.util.Set;
+
 import org.alfresco.repo.security.authentication.AuthenticationException;
 
 /**
@@ -148,6 +150,34 @@ public interface AuthenticationService
      */
     
     public boolean isCurrentUserTheSystemUser();
+ 
+    /**
+     * Get the domain to which this instance of an authentication service applies.
+     * 
+     * @return The domain name
+     */
     
+    public Set<String> getDomains();
+    
+    /**
+     * Does this instance alow user to be created?
+     * 
+     * @return
+     */
+    public Set<String> getDomainsThatAllowUserCreation();
+    
+    /**
+     * Does this instance allow users to be deleted?
+     * 
+     * @return
+     */
+    public Set<String>  getDomainsThatAllowUserDeletion();
+    
+    /**
+     * Does this instance allow users to update their passwords?
+     * 
+     * @return
+     */
+    public Set<String> getDomiansThatAllowUserPasswordChanges();
 }
 

@@ -25,6 +25,7 @@ import java.util.Hashtable;
 import org.alfresco.filesys.netbios.NetBIOSName;
 import org.alfresco.filesys.util.DataBuffer;
 import org.alfresco.filesys.util.IPAddress;
+import org.alfresco.filesys.util.X64;
 
 /**
  * Win32 NetBIOS Native Call Wrapper Class
@@ -696,15 +697,23 @@ public class Win32NetBIOS
      */
     static
     {
-
+        // Check if we are running under 64 bit Windows
+        
+        String dllName = "Win32NetBIOS";
+        
+        if ( X64.isWindows64())
+            dllName = "Win32NetBIOSx64";
+        
         // Load the Win32 NetBIOS interface library
 
         try
         {
-            System.loadLibrary("Win32NetBIOS");
+            System.loadLibrary( dllName);
         }
         catch (Throwable ex)
         {
+            ex.printStackTrace();
+            
             // Save the native code load exception
 
             m_loadDLLException = ex;

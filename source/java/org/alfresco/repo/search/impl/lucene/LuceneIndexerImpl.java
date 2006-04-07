@@ -919,6 +919,9 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                     throw new LuceneIndexException("Filed to close main reader", e);
                 }
             }
+            // Make sure deletes are sent
+            closeDeltaReader();
+            // Make sure writes and updates are sent.
             closeDeltaWriter();
         }
     }

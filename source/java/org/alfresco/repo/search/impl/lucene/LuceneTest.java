@@ -3025,7 +3025,28 @@ public class LuceneTest extends TestCase
         runBaseTests();
 
         serviceRegistry.getNodeService().deleteNode(n1);
-        serviceRegistry.getNodeService().createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+        
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("PATH:\"//.\"");
+        sp.excludeDataInTheCurrentTransaction(false);
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(5, results.length());
+        results.close();
+
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("PATH:\"//.\"");
+        sp.excludeDataInTheCurrentTransaction(true);
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(15, results.length());
+        results.close();
+        
+        
+        NodeRef created = serviceRegistry.getNodeService().createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{namespace}texas"), testSuperType).getChildRef();
 
         sp = new SearchParameters();
@@ -3046,6 +3067,27 @@ public class LuceneTest extends TestCase
         assertEquals(15, results.length());
         results.close();
 
+        serviceRegistry.getNodeService().deleteNode(created);
+        
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("PATH:\"//.\"");
+        sp.excludeDataInTheCurrentTransaction(false);
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(5, results.length());
+        results.close();
+
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("PATH:\"//.\"");
+        sp.excludeDataInTheCurrentTransaction(true);
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(15, results.length());
+        results.close();
+        
         tx.rollback();
 
         sp = new SearchParameters();

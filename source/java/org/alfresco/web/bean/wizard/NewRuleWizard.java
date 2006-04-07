@@ -966,32 +966,21 @@ public class NewRuleWizard extends BaseActionWizard
    {
       if (this.modelTypes == null)
       {
-         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
+         FacesContext context = FacesContext.getCurrentInstance();
+         ConfigService svc = Application.getConfigService(context);
          Config wizardCfg = svc.getConfig("Action Wizards");
          if (wizardCfg != null)
          {
             ConfigElement typesCfg = wizardCfg.getConfigElement("types");
             if (typesCfg != null)
             {
-               FacesContext context = FacesContext.getCurrentInstance();
                this.modelTypes = new ArrayList<SelectItem>();
                for (ConfigElement child : typesCfg.getChildren())
                {
                   QName idQName = Repository.resolveToQName(child.getAttribute("name"));
 
-                  // look for a client localized string
-                  String label = null;
-                  String msgId = child.getAttribute("displayLabelId");
-                  if (msgId != null)
-                  {
-                     label = Application.getMessage(context, msgId);
-                  }
-                  
-                  // if there wasn't an externalized string look for one in the config
-                  if (label == null)
-                  {
-                     label = child.getAttribute("displayLabel");
-                  }
+                  // get the display label from config
+                  String label = Utils.getDisplayLabel(context, child);
 
                   // if there wasn't a client based label try and get it from the dictionary
                   if (label == null)

@@ -35,11 +35,13 @@ public class PropertySheetElementReader implements ConfigElementReader
    public static final String ELEMENT_SHOW_ASSOC = "show-association";
    public static final String ELEMENT_SHOW_CHILD_ASSOC = "show-child-association";
    public static final String ATTR_NAME = "name";
-   public static final String ATTR_DISPLAY_LABEL = "displayLabel";
-   public static final String ATTR_DISPLAY_LABEL_ID = "displayLabelId";
-   public static final String ATTR_READ_ONLY = "readOnly";
+   public static final String ATTR_DISPLAY_LABEL = "display-label";
+   public static final String ATTR_DISPLAY_LABEL_ID = "display-label-id";
+   public static final String ATTR_READ_ONLY = "read-only";
    public static final String ATTR_CONVERTER = "converter";
-   public static final String ATTR_SHOW_IN_EDIT_MODE = "showInEditMode";
+   public static final String ATTR_SHOW_IN_EDIT_MODE = "show-in-edit-mode";
+   public static final String ATTR_SHOW_IN_VIEW_MODE = "show-in-view-mode";
+   public static final String ATTR_COMPONENT_GENERATOR = "component-generator";
    
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
@@ -71,19 +73,24 @@ public class PropertySheetElementReader implements ConfigElementReader
             String readOnly = item.attributeValue(ATTR_READ_ONLY);
             String converter = item.attributeValue(ATTR_CONVERTER);
             String inEdit = item.attributeValue(ATTR_SHOW_IN_EDIT_MODE);
+            String inView = item.attributeValue(ATTR_SHOW_IN_VIEW_MODE);
+            String compGenerator = item.attributeValue(ATTR_COMPONENT_GENERATOR);
             
             if (ELEMENT_SHOW_PROPERTY.equals(item.getName()))
             {
                // add the property to show to the custom config element
-               configElement.addProperty(propName, label, labelId, readOnly, converter, inEdit);
+               configElement.addProperty(propName, label, labelId, readOnly, converter, 
+                     inView, inEdit, compGenerator);
             }
             else if (ELEMENT_SHOW_ASSOC.equals(item.getName()))
             {
-               configElement.addAssociation(propName, label, labelId, readOnly, converter, inEdit);
+               configElement.addAssociation(propName, label, labelId, readOnly, converter, 
+                     inView, inEdit, compGenerator);
             }
             else if (ELEMENT_SHOW_CHILD_ASSOC.equals(item.getName()))
             {
-               configElement.addChildAssociation(propName, label, labelId, readOnly, converter, inEdit);
+               configElement.addChildAssociation(propName, label, labelId, readOnly, converter, 
+                     inView, inEdit, compGenerator);
             }
          }
       }

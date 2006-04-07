@@ -45,7 +45,7 @@
       <advanced-search>
          <!-- custom properties to be shown in the More Options panel -->
          <custom-properties>
-            <meta-data aspect="app:simpleworkflow" property="app:rejectStep" displayLabelId="reject_step" />
+            <meta-data aspect="app:simpleworkflow" property="app:rejectStep" display-label-id="reject_step" />
          </custom-properties>
       </advanced-search>
    </config>
@@ -78,8 +78,16 @@
    
    <config evaluator="string-compare" condition="space-aspect">
       <property-sheet>
-         <show-property name="size" readOnly="true" />
-         <show-property name="icon" readOnly="true" showInEditMode="false" />
+         <show-property name="size" read-only="true" />
+         <show-property name="icon" read-only="true" show-in-edit-mode="false" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="string-compare" condition="Property Viewing">
+      <property-sheet>
+         <show-property name="description" show-in-view-mode="false" show-in-edit-mode="false" />
+         <show-property name="icon" />
+         <show-property name="uuid" show-in-view-mode="true" />
       </property-sheet>
    </config>
    

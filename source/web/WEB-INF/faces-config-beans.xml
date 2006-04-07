@@ -1390,4 +1390,87 @@
       </managed-property>
    </managed-bean>
    
+   <!-- ==================== COMPONENT GENERATOR BEANS ==================== -->
+   
+   <managed-bean>
+      <description>
+         Bean that generates a text field component
+      </description>
+      <managed-bean-name>TextFieldGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.TextFieldGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that generates a checkbox component
+      </description>
+      <managed-bean-name>CheckboxGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.CheckboxGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that generates a date picker component
+      </description>
+      <managed-bean-name>DatePickerGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.DatePickerGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that generates a datetime picker component
+      </description>
+      <managed-bean-name>DateTimePickerGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.DateTimePickerGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that generates a label component
+      </description>
+      <managed-bean-name>LabelGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.LabelGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that generates an image picker component
+      </description>
+      <managed-bean-name>SpaceIconPickerGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.SpaceIconPickerGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that generates a category picker component
+      </description>
+      <managed-bean-name>CategoryPickerGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.CategoryPickerGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that generates an association component
+      </description>
+      <managed-bean-name>AssociationGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.AssociationGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that generates a child association component
+      </description>
+      <managed-bean-name>ChildAssociationGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.ChildAssociationGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+   
 </faces-config>

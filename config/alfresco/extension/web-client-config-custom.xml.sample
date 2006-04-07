@@ -67,11 +67,11 @@
 
    <config evaluator="node-type" condition="my:sop">
       <property-sheet>
-         <show-property name="name" showInEditMode="false" />
-         <show-property name="mimetype" displayLabelId="mimetype" converter="org.alfresco.faces.MimeTypeConverter" showInEditMode="false" />
-         <show-property name="title" showInEditMode="false" />
-         <show-property name="description" showInEditMode="false" />
-         <show-property name="size" displayLabelId="size" converter="org.alfresco.faces.ByteSizeConverter" showInEditMode="false" />
+         <show-property name="name" show-in-edit-mode="false" />
+         <show-property name="mimetype" display-label-id="mimetype" converter="org.alfresco.faces.MimeTypeConverter" show-in-edit-mode="false" />
+         <show-property name="title" show-in-edit-mode="false" />
+         <show-property name="description" show-in-edit-mode="false" />
+         <show-property name="size" display-label-id="size" converter="org.alfresco.faces.ByteSizeConverter" show-in-edit-mode="false" />
          <show-property name="my:publishedDate" />
          <show-association name="my:signOff" />
          <show-property name="my:authorisedBy" />

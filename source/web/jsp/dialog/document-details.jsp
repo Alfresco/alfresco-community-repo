@@ -116,6 +116,8 @@
                      <table cellspacing="0" cellpadding="3" border="0" width="100%">
                         <tr>
                            <td width="100%" valign="top">
+                              <a:errors message="An error occurred" styleClass="errorMessage" />
+                           
                               <%-- wrapper comment used by the panel to add additional component facets --%>
                               <h:panelGroup id="dashboard-panel-facets">
                                  <f:facet name="title">
@@ -220,7 +222,6 @@
                                                   action="#{DocumentDetailsBean.applyInlineEditable}"
                                                   rendered="#{DocumentDetailsBean.inlineEditable == false}" />
                                           </r:permissionEvaluator>
-                                          <h:messages globalOnly="true" id="props-msgs" styleClass="errorMessage" layout="table" />
                                           <h:message for="document-props" styleClass="statusMessage" />
                                        </td>
                                     </tr>

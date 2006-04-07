@@ -41,6 +41,7 @@ import javax.faces.el.MethodBinding;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 
+import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.CIFSServer;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
@@ -62,7 +63,6 @@ import org.alfresco.web.app.servlet.ExternalAccessServlet;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.ui.common.component.UIStatusMessage;
 import org.apache.commons.logging.Log;
@@ -544,13 +544,11 @@ public final class Utils
             try
             {
                List<FileInfo> paths = fileFolderService.getNamePath(null, node.getNodeRef());
-               User user = Application.getCurrentUser(context);
                
                // build up the webdav url
                StringBuilder path = new StringBuilder("/").append(WebDAVServlet.WEBDAV_PREFIX);
                
                // build up the path skipping the first path as it is the root folder
-               boolean homeSpaceFound = false;
                for (int x = 1; x < paths.size(); x++)
                {
                   path.append("/").append(
@@ -1148,5 +1146,61 @@ public final class Utils
       }
       
       return image;
+   }
+   
+   /**
+    * Given a ConfigElement instance retrieve the display label, this could be
+    * dervied from a message bundle key or a literal string
+    * 
+    * @param context FacesContext
+    * @param configElement The ConfigElement to test
+    * @return The resolved display label
+    */
+   public static String getDisplayLabel(FacesContext context, ConfigElement configElement)
+   {
+      String label = null;
+ 
+      // look for a localized string
+      String msgId = configElement.getAttribute("display-label-id");
+      if (msgId != null)
+      {
+         label = Application.getMessage(context, msgId);
+      }
+      
+      // if there wasn't an externalized string look for a literal string
+      if (label == null)
+      {
+         label = configElement.getAttribute("display-label");
+      }
+      
+      return label;
+   }
+   
+   /**
+    * Given a ConfigElement instance retrieve the description, this could be
+    * dervied from a message bundle key or a literal string
+    * 
+    * @param context FacesContext
+    * @param configElement The ConfigElement to test
+    * @return The resolved description
+    */
+   public static String getDescription(FacesContext context, ConfigElement configElement)
+   {
+      String description = null;
+      
+      // look for a localized string
+      String msgId = configElement.getAttribute("description-id");
+      if (msgId != null)
+      {
+         description = Application.getMessage(context, msgId);
+      }
+      
+      // if there wasn't an externalized string look for a literal string
+      if (description == null)
+      {
+         description = configElement.getAttribute("description");
+      }
+      
+      return description;
    }
 }

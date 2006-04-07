@@ -129,11 +129,11 @@
    
    <config evaluator="string-compare" condition="space-aspect">
       <property-sheet>
-         <show-property name="createddate" readOnly="true" />
-         <show-property name="modifieddate" readOnly="true" />
-         <show-property name="description" displayLabel="Description" readOnly="false" />
-         <show-property name="icon" />
-         <show-property name="size" readOnly="true" showInEditMode="false" />
+         <show-property name="createddate" read-only="true" />
+         <show-property name="modifieddate" read-only="true" />
+         <show-property name="description" display-label="Description" read-only="false" />
+         <show-property name="icon" component-generator="SpaceIconPickerGenerator" />
+         <show-property name="size" read-only="true" show-in-edit-mode="false" />
       </property-sheet>
    </config>
    
@@ -165,11 +165,20 @@
       </navigation>
    </config>
    
+   <config evaluator="string-compare" condition="Property Viewing">
+      <property-sheet>
+         <show-property name="description" show-in-edit-mode="true" />
+         <show-property name="icon" read-only="true" show-in-view-mode="false" />
+         <show-property name="size" read-only="true" show-in-edit-mode="false" />
+         <show-property name="uuid" show-in-view-mode="false" show-in-edit-mode="false" />
+      </property-sheet>
+   </config>
+   
    <config evaluator="string-compare" condition="Property Editing">
       <property-sheet>
-         <show-property name="description" showInEditMode="true" />
-         <show-property name="icon" readOnly="true" />
-         <show-property name="size" readOnly="true" showInEditMode="false" />
+         <show-property name="description" show-in-edit-mode="true" />
+         <show-property name="icon" read-only="true" />
+         <show-property name="size" read-only="true" show-in-edit-mode="false" />
       </property-sheet>
    </config>
    

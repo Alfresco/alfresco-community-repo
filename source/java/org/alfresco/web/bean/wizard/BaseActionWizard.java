@@ -690,20 +690,8 @@ public abstract class BaseActionWizard extends AbstractWizardBean
                {
                   String id = child.getAttribute("name");
                   
-                  // look for a client localized string
-                  String label = null;
-                  String msgId = child.getAttribute("displayLabelId");
-                  if (msgId != null)
-                  {
-                     label = Application.getMessage(context, msgId);
-                  }
-                  
-                  // if there wasn't an externalized string look for one in the config
-                  if (label == null)
-                  {
-                     label = child.getAttribute("displayLabel");
-                  }
-                  
+                  // try and get the display label from config
+                  String label = Utils.getDisplayLabel(context, child);
                   this.encodings.add(new SelectItem(id, label));
                }
                
@@ -748,19 +736,8 @@ public abstract class BaseActionWizard extends AbstractWizardBean
                {
                   String id = child.getAttribute("name");
                   
-                  // look for a client localized string
-                  String label = null;
-                  String msgId = child.getAttribute("displayLabelId");
-                  if (msgId != null)
-                  {
-                     label = Application.getMessage(context, msgId);
-                  }
-                  
-                  // if there wasn't an externalized string look for one in the config
-                  if (label == null)
-                  {
-                     label = child.getAttribute("displayLabel");
-                  }
+                  // try and get the display label from config
+                  String label = Utils.getDisplayLabel(context, child);
 
                   // if there wasn't a client based label get it from the mime type service
                   if (label == null)
@@ -812,19 +789,8 @@ public abstract class BaseActionWizard extends AbstractWizardBean
                {
                   String id = child.getAttribute("name");
                   
-                  // look for a client localized string
-                  String label = null;
-                  String msgId = child.getAttribute("displayLabelId");
-                  if (msgId != null)
-                  {
-                     label = Application.getMessage(context, msgId);
-                  }
-                  
-                  // if there wasn't an externalized string look for one in the config
-                  if (label == null)
-                  {
-                     label = child.getAttribute("displayLabel");
-                  }
+                  // try and get the display label from config
+                  String label = Utils.getDisplayLabel(context, child);
 
                   // if there wasn't a client based label get it from the mime type service
                   if (label == null)
@@ -875,19 +841,8 @@ public abstract class BaseActionWizard extends AbstractWizardBean
                {
                   QName idQName = Repository.resolveToQName(child.getAttribute("name"));
 
-                  // look for a client localized string
-                  String label = null;
-                  String msgId = child.getAttribute("displayLabelId");
-                  if (msgId != null)
-                  {
-                     label = Application.getMessage(context, msgId);
-                  }
-                  
-                  // if there wasn't an externalized string look for one in the config
-                  if (label == null)
-                  {
-                     label = child.getAttribute("displayLabel");
-                  }
+                  // try and get the display label from config
+                  String label = Utils.getDisplayLabel(context, child);
 
                   // if there wasn't a client based label try and get it from the dictionary
                   if (label == null)
@@ -954,19 +909,8 @@ public abstract class BaseActionWizard extends AbstractWizardBean
                   if (typeDef != null &&
                       this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT))
                   {
-                     // look for a client localized string
-                     String label = null;
-                     String msgId = child.getAttribute("displayLabelId");
-                     if (msgId != null)
-                     {
-                        label = Application.getMessage(context, msgId);
-                     }
-                     
-                     // if there wasn't an externalized string look for one in the config
-                     if (label == null)
-                     {
-                        label = child.getAttribute("displayLabel");
-                     }
+                     // try and get the display label from config
+                     String label = Utils.getDisplayLabel(context, child);
    
                      // if there wasn't a client based label try and get it from the dictionary
                      if (label == null)

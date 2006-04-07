@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.config.ConfigElement;
+import org.alfresco.config.ConfigException;
 import org.alfresco.config.element.ConfigElementAdapter;
-import org.alfresco.config.element.GenericConfigElement;
 
 /**
  * Custom config element that represents the config data for a property sheet
@@ -38,16 +38,8 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
    public static final String CONFIG_ELEMENT_ID = "property-sheet";
    
    protected Map<String, ItemConfig> items = new LinkedHashMap<String, ItemConfig>(8, 10f);
-   protected Map<String, ItemConfig> editableItems = new LinkedHashMap<String, ItemConfig>(8, 10f);
-   
-   
-   //private List<ItemConfig> items = new ArrayList<ItemConfig>();
-   //private List<ItemConfig> editableItems = new ArrayList<ItemConfig>();
-   //private Map<String, ItemConfig> itemsMap = new HashMap<String, ItemConfig>();
-   //private Map<String, ItemConfig> editableItemsMap = new HashMap<String, ItemConfig>();
-   //private List<String> itemNames = new ArrayList<String>();
-   //private List<String> editableItemNames = new ArrayList<String>();
-   private boolean kidsPopulated = false;
+   protected Map<String, ItemConfig> viewableItems = new LinkedHashMap<String, ItemConfig>(8, 10f);   
+   protected Map<String, ItemConfig> editableItems = new LinkedHashMap<String, ItemConfig>(8, 10f);   
    
    /**
     * Default constructor
@@ -72,47 +64,7 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     */
    public List<ConfigElement> getChildren()
    {
-      // lazily build the list of generic config elements representing
-      // the properties as the caller may not even call this method
-      
-      List<ConfigElement> kids = null;
-      
-      if (this.items.size() > 0)
-      {
-         if (this.kidsPopulated == false)
-         {
-            for (ItemConfig pc : this.items.values())
-            {
-               GenericConfigElement ce = null;
-               if (pc instanceof PropertyConfig)
-               {
-                  ce = new GenericConfigElement(PropertySheetElementReader.ELEMENT_SHOW_PROPERTY);
-               }
-               else if (pc instanceof AssociationConfig)
-               {
-                  ce = new GenericConfigElement(PropertySheetElementReader.ELEMENT_SHOW_ASSOC);
-               }
-               else
-               {
-                  ce = new GenericConfigElement(PropertySheetElementReader.ELEMENT_SHOW_CHILD_ASSOC);
-               }
-               
-               ce.addAttribute(PropertySheetElementReader.ATTR_NAME, pc.getName());
-               ce.addAttribute(PropertySheetElementReader.ATTR_DISPLAY_LABEL, pc.getDisplayLabel());
-               ce.addAttribute(PropertySheetElementReader.ATTR_DISPLAY_LABEL_ID, pc.getDisplayLabelId());
-               ce.addAttribute(PropertySheetElementReader.ATTR_READ_ONLY, Boolean.toString(pc.isReadOnly()));
-               ce.addAttribute(PropertySheetElementReader.ATTR_CONVERTER, pc.getConverter());
-               ce.addAttribute(PropertySheetElementReader.ATTR_SHOW_IN_EDIT_MODE, Boolean.toString(pc.isShownInEditMode()));
-               this.children.add(ce);
-            }
-            
-            this.kidsPopulated = true;
-         }
-         
-         kids = super.getChildren();
-      }
-      
-      return kids;
+      throw new ConfigException("Reading the property-sheet config via the generic interfaces is not supported");
    }
    
    /**
@@ -123,13 +75,13 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
       PropertySheetConfigElement combined = new PropertySheetConfigElement();
       
       // add all the existing properties
-      for (ItemConfig item : this.getItemsToShow().values())
+      for (ItemConfig item : this.getItems().values())
       {
          combined.addItem(item);
       }
       
       // add all the properties from the given element
-      for (ItemConfig item : ((PropertySheetConfigElement)configElement).getItemsToShow().values())
+      for (ItemConfig item : ((PropertySheetConfigElement)configElement).getItems().values())
       {
          combined.addItem(item);
       }
@@ -145,10 +97,24 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
    /*package*/ void addItem(ItemConfig itemConfig)
    {
       this.items.put(itemConfig.getName(), itemConfig);
-        
-      // remove the item from the map if it is no longer editable
+
+      if (itemConfig.isShownInViewMode())
+      {
+         // add the item to the view list if it is editable
+         this.viewableItems.put(itemConfig.getName(), itemConfig);
+      }
+      else
+      {
+         // if the item was added previously as viewable it should be removed
+         if (viewableItems.containsKey(itemConfig.getName()))
+         {
+            this.viewableItems.remove(itemConfig.getName());
+         }
+      }
+      
       if (itemConfig.isShownInEditMode())
       {
+         // add the item to the edit list if it is editable
          this.editableItems.put(itemConfig.getName(), itemConfig);
       }
       else
@@ -169,14 +135,17 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     * @param displayLabelId Display label message id to use for the property
     * @param readOnly Sets whether the property should be rendered as read only
     * @param converter The name of a converter to apply to the property control
+    * @param inView Sets whether the property should be shown when the property 
+    *        sheet is in view mode
     * @param inEdit Sets whether the property should be shown when the property 
     *        sheet is in edit mode
+    * @parm compGenerator The name of a bean that can be used as a component generator
     */
    /*package*/ void addProperty(String name, String displayLabel, String displayLabelId, String readOnly, 
-                                String converter, String inEdit)
+                                String converter, String inView, String inEdit, String compGenerator)
    {
       addItem(new PropertyConfig(name, displayLabel, displayLabelId, Boolean.parseBoolean(readOnly), 
-            converter, inEdit));
+            converter, inView, inEdit, compGenerator));
    }
    
    /**
@@ -187,14 +156,17 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     * @param displayLabelId Display label message id to use for the property
     * @param readOnly Sets whether the association should be rendered as read only
     * @param converter The name of a converter to apply to the association control
+    * @param inView Sets whether the property should be shown when the property 
+    *        sheet is in view mode
     * @param inEdit Sets whether the property should be shown when the property 
     *        sheet is in edit mode
+    * @parm compGenerator The name of a bean that can be used as a component generator
     */
    /*package*/ void addAssociation(String name, String displayLabel, String displayLabelId, String readOnly, 
-                                   String converter, String inEdit)
+                                   String converter, String inView, String inEdit, String compGenerator)
    {
       addItem(new AssociationConfig(name, displayLabel, displayLabelId, Boolean.parseBoolean(readOnly), 
-            converter, inEdit));
+            converter, inView, inEdit, compGenerator));
    }
    
    /**
@@ -205,12 +177,25 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     * @param displayLabelId Display label message id to use for the property
     * @param readOnly Sets whether the association should be rendered as read only
     * @param converter The name of a converter to apply to the association control
+    * @param inView Sets whether the property should be shown when the property 
+    *        sheet is in view mode
+    * @param inEdit Sets whether the property should be shown when the property 
+    *        sheet is in edit mode
+    * @parm compGenerator The name of a bean that can be used as a component generator
     */
    /*package*/ void addChildAssociation(String name, String displayLabel, String displayLabelId, String readOnly, 
-                                        String converter, String inEdit)
+                                        String converter, String inView, String inEdit, String compGenerator)
    {
       addItem(new ChildAssociationConfig(name, displayLabel, displayLabelId, Boolean.parseBoolean(readOnly), 
-            converter, inEdit));
+            converter, inView, inEdit, compGenerator));
+   }
+   
+   /**
+    * @return Returns a map of the all the items
+    */
+   public Map<String, ItemConfig> getItems()
+   {
+      return this.items;
    }
    
    /**
@@ -218,9 +203,9 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     */
    public List<String> getItemNamesToShow()
    {
-      List<String> propNames = new ArrayList<String>(this.items.size());
+      List<String> propNames = new ArrayList<String>(this.viewableItems.size());
       
-      for (String name : this.items.keySet())
+      for (String name : this.viewableItems.keySet())
       {
          propNames.add(name);
       }
@@ -233,7 +218,7 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     */
    public Map<String, ItemConfig> getItemsToShow()
    {
-      return this.items;
+      return this.viewableItems;
    }
    
    /**
@@ -268,18 +253,26 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
       private String displayLabel;
       private String displayLabelId;
       private String converter;
+      private String componentGenerator;
       private boolean readOnly;
+      private boolean showInViewMode = true;
       private boolean showInEditMode = true;
       
       public ItemConfig(String name, String displayLabel, String displayLabelId, 
-            boolean readOnly, String converter, String inEdit)
+            boolean readOnly, String converter, String inView, String inEdit, 
+            String compGenerator)
       {
          this.name = name;
          this.displayLabel = displayLabel;
          this.displayLabelId = displayLabelId;
          this.readOnly = readOnly;
          this.converter = converter;
+         this.componentGenerator = compGenerator;
          
+         if (inView != null)
+         {
+            this.showInViewMode = Boolean.parseBoolean(inView);
+         }
          if (inEdit != null)
          {
             this.showInEditMode = Boolean.parseBoolean(inEdit);
@@ -318,14 +311,36 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
          return this.readOnly;
       }
       
+      /**
+       * @return The converter id
+       */
       public String getConverter()
       {
          return this.converter;
       }
       
+      /**
+       * @return true if the property should be shown when the property sheet is in view mode
+       */
+      public boolean isShownInViewMode()
+      {
+         return this.showInViewMode;
+      }
+      
+      /**
+       * @return true if the property should be shown when the property sheet is in edit mode
+       */
       public boolean isShownInEditMode()
       {
          return this.showInEditMode;
+      }
+      
+      /**
+       * @return The name of a bean that generates a component to represent this item
+       */
+      public String getComponentGenerator()
+      {
+         return this.componentGenerator;
       }
       
       /**
@@ -335,11 +350,13 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
       {
          StringBuilder buffer = new StringBuilder(super.toString());
          buffer.append(" (name=").append(this.name);
-         buffer.append(" displaylabel=").append(this.displayLabel);
-         buffer.append(" displaylabelId=").append(this.displayLabelId);
+         buffer.append(" display-label=").append(this.displayLabel);
+         buffer.append(" display-label-id=").append(this.displayLabelId);
          buffer.append(" converter=").append(this.converter);
-         buffer.append(" readonly=").append(this.readOnly);
-         buffer.append(" showInEditMode=").append(this.showInEditMode).append(")");
+         buffer.append(" read-only=").append(this.readOnly);
+         buffer.append(" show-in-view-mode=").append(this.showInViewMode);
+         buffer.append(" show-in-edit-mode=").append(this.showInEditMode);
+         buffer.append(" component-generator=").append(this.componentGenerator).append(")");
          return buffer.toString();
       }
    }
@@ -350,9 +367,11 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
    public class PropertyConfig extends ItemConfig
    {
       public PropertyConfig(String name, String displayLabel, String displayLabelId, 
-            boolean readOnly, String converter, String inEdit)
+            boolean readOnly, String converter, String inView, String inEdit, 
+            String compGenerator)
       {
-         super(name, displayLabel, displayLabelId, readOnly, converter, inEdit);
+         super(name, displayLabel, displayLabelId, readOnly, converter, 
+               inView, inEdit, compGenerator);
       }
    }
    
@@ -362,9 +381,11 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
    public class AssociationConfig extends ItemConfig
    {
       public AssociationConfig(String name, String displayLabel, String displayLabelId, 
-            boolean readOnly, String converter, String inEdit)
+            boolean readOnly, String converter, String inView, String inEdit, 
+            String compGenerator)
       {
-         super(name, displayLabel, displayLabelId, readOnly, converter, inEdit);
+         super(name, displayLabel, displayLabelId, readOnly, converter, 
+               inView, inEdit, compGenerator);
       }
    }
    
@@ -374,9 +395,11 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
    public class ChildAssociationConfig extends ItemConfig
    {
       public ChildAssociationConfig(String name, String displayLabel, String displayLabelId, 
-            boolean readOnly, String converter, String inEdit)
+            boolean readOnly, String converter, String inView, String inEdit, 
+            String compGenerator)
       {
-         super(name, displayLabel, displayLabelId, readOnly, converter, inEdit);
+         super(name, displayLabel, displayLabelId, readOnly, converter, 
+               inView, inEdit, compGenerator);
       }
    }
 }

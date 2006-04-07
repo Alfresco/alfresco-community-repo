@@ -100,71 +100,60 @@ public class WebClientConfigTest extends BaseTest
       ItemConfig iconProp = props.get("icon");
       assertNotNull("icon property config should not be null", iconProp);
       assertEquals("display label for icon should be null", null, iconProp.getDisplayLabel());
+      assertEquals("component-generator", "SpaceIconPickerGenerator", iconProp.getComponentGenerator());
       assertFalse("read only for icon should be 'false'", iconProp.isReadOnly());
+      
+      // test that a call to the generic getChildren call throws an error
+      try
+      {
+         spacePropConfig.getChildren();
+         fail("getChildren() did not throw an excpetion");
+      }
+      catch (ConfigException ce)
+      {
+         // expected
+      } 
    }
    
-   /**
-    * Tests the config service by retrieving property sheet configuration using
-    * the generic interfaces
-    */
-   public void testGenericConfigElement()
-   {
-      // setup the config service
-      String configFiles = getResourcesDir() + "test-config.xml";
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
-
-      // get the space aspect configuration
-      Config configProps = svc.getConfig("space-aspect");
-      ConfigElement propsToDisplay = configProps.getConfigElement("property-sheet");
-      assertNotNull("property sheet config should not be null", propsToDisplay);
-
-      // get all the property names using the ConfigElement interface methods
-      List<ConfigElement> kids = propsToDisplay.getChildren();
-      List<String> propNames = new ArrayList<String>();
-      for (ConfigElement propElement : propsToDisplay.getChildren())
-      {
-         String value = propElement.getValue();
-         assertNull("property value should be null", value);
-         String propName = propElement.getAttribute("name");
-         propNames.add(propName);
-      }
-
-      assertTrue("There should be 6 properties", propNames.size() == 6);
-      assertFalse("The id attribute should not be present", propsToDisplay.hasAttribute("id"));
-      
-      // make sure the inEditMode and readOnly flags are set correctly on the last property
-      assertEquals("showInEditMode", "false", kids.get(5).getAttribute("showInEditMode"));
-      assertEquals("readOnly", "true", kids.get(5).getAttribute("readOnly"));
-   }
-
-   /**
-    * Tests the config service by retrieving property sheet configuration using
-    * the custom config objects
-    */
-   public void testGetProperties()
+   public void testPropertyViewing()
    {
       // setup the config service
       String configFiles = getResourcesDir() + "test-config.xml";
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
       svc.init();
       
-      // get the space aspect configuration
-      Config configProps = svc.getConfig("space-aspect");
-      PropertySheetConfigElement propsToDisplay = (PropertySheetConfigElement)configProps.
+      Config propViewConfig = svc.getConfig("Property Viewing");
+      assertNotNull("Property Viewing section should not be null", propViewConfig);
+      
+      PropertySheetConfigElement propSheet = (PropertySheetConfigElement)propViewConfig.
             getConfigElement("property-sheet");
-      assertNotNull("property sheet config should not be null", propsToDisplay);
+      assertNotNull("property-sheet config should not be null", propSheet);
       
-      // get all the property names using the PropertySheetConfigElement implementation
-      List<String> propNames = propsToDisplay.getItemNamesToShow();
-              
-      // make sure the generic interfaces are also returning the correct data
-      List<ConfigElement> kids = propsToDisplay.getChildren();
-      assertNotNull("kids should not be null", kids);
-      assertTrue("There should be more than one child", kids.size() > 1);
+      // make sure the all items map works correctly
+      Map<String, ItemConfig> allItems = propSheet.getItems();
+      assertNotNull("allItems should not be null", allItems);
+      assertEquals("Total number of properties", 5, allItems.size());
+      assertNotNull("name property is missing", allItems.get("name"));
+      assertNotNull("description property is missing", allItems.get("description"));
+      assertNotNull("icon property is missing", allItems.get("icon"));
+      assertNotNull("size property is missing", allItems.get("size"));
+      assertNotNull("uuid property is missing", allItems.get("uuid"));
       
-      assertEquals("There should be 6 properties", propNames.size() == 6, true);
-      assertFalse("The id attribute should not be present", propsToDisplay.hasAttribute("id"));
+      // make sure the viewable properties list is correct
+      List<String> itemsToShow = propSheet.getItemNamesToShow();
+      assertNotNull("itemsToShow should not be null", itemsToShow);
+      assertEquals("Number of viewable properties", 3, itemsToShow.size());
+      assertEquals("first viewable property name", "name", itemsToShow.get(0));
+      assertEquals("second viewable property name", "description", itemsToShow.get(1));
+      assertEquals("third viewable property name", "size", itemsToShow.get(2));
+      
+      // make sure the editable properties list is correct
+      List<String> editItems = propSheet.getEditableItemNamesToShow();
+      assertNotNull("editItems should not be null", editItems);
+      assertEquals("Number of editable properties", 3, editItems.size());
+      assertEquals("first viewable property name", "name", editItems.get(0));
+      assertEquals("second viewable property name", "description", editItems.get(1));
+      assertEquals("third viewable property name", "icon", editItems.get(2));
    }
    
    public void testPropertyEditing()
@@ -180,7 +169,7 @@ public class WebClientConfigTest extends BaseTest
       PropertySheetConfigElement propSheet = (PropertySheetConfigElement)propEditConfig.
             getConfigElement("property-sheet");
       assertNotNull("property-sheet config should not be null", propSheet);
-      
+            
       // make sure the list of names method works correctly
       List<String> itemNamesToEdit = propSheet.getEditableItemNamesToShow();
       assertNotNull("itemNamesToEdit should not be null", itemNamesToEdit);
@@ -243,6 +232,48 @@ public class WebClientConfigTest extends BaseTest
       // get the icon 
       propConfig = (PropertySheetConfigElement.PropertyConfig)propSheet.getItemsToShow().get("icon");
       assertNotNull("propConfig should not be null", propConfig);
+      
+      //
+      // test the overridding of viewable/editable items
+      //
+      
+      propSheet = ((PropertySheetConfigElement)svc.getConfig("Property Viewing").
+            getConfigElement(PropertySheetConfigElement.CONFIG_ELEMENT_ID));
+      assertNotNull("property-sheet config should not be null", propSheet);
+      
+      // make sure the all items map works correctly
+      Map<String, ItemConfig> allItems = propSheet.getItems();
+      assertNotNull("allItems should not be null", allItems);
+      assertEquals("Total number of properties", 5, allItems.size());
+      assertNotNull("name property is missing", allItems.get("name"));
+      assertNotNull("description property is missing", allItems.get("description"));
+      assertNotNull("icon property is missing", allItems.get("icon"));
+      assertNotNull("size property is missing", allItems.get("size"));
+      assertNotNull("uuid property is missing", allItems.get("uuid"));
+      
+      // make sure the viewable properties list is correct
+      List<String> itemsToShow = propSheet.getItemNamesToShow();
+      assertNotNull("itemsToShow should not be null", itemsToShow);
+      assertEquals("Number of viewable properties", 4, itemsToShow.size());
+      assertEquals("first viewable property name", "name", itemsToShow.get(0));
+      assertEquals("second viewable property name", "size", itemsToShow.get(1));
+      assertEquals("third viewable property name", "icon", itemsToShow.get(2));
+      assertEquals("third viewable property name", "uuid", itemsToShow.get(3));
+      
+      // make sure the editable properties list is correct
+      List<String> editItems = propSheet.getEditableItemNamesToShow();
+      assertNotNull("editItems should not be null", editItems);
+      assertEquals("Number of editable properties", 3, editItems.size());
+      assertEquals("first viewable property name", "name", editItems.get(0));
+      assertEquals("second viewable property name", "icon", editItems.get(1));
+      assertEquals("third viewable property name", "uuid", editItems.get(2));
+    
+      // make sure icon is no longer read-only
+      ItemConfig iconCfg = propSheet.getItemsToShow().get("icon");
+      assertNotNull("iconCfg not should not be null", iconCfg);
+      assertFalse("icon should not be read-only", iconCfg.isReadOnly());
+      assertTrue("icon should be shown in view mode", iconCfg.isShownInViewMode());
+      assertTrue("icon should be shown in edit mode", iconCfg.isShownInEditMode());
    }
    
    /**

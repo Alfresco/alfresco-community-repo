@@ -31,12 +31,14 @@ import org.alfresco.config.ConfigLookupContext;
 import org.alfresco.config.ConfigService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.config.PropertySheetConfigElement;
 import org.alfresco.web.config.PropertySheetConfigElement.AssociationConfig;
 import org.alfresco.web.config.PropertySheetConfigElement.ChildAssociationConfig;
 import org.alfresco.web.config.PropertySheetConfigElement.ItemConfig;
 import org.alfresco.web.config.PropertySheetConfigElement.PropertyConfig;
+import org.alfresco.web.ui.repo.RepoConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -52,6 +54,8 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
    
    private static Log logger = LogFactory.getLog(UIPropertySheet.class);
    private static String DEFAULT_VAR_NAME = "node";
+   private static String PROP_ID_PREFIX = "prop_";
+   private static String ASSOC_ID_PREFIX = "assoc_";
    
    private String variable;
    private NodeRef nodeRef;
@@ -318,6 +322,16 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
    }
    
    /**
+    * Determines whether the property sheet is in edit mode
+    * 
+    * @return true if in edit mode
+    */
+   public boolean inEditMode()
+   {
+      return getMode().equalsIgnoreCase(EDIT_MODE);
+   }
+   
+   /**
     * @return Returns the config area to use
     */
    public String getConfigArea()
@@ -357,8 +371,9 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       for (String propertyName : props.keySet())
       {
          // create the property component
-         UIProperty propComp = (UIProperty)context.getApplication().createComponent("org.alfresco.faces.Property");
-         propComp.setId(context.getViewRoot().createUniqueId());
+         UIProperty propComp = (UIProperty)context.getApplication().
+               createComponent(RepoConstants.ALFRESCO_FACES_PROPERTY);
+         FacesHelper.setupComponentId(context, propComp, PROP_ID_PREFIX + propertyName);
          propComp.setName(propertyName);
          
          // if this property sheet is set as read only, set all properties to read only
@@ -384,8 +399,9 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       while (iter.hasNext())
       {
          String assocName = (String)iter.next();
-         UIAssociation assocComp = (UIAssociation)context.getApplication().createComponent("org.alfresco.faces.Association");
-         assocComp.setId(context.getViewRoot().createUniqueId());
+         UIAssociation assocComp = (UIAssociation)context.getApplication().
+               createComponent(RepoConstants.ALFRESCO_FACES_ASSOCIATION);
+         FacesHelper.setupComponentId(context, assocComp, ASSOC_ID_PREFIX + assocName);
          assocComp.setName(assocName);
          
          // if this property sheet is set as read only, set all properties to read only
@@ -411,9 +427,9 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       while (iter.hasNext())
       {
          String assocName = (String)iter.next();
-         UIChildAssociation childAssocComp = (UIChildAssociation)context.getApplication().createComponent(
-               "org.alfresco.faces.ChildAssociation");
-         childAssocComp.setId(context.getViewRoot().createUniqueId());
+         UIChildAssociation childAssocComp = (UIChildAssociation)context.getApplication().
+               createComponent(RepoConstants.ALFRESCO_FACES_CHILD_ASSOCIATION);
+         FacesHelper.setupComponentId(context, childAssocComp, ASSOC_ID_PREFIX + assocName);
          childAssocComp.setName(assocName);
          
          // if this property sheet is set as read only, set all properties to read only
@@ -445,113 +461,62 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
    private void createComponentsFromConfig(FacesContext context, Collection<ItemConfig> items)
       throws IOException
    {
-      // **********************************
-      // TODO: Make a common base class for the UIxxx components so we can
-      //       reduce the code below...
-      // **********************************
-      
       for (ItemConfig item : items)
       {
+         String id = null;
+         PropertySheetItem propSheetItem = null;
+         
          // create the appropriate component
          if (item instanceof PropertyConfig)
          {
-            UIProperty propComp = (UIProperty)context.getApplication().createComponent("org.alfresco.faces.Property");
-            propComp.setId(context.getViewRoot().createUniqueId());
-            propComp.setName(item.getName());
-            propComp.setConverter(item.getConverter());
-            
-            String displayLabel = item.getDisplayLabel();
-            if (item.getDisplayLabelId() != null)
-            {
-               String label = Application.getMessage(context, item.getDisplayLabelId());
-               if (label != null)
-               {
-                  displayLabel = label; 
-               }
-            }
-            propComp.setDisplayLabel(displayLabel);
-            
-            // if this property sheet is set as read only or the config says the property
-            // should be read only set it as such
-            if (isReadOnly() || item.isReadOnly())
-            {
-               propComp.setReadOnly(true);
-            }
-            
-            this.getChildren().add(propComp);
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Created property component " + propComp + "(" + 
-                      propComp.getClientId(context) + 
-                      ") for '" + item.getName() + 
-                      "' and added it to property sheet " + this);
+            id = PROP_ID_PREFIX + item.getName();
+            propSheetItem = (PropertySheetItem)context.getApplication().
+                  createComponent(RepoConstants.ALFRESCO_FACES_PROPERTY);
          }
          else if (item instanceof AssociationConfig)
          {
-            UIAssociation assocComp = (UIAssociation)context.getApplication().createComponent("org.alfresco.faces.Association");
-            assocComp.setId(context.getViewRoot().createUniqueId());
-            assocComp.setName(item.getName());
-            assocComp.setConverter(item.getConverter());
-            
-            String displayLabel = item.getDisplayLabel();
-            if (item.getDisplayLabelId() != null)
-            {
-               String label = Application.getMessage(context, item.getDisplayLabelId());
-               if (label != null)
-               {
-                  displayLabel = label; 
-               }
-            }
-            assocComp.setDisplayLabel(displayLabel);
-            
-            // if this property sheet is set as read only or the config says the property
-            // should be read only set it as such
-            if (isReadOnly() || item.isReadOnly())
-            {
-               assocComp.setReadOnly(true);
-            }
-            
-            this.getChildren().add(assocComp);
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Created association component " + assocComp + "(" + 
-                      assocComp.getClientId(context) + 
-                      ") for '" + item.getName() + 
-                      "' and added it to property sheet " + this);
+            id = ASSOC_ID_PREFIX + item.getName();
+            propSheetItem = (PropertySheetItem)context.getApplication().
+                  createComponent(RepoConstants.ALFRESCO_FACES_ASSOCIATION);
          }
          else if (item instanceof ChildAssociationConfig)
          {
-            UIChildAssociation assocComp = (UIChildAssociation)context.getApplication().createComponent("org.alfresco.faces.ChildAssociation");
-            assocComp.setId(context.getViewRoot().createUniqueId());
-            assocComp.setName(item.getName());
-            assocComp.setConverter(item.getConverter());
-            
-            String displayLabel = item.getDisplayLabel();
-            if (item.getDisplayLabelId() != null)
-            {
-               String label = Application.getMessage(context, item.getDisplayLabelId());
-               if (label != null)
-               {
-                  displayLabel = label; 
-               }
-            }
-            assocComp.setDisplayLabel(displayLabel);
-            
-            // if this property sheet is set as read only or the config says the property
-            // should be read only set it as such
-            if (isReadOnly() || item.isReadOnly())
-            {
-               assocComp.setReadOnly(true);
-            }
-            
-            this.getChildren().add(assocComp);
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Created child association component " + assocComp + "(" + 
-                      assocComp.getClientId(context) + 
-                      ") for '" + item.getName() + 
-                      "' and added it to property sheet " + this);
+            id = ASSOC_ID_PREFIX + item.getName();
+            propSheetItem = (PropertySheetItem)context.getApplication().
+                  createComponent(RepoConstants.ALFRESCO_FACES_CHILD_ASSOCIATION);
          }
+         
+         // now setup the common stuff across all component types
+         FacesHelper.setupComponentId(context, propSheetItem, id);
+         propSheetItem.setName(item.getName());
+         propSheetItem.setConverter(item.getConverter());
+         propSheetItem.setComponentGenerator(item.getComponentGenerator());
+
+         String displayLabel = item.getDisplayLabel();
+         if (item.getDisplayLabelId() != null)
+         {
+            String label = Application.getMessage(context, item.getDisplayLabelId());
+            if (label != null)
+            {
+               displayLabel = label; 
+            }
+         }
+         propSheetItem.setDisplayLabel(displayLabel);
+         
+         // if this property sheet is set as read only or the config says the property
+         // should be read only set it as such
+         if (isReadOnly() || item.isReadOnly())
+         {
+            propSheetItem.setReadOnly(true);
+         }
+         
+         this.getChildren().add(propSheetItem);
+         
+         if (logger.isDebugEnabled())
+            logger.debug("Created property sheet item component " + propSheetItem + "(" + 
+                   propSheetItem.getClientId(context) + 
+                   ") for '" + item.getName() + 
+                   "' and added it to property sheet " + this);
       }
    }
 }

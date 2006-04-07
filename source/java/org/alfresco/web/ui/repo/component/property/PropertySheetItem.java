@@ -17,7 +17,6 @@
 package org.alfresco.web.ui.repo.component.property;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 
 import javax.faces.component.NamingContainer;
 import javax.faces.component.UIComponent;
@@ -26,14 +25,10 @@ import javax.faces.component.UIPanel;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.repository.DataDictionary;
-import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.ui.repo.RepoConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Abstract base class for all items that can appear in a property sheet component
@@ -48,6 +43,7 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
    protected String displayLabel;
    protected String converter;
    protected Boolean readOnly;
+   protected String componentGenerator;
    
    /**
     * @see javax.faces.component.UIComponentBase#encodeBegin(javax.faces.context.FacesContext)
@@ -65,8 +61,7 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
       int howManyKids = getChildren().size();
       if (howManyKids == 0)
       {
-         UIPropertySheet propSheet = (UIPropertySheet)parent;
-         generateItem(context, propSheet.getNode(), propSheet.getVar());
+         generateItem(context, (UIPropertySheet)parent);
       }
       
       super.encodeBegin(context);
@@ -79,7 +74,7 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
    {
       if (this.displayLabel == null)
       {
-         ValueBinding vb = getValueBinding("displayLabel");
+         ValueBinding vb = getValueBinding("display-label");
          if (vb != null)
          {
             this.displayLabel = (String)vb.getValue(getFacesContext());
@@ -140,6 +135,31 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
    }
 
    /**
+    * @param componentGenerator Sets the component generator
+    */
+   public void setComponentGenerator(String componentGenerator)
+   {
+      this.componentGenerator = componentGenerator;
+   }
+   
+   /**
+    * @return Returns the component generator
+    */
+   public String getComponentGenerator()
+   {
+      if (this.componentGenerator == null)
+      {
+         ValueBinding vb = getValueBinding("component-generator");
+         if (vb != null)
+         {
+            this.componentGenerator = (String)vb.getValue(getFacesContext());
+         }
+      }
+      
+      return this.componentGenerator;
+   }
+
+   /**
     * @param converter Sets the converter
     */
    public void setConverter(String converter)
@@ -189,6 +209,7 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
       this.displayLabel = (String)values[2];
       this.readOnly = (Boolean)values[3];
       this.converter = (String)values[4];
+      this.componentGenerator = (String)values[5];
    }
    
    /**
@@ -196,13 +217,14 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[5];
+      Object values[] = new Object[6];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.name;
       values[2] = this.displayLabel;
       values[3] = this.readOnly;
       values[4] = this.converter;
+      values[5] = this.componentGenerator;
       return (values);
    }
    
@@ -210,10 +232,9 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
     * Generates the label and control for the item
     * 
     * @param context FacesContext
-    * @param node The Node we are displaying the property sheet for
-    * @param var The variable name used to store the Node in the session
+    * @param propSheet The property sheet that the item is a child of
     */
-   protected abstract void generateItem(FacesContext context, Node node, String var)
+   protected abstract void generateItem(FacesContext context, UIPropertySheet propSheet)
       throws IOException;
    
    /**
@@ -228,20 +249,19 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
     * Generates a JSF OutputText component/renderer
     * 
     * @param context JSF context
+    * @param propSheet The property sheet that the item is a child of
     * @param displayLabel The display label text
-    * @param parent The parent component for the label
     */
-   protected void generateLabel(FacesContext context, String displayLabel)
+   protected void generateLabel(FacesContext context, UIPropertySheet propSheet, String displayLabel)
    {
-      UIOutput label = (UIOutput)context.getApplication().
-                        createComponent("javax.faces.Output");
-      label.setId(context.getViewRoot().createUniqueId());
-      label.setRendererType("javax.faces.Text");
-      label.setValue(displayLabel + ": ");
+      UIComponent label = FacesHelper.getComponentGenerator(context, 
+            RepoConstants.GENERATOR_LABEL).generate(context, propSheet, this);
+      label.getAttributes().put("value", displayLabel + ": ");
+      
       this.getChildren().add(label);
       
       if (logger.isDebugEnabled())
          logger.debug("Created label " + label.getClientId(context) + 
-                      " for '" + displayLabel + "' and added it to component " + this);
+                      " for '" + this.name + "' and added it to component " + this);
    }
 }

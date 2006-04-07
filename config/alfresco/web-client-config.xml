@@ -159,13 +159,13 @@
    
    <config evaluator="string-compare" condition="Custom Folder Types">
       <folder-types>
-         <type name="fm:forums" icon="/images/icons/forums.gif" descriptionMsgId="forums_desc" />
+         <type name="fm:forums" icon="/images/icons/forums.gif" description-id="forums_desc" />
       </folder-types>
    </config>
    
    <config evaluator="string-compare" condition="Action Wizards">
       <types>
-         <type name="folder" displayLabelId="space"/>
+         <type name="folder" display-label-id="space"/>
          <type name="content"/>
       </types>
       <aspects>

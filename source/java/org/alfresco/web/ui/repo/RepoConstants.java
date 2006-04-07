@@ -21,11 +21,28 @@ package org.alfresco.web.ui.repo;
  */
 public final class RepoConstants
 {
+   public static final String ALFRESCO_FACES_ASSOCIATION          = "org.alfresco.faces.Association";
+   public static final String ALFRESCO_FACES_CHILD_ASSOCIATION    = "org.alfresco.faces.ChildAssociation";
+   public static final String ALFRESCO_FACES_PROPERTY             = "org.alfresco.faces.Property";
    public static final String ALFRESCO_FACES_SPACE_SELECTOR       = "org.alfresco.faces.SpaceSelector";
+   public static final String ALFRESCO_FACES_ASSOC_EDITOR         = "org.alfresco.faces.AssociationEditor";
+   public static final String ALFRESCO_FACES_CHILD_ASSOC_EDITOR   = "org.alfresco.faces.ChildAssociationEditor";
    public static final String ALFRESCO_FACES_DATE_PICKER_RENDERER = "org.alfresco.faces.DatePickerRenderer";
    public static final String ALFRESCO_FACES_CATEGORY_SELECTOR    = "org.alfresco.faces.CategorySelector";
+   public static final String ALFRESCO_FACES_IMAGE_PICKER         = "org.alfresco.faces.ImagePicker";
+   public static final String ALFRESCO_FACES_LIST_ITEMS           = "org.alfresco.faces.ListItems";
+   public static final String ALFRESCO_FACES_RADIO_PANEL_RENDERER = "org.alfresco.faces.RadioPanel";
    public static final String ALFRESCO_FACES_XMLDATA_CONVERTER    = "org.alfresco.faces.XMLDataConverter";
-
+   
+   public static final String GENERATOR_LABEL = "LabelGenerator";
+   public static final String GENERATOR_TEXT_FIELD = "TextFieldGenerator";
+   public static final String GENERATOR_CHECKBOX = "CheckboxGenerator";
+   public static final String GENERATOR_DATE_PICKER = "DatePickerGenerator";
+   public static final String GENERATOR_DATETIME_PICKER = "DateTimePickerGenerator";
+   public static final String GENERATOR_CATEGORY_PICKER = "CategoryPickerGenerator";
+   public static final String GENERATOR_ASSOCIATION = "AssociationGenerator";
+   public static final String GENERATOR_CHILD_ASSOCIATION = "ChildAssociationGenerator";
+   
    /**
     * Private constructor
     */

@@ -41,7 +41,7 @@ public class AdvancedSearchElementReader implements ConfigElementReader
    public static final String ATTRIBUTE_TYPE = "type";
    public static final String ATTRIBUTE_PROPERTY = "property";
    public static final String ATTRIBUTE_ASPECT = "aspect";
-   public static final String ATTRIBUTE_DISPLAYLABEL = "displayLabelId";
+   public static final String ATTRIBUTE_DISPLAYLABEL = "display-label-id";
    
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)

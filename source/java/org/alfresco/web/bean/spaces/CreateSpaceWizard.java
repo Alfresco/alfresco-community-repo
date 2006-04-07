@@ -28,6 +28,7 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
+import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.component.description.UIDescription;
 import org.apache.commons.logging.Log;
@@ -486,19 +487,8 @@ public class CreateSpaceWizard extends BaseWizardBean
                   if (typeDef != null &&
                       this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_FOLDER))
                   {
-                     // look for a client localized string
-                     String label = null;
-                     String msgId = child.getAttribute("displayLabelId");
-                     if (msgId != null)
-                     {
-                        label = Application.getMessage(context, msgId);
-                     }
-                     
-                     // if there wasn't an externalized string look for one in the config
-                     if (label == null)
-                     {
-                        label = child.getAttribute("displayLabel");
-                     }
+                     // try and get the label from config
+                     String label = Utils.getDisplayLabel(context, child);
    
                      // if there wasn't a client based label try and get it from the dictionary
                      if (label == null)
@@ -513,17 +503,7 @@ public class CreateSpaceWizard extends BaseWizardBean
                      }
                      
                      // resolve a description string for the type
-                     String description = null;
-                     msgId = child.getAttribute("descriptionMsgId");
-                     if (msgId != null)
-                     {
-                        description = Application.getMessage(context, msgId);
-                     }
-                     
-                     if (description == null)
-                     {
-                        description = child.getAttribute("description");
-                     }
+                     String description = Utils.getDescription(context, child);
                      
                      // if we don't have a local description just use the label
                      if (description == null)

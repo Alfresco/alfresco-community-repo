@@ -22,9 +22,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.admin.PatchException;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,7 +63,16 @@ public abstract class AbstractPatch implements Patch
     private boolean applied;
     /** the service to register ourselves with */
     private PatchService patchService;
-    private TransactionService transactionService;
+    /** used to ensure a unique transaction per execution */
+    protected TransactionService transactionService;
+    /** support service */
+    protected NamespaceService namespaceService;
+    /** support service */
+    protected NodeService nodeService;
+    /** support service */
+    protected SearchService searchService;
+    /** support service */
+    protected AuthenticationComponent authComponent;
 
     public AbstractPatch()
     {
@@ -98,6 +111,35 @@ public abstract class AbstractPatch implements Patch
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    /**
+     * Set a generally-used service
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+    
+    /**
+     * Set a generally-used service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    /**
+     * Set a generally-used service
+     */
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
+    public void setAuthenticationComponent(AuthenticationComponent authComponent)
+    {
+        this.authComponent = authComponent;
     }
 
     /**
@@ -250,6 +292,10 @@ public abstract class AbstractPatch implements Patch
         checkPropertyNotNull(id, "id");
         checkPropertyNotNull(description, "description");
         checkPropertyNotNull(transactionService, "transactionService");
+        checkPropertyNotNull(namespaceService, "namespaceService");
+        checkPropertyNotNull(nodeService, "nodeService");
+        checkPropertyNotNull(searchService, "searchService");
+        checkPropertyNotNull(authComponent, "authComponent");
         if (fixesFromSchema == -1 || fixesToSchema == -1 || targetSchema == -1)
         {
             throw new AlfrescoRuntimeException(

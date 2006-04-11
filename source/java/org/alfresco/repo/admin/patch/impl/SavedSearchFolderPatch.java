@@ -29,10 +29,7 @@ import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.context.MessageSource;
 
@@ -62,9 +59,6 @@ public class SavedSearchFolderPatch extends AbstractPatch
     private static final String PROPERTY_ICON = "space-icon-default";
     
     private ImporterBootstrap importerBootstrap;
-    private NamespaceService namespaceService;
-    private SearchService searchService;
-    private NodeService nodeService;
     private MessageSource messageSource;
     
     protected NodeRef dictionaryNodeRef;
@@ -74,21 +68,6 @@ public class SavedSearchFolderPatch extends AbstractPatch
     public void setImporterBootstrap(ImporterBootstrap importerBootstrap)
     {
         this.importerBootstrap = importerBootstrap;
-    }
-
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-    
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
 
     public void setMessageSource(MessageSource messageSource)

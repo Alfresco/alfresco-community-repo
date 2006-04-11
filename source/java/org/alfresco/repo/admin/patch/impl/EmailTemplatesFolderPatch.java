@@ -29,10 +29,7 @@ import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.context.MessageSource;
 
@@ -62,9 +59,6 @@ public class EmailTemplatesFolderPatch extends AbstractPatch
     private static final String PROPERTY_ICON = "space-icon-default";
     
     private ImporterBootstrap importerBootstrap;
-    private NamespaceService namespaceService;
-    private SearchService searchService;
-    private NodeService nodeService;
     private MessageSource messageSource;
     
     protected NodeRef dictionaryNodeRef;
@@ -74,21 +68,6 @@ public class EmailTemplatesFolderPatch extends AbstractPatch
     public void setImporterBootstrap(ImporterBootstrap importerBootstrap)
     {
         this.importerBootstrap = importerBootstrap;
-    }
-
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-    
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
 
     public void setMessageSource(MessageSource messageSource)
@@ -101,22 +80,8 @@ public class EmailTemplatesFolderPatch extends AbstractPatch
      */
     protected void checkCommonProperties() throws Exception
     {
-        if (importerBootstrap == null)
-        {
-            throw new PatchException("'importerBootstrap' property has not been set");
-        }
-        else if (namespaceService == null)
-        {
-            throw new PatchException("'namespaceService' property has not been set");
-        }
-        else if (searchService == null)
-        {
-            throw new PatchException("'searchService' property has not been set");
-        }
-        else if (nodeService == null)
-        {
-            throw new PatchException("'nodeService' property has not been set");
-        }
+        checkPropertyNotNull(importerBootstrap, "importerBootstrap");
+        checkPropertyNotNull(messageSource, "messageSource");
     }
     
     /**

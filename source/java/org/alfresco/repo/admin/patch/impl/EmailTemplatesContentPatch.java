@@ -17,28 +17,18 @@
 package org.alfresco.repo.admin.patch.impl;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.alfresco.i18n.I18NUtil;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.importer.ImporterBootstrap;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.admin.PatchException;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.springframework.context.MessageSource;
 import org.springframework.core.io.ClassPathResource;
 
@@ -64,11 +54,7 @@ public class EmailTemplatesContentPatch extends AbstractPatch
     public static final String PROPERTY_EMAIL_TEMPLATES_CHILDNAME = "spaces.templates.email.childname";
     
     private ImporterBootstrap importerBootstrap;
-    private NamespaceService namespaceService;
-    private SearchService searchService;
     private ImporterService importerService;
-    private AuthenticationComponent authComponent;
-    private NodeService nodeService;
     private MessageSource messageSource;
     
     protected Properties configuration;
@@ -81,29 +67,9 @@ public class EmailTemplatesContentPatch extends AbstractPatch
         this.importerBootstrap = importerBootstrap;
     }
 
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-    
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
-    
     public void setImporterService(ImporterService importerService)
     {
         this.importerService = importerService;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-    
-    public void setAuthenticationComponent(AuthenticationComponent authComponent)
-    {
-        this.authComponent = authComponent;
     }
 
     public void setMessageSource(MessageSource messageSource)
@@ -124,34 +90,10 @@ public class EmailTemplatesContentPatch extends AbstractPatch
      */
     protected void checkRequiredProperties() throws Exception
     {
-        if (importerBootstrap == null)
-        {
-            throw new PatchException("'importerBootstrap' property has not been set");
-        }
-        if (namespaceService == null)
-        {
-            throw new PatchException("'namespaceService' property has not been set");
-        }
-        if (searchService == null)
-        {
-            throw new PatchException("'searchService' property has not been set");
-        }
-        if (nodeService == null)
-        {
-            throw new PatchException("'nodeService' property has not been set");
-        }
-        if (importerService == null)
-        {
-           throw new PatchException("'importerService' property has not been set");
-        }
-        if (messageSource == null)
-        {
-            throw new PatchException("'messageSource' property has not been set");
-        }
-        if (templatesACP == null || templatesACP.length() == 0)
-        {
-           throw new PatchException("'templatesACP' property has not been set");
-        }
+        checkPropertyNotNull(importerBootstrap, "importerBootstrap");
+        checkPropertyNotNull(importerService, "importerService");
+        checkPropertyNotNull(messageSource, "messageSource");
+        checkPropertyNotNull(templatesACP, "templatesACP");
     }
     
     /**

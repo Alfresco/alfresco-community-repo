@@ -25,10 +25,7 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
 
 /**
  * Generic patch that uses existing {@link org.alfresco.repo.importer.ImporterBootstrap importers}
@@ -46,27 +43,9 @@ public class GenericBootstrapPatch extends AbstractPatch
     private static final String MSG_CREATED = "patch.genericBootstrap.result.created";
     private static final String ERR_MULTIPLE_FOUND = "patch.genericBootstrap.err.multiple_found";
     
-    private NamespaceService namespaceService;
-    private NodeService nodeService;
-    private SearchService searchService;
     private ImporterBootstrap importerBootstrap;
     private String checkPath;
     private Properties bootstrapView;
-
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-    
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
 
     /**
      * @param importerBootstrap the bootstrap bean that performs the user store bootstrap
@@ -100,9 +79,6 @@ public class GenericBootstrapPatch extends AbstractPatch
     @Override
     protected void checkProperties()
     {
-        checkPropertyNotNull(namespaceService, "blah");
-        checkPropertyNotNull(nodeService, "nodeService");
-        checkPropertyNotNull(searchService, "searchService");
         checkPropertyNotNull(importerBootstrap, "importerBootstrap");
         checkPropertyNotNull(checkPath, "checkPath");
         checkPropertyNotNull(bootstrapView, "bootstrapView");

@@ -165,8 +165,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Store store = nodeDaoService.getStore(protocol, identifier);
         if (store != null)
         {
-            throw new StoreExistsException("Unable to create a store that already exists",
-                    new StoreRef(protocol, identifier));
+            throw new StoreExistsException("Unable to create a store that already exists: " + storeRef, storeRef);
         }
         
         // invoke policies

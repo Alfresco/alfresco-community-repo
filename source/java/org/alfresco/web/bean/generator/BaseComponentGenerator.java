@@ -5,6 +5,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIOutput;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
+import javax.faces.el.ValueBinding;
 
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -13,9 +14,8 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.DataDictionary;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.ui.common.ComponentConstants;
+import org.alfresco.web.ui.repo.RepoConstants;
 import org.alfresco.web.ui.repo.component.property.PropertySheetItem;
-import org.alfresco.web.ui.repo.component.property.UIAssociation;
-import org.alfresco.web.ui.repo.component.property.UIChildAssociation;
 import org.alfresco.web.ui.repo.component.property.UIProperty;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
 import org.apache.commons.logging.Log;
@@ -55,35 +55,57 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
    }
    
    /**
-    * Disables the given component if the item is read only or is defined in the 
-    * model as protected
+    * Creates a wrapper component around the given component to enable the user
+    * to edit multiple values.
     * 
     * @param context FacesContext
     * @param propertySheet The property sheet being generated
     * @param item The item being generated
-    * @param component The component to disable
+    * @param component The component to wrap if necessary
+    * @param field true if the property being enabled is a field style 
+    *        component i.e. text field or checkbox. false if the component
+    *        is a selector style component i.e. category selector
     */
-   protected void disableIfReadOnlyOrProtected(FacesContext context, UIPropertySheet propertySheet, 
-         PropertySheetItem item, UIComponent component)
+   protected UIComponent enableForMultiValue(FacesContext context, UIPropertySheet propertySheet,
+         PropertySheetItem item, UIComponent component, boolean field)
    {
+      UIComponent multiValueComponent = component;
+      
+      // NOTE: Associations have built in support for multiple values so we only deal
+      //       with UIProperty instances in here currently
+      
       if (item instanceof UIProperty)
       {
-         PropertyDefinition propertyDef = getPropertyDefinition(context,
-               propertySheet.getNode(), item.getName());
-         if (item.isReadOnly() || (propertyDef != null && propertyDef.isProtected()))
+         // if the property is multi-valued create a multi value editor wrapper component
+         String id = "multi_" + item.getName();
+         multiValueComponent = context.getApplication().createComponent(
+               RepoConstants.ALFRESCO_FACES_MULTIVALUE_EDITOR);
+         FacesHelper.setupComponentId(context, multiValueComponent, id);
+            
+         // set the renderer depending on whether the item is a 'field' or a 'selector'
+         if (field)
          {
-            component.getAttributes().put("disabled", Boolean.TRUE);
+            multiValueComponent.setRendererType(RepoConstants.ALFRESCO_FACES_FIELD_RENDERER);
          }
-      }
-      else if (item instanceof UIAssociation || item instanceof UIChildAssociation)
-      {
-         AssociationDefinition assocDef = getAssociationDefinition(context, 
-               propertySheet.getNode(), item.getName());
-         if (item.isReadOnly() || (assocDef != null && assocDef.isProtected()))
+         else
          {
-            component.getAttributes().put("disabled", Boolean.TRUE);
+            multiValueComponent.setRendererType(RepoConstants.ALFRESCO_FACES_SELECTOR_RENDERER);
+            
+            // set the value binding for the wrapped component and the lastItemAdded attribute of
+            // the multi select component, needs to point somewhere that can hold any object, it
+            // will store the item last added by the user.
+            String expr = "#{MultiValueEditorBean.lastItemsAdded['" +
+                  item.getName() + "']}";
+            ValueBinding vb = context.getApplication().createValueBinding(expr);
+            multiValueComponent.setValueBinding("lastItemAdded", vb);
+            component.setValueBinding("value", vb);
          }
+         
+         // add the original component as a child of the wrapper
+         multiValueComponent.getChildren().add(component);
       }
+      
+      return multiValueComponent;
    }
    
    /**

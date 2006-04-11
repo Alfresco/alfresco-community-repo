@@ -147,7 +147,7 @@
    
    <!-- ==================== CONVERTERS ==================== -->
    <converter>
-      <converter-id>org.alfresco.faces.XMLDataConverter</converter-id>
+      <converter-id>org.alfresco.faces.XMLDateConverter</converter-id>
       <converter-class>org.alfresco.web.ui.common.converter.XMLDateConverter</converter-class>
    </converter>
    

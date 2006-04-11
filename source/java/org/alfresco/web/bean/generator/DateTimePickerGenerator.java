@@ -23,15 +23,21 @@ public class DateTimePickerGenerator extends DatePickerGenerator
       UIComponent component = super.generate(context, id);
       
       // add the attribute to show the time
-      component.getAttributes().put("showTime", Boolean.valueOf(true));
+      component.getAttributes().put("showTime", Boolean.TRUE);
       
       return component;
    }
    
-   protected Converter getConverter(FacesContext context)
+   /**
+    * Retrieves the default converter for the date time component
+    * 
+    * @param context FacesContext
+    * @return XMLDateConverter
+    */
+   protected Converter getDefaultConverter(FacesContext context)
    {
       XMLDateConverter converter = (XMLDateConverter)context.getApplication().
-            createConverter(RepoConstants.ALFRESCO_FACES_XMLDATA_CONVERTER);
+            createConverter(RepoConstants.ALFRESCO_FACES_XMLDATE_CONVERTER);
       converter.setType("both");
       converter.setPattern(Application.getMessage(context, MSG_DATE_TIME));
       return converter;

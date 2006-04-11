@@ -99,7 +99,7 @@
                                  <tr>
                                     <td><h:outputText value="#{msg.categories}" />:</td>
                                     <td width="98%">
-                                       <r:multiValueListEditor id="multi-category-selector"
+                                       <r:multiValueSelector id="multi-category-selector"
                                                                value="#{DocumentDetailsBean.categories}"
                                                                lastItemAdded="#{DocumentDetailsBean.addedCategory}" 
                                                                selectItemMsg="#{msg.select_category}"
@@ -109,7 +109,7 @@
                                           <r:categorySelector id="category-selector" label="#{msg.select_category_prompt}" 
                                                               styleClass="selector"
                                                               value="#{DocumentDetailsBean.addedCategory}"/>
-                                       </r:multiValueListEditor>
+                                       </r:multiValueSelector>
                                     </td>
                                  </tr>
                                  <tr><td colspan="2" class="paddingRow"></td></tr>

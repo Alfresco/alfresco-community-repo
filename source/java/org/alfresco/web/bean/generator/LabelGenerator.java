@@ -24,7 +24,6 @@ public class LabelGenerator extends BaseComponentGenerator
       UIComponent component = generate(context, "label_" + item.getName());
       
       // TODO: Turn the label red if the field is required
-      //       set the label id to be label_<var>_<name>
       //       setup the 'for' attribute to associate with it the control
       
       return component;

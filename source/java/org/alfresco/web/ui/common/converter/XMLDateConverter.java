@@ -17,6 +17,7 @@
 package org.alfresco.web.ui.common.converter;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -36,7 +37,7 @@ public class XMLDateConverter extends DateTimeConverter
    /**
     * <p>The standard converter id for this converter.</p>
     */
-   public static final String CONVERTER_ID = "org.alfresco.faces.XMLDataConverter";
+   public static final String CONVERTER_ID = "org.alfresco.faces.XMLDateConverter";
 
    /**
     * @see javax.faces.convert.Converter#getAsObject(javax.faces.context.FacesContext, javax.faces.component.UIComponent, java.lang.String)
@@ -57,6 +58,21 @@ public class XMLDateConverter extends DateTimeConverter
       {
          Date date = ISO8601DateFormat.parse((String)value);
          str = super.getAsString(context, component, date);
+      }
+      else if (value instanceof List)
+      {
+         StringBuilder buffer = new StringBuilder();
+         for (Object date : ((List)value))
+         {
+            if (buffer.length() != 0)
+            {
+               buffer.append(", ");
+            }
+            
+            buffer.append(super.getAsString(context, component, date));
+         }
+         
+         str = buffer.toString();
       }
       else
       {

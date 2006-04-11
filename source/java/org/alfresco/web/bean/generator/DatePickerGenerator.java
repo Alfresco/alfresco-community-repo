@@ -6,6 +6,7 @@ import javax.faces.component.UIOutput;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.ui.common.ComponentConstants;
@@ -45,8 +46,23 @@ public class DatePickerGenerator extends BaseComponentGenerator
          // use the standard date picker component
          component = generate(context, item.getName());
          
-         // make sure the property is not read only or protected
-         disableIfReadOnlyOrProtected(context, propertySheet, item, component);
+         // get the property definition
+         PropertyDefinition propertyDef = getPropertyDefinition(context,
+               propertySheet.getNode(), item.getName());
+         
+         // disable the component if it is read only or protected
+         if (item.isReadOnly() || (propertyDef != null && propertyDef.isProtected()))
+         {
+            component.getAttributes().put("disabled", Boolean.TRUE);
+         }
+         else
+         {
+            // if the item is multi valued we need to wrap the standard component
+            if (propertyDef != null && propertyDef.isMultiValued())
+            {
+               component = enableForMultiValue(context, propertySheet, item, component, true);
+            }
+         }
       }
       else
       {
@@ -54,31 +70,31 @@ public class DatePickerGenerator extends BaseComponentGenerator
          component = createOutputTextComponent(context, item.getName());
       }
       
-      // setup the converter if one was specified
-      setupConverter(context, propertySheet, item, component);
-      
-      return component;
-   }
-   
-   @Override
-   protected void setupConverter(FacesContext context, UIPropertySheet propertySheet, 
-         PropertySheetItem item, UIComponent component)
-   {
       if (item.getConverter() != null)
       {
-         super.setupConverter(context, propertySheet, item, component);
+         // setup the converter if one was specified
+         setupConverter(context, propertySheet, item, component);
       }
       else
       {
+         // use the default converter for the date component
          // we can cast this as we know it is an UIOutput type
-         ((UIOutput)component).setConverter(getConverter(context));
+         ((UIOutput)component).setConverter(getDefaultConverter(context));
       }
+      
+      return component;
    }
 
-   protected Converter getConverter(FacesContext context)
+   /**
+    * Retrieves the default converter for the date component
+    * 
+    * @param context FacesContext
+    * @return XMLDateConverter
+    */
+   protected Converter getDefaultConverter(FacesContext context)
    {
       XMLDateConverter converter = (XMLDateConverter)context.getApplication().
-            createConverter(RepoConstants.ALFRESCO_FACES_XMLDATA_CONVERTER);
+            createConverter(RepoConstants.ALFRESCO_FACES_XMLDATE_CONVERTER);
       converter.setType("date");
       converter.setPattern(Application.getMessage(context, MSG_DATE));
       return converter;

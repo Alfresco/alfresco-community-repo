@@ -171,8 +171,14 @@
       
       <renderer>
          <component-family>org.alfresco.faces.MultiValueEditor</component-family>
-         <renderer-type>org.alfresco.faces.List</renderer-type>
-         <renderer-class>org.alfresco.web.ui.repo.renderer.MultiValueListEditorRenderer</renderer-class>
+         <renderer-type>org.alfresco.faces.Selector</renderer-type>
+         <renderer-class>org.alfresco.web.ui.repo.renderer.MultiValueSelectorRenderer</renderer-class>
+      </renderer>
+      
+      <renderer>
+         <component-family>org.alfresco.faces.MultiValueEditor</component-family>
+         <renderer-type>org.alfresco.faces.Field</renderer-type>
+         <renderer-class>org.alfresco.web.ui.repo.renderer.MultiValueFieldRenderer</renderer-class>
       </renderer>
    </render-kit>
       

@@ -21,6 +21,8 @@ package org.alfresco.web.ui.repo;
  */
 public final class RepoConstants
 {
+   // TODO: move these into the respective components as static members - as per JSF spec
+   
    public static final String ALFRESCO_FACES_ASSOCIATION          = "org.alfresco.faces.Association";
    public static final String ALFRESCO_FACES_CHILD_ASSOCIATION    = "org.alfresco.faces.ChildAssociation";
    public static final String ALFRESCO_FACES_PROPERTY             = "org.alfresco.faces.Property";
@@ -31,8 +33,13 @@ public final class RepoConstants
    public static final String ALFRESCO_FACES_CATEGORY_SELECTOR    = "org.alfresco.faces.CategorySelector";
    public static final String ALFRESCO_FACES_IMAGE_PICKER         = "org.alfresco.faces.ImagePicker";
    public static final String ALFRESCO_FACES_LIST_ITEMS           = "org.alfresco.faces.ListItems";
+   public static final String ALFRESCO_FACES_MULTIVALUE_EDITOR    = "org.alfresco.faces.MultiValueEditor";
+   public static final String ALFRESCO_FACES_FIELD_RENDERER       = "org.alfresco.faces.Field";
+   public static final String ALFRESCO_FACES_SELECTOR_RENDERER    = "org.alfresco.faces.Selector";
    public static final String ALFRESCO_FACES_RADIO_PANEL_RENDERER = "org.alfresco.faces.RadioPanel";
-   public static final String ALFRESCO_FACES_XMLDATA_CONVERTER    = "org.alfresco.faces.XMLDataConverter";
+   public static final String ALFRESCO_FACES_XMLDATE_CONVERTER    = "org.alfresco.faces.XMLDateConverter";
+   public static final String ALFRESCO_FACES_MULTIVALUE_CONVERTER = "org.alfresco.faces.MultiValueConverter";
+   public static final String ALFRESCO_FACES_BOOLEAN_CONVERTER    = "org.alfresco.faces.BooleanLabelConverter";
    
    public static final String GENERATOR_LABEL = "LabelGenerator";
    public static final String GENERATOR_TEXT_FIELD = "TextFieldGenerator";

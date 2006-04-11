@@ -18,6 +18,7 @@ package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.component.EditableValueHolder;
@@ -261,6 +262,31 @@ public abstract class AbstractItemSelector extends UIInput
             else if (val instanceof String && ((String)val).length() != 0)
             {
                nodeRef = new NodeRef((String)val);
+            }
+            else if (val instanceof List)
+            {
+               // build a comma separated list of node names
+               List nodes = (List)val;
+               StringBuilder buffer = new StringBuilder();
+               for (Object obj : nodes)
+               {
+                  if (buffer.length() != 0)
+                  {
+                     buffer.append(", ");
+                  }
+                  
+                  if (obj instanceof NodeRef)
+                  {
+                     buffer.append(Repository.getNameForNode(service, (NodeRef)obj));
+                  }
+                  else
+                  {
+                     buffer.append(obj.toString());
+                  }
+               }
+               
+               // write out to response
+               out.write(buffer.toString());
             }
          }
          

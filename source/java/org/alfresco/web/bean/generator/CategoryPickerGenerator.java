@@ -3,6 +3,7 @@ package org.alfresco.web.bean.generator;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.ui.repo.RepoConstants;
 import org.alfresco.web.ui.repo.component.UICategorySelector;
@@ -29,10 +30,25 @@ public class CategoryPickerGenerator extends BaseComponentGenerator
          PropertySheetItem item)
    {
       // create the standard component
-      UICategorySelector component = (UICategorySelector)generate(context, item.getName());
+      UIComponent component = generate(context, item.getName());
       
-      // make sure the property is not read only or protected
-      disableIfReadOnlyOrProtected(context, propertySheet, item, component);
+      // get the property definition
+      PropertyDefinition propertyDef = getPropertyDefinition(context,
+               propertySheet.getNode(), item.getName());
+      
+      if (propertySheet.inEditMode() && propertyDef != null && propertyDef.isMultiValued())
+      {
+         // if the item is multi valued we need to wrap the standard component
+         // but only when the property sheet is in edit mode
+         component = enableForMultiValue(context, propertySheet, item, component, false);
+      }
+      else if (propertySheet.inEditMode() == false || item.isReadOnly() || 
+              (propertyDef != null && propertyDef.isProtected())) 
+      {
+         // disable the component if it is read only or protected
+         // or if the property sheet is in view mode
+         component.getAttributes().put("disabled", Boolean.TRUE);
+      }
       
       // setup the converter if one was specified
       setupConverter(context, propertySheet, item, component);

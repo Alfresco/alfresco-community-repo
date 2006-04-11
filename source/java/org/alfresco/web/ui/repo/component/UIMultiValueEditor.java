@@ -18,8 +18,9 @@
 package org.alfresco.web.ui.repo.component;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Map;
 
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -30,8 +31,9 @@ import javax.faces.event.ActionEvent;
 import javax.faces.event.FacesEvent;
 
 import org.alfresco.web.app.Application;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.ui.common.renderer.DatePickerRenderer;
+import org.alfresco.web.ui.repo.RepoConstants;
 
 /**
  * This component wraps a standard component to give it multi value capabilities.
@@ -44,12 +46,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public class UIMultiValueEditor extends UIInput
 {
-   private static final Log logger = LogFactory.getLog(UIMultiValueEditor.class);
    private static final String MSG_SELECTED_ITEMS = "selected_items";
    private static final String MSG_NO_SELECTED_ITEMS = "no_selected_items";
    private static final String MSG_SELECT_ITEM = "select_an_item";
-   
-   
+
    public final static String ACTION_SEPARATOR = ";";
    public final static int ACTION_NONE   = -1;
    public final static int ACTION_REMOVE = 0;
@@ -71,7 +71,7 @@ public class UIMultiValueEditor extends UIInput
     */
    public UIMultiValueEditor()
    {
-      setRendererType("org.alfresco.faces.List");
+      setRendererType(RepoConstants.ALFRESCO_FACES_SELECTOR_RENDERER);
    }
    
    /**
@@ -79,7 +79,7 @@ public class UIMultiValueEditor extends UIInput
     */
    public String getFamily()
    {
-      return "org.alfresco.faces.MultiValueEditor";
+      return RepoConstants.ALFRESCO_FACES_MULTIVALUE_EDITOR;
    }
    
    /**
@@ -303,15 +303,48 @@ public class UIMultiValueEditor extends UIInput
                   setSubmittedValue(items);
                }
                
-               items.add(getLastItemAdded());
-               this.addingNewItem = Boolean.FALSE;
+               Object addedItem = null;
                
-               // get hold of the value binding for the lastItemAdded property
-               // and set it to null to show it's been added to the list
-               ValueBinding vb = getValueBinding("lastItemAdded");
-               if (vb != null)
+               if (getRendererType().equals(RepoConstants.ALFRESCO_FACES_FIELD_RENDERER))
                {
-                  vb.setValue(FacesContext.getCurrentInstance(), null);
+                  UIInput childComponent = (UIInput)this.getChildren().get(0);
+                  
+                  // as the 'field' is being submitted in the same request we can go
+                  // directly to the submitted value to find the entered value
+                  addedItem = childComponent.getSubmittedValue();
+                  
+                  if (childComponent.getRendererType() != null &&
+                      childComponent.getRendererType().equals(
+                      RepoConstants.ALFRESCO_FACES_DATE_PICKER_RENDERER))
+                  {
+                     // the submitted value for the date is in it's raw form, convert to date
+                     int[] parts = (int[])addedItem;
+                     Calendar date = new GregorianCalendar(parts[0], parts[1], parts[2], 
+                           parts[3], parts[4]);
+                     addedItem = date.getTime();
+                  }
+                  
+                  // conversely, we can erase the submitted value
+                  childComponent.setSubmittedValue(null);
+               }
+               else
+               {
+                  addedItem = getLastItemAdded();
+                  
+                  this.addingNewItem = Boolean.FALSE;
+               
+                  // get hold of the value binding for the lastItemAdded property
+                  // and set it to null to show it's been added to the list
+                  ValueBinding vb = getValueBinding("lastItemAdded");
+                  if (vb != null)
+                  {
+                     vb.setValue(FacesContext.getCurrentInstance(), null);
+                  }
+               }
+               
+               if (addedItem != null)
+               {
+                  items.add(addedItem);
                }
                
                break;
@@ -335,9 +368,16 @@ public class UIMultiValueEditor extends UIInput
     */
    public boolean getRendersChildren()
    {
-      // only show the wrapped component when the add button has been clicked 
-      
-      return !this.addingNewItem.booleanValue();
+      if (getRendererType().equals(RepoConstants.ALFRESCO_FACES_FIELD_RENDERER))
+      {
+         // if we are using the field renderer always render the childre
+         return false;
+      }
+      else
+      {
+         // only show the wrapped component when the add button has been clicked 
+         return !this.addingNewItem.booleanValue();
+      }
    }
    
    // ------------------------------------------------------------------------------

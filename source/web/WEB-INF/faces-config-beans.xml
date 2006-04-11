@@ -1390,6 +1390,16 @@
       </managed-property>
    </managed-bean>
    
+   <managed-bean>
+      <description>
+         Helper bean that caches the last item added to a multi
+         value editor component
+      </description>
+      <managed-bean-name>MultiValueEditorBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.MultiValueEditorBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+   </managed-bean>
+   
    <!-- ==================== COMPONENT GENERATOR BEANS ==================== -->
    
    <managed-bean>

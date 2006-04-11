@@ -50,6 +50,18 @@
         <property name="transactionService">
             <ref bean="transactionComponent" />
         </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="searchService">
+            <ref bean="searchService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent" />
+        </property>
     </bean>
     
     <!-- Example patches -->
@@ -77,30 +89,6 @@
     <!-- Helper beans -->
     <!--              -->
     
-    <bean id="patch.genericBootstrap.Base" abstract="true" parent="basePatch" >
-        <property name="namespaceService">
-            <ref bean="namespaceService" />
-        </property>
-        <property name="searchService">
-            <ref bean="searchService" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>
-    </bean>
-    
-    <bean id="patch.savedSearches.Base" abstract="true" parent="basePatch" >
-        <property name="namespaceService">
-            <ref bean="namespaceService" />
-        </property>
-        <property name="searchService">
-            <ref bean="searchService" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>
-    </bean>
-
     <bean id="bootstrapSpacesMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
         <property name="basenames">
             <list>
@@ -113,7 +101,7 @@
     <!-- Patch definitions -->
     <!--                   -->
     
-    <bean id="patch.authoritiesFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="patch.genericBootstrap.Base" >
+    <bean id="patch.authoritiesFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.authoritiesFolder</value></property>
         <property name="description"><value>patch.authoritiesFolder.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -133,7 +121,7 @@
             </props>
         </property>
     </bean>
-    <bean id="patch.savedSearchesFolder" class="org.alfresco.repo.admin.patch.impl.SavedSearchFolderPatch" parent="patch.savedSearches.Base" >
+    <bean id="patch.savedSearchesFolder" class="org.alfresco.repo.admin.patch.impl.SavedSearchFolderPatch" parent="basePatch" >
         <property name="id"><value>patch.savedSearchesFolder</value></property>
         <property name="description"><value>patch.savedSearchesFolder.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -144,7 +132,7 @@
             <ref bean="bootstrapSpacesMessageSource" />
         </property>   
     </bean>
-    <bean id="patch.savedSearchesPermission" class="org.alfresco.repo.admin.patch.impl.SavedSearchPermissionPatch" parent="patch.savedSearches.Base" >
+    <bean id="patch.savedSearchesPermission" class="org.alfresco.repo.admin.patch.impl.SavedSearchPermissionPatch" parent="basePatch" >
         <property name="id"><value>patch.savedSearchesPermission</value></property>
         <property name="description"><value>patch.savedSearchesPermission.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -179,12 +167,6 @@
         <property name="fixesToSchema"><value>2</value></property>
         <property name="targetSchema"><value>3</value></property>
         <!-- helper beans -->
-        <property name="searchService">
-            <ref bean="searchService" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>
         <property name="personService">
             <ref bean="personService"/>
         </property>
@@ -193,9 +175,6 @@
         </property>
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
-        </property>
-        <property name="namespaceService">
-            <ref bean="namespaceService" />
         </property>
         <property name="messageSource">
             <ref bean="bootstrapSpacesMessageSource" />
@@ -261,9 +240,6 @@
         <property name="permissionService">
             <ref bean="permissionService"/>
         </property>
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>
         <property name="dependsOn">
             <list>
                 <ref bean="patch.updateGuestPermission" />
@@ -279,15 +255,6 @@
         <!-- helper beans for execution -->
         <property name="permissionService">
             <ref bean="permissionService"/>
-        </property>
-        <property name="searchService">
-            <ref bean="searchService"/>
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>
-        <property name="namespaceService">
-            <ref bean="namespaceService"/>
         </property>
         <property name="spacesBootstrap">
             <ref bean="spacesBootstrap" />
@@ -317,14 +284,8 @@
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>
-        <property name="searchService">
-            <ref bean="searchService" />
-        </property>
     </bean>
-    <bean id="patch.emailTemplatesFolder" class="org.alfresco.repo.admin.patch.impl.EmailTemplatesFolderPatch" parent="patch.savedSearches.Base" >
+    <bean id="patch.emailTemplatesFolder" class="org.alfresco.repo.admin.patch.impl.EmailTemplatesFolderPatch" parent="basePatch" >
         <property name="id"><value>patch.emailTemplatesFolder</value></property>
         <property name="description"><value>patch.emailTemplatesFolder.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -335,7 +296,7 @@
             <ref bean="bootstrapSpacesMessageSource" />
         </property>   
     </bean>
-    <bean id="patch.emailTemplatesContent" class="org.alfresco.repo.admin.patch.impl.EmailTemplatesContentPatch" parent="patch.savedSearches.Base" >
+    <bean id="patch.emailTemplatesContent" class="org.alfresco.repo.admin.patch.impl.EmailTemplatesContentPatch" parent="basePatch" >
         <property name="id"><value>patch.emailTemplatesContent</value></property>
         <property name="description"><value>patch.emailTemplatesContent.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -349,9 +310,6 @@
         <property name="importerService">
             <ref bean="importerComponent" />
         </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
-        </property>
         <property name="dependsOn">
             <list>
                 <ref bean="patch.emailTemplatesFolder" />
@@ -361,5 +319,5 @@
 
     <!-- Note: targetSchema 11 is allocated for patching in an enterprise trial license -->
     <!--       A patch bean is not provided as this is handled by the license component internally (enterprise only) -->
-    
+
 </beans>

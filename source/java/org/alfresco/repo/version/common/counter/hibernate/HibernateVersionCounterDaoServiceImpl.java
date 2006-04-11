@@ -19,8 +19,14 @@ package org.alfresco.repo.version.common.counter.hibernate;
 import org.alfresco.repo.domain.StoreKey;
 import org.alfresco.repo.domain.VersionCount;
 import org.alfresco.repo.domain.hibernate.VersionCountImpl;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.version.common.counter.VersionCounterDaoService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.hibernate.LockMode;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
@@ -33,28 +39,93 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * 
  * @author Derek Hulley
  */
-public class HibernateVersionCounterDaoServiceImpl extends HibernateDaoSupport implements VersionCounterDaoService
+public class HibernateVersionCounterDaoServiceImpl
+        extends HibernateDaoSupport
+        implements VersionCounterDaoService, NodeServicePolicies.BeforeCreateStorePolicy
 {
+    private PolicyComponent policyComponent;
+
     /**
-     * Retrieves or creates a version counter
+     * @param policyComponent the component to register behaviour
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+    
+    /**
+     * Bind to receive notifications of store creations
+     */
+    public void init()
+    {
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateStore"),
+                this,
+                new JavaBehaviour(this, "beforeCreateStore"));
+    }
+
+    /**
+     * Create a version counter for the store
+     * @param nodeTypeQName
+     * @param storeRef
+     */
+    public void beforeCreateStore(QName nodeTypeQName, StoreRef storeRef)
+    {
+        final StoreKey storeKey = new StoreKey(storeRef.getProtocol(), storeRef.getIdentifier());
+        VersionCount versionCount = (VersionCount) getHibernateTemplate().get(VersionCountImpl.class, storeKey);
+        if (versionCount != null)
+        {
+            // already exists
+            return;
+        }
+        versionCount = new VersionCountImpl();
+        versionCount.setKey(storeKey);
+        getHibernateTemplate().save(versionCount);
+    }
+
+    /**
+     * Retrieves or creates a version counter.  This locks the counter against updates for the
+     * current transaction.
      * 
-     * @param storeKey
+     * @param storeKey the primary key of the counter
      * @return Returns a current or new version counter
      */
     private VersionCount getVersionCounter(StoreRef storeRef)
     {
-        StoreKey storeKey = new StoreKey(storeRef.getProtocol(), storeRef.getIdentifier());
-        // get the version counter
-        VersionCount versionCounter = (VersionCount) getHibernateTemplate().get(VersionCountImpl.class, storeKey);
+        final StoreKey storeKey = new StoreKey(storeRef.getProtocol(), storeRef.getIdentifier());
+        
         // check if it exists
-        if (versionCounter == null)
+        VersionCount versionCount = (VersionCount) getHibernateTemplate().get(
+                VersionCountImpl.class,
+                storeKey,
+                LockMode.UPGRADE);
+        if (versionCount == null)
         {
-            // create a new one
-            versionCounter = new VersionCountImpl();
-            versionCounter.setKey(storeKey);
-            getHibernateTemplate().save(versionCounter);
+            // This could fail on some databases with concurrent adds.  But it is only those databases
+            // that don't lock the index against an addition of the row, and then it will only fail once.
+            versionCount = new VersionCountImpl();
+            versionCount.setKey(storeKey);
+            getHibernateTemplate().save(versionCount);
+            // debug
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Created version counter: \n" +
+                        "   Thread: " + Thread.currentThread().getName() + "\n" +
+                        "   Version count: " + versionCount.getVersionCount());
+            }
         }
-        return versionCounter;
+        else
+        {
+            // debug
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Got version counter: \n" +
+                        "   Thread: " + Thread.currentThread().getName() + "\n" +
+                        "   Version count: " + versionCount.getVersionCount());
+            }
+        }
+        // done
+        return versionCount;
     }
     
     /**
@@ -63,12 +134,21 @@ public class HibernateVersionCounterDaoServiceImpl extends HibernateDaoSupport i
      * @param storeRef  the version store id
      * @return          the next version number
      */
-    public synchronized int nextVersionNumber(StoreRef storeRef)
+    public int nextVersionNumber(StoreRef storeRef)
     {
         // get the version counter
-        VersionCount versionCounter = getVersionCounter(storeRef);
+        VersionCount versionCount = getVersionCounter(storeRef);
         // get an incremented count
-        return versionCounter.incrementVersionCount();
+        int nextCount = versionCount.incrementVersionCount();
+        
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Incremented version count: \n" +
+                    "   Thread: " + Thread.currentThread().getName() + "\n" +
+                    "   New version count: " + versionCount.getVersionCount());
+        }
+        return nextCount;
     }
     
     /**
@@ -77,7 +157,7 @@ public class HibernateVersionCounterDaoServiceImpl extends HibernateDaoSupport i
      * @param storeRef  the store reference
      * @return          the current version number, zero if no version yet allocated.
      */
-    public synchronized int currentVersionNumber(StoreRef storeRef)
+    public int currentVersionNumber(StoreRef storeRef)
     {
         // get the version counter
         VersionCount versionCounter = getVersionCounter(storeRef);

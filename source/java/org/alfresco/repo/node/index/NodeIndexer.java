@@ -16,14 +16,12 @@
  */
 package org.alfresco.repo.node.index;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -34,8 +32,7 @@ import org.alfresco.service.namespace.QName;
  * @author Derek Hulley
  */
 public class NodeIndexer
-        implements NodeServicePolicies.BeforeCreateStorePolicy,
-                   NodeServicePolicies.OnCreateNodePolicy,
+        implements NodeServicePolicies.OnCreateNodePolicy,
                    NodeServicePolicies.OnUpdateNodePolicy,
                    NodeServicePolicies.OnDeleteNodePolicy,
                    NodeServicePolicies.OnCreateChildAssociationPolicy,
@@ -68,10 +65,6 @@ public class NodeIndexer
     public void init()
     {
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateStore"),
-                ContentModel.TYPE_STOREROOT,
-                new JavaBehaviour(this, "beforeCreateStore"));   
-        policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
                 this,
                 new JavaBehaviour(this, "onCreateNode"));   
@@ -91,11 +84,6 @@ public class NodeIndexer
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteChildAssociation"),
                 this,
                 new JavaBehaviour(this, "onDeleteChildAssociation"));   
-    }
-
-    public void beforeCreateStore(QName nodeTypeQName, StoreRef storeRef)
-    {
-        // indexer can perform some cleanup here, if required
     }
 
     public void onCreateNode(ChildAssociationRef childAssocRef)

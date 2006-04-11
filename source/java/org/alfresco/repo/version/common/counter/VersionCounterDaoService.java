@@ -17,6 +17,7 @@
 package org.alfresco.repo.version.common.counter;
 
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Version counter DAO service interface.
@@ -25,6 +26,14 @@ import org.alfresco.service.cmr.repository.StoreRef;
  */
 public interface VersionCounterDaoService
 {
+    /**
+     * Helper method for simple patching
+     * 
+     * @param nodeTypeQName not used
+     * @param storeRef the store to create a counter for
+     */
+    public void beforeCreateStore(QName nodeTypeQName, StoreRef storeRef);
+    
     /**
      * Get the next available version number for the specified store.
      * 

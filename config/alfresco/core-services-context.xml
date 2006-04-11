@@ -318,9 +318,27 @@
         </property>
     </bean>
 
-    <bean id="versionCounterDaoService" class="org.alfresco.repo.version.common.counter.hibernate.HibernateVersionCounterDaoServiceImpl">
-        <property name="sessionFactory">
-            <ref bean="sessionFactory" />
+    <bean id="versionCounterDaoService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.version.common.counter.VersionCounterDaoService</value>
+        </property>
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="target">
+            <bean class="org.alfresco.repo.version.common.counter.hibernate.HibernateVersionCounterDaoServiceImpl" init-method="init">
+                <property name="sessionFactory">
+                    <ref bean="sessionFactory" />
+                </property>
+                <property name="policyComponent">
+                    <ref bean="policyComponent" />
+                </property>
+            </bean>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}, PROPAGATION_REQUIRES_NEW</prop>
+            </props>
         </property>
     </bean>
 

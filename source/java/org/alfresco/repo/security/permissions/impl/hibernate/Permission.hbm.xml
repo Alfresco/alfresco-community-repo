@@ -8,7 +8,7 @@
     <class 
         name="org.alfresco.repo.security.permissions.impl.hibernate.NodePermissionEntryImpl"
         proxy="org.alfresco.repo.security.permissions.impl.hibernate.NodePermissionEntry"
-        table="node_permission"
+        table="node_perm_entry"
         dynamic-insert="false"
         dynamic-update="false"
         select-before-update="false" 
@@ -44,7 +44,7 @@
     <class 
         name="org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntryImpl"
         proxy="org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntry"
-        table="node_perm_entry"
+        table="perm_entry"
         dynamic-insert="false"
         dynamic-update="false"
         select-before-update="false"
@@ -89,7 +89,7 @@
     <class
         name="org.alfresco.repo.security.permissions.impl.hibernate.PermissionReferenceImpl"
         proxy="org.alfresco.repo.security.permissions.impl.hibernate.PermissionReference"
-        table="permission_ref"
+        table="perm_ref"
         dynamic-insert="false"
         dynamic-update="false"
         select-before-update="false"

@@ -19,7 +19,6 @@ package org.alfresco.repo.domain.hibernate;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.StoreKey;
 import org.alfresco.repo.domain.VersionCount;
-import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
  * Hibernate-specific implementation of the domain entity <b>versioncounter</b>.
@@ -29,8 +28,9 @@ import org.alfresco.service.cmr.repository.StoreRef;
 public class VersionCountImpl implements VersionCount
 {
 	private StoreKey key;
+    @SuppressWarnings("unused")
+    private long version;    // used by Hibernate for concurrency
     private int versionCount;
-    private transient StoreRef storeRef;
 
     public VersionCountImpl()
     {
@@ -78,9 +78,9 @@ public class VersionCountImpl implements VersionCount
 		return key;
 	}
 
-	public synchronized void setKey(StoreKey key) {
+	public synchronized void setKey(StoreKey key)
+    {
 		this.key = key;
-        this.storeRef = null;
 	}
     
     /**
@@ -93,7 +93,9 @@ public class VersionCountImpl implements VersionCount
 
     public int incrementVersionCount()
     {
-        return ++versionCount;
+        int versionCount = getVersionCount() + 1;
+        setVersionCount(versionCount);
+        return versionCount;
     }
 
     /**

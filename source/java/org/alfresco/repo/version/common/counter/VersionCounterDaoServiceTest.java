@@ -16,75 +16,203 @@
  */
 package org.alfresco.repo.version.common.counter;
 
+import javax.transaction.UserTransaction;
+
+import junit.framework.TestCase;
+
+import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.util.BaseSpringTest;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
+import org.springframework.context.ApplicationContext;
 
 /**
  * @author Roy Wetherall
  */
-public class VersionCounterDaoServiceTest extends BaseSpringTest
+public class VersionCounterDaoServiceTest extends TestCase
 {
-    /*
-     * Test store id's
-     */
-    private final static String STORE_ID_1 = "test1_" + System.currentTimeMillis();
-    private final static String STORE_ID_2 = "test2_" + System.currentTimeMillis();
-    private static final String STORE_NONE = "test3_" + System.currentTimeMillis();;
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
+    private StoreRef storeRef1;
+    private StoreRef storeRef2;
+
+    private TransactionService transactionService;
     private NodeService nodeService;
     private VersionCounterDaoService counter;
     
     @Override
-    public void onSetUpInTransaction()
+    public void setUp() throws Exception
     {
-        nodeService = (NodeService) applicationContext.getBean("dbNodeService");
-        counter = (VersionCounterDaoService) applicationContext.getBean("versionCounterDaoService");
+        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
+        transactionService = serviceRegistry.getTransactionService();
+        nodeService = serviceRegistry.getNodeService();
+        counter = (VersionCounterDaoService) ctx.getBean("versionCounterDaoService");
+        
+        storeRef1 = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "test1_" + System.currentTimeMillis());
+        storeRef2 = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "test2_" + System.currentTimeMillis());
+    }
+    
+    @Override
+    public void tearDown() throws Exception
+    {
+        synchronized(endWait)
+        {
+            endWait.notifyAll();
+        }
     }
     
     public void testSetUp() throws Exception
     {
-        assertNotNull(nodeService);
+        assertNotNull(transactionService);
         assertNotNull(counter);
     }
     
     /**
      * Test nextVersionNumber
      */
-    public void testNextVersionNumber()
+    public void testNextVersionNumber() throws Exception
     {
-        // Create the store references
-        StoreRef store1 = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, VersionCounterDaoServiceTest.STORE_ID_1);
-        StoreRef store2 = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, VersionCounterDaoServiceTest.STORE_ID_2);
-        StoreRef storeNone = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, VersionCounterDaoServiceTest.STORE_NONE);
-        
-        int store1Version0 = this.counter.nextVersionNumber(store1);
-        assertEquals(store1Version0, 1);
-        
-        int store1Version1 = this.counter.nextVersionNumber(store1);
-        assertEquals(store1Version1, 2);
-        
-        int store2Version0 = this.counter.nextVersionNumber(store2);
-        assertEquals(store2Version0, 1);
-        
-        int store1Version2 = this.counter.nextVersionNumber(store1);
-        assertEquals(store1Version2, 3);
-        
-        int store2Version1 = this.counter.nextVersionNumber(store2);
-        assertEquals(store2Version1, 2);
-        
-        int store1Current = this.counter.currentVersionNumber(store1);
-        assertEquals(store1Current, 3);
-        
-        int store2Current = this.counter.currentVersionNumber(store2);
-        assertEquals(store2Current, 2);
-        
-        int storeNoneCurrent = this.counter.currentVersionNumber(storeNone);
-        assertEquals(storeNoneCurrent, 0);
-        
-        // Need to clean-up since the version counter works in its own transaction
-        this.counter.resetVersionNumber(store1);
-        this.counter.resetVersionNumber(store2);
+        UserTransaction txn = transactionService.getUserTransaction();
+        try
+        {
+            txn.begin();
+            
+            int store1Version0 = counter.nextVersionNumber(storeRef1);
+            assertEquals(1, store1Version0);
+            
+            int store1Version1 = counter.nextVersionNumber(storeRef1);
+            assertEquals(2, store1Version1);
+            
+            int store2Version0 = counter.nextVersionNumber(storeRef2);
+            assertEquals(1, store2Version0);
+            
+            int store1Version2 = counter.nextVersionNumber(storeRef1);
+            assertEquals(3, store1Version2);
+            
+            int store2Version1 = counter.nextVersionNumber(storeRef2);
+            assertEquals(2, store2Version1);
+            
+            int store1Current = counter.currentVersionNumber(storeRef1);
+            assertEquals(3, store1Current);
+            
+            int store2Current = counter.currentVersionNumber(storeRef2);
+            assertEquals(2, store2Current);
+            
+            // Need to clean-up since the version counter works in its own transaction
+            counter.resetVersionNumber(storeRef1);
+            counter.resetVersionNumber(storeRef2);
+        }
+        finally
+        {
+            try { txn.rollback(); } catch (Throwable e) {}
+        }
     }
 
+    public void testConcurrentVersionNumber() throws Throwable
+    {
+        VersionCounterThread[] threads = new VersionCounterThread[5];
+        for (int i = 0; i < threads.length; i++)
+        {
+            threads[i] = new VersionCounterThread("VersionCounterThread_" + i);
+            // start the thread
+            threads[i].start();
+        }
+        // now wait until all the threads are waiting
+        int iteration = 0;
+        while (waitCount < threads.length && iteration++ < 5000)
+        {
+            synchronized (this)
+            {
+                this.wait(20);   // 20 ms wait
+            }
+        }
+        // reset wait count
+        this.waitCount = 0;
+        // kick them off
+        synchronized(beginWait)
+        {
+            beginWait.notifyAll();
+        }
+
+        // now wait until all the threads are waiting
+        while (waitCount < threads.length && iteration++ < 5000)
+        {
+            synchronized (this)
+            {
+                this.wait(20);   // 20 ms wait
+            }
+        }
+        // let them finish
+        iteration = 0;
+        synchronized(endWait)
+        {
+            endWait.notifyAll();
+        }
+        
+        // check for exceptions
+        for (VersionCounterThread thread : threads)
+        {
+            if (thread.error != null)
+            {
+                throw thread.error;
+            }
+        }
+    }
+
+    private Object beginWait = new String("BEGIN_WAIT");
+    private Object endWait = new String("END_WAIT");
+    private int waitCount = 0;
+    
+    private class VersionCounterThread extends Thread
+    {
+        private Throwable error = new RuntimeException("Execution didn't complete");
+        public VersionCounterThread(String name)
+        {
+            super(name);
+        }
+        
+        @Override
+        public void run()
+        {
+            TransactionWork<Object> versionWork = new TransactionWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    // wait for all other threads to enter into their transactions
+                    synchronized(beginWait)
+                    {
+                        waitCount++;
+                        beginWait.wait(10000L);
+                    }
+                    
+                    int startVersion = counter.currentVersionNumber(storeRef1);
+                    // increment it
+                    int incrementedVersion = counter.nextVersionNumber(storeRef1);
+                    assertTrue("Version number was not incremented", incrementedVersion > startVersion);
+                    
+                    // wait for all other threads to have finished their increments
+                    synchronized(endWait)
+                    {
+                        waitCount++;
+                        endWait.wait(10000L);
+                    }
+                    
+                    return null;
+                }
+            };
+            try
+            {
+                TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, versionWork, false);
+                error = null;
+            }
+            catch (Throwable e)
+            {
+                error = e;
+                e.printStackTrace();
+            }
+        }
+    }
 }

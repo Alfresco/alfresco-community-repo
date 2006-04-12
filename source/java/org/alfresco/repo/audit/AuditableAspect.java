@@ -56,7 +56,6 @@ public class AuditableAspect
     private NodeService nodeService;
     private AuthenticationService authenticationService;
     private PolicyComponent policyComponent;
-    private BehaviourFilter policyBehaviourFilter;
 
     // Behaviours
     private Behaviour onCreateAudit;
@@ -78,14 +77,6 @@ public class AuditableAspect
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
-    }
-    
-    /**
-     * @param policyBehaviourFilter  the policy behaviour filter
-     */
-    public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
-    {
-        this.policyBehaviourFilter = policyBehaviourFilter;
     }
     
     /**

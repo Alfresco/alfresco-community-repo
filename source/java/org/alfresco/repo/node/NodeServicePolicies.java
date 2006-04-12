@@ -21,8 +21,8 @@ import java.util.Map;
 
 import org.alfresco.repo.policy.AssociationPolicy;
 import org.alfresco.repo.policy.ClassPolicy;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
@@ -117,6 +117,10 @@ public interface NodeServicePolicies
                 NodeRef nodeRef,
                 Map<QName, Serializable> before,
                 Map<QName, Serializable> after);
+        
+        static Arg ARG_0 = Arg.KEY;
+        static Arg ARG_1 = Arg.START_VALUE;
+        static Arg ARG_2 = Arg.END_VALUE;
     }
     
 	public interface BeforeDeleteNodePolicy extends ClassPolicy

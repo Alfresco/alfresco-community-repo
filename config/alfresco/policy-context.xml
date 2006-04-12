@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <!-- Policy Support -->
+
+	<bean id="policyBehaviourQueue" class="org.alfresco.repo.policy.TransactionBehaviourQueue">
+	</bean>
+
+	<bean id="policyTransactionHandlerFactory" class="org.alfresco.repo.policy.TransactionInvocationHandlerFactory">
+		<constructor-arg index="0">
+			<ref bean="policyBehaviourQueue"/>
+		</constructor-arg>
+	</bean>
+
+    <bean id="policyBehaviourFilter" class="org.alfresco.repo.policy.BehaviourFilterImpl">
+		<property name="dictionaryService">
+			<ref bean="dictionaryService"/>
+	    </property>
+    </bean>
+
+    <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl">
+        <constructor-arg index="0">
+            <ref bean="dictionaryService"/>
+        </constructor-arg>
+        <property name="behaviourFilter">
+            <ref bean="policyBehaviourFilter"/>
+        </property>
+        <property name="transactionInvocationHandlerFactory">
+        	<ref bean="policyTransactionHandlerFactory"/>
+        </property>
+    </bean>
+
+</beans>

@@ -26,7 +26,9 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -100,9 +102,9 @@ public class AuditableAspect
     public void init()
     {
         // Create behaviours
-        onCreateAudit =  new JavaBehaviour(this, "onCreateAudit");
-        onAddAudit = new JavaBehaviour(this, "onAddAudit");
-        onUpdateAudit = new JavaBehaviour(this, "onUpdateAudit");
+        onCreateAudit =  new JavaBehaviour(this, "onCreateAudit", NotificationFrequency.FIRST_EVENT);
+        onAddAudit = new JavaBehaviour(this, "onAddAudit", NotificationFrequency.FIRST_EVENT);
+        onUpdateAudit = new JavaBehaviour(this, "onUpdateAudit", NotificationFrequency.TRANSACTION_COMMIT);
         
         // Bind behaviours to node policies
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"), ContentModel.ASPECT_AUDITABLE, onCreateAudit);
@@ -132,37 +134,36 @@ public class AuditableAspect
      */
     public void onAddAudit(NodeRef nodeRef, QName aspect)
     {
+        // Get the current properties
+        Map<QName, Serializable> properties = this.nodeService.getProperties(nodeRef);
+        
+        // Set created / updated date
+        Date now = new Date(System.currentTimeMillis());
+        properties.put(ContentModel.PROP_CREATED, now);
+        properties.put(ContentModel.PROP_MODIFIED, now);
+
+        // Set creator (but do not override, if explicitly set)
+        String creator = (String)properties.get(ContentModel.PROP_CREATOR);
+        if (creator == null || creator.length() == 0)
+        {
+            creator = getUsername();
+            properties.put(ContentModel.PROP_CREATOR, creator);
+        }
+        properties.put(ContentModel.PROP_MODIFIER, creator);
+        
         try
         {
-            this.policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
-            
-            // Get the current properties
-            Map<QName, Serializable> properties = this.nodeService.getProperties(nodeRef);
-            
-            // Set created / updated date
-            Date now = new Date(System.currentTimeMillis());
-            properties.put(ContentModel.PROP_CREATED, now);
-            properties.put(ContentModel.PROP_MODIFIED, now);
-
-            // Set creator (but do not override, if explicitly set)
-            String creator = (String)properties.get(ContentModel.PROP_CREATOR);
-            if (creator == null || creator.length() == 0)
-            {
-                creator = getUsername();
-                properties.put(ContentModel.PROP_CREATOR, creator);
-            }
-            properties.put(ContentModel.PROP_MODIFIER, creator);
-            
-            // Set the updated property values
+            // Set the updated property values (but do not cascade to update audit behaviour)
+            onUpdateAudit.disable();
             this.nodeService.setProperties(nodeRef, properties);
-            
-            if (logger.isDebugEnabled())
-                logger.debug("Auditable node " + nodeRef + " created [created,modified=" + now + ";creator,modifier=" + creator + "]");
         }
         finally
         {
-            this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+            onUpdateAudit.enable();
         }
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Auditable node " + nodeRef + " created [created,modified=" + now + ";creator,modifier=" + creator + "]");
     }
 
     /**
@@ -172,11 +173,9 @@ public class AuditableAspect
      */
     public void onUpdateAudit(NodeRef nodeRef)
     {       
+        // Get the current properties
         try
         {
-            this.policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
-         
-            // Get the current properties
             Map<QName, Serializable> properties = this.nodeService.getProperties(nodeRef);
             
             // Set updated date
@@ -193,9 +192,10 @@ public class AuditableAspect
             if (logger.isDebugEnabled())
                 logger.debug("Auditable node " + nodeRef + " updated [modified=" + now + ";modifier=" + modifier + "]");
         }
-        finally
+        catch(InvalidNodeRefException e) 
         {
-            this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+            if (logger.isDebugEnabled())
+                logger.debug("Warning: Auditable node " + nodeRef + " no longer exists - cannot update");
         }
     }
 

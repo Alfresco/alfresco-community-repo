@@ -531,23 +531,6 @@
         </property>
     </bean>
 
-    <!-- Policy Support -->
-
-    <bean id="policyBehaviourFilter" class="org.alfresco.repo.policy.BehaviourFilterImpl">
-		<property name="dictionaryService">
-			<ref bean="dictionaryService"/>
-	    </property>
-    </bean>
-
-    <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl">
-        <constructor-arg index="0">
-            <ref bean="dictionaryService"/>
-        </constructor-arg>
-        <property name="behaviourFilter">
-            <ref bean="policyBehaviourFilter"/>
-        </property>
-    </bean>
-
     <!-- Bean to support full text search -->
 
     <bean id="LuceneFullTextSearchIndexer"

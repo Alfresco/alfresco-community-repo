@@ -43,6 +43,9 @@ public class JavaBehaviour implements Behaviour
     
     // The method name
     private String method;
+
+    // Notification Frequency
+    private NotificationFrequency frequency;
     
     // Cache of interface proxies (by interface class)
     private Map<Class, Object> proxies = new HashMap<Class, Object>();
@@ -59,10 +62,22 @@ public class JavaBehaviour implements Behaviour
      */
     public JavaBehaviour(Object instance, String method)
     {
+        this(instance, method, NotificationFrequency.EVERY_EVENT);
+    }
+
+    /**
+     * Construct.
+     * 
+     * @param instance  the object instance holding the method
+     * @param method  the method name
+     */
+    public JavaBehaviour(Object instance, String method, NotificationFrequency frequency)
+    {
         ParameterCheck.mandatory("Instance", instance);
         ParameterCheck.mandatory("Method", method);
         this.instance = instance;
         this.method = method;
+        this.frequency = frequency;
     }
 
 
@@ -113,6 +128,15 @@ public class JavaBehaviour implements Behaviour
         Stack<Integer> stack = disabled.get();
         return stack.search(hashCode()) == -1;
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.policy.Behaviour#getNotificationFrequency()
+     */
+    public NotificationFrequency getNotificationFrequency()
+    {
+        return frequency;
+    }
+    
     
     @Override
     public String toString()

@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.policy;
 
+import org.alfresco.repo.policy.Policy.Arg;
 import org.alfresco.service.namespace.QName;
 
 
@@ -46,7 +47,23 @@ public interface PolicyDefinition<P extends Policy>
     
     /**
      * Gets the Policy type
+     * 
      * @return  the policy type
      */
     public PolicyType getType();
+    
+    /**
+     * Gets Policy Argument definition for the specified argument index
+     * 
+     * @param index  argument index
+     * @return  ARG.KEY or ARG.START_VALUE or ARG.END_VALUE
+     */
+    public Arg getArgument(int index);
+
+    /**
+     * Gets Policy Argument definitions for all arguments in order of arguments
+     * @return
+     */
+    public Arg[] getArguments();
+    
 }

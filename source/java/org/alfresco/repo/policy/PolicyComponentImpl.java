@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.policy.Policy.Arg;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -47,6 +48,7 @@ public class PolicyComponentImpl implements PolicyComponent
     
     // Policy interface annotations
     private static String ANNOTATION_NAMESPACE = "NAMESPACE";
+    private static String ANNOTATION_ARG ="ARG_";
 
     // Dictionary Service
     private DictionaryService dictionary;
@@ -91,6 +93,17 @@ public class PolicyComponentImpl implements PolicyComponent
     public void setBehaviourFilter(BehaviourFilter filter)
     {
         this.behaviourFilter = filter;
+    }
+    
+    
+    /**
+     * Sets the transaction-based policy invocation handler
+     * 
+     * @param factory
+     */
+    public void setTransactionInvocationHandlerFactory(TransactionInvocationHandlerFactory factory)
+    {
+        PolicyFactory.setTransactionInvocationHandlerFactory(factory);
     }
     
     
@@ -509,8 +522,38 @@ public class PolicyComponentImpl implements PolicyComponent
         }
         String name = methods[0].getName();
 
+        // Extract Policy Arguments
+        Class[] paramTypes = methods[0].getParameterTypes();
+        Arg[] args = new Arg[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++)
+        {
+            // Extract Policy Arg
+            args[i] = (i == 0) ? Arg.KEY : Arg.START_VALUE; 
+            try
+            {
+                Field argMetadata = policyIF.getField(ANNOTATION_ARG + i);
+                if (!Arg.class.isAssignableFrom(argMetadata.getType()))
+                {
+                    throw new PolicyException("ARG_" + i + " metadata incorrectly specified in policy " + policyIF.getCanonicalName());
+                }
+                args[i] = (Arg)argMetadata.get(null);
+                if (i == 0 && (!args[i].equals(Arg.KEY)))
+                {
+                    throw new PolicyException("ARG_" + i + " specified in policy " + policyIF.getCanonicalName() + " must be a key");
+                }
+            }
+            catch(NoSuchFieldException e)
+            {
+                // Assume default ARG configuration
+            }
+            catch(IllegalAccessException e)
+            {
+                // Shouldn't get here (interface definitions must be accessible)
+            }
+        }
+        
         // Create Policy Definition
-        return new PolicyDefinitionImpl(QName.createQName(namespaceURI, name), policyIF);
+        return new PolicyDefinitionImpl(QName.createQName(namespaceURI, name), policyIF, args);
     }
 
     
@@ -564,11 +607,13 @@ public class PolicyComponentImpl implements PolicyComponent
     {
         private QName policy;
         private Class policyIF;
+        private Arg[] args;
 
-        /*package*/ PolicyDefinitionImpl(QName policy, Class policyIF)
+        /*package*/ PolicyDefinitionImpl(QName policy, Class policyIF, Arg[] args)
         {
             this.policy = policy;
             this.policyIF = policyIF;
+            this.args = args;
         }
         
         /* (non-Javadoc)
@@ -605,6 +650,27 @@ public class PolicyComponentImpl implements PolicyComponent
                 return PolicyType.Association; 
             }
         }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.policy.PolicyDefinition#getArgument(int)
+         */
+        public Arg getArgument(int index)
+        {
+            if (index < 0 || index > args.length -1)
+            {
+                throw new IllegalArgumentException("Argument index " + index + " is invalid");
+            }
+            return args[index];
+        }
+        
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.policy.PolicyDefinition#getArguments()
+         */
+        public Arg[] getArguments()
+        {
+            return args;
+        }
+        
     }
     
 

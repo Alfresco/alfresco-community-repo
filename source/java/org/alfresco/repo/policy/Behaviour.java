@@ -29,6 +29,17 @@ package org.alfresco.repo.policy;
  */
 public interface Behaviour
 {
+    
+    /**
+     * When should behaviour be notified? 
+     */
+    public enum NotificationFrequency
+    {
+        EVERY_EVENT,
+        FIRST_EVENT,
+        TRANSACTION_COMMIT
+    }
+    
     /**
      * Gets the requested policy interface onto the behaviour 
      * 
@@ -51,5 +62,11 @@ public interface Behaviour
      * @return  is the behaviour enabled (for this thread only)
      */
     public boolean isEnabled();
-    
+
+    /**
+     * @return  the notification
+     */
+    public NotificationFrequency getNotificationFrequency();
+
 }
+

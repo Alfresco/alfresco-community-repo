@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+
 
 /**
  * A Policy Factory is responsible for creating Policy implementations.
@@ -41,6 +43,12 @@ import java.util.List;
     
     // The policy interface class
     private Class<P> policyClass;
+
+    // NOOP Invocation Handler
+    private static InvocationHandler NOOPHandler = new NOOPHandler();
+    
+    // Transaction Invocation Handler Factory
+    private static TransactionInvocationHandlerFactory transactionHandlerFactory = null;
     
     
     /**
@@ -55,6 +63,17 @@ import java.util.List;
         this.index = index;
     }
     
+
+    /**
+     * Sets the Transaction Invocation Handler
+     * 
+     * @param handlerFactory
+     */
+    protected static void setTransactionInvocationHandlerFactory(TransactionInvocationHandlerFactory factory)
+    {
+        transactionHandlerFactory = factory;
+    }
+
     
     /**
      * Gets the Policy class created by this factory
@@ -95,6 +114,16 @@ import java.util.List;
         {
             Behaviour behaviour = behaviourDef.getBehaviour();
             P policyIF = behaviour.getInterface(policyClass);
+            if (!(behaviour.getNotificationFrequency().equals(NotificationFrequency.EVERY_EVENT)))
+            {
+                // wrap behaviour in transaction proxy which deals with delaying invocation until necessary
+                if (transactionHandlerFactory == null)
+                {
+                    throw new PolicyException("Transaction-level policies not supported as transaction support for the Policy Component has not been initialised.");
+                }
+                InvocationHandler trxHandler = transactionHandlerFactory.createHandler(behaviour, behaviourDef.getPolicyDefinition(), policyIF);
+                policyIF = (P)Proxy.newProxyInstance(policyClass.getClassLoader(), new Class[]{policyClass}, trxHandler);
+            }
             policyInterfaces.add(policyIF);
         }
         
@@ -119,7 +148,7 @@ import java.util.List;
         else if (policyList.size() == 0)
         {
             return (P)Proxy.newProxyInstance(policyClass.getClassLoader(), 
-					new Class[]{policyClass}, new NOOPHandler());
+					new Class[]{policyClass}, NOOPHandler);
         }
         else
         {
@@ -157,7 +186,7 @@ import java.util.List;
             return null;
         }
     }
-        
+    
 
     /**
      * Multi-policy Invocation Handler.
@@ -166,8 +195,7 @@ import java.util.List;
      *
      * @param <P>  policy interface
      */
-    @SuppressWarnings("hiding")
-    private static class MultiHandler<P> implements InvocationHandler, PolicyList
+    private static class MultiHandler<P extends Policy> implements InvocationHandler, PolicyList
     {
         private Collection<P> policyInterfaces;
        
@@ -186,13 +214,13 @@ import java.util.List;
          */
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
         {
-			// Handle PolicyList level methods
-			if (method.getDeclaringClass().equals(PolicyList.class))
-			{
-				return method.invoke(this, args);
-			}
-			
-			// Handle Object level methods
+            // Handle PolicyList level methods
+            if (method.getDeclaringClass().equals(PolicyList.class))
+            {
+                return method.invoke(this, args);
+            }
+            
+            // Handle Object level methods
             if (method.getName().equals("toString"))
             {
                 return toString() + ": wrapped " + policyInterfaces.size() + " policies";
@@ -222,13 +250,13 @@ import java.util.List;
             }
         }
 
-		/* (non-Javadoc)
-		 * @see org.alfresco.repo.policy.PolicyList#getPolicies()
-		 */
-		public Collection getPolicies()
-		{
-			return policyInterfaces;
-		}
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.policy.PolicyList#getPolicies()
+         */
+        public Collection getPolicies()
+        {
+            return policyInterfaces;
+        }
     }
     
 }

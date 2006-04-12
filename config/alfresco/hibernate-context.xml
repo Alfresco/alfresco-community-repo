@@ -24,10 +24,12 @@
     </bean>
 
     <!-- Hibernate session factory -->
-    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean" parent="sessionFactoryBase">
         <property name="dataSource">
             <ref bean="dataSource" />
         </property>
+    </bean>
+    <bean id="sessionFactoryBase" abstract="true">
         <property name="mappingResources">
             <list>
                 <value>org/alfresco/repo/domain/hibernate/Node.hbm.xml</value>

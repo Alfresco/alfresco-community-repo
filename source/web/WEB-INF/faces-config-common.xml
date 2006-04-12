@@ -161,6 +161,10 @@
       <converter-class>org.alfresco.web.ui.common.converter.ByteSizeConverter</converter-class>
    </converter>
    
+   <converter>
+      <converter-id>org.alfresco.faces.MultiValueConverter</converter-id>
+      <converter-class>org.alfresco.web.ui.common.converter.MultiValueConverter</converter-class>
+   </converter>
    
    <!-- ==================== RENDERERS ==================== -->
    <render-kit>

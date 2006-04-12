@@ -686,7 +686,11 @@ public class AdvancedSearchBean
       // then simply navigating to the browse screen will cause it pickup the Search Context
       SearchContext search = new SearchContext();
       
+      // set the full-text/name field value 
       search.setText(this.text);
+      
+      // set whether to force AND operation on text terms
+      search.setForceAndTerms(Application.getClientConfig(FacesContext.getCurrentInstance()).getForceAndTerms());
       
       if (this.mode.equals(MODE_ALL))
       {

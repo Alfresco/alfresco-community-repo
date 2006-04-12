@@ -119,6 +119,9 @@ public final class SearchContext implements Serializable
    /** any additional fixed value attributes to add to the search, such as boolean or noderef */
    private Map<QName, String> queryFixedValues = new HashMap<QName, String>(5, 1.0f);
    
+   /** set true to force the use of AND between text terms */
+   private boolean forceAndTerms = false;
+   
    /** logger */
    private static Log logger = LogFactory.getLog(SearchContext.class);
    
@@ -216,6 +219,9 @@ public final class SearchContext implements Serializable
                   {
                      term = term.substring(1);
                   }
+                  
+                  // special case for AND all terms if set (apply after operator character removed)
+                  operatorAND = operatorAND | this.forceAndTerms;
                   
                   if (term.length() != 0)
                   {
@@ -654,6 +660,22 @@ public final class SearchContext implements Serializable
       return this.queryFixedValues.get(qname);
    }
    
+   /**
+    * @return Returns if AND is forced between text terms. False (OR terms) is the default.
+    */
+   public boolean getForceAndTerms()
+   {
+      return this.forceAndTerms;
+   }
+
+   /**
+    * @param forceAndTerms Set true to force AND between text terms. Otherwise OR is the default.
+    */
+   public void setForceAndTerms(boolean forceAndTerms)
+   {
+      this.forceAndTerms = forceAndTerms;
+   }
+
    /**
     * @return this SearchContext as XML
     * 

@@ -34,6 +34,8 @@ public class ClientConfigElement extends ConfigElementAdapter
    private int recentSpacesItems = 6;
    private boolean shelfVisible = true;
    private int searchMinimum = 3;
+   private boolean forceAndTerms = false;
+   private int searchMaxResults = -1;
    private String helpUrl = null;
    private String editLinkType = "http";
    private String homeSpacePermission = null;
@@ -119,6 +121,16 @@ public class ClientConfigElement extends ConfigElementAdapter
       if (existingElement.getSearchMinimum() != newElement.getSearchMinimum())
       {
          newElement.setSearchMinimum(existingElement.getSearchMinimum());
+      }
+      
+      if (existingElement.getForceAndTerms() != newElement.getForceAndTerms())
+      {
+         newElement.setForceAndTerms(existingElement.getForceAndTerms());
+      }
+      
+      if (existingElement.getSearchMaxResults() != newElement.getSearchMaxResults())
+      {
+         newElement.setSearchMaxResults(existingElement.getSearchMaxResults());
       }
       
       if (existingElement.isShelfVisible() != newElement.isShelfVisible())
@@ -262,6 +274,44 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setSearchMinimum(int searchMinimum)
    {
       this.searchMinimum = searchMinimum;
+   }
+   
+   /**
+    * @return If true enables AND text terms for simple/advanced search by default.
+    */
+   public boolean getForceAndTerms()
+   {
+      return this.forceAndTerms;
+   }
+
+   /**
+    * @param forceAndTerms True to enable AND text terms for simple/advanced search by default.
+    */
+   /*package*/ void setForceAndTerms(boolean forceAndTerms)
+   {
+      this.forceAndTerms = forceAndTerms;
+   }
+
+   /**
+    * If positive, this will limit the size of the result set from the search.
+    * 
+    * @return
+    */
+   
+   public int getSearchMaxResults()
+   {
+       return searchMaxResults;
+   }
+
+   /**
+    * Set if the the result set from a search will be of limited size.
+    * If negative it is unlimited, by convention, this is set to -1.
+    * 
+    * @param searchMaxResults
+    */
+   /*package*/ void setSearchMaxResults(int searchMaxResults)
+   {
+       this.searchMaxResults = searchMaxResults;
    }
 
    /**

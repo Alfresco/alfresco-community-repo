@@ -132,6 +132,7 @@ public class UISimpleSearch extends UICommand
     */
    public void broadcast(FacesEvent event) throws AbortProcessingException
    {
+      FacesContext fc = getFacesContext();
       if (event instanceof SearchEvent)
       {
          // update the component parameters from the search event details
@@ -141,6 +142,7 @@ public class UISimpleSearch extends UICommand
          SearchContext context = new SearchContext();
          context.setText(searchEvent.SearchText);
          context.setMode(searchEvent.SearchMode);
+         context.setForceAndTerms(Application.getClientConfig(fc).getForceAndTerms());
          this.search = context;
          
          super.broadcast(event);
@@ -149,7 +151,6 @@ public class UISimpleSearch extends UICommand
       {
          // special case to navigate to the advanced search screen
          AdvancedSearchEvent searchEvent = (AdvancedSearchEvent)event;
-         FacesContext fc = getFacesContext();
          fc.getApplication().getNavigationHandler().handleNavigation(fc, null, searchEvent.Outcome);
          
          // NOTE: we don't call super() here so that our nav outcome is the one that occurs!

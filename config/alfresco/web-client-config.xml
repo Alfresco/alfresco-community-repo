@@ -39,6 +39,13 @@
          <!-- the minimum number of characters required for a valid search string -->
          <search-minimum>3</search-minimum>
          
+         <!-- set this value to true to enable AND text terms for simple/advanced search by default -->
+         <search-and-terms>false</search-and-terms>
+          
+          <!-- Limit search results. -1 for unlimited. -->
+          <search-max-results>-1</search-max-results>
+          
+         
          <!-- The default permissions to apply to a new users Home Space when first created -->
          <!-- this permission is for other users attempting to access that Home Space -->
          <!-- generally set to "Consumer" or empty value to indicate a private hidden space. -->
@@ -138,6 +145,7 @@
    
    <config evaluator="string-compare" condition="Advanced Search">
       <!-- advanced search custom attribute config -->
+      <!-- see http://wiki.alfresco.com/wiki/Advanced_Search_Custom_Attributes -->
       <advanced-search>
          <!-- type constraint drop-down -->
          <content-types>

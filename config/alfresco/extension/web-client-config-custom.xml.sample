@@ -5,6 +5,7 @@
    <config>
       <client>
          <from-email-address>someone@your-domain.com</from-email-address>
+         <search-max-results>100</search-max-results>
       </client>
    </config>
    -->

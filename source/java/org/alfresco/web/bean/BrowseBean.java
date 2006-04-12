@@ -43,8 +43,10 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -679,9 +681,20 @@ public class BrowseBean implements IContextListener
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
          tx.begin();
          
-         results = this.searchService.query(
-               Repository.getStoreRef(), 
-               SearchService.LANGUAGE_LUCENE, query, null, null);
+         // Limit search to the first 100 matches
+         SearchParameters sp = new SearchParameters();
+         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+         sp.setQuery(query);
+         sp.addStore(Repository.getStoreRef());
+         
+         int searchLimit = Application.getClientConfig(FacesContext.getCurrentInstance()).getSearchMaxResults();
+         if(searchLimit > 0)
+         {
+            sp.setLimitBy(LimitBy.FINAL_SIZE);
+            sp.setLimit(searchLimit);
+         }
+         
+         results = this.searchService.query(sp);
          if (logger.isDebugEnabled())
             logger.debug("Search results returned: " + results.length());
          

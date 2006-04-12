@@ -18,6 +18,7 @@ package org.alfresco.repo.coci;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -27,6 +28,7 @@ import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -282,6 +284,32 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		this.cociService.checkin(workingCopy2, new HashMap<String, Serializable>(), null, true);	
 	}
 	
+	public void testCheckOutCheckInWithTranslatableAspect()
+	{
+		// Create a node to be used as the translation
+		NodeRef translationNodeRef = this.nodeService.createNode(
+				rootNodeRef,
+				ContentModel.ASSOC_CHILDREN,
+				QName.createQName("{test}translation"),
+				ContentModel.TYPE_CONTENT).getChildRef();
+		
+		this.nodeService.addAspect(this.nodeRef, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "translatable"), null);
+		this.nodeService.createAssociation(this.nodeRef, translationNodeRef, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "translations"));
+				
+		// Check it out
+		NodeRef workingCopy = this.cociService.checkout(
+				this.nodeRef, 
+				this.rootNodeRef, 
+				ContentModel.ASSOC_CHILDREN, 
+				QName.createQName("{test}workingCopy"));
+		
+				
+		// Check it back in again
+		Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+		versionProperties.put(Version.PROP_DESCRIPTION, "This is a test version");
+		this.cociService.checkin(workingCopy, versionProperties);
+	}
+	
 	/**
 	 * Test when the aspect is not set when check-in is performed
 	 */
@@ -399,8 +427,8 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
                     
                 });
         
-        //NodeRef wk3 = this.cociService.getWorkingCopy(this.nodeRef);
-        //assertNull(wk3);
+        NodeRef wk3 = this.cociService.getWorkingCopy(this.nodeRef);
+        assertNull(wk3);
     }
 
 }

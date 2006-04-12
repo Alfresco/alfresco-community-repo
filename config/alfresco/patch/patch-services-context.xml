@@ -320,4 +320,19 @@
     <!-- Note: targetSchema 11 is allocated for patching in an enterprise trial license -->
     <!--       A patch bean is not provided as this is handled by the license component internally (enterprise only) -->
 
+    <bean id="patch.descriptorUpdate" class="org.alfresco.repo.admin.patch.impl.DescriptorUpdatePatch" parent="basePatch" >
+        <property name="id"><value>patch.descriptorUpdate</value></property>
+        <property name="description"><value>patch.descriptorUpdate.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>11</value></property>
+        <property name="targetSchema"><value>12</value></property>
+        <!-- helper beans for execution -->
+        <property name="systemBootstrap">
+            <ref bean="systemBootstrap"/>
+        </property>
+        <property name="searchService">
+            <ref bean="searchService"/>
+        </property>
+    </bean>
+
 </beans>

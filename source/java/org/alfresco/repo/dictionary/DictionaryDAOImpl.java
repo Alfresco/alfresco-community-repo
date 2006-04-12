@@ -31,6 +31,8 @@ import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -55,6 +57,9 @@ public class DictionaryDAOImpl implements DictionaryDAO
     
     // Map of model name to compiled model
     private Map<QName,CompiledModel> compiledModels = new HashMap<QName,CompiledModel>();
+
+    // Logger
+    private static Log logger = LogFactory.getLog(DictionaryDAO.class);
 
 
     /**
@@ -99,6 +104,15 @@ public class DictionaryDAOImpl implements DictionaryDAO
         
         // Publish new Model Definition
         compiledModels.put(modelName, compiledModel);
+
+        if (logger.isInfoEnabled())
+        {
+            logger.info("Registered model " + modelName.toPrefixString(namespaceDAO));
+            for (M2Namespace namespace : model.getNamespaces())
+            {
+                logger.info("Registered namespace '" + namespace.getUri() + "' (prefix '" + namespace.getPrefix() + "')");
+            }
+        }
     }
     
     /**

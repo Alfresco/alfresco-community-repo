@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -240,33 +239,6 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     }
     
     /**
-     * Create current repository descriptor
-     * 
-     * @return  descriptor
-     */
-    private Descriptor createCurrentRepositoryDescriptor()
-    {
-        // retrieve system descriptor location
-        StoreRef storeRef = systemBootstrap.getStoreRef();
-        Properties systemProperties = systemBootstrap.getConfiguration();
-        String path = systemProperties.getProperty("system.descriptor.current.childname");
-
-        // retrieve system descriptor
-        NodeRef descriptorNodeRef = getDescriptorNodeRef(storeRef, path, false);
-        // create appropriate descriptor
-        if (descriptorNodeRef != null)
-        {
-            Map<QName, Serializable> properties = nodeService.getProperties(descriptorNodeRef);
-            return new RepositoryDescriptor(properties);
-        }
-        else
-        {
-            // descriptor cannot be found
-            return new UnknownDescriptor();
-        }
-    }
-    
-    /**
      * Push the current server descriptor properties into persistence.
      * 
      * @param serverDescriptor the current server descriptor
@@ -286,13 +258,12 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
             return;
         }
         // set the properties
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(17);
-        properties.put(ContentModel.PROP_SYS_VERSION_MAJOR, serverDescriptor.getVersionMajor());
-        properties.put(ContentModel.PROP_SYS_VERSION_MINOR, serverDescriptor.getVersionMinor());
-        properties.put(ContentModel.PROP_SYS_VERSION_REVISION, serverDescriptor.getVersionRevision());
-        properties.put(ContentModel.PROP_SYS_VERSION_LABEL, serverDescriptor.getVersionLabel());
-        properties.put(ContentModel.PROP_SYS_VERSION_SCHEMA, serverDescriptor.getSchema());
-        nodeService.setProperties(currentDescriptorNodeRef, properties);
+        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_MAJOR, serverDescriptor.getVersionMajor());
+        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_MINOR, serverDescriptor.getVersionMinor());
+        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_REVISION, serverDescriptor.getVersionRevision());
+        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_LABEL, serverDescriptor.getVersionLabel());
+        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_SCHEMA, serverDescriptor.getSchema());
+        
         // done
         if (logger.isDebugEnabled())
         {
@@ -377,8 +348,8 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
             // NOTE: We could tie in the License Component via Spring configuration, but then it could
             //       be declaratively taken out in an installed environment.
             Class licenseComponentClass = Class.forName("org.alfresco.license.LicenseComponent");
-            Constructor constructor = licenseComponentClass.getConstructor(new Class[] { ApplicationContext.class, Descriptor.class} );
-            licenseService = (LicenseService)constructor.newInstance(new Object[] { applicationContext, createCurrentRepositoryDescriptor() } );            
+            Constructor constructor = licenseComponentClass.getConstructor(new Class[] { ApplicationContext.class} );
+            licenseService = (LicenseService)constructor.newInstance(new Object[] { applicationContext });            
         }
         catch (ClassNotFoundException e)
         {
@@ -415,13 +386,6 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
      */
     private class NOOPLicenseService implements LicenseService
     {
-        /* (non-Javadoc)
-         * @see org.alfresco.service.license.LicenseService#install()
-         */
-        public void installLicense() throws LicenseException
-        {
-        }
-
         /* (non-Javadoc)
          * @see org.alfresco.service.license.LicenseService#verify()
          */

@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.descriptor;
 
+import java.security.Principal;
 import java.util.Date;
 import java.util.Map;
 
@@ -88,6 +89,11 @@ public class DescriptorStartupLog implements ApplicationListener
             {
                 String subject = license.getSubject();
                 String msg = "Alfresco license: " + subject;
+                String holder = getHolderOrganisation(license.getHolder());
+                if (holder != null)
+                {
+                    msg += " granted to " + holder;
+                }
                 Date validUntil = license.getValidUntil();
                 if (validUntil != null)
                 {
@@ -100,6 +106,8 @@ public class DescriptorStartupLog implements ApplicationListener
                 {
                     msg += " (does not expire)";
                 }
+                
+                
                 logger.info(msg);
             }
             
@@ -117,6 +125,36 @@ public class DescriptorStartupLog implements ApplicationListener
                    serverEdition, serverVersion, serverSchemaVersion, installedRepoVersion, installedSchemaVersion));
             }
         }
+    }
+    
+    
+    /**
+     * Get Organisation from Principal
+     * 
+     * @param holderPrincipal
+     * @return  organisation
+     */
+    private String getHolderOrganisation(Principal holderPrincipal)
+    {
+        String holder = null;
+        if (holderPrincipal != null)
+        {
+            holder = holderPrincipal.getName();
+            if (holder != null)
+            {
+                String[] properties = holder.split(",");
+                for (String property : properties)
+                {
+                    String[] parts = property.split("=");
+                    if (parts[0].equals("O"))
+                    {
+                        holder = parts[1];
+                    }
+                }
+            }
+        }
+        
+        return holder;
     }
     
 }

@@ -22,6 +22,8 @@ import java.util.List;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -40,6 +42,10 @@ public class DictionaryBootstrap
 
     // Dictionary DAO
     private DictionaryDAO dictionaryDAO = null;
+
+    // Logger
+    private static Log logger = LogFactory.getLog(DictionaryDAO.class);
+    
     
     /**
      * Sets the Dictionary DAO
@@ -86,6 +92,9 @@ public class DictionaryBootstrap
             }
             try
             {
+                if (logger.isInfoEnabled())
+                    logger.info("Loading model from " + bootstrapModel);
+                
                 M2Model model = M2Model.createModel(modelStream);
                 dictionaryDAO.putModel(model);
             }

@@ -26,11 +26,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.view.ImportPackageHandler;
+import org.alfresco.service.cmr.view.ImporterBinding;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
+import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.QName;
+
 
 
 /**
@@ -126,6 +129,18 @@ public class Import extends Tool
                 }
                 context.encoding = args[i];
             }
+            else if (args[i].equals("-uuidBinding"))
+            {
+                i++;
+                try
+                {
+                    context.uuidBinding = UUID_BINDING.valueOf(UUID_BINDING.class, args[i]);
+                }
+                catch(IllegalArgumentException e)
+                {
+                    throw new ToolException("The value " + args[i] + " is an invalid uuidBinding");
+                }
+            }
             else if (args[i].equals("-quiet"))
             {
                 context.setQuiet(true);
@@ -168,6 +183,7 @@ public class Import extends Tool
         System.out.println(" -d[ir] the source directory to import from (default: current directory)");
         System.out.println(" -pwd password for login");
         System.out.println(" -encoding package file encoding (default: " + Charset.defaultCharset() + ")");
+        System.out.println(" -uuidBinding CREATE_NEW, REMOVE_EXISTING, REPLACE_EXISTING, UPDATE_EXISTING, THROW_ON_COLLISION (default: CREATE_NEW)");
         System.out.println(" -quiet do not display any messages during import");
         System.out.println(" -verbose report import progress");
     }
@@ -202,7 +218,8 @@ public class Import extends Tool
         
         try
         {
-            importer.importView(importHandler, context.getLocation(), null, new ImportProgress());
+            ImportBinding binding = new ImportBinding(context.uuidBinding);
+            importer.importView(importHandler, context.getLocation(), binding, new ImportProgress());
         }
         catch(ImporterException e)
         {
@@ -360,6 +377,8 @@ public class Import extends Tool
         private String packageName;
         /** The package encoding */
         private String encoding = null;
+        /** The UUID Binding */
+        private UUID_BINDING uuidBinding = UUID_BINDING.CREATE_NEW;
         /** Zip Package? */
         private boolean zipFile = false;
 
@@ -451,5 +470,57 @@ public class Import extends Tool
             return (zipFile) ? new File(packageName) : getDataFile();
         }        
     }
+ 
+
+    /**
+     * Import Tool Binding
+     * 
+     * @author davidc
+     */
+    private class ImportBinding implements ImporterBinding
+    {
+        private UUID_BINDING uuidBinding = null;
     
+        /**
+         * Construct
+         * 
+         * @param uuidBinding
+         */
+        public ImportBinding(UUID_BINDING uuidBinding)
+        {
+            this.uuidBinding = uuidBinding;
+        }
+        
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterBinding#getUUIDBinding()
+         */
+        public UUID_BINDING getUUIDBinding()
+        {
+            return uuidBinding;
+        }
+
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterBinding#allowReferenceWithinTransaction()
+         */
+        public boolean allowReferenceWithinTransaction()
+        {
+            return false;
+        }
+
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.service.cmr.view.ImporterBinding#getValue(java.lang.String)
+         */
+        public String getValue(String key)
+        {
+            return null;
+        }
+
+        public QName[] getExcludedClasses()
+        {
+            return new QName[] {};
+        }
+    }
 }

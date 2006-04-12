@@ -46,9 +46,10 @@
 					<mandatory enforced="true">true</mandatory>
 					<default>0</default>
 				</property>
-				<property name="sys:license">
-				    <type>d:content</type>
-				</property>
+				<property name="sys:versionEdition">
+					<type>d:any</type>
+					<multiple>true</multiple>
+				</property>					
 			</properties>
         </type>		
 

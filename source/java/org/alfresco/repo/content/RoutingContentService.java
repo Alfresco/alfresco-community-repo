@@ -240,9 +240,7 @@ public class RoutingContentService implements ContentService
         
     private ContentReader getReader(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy)
     {
-        // get the property value
         ContentData contentData = null;
-        
         Serializable propValue = nodeService.getProperty(nodeRef, propertyQName);
         if (propValue instanceof Collection)
         {
@@ -252,6 +250,7 @@ public class RoutingContentService implements ContentService
                 propValue = (Serializable)colPropValue.iterator().next();
             }
         }
+
         if (propValue instanceof ContentData)
         {
             contentData = (ContentData)propValue;
@@ -272,7 +271,7 @@ public class RoutingContentService implements ContentService
                         propertyQName);
             }
         }
-        
+
         // check that the URL is available
         if (contentData == null || contentData.getContentUrl() == null)
         {
@@ -315,9 +314,10 @@ public class RoutingContentService implements ContentService
         ContentWriter writer = store.getWriter(existingContentReader, null);
 
         // set extra data on the reader if the property is pre-existing
-        ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, propertyQName);
-        if (contentData != null)
+        Serializable contentValue = nodeService.getProperty(nodeRef, propertyQName);
+        if (contentValue != null && contentValue instanceof ContentData)
         {
+            ContentData contentData = (ContentData)contentValue;
             writer.setMimetype(contentData.getMimetype());
             writer.setEncoding(contentData.getEncoding());
         }

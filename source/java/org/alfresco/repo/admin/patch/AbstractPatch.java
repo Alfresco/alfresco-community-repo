@@ -277,7 +277,7 @@ public abstract class AbstractPatch implements Patch
     {
         if (value == null)
         {
-            throw new PatchException(ERR_PROPERTY_NOT_SET, "bootstrapView", this);
+            throw new PatchException(ERR_PROPERTY_NOT_SET, name, this);
         }
     }
 

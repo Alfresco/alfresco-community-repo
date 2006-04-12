@@ -607,9 +607,23 @@ public class CopyServiceImpl implements CopyService
 		{
 			for (AssociationRef assocRef : nodeAssocRefs) 
 			{
-				// Add the association
 				NodeRef targetRef = assocRef.getTargetRef();
-				this.nodeService.createAssociation(destinationNodeRef, targetRef, assocRef.getTypeQName());
+				
+				boolean exists = false;
+				for (AssociationRef assocRef2 : this.nodeService.getTargetAssocs(destinationNodeRef, assocRef.getTypeQName())) 
+				{
+					if (targetRef.equals(assocRef2.getTargetRef()) == true)
+					{
+						exists = true;
+						break;
+					}
+				}
+				
+				if (exists == false)
+				{
+					// Add the association				
+					this.nodeService.createAssociation(destinationNodeRef, targetRef, assocRef.getTypeQName());
+				}
 			}
 		}
 	}

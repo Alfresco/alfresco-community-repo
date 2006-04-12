@@ -13,6 +13,7 @@
 		<sys:versionMajor>${version.major}</sys:versionMajor>
 		<sys:versionMinor>${version.minor}</sys:versionMinor>
 		<sys:versionRevision>${version.revision}</sys:versionRevision>
+		<sys:versionEdition><view:values><view:value>${version.edition}</view:value></view:values></sys:versionEdition>
 		<sys:versionLabel>${version.label}</sys:versionLabel>
 		<sys:versionSchema>${version.schema}</sys:versionSchema>
 	</sys:descriptor>

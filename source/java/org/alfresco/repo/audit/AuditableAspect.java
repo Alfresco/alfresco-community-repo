@@ -22,11 +22,11 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.Behaviour;
-import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -146,7 +146,7 @@ public class AuditableAspect
         {
             // Set the updated property values (but do not cascade to update audit behaviour)
             onUpdateAudit.disable();
-            this.nodeService.setProperties(nodeRef, properties);
+            AuthenticationUtil.runAs(new SetAuditProperties(nodeService, nodeRef, properties), AuthenticationUtil.getSystemUserName());
         }
         finally
         {
@@ -156,7 +156,7 @@ public class AuditableAspect
         if (logger.isDebugEnabled())
             logger.debug("Auditable node " + nodeRef + " created [created,modified=" + now + ";creator,modifier=" + creator + "]");
     }
-
+    
     /**
      * Maintain audit properties on update of node
      * 
@@ -178,7 +178,7 @@ public class AuditableAspect
             properties.put(ContentModel.PROP_MODIFIER, modifier);
             
             // Set the updated property values
-            this.nodeService.setProperties(nodeRef, properties);
+            AuthenticationUtil.runAs(new SetAuditProperties(nodeService, nodeRef, properties), AuthenticationUtil.getSystemUserName());
             
             if (logger.isDebugEnabled())
                 logger.debug("Auditable node " + nodeRef + " updated [modified=" + now + ";modifier=" + modifier + "]");
@@ -220,4 +220,39 @@ public class AuditableAspect
 	{
 		// The auditable aspect should not be copied
 	}    
+
+    
+    /**
+     * Helper to set Audit Properties as System User
+     */
+    private static class SetAuditProperties implements AuthenticationUtil.RunAsWork<Boolean>
+    {
+        private NodeService nodeService;
+        private NodeRef nodeRef;
+        private Map<QName, Serializable> properties;
+
+        /**
+         * Construct
+         * 
+         * @param nodeRef
+         * @param properties
+         */
+        private SetAuditProperties(NodeService nodeService, NodeRef nodeRef, Map<QName, Serializable> properties)
+        {
+            this.nodeService = nodeService;
+            this.nodeRef = nodeRef;
+            this.properties = properties;
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork#doWork()
+         */
+        public Boolean doWork() throws Exception
+        {
+            nodeService.setProperties(nodeRef, properties);
+            return Boolean.TRUE;
+        }
+    }
+    
+    
 }

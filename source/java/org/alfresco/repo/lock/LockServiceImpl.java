@@ -30,6 +30,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.lock.LockType;
@@ -431,7 +432,7 @@ public class LockServiceImpl implements LockService
         if (nodeRef != null && userName != null)
         {
             // Check to see if should just ignore this node
-            if (this.ignoreNodeRefs.contains(nodeRef) == false)
+            if (!(this.ignoreNodeRefs.contains(nodeRef) || userName.equals(AuthenticationUtil.getSystemUserName())))
             {
                 try
                 {

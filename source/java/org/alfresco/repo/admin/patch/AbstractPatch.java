@@ -72,7 +72,7 @@ public abstract class AbstractPatch implements Patch
     /** support service */
     protected SearchService searchService;
     /** support service */
-    protected AuthenticationComponent authComponent;
+    protected AuthenticationComponent authenticationComponent;
 
     public AbstractPatch()
     {
@@ -137,9 +137,12 @@ public abstract class AbstractPatch implements Patch
         this.searchService = searchService;
     }
 
-    public void setAuthenticationComponent(AuthenticationComponent authComponent)
+    /**
+     * Set a generally-used service
+     */
+    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
-        this.authComponent = authComponent;
+        this.authenticationComponent = authenticationComponent;
     }
 
     /**
@@ -295,7 +298,7 @@ public abstract class AbstractPatch implements Patch
         checkPropertyNotNull(namespaceService, "namespaceService");
         checkPropertyNotNull(nodeService, "nodeService");
         checkPropertyNotNull(searchService, "searchService");
-        checkPropertyNotNull(authComponent, "authComponent");
+        checkPropertyNotNull(authenticationComponent, "authenticationComponent");
         if (fixesFromSchema == -1 || fixesToSchema == -1 || targetSchema == -1)
         {
             throw new AlfrescoRuntimeException(

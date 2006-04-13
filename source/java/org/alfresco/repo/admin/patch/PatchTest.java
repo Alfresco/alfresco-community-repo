@@ -23,7 +23,12 @@ import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.AppliedPatch;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.admin.PatchException;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
@@ -40,6 +45,10 @@ public class PatchTest extends TestCase
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private TransactionService transactionService;
+    private NamespaceService namespaceService;
+    private NodeService nodeService;
+    private SearchService searchService;
+    private AuthenticationComponent authenticationComponent;
     private PatchService patchService;
     private PatchDaoService patchDaoComponent;
     
@@ -51,6 +60,11 @@ public class PatchTest extends TestCase
     public void setUp() throws Exception
     {
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
+        namespaceService = (NamespaceService) ctx.getBean("namespaceService");
+        nodeService = (NodeService) ctx.getBean("nodeService");
+        searchService = (SearchService) ctx.getBean("searchService");
+        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        
         patchService = (PatchService) ctx.getBean("PatchService");
         patchDaoComponent = (PatchDaoService) ctx.getBean("patchDaoComponent");
         
@@ -66,9 +80,20 @@ public class PatchTest extends TestCase
         assertNotNull(patchDaoComponent);
     }
     
+    private SamplePatch constructSamplePatch(boolean mustFail)
+    {
+        SamplePatch patch = new SamplePatch(mustFail, transactionService);
+        patch.setNamespaceService(namespaceService);
+        patch.setNodeService(nodeService);
+        patch.setSearchService(searchService);
+        patch.setAuthenticationComponent(authenticationComponent);
+        // done
+        return patch;
+    }
+    
     public void testSimplePatchSuccess() throws Exception
     {
-        Patch patch = new SamplePatch(false, transactionService);
+        Patch patch = constructSamplePatch(false);
         String report = patch.apply();
         // check that the report was generated
         assertEquals("Patch report incorrect", SamplePatch.MSG_SUCCESS, report);
@@ -77,7 +102,7 @@ public class PatchTest extends TestCase
     public void testPatchReapplication()
     {
         // successfully apply a patch
-        Patch patch = new SamplePatch(false, transactionService);
+        Patch patch = constructSamplePatch(false);
         patch.apply();
         // check that the patch cannot be reapplied
         try
@@ -91,7 +116,7 @@ public class PatchTest extends TestCase
         }
         
         // apply an unsuccessful patch
-        patch = new SamplePatch(true, transactionService);
+        patch = constructSamplePatch(true);
         try
         {
             patch.apply();

@@ -165,13 +165,13 @@ public class EmailTemplatesContentPatch extends AbstractPatch
         // import the content
         try
         {
-           authComponent.setCurrentUser(authComponent.getSystemUserName());
+           authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
            
            importContent();
         }
         finally
         {
-           authComponent.clearCurrentSecurityContext();
+           authenticationComponent.clearCurrentSecurityContext();
         }
         
         // output a message to describe the result

@@ -126,7 +126,7 @@ public class DictionaryDAOTest extends TestCase
         // get the constraints for a property without constraints
         QName propNoConstraintsQName = QName.createQName(TEST_URL, "fileprop");
         PropertyDefinition propNoConstraintsDef = service.getProperty(propNoConstraintsQName);
-        assertNotNull("Property without constraints returned empty list", propNoConstraintsDef.getConstraints());
+        assertNotNull("Property without constraints returned null list", propNoConstraintsDef.getConstraints());
         
         // get the constraints defined for the property
         QName prop1QName = QName.createQName(TEST_URL, "prop1");

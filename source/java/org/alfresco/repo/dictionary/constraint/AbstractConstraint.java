@@ -34,6 +34,22 @@ public abstract class AbstractConstraint implements Constraint
     public static final String ERR_EVALUATE_EXCEPTION = "d_dictionary.constraint.err.evaluate_exception";
 
     /**
+     * Check that the given value is not <tt>null</tt>.
+     * 
+     * @param name the name of the property
+     * @param value the value to check for <tt>null</tt>
+     * 
+     * @throws DictionaryException if the the property is null
+     */
+    protected void checkPropertyNotNull(String name, Object value)
+    {
+        if (value == null)
+        {
+            throw new DictionaryException(AbstractConstraint.ERR_PROP_NOT_SET, value);
+        }
+    }
+
+    /**
      * @see #evaluateSingleValue(Object)
      * @see #evaluateCollection(Collection)
      */

@@ -20,7 +20,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.service.cmr.dictionary.ConstraintException;
-import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**
@@ -94,13 +93,11 @@ public class RegexConstraint extends AbstractConstraint
     {
         this.requiresMatch = requiresMatch;
     }
-
+    
     public void initialize()
     {
-        if (expression == null)
-        {
-            throw new DictionaryException(AbstractConstraint.ERR_PROP_NOT_SET, "expression");
-        }
+        checkPropertyNotNull("expression", expression);
+
         this.patternMatcher = Pattern.compile(expression);
     }
 

@@ -24,16 +24,25 @@
    
    <constraints>
       <constraint name="test:regex1" type="REGEX">
-         <parameter name="expression">[A-Z]*</parameter>
-         <parameter name="requiresMatch">false</parameter>
+         <parameter name="expression"><value>[A-Z]*</value></parameter>
+         <parameter name="requiresMatch"><value>false</value></parameter>
       </constraint>
       <constraint name="test:stringLength1" type="LENGTH">
-         <parameter name="minLength">0</parameter>
-         <parameter name="maxLength">256</parameter>
+         <parameter name="minLength"><value>0</value></parameter>
+         <parameter name="maxLength"><value>256</value></parameter>
       </constraint>
       <constraint name="test:minMax1" type="MINMAX">
-         <parameter name="minValue">0</parameter>
-         <parameter name="maxValue">256</parameter>
+         <parameter name="minValue"><value>0</value></parameter>
+         <parameter name="maxValue"><value>256</value></parameter>
+      </constraint>
+      <constraint name="test:list1" type="LIST">
+         <parameter name="allowedValues">
+             <list>
+                 <value>ABC</value>
+                 <value>DEF</value>
+             </list>
+         </parameter>
+         <parameter name="caseSensitive"><value>true</value></parameter>
       </constraint>
    </constraints>
 

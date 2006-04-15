@@ -18,6 +18,7 @@ package org.alfresco.repo.dictionary;
 
 import java.util.List;
 
+import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.dictionary.constraint.NumericRangeConstraint;
 import org.alfresco.repo.dictionary.constraint.RegexConstraint;
 import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
@@ -29,7 +30,8 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.TypeMismatchException;
+import org.springframework.beans.InvalidPropertyException;
+import org.springframework.beans.PropertyAccessException;
 
 /**
  * Compiled Property Constraint
@@ -44,6 +46,7 @@ import org.springframework.beans.TypeMismatchException;
     public static final String ERR_REF_NOT_FOUND = "d_dictionary.constraint.err.ref_not_found";
     public static final String ERR_ANON_NEEDS_PROPERTY = "d_dictionary.constraint.err.anon_needs_property";
     public static final String ERR_INVALID_TYPE = "d_dictionary.constraint.err.invalid_type";
+    public static final String ERR_SIMPLE_AND_LIST = "d_dictionary.constraint.err.property_simple_and_list";
     public static final String ERR_CONSTRUCT_FAILURE = "d_dictionary.constraint.err.construct_failure";
     public static final String ERR_PROPERTY_MISMATCH = "d_dictionary.constraint.err.property_mismatch";
 
@@ -178,11 +181,28 @@ import org.springframework.beans.TypeMismatchException;
             List<M2NamedValue> constraintNamedValues = m2Constraint.getParameters();
             for (M2NamedValue namedValue : constraintNamedValues)
             {
+                Object value = null;
+                if (namedValue.getSimpleValue() != null && namedValue.getListValue() != null)
+                {
+                    throw new DictionaryException(ERR_SIMPLE_AND_LIST, shortName, namedValue.getName());
+                }
+                else if (namedValue.getSimpleValue() != null)
+                {
+                    value = namedValue.getSimpleValue();
+                }
+                else if (namedValue.getListValue() != null)
+                {
+                    value = namedValue.getListValue();
+                }
                 try
                 {
-                    beanWrapper.setPropertyValue(namedValue.getName(), namedValue.getValue());
+                    beanWrapper.setPropertyValue(namedValue.getName(), value);
                 }
-                catch (TypeMismatchException e)
+                catch (PropertyAccessException e)
+                {
+                    throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, namedValue.getName(), shortName);
+                }
+                catch (InvalidPropertyException e)
                 {
                     throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, namedValue.getName(), shortName);
                 }
@@ -243,6 +263,14 @@ import org.springframework.beans.TypeMismatchException;
             protected Constraint newInstance()
             {
                 return new StringLengthConstraint();
+            }
+        },
+        LIST
+        {
+            @Override
+            protected Constraint newInstance()
+            {
+                return new ListOfValuesConstraint();
             }
         };
 

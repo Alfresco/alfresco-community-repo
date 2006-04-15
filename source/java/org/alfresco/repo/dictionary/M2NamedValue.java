@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.util.List;
+
 /**
  * Definition of a named value that can be used for property injection.
  * 
@@ -24,8 +26,8 @@ package org.alfresco.repo.dictionary;
 public class M2NamedValue
 {
     private String name;
-    private String value;
-   
+    private String simpleValue;
+    private List<String> listValue;
     
     /*package*/ M2NamedValue()
     {
@@ -35,7 +37,7 @@ public class M2NamedValue
     @Override
     public String toString()
     {
-        return (name + "=" + value);
+        return (name + "=" + (simpleValue == null ? listValue : simpleValue));
     }
 
     public String getName()
@@ -46,8 +48,16 @@ public class M2NamedValue
     /**
      * @return Returns the raw, unconverted value
      */
-    public String getValue()
+    public String getSimpleValue()
     {
-        return value;
+        return simpleValue;
+    }
+    
+    /**
+     * @return Returns the list of raw, unconverted values
+     */
+    public List<String> getListValue()
+    {
+        return listValue;
     }
 }

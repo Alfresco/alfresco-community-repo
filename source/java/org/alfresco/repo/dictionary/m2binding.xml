@@ -119,7 +119,16 @@
 
    <mapping abstract="true" class="org.alfresco.repo.dictionary.M2NamedValue">
       <value style="attribute" name="name" field="name" />
-      <value style="text" field="value"/>
+      <structure name="value" usage="optional">
+          <value style="text" field="simpleValue" />
+      </structure>
+      <structure name="list" usage="optional">
+          <collection field="listValue" factory="org.alfresco.repo.dictionary.M2Model.createList" usage="optional" >
+              <structure name="value" usage="optional" >
+                  <value style="text" />
+              </structure>
+          </collection>
+      </structure>
    </mapping>
 
    <mapping name="constraint" class="org.alfresco.repo.dictionary.M2Constraint">

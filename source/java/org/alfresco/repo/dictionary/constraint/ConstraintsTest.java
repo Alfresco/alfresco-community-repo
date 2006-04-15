@@ -18,6 +18,7 @@ package org.alfresco.repo.dictionary.constraint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -146,6 +147,32 @@ public class ConstraintsTest extends TestCase
         evaluate(constraint, "ab", true);
         evaluate(constraint, "abcdefg", true);
         evaluate(constraint, Arrays.asList("abc", "abcdefg"), true);
+    }
+    
+    public void testListOfValuesConstraint() throws Exception
+    {
+        ListOfValuesConstraint constraint = new ListOfValuesConstraint();
+        try
+        {
+            constraint.setAllowedValues(Collections.<String>emptyList());
+        }
+        catch (DictionaryException e)
+        {
+            // expected
+            checkI18NofExceptionMessage(e);
+        }
+        List<String> allowedValues = Arrays.asList(new String[] {"abc", "def", "ghi"});
+        constraint.setAllowedValues(allowedValues);
+        
+        evaluate(constraint, "def", false);
+        evaluate(constraint, "DEF", true);
+        evaluate(constraint, Arrays.asList("abc", "def"), false);
+        evaluate(constraint, Arrays.asList("abc", "DEF"), true);
+        
+        // now make it case-insensitive
+        constraint.setCaseSensitive(false);
+        evaluate(constraint, "DEF", false);
+        evaluate(constraint, Arrays.asList("abc", "DEF"), false);
     }
     
     public void testNumericRangeConstraint() throws Exception

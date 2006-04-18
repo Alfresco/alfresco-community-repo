@@ -16,6 +16,9 @@
  */
 package org.alfresco.repo.version.common.counter;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -53,15 +56,6 @@ public class VersionCounterDaoServiceTest extends TestCase
         
         storeRef1 = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "test1_" + System.currentTimeMillis());
         storeRef2 = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "test2_" + System.currentTimeMillis());
-    }
-    
-    @Override
-    public void tearDown() throws Exception
-    {
-        synchronized(endWait)
-        {
-            endWait.notifyAll();
-        }
     }
     
     public void testSetUp() throws Exception
@@ -113,44 +107,16 @@ public class VersionCounterDaoServiceTest extends TestCase
 
     public void testConcurrentVersionNumber() throws Throwable
     {
-        VersionCounterThread[] threads = new VersionCounterThread[5];
-        for (int i = 0; i < threads.length; i++)
+        VersionCounterThread[] threads = new VersionCounterThread[threadCount];
+        for (int i = 0; i < threadCount; i++)
         {
             threads[i] = new VersionCounterThread("VersionCounterThread_" + i);
             // start the thread
             threads[i].start();
         }
-        // now wait until all the threads are waiting
-        int iteration = 0;
-        while (waitCount < threads.length && iteration++ < 5000)
-        {
-            synchronized (this)
-            {
-                this.wait(20);   // 20 ms wait
-            }
-        }
-        // reset wait count
-        this.waitCount = 0;
-        // kick them off
-        synchronized(beginWait)
-        {
-            beginWait.notifyAll();
-        }
-
-        // now wait until all the threads are waiting
-        while (waitCount < threads.length && iteration++ < 5000)
-        {
-            synchronized (this)
-            {
-                this.wait(20);   // 20 ms wait
-            }
-        }
-        // let them finish
-        iteration = 0;
-        synchronized(endWait)
-        {
-            endWait.notifyAll();
-        }
+        
+        // wait for the threads to all be done (or 10 seconds has passed)
+        endSignal.await(10, TimeUnit.SECONDS);
         
         // check for exceptions
         for (VersionCounterThread thread : threads)
@@ -162,9 +128,9 @@ public class VersionCounterDaoServiceTest extends TestCase
         }
     }
 
-    private Object beginWait = new String("BEGIN_WAIT");
-    private Object endWait = new String("END_WAIT");
-    private int waitCount = 0;
+    private int threadCount = 5;
+    private CountDownLatch startSignal = new CountDownLatch(threadCount);
+    private CountDownLatch endSignal = new CountDownLatch(threadCount);
     
     private class VersionCounterThread extends Thread
     {
@@ -182,24 +148,13 @@ public class VersionCounterDaoServiceTest extends TestCase
                 public Object doWork() throws Exception
                 {
                     // wait for all other threads to enter into their transactions
-                    synchronized(beginWait)
-                    {
-                        waitCount++;
-                        beginWait.wait(10000L);
-                    }
+                    startSignal.countDown();
                     
                     int startVersion = counter.currentVersionNumber(storeRef1);
                     // increment it
                     int incrementedVersion = counter.nextVersionNumber(storeRef1);
                     assertTrue("Version number was not incremented", incrementedVersion > startVersion);
-                    
-                    // wait for all other threads to have finished their increments
-                    synchronized(endWait)
-                    {
-                        waitCount++;
-                        endWait.wait(10000L);
-                    }
-                    
+
                     return null;
                 }
             };
@@ -212,6 +167,10 @@ public class VersionCounterDaoServiceTest extends TestCase
             {
                 error = e;
                 e.printStackTrace();
+            }
+            finally
+            {
+                endSignal.countDown();
             }
         }
     }

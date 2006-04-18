@@ -92,7 +92,7 @@ public class PolicyComponentTransactionTest extends TestCase
 
         // Register Policy
         QName policyName = QName.createQName(TEST_NAMESPACE, "start");
-        PolicyDefinition definition = policyComponent.getRegisteredPolicy(PolicyType.Class, policyName);
+        PolicyDefinition<Policy> definition = policyComponent.getRegisteredPolicy(PolicyType.Class, policyName);
         assertNotNull(definition);
         Arg arg0 = definition.getArgument(0);
         assertEquals(Arg.KEY, arg0);
@@ -190,7 +190,7 @@ public class PolicyComponentTransactionTest extends TestCase
         ClassPolicyDelegate<EndTestPolicy> endDelegate = policyComponent.registerClassPolicy(EndTestPolicy.class);
 
         QName policyName = QName.createQName(TEST_NAMESPACE, "end");
-        PolicyDefinition definition = policyComponent.getRegisteredPolicy(PolicyType.Class, policyName);
+        PolicyDefinition<Policy> definition = policyComponent.getRegisteredPolicy(PolicyType.Class, policyName);
         assertNotNull(definition);
         Arg arg0 = definition.getArgument(0);
         assertEquals(Arg.KEY, arg0);

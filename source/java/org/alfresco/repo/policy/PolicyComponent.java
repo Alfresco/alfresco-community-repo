@@ -81,7 +81,7 @@ public interface PolicyComponent
      * @param policy  the policy name
      * @return  the policy definition (or null, if it has not been registered)
      */
-    public PolicyDefinition getRegisteredPolicy(PolicyType policyType, QName policy);
+    public PolicyDefinition<Policy> getRegisteredPolicy(PolicyType policyType, QName policy);
 
     /**
      * Determine if the specified policy has been registered

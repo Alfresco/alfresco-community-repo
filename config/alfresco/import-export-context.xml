@@ -179,6 +179,7 @@
                 <prop key="version.revision">${version.revision}</prop>
                 <prop key="version.label">${version.label}</prop>
                 <prop key="version.schema">${version.schema}</prop>
+                <prop key="version.edition">${version.edition}</prop>
                 <prop key="system.descriptor.childname">${system.descriptor.childname}</prop>
                 <prop key="system.descriptor.current.childname">${system.descriptor.current.childname}</prop>
             </props>

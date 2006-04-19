@@ -512,25 +512,37 @@ public abstract class BaseContentWizard extends AbstractWizardBean
                   {
                      TypeDefinition typeDef = this.dictionaryService.getType(idQName);
                      
-                     if (typeDef != null &&
-                         this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT))
+                     if (typeDef != null)
                      {
-                        // try and get the display label from config
-                        String label = Utils.getDisplayLabel(context, child);
-      
-                        // if there wasn't a client based label try and get it from the dictionary
-                        if (label == null)
+                        if (this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT))
                         {
-                           label = typeDef.getTitle();
+                           // try and get the display label from config
+                           String label = Utils.getDisplayLabel(context, child);
+         
+                           // if there wasn't a client based label try and get it from the dictionary
+                           if (label == null)
+                           {
+                              label = typeDef.getTitle();
+                           }
+                           
+                           // finally, just use the localname
+                           if (label == null)
+                           {
+                              label = idQName.getLocalName();
+                           }
+                           
+                           this.objectTypes.add(new SelectItem(idQName.toString(), label));
                         }
-                        
-                        // finally, just use the localname
-                        if (label == null)
+                        else
                         {
-                           label = idQName.getLocalName();
+                           logger.warn("Failed to add '" + child.getAttribute("name") + 
+                                 "' to the list of content types as the type is not a subtype of cm:content");
                         }
-                        
-                        this.objectTypes.add(new SelectItem(idQName.toString(), label));
+                     }
+                     else
+                     {
+                        logger.warn("Failed to add '" + child.getAttribute("name") + 
+                              "' to the list of content types as the type is not recognised");
                      }
                   }
                }

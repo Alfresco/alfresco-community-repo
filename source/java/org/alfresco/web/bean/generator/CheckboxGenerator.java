@@ -1,22 +1,18 @@
 package org.alfresco.web.bean.generator;
 
 import javax.faces.component.UIComponent;
-import javax.faces.component.UIOutput;
 import javax.faces.component.UISelectBoolean;
 import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
 
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.ui.common.ComponentConstants;
-import org.alfresco.web.ui.common.converter.XMLDateConverter;
 import org.alfresco.web.ui.repo.RepoConstants;
 import org.alfresco.web.ui.repo.component.property.PropertySheetItem;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
 
 /**
- * Generates a text field component.
+ * Generates a checkbox component.
  * 
  * @author gavinc
  */
@@ -32,58 +28,46 @@ public class CheckboxGenerator extends BaseComponentGenerator
       return component;
    }
 
-   public UIComponent generate(FacesContext context, UIPropertySheet propertySheet, 
-         PropertySheetItem item)
+   @Override
+   protected void setupConverter(FacesContext context, 
+         UIPropertySheet propertySheet, PropertySheetItem property, 
+         PropertyDefinition propertyDef, UIComponent component)
    {
-      UIComponent component = null;
-      
-      // get the property definition
-      PropertyDefinition propertyDef = getPropertyDefinition(context,
-            propertySheet.getNode(), item.getName());
-         
-      if (propertySheet.inEditMode())
+      if (property.getConverter() != null)
       {
-         // use the standard component in edit mode
-         component = generate(context, item.getName());
-         
-         // disable the component if it is read only or protected
-         if (item.isReadOnly() || (propertyDef != null && propertyDef.isProtected()))
-         {
-            component.getAttributes().put("disabled", Boolean.TRUE);
-         }
-         else
-         {
-            // if the item is multi valued we need to wrap the standard component
-            if (propertyDef != null && propertyDef.isMultiValued())
-            {
-               component = enableForMultiValue(context, propertySheet, item, component, true);
-            }
-         }
+         // create and add the custom converter
+         createAndSetConverter(context, property.getConverter(), component);
       }
       else
       {
-         // create an output text component in view mode
-         component = createOutputTextComponent(context, item.getName());
-         
-         // if there is no overridden converter add a default
-         if (item.getConverter() == null)
+         if (propertySheet.inEditMode() == false)
          {
             if (propertyDef != null && propertyDef.isMultiValued())
             {
-               // add multi-value converter if property is such
-               item.setConverter(RepoConstants.ALFRESCO_FACES_MULTIVALUE_CONVERTER);
+               // if there isn't a custom converter and the property is
+               // multi-valued add the multi value converter as a default
+               createAndSetConverter(context, 
+                     RepoConstants.ALFRESCO_FACES_MULTIVALUE_CONVERTER,
+                     component);
             }
             else
             {
-               // add the default boolean label converter
-               item.setConverter(RepoConstants.ALFRESCO_FACES_BOOLEAN_CONVERTER);
+               // if there isn't a custom converter and the property is
+               // not multi-valued add the boolean converter as a default
+               createAndSetConverter(context, 
+                     RepoConstants.ALFRESCO_FACES_BOOLEAN_CONVERTER,
+                     component);
             }
          }
       }
-      
-      // setup the converter if one was specified
-      setupConverter(context, propertySheet, item, component);
-      
-      return component;
+   }
+   
+   @Override
+   protected void setupMandatoryValidation(FacesContext context, 
+         UIPropertySheet propertySheet, PropertySheetItem item, 
+         UIComponent component, boolean realTimeChecking)
+   {
+      // a checkbox will always have one value or another so there
+      // is no need to create a mandatory validation rule
    }
 }

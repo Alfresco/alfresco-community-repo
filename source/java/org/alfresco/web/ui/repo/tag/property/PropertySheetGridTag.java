@@ -34,9 +34,11 @@ public class PropertySheetGridTag extends BaseComponentTag
    private String configArea;
    private String readOnly;
    private String mode;
+   private String validationEnabled;
    private String labelStyleClass;
    private String cellpadding;
    private String cellspacing;
+   private String finishButtonId;
    
    /**
     * @see javax.faces.webapp.UIComponentTag#getComponentType()
@@ -111,6 +113,14 @@ public class PropertySheetGridTag extends BaseComponentTag
    }
    
    /**
+    * @param validationEnabled The validationEnabled to set.
+    */
+   public void setValidationEnabled(String validationEnabled)
+   {
+      this.validationEnabled = validationEnabled;
+   }
+   
+   /**
     * @param labelStyleClass Sets the style class for the label column
     */
    public void setLabelStyleClass(String labelStyleClass)
@@ -135,6 +145,14 @@ public class PropertySheetGridTag extends BaseComponentTag
    }
 
    /**
+    * @param finishButtonId Sets the finish button id
+    */
+   public void setFinishButtonId(String finishButtonId)
+   {
+      this.finishButtonId = finishButtonId;
+   }
+
+   /**
     * @see javax.faces.webapp.UIComponentTag#setProperties(javax.faces.component.UIComponent)
     */
    protected void setProperties(UIComponent component)
@@ -149,8 +167,10 @@ public class PropertySheetGridTag extends BaseComponentTag
       setStringStaticProperty(component, "labelStyleClass", this.labelStyleClass);
       setBooleanProperty(component, "externalConfig", this.externalConfig);
       setBooleanProperty(component, "readOnly", this.readOnly);
+      setBooleanProperty(component, "validationEnabled", this.validationEnabled);
       setStringStaticProperty(component, "cellpadding", this.cellpadding);
       setStringStaticProperty(component, "cellspacing", this.cellspacing);
+      setStringStaticProperty(component, "finishButtonId", this.finishButtonId);
    }
 
    /**
@@ -165,9 +185,11 @@ public class PropertySheetGridTag extends BaseComponentTag
       this.configArea = null;
       this.readOnly = null;
       this.mode = null;
+      this.validationEnabled = null;
       this.labelStyleClass = null;
       this.cellpadding = null;
       this.cellspacing = null;
+      this.finishButtonId = null;
       
       super.release();
    }

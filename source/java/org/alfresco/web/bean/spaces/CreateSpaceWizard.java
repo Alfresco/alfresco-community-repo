@@ -484,51 +484,63 @@ public class CreateSpaceWizard extends BaseWizardBean
                   QName idQName = Repository.resolveToQName(child.getAttribute("name"));
                   TypeDefinition typeDef = this.dictionaryService.getType(idQName);
                   
-                  if (typeDef != null &&
-                      this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_FOLDER))
+                  if (typeDef != null)
                   {
-                     // try and get the label from config
-                     String label = Utils.getDisplayLabel(context, child);
-   
-                     // if there wasn't a client based label try and get it from the dictionary
-                     if (label == null)
+                     if (this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_FOLDER))
                      {
-                        label = typeDef.getTitle();
+                        // try and get the label from config
+                        String label = Utils.getDisplayLabel(context, child);
+      
+                        // if there wasn't a client based label try and get it from the dictionary
+                        if (label == null)
+                        {
+                           label = typeDef.getTitle();
+                        }
+                        
+                        // finally use the localname if we still haven't found a label
+                        if (label == null)
+                        {
+                           label = idQName.getLocalName();
+                        }
+                        
+                        // resolve a description string for the type
+                        String description = Utils.getDescription(context, child);
+                        
+                        // if we don't have a local description just use the label
+                        if (description == null)
+                        {
+                           description = label;
+                        }
+                        
+                        // extract the icon to use from the config
+                        String icon = child.getAttribute("icon");
+                        if (icon == null || icon.length() == 0)
+                        {
+                           icon = DEFAULT_SPACE_TYPE_ICON_PATH;
+                        }
+                        
+                        UIListItem item = new UIListItem();
+                        item.getAttributes().put("value", idQName.toString());
+                        item.getAttributes().put("label", label);
+                        item.getAttributes().put("tooltip", label);
+                        item.getAttributes().put("image", icon);
+                        this.folderTypes.add(item);
+                        
+                        UIDescription desc = new UIDescription();
+                        desc.setControlValue(idQName.toString());
+                        desc.setText(description);
+                        this.folderTypeDescriptions.add(desc);
                      }
-                     
-                     // finally use the localname if we still haven't found a label
-                     if (label == null)
+                     else
                      {
-                        label = idQName.getLocalName();
+                        logger.warn("Failed to add '" + child.getAttribute("name") + 
+                              "' to the list of folder types as the type is not a subtype of cm:folder");
                      }
-                     
-                     // resolve a description string for the type
-                     String description = Utils.getDescription(context, child);
-                     
-                     // if we don't have a local description just use the label
-                     if (description == null)
-                     {
-                        description = label;
-                     }
-                     
-                     // extract the icon to use from the config
-                     String icon = child.getAttribute("icon");
-                     if (icon == null || icon.length() == 0)
-                     {
-                        icon = DEFAULT_SPACE_TYPE_ICON_PATH;
-                     }
-                     
-                     UIListItem item = new UIListItem();
-                     item.getAttributes().put("value", idQName.toString());
-                     item.getAttributes().put("label", label);
-                     item.getAttributes().put("tooltip", label);
-                     item.getAttributes().put("image", icon);
-                     this.folderTypes.add(item);
-                     
-                     UIDescription desc = new UIDescription();
-                     desc.setControlValue(idQName.toString());
-                     desc.setText(description);
-                     this.folderTypeDescriptions.add(desc);
+                  }
+                  else
+                  {
+                     logger.warn("Failed to add '" + child.getAttribute("name") + 
+                           "' to the list of folder types as the type is not recognised");
                   }
                }
             }

@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
-import javax.faces.el.ValueBinding;
 
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -124,6 +123,7 @@ public class UIProperty extends PropertySheetItem
     * @param propSheet The property sheet this property belongs to
     * @param propDef The definition of the property to create the control for
     */
+   @SuppressWarnings("unchecked")
    private void generateControl(FacesContext context, UIPropertySheet propSheet,
          PropertyDefinition propDef)
    {
@@ -149,7 +149,7 @@ public class UIProperty extends PropertySheetItem
          }
          else if (typeName.equals(DataTypeDefinition.CATEGORY))
          {
-            componentGeneratorName = RepoConstants.GENERATOR_CATEGORY_PICKER;
+            componentGeneratorName = RepoConstants.GENERATOR_CATEGORY_SELECTOR;
          }
          else if (typeName.equals(DataTypeDefinition.DATETIME))
          {
@@ -167,8 +167,8 @@ public class UIProperty extends PropertySheetItem
       }
       
       // retrieve the component generator and generate the control
-      control = FacesHelper.getComponentGenerator(context, componentGeneratorName).generate(
-            context, propSheet, this);
+      control = FacesHelper.getComponentGenerator(context, componentGeneratorName).
+            generateAndAdd(context, propSheet, this);
       
       // if we're in edit mode ensure that we don't allow editing of system properties or scenarios we don't support
       if (propSheet.inEditMode())
@@ -181,15 +181,6 @@ public class UIProperty extends PropertySheetItem
             control.getAttributes().put("disabled", Boolean.TRUE);
          }         
       }
-      
-      // create and set the value binding
-      ValueBinding vb = context.getApplication().
-                        createValueBinding("#{" + propSheet.getVar() + ".properties[\"" + 
-                        propDef.getName().toString() + "\"]}");
-      control.setValueBinding("value", vb);
-      
-      // add the control to this component
-      this.getChildren().add(control);
       
       if (logger.isDebugEnabled())
          logger.debug("Created control " + control + "(" + 
@@ -208,16 +199,7 @@ public class UIProperty extends PropertySheetItem
    private void generateControl(FacesContext context, UIPropertySheet propSheet, String propName)
    {
       UIComponent control = FacesHelper.getComponentGenerator(context, RepoConstants.GENERATOR_TEXT_FIELD).
-            generate(context, propSheet, this);
-      
-      // create and set the value binding
-      ValueBinding vb = context.getApplication().
-                        createValueBinding("#{" + propSheet.getVar() + ".properties[\"" + 
-                        propName + "\"]}");
-      control.setValueBinding("value", vb);
-      
-      // add the control to this component
-      this.getChildren().add(control);
+            generateAndAdd(context, propSheet, this);
       
       if (logger.isDebugEnabled())
          logger.debug("Created control " + control + "(" + 

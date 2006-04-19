@@ -60,6 +60,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
    /**
     * @see org.alfresco.web.ui.repo.component.property.BaseAssociationEditor#populateAssocationMaps(org.alfresco.web.bean.repository.Node)
     */
+   @SuppressWarnings("unchecked")
    protected void populateAssocationMaps(Node node)
    {
       // we need to remember the original set of associations (if there are any)

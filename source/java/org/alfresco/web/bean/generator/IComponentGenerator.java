@@ -7,8 +7,7 @@ import org.alfresco.web.ui.repo.component.property.PropertySheetItem;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
 
 /**
- * Interface definition for objects that dynamically generate components 
- * on behalf of the PropertySheet component.
+ * Interface definition for objects that dynamically generate components.
  * 
  * @author gavinc
  */
@@ -25,8 +24,9 @@ public interface IComponentGenerator
    UIComponent generate(FacesContext context, String id);
    
    /**
-    * Dynamically generates a component for use in the given property sheet
-    * to represent the given property definition.
+    * Dynamically generates a component for the given property sheet item.
+    * The generated component is also setup appropriately for it's model
+    * definition and added to the given property sheet.
     * 
     * @param context FacesContext
     * @param propertySheet The property sheet component
@@ -34,6 +34,6 @@ public interface IComponentGenerator
     *        either a property, association or child association
     * @return The component instance
     */
-   UIComponent generate(FacesContext context, UIPropertySheet propertySheet, 
+   UIComponent generateAndAdd(FacesContext context, UIPropertySheet propertySheet, 
          PropertySheetItem item);
 }

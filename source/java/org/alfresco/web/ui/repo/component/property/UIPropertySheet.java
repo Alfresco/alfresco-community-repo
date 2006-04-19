@@ -17,13 +17,18 @@
 package org.alfresco.web.ui.repo.component.property;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.component.NamingContainer;
+import javax.faces.component.UIForm;
 import javax.faces.component.UIPanel;
 import javax.faces.context.FacesContext;
+import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
 import org.alfresco.config.Config;
@@ -38,6 +43,8 @@ import org.alfresco.web.config.PropertySheetConfigElement.AssociationConfig;
 import org.alfresco.web.config.PropertySheetConfigElement.ChildAssociationConfig;
 import org.alfresco.web.config.PropertySheetConfigElement.ItemConfig;
 import org.alfresco.web.config.PropertySheetConfigElement.PropertyConfig;
+import org.alfresco.web.ui.common.ComponentConstants;
+import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.repo.RepoConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,12 +64,15 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
    private static String PROP_ID_PREFIX = "prop_";
    private static String ASSOC_ID_PREFIX = "assoc_";
    
+   private List<ClientValidation> validations = new ArrayList<ClientValidation>();
    private String variable;
    private NodeRef nodeRef;
    private Node node;
    private Boolean readOnly;
+   private Boolean validationEnabled;
    private String mode;
    private String configArea;
+   private String finishButtonId;
    
    /**
     * Default constructor
@@ -70,7 +80,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
    public UIPropertySheet()
    {
       // set the default renderer for a property sheet
-      setRendererType("javax.faces.Grid");
+      setRendererType(ComponentConstants.JAVAX_FACES_GRID);
    }
    
    /**
@@ -78,12 +88,13 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
     */
    public String getFamily()
    {
-      return "javax.faces.Panel";
+      return UIPanel.COMPONENT_FAMILY;
    }
 
    /**
     * @see javax.faces.component.UIComponent#encodeBegin(javax.faces.context.FacesContext)
     */
+   @SuppressWarnings("unchecked")
    public void encodeBegin(FacesContext context) throws IOException
    {
       int howManyKids = getChildren().size();
@@ -168,10 +179,29 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
 
       super.encodeBegin(context);
    }
-   
+
+   /**
+    * @see javax.faces.component.UIComponent#encodeBegin(javax.faces.context.FacesContext)
+    */
+   public void encodeEnd(FacesContext context) throws IOException
+   {
+      super.encodeEnd(context);
+      
+      // NOTE: We should really use a renderer to output the JavaScript below but that would
+      //       require extending the MyFaces HtmlGridRenderer class which we should avoid doing.
+      //       Until we support multiple client types this will be OK.
+      
+      // output the JavaScript to enforce the required validations (if validation is enabled)
+      if (isValidationEnabled() && this.validations.size() > 0)
+      {
+         renderValidationScript(context);
+      }
+   }
+
    /**
     * @see javax.faces.component.StateHolder#restoreState(javax.faces.context.FacesContext, java.lang.Object)
     */
+   @SuppressWarnings("unchecked")
    public void restoreState(FacesContext context, Object state)
    {
       Object values[] = (Object[])state;
@@ -183,6 +213,9 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       this.readOnly = (Boolean)values[4];
       this.mode = (String)values[5];
       this.configArea = (String)values[6];
+      this.validationEnabled = (Boolean)values[7];
+      this.validations = (List<ClientValidation>)values[8];
+      this.finishButtonId = (String)values[9];
    }
    
    /**
@@ -190,7 +223,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[7];
+      Object values[] = new Object[10];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.nodeRef;
@@ -199,6 +232,9 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       values[4] = this.readOnly;
       values[5] = this.mode;
       values[6] = this.configArea;
+      values[7] = this.validationEnabled;
+      values[8] = this.validations;
+      values[9] = this.finishButtonId;
       return (values);
    }
    
@@ -222,8 +258,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
                value = vb.getValue(getFacesContext());
             }
          }
-         
-         // TODO: for now we presume the object is a Node, but we need to support id's too
+
          if (value instanceof Node)
          {
             node = (Node)value;
@@ -292,6 +327,69 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
    }
 
    /**
+    * @return true if validation is enabled for this property sheet
+    */
+   public boolean isValidationEnabled()
+   {
+      // if the property sheet is in "view" mode validation will
+      // always be disabled
+      if (inEditMode() == false)
+      {
+         return false;
+      }
+      
+      if (this.validationEnabled == null)
+      {
+         ValueBinding vb = getValueBinding("validationEnabled");
+         if (vb != null)
+         {
+            this.validationEnabled = (Boolean)vb.getValue(getFacesContext());
+         }
+      }
+      
+      if (this.validationEnabled == null)
+      {
+         this.validationEnabled = Boolean.TRUE;
+      }
+      
+      return this.validationEnabled; 
+   }
+
+   /**
+    * @param validationEnabled Sets the validationEnabled flag
+    */
+   public void setValidationEnabled(boolean validationEnabled)
+   {
+      this.validationEnabled = Boolean.valueOf(validationEnabled);
+   }
+
+   /**
+    * Returns the id of the finish button
+    * 
+    * @return The id of the finish button on the page
+    */
+   public String getFinishButtonId()
+   {
+      // NOTE: This parameter isn't value binding enabled
+      if (this.finishButtonId == null)
+      {
+         this.finishButtonId = "finish-button";
+      }
+      
+      return this.finishButtonId;
+   }
+
+   /**
+    * Sets the id of the finish button being used on the page
+    * 
+    * @param finishButtonId The id of the finish button
+    */
+   public void setFinishButtonId(String finishButtonId)
+   {
+      this.finishButtonId = finishButtonId;
+   }
+
+   /**
     * @return Returns the mode
     */
    public String getMode()
@@ -357,12 +455,165 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
    }
    
    /**
+    * Adds a validation case to the property sheet
+    * 
+    * @param validation The validation case to enforce
+    */
+   public void addClientValidation(ClientValidation validation)
+   {
+      this.validations.add(validation);
+   }
+   
+   /**
+    * @return Returns the list of client validations to enforce
+    */
+   public List<ClientValidation> getClientValidations()
+   {
+      return this.validations;
+   }
+   
+   /**
+    * Renders the necessary JavaScript to enforce any constraints the properties
+    * have.
+    * 
+    * @param context FacesContext
+    */
+   @SuppressWarnings("unchecked")
+   private void renderValidationScript(FacesContext context) throws IOException
+   {
+      ResponseWriter out = context.getResponseWriter();
+      UIForm form = Utils.getParentForm(context, this);
+         
+      // output the validation.js script
+      // TODO: make sure its only included once per page!!
+      out.write("\n<script type='text/javascript' src='");
+      out.write(context.getExternalContext().getRequestContextPath());
+      out.write("/scripts/validation.js");
+      out.write("'></script>\n<script type='text/javascript'>\n");
+      
+      // output variable to hold flag for which submit button was pressed
+      out.write("var finishButtonPressed = false;\n");
+      
+      // output the validate() function
+      out.write("function validate()\n{\n   var result = true;\n   if (finishButtonPressed && (");
+      
+      int numberValidations = this.validations.size();
+      List<ClientValidation> realTimeValidations = 
+         new ArrayList<ClientValidation>(numberValidations);
+      
+      for (int x = 0; x < numberValidations; x++)
+      {
+         ClientValidation validation = this.validations.get(x);
+         
+         if (validation.RealTimeChecking)
+         {
+            realTimeValidations.add(validation);
+         }
+         
+         renderValidationMethod(out, validation, (x == (numberValidations-1)), true);
+      }
+      
+      // return false if validation failed to stop the form submitting
+      out.write(")\n   { result = false; }\n\n");
+      out.write("   finishButtonPressed = false;\n   return result;\n}\n\n");
+      
+      // output the processButtonState() function (if necessary)
+      int numberRealTimeValidations = realTimeValidations.size();
+      if (numberRealTimeValidations > 0)
+      {
+         out.write("function processButtonState()\n{\n   if (");
+         
+         for (int x = 0; x < numberRealTimeValidations; x++)
+         {
+            renderValidationMethod(out, realTimeValidations.get(x),
+                  (x == (numberRealTimeValidations-1)), false);
+         }
+      
+         // disable the finish button if validation failed
+         out.write("\n   { document.getElementById('");
+         out.write(form.getClientId(context));
+         out.write(NamingContainer.SEPARATOR_CHAR);
+         out.write(getFinishButtonId());
+         out.write("').disabled = true; }\n");
+         out.write("   else { document.getElementById('");
+         out.write(form.getClientId(context));
+         out.write(NamingContainer.SEPARATOR_CHAR);
+         out.write(getFinishButtonId());
+         out.write("').disabled = false; }\n}\n\n");
+      }
+      
+      // write out a function to initialise everything
+      out.write("function initValidation()\n{\n");
+      
+      // register the validate function as the form onsubmit handler
+      out.write("   document.getElementById('");
+      out.write(form.getClientId(context));
+      out.write("').onsubmit = validate;\n");
+      
+      // set the flag when the finish button is clicked
+      out.write("   document.getElementById('");
+      out.write(form.getClientId(context));
+      out.write(NamingContainer.SEPARATOR_CHAR);
+      out.write(getFinishButtonId());
+      out.write("').onclick = function() { finishButtonPressed = true; }\n");
+      
+      // perform an initial check at page load time (if we have any real time validations)
+      if (numberRealTimeValidations > 0)
+      {
+         out.write("   processButtonState();\n");
+      }
+      
+      // close out the init function
+      out.write("}\n\n");
+      
+      // setup init function to be called at page load time
+      out.write("window.onload=initValidation;\n");
+      
+      // close out the script block
+      out.write("</script>\n");
+   }
+   
+   private void renderValidationMethod(ResponseWriter out, ClientValidation validation,
+         boolean lastMethod, boolean showMessage) throws IOException
+   {
+      out.write("!");
+      out.write(validation.Type);
+      out.write("(");
+      
+      // add the parameters
+      int numberParams = validation.Params.size();
+      for (int p = 0; p < numberParams; p++)
+      {
+         out.write(validation.Params.get(p));
+         if (p != (numberParams-1))
+         {
+            out.write(", ");
+         }
+      }
+      
+      // add the parameter to show any validation messages
+      out.write(", ");
+      out.write(Boolean.toString(showMessage));
+      out.write(")");
+      
+      if (lastMethod)
+      {
+         out.write(")");
+      }
+      else
+      {
+         out.write(" || ");
+      }
+   }
+   
+   /**
     * Creates all the property components required to display the properties held by the node.
     * 
     * @param context JSF context
     * @param node The Node to show all the properties for 
     * @throws IOException
     */
+   @SuppressWarnings("unchecked")
    private void createComponentsFromNode(FacesContext context, Node node)
       throws IOException
    {
@@ -458,6 +709,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
     * @param properties Collection of properties to render (driven from configuration) 
     * @throws IOException
     */
+   @SuppressWarnings("unchecked")
    private void createComponentsFromConfig(FacesContext context, Collection<ItemConfig> items)
       throws IOException
    {
@@ -517,6 +769,32 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
                    propSheetItem.getClientId(context) + 
                    ") for '" + item.getName() + 
                    "' and added it to property sheet " + this);
+      }
+   }
+   
+   /**
+    * Inner class representing a validation case that must be enforced.
+    */
+   @SuppressWarnings("serial") 
+   public static class ClientValidation implements Serializable
+   {
+      public String Type;
+      public List<String> Params;
+      public boolean RealTimeChecking;
+      
+      /**
+       * Default constructor
+       * 
+       * @param type The type of the validation
+       * @param params A List of String parameters to use for the validation
+       * @param realTimeChecking true to check the property sheet in real time
+       *        i.e. as the user types or uses the mouse
+       */
+      public ClientValidation(String type, List<String> params, boolean realTimeChecking)
+      {
+         this.Type = type;
+         this.Params = params;
+         this.RealTimeChecking = realTimeChecking;
       }
    }
 }

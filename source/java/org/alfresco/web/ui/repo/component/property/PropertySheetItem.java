@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import javax.faces.component.NamingContainer;
 import javax.faces.component.UIComponent;
-import javax.faces.component.UIOutput;
 import javax.faces.component.UIPanel;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
@@ -44,6 +43,8 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
    protected String converter;
    protected Boolean readOnly;
    protected String componentGenerator;
+   
+   protected String resolvedDisplayLabel;
    
    /**
     * @see javax.faces.component.UIComponentBase#encodeBegin(javax.faces.context.FacesContext)
@@ -210,6 +211,7 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
       this.readOnly = (Boolean)values[3];
       this.converter = (String)values[4];
       this.componentGenerator = (String)values[5];
+      this.resolvedDisplayLabel = (String)values[6];
    }
    
    /**
@@ -217,7 +219,7 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[6];
+      Object values[] = new Object[7];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.name;
@@ -225,7 +227,18 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
       values[3] = this.readOnly;
       values[4] = this.converter;
       values[5] = this.componentGenerator;
+      values[6] = this.resolvedDisplayLabel;
       return (values);
+   }
+   
+   /**
+    * Returns the resolved display label
+    * 
+    * @return The display label being used at runtime
+    */
+   public String getResolvedDisplayLabel()
+   {
+      return resolvedDisplayLabel;
    }
    
    /**
@@ -252,13 +265,16 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
     * @param propSheet The property sheet that the item is a child of
     * @param displayLabel The display label text
     */
+   @SuppressWarnings("unchecked")
    protected void generateLabel(FacesContext context, UIPropertySheet propSheet, String displayLabel)
    {
       UIComponent label = FacesHelper.getComponentGenerator(context, 
-            RepoConstants.GENERATOR_LABEL).generate(context, propSheet, this);
-      label.getAttributes().put("value", displayLabel + ": ");
+            RepoConstants.GENERATOR_LABEL).generateAndAdd(context, propSheet, this);
       
-      this.getChildren().add(label);
+      // remember the display label used (without the : separator)
+      this.resolvedDisplayLabel = displayLabel;
+      
+      label.getAttributes().put("value", displayLabel + ":");
       
       if (logger.isDebugEnabled())
          logger.debug("Created label " + label.getClientId(context) + 

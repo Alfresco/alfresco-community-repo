@@ -46,7 +46,7 @@ public final class RepoConstants
    public static final String GENERATOR_CHECKBOX = "CheckboxGenerator";
    public static final String GENERATOR_DATE_PICKER = "DatePickerGenerator";
    public static final String GENERATOR_DATETIME_PICKER = "DateTimePickerGenerator";
-   public static final String GENERATOR_CATEGORY_PICKER = "CategoryPickerGenerator";
+   public static final String GENERATOR_CATEGORY_SELECTOR = "CategorySelectorGenerator";
    public static final String GENERATOR_ASSOCIATION = "AssociationGenerator";
    public static final String GENERATOR_CHILD_ASSOCIATION = "ChildAssociationGenerator";
    

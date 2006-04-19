@@ -18,10 +18,15 @@ public class LabelGenerator extends BaseComponentGenerator
       return createOutputTextComponent(context, id);
    }
 
-   public UIComponent generate(FacesContext context, UIPropertySheet propertySheet, 
+   @Override
+   @SuppressWarnings("unchecked")
+   public UIComponent generateAndAdd(FacesContext context, UIPropertySheet propertySheet, 
          PropertySheetItem item)
    {
       UIComponent component = generate(context, "label_" + item.getName());
+      
+      // add the component to the property sheet item
+      item.getChildren().add(component);
       
       // TODO: Turn the label red if the field is required
       //       setup the 'for' attribute to associate with it the control

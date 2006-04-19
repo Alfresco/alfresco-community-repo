@@ -1,7 +1,6 @@
 package org.alfresco.web.bean.generator;
 
 import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
 import javax.faces.component.UIOutput;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -16,7 +15,7 @@ import org.alfresco.web.ui.repo.component.property.PropertySheetItem;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
 
 /**
- * Generates a text field component.
+ * Generates a date picker component.
  * 
  * @author gavinc
  */
@@ -24,6 +23,7 @@ public class DatePickerGenerator extends BaseComponentGenerator
 {
    private static final String MSG_DATE = "date_pattern";
    
+   @SuppressWarnings("unchecked")
    public UIComponent generate(FacesContext context, String id)
    {
       UIComponent component = context.getApplication().
@@ -36,44 +36,15 @@ public class DatePickerGenerator extends BaseComponentGenerator
       return component;
    }
 
-   public UIComponent generate(FacesContext context, UIPropertySheet propertySheet, 
-         PropertySheetItem item)
+   @Override
+   protected void setupConverter(FacesContext context, 
+         UIPropertySheet propertySheet, PropertySheetItem property, 
+         PropertyDefinition propertyDef, UIComponent component)
    {
-      UIComponent component = null;
-      
-      if (propertySheet.inEditMode())
+      if (property.getConverter() != null)
       {
-         // use the standard date picker component
-         component = generate(context, item.getName());
-         
-         // get the property definition
-         PropertyDefinition propertyDef = getPropertyDefinition(context,
-               propertySheet.getNode(), item.getName());
-         
-         // disable the component if it is read only or protected
-         if (item.isReadOnly() || (propertyDef != null && propertyDef.isProtected()))
-         {
-            component.getAttributes().put("disabled", Boolean.TRUE);
-         }
-         else
-         {
-            // if the item is multi valued we need to wrap the standard component
-            if (propertyDef != null && propertyDef.isMultiValued())
-            {
-               component = enableForMultiValue(context, propertySheet, item, component, true);
-            }
-         }
-      }
-      else
-      {
-         // create an output text component in view mode
-         component = createOutputTextComponent(context, item.getName());
-      }
-      
-      if (item.getConverter() != null)
-      {
-         // setup the converter if one was specified
-         setupConverter(context, propertySheet, item, component);
+         // create and add the custom converter
+         createAndSetConverter(context, property.getConverter(), component);
       }
       else
       {
@@ -81,10 +52,17 @@ public class DatePickerGenerator extends BaseComponentGenerator
          // we can cast this as we know it is an UIOutput type
          ((UIOutput)component).setConverter(getDefaultConverter(context));
       }
-      
-      return component;
    }
 
+   @Override
+   protected void setupMandatoryValidation(FacesContext context, 
+         UIPropertySheet propertySheet, PropertySheetItem item, 
+         UIComponent component, boolean realTimeChecking)
+   {
+      // a date picker will always have a date value so there
+      // is no need to create a mandatory validation rule
+   }
+   
    /**
     * Retrieves the default converter for the date component
     * 

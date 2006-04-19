@@ -50,6 +50,18 @@
       </attribute>
       
       <attribute>
+         <name>validationEnabled</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>finishButtonId</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
          <name>var</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>

@@ -1,14 +1,11 @@
 package org.alfresco.web.bean.generator;
 
 import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.component.UIOutput;
 import javax.faces.context.FacesContext;
 
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.ui.common.ComponentConstants;
-import org.alfresco.web.ui.repo.RepoConstants;
+import org.alfresco.web.ui.repo.component.UIMultiValueEditor;
 import org.alfresco.web.ui.repo.component.property.PropertySheetItem;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
 
@@ -19,6 +16,7 @@ import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
  */
 public class TextFieldGenerator extends BaseComponentGenerator
 {
+   @SuppressWarnings("unchecked")
    public UIComponent generate(FacesContext context, String id)
    {
       UIComponent component = context.getApplication().
@@ -31,50 +29,31 @@ public class TextFieldGenerator extends BaseComponentGenerator
       return component;
    }
 
-   public UIComponent generate(FacesContext context, UIPropertySheet propertySheet, 
-         PropertySheetItem item)
+   @Override
+   @SuppressWarnings("unchecked")
+   protected void setupMandatoryValidation(FacesContext context, 
+         UIPropertySheet propertySheet, PropertySheetItem item, 
+         UIComponent component, boolean realTimeChecking)
    {
-      UIComponent component = null;
-      
-      // get the property definition
-      PropertyDefinition propertyDef = getPropertyDefinition(context,
-            propertySheet.getNode(), item.getName());
-         
-      if (propertySheet.inEditMode())
+      if (component instanceof UIMultiValueEditor)
       {
-         // use the standard component in edit mode
-         component = generate(context, item.getName());
+         // if the text field has multiple values don't allow real time
+         // checking of the mandatory status
          
-         // disable the component if it is read only or protected
-         if (item.isReadOnly() || (propertyDef != null && propertyDef.isProtected()))
-         {
-            component.getAttributes().put("disabled", Boolean.TRUE);
-         }
-         else
-         {
-            // if the item is multi valued we need to wrap the standard component
-            if (propertyDef != null && propertyDef.isMultiValued())
-            {
-               component = enableForMultiValue(context, propertySheet, item, component, true);
-            }
-         }
+         // TODO: the multi-value editor component needs to use the 
+         //       'current_value' hidden field rather than the standard
+         //       'value' field as this is always null (it's used internally 
+         //       by the component) for now disable mandatory checks completely
+         
+         //super.setupMandatoryValidation(context, propertySheet, item, component, false);
       }
       else
       {
-         // create an output text component in view mode
-         component = createOutputTextComponent(context, item.getName());
-         
-         // if the property is multi-valued and there isn't a custom converter 
-         // specified, add the MultiValue converter as a default
-         if (propertyDef != null && propertyDef.isMultiValued() && item.getConverter() == null)
-         {
-            item.setConverter(RepoConstants.ALFRESCO_FACES_MULTIVALUE_CONVERTER);
-         }
+         // setup the client validation rule with real time validation enabled
+         super.setupMandatoryValidation(context, propertySheet, item, component, true);
+      
+         // add event handler to kick off real time checks
+         component.getAttributes().put("onkeyup", "javascript:processButtonState();");
       }
-      
-      // setup the converter if one was specified
-      setupConverter(context, propertySheet, item, component);
-      
-      return component;
    }
 }

@@ -19,6 +19,7 @@ import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
  */
 public class SpaceIconPickerGenerator extends BaseComponentGenerator
 {
+   @SuppressWarnings("unchecked")
    public UIComponent generate(FacesContext context, String id)
    {
       // create the outer component
@@ -35,21 +36,20 @@ public class SpaceIconPickerGenerator extends BaseComponentGenerator
       
       return component;
    }
-   
-   public UIComponent generate(FacesContext context, UIPropertySheet propertySheet,
-         PropertySheetItem item)
+
+   @Override
+   @SuppressWarnings("unchecked")
+   protected void setupProperty(FacesContext context, 
+         UIPropertySheet propertySheet, PropertySheetItem item, 
+         PropertyDefinition propertyDef, UIComponent component)
    {
-      UIComponent component = null;
+      // do the standard setup
+      super.setupProperty(context, propertySheet, item, propertyDef, component);
       
-      // get the property definition
-      PropertyDefinition propertyDef = getPropertyDefinition(context,
-            propertySheet.getNode(), item.getName());
-         
+      // if the property sheet is in edit mode we also need to setup the 
+      // list of icons the user can select from
       if (propertySheet.inEditMode())
       {
-         // use the standard component in edit mode
-         component = generate(context, item.getName());
-      
          // create the list items child component
          UIListItems items = (UIListItems)context.getApplication().
                createComponent(RepoConstants.ALFRESCO_FACES_LIST_ITEMS);
@@ -76,37 +76,6 @@ public class SpaceIconPickerGenerator extends BaseComponentGenerator
          
          // add the list items component to the image picker component
          component.getChildren().add(items);
-         
-         // disable the component if it is read only or protected
-         if (item.isReadOnly() || (propertyDef != null && propertyDef.isProtected()))
-         {
-            component.getAttributes().put("disabled", Boolean.TRUE);
-         }
-         else
-         {
-            // if the item is multi valued we need to wrap the standard component
-            if (propertyDef != null && propertyDef.isMultiValued())
-            {
-               component = enableForMultiValue(context, propertySheet, item, component, true);
-            }
-         }
       }
-      else
-      {
-         // create an output text component in view mode
-         component = createOutputTextComponent(context, item.getName());
-         
-         // if the property is multi-valued and there isn't a custom converter 
-         // specified, add the MultiValue converter as a default
-         if (propertyDef.isMultiValued() && item.getConverter() == null)
-         {
-            item.setConverter(RepoConstants.ALFRESCO_FACES_MULTIVALUE_CONVERTER);
-         }
-      }
-      
-      // setup the converter if one was specified
-      setupConverter(context, propertySheet, item, component);
-      
-      return component;
    }
 }

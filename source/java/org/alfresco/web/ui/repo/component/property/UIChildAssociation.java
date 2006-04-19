@@ -17,20 +17,13 @@
 package org.alfresco.web.ui.repo.component.property;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 
-import javax.faces.FacesException;
-import javax.faces.component.UIOutput;
 import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.el.ValueBinding;
 
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.DataDictionary;
-import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.repo.RepoConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -121,14 +114,7 @@ public class UIChildAssociation extends PropertySheetItem
          AssociationDefinition assocDef)
    {
       UIChildAssociationEditor control = (UIChildAssociationEditor)FacesHelper.getComponentGenerator(
-            context, RepoConstants.GENERATOR_CHILD_ASSOCIATION).generate(context, propSheet, this);
-      
-      // set up the value binding
-      ValueBinding vb = context.getApplication().createValueBinding("#{" + propSheet.getVar() + "}");
-      control.setValueBinding("value", vb);
-      
-      // add the control itself
-      this.getChildren().add(control);
+            context, RepoConstants.GENERATOR_CHILD_ASSOCIATION).generateAndAdd(context, propSheet, this);
       
       if (logger.isDebugEnabled())
          logger.debug("Created control " + control + "(" + 

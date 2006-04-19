@@ -79,7 +79,6 @@ public abstract class BaseAssociationEditor extends UIInput
    private final static String MSG_SEARCH_SELECT_ITEM = "search_select_item";
    private final static String MSG_SELECTED_ITEMS = "selected_items";
    private final static String MSG_REMOVE = "remove";
-   private final static String MSG_ADD = "add";
    private final static String MSG_OK = "ok";
    private final static String MSG_CANCEL = "cancel";
    private final static String MSG_SEARCH = "search";
@@ -274,7 +273,6 @@ public abstract class BaseAssociationEditor extends UIInput
       this.highlightedRow = false;
       
       ResponseWriter out = context.getResponseWriter();
-      String clientId = getClientId(context);
 
       // get the child associations currently on the node and any that have been added
       NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();

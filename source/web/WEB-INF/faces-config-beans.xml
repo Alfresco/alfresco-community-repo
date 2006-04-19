@@ -1458,10 +1458,10 @@
    
    <managed-bean>
       <description>
-         Bean that generates a category picker component
+         Bean that generates a category selector component
       </description>
-      <managed-bean-name>CategoryPickerGenerator</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.generator.CategoryPickerGenerator</managed-bean-class>
+      <managed-bean-name>CategorySelectorGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.CategorySelectorGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
    

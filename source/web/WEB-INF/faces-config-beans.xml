@@ -1449,6 +1449,15 @@
    
    <managed-bean>
       <description>
+         Bean that generates a mime type selector component
+      </description>
+      <managed-bean-name>MimeTypeSelectorGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.MimeTypeSelectorGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
          Bean that generates an image picker component
       </description>
       <managed-bean-name>SpaceIconPickerGenerator</managed-bean-name>

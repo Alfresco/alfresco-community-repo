@@ -123,9 +123,7 @@
                                  <tr>
                                     <td><nobr><h:outputText value="#{msg.content_type}" />:</nobr></td>
                                     <td>
-                                       <h:selectOneMenu value="#{EditDocPropsDialog.properties.mimetype}">
-                                          <f:selectItems value="#{EditDocPropsDialog.contentTypes}" />
-                                       </h:selectOneMenu>&nbsp;*
+                                       <r:mimeTypeSelector value="#{EditDocPropsDialog.properties.mimetype}" />&nbsp;*
                                     </td>
                                  </tr>
                                  <tr>
@@ -175,7 +173,7 @@
                                  </tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel}" action="cancel" styleClass="wizardButton" />
+                                       <h:commandButton id="cancel-button" value="#{msg.cancel}" action="cancel" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

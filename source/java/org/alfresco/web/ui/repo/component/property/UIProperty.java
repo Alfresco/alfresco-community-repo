@@ -198,7 +198,14 @@ public class UIProperty extends PropertySheetItem
     */
    private void generateControl(FacesContext context, UIPropertySheet propSheet, String propName)
    {
-      UIComponent control = FacesHelper.getComponentGenerator(context, RepoConstants.GENERATOR_TEXT_FIELD).
+      String componentGeneratorName = this.getComponentGenerator(); 
+      
+      if (componentGeneratorName == null)
+      {
+         componentGeneratorName = RepoConstants.GENERATOR_TEXT_FIELD;
+      }
+      
+      UIComponent control = FacesHelper.getComponentGenerator(context, componentGeneratorName).
             generateAndAdd(context, propSheet, this);
       
       if (logger.isDebugEnabled())

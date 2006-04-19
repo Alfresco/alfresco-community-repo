@@ -26,9 +26,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.ConverterException;
 
-import org.alfresco.web.app.Application;
-import org.alfresco.web.ui.repo.RepoConstants;
-
 /**
  * Converter class to convert a List of multiple values into a comma
  * separated list.
@@ -76,16 +73,7 @@ public class MultiValueConverter implements Converter
                buffer.append(", ");
             }
             
-            if (obj instanceof Boolean)
-            {
-               Converter boolLabel = context.getApplication().createConverter(
-                     RepoConstants.ALFRESCO_FACES_BOOLEAN_CONVERTER);
-               buffer.append(boolLabel.getAsString(context, component, obj));
-            }
-            else
-            {
-               buffer.append(obj.toString());
-            }
+            buffer.append(obj.toString());
          }
          
          result = buffer.toString();

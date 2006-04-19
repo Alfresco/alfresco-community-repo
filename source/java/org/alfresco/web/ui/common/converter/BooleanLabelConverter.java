@@ -16,6 +16,7 @@
  */
 package org.alfresco.web.ui.common.converter;
 
+import java.util.Collection;
 import java.util.ResourceBundle;
 
 import javax.faces.component.UIComponent;
@@ -62,6 +63,29 @@ public class BooleanLabelConverter implements Converter
       if (value instanceof Boolean)
       {
          result = ((Boolean)value).booleanValue() ? bundle.getString(MSG_YES) : bundle.getString(MSG_NO);
+      }
+      else if (value instanceof Collection)
+      {
+         StringBuilder buffer = new StringBuilder();
+         for (Object obj : (Collection)value)
+         {
+            if (buffer.length() != 0)
+            {
+               buffer.append(", ");
+            }
+            
+            if (obj instanceof Boolean)
+            {
+               buffer.append(((Boolean)obj).booleanValue() ? 
+                     bundle.getString(MSG_YES) : bundle.getString(MSG_NO));
+            }
+            else
+            {
+               buffer.append(obj.toString());
+            }
+         }
+         
+         result = buffer.toString();
       }
       
       return result;

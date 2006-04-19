@@ -5,23 +5,22 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.ui.common.ComponentConstants;
-import org.alfresco.web.ui.common.converter.BooleanLabelConverter;
+import org.alfresco.web.ui.repo.component.UIMimeTypeSelector;
 import org.alfresco.web.ui.repo.component.property.PropertySheetItem;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
+import org.alfresco.web.ui.repo.converter.MimeTypeConverter;
 
 /**
- * Generates a checkbox component.
+ * Generates a MIME type selector component.
  * 
  * @author gavinc
  */
-public class CheckboxGenerator extends BaseComponentGenerator
+public class MimeTypeSelectorGenerator extends BaseComponentGenerator
 {
    public UIComponent generate(FacesContext context, String id)
    {
       UIComponent component = context.getApplication().
-            createComponent(ComponentConstants.JAVAX_FACES_SELECT_BOOLEAN);
-      component.setRendererType(ComponentConstants.JAVAX_FACES_CHECKBOX);
+            createComponent(UIMimeTypeSelector.COMPONENT_TYPE);
       FacesHelper.setupComponentId(context, component, id);
       
       return component;
@@ -39,13 +38,10 @@ public class CheckboxGenerator extends BaseComponentGenerator
       }
       else
       {
-         if (propertySheet.inEditMode() == false)
-         {
-            // if there isn't a custom converter add the boolean 
-            // converter as a default
-            createAndSetConverter(context, BooleanLabelConverter.CONVERTER_ID,
-                  component);
-         }
+         // if there isn't a custom converter add the mime type 
+         // converter as a default
+         createAndSetConverter(context, MimeTypeConverter.CONVERTER_ID, 
+               component);
       }
    }
    
@@ -54,7 +50,7 @@ public class CheckboxGenerator extends BaseComponentGenerator
          UIPropertySheet propertySheet, PropertySheetItem item, 
          UIComponent component, boolean realTimeChecking)
    {
-      // a checkbox will always have one value or another so there
-      // is no need to create a mandatory validation rule
+      // a mime type selector will always have one value or another 
+      // so there is no need to create a mandatory validation rule.
    }
 }

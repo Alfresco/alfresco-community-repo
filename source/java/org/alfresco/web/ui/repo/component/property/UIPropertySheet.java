@@ -97,7 +97,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
    @SuppressWarnings("unchecked")
    public void encodeBegin(FacesContext context) throws IOException
    {
-      int howManyKids = getChildren().size();
+      int howManyChildren = getChildren().size();
       Boolean externalConfig = (Boolean)getAttributes().get("externalConfig");
       
       // generate a variable name to use if necessary
@@ -109,7 +109,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       // force retrieval of node info
       Node node = getNode();
       
-      if (howManyKids == 0)
+      if (howManyChildren == 0)
       {
          if (externalConfig != null && externalConfig.booleanValue())
          {

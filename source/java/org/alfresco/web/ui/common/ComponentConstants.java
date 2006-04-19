@@ -30,6 +30,7 @@ public final class ComponentConstants
    public static final String JAVAX_FACES_SELECT_BOOLEAN = "javax.faces.SelectBoolean";
    public static final String JAVAX_FACES_GRAPHIC        = "javax.faces.Graphic";
    public static final String JAVAX_FACES_PARAMETER      = "javax.faces.Parameter";
+   public static final String JAVAX_FACES_MENU           = "javax.faces.Menu";
 
    /**
     * Private constructor

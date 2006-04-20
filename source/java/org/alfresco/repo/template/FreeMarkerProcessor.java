@@ -23,9 +23,11 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
+import org.alfresco.util.ISO9075;
 import org.apache.log4j.Logger;
 
 import freemarker.cache.MruCacheStorage;
+import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
@@ -98,6 +100,28 @@ public class FreeMarkerProcessor implements TemplateProcessor
         return this.config;
     }
     
+    private Configuration getStringConfig(String path, String template)
+    {
+        
+            Configuration config = new Configuration();
+            
+            // setup template cache
+            config.setCacheStorage(new MruCacheStorage(20, 0));
+            
+            // use our custom loader to find templates on the ClassPath
+            StringTemplateLoader stringTemplateLoader = new StringTemplateLoader();
+            stringTemplateLoader.putTemplate(path, template);
+            config.setTemplateLoader(stringTemplateLoader);
+            
+            // use our custom object wrapper that can deal with QNameMap objects directly
+            config.setObjectWrapper(new QNameAwareObjectWrapper());
+            
+            // rethrow any exception so we can deal with them
+            config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+            
+            return config;
+    }
+    
     /**
      * @see org.alfresco.service.cmr.repository.TemplateProcessor#process(java.lang.String, java.lang.Object, java.io.Writer)
      */
@@ -122,6 +146,52 @@ public class FreeMarkerProcessor implements TemplateProcessor
                 logger.debug("Executing template: " + template + " on model: " + model);
             
             Template t = getConfig().getTemplate(template);
+            if (t != null)
+            {
+                try
+                {
+                    // perform the template processing against supplied data model
+                    t.process(model, out);
+                }
+                catch (Throwable err)
+                {
+                    throw new TemplateException(MSG_ERROR_TEMPLATE_FAIL, new Object[] {err.getMessage()}, err);
+                }
+            }
+            else
+            {
+                throw new TemplateException(MSG_ERROR_NO_TEMPLATE, new Object[] {template});
+            }
+        }
+        catch (IOException ioerr)
+        {
+            throw new TemplateException(MSG_ERROR_TEMPLATE_IO, new Object[] {template}, ioerr);
+        }
+    }
+    
+    private static final String PATH = "string://fixed";
+    
+    public void processString(String template, Object model, Writer out)
+    {
+        if (template == null || template.length() == 0)
+        {
+            throw new IllegalArgumentException("Template is mandatory.");
+        }
+        if (model == null)
+        {
+            throw new IllegalArgumentException("Model is mandatory.");
+        }
+        if (out == null)
+        {
+            throw new IllegalArgumentException("Output Writer is mandatory.");
+        }
+        
+        try
+        {
+            if (logger.isDebugEnabled())
+                logger.debug("Executing template: " + template + " on model: " + model);
+            
+            Template t = getStringConfig(PATH, template).getTemplate(PATH);
             if (t != null)
             {
                 try

@@ -91,6 +91,8 @@ public final class TemplateNode implements Serializable
     private Long size = null;
     private TemplateImageResolver imageResolver = null;
     private TemplateNode parent = null;
+
+    private ChildAssociationRef primaryParentAssoc;
     
     
     /**
@@ -489,6 +491,19 @@ public final class TemplateNode implements Serializable
         }
         
         return parent;
+    }
+    
+    /**
+     * 
+     * @return the primary parent association so we can get at the association QName and the association type QName.
+     */
+    public ChildAssociationRef getPrimaryParentAssoc()
+    {
+        if (primaryParentAssoc == null)
+        {
+            primaryParentAssoc = this.services.getNodeService().getPrimaryParent(nodeRef);
+        }
+        return primaryParentAssoc;
     }
     
     /**

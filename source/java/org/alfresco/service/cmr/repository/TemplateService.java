@@ -56,6 +56,34 @@ public interface TemplateService
         throws TemplateException;
     
     /**
+     * Process a given template, provided as a string, against the supplied data model and return the result as a String
+     * 
+     * @param engine       Name of the template engine to use
+     * @param template     Template string
+     * @param model        Object model to process template against
+     * 
+     * @return  output of the template process as a String
+     *      
+     * @throws TemplateException
+     */
+    public String processTemplateString(String engine, String template, Object model)
+    throws TemplateException;
+    
+    /**
+     * Process a given template, provided as a string, against the supplied data model and report the
+     * result back in the provided writer.
+     * 
+     * @param engine       Name of the template engine to use
+     * @param template     Template string
+     * @param model        Object model to process template against
+     * @param out          Writer object to send output too
+     * 
+     * @throws TemplateException
+     */
+    public void processTemplateString(String engine, String template, Object model, Writer out)
+    throws TemplateException;
+    
+    /**
      * Return a TemplateProcessor instance for the specified engine name.
      * Note that the processor instance is NOT thread safe!
      * 

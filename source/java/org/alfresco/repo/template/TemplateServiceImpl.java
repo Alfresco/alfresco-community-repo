@@ -48,7 +48,7 @@ public class TemplateServiceImpl implements TemplateService, ApplicationContextA
     private Map<String, String> templateEngines;
     
     /** Threadlocal instance for template processor cache */
-    private static ThreadLocal<Map<String, TemplateProcessor>> processors = new ThreadLocal();
+    private static ThreadLocal<Map<String, TemplateProcessor>> processors = new ThreadLocal<Map<String, TemplateProcessor>>();
     
     /**
      * Set the application context
@@ -127,6 +127,36 @@ public class TemplateServiceImpl implements TemplateService, ApplicationContextA
         return out.toString();
     }
 
+    public void processTemplateString(String engine, String template, Object model, Writer out)
+    throws TemplateException
+    {
+        try
+        {
+            // execute template processor
+            TemplateProcessor processor = getTemplateProcessorImpl(engine);
+            processor.processString(template, model, out);
+        }
+        catch (TemplateException terr)
+        {
+            throw terr;
+        }
+        catch (Throwable err)
+        {
+            throw new TemplateException(err.getMessage(), err);
+        }
+    }
+    
+    
+    public String processTemplateString(String engine, String template, Object model)
+    throws TemplateException
+    {
+        Writer out = new StringWriter(1024);
+        processTemplateString(engine, template, model, out);
+        return out.toString();
+    }
+
+    
+    
     /**
      * Return the TemplateProcessor implementation for the named template engine
      * 

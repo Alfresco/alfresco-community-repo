@@ -8,7 +8,6 @@ import org.alfresco.model.ForumModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
@@ -24,24 +23,12 @@ public class ForumsIconsPatch extends AbstractPatch
     private static final String MSG_SUCCESS = "patch.forumsIcons.result";
     
     private ImporterBootstrap importerBootstrap;
-    private NodeService nodeService;
-    private SearchService searchService;
    
     public void setImporterBootstrap(ImporterBootstrap importerBootstrap)
     {
         this.importerBootstrap = importerBootstrap;
     }
     
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-    
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
-   
     @Override
     protected String applyInternal() throws Exception 
     {

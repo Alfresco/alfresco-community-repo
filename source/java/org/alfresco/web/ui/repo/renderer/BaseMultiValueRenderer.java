@@ -25,13 +25,10 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.convert.Converter;
-import javax.faces.convert.DateTimeConverter;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.converter.XMLDateConverter;
@@ -39,8 +36,6 @@ import org.alfresco.web.ui.common.renderer.BaseRenderer;
 import org.alfresco.web.ui.repo.RepoConstants;
 import org.alfresco.web.ui.repo.component.UIMultiValueEditor;
 import org.alfresco.web.ui.repo.component.UIMultiValueEditor.MultiValueEditorEvent;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Base class for renderers of the MultiValueEditor component.
@@ -51,8 +46,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class BaseMultiValueRenderer extends BaseRenderer
 {
-   private static Log logger = LogFactory.getLog(BaseMultiValueRenderer.class);
-   
    /** I18N message strings */
    protected final static String MSG_REMOVE = "remove";
    protected final static String MSG_SELECT_BUTTON = "select_button";
@@ -68,10 +61,7 @@ public abstract class BaseMultiValueRenderer extends BaseRenderer
     */
    public void decode(FacesContext context, UIComponent component)
    {
-      Object obj = FacesHelper.getManagedBean(context, "MultiValueEditorBean");
-      
       Map requestMap = context.getExternalContext().getRequestParameterMap();
-      Map valuesMap = context.getExternalContext().getRequestParameterValuesMap();
       String fieldId = getHiddenFieldName(component);
       String value = (String)requestMap.get(fieldId);
       
@@ -104,6 +94,7 @@ public abstract class BaseMultiValueRenderer extends BaseRenderer
    /**
     * @see javax.faces.render.Renderer#encodeBegin(javax.faces.context.FacesContext, javax.faces.component.UIComponent)
     */
+   @SuppressWarnings("static-access")
    public void encodeBegin(FacesContext context, UIComponent component) throws IOException
    {
       if (component.isRendered() == false)
@@ -118,7 +109,6 @@ public abstract class BaseMultiValueRenderer extends BaseRenderer
       {
          ResponseWriter out = context.getResponseWriter();
          Map attrs = component.getAttributes();
-         String clientId = component.getClientId(context);
          UIMultiValueEditor editor = (UIMultiValueEditor)component;
          
          // start outer table
@@ -137,6 +127,11 @@ public abstract class BaseMultiValueRenderer extends BaseRenderer
     */
    public void encodeEnd(FacesContext context, UIComponent component) throws IOException
    {
+      if (component.isRendered() == false)
+      {
+         return;
+      }
+      
       if (component instanceof UIMultiValueEditor)
       {
          ResponseWriter out = context.getResponseWriter();
@@ -193,7 +188,18 @@ public abstract class BaseMultiValueRenderer extends BaseRenderer
          }
          
          // close tables
-         out.write("</table></td></tr></table>");
+         out.write("</table></td></tr></table>\n");
+         
+         // output a hidden field containing the current value
+         out.write("<input type='hidden' name='");
+         out.write(component.getClientId(context));
+         out.write("_current_value");
+         out.write("' value='");
+         if (currentItems != null && currentItems.size() > 0)
+         {
+            out.write(currentItems.toString());
+         }
+         out.write("' />");
       }
    }
 

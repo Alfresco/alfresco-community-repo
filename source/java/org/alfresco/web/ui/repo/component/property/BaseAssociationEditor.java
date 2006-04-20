@@ -392,6 +392,20 @@ public abstract class BaseAssociationEditor extends UIInput
             
             // close table
             out.write("</table>");
+            
+            // output a hidden field containing the current value
+            out.write("<input type='hidden' name='");
+            out.write(this.getClientId(context));
+            out.write("_current_value");
+            out.write("' value='");
+            // if the current state will leave the node without any associations 
+            // do not set a value for the hidden field
+            int numberAssocs = (this.originalAssocs.size() + this.added.size()) - this.removed.size();
+            if (numberAssocs > 0)
+            {
+               out.write(Integer.toString(numberAssocs));
+            }
+            out.write("' />");
          }
       }
    }

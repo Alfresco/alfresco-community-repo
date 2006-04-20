@@ -17,6 +17,7 @@
 package org.alfresco.repo.search.impl.lucene.query;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.alfresco.repo.search.impl.lucene.query.LeafScorer.Counter;
@@ -79,10 +80,14 @@ public class PathScorer extends Scorer
         }
         
         
-        if ((pathQuery.getPathStructuredFieldPositions().size() + pathQuery.getQNameStructuredFieldPositions().size()) == 0) // optimize
-            // zero-term
-            // case
-            return null;
+        if ((pathQuery.getPathStructuredFieldPositions().size() + pathQuery.getQNameStructuredFieldPositions().size()) == 0) 
+        {
+                ArrayList<StructuredFieldPosition> answer = new ArrayList<StructuredFieldPosition>(2);
+                answer.add(new SelfAxisStructuredFieldPosition());
+                answer.add(new SelfAxisStructuredFieldPosition());
+                
+                pathQuery.appendQuery(answer);
+        }
 
         
         for (StructuredFieldPosition sfp : pathQuery.getPathStructuredFieldPositions())
@@ -143,6 +148,13 @@ public class PathScorer extends Scorer
         {
             level0 = reader.termPositions(new Term("ISROOT", "T"));
         }
+        
+        if((cs == null) && 
+                (pathQuery.getQNameStructuredFieldPositions().get(pathQuery.getQNameStructuredFieldPositions().size()-1)).linkSelf())
+        {
+            nodePositions = reader.termPositions(new Term("ISROOT", "T"));
+        }
+        
 
         LeafScorer ls = new LeafScorer(weight, rootLeafPositions, level0, cs, (StructuredFieldPosition[]) pathQuery.getQNameStructuredFieldPositions().toArray(new StructuredFieldPosition[] {}), nodePositions,
                 selfIds, reader, similarity, reader.norms(pathQuery.getQnameField()), dictionarySertvice, repeat, tp);

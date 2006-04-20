@@ -292,6 +292,9 @@
         <property name="fixesToSchema"><value>8</value></property>
         <property name="targetSchema"><value>9</value></property>
         <!-- helper beans for execution -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
         <property name="messageSource">
             <ref bean="bootstrapSpacesMessageSource" />
         </property>   
@@ -304,6 +307,9 @@
         <property name="targetSchema"><value>10</value></property>
         <property name="templatesACP"><value>alfresco/templates/email_templates.acp</value></property>
         <!-- helper beans for execution -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
         <property name="messageSource">
             <ref bean="bootstrapSpacesMessageSource" />
         </property>

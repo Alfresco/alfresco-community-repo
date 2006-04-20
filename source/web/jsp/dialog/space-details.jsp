@@ -163,7 +163,7 @@
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
                                        <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif"
-                                             action="editSpaceProperties" actionListener="#{EditSpaceDialog.startWizardForEdit}" />
+                                             action="dialog:editSpace" />
                                     </r:permissionEvaluator>
                                  </f:facet>
                               </h:panelGroup>

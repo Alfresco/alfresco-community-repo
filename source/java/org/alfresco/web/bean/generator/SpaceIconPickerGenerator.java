@@ -63,7 +63,7 @@ public class SpaceIconPickerGenerator extends BaseComponentGenerator
          ValueBinding binding = propertySheet.getValueBinding("value");
          String expression = binding.getExpressionString();
          String beanName = expression.substring(2, expression.indexOf(".")+1);
-         if (beanName.equals("DialogManager") || beanName.equals("WizardManager"))
+         if (beanName.equals("DialogManager.") || beanName.equals("WizardManager."))
          {
             // deal with the special dialog and wizard manager beans by 
             // adding .bean

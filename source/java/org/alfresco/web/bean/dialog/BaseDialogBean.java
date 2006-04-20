@@ -5,7 +5,9 @@ import java.text.MessageFormat;
 import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
@@ -27,6 +29,8 @@ public abstract class BaseDialogBean implements IDialogBean
    protected BrowseBean browseBean;
    protected NavigationBean navigator;
    protected NodeService nodeService;
+   protected FileFolderService fileFolderService;
+   protected SearchService searchService;
    
    public void init()
    {
@@ -54,7 +58,12 @@ public abstract class BaseDialogBean implements IDialogBean
          // call the actual implementation
          outcome = finishImpl(context, outcome);
          
+         // persist the changes
          tx.commit();
+         
+         // allow any subclasses to perform post commit processing 
+         // i.e. resetting state or setting status messages
+         outcome = doPostCommitProcessing(context, outcome);
       }
       catch (Throwable e)
       {
@@ -107,6 +116,22 @@ public abstract class BaseDialogBean implements IDialogBean
    }
    
    /**
+    * @param fileFolderService used to manipulate folder/folder model nodes
+    */
+   public void setFileFolderService(FileFolderService fileFolderService)
+   {
+      this.fileFolderService = fileFolderService;
+   }
+
+   /**
+    * @param searchService the service used to find nodes
+    */
+   public void setSearchService(SearchService searchService)
+   {
+      this.searchService = searchService;
+   }
+   
+   /**
     * Returns the default cancel outcome
     * 
     * @return Default close outcome, dialog:close by default
@@ -138,6 +163,20 @@ public abstract class BaseDialogBean implements IDialogBean
    protected abstract String finishImpl(FacesContext context, String outcome)
       throws Exception;
 
+   /**
+    * Performs any post commit processing subclasses may want to provide
+    * 
+    * @param context FacesContext
+    * @param outcome The default outcome
+    * @return The outcome
+    */
+   protected String doPostCommitProcessing(FacesContext context, String outcome)
+   {
+      // do nothing by default, subclasses can override if necessary
+      
+      return outcome;
+   }
+   
    /**
     * Returns a formatted exception string for the given exception
     * 

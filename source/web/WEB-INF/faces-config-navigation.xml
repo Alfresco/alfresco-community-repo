@@ -240,10 +240,6 @@
    <navigation-rule>
       <from-view-id>/jsp/dialog/space-details.jsp</from-view-id>
       <navigation-case>
-         <from-outcome>editSpaceProperties</from-outcome>
-         <to-view-id>/jsp/dialog/edit-space.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>manageInvitedUsers</from-outcome>
          <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
       </navigation-case>
@@ -274,18 +270,6 @@
       <navigation-case>
          <from-outcome>showForum</from-outcome>
          <to-view-id>/jsp/forums/forum.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/edit-space.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

@@ -17,10 +17,6 @@ public abstract class BaseWizardBean extends BaseDialogBean implements IWizardBe
 {
    private static final String MSG_NOT_SET = "value_not_set";
    
-   // services common to most wizards
-   protected FileFolderService fileFolderService;
-   protected SearchService searchService;
-   
    public boolean getNextButtonDisabled()
    {
       return false;
@@ -39,22 +35,6 @@ public abstract class BaseWizardBean extends BaseDialogBean implements IWizardBe
    public String getFinishButtonLabel()
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), "finish_button");
-   }
-
-   /**
-    * @param fileFolderService used to manipulate folder/folder model nodes
-    */
-   public void setFileFolderService(FileFolderService fileFolderService)
-   {
-      this.fileFolderService = fileFolderService;
-   }
-
-   /**
-    * @param searchService the service used to find nodes
-    */
-   public void setSearchService(SearchService searchService)
-   {
-      this.searchService = searchService;
    }
    
    /**

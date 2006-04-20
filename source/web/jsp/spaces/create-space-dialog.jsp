@@ -20,9 +20,7 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
-
-<script language="JavaScript1.2">
+<script type="text/javascript">
 
    window.onload = pageLoaded;
    
@@ -48,10 +46,11 @@
 
 <%-- Create Space Dialog Fragment --%>
 
+<%-- TODO: Move this to the container page and add error-message-id attribute to dialog config --%>
+
 <a:errors message="#{msg.error_create_space_dialog}" styleClass="errorMessage" />
 
 <f:verbatim>
-<% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
 <table cellpadding="2" cellspacing="2" border="0" width="100%">
    <tr>
       <td colspan="2" class="wizardSectionHeading">
@@ -119,7 +118,5 @@
       </td>
    </tr>
 </table>
-<% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
-
 </f:verbatim>
     

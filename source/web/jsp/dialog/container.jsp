@@ -94,9 +94,11 @@
                      <table cellspacing="0" cellpadding="3" border="0" width="100%">
                         <tr>
                            <td width="100%" valign="top">
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <f:subview id="dialog-body">
                               	<jsp:include page="<%=Application.getDialogManager().getPage() %>" />
                               </f:subview>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
                            </td>
                            
                            <td valign="top">

@@ -318,7 +318,7 @@
          The bean that backs up the Edit Space Dialog
       </description>
       <managed-bean-name>EditSpaceDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewSpaceWizard</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.spaces.EditSpaceDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -339,6 +339,10 @@
       <managed-property>
          <property-name>searchService</property-name>
          <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
       </managed-property>
       <managed-property>
          <property-name>namespaceService</property-name>

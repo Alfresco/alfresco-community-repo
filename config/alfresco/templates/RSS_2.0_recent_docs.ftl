@@ -5,7 +5,7 @@
       <copyright>Copyright (c) 2005 Alfresco Software, Inc. All rights reserved.</copyright>
       <#assign hostname="http://localhost:8080/alfresco">
       <#assign spaceref="${hostname}/navigate/browse/${space.nodeRef.storeRef.protocol}/${space.nodeRef.storeRef.identifier}/${space.nodeRef.id}">
-      <#assign datetimeformat="EEE, dd MMM yyyy hh:mm:ss zzz">
+      <#assign datetimeformat="EEE, dd MMM yyyy HH:mm:ss zzz">
       <link>${spaceref}</link>
       <description>Recent Changes to '${space.name}'</description>
       <language>en-us</language>

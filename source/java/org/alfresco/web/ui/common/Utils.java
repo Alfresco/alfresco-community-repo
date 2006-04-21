@@ -40,6 +40,7 @@ import javax.faces.el.EvaluationException;
 import javax.faces.el.MethodBinding;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
+import javax.servlet.ServletContext;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -1112,6 +1113,39 @@ public final class Utils
     */
    public static String getFileTypeImage(String name, boolean small)
    {
+      return getFileTypeImage(FacesContext.getCurrentInstance(), null, name, small);
+   }
+   
+   /**
+    * Return the image path to the filetype icon for the specified file name string
+    * 
+    * @param fc         FacesContext
+    * @param name       File name to build filetype icon path for
+    * @param small      True for the small 16x16 icon or false for the large 32x32 
+    * 
+    * @return the image path for the specified node type or the default icon if not found
+    */
+   public static String getFileTypeImage(FacesContext fc, String name, boolean small)
+   {
+      return getFileTypeImage(fc, null, name, small);
+   }
+   
+   /**
+    * Return the image path to the filetype icon for the specified file name string
+    * 
+    * @param sc         ServletContext
+    * @param name       File name to build filetype icon path for
+    * @param small      True for the small 16x16 icon or false for the large 32x32 
+    * 
+    * @return the image path for the specified node type or the default icon if not found
+    */
+   public static String getFileTypeImage(ServletContext sc, String name, boolean small)
+   {
+      return getFileTypeImage(null, sc, name, small);
+   }
+   
+   private static String getFileTypeImage(FacesContext fc, ServletContext sc, String name, boolean small)
+   {
       String image = (small ? DEFAULT_FILE_IMAGE16 : DEFAULT_FILE_IMAGE32);
       
       int extIndex = name.lastIndexOf('.');
@@ -1130,7 +1164,8 @@ public final class Utils
                image = (small ? IMAGE_PREFIX16 : IMAGE_PREFIX32) + ext + IMAGE_POSTFIX;
                
                // does this image exist on the web-server?
-               if (FacesContext.getCurrentInstance().getExternalContext().getResourceAsStream(image) != null)
+               if ((fc != null && fc.getExternalContext().getResourceAsStream(image) != null) ||
+                   (sc != null && sc.getResourceAsStream(image) != null))
                {
                   // found the image for this extension - save it for later
                   s_fileExtensionMap.put(key, image);

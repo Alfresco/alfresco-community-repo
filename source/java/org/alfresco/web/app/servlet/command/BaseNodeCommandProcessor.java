@@ -37,9 +37,9 @@ public abstract class BaseNodeCommandProcessor implements CommandProcessor
    protected NodeRef targetRef;
    
    /**
-    * @see org.alfresco.web.app.servlet.command.CommandProcessor#validateArguments(org.alfresco.service.ServiceRegistry, java.lang.String[])
+    * @see org.alfresco.web.app.servlet.command.CommandProcessor#validateArguments(org.alfresco.service.ServiceRegistry, java.lang.String, java.lang.String[])
     */
-   public boolean validateArguments(ServiceRegistry serviceRegistry, String[] args)
+   public boolean validateArguments(ServiceRegistry serviceRegistry, String command, String[] args)
    {
       if (args.length < 3)
       {

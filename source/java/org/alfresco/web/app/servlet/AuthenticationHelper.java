@@ -231,13 +231,57 @@ public final class AuthenticationHelper
       // setup the authentication context
       WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
       AuthenticationService auth = (AuthenticationService)wc.getBean(AUTHENTICATION_SERVICE);
+      UserTransaction tx = null;
       try
       {
          auth.validate(ticket);
+         
+         HttpSession session = httpRequest.getSession();
+         User user = (User)session.getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+         if (user == null)
+         {
+            // need to create the User instance if not already available
+            String currentUsername = auth.getCurrentUserName();
+            
+            ServiceRegistry services = BaseServlet.getServiceRegistry(context);
+            tx = services.getTransactionService().getUserTransaction();
+            tx.begin();
+            
+            NodeService nodeService = services.getNodeService();
+            PersonService personService = (PersonService)wc.getBean(PERSON_SERVICE);
+            NodeRef personRef = personService.getPerson(currentUsername);
+            user = new User(currentUsername, auth.getCurrentTicket(), personRef);
+            NodeRef homeRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+            
+            // check that the home space node exists - else Login cannot proceed
+            if (nodeService.exists(homeRef) == false)
+            {
+               throw new InvalidNodeRefException(homeRef);
+            }
+            user.setHomeSpaceId(homeRef.getId());
+            
+            tx.commit();
+            tx = null;     // clear this so we know not to rollback 
+            
+            // store the User object in the Session - the authentication servlet will then proceed
+            session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
+         }
       }
       catch (AuthenticationException authErr)
       {
          return AuthenticationStatus.Failure;
+      }
+      catch (Throwable e)
+      {
+         // Some other kind of serious failure
+         AuthenticationService unprotAuthService = (AuthenticationService)wc.getBean(UNPROTECTED_AUTH_SERVICE);
+         unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket());
+         unprotAuthService.clearCurrentSecurityContext();
+         return AuthenticationStatus.Failure;
+      }
+      finally
+      {
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
       
       // Set the current locale

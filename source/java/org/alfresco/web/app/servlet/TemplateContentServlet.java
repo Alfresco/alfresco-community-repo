@@ -25,7 +25,6 @@ import java.util.StringTokenizer;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -35,11 +34,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateException;
+import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.repo.component.template.DefaultModelHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -164,7 +165,7 @@ public class TemplateContentServlet extends BaseServlet
             }
             
             // create the model - put the supplied noderef in as space/document as appropriate
-            Object model = getModel(serviceRegistry, req.getSession(), nodeRef);
+            Object model = getModel(serviceRegistry, req, res, nodeRef);
             
             // process the template against the node content directly to the response output stream
             // assuming the repo is capable of streaming in chunks, this should allow large files
@@ -218,18 +219,27 @@ public class TemplateContentServlet extends BaseServlet
     * 
     * @return an object model ready for executing template against
     */
-   private Object getModel(ServiceRegistry services, HttpSession session, NodeRef nodeRef)
+   private Object getModel(ServiceRegistry services, HttpServletRequest req, HttpServletResponse res, NodeRef nodeRef)
    {
       // build FreeMarker default model and merge
-      Map root = DefaultModelHelper.buildDefaultModel(services, Application.getCurrentUser(session)); 
+      Map root = DefaultModelHelper.buildDefaultModel(services, Application.getCurrentUser(req.getSession())); 
       
       // put the current NodeRef in as "space" and "document"
-      TemplateNode node = new TemplateNode(nodeRef, services, DefaultModelHelper.imageResolver);
+      TemplateNode node = new TemplateNode(nodeRef, services, this.imageResolver);
       root.put("space", node);
       root.put("document", node);
       
       return root;
    }
+   
+   /** Template Image resolver helper */
+   private TemplateImageResolver imageResolver = new TemplateImageResolver()
+   {
+      public String resolveImagePathForName(String filename, boolean small)
+      {
+         return Utils.getFileTypeImage(getServletContext(), filename, small);
+      }
+   };
    
    /**
     * Helper to generate a URL to process a template against a node.

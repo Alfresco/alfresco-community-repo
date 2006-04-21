@@ -42,11 +42,13 @@ public interface CommandProcessor
     * convert the supplied arguments to the objects it expects, and also check any permissions
     * that are required by the current user to execute the command.
     * 
+    * @param serviceRegistry  ServiceRegistry instance
+    * @param command          Name of the command the arguments are for
     * @param args             String[] of the remaining URL arguments to the command servlet.
     * 
     * @return true if the command can be executed by the current user given the supplied args.
     */
-   public boolean validateArguments(ServiceRegistry serviceRegistry, String[] args);
+   public boolean validateArguments(ServiceRegistry serviceRegistry, String command, String[] args);
    
    /**
     * Process the supplied command name. It is the responsibility of the Command Processor

@@ -114,7 +114,7 @@ public class CommandServlet extends BaseServlet
          
          // validate that the processor has everything it needs to run the command
          ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
-         if (processor.validateArguments(serviceRegistry, args) == false)
+         if (processor.validateArguments(serviceRegistry, command, args) == false)
          {
             redirectToLoginPage(req, res, getServletContext());
             return;

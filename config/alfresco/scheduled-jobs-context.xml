@@ -6,7 +6,7 @@
     <!-- Scheduled jobs -->
     <!--                -->
 
-    <bean id="ftsIndexerTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+    <bean id="ftsIndexerTrigger" class="org.alfresco.util.TriggerBean">
         <property name="jobDetail">
             <bean id="ftsIndexerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
                 <property name="jobClass">
@@ -21,15 +21,19 @@
                 </property>
             </bean>
         </property>
+        <!-- Try and do some indexing every minute after starting up -->
         <property name="startDelay">
             <value>60000</value>
         </property>
         <property name="repeatInterval">
             <value>60000</value>
         </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
     </bean>
-
-    <bean id="tempFileCleanerTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+    
+    <bean id="tempFileCleanerTrigger" class="org.alfresco.util.TriggerBean">
         <property name="jobDetail">
             <bean id="tempFileCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
                 <property name="jobClass">
@@ -50,9 +54,12 @@
         <property name="repeatInterval">
             <value>3600000</value><!-- repeat every hour -->
         </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
     </bean>
 
-    <bean id="contentStoreCleanerTrigger" class="org.alfresco.util.TriggerBean">
+    <bean id="contentStoreCleanerTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
             <bean id="fileContentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
                 <property name="jobClass">
@@ -67,19 +74,17 @@
                 </property>
             </bean>
         </property>
-        <!-- trigger at 4am -->
-        <property name="hour">
-            <value>04</value>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
         </property>
-        <property name="minute">
-            <value>00</value>
-        </property>
-        <property name="repeatInterval">
-            <value>86400000</value>     <!-- repeat daily -->
+         <!-- trigger at 4am each day -->
+        <property name="cronExpression">
+            <value>0 0 4 * * ?</value>
         </property>
     </bean>
 
-    <bean id="indexRecoveryTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+    
+    <bean id="indexRecoveryTrigger" class="org.alfresco.util.TriggerBean">
         <property name="jobDetail">
             <bean id="IndexRecoveryJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
                 <property name="jobClass">
@@ -100,9 +105,12 @@
         <property name="repeatCount">
             <value>0</value>           <!-- DO NOT REPEAT !!!!! -->
         </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
     </bean>
 
-    <bean id="indexBackupTrigger" class="org.alfresco.util.TriggerBean">
+    <bean id="indexBackupTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
             <bean id="IndexBackupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
                 <property name="jobClass">
@@ -117,20 +125,17 @@
                 </property>
             </bean>
         </property>
-        <!-- trigger at 3am -->
-        <property name="hour">
-            <value>03</value>
+         <property name="scheduler">
+            <ref bean="schedulerFactory" />
         </property>
-        <property name="minute">
-            <value>00</value>
-        </property>
-        <property name="repeatInterval">
-            <value>86400000</value>     <!-- repeat daily -->
+         <!-- trigger at 3am each day -->
+        <property name="cronExpression">
+            <value>0 0 3 * * ?</value>
         </property>
     </bean>
 
     <!-- enable DEBUG for 'org.alfresco.repo.cache.EhCacheTracerJob' to activate -->
-    <bean id="ehCacheTracerJob" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+    <bean id="ehCacheTracerJob" class="org.alfresco.util.TriggerBean">
         <property name="jobDetail">
             <bean id="ehCacheTracerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
                 <property name="jobClass">
@@ -147,28 +152,17 @@
     </bean>
 
     <!-- Scheduled tasks -->
+    <!-- Triggers should not appear here - the scheduler should be injected into the trigger definition -->
+    <!-- This bean should not need to apear else where in extension configuration -->
     <bean id="schedulerFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
-        <property name="triggers">
-            <list>
-                <ref bean="tempFileCleanerTrigger" />
-                <ref bean="contentStoreCleanerTrigger"/>
-                <ref bean="ftsIndexerTrigger" />
-                <ref bean="indexRecoveryTrigger" />
-                <ref bean="indexBackupTrigger" />
-                <!--
-                <ref bean="ldapGroupTrigger" />
-                <ref bean="ldapPeopleTrigger" />
-                -->
-                <!--
-                <ref bean="ehCacheTracerJob" />
-                -->
-            </list>
-        </property>
         <property name="waitForJobsToCompleteOnShutdown">
             <value>true</value>
         </property>
         <property name="configLocation">
             <value>classpath:alfresco/domain/quartz.properties</value>
+        </property>
+        <property name="schedulerName">
+            <value>DefaultScheduler</value>
         </property>
     </bean>
     

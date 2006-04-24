@@ -160,14 +160,14 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
         StoreRef toIndex = getNextRef();
         if (toIndex != null)
         {
-            //System.out.println("Indexing "+toIndex+" id is "+this);
+            //System.out.println("Indexing "+toIndex+" at "+(new java.util.Date()));
             LuceneIndexer indexer = luceneIndexerAndSearcherFactory.getIndexer(toIndex);
             indexer.registerCallBack(this);
             indexer.updateFullTextSearch(1000);
         }
         else
-        {
-            //System.out.println("Nothing to index"+" id is "+this);
+        { 
+            //System.out.println("Nothing to Indexing at "+(new java.util.Date()));
         }
     }
 

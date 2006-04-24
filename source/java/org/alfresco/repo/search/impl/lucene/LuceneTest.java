@@ -522,6 +522,7 @@ public class LuceneTest extends TestCase
             {
                 try
                 {
+                    authenticationComponent.setSystemUserAsCurrentUser();
                     UserTransaction tx = transactionService.getUserTransaction();
                     tx = transactionService.getUserTransaction();
                     tx.begin();
@@ -559,7 +560,7 @@ public class LuceneTest extends TestCase
 
                     tx.rollback();
                 }
-                catch (Exception e)
+                catch (Throwable e)
                 {
                     throw new RuntimeException(e);
                 }

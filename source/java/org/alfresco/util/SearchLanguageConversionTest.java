@@ -29,7 +29,7 @@ public class SearchLanguageConversionTest extends TestCase
      * A string with a whole lod of badness to stress test with
      */
     private static final String BAD_STRING =
-            "\\ | ! \" £ " +
+            "\\ | ! \" Â£ " +
             "$ % ^ & * ( " +
             ") _ { } [ ] " +
             "@ # ~ ' : ; " +
@@ -40,7 +40,7 @@ public class SearchLanguageConversionTest extends TestCase
     {
         String good = SearchLanguageConversion.escapeForXPathLike(BAD_STRING);
         assertEquals("Escaping for xpath failed",
-                "\\\\ | ! \" £ " +
+                "\\\\ | ! \" Â£ " +
                 "$ \\% ^ & * ( " +
                 ") \\_ { } [ ] " +
                 "@ # ~ ' : ; " +
@@ -53,7 +53,7 @@ public class SearchLanguageConversionTest extends TestCase
     {
         String good = SearchLanguageConversion.escapeForRegex(BAD_STRING);
         assertEquals("Escaping for regex failed",
-                "\\\\ \\| ! \" £ " +
+                "\\\\ \\| ! \" Â£ " +
                 "\\$ % \\^ & \\* \\( " +
                 "\\) _ \\{ \\} [ ] " +
                 "@ # ~ ' : ; " +
@@ -66,7 +66,7 @@ public class SearchLanguageConversionTest extends TestCase
     {
         String good = SearchLanguageConversion.escapeForLucene(BAD_STRING);
         assertEquals("Escaping for regex failed",
-                "\\\\ | \\! \\\" £ " +
+                "\\\\ | \\! \\\" Â£ " +
                 "$ % \\^ & \\* \\( " +
                 "\\) _ \\{ \\} \\[ \\] " +
                 "@ # \\~ ' \\: ; " +
@@ -79,7 +79,7 @@ public class SearchLanguageConversionTest extends TestCase
     {
         String good = SearchLanguageConversion.convertXPathLikeToRegex(BAD_STRING);
         assertEquals("XPath like to regex failed",
-                "(?s)\\ \\| ! \" £ " +
+                "(?s)\\ \\| ! \" Â£ " +
                 "\\$ .* \\^ & \\* \\( " +
                 "\\) . \\{ \\} [ ] " +
                 "@ # ~ ' : ; " +
@@ -92,7 +92,7 @@ public class SearchLanguageConversionTest extends TestCase
     {
         String good = SearchLanguageConversion.convertXPathLikeToLucene(BAD_STRING);
         assertEquals("XPath like to regex failed",
-                "\\ | \\! \\\" £ " +
+                "\\ | \\! \\\" Â£ " +
                 "$ * \\^ & \\* \\( " +
                 "\\) ? \\{ \\} \\[ \\] " +
                 "@ # \\~ ' \\: ; " +

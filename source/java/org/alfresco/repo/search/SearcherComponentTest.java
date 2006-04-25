@@ -53,7 +53,11 @@ public class SearcherComponentTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
-    private static String COMPLEX_LOCAL_NAME = " `¬¦!\"£$%^&*()-_=+\t\n\\\u0000[]{};'#:@~,./<>?\\|\u0123\u4567\u8900\uabcd\uefff_xT65A_";
+    // private static String COMPLEX_LOCAL_NAME = " `¬¦!\"£$%^&*()-_=+\t\n\\\u0000[]{};'#:@~,./<>?\\|\u0123\u4567\u8900\uabcd\uefff_xT65A_";
+    
+    private static String COMPLEX_LOCAL_NAME ="\u0020\u0060\u00ac\u00a6\u0021\\u0022\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\\u0009\\u000a\\u005c\u0000\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u005c\u007c\u0123\u4567\u8900\uabcd\uefff\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
+
+ 
     
     private ServiceRegistry serviceRegistry;
     private TransactionService transactionService;
@@ -322,7 +326,7 @@ public class SearcherComponentTest extends TestCase
                 "//*[like(@test:"+ISO9075.encode(COMPLEX_LOCAL_NAME)+", 'm__k%', false)]",
                 null,
                 namespacePrefixResolver, false);
-//        assertEquals(1, answer.size());
+        assertEquals(1, answer.size());
         
         answer =  searcher.selectNodes(
                 rootNodeRef,
@@ -336,7 +340,7 @@ public class SearcherComponentTest extends TestCase
                 "//*[like(@test:"+ISO9075.encode(COMPLEX_LOCAL_NAME)+", 'M__K%', false)]",
                 null,
                 namespacePrefixResolver, false);
-//        assertEquals(1, answer.size());
+        assertEquals(1, answer.size());
         
         answer =  searcher.selectNodes(
                 rootNodeRef,
@@ -1133,5 +1137,42 @@ public class SearcherComponentTest extends TestCase
                 namespacePrefixResolver, false);
         assertEquals(1, answer.size());
         
+    }
+    
+    public static void main(String[] args)
+    {
+        String escape = "\\\t\n\"";
+        StringBuilder builder = new StringBuilder();
+        builder.append("\"");
+        for(int i = 0; i < COMPLEX_LOCAL_NAME.length(); i++)
+        {
+           if(escape.indexOf(COMPLEX_LOCAL_NAME.charAt(i)) != -1)
+           {
+               builder.append("\\");
+           }
+           String part = Integer.toHexString(COMPLEX_LOCAL_NAME.charAt(i));
+           builder.append("\\u");
+           if(part.length() == 0)
+           {
+               builder.append("000");
+           }
+           if(part.length() == 1)
+           {
+               builder.append("000");
+           }
+           if(part.length() == 2)
+           {
+               builder.append("00");
+           }
+           if(part.length() == 3)
+           {
+               builder.append("0");
+           }
+          
+           builder.append(part);
+           System.out.println(part);
+        }
+        builder.append("\"");
+        System.out.println(builder.toString());
     }
 }

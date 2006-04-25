@@ -1,16 +1,20 @@
 package org.alfresco.web.bean.generator;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.faces.FacesException;
 import javax.faces.component.UIComponent;
+import javax.faces.component.UIGraphic;
 import javax.faces.component.UIOutput;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.el.ValueBinding;
 
+import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.dictionary.constraint.NumericRangeConstraint;
 import org.alfresco.repo.dictionary.constraint.RegexConstraint;
 import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
@@ -335,7 +339,7 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
       if (propertySheet.inEditMode() && propertySheet.isValidationEnabled() &&
           propertyDef != null && propertyDef.isMandatory())
       {
-         setupMandatoryValidation(context, propertySheet, property, component, false);
+         setupMandatoryValidation(context, propertySheet, property, component, false, null);
          setupMandatoryMarker(context, property);
       }
    }
@@ -358,7 +362,7 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
       if (propertySheet.inEditMode() && propertySheet.isValidationEnabled() &&
           associationDef != null && associationDef.isTargetMandatory())
       {
-         setupMandatoryValidation(context, propertySheet, association, component, false);
+         setupMandatoryValidation(context, propertySheet, association, component, false, null);
          setupMandatoryMarker(context, association);
       }
    }
@@ -372,17 +376,24 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
     * @param item The item being generated
     * @param component The component representing the item
     * @param realTimeChecking true to make the client validate as the user types
+    * @param idSuffix An optional suffix to add to the client id
     */
    protected void setupMandatoryValidation(FacesContext context, 
          UIPropertySheet propertySheet, PropertySheetItem item, 
-         UIComponent component, boolean realTimeChecking)
+         UIComponent component, boolean realTimeChecking,
+         String idSuffix)
    {
       List<String> params = new ArrayList<String>(3);
       
       // add the value parameter
-      String value = "document.getElementById('" +
-            component.getClientId(context) + "').value";
-      params.add(value);
+      StringBuilder value = new StringBuilder("document.getElementById('");
+      value.append(component.getClientId(context));
+      if (idSuffix != null)
+      {
+         value.append(idSuffix);
+      }
+      value.append("')");
+      params.add(value.toString());
       
       // add the validation failed message to show (use the value of the 
       // label component of the given item)
@@ -403,12 +414,14 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
    @SuppressWarnings("unchecked")
    protected void setupMandatoryMarker(FacesContext context, PropertySheetItem item)
    {
-      // create an output text component and set value to "*"
-      UIOutput component = createOutputTextComponent(context, null);
-      component.setValue("*");
+      // create the required field graphic
+      UIGraphic image = (UIGraphic)context.getApplication().
+            createComponent(UIGraphic.COMPONENT_TYPE);
+      image.setUrl("/images/icons/required_field.gif");
+      image.getAttributes().put("style", "padding-right: 4px;");
       
       // add marker as child to the property sheet item
-      item.getChildren().add(component);
+      item.getChildren().add(image);
    }
    
    /**
@@ -449,6 +462,11 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
                setupNumericRangeConstraint(context, propertySheet, property, component,
                      (NumericRangeConstraint)constraint, false);
             }
+            else if (constraint instanceof ListOfValuesConstraint)
+            {
+               // NOTE: This is dealt with at the component creation stage
+               //       as a different component is usually required.
+            }
             else
             {
                logger.warn("Unrecognized constaint object: " + constraint.getClass().getName());
@@ -479,27 +497,32 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
       
       // add the value parameter
       String value = "document.getElementById('" +
-            component.getClientId(context) + "').value";
+            component.getClientId(context) + "')";
       params.add(value);
       
-      // add the min parameter
-      params.add("'" + expression + "'");
+      // add the regular expression parameter
+      try
+      {
+         // encode the expression so it can be unescaped by JavaScript
+         params.add("'" + URLEncoder.encode(expression, "UTF-8") + "'");
+      }
+      catch (UnsupportedEncodingException e)
+      {
+         // just add the expression as is
+         params.add("'" + expression + "'");
+      }
       
-      // add the max parameter
+      // add the requiresMatch parameter
       params.add(Boolean.toString(requiresMatch));
       
-      // add the validation failed message to show
-      String msg = null;
-      if (requiresMatch)
-      {
-         msg = Application.getMessage(context, "validation_regex");
-      }
-      else
-      {
-         msg = Application.getMessage(context, "validation_regex_not_match");
-      }
-      params.add("'" + MessageFormat.format(msg, new Object[] 
-            {property.getResolvedDisplayLabel(), expression}) + "'");
+      // add the validation failed messages
+      String matchMsg = Application.getMessage(context, "validation_regex");
+      params.add("'" + MessageFormat.format(matchMsg, new Object[] 
+            {property.getResolvedDisplayLabel()}) + "'");
+
+      String noMatchMsg = Application.getMessage(context, "validation_regex_not_match");
+      params.add("'" + MessageFormat.format(noMatchMsg, new Object[] 
+            {property.getResolvedDisplayLabel()}) + "'");
       
       // add the validation case to the property sheet
       propertySheet.addClientValidation(new ClientValidation("validateRegex",
@@ -528,7 +551,7 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
       
       // add the value parameter
       String value = "document.getElementById('" +
-            component.getClientId(context) + "').value";
+            component.getClientId(context) + "')";
       params.add(value);
       
       // add the min parameter
@@ -569,7 +592,7 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
       
       // add the value parameter
       String value = "document.getElementById('" +
-            component.getClientId(context) + "').value";
+            component.getClientId(context) + "')";
       params.add(value);
       
       // add the min parameter

@@ -394,7 +394,10 @@ public abstract class BaseAssociationEditor extends UIInput
             out.write("</table>");
             
             // output a hidden field containing the current value
-            out.write("<input type='hidden' name='");
+            out.write("<input type='hidden' id='");
+            out.write(this.getClientId(context));
+            out.write("_current_value");
+            out.write("' name='");
             out.write(this.getClientId(context));
             out.write("_current_value");
             out.write("' value='");

@@ -70,9 +70,25 @@ public class PropertySheetItemRenderer extends BaseRenderer
          UIComponent label = children.get(0);
          UIComponent control = children.get(1);
          
+         out.write("</td>");
+         
+         // encode the mandatory marker component if present
+         if (count == 3)
+         {
+            out.write("<td>");
+            UIComponent mandatoryMarker = children.get(2);
+            Utils.encodeRecursive(context, mandatoryMarker);
+            out.write("</td>");
+         }
+         else
+         {
+            // output an empty column
+            out.write("<td>&nbsp;</td>");
+         }
+         
          // place a style class on the label column if necessary
          String labelStylceClass = (String)component.getParent().getAttributes().get("labelStyleClass");
-         out.write("</td><td");
+         out.write("<td");
          if (labelStylceClass != null)
          {
             outputAttribute(out, labelStylceClass, "class");
@@ -85,14 +101,6 @@ public class PropertySheetItemRenderer extends BaseRenderer
          // encode the control
          out.write("</td><td>");
          Utils.encodeRecursive(context, control);
-         
-         // encode the mandatory marker component if present
-         if (count == 3)
-         {
-            out.write("</td><td>");
-            UIComponent mandatoryMarker = children.get(2);
-            Utils.encodeRecursive(context, mandatoryMarker);
-         }
          
          // NOTE: we'll allow the property sheet's grid renderer close off the last <td>
       }

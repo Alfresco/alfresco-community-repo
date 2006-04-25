@@ -5,27 +5,29 @@
 
 /**
  * Informs the user of the given 'message', if 'showMessage' is true.
+ * If 'showMessage' is true focus is given to the 'control'.
  */
-function informUser(message, showMessage)
+function informUser(control, message, showMessage)
 {
 	if (showMessage)
    {
       alert(message);
+      control.focus();
    }
 }
 
 /**
- * Ensures the 'value' is not null or 0.
+ * Ensures the value of the 'control' is not null or 0.
  *
  * @return true if the mandatory validation passed
  */
-function validateMandatory(value, message, showMessage)
+function validateMandatory(control, message, showMessage)
 {
    var result = true;
    
-   if (value == null || value.length == 0)
+   if (control.value == null || control.value.length == 0)
    {
-      informUser(message, showMessage);
+      informUser(control, message, showMessage);
       result = false;
    }
    
@@ -33,17 +35,17 @@ function validateMandatory(value, message, showMessage)
 }
 
 /**
- * Ensures the 'value' is more than 'min' and less than 'max'.
+ * Ensures the value of the 'control' is more than 'min' and less than 'max'.
  *
  * @return true if the number range validation passed
  */
-function validateNumberRange(value, min, max, message, showMessage)
+function validateNumberRange(control, min, max, message, showMessage)
 {
    var result = true;
    
-   if (value < min || value > max)
+   if (isNaN(control.value) || control.value < min || control.value > max)
    {
-      informUser(message, showMessage);
+      informUser(control, message, showMessage);
       result = false;
    }
    
@@ -51,17 +53,17 @@ function validateNumberRange(value, min, max, message, showMessage)
 }
 
 /**
- * Ensures the 'value' has a string length more than 'min' and less than 'max'.
+ * Ensures the value of the 'control' has a string length more than 'min' and less than 'max'.
  *
  * @return true if the string length validation passed
  */
-function validateStringLength(value, min, max, message, showMessage)
+function validateStringLength(control, min, max, message, showMessage)
 {
    var result = true;
    
-   if (value.length < min || value.length > max)
+   if (control.value.length < min || control.value.length > max)
    {
-      informUser(message, showMessage);
+      informUser(control, message, showMessage);
       result = false;
    }
    
@@ -69,16 +71,31 @@ function validateStringLength(value, min, max, message, showMessage)
 }
 
 /**
- * Ensures the 'value' matches the 'expression' if 'requiresMatch' is true. 
- * Ensures the 'value' does not matche the 'expression' if 'requiresMatch' is false.
+ * Ensures the value of the 'control' matches the 'expression' if 'requiresMatch' is true. 
+ * Ensures the value of the 'control' does not match the 'expression' if 'requiresMatch' is false.
  * 
  * @return true if the regex validation passed
  */
-function validateRegex(value, expression, requiresMatch, message, showMessage)
+function validateRegex(control, expression, requiresMatch, matchMessage, noMatchMessage, showMessage)
 {
    var result = true;
    
-   // TODO: implement the regular expression matching
+   var pattern = new RegExp(unescape(expression));
+   var matches = pattern.test(control.value);
+   
+   if (matches != requiresMatch)
+   {
+      if (requiresMatch)
+      {
+         informUser(control, noMatchMessage, showMessage);
+      }
+      else
+      {
+         informUser(control, matchMessage, showMessage);
+      }
+      
+      result = false;
+   }
    
    return result;
 }

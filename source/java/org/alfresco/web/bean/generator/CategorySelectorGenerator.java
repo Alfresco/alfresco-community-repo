@@ -1,19 +1,12 @@
 package org.alfresco.web.bean.generator;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 
-import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.repo.RepoConstants;
 import org.alfresco.web.ui.repo.component.property.PropertySheetItem;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
-import org.alfresco.web.ui.repo.component.property.UIPropertySheet.ClientValidation;
 
 /**
  * Generates a category selector component.
@@ -42,31 +35,16 @@ public class CategorySelectorGenerator extends BaseComponentGenerator
 
    @Override
    protected void setupMandatoryValidation(FacesContext context, UIPropertySheet propertySheet, 
-         PropertySheetItem item, UIComponent component, boolean realTimeChecking)
+         PropertySheetItem item, UIComponent component, boolean realTimeChecking, String idSuffix)
    {
-      // Override the setup of the mandatory validation as the
-      // [form][element] approach needs to be used to locate the field
-      // and the <comp-id>_selected hidden field needs to be
-      // used. We also enable real time so the page load check disabled
+      // Override the setup of the mandatory validation 
+      // so we can send the _selected id suffix.
+      // We also enable real time so the page load check disabled
       // the ok button if necessary, as the control is used the
       // page will be refreshed and therefore re-check the status.
       
-      List<String> params = new ArrayList<String>(3);
-   
-      // add the value parameter
-      String value = "document.forms['" +
-            Utils.getParentForm(context, component).getId() + "']['" + 
-            component.getClientId(context) + "_selected'].value";
-      params.add(value);
-      
-      // add the validation failed message to show (use the value of the 
-      // label component of the given item)
-      String msg = Application.getMessage(context, "validation_mandatory");
-      params.add("'" + MessageFormat.format(msg, new Object[] {item.getResolvedDisplayLabel()}) + "'");
-      
-      // add the validation case to the property sheet
-      propertySheet.addClientValidation(new ClientValidation("validateMandatory",
-            params, true));
+      super.setupMandatoryValidation(context, propertySheet, item, 
+            component, true, "_selected");
    }
 
    @Override

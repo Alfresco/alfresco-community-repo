@@ -48,7 +48,7 @@ public class MimeTypeSelectorGenerator extends BaseComponentGenerator
    @Override
    protected void setupMandatoryValidation(FacesContext context, 
          UIPropertySheet propertySheet, PropertySheetItem item, 
-         UIComponent component, boolean realTimeChecking)
+         UIComponent component, boolean realTimeChecking, String idSuffix)
    {
       // a mime type selector will always have one value or another 
       // so there is no need to create a mandatory validation rule.

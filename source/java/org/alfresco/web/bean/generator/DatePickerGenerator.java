@@ -57,7 +57,7 @@ public class DatePickerGenerator extends BaseComponentGenerator
    @Override
    protected void setupMandatoryValidation(FacesContext context, 
          UIPropertySheet propertySheet, PropertySheetItem item, 
-         UIComponent component, boolean realTimeChecking)
+         UIComponent component, boolean realTimeChecking, String idSuffix)
    {
       // a date picker will always have a date value so there
       // is no need to create a mandatory validation rule

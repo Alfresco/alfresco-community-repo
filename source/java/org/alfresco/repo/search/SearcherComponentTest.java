@@ -311,6 +311,7 @@ public class SearcherComponentTest extends TestCase
                 namespacePrefixResolver, false);
         assertEquals(1, answer.size());
 
+        System.out.println("Encoded = "+ISO9075.encode(COMPLEX_LOCAL_NAME));
         answer = searcher.selectNodes(rootNodeRef, "//*[like(@test:"
                 + ISO9075.encode(COMPLEX_LOCAL_NAME) + ", 'm__k%', false)]", null, namespacePrefixResolver, false);
         assertEquals(1, answer.size());

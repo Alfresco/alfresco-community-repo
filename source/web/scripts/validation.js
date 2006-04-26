@@ -80,6 +80,7 @@ function validateRegex(control, expression, requiresMatch, matchMessage, noMatch
 {
    var result = true;
    
+   /*
    var pattern = new RegExp(unescape(expression));
    var matches = pattern.test(control.value);
    
@@ -96,6 +97,7 @@ function validateRegex(control, expression, requiresMatch, matchMessage, noMatch
       
       result = false;
    }
+   */
    
    return result;
 }

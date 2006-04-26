@@ -102,7 +102,7 @@ public class NewDiscussionWizard extends NewTopicWizard
 
          // apply the uifacets aspect
          Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(5);
-         uiFacetsProps.put(ContentModel.PROP_ICON, "forum_large");
+         uiFacetsProps.put(ContentModel.PROP_ICON, "forum");
          this.nodeService.addAspect(forumNodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
          
          if (logger.isDebugEnabled())

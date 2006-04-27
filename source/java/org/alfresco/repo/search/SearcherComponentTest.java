@@ -313,6 +313,11 @@ public class SearcherComponentTest extends TestCase
         assertEquals(1, answer.size());
 
         System.out.println("Encoded = "+ISO9075.encode(COMPLEX_LOCAL_NAME));
+        for(int i = 0; i < COMPLEX_LOCAL_NAME.length(); i++)
+        {
+            System.out.println("Char at "+i+" = "+Integer.toHexString(COMPLEX_LOCAL_NAME.charAt(i)));
+        }
+        
         answer = searcher.selectNodes(rootNodeRef, "//*[like(@test:"
                 + ISO9075.encode(COMPLEX_LOCAL_NAME) + ", 'm__k%', false)]", null, namespacePrefixResolver, false);
         assertEquals(1, answer.size());

@@ -128,7 +128,7 @@ public class TemplateServiceImpl implements TemplateService, ApplicationContextA
     }
 
     public void processTemplateString(String engine, String template, Object model, Writer out)
-    throws TemplateException
+        throws TemplateException
     {
         try
         {
@@ -146,15 +146,13 @@ public class TemplateServiceImpl implements TemplateService, ApplicationContextA
         }
     }
     
-    
     public String processTemplateString(String engine, String template, Object model)
-    throws TemplateException
+        throws TemplateException
     {
         Writer out = new StringWriter(1024);
         processTemplateString(engine, template, model, out);
         return out.toString();
     }
-
     
     
     /**

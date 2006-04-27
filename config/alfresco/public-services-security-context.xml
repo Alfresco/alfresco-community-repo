@@ -671,8 +671,16 @@
     <!-- The Template Service -->
     <!-- ==================== -->
    
-    <!-- This service currently has no restrictions.                                     -->
+    <!-- This service currently has no restrictions. -->
     
     <bean id="TemplateService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
+    <!-- ==================== -->
+    <!-- The Script Service -->
+    <!-- ==================== -->
+   
+    <!-- This service currently has no restrictions. -->
+    
+    <bean id="ScriptService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
     
 </beans>

@@ -784,8 +784,7 @@
     </bean>
     
     
-    
-     <!-- Authentication Service -->
+    <!-- Authentication Service -->
     
     <bean id="AuthenticationService" class="org.springframework.aop.framework.ProxyFactoryBean">
     	<property name="proxyInterfaces">
@@ -822,7 +821,9 @@
     	</property>
     </bean>
     
+    
     <!-- Template Service -->
+    
     <bean id="TemplateService" class="org.springframework.aop.framework.ProxyFactoryBean">
     	<property name="proxyInterfaces">
     		<value>org.alfresco.service.cmr.repository.TemplateService</value>
@@ -858,7 +859,47 @@
     	</property>
     </bean>
     
+    
+    <!-- Script Service -->
+    
+    <bean id="ScriptService" class="org.springframework.aop.framework.ProxyFactoryBean">
+    	<property name="proxyInterfaces">
+    		<value>org.alfresco.service.cmr.repository.ScriptService</value>
+    	</property>
+    	<property name="target"><ref bean="scriptService"/></property>
+    	<property name="interceptorNames">
+    		<list>
+    		    <idref local="ScriptService_transaction" />
+             <idref local="exceptionTranslator" />
+             <idref bean="ScriptService_security" />
+    			 <idref local="ScriptService_descriptor" />
+    		</list>
+    	</property>
+    </bean>
+
+    <bean id="ScriptService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="ScriptService_descriptor" parent="AlfrescoServiceDescriptor">
+    	<property name="interface">
+    		<value>org.alfresco.service.cmr.repository.ScriptService</value>
+    	</property>
+    	<property name="description">
+    		<value>ScriptService Service</value>
+    	</property>
+    </bean>
+    
+    
     <!-- File/Folder Service -->
+    
     <bean id="FileFolderService" class="org.springframework.aop.framework.ProxyFactoryBean">
     	<property name="proxyInterfaces">
     		<value>org.alfresco.service.cmr.model.FileFolderService</value>

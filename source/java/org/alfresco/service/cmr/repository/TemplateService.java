@@ -25,8 +25,10 @@ import java.io.Writer;
  * and data model.
  * <p>
  * The service provides a configured list of available template engines. The template file
- * can either be in the repository (passed as NodeRef string) or on the classpath. The data
- * model is specified to the template engine. The FreeMarker template engine is used by default.
+ * can either be in the repository (passed as NodeRef string) or on the classpath. Also a template
+ * can be passed directly as a String using the processTemplateString() methods.
+ * <p>
+ * The data model is specified to the template engine. The FreeMarker template engine is used by default.
  * 
  * @author Kevin Roast
  */
@@ -67,7 +69,7 @@ public interface TemplateService
      * @throws TemplateException
      */
     public String processTemplateString(String engine, String template, Object model)
-    throws TemplateException;
+        throws TemplateException;
     
     /**
      * Process a given template, provided as a string, against the supplied data model and report the
@@ -81,7 +83,7 @@ public interface TemplateService
      * @throws TemplateException
      */
     public void processTemplateString(String engine, String template, Object model, Writer out)
-    throws TemplateException;
+        throws TemplateException;
     
     /**
      * Return a TemplateProcessor instance for the specified engine name.

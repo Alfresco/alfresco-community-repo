@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean id="scriptService" class="org.alfresco.repo.jscript.RhinoScriptService">
+        <property name="nodeService">
+            <ref bean="NodeService"/>
+        </property>
+        <property name="contentService">
+            <ref bean="ContentService"/>
+        </property>
+    </bean>
+</beans>

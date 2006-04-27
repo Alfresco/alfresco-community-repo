@@ -174,6 +174,10 @@
          <from-outcome>saveEditSearch</from-outcome>
          <to-view-id>/jsp/dialog/edit-search.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>manageDeletedItems</from-outcome>
+         <to-view-id>/jsp/trashcan/trash-list.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <!-- Admin Console rules -->
@@ -1151,6 +1155,35 @@
       <navigation-case>
          <from-outcome>topicDeleted</from-outcome>
          <to-view-id>/jsp/forums/forum.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <!-- Manage Deleted Items screen action outcomes -->
+   <navigation-rule>
+      <from-view-id>/jsp/trashcan/*</from-view-id>
+      <navigation-case>
+         <from-outcome>deleteItem</from-outcome>
+         <to-view-id>/jsp/trashcan/delete-item.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>recoverItem</from-outcome>
+         <to-view-id>/jsp/trashcan/recover-item.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>recoverAllItems</from-outcome>
+         <to-view-id>/jsp/trashcan/recover-all.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>deleteAllItems</from-outcome>
+         <to-view-id>/jsp/trashcan/delete-all.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>recoverListedItems</from-outcome>
+         <to-view-id>/jsp/trashcan/recover-listed.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>deleteListedItems</from-outcome>
+         <to-view-id>/jsp/trashcan/delete-listed.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
 

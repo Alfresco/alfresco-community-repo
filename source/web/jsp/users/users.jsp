@@ -144,11 +144,11 @@
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
                               
-                              <div style="padding: 6px;" />
+                              <div style="padding: 6px;"></div>
                               <h:inputText id="search-text" value="#{UsersBean.searchCriteria}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;
                               <h:commandButton id="search-btn" value="#{msg.search}" action="#{UsersBean.search}" disabled="true" />&nbsp;
                               <h:commandButton value="#{msg.show_all}" action="#{UsersBean.showAll}" />
-                              <div style="padding: 6px;" />
+                              <div style="padding: 6px;"></div>
                               
                               <a:richList id="users-list" binding="#{UsersBean.usersRichList}" viewMode="details" pageSize="10"
                                     styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"

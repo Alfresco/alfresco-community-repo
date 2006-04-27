@@ -258,6 +258,7 @@
             <action idref="export_space" />
             <action idref="create_shortcut" />
             <action idref="take_ownership_space" />
+            <action idref="manage_space_users" />
             <action idref="manage_space_rules" />
             <action idref="discuss_node" />
             <action idref="create_forum_node" />

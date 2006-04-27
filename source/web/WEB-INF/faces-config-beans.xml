@@ -1396,6 +1396,23 @@
    
    <managed-bean>
       <description>
+         The bean that holds state for the Manage Deleted Items screen.
+      </description>
+      <managed-bean-name>TrashcanBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.TrashcanBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
          Helper bean that caches the last item added to a multi
          value editor component
       </description>
@@ -1404,8 +1421,8 @@
       <managed-bean-scope>session</managed-bean-scope>
    </managed-bean>
    
-   <!-- ==================== COMPONENT GENERATOR BEANS ==================== -->
    
+   <!-- ==================== COMPONENT GENERATOR BEANS ==================== -->
    <managed-bean>
       <description>
          Bean that generates a text field component

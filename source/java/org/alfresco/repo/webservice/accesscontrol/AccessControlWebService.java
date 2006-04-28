@@ -274,12 +274,7 @@ public class AccessControlWebService extends AbstractWebService implements Acces
                 // Delete the permissions for each ACE
                 for (ACE ace : aces)
                 {
-                    boolean allow = false;
-                    if (ace.getAccessStatus().equals(org.alfresco.repo.webservice.accesscontrol.AccessStatus.acepted) == true)
-                    {
-                        allow = true;
-                    }
-                    this.permissionService.deletePermission(node, ace.getAuthority(), ace.getPermission(), allow);
+                    this.permissionService.deletePermission(node, ace.getAuthority(), ace.getPermission());
                 }
             }
             

@@ -23,6 +23,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -37,6 +38,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
@@ -44,11 +46,12 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.util.StringUtils;
 
 /**
- * Node class specific for use by Template pages that support Bean objects as part of the model.
- * The default template engine FreeMarker can use these objects and they are provided to support it.
- * A single method is completely freemarker specific - getXmlNodeModel()
+ * Node class implementation specific for use by ScriptService as part of the object model.
  * <p>
- * The class exposes Node properties, children as dynamically populated maps and lists.
+ * <p>
+ * The class exposes Node properties, children and assocs as dynamically populated maps and lists.
+ * The various collection classes are mirrored as JavaScript properties. So can be accessed using
+ * standard JavaScript syntax, such as <code>node.children[0].properties.name</code>.
  * <p>
  * Various helper methods are provided to access common and useful node variables such
  * as the content url and type information. 
@@ -113,8 +116,6 @@ public final class Node implements Serializable
         this.id = nodeRef.getId();
         this.services = services;
         this.imageResolver = resolver;
-        
-        this.properties = new ScriptableQNameMap<String, Object>(this.services.getNamespaceService());
     }
     
     /**
@@ -125,12 +126,22 @@ public final class Node implements Serializable
         return this.id;
     }
     
+    public String jsGet_id()
+    {
+        return getId();
+    }
+    
     /**
      * @return Returns the NodeRef this Node object represents
      */
     public NodeRef getNodeRef()
     {
         return this.nodeRef;
+    }
+    
+    public NodeRef jsGet_nodeRef()
+    {
+        return getNodeRef();
     }
     
     /**
@@ -144,6 +155,11 @@ public final class Node implements Serializable
         }
         
         return type;
+    }
+    
+    public QName jsGet_type()
+    {
+        return getType();
     }
     
     /**
@@ -174,6 +190,16 @@ public final class Node implements Serializable
         return this.name;
     }
     
+    public String jsGet_name()
+    {
+        return getName();
+    }
+    
+    public void jsSet_name(String name)
+    {
+        this.getProperties().put(ContentModel.PROP_NAME.toString(), name);
+    }
+    
     /**
      * @return The children of this Node as Node wrappers
      */
@@ -194,21 +220,54 @@ public final class Node implements Serializable
         return this.children;
     }
     
+    public Node[] jsGet_children()
+    {
+        return getChildren();
+    }
+    
     /**
-     * @return A map capable of returning the Node at the specified Path as a child of this node.
+     * @return Returns the Node at the specified 'cm:name' based Path walking the children of this Node.
+     *         So a valid call might be <code>mynode.childByNamePath("/QA/Testing/Docs");</code>
      */
-    //public Map getChildByNamePath()
+    public Node childByNamePath(String path)
+    {
+        // convert the name based path to a valid XPath query 
+        StringBuilder xpath = new StringBuilder(path.length() << 1);
+        for (StringTokenizer t = new StringTokenizer(path, "/"); t.hasMoreTokens(); /**/)
+        {
+            if (xpath.length() != 0)
+            {
+                xpath.append('/');
+            }
+            xpath.append("*[@cm:name='")
+                 .append(t.nextToken())   // TODO: use QueryParameterDefinition see FileFolderService.search()
+                 .append("']");
+        }
+        
+        Node[] nodes = getChildrenByXPath(xpath.toString(), true);
+        
+        return (nodes.length != 0) ? nodes[0] : null;
+    }
+    
+    // TODO: find out why this doesn't work - the function defs do not seem to get found
+    //public Node jsFunction_childByNamePath(String path)
     //{
-    //    return new NamePathResultsMap(this, this.services);
+    //    return getChildByNamePath(path);
     //}
     
     /**
-     * @return A map capable of returning a List of Node objects from an XPath query
-     *         as children of this node.
+     * @return Returns the Nodes at the specified XPath walking the children of this Node.
+     *         So a valid call might be <code>mynode.childrenByXPath("/*[@cm:name='Testing']/*");</code>
      */
-    //public Map getChildrenByXPath()
+    public Node[] childrenByXPath(String xpath)
+    {
+        return getChildrenByXPath(xpath, false);
+    }
+    
+    // TODO: find out why this doesn't work - the function defs do not seem to get found
+    //public Node[] jsFunction_childrenByXPath(String xpath)
     //{
-    //    return new XPathResultsMap(this, this.services);
+    //    return childrenByXPath(xpath);
     //}
     
     /**
@@ -242,8 +301,10 @@ public final class Node implements Serializable
     {
         if (this.assocs == null)
         {
-            List<AssociationRef> refs = this.services.getNodeService().getTargetAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
+            // this Map implements the Scriptable interface for native JS syntax property access
             this.assocs = new ScriptableQNameMap<String, Node[]>(this.services.getNamespaceService());
+            
+            List<AssociationRef> refs = this.services.getNodeService().getTargetAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
             for (AssociationRef ref : refs)
             {
                 String qname = ref.getTypeQName().toString();
@@ -268,6 +329,11 @@ public final class Node implements Serializable
         return this.assocs;
     }
     
+    public Map<String, Node[]> jsGet_assocs()
+    {
+        return getAssocs();
+    }
+    
     /**
      * Return all the properties known about this node.
      * 
@@ -281,8 +347,10 @@ public final class Node implements Serializable
     {
         if (this.propsRetrieved == false)
         {
-            Map<QName, Serializable> props = this.services.getNodeService().getProperties(this.nodeRef);
+            // this Map implements the Scriptable interface for native JS syntax property access
+            this.properties = new ScriptableQNameMap<String, Object>(this.services.getNamespaceService());
             
+            Map<QName, Serializable> props = this.services.getNodeService().getProperties(this.nodeRef);
             for (QName qname : props.keySet())
             {
                 Serializable propValue = props.get(qname);
@@ -307,6 +375,11 @@ public final class Node implements Serializable
         return this.properties;
     }
     
+    public Map<String, Object> jsGet_properties()
+    {
+        return getProperties();
+    }
+    
     /**
      * @return true if this Node is a container (i.e. a folder)
      */
@@ -320,6 +393,11 @@ public final class Node implements Serializable
         }
         
         return isContainer.booleanValue();
+    }
+    
+    public boolean jsGet_isContainer()
+    {
+        return isContainer();
     }
     
     /**
@@ -336,6 +414,11 @@ public final class Node implements Serializable
         return isDocument.booleanValue();
     }
     
+    public boolean jsGet_isDocument()
+    {
+        return isDocument();
+    }
+    
     /**
      * @return The list of aspects applied to this node
      */
@@ -347,6 +430,11 @@ public final class Node implements Serializable
         }
         
         return this.aspects;
+    }
+    
+    public QName[] jsGet_aspects()
+    {
+        return getAspects().toArray(new QName[getAspects().size()]);
     }
     
     /**
@@ -400,6 +488,11 @@ public final class Node implements Serializable
         return displayPath;
     }
     
+    public String jsGet_displayPath()
+    {
+        return getDisplayPath();
+    }
+    
     /**
      * @return the small icon image for this node
      */
@@ -420,6 +513,11 @@ public final class Node implements Serializable
         {
             return "/images/filetypes/_default.gif";
         }
+    }
+    
+    public String jsGet_icon16()
+    {
+        return getIcon16();
     }
     
     /**
@@ -452,6 +550,11 @@ public final class Node implements Serializable
         }
     }
     
+    public String jsGet_icon32()
+    {
+        return getIcon32();
+    }
+    
     /**
      * @return true if the node is currently locked
      */
@@ -469,6 +572,11 @@ public final class Node implements Serializable
         }
         
         return locked;
+    }
+    
+    public boolean jsGet_isLocked()
+    {
+        return isLocked();
     }
     
     /**
@@ -489,6 +597,11 @@ public final class Node implements Serializable
         return parent;
     }
     
+    public Node jsGet_parent()
+    {
+        return getParent();
+    }
+    
     /**
      * 
      * @return the primary parent association so we can get at the association QName and the association type QName.
@@ -502,6 +615,11 @@ public final class Node implements Serializable
         return primaryParentAssoc;
     }
     
+    public ChildAssociationRef jsGet_primaryParentAssoc()
+    {
+        return getPrimaryParentAssoc();
+    }
+    
     /**
      * @return the content String for this node from the default content property
      *         (@see ContentModel.PROP_CONTENT)
@@ -511,6 +629,11 @@ public final class Node implements Serializable
         ContentService contentService = this.services.getContentService();
         ContentReader reader = contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
         return (reader != null && reader.exists()) ? reader.getContentString() : "";
+    }
+    
+    public String jsGet_content()
+    {
+        return getContent();
     }
     
     /**
@@ -545,6 +668,11 @@ public final class Node implements Serializable
         }
     }
     
+    public String jsGet_url()
+    {
+        return getUrl();
+    }
+    
     /**
      * @return The mimetype encoding for content attached to the node from the default content property
      *         (@see ContentModel.PROP_CONTENT)
@@ -563,6 +691,11 @@ public final class Node implements Serializable
         return mimetype;
     }
     
+    public String jsGet_mimetype()
+    {
+        return getMimetype();
+    }
+    
     /**
      * @return The size in bytes of the content attached to the node from the default content property
      *         (@see ContentModel.PROP_CONTENT)
@@ -579,6 +712,11 @@ public final class Node implements Serializable
         }
         
         return size != null ? size.longValue() : 0L;
+    }
+    
+    public long jsGet_size()
+    {
+        return getSize();
     }
     
     /**
@@ -604,6 +742,63 @@ public final class Node implements Serializable
         {
             return "Node no longer exists: " + nodeRef;
         }
+    }
+    
+    /**
+     * Return a list or a single Node from executing an xpath against the parent Node.
+     * 
+     * @param xpath        XPath to execute
+     * @param firstOnly    True to return the first result only
+     * 
+     * @return Node[] can be empty but never null
+     */
+    private Node[] getChildrenByXPath(String xpath, boolean firstOnly)
+    {
+        Node[] result = null;
+        
+        if (xpath.length() != 0)
+        {
+            if (logger.isDebugEnabled())
+                logger.debug("Executing xpath: " + xpath);
+            
+            NodeRef contextRef;
+            if (getParent() != null)
+            {
+                contextRef = getParent().getNodeRef();
+            }
+            else
+            {
+                contextRef = this.services.getNodeService().getRootNode(nodeRef.getStoreRef());
+            }
+            List<NodeRef> nodes = this.services.getSearchService().selectNodes(
+                    contextRef,
+                    xpath,
+                    null,
+                    this.services.getNamespaceService(),
+                    false);
+            
+            // see if we only want the first result
+            if (firstOnly == true)
+            {
+                if (nodes.size() != 0)
+                {
+                    result = new Node[1];
+                    result[0] = new Node(nodes.get(0), this.services, this.imageResolver);
+                }
+            }
+            // or all the results
+            else
+            {
+                result = new Node[nodes.size()];
+                for (int i=0; i<nodes.size(); i++)
+                {
+                    NodeRef ref = nodes.get(i);
+                    result[i] = new Node(ref, this.services, this.imageResolver);
+                }
+            }
+        }
+        
+        return result != null ? result : new Node[0];
     }
     
     

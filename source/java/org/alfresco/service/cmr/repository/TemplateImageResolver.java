@@ -18,8 +18,8 @@ package org.alfresco.service.cmr.repository;
 
 /**
  * Interface contract for the conversion of file name to a fully qualified icon image path for use by
- * the templating engine.
- * 
+ * templating and scripting engines executing within the repository context.
+ * <p>
  * Generally this contract will be implemented by classes that have access to say the webserver
  * context which can be used to generate an icon image for a specific filename.
  * 

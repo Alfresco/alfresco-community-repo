@@ -19,6 +19,8 @@ package org.alfresco.service.cmr.repository;
 import java.io.Writer;
 import java.util.Map;
 
+import org.alfresco.service.namespace.QName;
+
 /**
  * Script Service.
  * <p>
@@ -53,13 +55,15 @@ public interface ScriptService
      * Process a script against the supplied data model.
      * 
      * @param scriptRef    Script NodeRef location
+     * @param contentProp  QName of the property on the node that contains the content, null can
+     *                     be passed to indicate the default property of 'cm:content'
      * @param model        Object model to process script against
      * 
      * @return output of the script (may be null or any valid wrapped JavaScript object)
      * 
      * @throws ScriptException
      */
-    public Object executeScript(NodeRef scriptRef, Map<String, Object> model)
+    public Object executeScript(NodeRef scriptRef, QName contentProp, Map<String, Object> model)
         throws ScriptException;
     
     /**

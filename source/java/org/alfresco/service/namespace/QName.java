@@ -450,27 +450,30 @@ public final class QName implements QNamePattern, Serializable, Cloneable
             throw new IllegalArgumentException("str parameter is mandatory");
         }
 
-        if (str.charAt(0) != NAMESPACE_BEGIN && str.indexOf(NAMESPACE_PREFIX) != -1)
+        if (str.charAt(0) != NAMESPACE_BEGIN)
         {
-            // get the prefix and resolve to the uri
-            int end = str.indexOf(NAMESPACE_PREFIX);
-            String prefix = str.substring(0, end);
-            String localName = str.substring(end + 1);
-            String uri = prefixResolver.getNamespaceURI(prefix);
-
-            if (uri != null)
+            if (str.indexOf(NAMESPACE_PREFIX) != -1)
             {
-                result = new StringBuilder(64).append(NAMESPACE_BEGIN).append(uri).append(NAMESPACE_END).append(
-                        localName).toString();
+                // get the prefix and resolve to the uri
+                int end = str.indexOf(NAMESPACE_PREFIX);
+                String prefix = str.substring(0, end);
+                String localName = str.substring(end + 1);
+                String uri = prefixResolver.getNamespaceURI(prefix);
+    
+                if (uri != null)
+                {
+                    result = new StringBuilder(64).append(NAMESPACE_BEGIN).append(uri).append(NAMESPACE_END)
+                                                  .append(localName).toString();
+                }
+            }
+            else
+            {
+                // there's no namespace so prefix with Alfresco's Content Model
+                result = new StringBuilder(64).append(NAMESPACE_BEGIN).append(NamespaceService.CONTENT_MODEL_1_0_URI)
+                                              .append(NAMESPACE_END).append(str).toString();
             }
         }
-        else if (str.charAt(0) != NAMESPACE_BEGIN)
-        {
-            // there's no namespace so prefix with Alfresco's Content Model
-            result = new StringBuilder(64).append(NAMESPACE_BEGIN).append(NamespaceService.CONTENT_MODEL_1_0_URI)
-                    .append(NAMESPACE_END).append(str).toString();
-        }
-
+        
         return result;
     }
 }

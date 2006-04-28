@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
@@ -71,7 +72,8 @@ public class RhinoScriptService implements ScriptService
     /**
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(java.lang.String, java.util.Map)
      */
-    public Object executeScript(String scriptClasspath, Map<String, Object> model) throws ScriptException
+    public Object executeScript(String scriptClasspath, Map<String, Object> model)
+        throws ScriptException
     {
         if (scriptClasspath == null)
         {
@@ -104,9 +106,10 @@ public class RhinoScriptService implements ScriptService
     }
 
     /**
-     * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(org.alfresco.service.cmr.repository.NodeRef, java.util.Map)
+     * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.util.Map)
      */
-    public Object executeScript(NodeRef scriptRef, Map<String, Object> model) throws ScriptException
+    public Object executeScript(NodeRef scriptRef, QName contentProp, Map<String, Object> model)
+        throws ScriptException
     {
         if (scriptRef == null)
         {
@@ -120,7 +123,12 @@ public class RhinoScriptService implements ScriptService
             {
                 throw new AlfrescoRuntimeException("Script Node does not exist: " + scriptRef);
             }
-            ContentReader cr = this.contentService.getReader(scriptRef, ContentModel.PROP_CONTENT);
+            
+            if (contentProp == null)
+            {
+                contentProp = ContentModel.PROP_CONTENT;
+            }
+            ContentReader cr = this.contentService.getReader(scriptRef, contentProp);
             if (cr == null || cr.exists() == false)
             {
                 throw new AlfrescoRuntimeException("Script Node content not found: " + scriptRef);
@@ -145,7 +153,8 @@ public class RhinoScriptService implements ScriptService
     /**
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScriptString(java.lang.String, java.util.Map)
      */
-    public Object executeScriptString(String script, Map<String, Object> model) throws ScriptException
+    public Object executeScriptString(String script, Map<String, Object> model)
+        throws ScriptException
     {
         if (script == null || script.length() == 0)
         {
@@ -193,7 +202,8 @@ public class RhinoScriptService implements ScriptService
             {
                 for (String key : model.keySet())
                 {
-                    ScriptableObject.putProperty(scope, key, model.get(key));
+                    Object jsObject = Context.javaToJS(model.get(key), scope);
+                    ScriptableObject.putProperty(scope, key, jsObject);
                 }
             }
             

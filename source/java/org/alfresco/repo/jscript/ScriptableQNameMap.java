@@ -40,14 +40,21 @@ public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
     {
         return "ScriptableQNameMap";
     }
-
+    
     /**
      * @see org.mozilla.javascript.Scriptable#get(java.lang.String, org.mozilla.javascript.Scriptable)
      */
     public Object get(String name, Scriptable start)
     {
         // get the property from the underlying QName map
-        return get(name);
+        if ("length".equals(name))
+        {
+            return this.size();
+        }
+        else
+        {
+            return get(name);
+        }
     }
 
     /**

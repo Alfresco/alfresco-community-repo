@@ -16,7 +16,6 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
-import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.StoreKey;
 import org.alfresco.repo.domain.VersionCount;
 
@@ -50,11 +49,11 @@ public class VersionCountImpl implements VersionCount
         {
             return true;
         }
-        else if (!(obj instanceof Node))
+        else if (!(obj instanceof VersionCount))
         {
             return false;
         }
-        Node that = (Node) obj;
+        VersionCount that = (VersionCount) obj;
         return (this.getKey().equals(that.getKey()));
     }
     

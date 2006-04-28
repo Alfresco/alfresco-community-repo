@@ -112,6 +112,7 @@ public class NodeAssocImpl implements NodeAssoc
     /**
      * For Hibernate use
      */
+    @SuppressWarnings("unused")
     private void setId(long id)
     {
         this.id = id;

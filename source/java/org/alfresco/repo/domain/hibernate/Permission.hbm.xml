@@ -1,0 +1,200 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    '-//Hibernate/Hibernate Mapping DTD 3.0//EN' 
+    'http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd'>
+
+<hibernate-mapping>
+    <class 
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"
+        proxy="org.alfresco.repo.domain.DbAccessControlList"
+        table="access_control_list"
+        dynamic-insert="false"
+        dynamic-update="false"
+        select-before-update="false" 
+        lazy="true"
+        optimistic-lock="version" >
+
+        <id name="id" column="id" type="long" >
+           <generator class="native" />
+        </id>
+
+        <many-to-one
+               name="node"
+               class="org.alfresco.repo.domain.hibernate.NodeImpl"
+               unique="true"
+               not-null="true">
+            <column name="node_id" />
+        </many-to-one>
+
+        <property name="inherits" column="inherits" type="boolean" not-null="true" />
+        
+    </class>
+    
+    <class 
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl"
+        proxy="org.alfresco.repo.domain.DbAccessControlEntry"
+        table="access_control_entry"
+        dynamic-insert="false"
+        dynamic-update="false"
+        select-before-update="false"
+        lazy="true"
+        optimistic-lock="version" >
+        
+        <id name="id" column="id" type="long" >
+            <generator class="native" />
+        </id>
+
+        <natural-id mutable="true" >
+           <many-to-one 
+               name="accessControlList" 
+               class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"
+               column="acl_id"
+               lazy="no-proxy"
+               fetch="select"
+               optimistic-lock="true"
+               not-null="true" /> 
+           <many-to-one 
+               name="permission" 
+               class="org.alfresco.repo.domain.hibernate.DbPermissionImpl"
+               column="permission_id"
+               lazy="no-proxy"
+               fetch="select"
+               optimistic-lock="true"
+               not-null="true" /> 
+           <many-to-one 
+               name="authority" 
+               class="org.alfresco.repo.domain.hibernate.DbAuthorityImpl"
+               column="authority_id"
+               lazy="no-proxy"
+               fetch="select"
+               optimistic-lock="true"
+               not-null="true" /> 
+        </natural-id>
+        
+        <property name="allowed" column="allowed" type="boolean" not-null="true" />
+
+    </class>
+    
+    <class
+        name="org.alfresco.repo.domain.hibernate.DbPermissionImpl"
+        proxy="org.alfresco.repo.domain.DbPermission"
+        table="permission"
+        dynamic-insert="false"
+        dynamic-update="false"
+        select-before-update="false"
+        lazy="true"
+        optimistic-lock="version" >
+        
+        <id name="id" column="id" type="long" >
+            <generator class="native" />
+        </id>
+
+        <natural-id mutable="true">
+           <property name="typeQname" column="type_qname" type="QName" length="200" />
+           <property name="name" type="string" length="100" column="name" />
+        </natural-id>
+
+    </class>
+    
+    <class
+        name="org.alfresco.repo.domain.hibernate.DbAuthorityImpl"
+        proxy="org.alfresco.repo.domain.DbAuthority"
+        table="authority"
+        dynamic-insert="false"
+        dynamic-update="false"
+        select-before-update="false"
+        lazy="true"
+        optimistic-lock="version" >
+        
+        <id name="recipient" column="recipient" type="string" length="100" />
+
+        <set
+            name="externalKeys"
+            table="auth_ext_keys"
+            lazy="true"
+            sort="unsorted"
+            fetch="select"
+            optimistic-lock="true" >
+            <key >
+               <column name="id" />
+            </key>
+            <element column="externalKey" length="100" not-null="true" type="string" />
+        </set>
+    </class>
+
+   <query name="permission.GetPermission" cacheable="true">
+      select distinct
+         permission
+      from
+         org.alfresco.repo.domain.hibernate.DbPermissionImpl as permission
+      where
+         permission.typeQname = :permissionTypeQName and
+         permission.name = :permissionName
+   </query>
+   
+   <query name="permission.GetAccessControlEntriesForAccessControlList" cacheable="true" >
+      select
+         ace
+      from
+         org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl as ace
+      where
+         ace.accessControlList.id = :accessControlListId
+   </query>
+   
+   <query name="permission.GetAccessControlEntriesForPermission">
+      select
+         ace
+      from
+         org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl as ace
+      where
+         ace.permission.id = :permissionId
+   </query>
+   
+   <query name="permission.GetAccessControlEntriesForAuthority">
+      select
+         ace
+      from
+         org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl as ace
+      where
+         ace.authority.recipient = :authorityRecipient
+   </query>
+   
+   <query name="permission.GetAccessControlEntriesForAuthorityAndNode">
+      select
+         ace
+      from
+         org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl as ace
+      where
+         ace.authority.recipient = :authorityRecipient and
+         ace.accessControlList.node.store.key.protocol = :storeProtocol and
+         ace.accessControlList.node.store.key.identifier = :storeIdentifier and
+         ace.accessControlList.node.uuid = :nodeUuid 
+   </query>
+   
+   <query name="permission.GetAccessControlEntryForAll">
+      select
+         ace
+      from
+         org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl as ace
+      where
+         ace.permission.typeQname = :permissionTypeQName and
+         ace.permission.name = :permissionName and
+         ace.authority.recipient = :authorityRecipient and
+         ace.accessControlList.node.store.key.protocol = :storeProtocol and
+         ace.accessControlList.node.store.key.identifier = :storeIdentifier and
+         ace.accessControlList.node.uuid = :nodeUuid 
+   </query>
+   
+   <query name="permission.GetAccessControlListForNode" cacheable="true" >
+      select
+         acl
+      from
+         org.alfresco.repo.domain.hibernate.DbAccessControlListImpl as acl
+      where
+         acl.node.store.key.protocol = :storeProtocol and
+         acl.node.store.key.identifier = :storeIdentifier and
+         acl.node.uuid = :nodeUuid 
+   </query>
+    
+</hibernate-mapping>

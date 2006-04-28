@@ -62,7 +62,7 @@ public class SpacesRootPermissionPatch extends AbstractPatch
     protected String applyInternal() throws Exception
     {
         NodeRef rootNodeRef = nodeService.getRootNode(spacesBootstrap.getStoreRef());
-        permissionService.deletePermission(rootNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.CONSUMER, true);
+        permissionService.deletePermission(rootNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.CONSUMER);
         permissionService.setPermission(rootNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
 
         return I18NUtil.getMessage(MSG_SUCCESS);

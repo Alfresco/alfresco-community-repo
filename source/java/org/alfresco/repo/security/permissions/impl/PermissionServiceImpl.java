@@ -73,7 +73,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     /*
      * Access to permissions
      */
-    private PermissionsDAO permissionsDAO;
+    private PermissionsDaoComponent permissionsDaoComponent;
 
     /*
      * Access to the node service
@@ -127,9 +127,9 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         this.nodeService = nodeService;
     }
 
-    public void setPermissionsDAO(PermissionsDAO permissionsDAO)
+    public void setPermissionsDaoComponent(PermissionsDaoComponent permissionsDaoComponent)
     {
-        this.permissionsDAO = permissionsDAO;
+        this.permissionsDaoComponent = permissionsDaoComponent;
     }
 
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
@@ -171,7 +171,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             throw new IllegalArgumentException("Property 'nodeService' has not been set");
         }
-        if (permissionsDAO == null)
+        if (permissionsDaoComponent == null)
         {
             throw new IllegalArgumentException("Property 'permissionsDAO' has not been set");
         }
@@ -332,7 +332,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     public NodePermissionEntry getSetPermissions(NodeRef nodeRef)
     {
-        return permissionsDAO.getPermissions(nodeRef);
+        return permissionsDaoComponent.getPermissions(nodeRef);
     }
 
     public AccessStatus hasPermission(NodeRef nodeRef, PermissionReference perm)
@@ -469,55 +469,60 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     public void deletePermissions(NodeRef nodeRef)
     {
-        permissionsDAO.deletePermissions(nodeRef);
+        permissionsDaoComponent.deletePermissions(nodeRef);
         accessCache.clear();
     }
 
     public void deletePermissions(NodePermissionEntry nodePermissionEntry)
     {
-        permissionsDAO.deletePermissions(nodePermissionEntry);
+        permissionsDaoComponent.deletePermissions(nodePermissionEntry.getNodeRef());
         accessCache.clear();
     }
 
+    /**
+     * @see #deletePermission(NodeRef, String, PermissionReference)
+     */
     public void deletePermission(PermissionEntry permissionEntry)
     {
-        permissionsDAO.deletePermissions(permissionEntry);
-        accessCache.clear();
+        NodeRef nodeRef = permissionEntry.getNodeRef();
+        String authority = permissionEntry.getAuthority();
+        PermissionReference permission = permissionEntry.getPermissionReference();
+        deletePermission(nodeRef, authority, permission);
     }
 
-    public void deletePermission(NodeRef nodeRef, String authority, PermissionReference perm, boolean allow)
+    public void deletePermission(NodeRef nodeRef, String authority, PermissionReference perm)
     {
-        permissionsDAO.deletePermissions(nodeRef, authority, perm, allow);
+        permissionsDaoComponent.deletePermission(nodeRef, authority, perm);
         accessCache.clear();
     }
 
     public void clearPermission(NodeRef nodeRef, String authority)
     {
-        permissionsDAO.clearPermission(nodeRef, authority);
+        permissionsDaoComponent.deletePermissions(nodeRef, authority);
         accessCache.clear();
     }
 
     public void setPermission(NodeRef nodeRef, String authority, PermissionReference perm, boolean allow)
     {
-        permissionsDAO.setPermission(nodeRef, authority, perm, allow);
+        permissionsDaoComponent.setPermission(nodeRef, authority, perm, allow);
         accessCache.clear();
     }
 
     public void setPermission(PermissionEntry permissionEntry)
     {
-        permissionsDAO.setPermission(permissionEntry);
+        permissionsDaoComponent.setPermission(permissionEntry);
         accessCache.clear();
     }
 
     public void setPermission(NodePermissionEntry nodePermissionEntry)
     {
-        permissionsDAO.setPermission(nodePermissionEntry);
+        permissionsDaoComponent.setPermission(nodePermissionEntry);
         accessCache.clear();
     }
 
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions)
     {
-        permissionsDAO.setInheritParentPermissions(nodeRef, inheritParentPermissions);
+        permissionsDaoComponent.setInheritParentPermissions(nodeRef, inheritParentPermissions);
         accessCache.clear();
     }
     
@@ -526,7 +531,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
      */
     public boolean getInheritParentPermissions(NodeRef nodeRef)
     {
-        return permissionsDAO.getInheritParentPermissions(nodeRef);
+        return permissionsDaoComponent.getInheritParentPermissions(nodeRef);
     }
 
     
@@ -567,9 +572,9 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         return modelDAO.getExposedPermissions(nodeRef);
     }
 
-    public void deletePermission(NodeRef nodeRef, String authority, String perm, boolean allow)
+    public void deletePermission(NodeRef nodeRef, String authority, String perm)
     {
-        deletePermission(nodeRef, authority, getPermissionReference(perm), allow);
+        deletePermission(nodeRef, authority, getPermissionReference(perm));
     }
 
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
@@ -584,7 +589,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     public void deletePermissions(String recipient)
     {
-        permissionsDAO.deleteAllPermissionsForAuthority(recipient);
+        permissionsDaoComponent.deletePermissions(recipient);
         accessCache.clear();
     }
     
@@ -748,7 +753,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
                 if (car.getParentRef() != null)
                 {
 
-                    NodePermissionEntry nodePermissions = permissionsDAO.getPermissions(car.getChildRef());
+                    NodePermissionEntry nodePermissions = permissionsDaoComponent.getPermissions(car.getChildRef());
                     if ((nodePermissions == null) || (nodePermissions.inheritPermissions()))
                     {
 
@@ -848,7 +853,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
                 // Build the next element of the evaluation chain
                 if (car.getParentRef() != null)
                 {
-                    NodePermissionEntry nodePermissions = permissionsDAO.getPermissions(car.getChildRef());
+                    NodePermissionEntry nodePermissions = permissionsDaoComponent.getPermissions(car.getChildRef());
                     if ((nodePermissions == null) || (nodePermissions.inheritPermissions()))
                     {
                         car = nodeService.getPrimaryParent(car.getParentRef());
@@ -900,7 +905,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             Set<Pair<String, PermissionReference>> deniedSet = new HashSet<Pair<String, PermissionReference>>();
 
             // Loop over all denied permissions
-            NodePermissionEntry nodeEntry = permissionsDAO.getPermissions(nodeRef);
+            NodePermissionEntry nodeEntry = permissionsDaoComponent.getPermissions(nodeRef);
             if (nodeEntry != null)
             {
                 for (PermissionEntry pe : nodeEntry.getPermissionEntries())
@@ -950,7 +955,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
          */
         boolean checkRequired(Set<String> authorisations, NodeRef nodeRef, Set<Pair<String, PermissionReference>> denied)
         {
-            NodePermissionEntry nodeEntry = permissionsDAO.getPermissions(nodeRef);
+            NodePermissionEntry nodeEntry = permissionsDaoComponent.getPermissions(nodeRef);
 
             // No permissions set - short cut to deny
             if (nodeEntry == null)

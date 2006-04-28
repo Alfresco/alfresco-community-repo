@@ -25,6 +25,7 @@ import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -63,24 +64,40 @@ public interface NodeDaoService
      * @return Returns a store with the given values or null if one doesn't exist
      */
     public Store getStore(String protocol, String identifier);
+    
+    /**
+     * Gets the node's status.  If the node <i>never</i> existed, then
+     * <code>null</code> is returned.
+     * 
+     * @param nodeRef the node reference
+     * @return Returns the node status if the node exists or once existed, otherwise
+     *      returns <code>null</code>.
+     */
+    public NodeStatus getNodeStatus(NodeRef nodeRef);
+    
+    /**
+     * Sets the current transaction ID on the node status.  Note that the node
+     * may not exist, but the status will.
+     * 
+     * @param nodeRef the node reference
+     */
+    public void recordChangeId(NodeRef nodeRef);
 
     /**
      * @param store the store to which the node must belong
-     * @param id the node store-unique identifier
+     * @param uuid the node store-unique identifier
      * @param nodeTypeQName the type of the node
      * @return Returns a new node of the given type and attached to the store
      * @throws InvalidTypeException if the node type is invalid or if the node type
      *      is not a valid real node
      */
-    public Node newNode(Store store, String id, QName nodeTypeQName) throws InvalidTypeException;
+    public Node newNode(Store store, String uuid, QName nodeTypeQName) throws InvalidTypeException;
     
     /**
-     * @param protocol the store protocol
-     * @param identifier the store identifier for the given protocol
-     * @param id the store-specific node identifier
+     * @param nodeRef the node reference
      * @return Returns the <b>node</b> entity
      */
-    public Node getNode(String protocol, String identifier, String id);
+    public Node getNode(NodeRef nodeRef);
     
     /**
      * Deletes the node instance, taking care of any cascades that are required over
@@ -164,18 +181,6 @@ public interface NodeDaoService
      * @param assoc the node association to remove
      */
     public void deleteNodeAssoc(NodeAssoc assoc);
-    
-    /**
-     * Gets the node's status.  If the node <i>never</i> existed, then
-     * <code>null</code> is returned.
-     * 
-     * @param protocol the store protocol
-     * @param identifier the store identifier for the given protocol
-     * @param id the store-specific node status identifier
-     * @return Returns the node status if the node exists or once existed, otherwise
-     *      returns <code>null</code>.
-     */
-    public NodeStatus getNodeStatus(String protocol, String identifier, String id);
     
     /**
      * Fetch all content data strings.  These are all string values that begin

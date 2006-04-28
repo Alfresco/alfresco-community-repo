@@ -31,6 +31,15 @@
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         />
+    <!-- approx XXX MB memory required -->
+    <cache 
+        name="org.alfresco.repo.domain.hibernate.QNameEntityImpl" 
+        maxElementsInMemory="100"
+        eternal="true" 
+        timeToIdleSeconds="0" 
+        timeToLiveSeconds="0" 
+        overflowToDisk="false" 
+        />
     <!-- approx 20MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeStatusImpl" 
@@ -142,36 +151,30 @@
     <!-- Permission related caches -->
     <!-- approx 40MB memory required -->
     <cache 
-        name="org.alfresco.repo.security.permissions.impl.hibernate.RecipientImpl" 
+        name="org.alfresco.repo.domain.hibernate.DbAuthorityImpl" 
         maxElementsInMemory="10000"        
         eternal="true" 
         overflowToDisk="false"/>
     <!-- approx 2MB memory required -->
     <cache 
-        name="org.alfresco.repo.security.permissions.impl.hibernate.PermissionReferenceImpl" 
+        name="org.alfresco.repo.domain.hibernate.DbPermissionImpl" 
         maxElementsInMemory="500"          
         eternal="true" 
         overflowToDisk="false"/>
     <!-- approx 35MB memory required -->
     <cache 
-        name="org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntryImpl" 
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl" 
         maxElementsInMemory="25000"        
         eternal="true" 
         overflowToDisk="false"/>
     <!-- approx 40MB memory required -->
     <cache 
-        name="org.alfresco.repo.security.permissions.impl.hibernate.NodePermissionEntryImpl" 
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl" 
         maxElementsInMemory="10000"        
         eternal="true" 
         overflowToDisk="false"/>
-    <!-- approx 40MB memory required -->
     <cache 
-        name="org.alfresco.repo.security.permissions.impl.hibernate.NodePermissionEntryImpl.permissionEntries" 
-        maxElementsInMemory="10000"
-        eternal="true" 
-        overflowToDisk="false"/>
-    <cache 
-        name="org.alfresco.repo.security.permissions.impl.hibernate.RecipientImpl.externalKeys" 
+        name="org.alfresco.repo.domain.hibernate.DbAuthorityImpl.externalKeys" 
         maxElementsInMemory="5000"
         eternal="true" 
         overflowToDisk="false"/>

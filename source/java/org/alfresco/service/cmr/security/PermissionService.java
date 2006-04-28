@@ -197,14 +197,13 @@ public interface PermissionService
     public void clearPermission(NodeRef nodeRef, String authority);
     
     /**
-     * Find and delete a permission by node, authentication and permission
-     * definition.
+     * Find and delete a access control entry by node, authentication and permission.
      * 
-     * @param nodeRef
-     * @param authority
-     * @param perm
+     * @param nodeRef the node that the entry applies to
+     * @param authority the authority recipient
+     * @param permission the entry permission
      */
-    public void deletePermission(NodeRef nodeRef, String authority, String perm, boolean allow);
+    public void deletePermission(NodeRef nodeRef, String authority, String permission);
 
     /**
      * Set a specific permission on a node.

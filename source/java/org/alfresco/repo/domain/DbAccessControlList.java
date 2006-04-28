@@ -14,40 +14,21 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.repo.security.permissions.impl.hibernate;
+package org.alfresco.repo.domain;
 
-import java.util.Set;
-
-import org.alfresco.repo.domain.NodeKey;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * The interface to support persistence of node permission entries in hibernate
+ * The interface to support persistence of node access control entries in hibernate
  * 
  * @author andyh
  */
-public interface NodePermissionEntry
+public interface DbAccessControlList
 {
-    /**
-     * Get the node key.
-     * 
-     * @return
-     */
-    public NodeKey getNodeKey();
+    public long getId();
 
-    /**
-     * Set the node key.
-     * 
-     * @param key
-     */
-    public void setNodeKey(NodeKey key);
+    public Node getNode();
     
-    /**
-     * Get the node ref
-     * 
-     * @return
-     */
-    public NodeRef getNodeRef();
+    public void setNode(Node node);
     
     /**
      * Get inheritance behaviour
@@ -62,9 +43,9 @@ public interface NodePermissionEntry
     public void setInherits(boolean inherits);
     
     /**
-     * Get the permission entries set for the node
-     * @return
+     * Delete the entries related to this access control list
+     * 
+     * @return Returns the number of entries deleted
      */
-    public Set<PermissionEntry> getPermissionEntries();
-    
+    public int deleteEntries();
 }

@@ -18,6 +18,8 @@ package org.alfresco.repo.domain;
 
 import java.io.Serializable;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -36,14 +38,26 @@ public class NodeKey implements Serializable
     public NodeKey()
     {
     }
+    
+    public NodeKey(NodeRef nodeRef)
+    {
+        this(nodeRef.getStoreRef(), nodeRef.getId());
+    }
 	
-	public NodeKey(StoreKey storeKey, String guid)
-	{
-		setGuid(guid);
-		setProtocol(storeKey.getProtocol());
-		setIdentifier(storeKey.getIdentifier());
-	}
-	
+    public NodeKey(StoreRef storeRef, String guid)
+    {
+        setGuid(guid);
+        setProtocol(storeRef.getProtocol());
+        setIdentifier(storeRef.getIdentifier());
+    }
+    
+    public NodeKey(StoreKey storeKey, String guid)
+    {
+        setGuid(guid);
+        setProtocol(storeKey.getProtocol());
+        setIdentifier(storeKey.getIdentifier());
+    }
+    
 	public NodeKey(String protocol, String identifier, String guid)
 	{
 		setGuid(guid);

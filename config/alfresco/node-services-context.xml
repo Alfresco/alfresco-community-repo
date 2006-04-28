@@ -3,32 +3,6 @@
 
 <!-- Beans pertinent to node persistence and services --> 
 <beans>
-	
-   <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl" >
-      <property name="sessionFactory">
-         <ref bean="sessionFactory" />
-      </property>
-   </bean>
-   
-   <bean id="dbNodeDaoServiceTxnRegistration" class="org.alfresco.repo.transaction.NodeDaoServiceTransactionInterceptor" >
-      <property name="nodeDaoService">
-         <ref bean="nodeDaoServiceImpl" />
-      </property>
-   </bean>
-
-   <bean id="nodeDaoService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.repo.node.db.NodeDaoService</value>
-      </property>
-      <property name="target">
-         <ref bean="nodeDaoServiceImpl" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <value>dbNodeDaoServiceTxnRegistration</value>
-         </list>
-      </property>
-   </bean>
    
    <bean id="nodeService" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
       <property name="proxyInterface">
@@ -46,35 +20,16 @@
    </bean>
    
    <!-- NodeService implemented to persist to Database -->
-   <bean id="dbNodeService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-    	<value>org.alfresco.service.cmr.repository.NodeService</value>
-      </property>
-      <property name="target">
-        <bean class="org.alfresco.repo.node.db.DbNodeServiceImpl" init-method="init" >
-          <constructor-arg>
-             <ref bean="policyComponent"/>
-          </constructor-arg>
-          <constructor-arg>
-             <ref bean="dictionaryService" />
-          </constructor-arg>
-          <constructor-arg>
-             <ref bean="nodeDaoService" />
-          </constructor-arg>
-        </bean>
-      </property>
-      <property name="interceptorNames">
-         <list>
-<!--            <idref bean="methodCallLogAdvice" />-->
-<!--            <idref bean="dbNodeService_PerformanceMonitorAdvice" />-->
-         </list>
-      </property>
-   </bean>   
-
-   <bean id="dbNodeService_PerformanceMonitorAdvice" class="org.alfresco.util.perf.PerformanceMonitorAdvice" >
-       <constructor-arg>
-          <value>dbNodeService</value>
-       </constructor-arg>
+   <bean id="dbNodeService" class="org.alfresco.repo.node.db.DbNodeServiceImpl" init-method="init" >
+      <constructor-arg>
+         <ref bean="policyComponent"/>
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="dictionaryService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="nodeDaoService" />
+      </constructor-arg>
    </bean>
    
    <!-- Handles policy callbacks to ensure that node hierarchy gets indexed -->

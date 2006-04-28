@@ -16,6 +16,10 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.StoreKey;
@@ -30,10 +34,59 @@ public class StoreImpl implements Store
 {
 	private StoreKey key;
     private Node rootNode;
+
+    private transient ReadLock refReadLock;
+    private transient WriteLock refWriteLock;
     private transient StoreRef storeRef;
 
     public StoreImpl()
     {
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        refReadLock = lock.readLock();
+        refWriteLock = lock.writeLock();
+    }
+    
+    /**
+     * Lazily constructs <code>StoreRef</code> instance referencing this entity
+     */
+    public StoreRef getStoreRef()
+    {
+        // first check if it is available
+        refReadLock.lock();
+        try
+        {
+            if (storeRef != null)
+            {
+                return storeRef;
+            }
+        }
+        finally
+        {
+            refReadLock.unlock();
+        }
+        // get write lock
+        refWriteLock.lock();
+        try
+        {
+            // double check
+            if (storeRef == null )
+            {
+                storeRef = new StoreRef(getKey().getProtocol(), getKey().getIdentifier());
+            }
+            return storeRef;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+    
+    /**
+     * @see #getStoreRef()()
+     */
+    public String toString()
+    {
+        return getStoreRef().toString();
     }
     
     /**
@@ -49,11 +102,11 @@ public class StoreImpl implements Store
         {
             return true;
         }
-        else if (!(obj instanceof Node))
+        else if (!(obj instanceof Store))
         {
             return false;
         }
-        Node that = (Node) obj;
+        Store that = (Store) obj;
         return (this.getKey().equals(that.getKey()));
     }
     
@@ -65,42 +118,32 @@ public class StoreImpl implements Store
         return getKey().hashCode();
     }
     
-    /**
-     * @see #getStoreRef()()
-     */
-    public String toString()
+    public StoreKey getKey()
     {
-        return getStoreRef().toString();
+        return key;
     }
-
-    public StoreKey getKey() {
-		return key;
-	}
-
-	public synchronized void setKey(StoreKey key) {
-		this.key = key;
-        this.storeRef = null;
-	}
-
+    
+    public synchronized void setKey(StoreKey key)
+    {
+        refWriteLock.lock();
+        try
+        {
+            this.key = key;
+            this.storeRef = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+    
     public Node getRootNode()
     {
         return rootNode;
     }
-
+    
     public void setRootNode(Node rootNode)
     {
         this.rootNode = rootNode;
-    }
-    
-    /**
-     * Lazily constructs <code>StoreRef</code> instance referencing this entity
-     */
-    public synchronized StoreRef getStoreRef()
-    {
-        if (storeRef == null && key != null)
-        {
-            storeRef = new StoreRef(key.getProtocol(), key.getIdentifier());
-        }
-        return storeRef;
     }
 }

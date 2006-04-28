@@ -36,7 +36,7 @@
                 <value>org/alfresco/repo/domain/hibernate/Store.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/VersionCount.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/AppliedPatch.hbm.xml</value>
-                <value>org/alfresco/repo/security/permissions/impl/hibernate/Permission.hbm.xml</value>
+                <value>org/alfresco/repo/domain/hibernate/Permission.hbm.xml</value>
             </list>
         </property>
         <property name="hibernateProperties" ref="hibernateConfigProperties" />
@@ -50,10 +50,10 @@
                 <prop key="org.alfresco.repo.domain.hibernate.VersionCountImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.AppliedPatchImpl">${cache.strategy}</prop>
                 
-                <prop key="org.alfresco.repo.security.permissions.impl.hibernate.NodePermissionEntryImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.security.permissions.impl.hibernate.PermissionEntryImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.security.permissions.impl.hibernate.PermissionReferenceImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.security.permissions.impl.hibernate.RecipientImpl">${cache.strategy}</prop>
+                <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl">${cache.strategy}</prop>
+                <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl">${cache.strategy}</prop>
+                <prop key="org.alfresco.repo.domain.hibernate.DbPermissionImpl">${cache.strategy}</prop>
+                <prop key="org.alfresco.repo.domain.hibernate.DbAuthorityImpl">${cache.strategy}</prop>
             </props>
         </property>
         <property name="collectionCacheStrategies" >
@@ -65,8 +65,7 @@
                 <prop key="org.alfresco.repo.domain.hibernate.NodeImpl.sourceNodeAssocs">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.NodeImpl.targetNodeAssocs">${cache.strategy}</prop>
 
-                <prop key="org.alfresco.repo.security.permissions.impl.hibernate.NodePermissionEntryImpl.permissionEntries">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.security.permissions.impl.hibernate.RecipientImpl.externalKeys">${cache.strategy}</prop>
+                <prop key="org.alfresco.repo.domain.hibernate.DbAuthorityImpl.externalKeys">${cache.strategy}</prop>
             </props>
         </property>
     </bean>
@@ -80,5 +79,51 @@
             <ref bean="sessionFactory" />
         </property>
     </bean>
+    
+    <!-- Hibernate-specific implementations of persistence components -->
+   <bean id="versionCounterDaoComponent" class="org.alfresco.repo.domain.hibernate.VersionCounterDaoComponentImpl" init-method="init">
+      <property name="sessionFactory">
+         <ref bean="sessionFactory" />
+      </property>
+      <property name="policyComponent">
+         <ref bean="policyComponent" />
+      </property>
+   </bean>
+   
+   <bean id="permissionsDaoComponent" class="org.alfresco.repo.domain.hibernate.PermissionsDaoComponentImpl">
+      <property name="sessionFactory">
+         <ref bean="sessionFactory" />
+      </property>
+      <property name="nullPermissionCache">
+         <ref bean="nullPermissionCache" />
+      </property>
+      <property name="nodeDaoService">
+         <ref bean="nodeDaoService" />
+      </property>
+   </bean>
+	
+   <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl" >
+      <property name="sessionFactory">
+         <ref bean="sessionFactory" />
+      </property>
+   </bean>
+   <bean id="dbNodeDaoServiceTxnRegistration" class="org.alfresco.repo.transaction.NodeDaoServiceTransactionInterceptor" >
+      <property name="nodeDaoService">
+         <ref bean="nodeDaoServiceImpl" />
+      </property>
+   </bean>
+   <bean id="nodeDaoService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.repo.node.db.NodeDaoService</value>
+      </property>
+      <property name="target">
+         <ref bean="nodeDaoServiceImpl" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <value>dbNodeDaoServiceTxnRegistration</value>
+         </list>
+      </property>
+   </bean>
 
 </beans>

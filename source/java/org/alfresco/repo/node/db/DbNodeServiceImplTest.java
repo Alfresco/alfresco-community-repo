@@ -190,19 +190,13 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
             public Object doWork()
             {
                 // check n6
-                NodeStatus n6Status = nodeDaoService.getNodeStatus(
-                        n6Ref.getStoreRef().getProtocol(),
-                        n6Ref.getStoreRef().getIdentifier(),
-                        n6Ref.getId());
+                NodeStatus n6Status = nodeDaoService.getNodeStatus(n6Ref);
                 if (!n6Status.isDeleted())
                 {
                     throw new RuntimeException("Deleted node does not have deleted status");
                 }
                 // n8 is a primary child - it should be deleted too
-                NodeStatus n8Status = nodeDaoService.getNodeStatus(
-                        n8Ref.getStoreRef().getProtocol(),
-                        n8Ref.getStoreRef().getIdentifier(),
-                        n8Ref.getId());
+                NodeStatus n8Status = nodeDaoService.getNodeStatus(n8Ref);
                 if (!n8Status.isDeleted())
                 {
                     throw new RuntimeException("Cascade-deleted node does not have deleted status");

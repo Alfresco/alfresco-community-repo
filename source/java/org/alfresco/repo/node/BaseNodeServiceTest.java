@@ -376,10 +376,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     private int countNodesById(NodeRef nodeRef)
     {
         String query =
-                "select count(node.key.guid)" +
+                "select count(node.uuid)" +
                 " from " +
                 NodeImpl.class.getName() + " node" +
-                " where node.key.guid = ?";
+                " where node.uuid = ?";
         Session session = getSession();
         List results = session.createQuery(query)
             .setString(0, nodeRef.getId())
@@ -710,7 +710,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 "select node.childAssocs" +
                 " from " +
                 NodeImpl.class.getName() + " node" +
-                " where node.key.guid = ?";
+                " where node.uuid = ?";
         Session session = getSession();
         List results = session.createQuery(query)
             .setString(0, nodeRef.getId())

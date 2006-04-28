@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.repo.security.permissions.impl.hibernate;
+package org.alfresco.repo.domain;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -23,26 +23,27 @@ import java.util.Set;
  * The interface against which recipients of permission are persisted
  * @author andyh
  */
-public interface Recipient extends Serializable 
+public interface DbAuthority extends Serializable 
 {
     /**
-     * Get the recipient.
-     * 
-     * @return
+     * @return Returns the recipient
      */
     public String getRecipient();
     
     /**
-     * Set the recipient
-     * 
-     * @param recipient
+     * @param recipient the authority recipient
      */
     public void setRecipient(String recipient);
     
     /**
-     * Get the external keys that map to this recipient.
-     * 
-     * @return
+     * @return Returns the external keys associated with this authority
      */
     public Set<String> getExternalKeys();
+    
+    /**
+     * Delete the access control entries related to this authority
+     * 
+     * @return Returns the number of entries deleted
+     */
+    public int deleteEntries();
 }

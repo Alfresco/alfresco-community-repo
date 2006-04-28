@@ -14,15 +14,14 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.repo.version.common.counter.hibernate;
+package org.alfresco.repo.domain.hibernate;
 
 import org.alfresco.repo.domain.StoreKey;
 import org.alfresco.repo.domain.VersionCount;
-import org.alfresco.repo.domain.hibernate.VersionCountImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.version.common.counter.VersionCounterDaoService;
+import org.alfresco.repo.version.common.counter.VersionCounterService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -39,9 +38,9 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * 
  * @author Derek Hulley
  */
-public class HibernateVersionCounterDaoServiceImpl
+public class VersionCounterDaoComponentImpl
         extends HibernateDaoSupport
-        implements VersionCounterDaoService, NodeServicePolicies.BeforeCreateStorePolicy
+        implements VersionCounterService, NodeServicePolicies.BeforeCreateStorePolicy
 {
     private PolicyComponent policyComponent;
 

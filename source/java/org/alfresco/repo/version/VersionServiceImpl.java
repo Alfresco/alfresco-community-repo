@@ -33,7 +33,7 @@ import org.alfresco.repo.version.common.AbstractVersionServiceImpl;
 import org.alfresco.repo.version.common.VersionHistoryImpl;
 import org.alfresco.repo.version.common.VersionImpl;
 import org.alfresco.repo.version.common.VersionUtil;
-import org.alfresco.repo.version.common.counter.VersionCounterDaoService;
+import org.alfresco.repo.version.common.counter.VersionCounterService;
 import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
 import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -73,7 +73,7 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
     /**
      * The version counter service
      */
-    private VersionCounterDaoService versionCounterService ;
+    private VersionCounterService versionCounterService;
     
     /**
      * The db node service, used as the version store implementation
@@ -92,11 +92,6 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
     private SearchService searcher;       	
     
     /**
-     * The version cache
-     */
-    private HashMap<NodeRef, Version> versionCache = new HashMap<NodeRef, Version>(100);
-    
-    /**
      * Sets the db node service, used as the version store implementation
      * 
      * @param nodeService  the node service
@@ -107,8 +102,6 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
     }
 
     /**
-     * Sets the searcher
-     * 
      * @param searcher  the searcher
      */
     public void setSearcher(SearchService searcher)
@@ -117,11 +110,9 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
     }
 	
     /**
-     * Sets the version counter service
-     * 
      * @param versionCounterService  the version counter service
      */
-    public void setVersionCounterDaoService(VersionCounterDaoService versionCounterService)
+    public void setVersionCounterService(VersionCounterService versionCounterService)
     {
         this.versionCounterService = versionCounterService;
     }    
@@ -164,7 +155,7 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
     }
 	
     /**
-     * @see VersionCounterDaoService#nextVersionNumber(StoreRef)
+     * @see VersionCounterService#nextVersionNumber(StoreRef)
      */
     public Version createVersion(
             NodeRef nodeRef, 
@@ -727,45 +718,37 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
      */
     private Version getVersion(NodeRef versionRef)
     {
-        Version result = null;
-		
-		if (versionRef != null)
-		{
-            // check to see if this version is already in the cache
-            result = this.versionCache.get(versionRef);
-            
-            if (result == null)
-            {
-    	        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
-    	        
-    	        // Get the standard node details
-    	        Map<QName, Serializable> nodeProperties = this.dbNodeService.getProperties(versionRef);
-    	        for (QName key : nodeProperties.keySet())
-    	        {                 
-	                Serializable value = nodeProperties.get(key);
-	                versionProperties.put(key.getLocalName(), value);
-    	        }
-                
-                // Get the meta data
-                List<ChildAssociationRef> metaData = 
-                    this.dbNodeService.getChildAssocs(versionRef, RegexQNamePattern.MATCH_ALL, CHILD_QNAME_VERSION_META_DATA);
-                for (ChildAssociationRef ref : metaData)
-                {
-                    NodeRef metaDataValue = (NodeRef)ref.getChildRef();
-                    String name = (String)this.dbNodeService.getProperty(metaDataValue, PROP_QNAME_META_DATA_NAME);
-                    Serializable value = this.dbNodeService.getProperty(metaDataValue, PROP_QNAME_META_DATA_VALUE);
-                    versionProperties.put(name, value);
-                }
-    	        
-    	        // Create and return the version object
-                NodeRef newNodeRef = new NodeRef(new StoreRef(STORE_PROTOCOL, STORE_ID), versionRef.getId());
-    	        result = new VersionImpl(versionProperties, newNodeRef);
-                
-                // Add the version to the cache
-                this.versionCache.put(versionRef, result);
-            }
-		}
-		
+        if (versionRef == null)
+        {
+            return null;
+        }
+        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+        
+        // Get the standard node details
+        Map<QName, Serializable> nodeProperties = this.dbNodeService.getProperties(versionRef);
+        for (QName key : nodeProperties.keySet())
+        {                 
+            Serializable value = nodeProperties.get(key);
+            versionProperties.put(key.getLocalName(), value);
+        }
+        
+        // Get the meta data
+        List<ChildAssociationRef> metaData = this.dbNodeService.getChildAssocs(
+                versionRef,
+                RegexQNamePattern.MATCH_ALL,
+                CHILD_QNAME_VERSION_META_DATA);
+        for (ChildAssociationRef ref : metaData)
+        {
+            NodeRef metaDataValue = (NodeRef)ref.getChildRef();
+            String name = (String)this.dbNodeService.getProperty(metaDataValue, PROP_QNAME_META_DATA_NAME);
+            Serializable value = this.dbNodeService.getProperty(metaDataValue, PROP_QNAME_META_DATA_VALUE);
+            versionProperties.put(name, value);
+        }
+        
+        // Create and return the version object
+        NodeRef newNodeRef = new NodeRef(new StoreRef(STORE_PROTOCOL, STORE_ID), versionRef.getId());
+        Version result = new VersionImpl(versionProperties, newNodeRef);
+		// done
 		return result;
     }
     

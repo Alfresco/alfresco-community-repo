@@ -31,13 +31,11 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
-import org.alfresco.repo.domain.NodeKey;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -92,9 +90,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     private Node getNodeNotNull(NodeRef nodeRef) throws InvalidNodeRefException
     {
-        String protocol = nodeRef.getStoreRef().getProtocol();
-        String identifier = nodeRef.getStoreRef().getIdentifier();
-        Node unchecked = nodeDaoService.getNode(protocol, identifier, nodeRef.getId());
+        Node unchecked = nodeDaoService.getNode(nodeRef);
         if (unchecked == null)
         {
             throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);
@@ -112,10 +108,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     public boolean exists(NodeRef nodeRef)
     {
-        StoreRef storeRef = nodeRef.getStoreRef();
-        Node node = nodeDaoService.getNode(storeRef.getProtocol(),
-                storeRef.getIdentifier(),
-                nodeRef.getId());
+        Node node = nodeDaoService.getNode(nodeRef);
         boolean exists = (node != null);
         // done
         return exists;
@@ -123,10 +116,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     public Status getNodeStatus(NodeRef nodeRef)
     {
-        NodeStatus nodeStatus = nodeDaoService.getNodeStatus(
-                nodeRef.getStoreRef().getProtocol(),
-                nodeRef.getStoreRef().getIdentifier(),
-                nodeRef.getId());
+        NodeStatus nodeStatus = nodeDaoService.getNodeStatus(nodeRef);
         if (nodeStatus == null)     // node never existed
         {
             return null;
@@ -416,8 +406,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeOnUpdateNode(newParentRef);
         
         // update the node status
-        NodeStatus nodeStatus = nodeToMove.getStatus();
-        nodeStatus.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        nodeDaoService.recordChangeId(nodeToMoveRef);
         
         // done
         return newAssoc.getChildAssocRef();
@@ -526,8 +515,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             invokeOnAddAspect(nodeRef, aspectTypeQName);
             
             // update the node status
-            NodeStatus nodeStatus = node.getStatus();
-            nodeStatus.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+            nodeDaoService.recordChangeId(nodeRef);
         }                
     }
 
@@ -581,8 +569,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             invokeOnRemoveAspect(nodeRef, aspectTypeQName);
             
             // update the node status
-            NodeStatus nodeStatus = node.getStatus();
-            nodeStatus.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+            nodeDaoService.recordChangeId(nodeRef);
         }
     }
 
@@ -758,7 +745,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         Node parentNode = getNodeNotNull(parentRef);
         Node childNode = getNodeNotNull(childRef);
-        NodeKey childNodeKey = childNode.getKey();
+        Long childNodeId = childNode.getId();
         
         // get all the child assocs
         ChildAssociationRef primaryAssocRef = null;
@@ -766,7 +753,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         assocs = new HashSet<ChildAssoc>(assocs);   // copy set as we will be modifying it
         for (ChildAssoc assoc : assocs)
         {
-            if (!assoc.getChild().getKey().equals(childNodeKey))
+            if (!assoc.getChild().getId().equals(childNodeId))
             {
                 continue;  // not a matching association
             }
@@ -901,8 +888,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
         
         // update the node status
-        NodeStatus nodeStatus = node.getStatus();
-        nodeStatus.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        nodeDaoService.recordChangeId(nodeRef);
     }
     
     /**
@@ -937,8 +923,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
         
         // update the node status
-        NodeStatus nodeStatus = node.getStatus();
-        nodeStatus.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        nodeDaoService.recordChangeId(nodeRef);
     }
     
     /**

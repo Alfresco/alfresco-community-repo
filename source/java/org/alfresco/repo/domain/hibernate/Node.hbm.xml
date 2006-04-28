@@ -17,21 +17,41 @@
          select-before-update="false" 
          lazy="true" 
          optimistic-lock="version"  >
-      <!-- composite PK -->
-      <composite-id name="key" class="org.alfresco.repo.domain.NodeKey">
-         <key-property name="protocol" length="50" />
-         <key-property name="identifier" length="100" />
-         <key-property name="guid" length="36"/>
-      </composite-id>
+      <!-- auto-generated ID -->
+      <id name="id" column="id" type="long" >
+         <generator class="native" />
+      </id>
+      <!-- forward assoc to store -->
+      <many-to-one
+            name="store"
+            class="org.alfresco.repo.domain.hibernate.StoreImpl"
+            not-null="true"
+            lazy="no-proxy"
+            optimistic-lock="true"
+            fetch="select">
+         <column name="protocol" not-null="true" />
+         <column name="identifier" not-null="true" />
+      </many-to-one>
+      <!-- the store-unique identifier -->
+      <property name="uuid" column="uuid" type="string" length="36" />
       <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
-      <!-- forward assoc to node status -->
+      <!-- inverse assoc to access control list -->
+      <one-to-one 
+            name="accessControlList"
+            class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"
+            property-ref="node"
+            lazy="no-proxy"
+            fetch="select"
+            cascade="delete" /> 
+      <!-- inverse assoc to node status -->
+<!--
       <one-to-one
             name="status"
             class="org.alfresco.repo.domain.hibernate.NodeStatusImpl"
-            constrained="true"
+            property-ref="node"
             lazy="no-proxy"
-            fetch="select">
-      </one-to-one>
+            fetch="select" />
+-->
       <!-- forward assoc to properties -->
       <map
             name="properties" 
@@ -42,12 +62,8 @@
             inverse="false" 
             optimistic-lock="true"
             cascade="delete" >
-         <key>
-            <column name="protocol" length="50" />
-            <column name="identifier" length="100" />
-            <column name="guid" length="36" />
-         </key>
-         <map-key column="qname" type="QName" length="128" />
+         <key column="node_id" not-null="true" />
+         <map-key column="qname" type="QName" length="200" />
          <composite-element class="org.alfresco.repo.domain.PropertyValue" >
             <property name="actualType" column="actual_type" type="string" length="15" not-null="true" />
             <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
@@ -70,26 +86,9 @@
             fetch="select"
             optimistic-lock="true"
             cascade="delete" >
-         <key>
-            <column name="protocol" length="50"  />
-            <column name="identifier" length="100" />
-            <column name="guid" length="36" />
-         </key>
-         <element column="qname" type="QName" length="128"/>
+         <key column="node_id" not-null="true" />
+         <element column="qname" type="QName" length="200"/>
       </set>
-      <!-- forward assoc to store -->
-      <many-to-one
-            name="store"
-            class="org.alfresco.repo.domain.hibernate.StoreImpl"
-            not-null="true"
-            insert="false"
-            update="false" 
-            lazy="no-proxy"
-            optimistic-lock="true"
-            fetch="select">
-         <column name="protocol" />
-         <column name="identifier" />
-      </many-to-one>
       <!-- inverse assoc to parent childassocs -->
       <bag
             name="parentAssocs"
@@ -98,11 +97,7 @@
             cascade="none"
             optimistic-lock="true"
             fetch="select" >
-         <key>
-            <column name="child_protocol" />
-            <column name="child_identifier" />
-            <column name="child_guid" length="36" />
-         </key>
+         <key column="child_node_id" />
          <one-to-many class="org.alfresco.repo.domain.hibernate.ChildAssocImpl" />
       </bag>
       <!-- inverse assoc to child childassocs -->
@@ -113,13 +108,8 @@
             cascade="none"
             optimistic-lock="true"
             fetch="select" >
-         <key>
-            <column name="parent_protocol" />
-            <column name="parent_identifier" />
-            <column name="parent_guid" length="36" />
-         </key>
+         <key column="parent_node_id" />
          <one-to-many class="org.alfresco.repo.domain.hibernate.ChildAssocImpl"  />
-         
       </bag>
       <!-- inverse assoc to source nodeassocs -->
       <bag
@@ -127,11 +117,7 @@
             inverse="true" 
             cascade="none"
             optimistic-lock="true" >
-         <key>
-            <column name="target_protocol" />
-            <column name="target_identifier" />
-            <column name="target_guid" length="36" />
-         </key>
+         <key column="target_node_id" />
          <one-to-many class="org.alfresco.repo.domain.hibernate.NodeAssocImpl" />
       </bag>
       <!-- inverse assoc to target nodeassocs -->
@@ -140,11 +126,7 @@
             inverse="true" 
             cascade="none"
             optimistic-lock="true" >
-         <key>
-            <column name="source_protocol" />
-            <column name="source_identifier" />
-            <column name="source_guid" length="36" />
-         </key>
+         <key column="source_node_id" />
          <one-to-many class="org.alfresco.repo.domain.hibernate.NodeAssocImpl" />
       </bag>
    </class>
@@ -162,8 +144,17 @@
       <composite-id name="key" class="org.alfresco.repo.domain.NodeKey">
          <key-property name="protocol" length="50" />
          <key-property name="identifier" length="100" />
-         <key-property name="guid" length="36"/>
+         <key-property name="guid" length="36" />
       </composite-id>
+      <!-- forward assoc to node (optional) -->
+      <many-to-one
+            name="node"
+            class="org.alfresco.repo.domain.hibernate.NodeImpl"
+            column="node_id"
+            unique="true"
+            not-null="false"
+            fetch="join"
+            lazy="false" />
       <property name="changeTxnId" column="change_txn_id" type="string" length="56" not-null="true" />
       <property name="deleted" column="deleted" type="boolean" not-null="true" />
    </class>
@@ -176,15 +167,13 @@
          lazy="true"
          optimistic-lock="version"
          table="child_assoc" >
-      <id
-            name="id"
-            column="id" 
-            type="long" >
-         <generator class="increment" />
+      <!-- auto-generated ID -->
+      <id name="id" column="id" type="long" >
+         <generator class="native" />
       </id>
       <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
       <property name="qname" column="qname" type="QName" length="255" not-null="true" />
-      <property name="isPrimary" />
+      <property name="isPrimary" column="is_primary" />
       <property name="index" column="assoc_index" />
       <!-- forward assoc to parent node -->
       <many-to-one 
@@ -194,9 +183,7 @@
             fetch="join"
             optimistic-lock="true"
             not-null="true" >
-         <column name="parent_protocol" />
-         <column name="parent_identifier" />
-         <column name="parent_guid" length="36" />
+         <column name="parent_node_id" />
       </many-to-one>
       <!-- forward assoc to child node -->
       <many-to-one
@@ -206,9 +193,7 @@
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             optimistic-lock="true"
             not-null="true" >
-         <column name="child_protocol" />
-         <column name="child_identifier" />
-         <column name="child_guid" length="36" />
+         <column name="child_node_id" />
       </many-to-one>
    </class>
 
@@ -216,11 +201,9 @@
          name="org.alfresco.repo.domain.hibernate.NodeAssocImpl"
          proxy="org.alfresco.repo.domain.NodeAssoc"
          table="node_assoc" >
-      <id
-            name="id"
-            column="id"
-            type="long" >
-         <generator class="increment" />
+      <!-- auto-generated ID -->
+      <id name="id" column="id" type="long" >
+         <generator class="native" />
       </id>
       <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
       <!-- forward assoc to source node -->
@@ -228,18 +211,14 @@
             name="source"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             not-null="true" >
-         <column name="source_protocol" />
-         <column name="source_identifier" />
-         <column name="source_guid" length="36" />
+         <column name="source_node_id" />
       </many-to-one>
       <!-- forward assoc to target node -->
       <many-to-one
             name="target"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             not-null="true" >
-         <column name="target_protocol" />
-         <column name="target_identifier" />
-         <column name="target_guid" length="36" />
+         <column name="target_node_id" />
       </many-to-one>
    </class>
    
@@ -254,30 +233,21 @@
       select
          assoc
       from
-         org.alfresco.repo.domain.hibernate.NodeImpl as source
-         join source.targetNodeAssocs as assoc
-         join assoc.target as target
+         org.alfresco.repo.domain.hibernate.NodeAssocImpl as assoc
       where
-         source.key.protocol = :sourceKeyProtocol and
-         source.key.identifier = :sourceKeyIdentifier and
-         source.key.guid = :sourceKeyGuid and
-         assoc.typeQName = :assocTypeQName and
-         target.key.protocol = :targetKeyProtocol and
-         target.key.identifier = :targetKeyIdentifier and
-         target.key.guid = :targetKeyGuid
+         assoc.source = :sourceNode and
+         assoc.target = :targetNode and
+         assoc.typeQName = :assocTypeQName
    </query>
    
    <query name="node.GetNodeAssocTargets">
       select
          target
       from
-         org.alfresco.repo.domain.hibernate.NodeImpl as source
-         join source.targetNodeAssocs as assoc
+         org.alfresco.repo.domain.hibernate.NodeAssocImpl as assoc
          join assoc.target as target
       where
-         source.key.protocol = :sourceKeyProtocol and
-         source.key.identifier = :sourceKeyIdentifier and
-         source.key.guid = :sourceKeyGuid and
+         assoc.source = :sourceNode and
          assoc.typeQName = :assocTypeQName
    </query>
 
@@ -285,13 +255,10 @@
       select
          source
       from
-         org.alfresco.repo.domain.hibernate.NodeImpl as target
-         join target.sourceNodeAssocs as assoc
+         org.alfresco.repo.domain.hibernate.NodeAssocImpl as assoc
          join assoc.source as source
       where
-         target.key.protocol = :targetKeyProtocol and
-         target.key.identifier = :targetKeyIdentifier and
-         target.key.guid = :targetKeyGuid and
+         assoc.target = :targetNode and
          assoc.typeQName = :assocTypeQName
    </query>
 

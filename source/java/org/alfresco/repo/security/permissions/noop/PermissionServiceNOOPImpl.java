@@ -113,7 +113,7 @@ public class PermissionServiceNOOPImpl
     /* (non-Javadoc)
      * @see org.alfresco.repo.security.permissions.PermissionService#deletePermission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.repo.security.permissions.PermissionReference, boolean)
      */
-    public void deletePermission(NodeRef nodeRef, String authority, String perm, boolean allow)
+    public void deletePermission(NodeRef nodeRef, String authority, String perm)
     {
     }
 

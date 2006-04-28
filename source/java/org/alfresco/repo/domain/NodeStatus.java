@@ -37,11 +37,13 @@ public interface NodeStatus
      */
     public void setKey(NodeKey key);
     
+    public Node getNode();
+    
+    public void setNode(Node node);
+    
     public String getChangeTxnId();
     
     public void setChangeTxnId(String txnId);
-    
-    public void setDeleted(boolean deleted);
     
     public boolean isDeleted();
 }

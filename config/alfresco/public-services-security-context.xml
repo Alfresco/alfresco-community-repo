@@ -51,8 +51,8 @@
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
         </property>
-        <property name="permissionsDAO">
-            <ref bean="permissionsDAO" />
+        <property name="permissionsDaoComponent">
+            <ref bean="permissionsDaoComponent" />
         </property>
         <property name="modelDAO">
             <ref bean="permissionsModelDAO" />
@@ -95,19 +95,6 @@
     <bean id="lockOwnerDynamicAuthority" class="org.alfresco.repo.security.permissions.dynamic.LockOwnerDynamicAuthority">
         <property name="lockService">
             <ref bean="lockService" />
-        </property>
-    </bean>
-
-    <!-- =============== -->
-    <!-- Permissions DAO -->
-    <!-- =============== -->
-
-    <bean id="permissionsDAO" class="org.alfresco.repo.security.permissions.impl.hibernate.HibernatePermissionsDAO">
-        <property name="sessionFactory">
-            <ref bean="sessionFactory" />
-        </property>
-        <property name="nullPermissionCache">
-            <ref bean="nullPermissionCache" />
         </property>
     </bean>
 

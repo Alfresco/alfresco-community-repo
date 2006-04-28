@@ -26,7 +26,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author andyh
  */
-public interface PermissionsDAO
+public interface PermissionsDaoComponent
 {
     /**
      * Get the permissions that have been set on a given node.
@@ -37,42 +37,36 @@ public interface PermissionsDAO
     public NodePermissionEntry getPermissions(NodeRef nodeRef);
 
     /**
-     * Delete all the permissions on a given node.
-     * The node permission and all the permission entries it contains will be deleted.
+     * Delete the access control list and all access control entries for the node.
      * 
-     * @param nodeRef
+     * @param nodeRef the node for which to delete permission
      */
     public void deletePermissions(NodeRef nodeRef);
 
     /**
-     * Delete all the permissions on a given node.
-     * The node permission and all the permission entries it contains will be deleted.
-     * 
-     * @param nodePermissionEntry
+     * Remove all permissions for the specvified authority
+     * @param authority
      */
-    public void deletePermissions(NodePermissionEntry nodePermissionEntry);
+    public void deletePermissions(String authority);
 
+    /**
+     * Delete permission entries for the given node and authority
+     * 
+     * @param nodeRef the node to query against
+     * @param authority the specific authority to query against
+     */
+    public void deletePermissions(NodeRef nodeRef, String authority);
     
     /**
-     * Delete as single permission entry.
-     * This deleted one permission on the node. It does not affect the persistence of any other permissions.
-     * 
-     * @param permissionEntry
-     */
-    public void deletePermissions(PermissionEntry permissionEntry);
-
-    /**
-     * 
      * Delete as single permission entry, if a match is found.
      * This deleted one permission on the node. It does not affect the persistence of any other permissions.
      * 
-     * @param nodeRef
-     * @param authority
-     * @param perm
-     * @param allow
+     * @param nodeRef the node with the access control list
+     * @param authority the specific authority to look for
+     * @param permission the permission to look for
      */
-    public void deletePermissions(NodeRef nodeRef, String authority, PermissionReference perm,  boolean allow);
-
+    public void deletePermission(NodeRef nodeRef, String authority, PermissionReference permission);
+    
     /**
      * Set a permission on a node.
      * If the node has no permissions set then a default node permission (allowing inheritance) will be created to
@@ -114,19 +108,4 @@ public interface PermissionsDAO
      * @return inheritParentPermissions
      */
     public boolean getInheritParentPermissions(NodeRef nodeRef);
-    
-    /**
-     * Clear all the permissions set for a given authentication
-     * 
-     * @param nodeRef
-     * @param authority
-     */
-    public void clearPermission(NodeRef nodeRef, String authority);
-    
-    /**
-     * Remove all permissions for the specvified authority
-     * @param authority
-     */
-    public void deleteAllPermissionsForAuthority(String authority);
-
 }

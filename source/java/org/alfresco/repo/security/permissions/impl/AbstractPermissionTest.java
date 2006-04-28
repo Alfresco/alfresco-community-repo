@@ -136,7 +136,15 @@ public class AbstractPermissionTest extends BaseSpringTest
 
     protected void onTearDownInTransaction() throws Exception
     {
-        flushAndClear();
+        try
+        {
+            flushAndClear();
+        }
+        catch (Throwable e)
+        {
+            // don't absorb the exception
+            e.printStackTrace();
+        }
         super.onTearDownInTransaction();
     }
 

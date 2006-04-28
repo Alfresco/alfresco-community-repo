@@ -14,56 +14,41 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.repo.security.permissions.impl.hibernate;
+package org.alfresco.repo.domain;
 
 import java.io.Serializable;
+
+import org.alfresco.service.namespace.QName;
 
 /**
  * The interface against which permission references are persisted in hibernate.
  * 
  * @author andyh
  */
-public interface PermissionReference extends Serializable
+public interface DbPermission extends Serializable
 {
-   /**
-    * Get the URI for the type to which this permission applies.
-    * 
-    * @return
-    */ 
-    public String getTypeUri();
-    
     /**
-     * Set the URI for the type to which this permission applies.
-     * 
-     * @param typeUri
+     * @return Returns the automatically assigned ID
      */
-    public void setTypeUri(String typeUri);
+    public long getId();
     
     /**
-     * Get the local name of the type to which this permission applies.
-     * 
-     * @return
+     * @return Returns the qualified name of this permission
      */
-    public String getTypeName();
+    public QName getTypeQname();
     
     /**
-     * Set the local name of the type to which this permission applies.
-     * 
-     * @param typeName
+     * @param qname the entity representing the qname for this instance
      */
-    public void setTypeName(String typeName);
-    
+    public void setTypeQname(QName qname);
+
     /**
-     * Get the name of the permission.
-     * 
-     * @return
+     * @return Returns the permission name
      */
     public String getName();
     
     /**
-     * Set the name of the permission.
-     * 
-     * @param name
+     * @param name the name of the permission
      */
     public void setName(String name);
 }

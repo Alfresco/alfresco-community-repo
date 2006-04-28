@@ -44,10 +44,8 @@ public abstract class AbstractPermissionEntry implements PermissionEntry
             return false;
         }
         AbstractPermissionEntry other = (AbstractPermissionEntry) o;
-        return EqualsHelper.nullSafeEquals(this.getNodeRef(),
-                other.getNodeRef())
-                && EqualsHelper.nullSafeEquals(this.getPermissionReference(),
-                        other.getPermissionReference())
+        return EqualsHelper.nullSafeEquals(this.getNodeRef(), other.getNodeRef())
+                && EqualsHelper.nullSafeEquals(this.getPermissionReference(), other.getPermissionReference())
                 && EqualsHelper.nullSafeEquals(this.getAuthority(), other.getAuthority())
                 && EqualsHelper.nullSafeEquals(this.getAccessStatus(), other.getAccessStatus());
     }

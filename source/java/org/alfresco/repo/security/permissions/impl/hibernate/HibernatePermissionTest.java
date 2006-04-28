@@ -18,17 +18,36 @@ package org.alfresco.repo.security.permissions.impl.hibernate;
 
 import java.io.Serializable;
 
-import org.alfresco.repo.domain.NodeKey;
+import org.alfresco.repo.domain.DbAccessControlEntry;
+import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.DbAuthority;
+import org.alfresco.repo.domain.DbPermission;
+import org.alfresco.repo.domain.Node;
+import org.alfresco.repo.domain.Store;
+import org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl;
+import org.alfresco.repo.domain.hibernate.DbAccessControlListImpl;
+import org.alfresco.repo.domain.hibernate.DbAuthorityImpl;
+import org.alfresco.repo.domain.hibernate.DbPermissionImpl;
+import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
+import org.alfresco.util.GUID;
+import org.hibernate.ObjectDeletedException;
 
 /**
- * Test persistence and retrieval of Hibernate-specific implementations of the
- * {@link org.alfresco.repo.domain.Node} interface
+ * @see org.alfresco.repo.domain.hibernate.PermissionsDaoComponentImpl
+ * @see org.alfresco.repo.domain.DbAccessControlList
+ * @see org.alfresco.repo.domain.DbAccessControlEntry
  * 
  * @author Andy Hind
  */
 public class HibernatePermissionTest extends BaseSpringTest
-{    
+{
+    private NodeDaoService nodeDaoService;
+    private Node node;
+    private QName qname;
   
     public HibernatePermissionTest()
     {
@@ -36,174 +55,172 @@ public class HibernatePermissionTest extends BaseSpringTest
     
     protected void onSetUpInTransaction() throws Exception
     {
+        nodeDaoService = (NodeDaoService) applicationContext.getBean("nodeDaoService");
         
+        // create the node to play with
+        Store store = nodeDaoService.createStore(
+                StoreRef.PROTOCOL_WORKSPACE,
+                getName() + "_" + System.currentTimeMillis());
+        qname = QName.createQName(NamespaceService.ALFRESCO_URI, getName());
+        node = nodeDaoService.newNode(
+                store,
+                GUID.generate(),
+                qname);
     }
     
     protected void onTearDownInTransaction()
     {
-        // force a flush to ensure that the database updates succeed
-        getSession().flush();
-        getSession().clear();
+        try
+        {
+            // force a flush to ensure that the database updates succeed
+            getSession().flush();
+            getSession().clear();
+        }
+        catch (Throwable e)
+        {
+            // don't mask any other exception coming through
+            e.printStackTrace();
+        }
     }
-   
 
-	public void testSimpleNodePermission() throws Exception
+	public void testSimpleAccessControlList() throws Exception
 	{
         // create a new Node
-        NodePermissionEntry nodePermission = new NodePermissionEntryImpl();
-		NodeKey key = new NodeKey("Random Protocol", "Random Identifier", "AAA");
-        nodePermission.setNodeKey(key);
-        nodePermission.setInherits(true);
+        DbAccessControlList accessControlList = new DbAccessControlListImpl();
+        accessControlList.setNode(node);
+        accessControlList.setInherits(true);
         
-        Serializable id = getSession().save(nodePermission);
+        Serializable id = getSession().save(accessControlList);
 			
         // throw the reference away and get the a new one for the id
-        nodePermission = (NodePermissionEntry) getSession().load(NodePermissionEntryImpl.class, id);
-        assertNotNull("Node not found", nodePermission);
-        assertTrue(nodePermission.getInherits());
+        accessControlList = (DbAccessControlList) getSession().load(DbAccessControlListImpl.class, id);
+        assertNotNull("Access control list not found", accessControlList);
+        assertTrue(accessControlList.getInherits());
         
         // Update inherits 
         
-        nodePermission.setInherits(false);
-        id = getSession().save(nodePermission);
+        accessControlList.setInherits(false);
+        id = getSession().save(accessControlList);
         
         // throw the reference away and get the a new one for the id
-        nodePermission = (NodePermissionEntry) getSession().load(NodePermissionEntryImpl.class, id);
-        assertNotNull("Node not found", nodePermission);
-        assertFalse(nodePermission.getInherits());
+        accessControlList = (DbAccessControlList) getSession().load(DbAccessControlListImpl.class, id);
+        assertNotNull("Node not found", accessControlList);
+        assertFalse(accessControlList.getInherits());
 	}
     
-    public void testSimplePermissionReference()
+    public void testSimplePermission()
     {
-        PermissionReference permissionReference = new PermissionReferenceImpl();
-        permissionReference.setName("Test");
-        permissionReference.setTypeUri("TestUri");
-        permissionReference.setTypeName("TestName");
+        DbPermission permission = new DbPermissionImpl();
+        permission.setTypeQname(qname);
+        permission.setName("Test");
         
-        Serializable id = getSession().save(permissionReference);
+        Serializable id = getSession().save(permission);
         
         // throw the reference away and get the a new one for the id
-        permissionReference = (PermissionReference) getSession().load(PermissionReferenceImpl.class, id);
-        assertNotNull("Node not found", permissionReference);
-        assertEquals("Test", permissionReference.getName());
-        assertEquals("TestUri", permissionReference.getTypeUri());
-        assertEquals("TestName", permissionReference.getTypeName());
+        permission = (DbPermission) getSession().load(DbPermissionImpl.class, id);
+        assertNotNull("Permission not found", permission);
+        assertEquals("Test", permission.getName());
+        assertEquals(qname, permission.getTypeQname());
         
         // Test key
-        
-        PermissionReference key = new PermissionReferenceImpl();
-        key.setName("Test");
-        key.setTypeUri("TestUri");
-        key.setTypeName("TestName");
-        
-        permissionReference = (PermissionReference) getSession().load(PermissionReferenceImpl.class, key);
-        assertNotNull("Node not found", permissionReference);
-        assertEquals("Test", permissionReference.getName());
-        assertEquals("TestUri", permissionReference.getTypeUri());
-        assertEquals("TestName", permissionReference.getTypeName());
+        permission = (DbPermission) getSession().load(DbPermissionImpl.class, id);
+        assertNotNull("Permission not found", permission);
+        assertEquals("Test", permission.getName());
+        assertEquals(qname, permission.getTypeQname());
     }
     
-    public void testSimpleRecipient()
+    public void testSimpleAuthority()
     {
-        Recipient recipient = new RecipientImpl();
-        recipient.setRecipient("Test");
-        recipient.getExternalKeys().add("One");
+        DbAuthority authority = new DbAuthorityImpl();
+        authority.setRecipient("Test");
+        authority.getExternalKeys().add("One");
         
-        Serializable id = getSession().save(recipient);
+        Serializable id = getSession().save(authority);
         
         // throw the reference away and get the a new one for the id
-        recipient = (Recipient) getSession().load(RecipientImpl.class, id);
-        assertNotNull("Node not found", recipient);
-        assertEquals("Test", recipient.getRecipient());
-        assertEquals(1, recipient.getExternalKeys().size());
-        
-        // Key
-        
-
-        Recipient key = new RecipientImpl();
-        key.setRecipient("Test");
-        
-        recipient = (Recipient) getSession().load(RecipientImpl.class, key);
-        assertNotNull("Node not found", recipient);
-        assertEquals("Test", recipient.getRecipient());
-        assertEquals(1, recipient.getExternalKeys().size());
-        
+        authority = (DbAuthority) getSession().load(DbAuthorityImpl.class, id);
+        assertNotNull("Node not found", authority);
+        assertEquals("Test", authority.getRecipient());
+        assertEquals(1, authority.getExternalKeys().size());
         
         // Update
         
-        recipient.getExternalKeys().add("Two");
-        id  = getSession().save(recipient);
+        authority.getExternalKeys().add("Two");
+        id  = getSession().save(authority);
       
         // throw the reference away and get the a new one for the id
-        recipient = (Recipient) getSession().load(RecipientImpl.class, id);
-        assertNotNull("Node not found", recipient);
-        assertEquals("Test", recipient.getRecipient());
-        assertEquals(2, recipient.getExternalKeys().size());
+        authority = (DbAuthority) getSession().load(DbAuthorityImpl.class, id);
+        assertNotNull("Node not found", authority);
+        assertEquals("Test", authority.getRecipient());
+        assertEquals(2, authority.getExternalKeys().size());
         
         
         // complex
         
-        recipient.getExternalKeys().add("Three");
-        recipient.getExternalKeys().remove("One");
-        recipient.getExternalKeys().remove("Two");
-        id  = getSession().save(recipient);
+        authority.getExternalKeys().add("Three");
+        authority.getExternalKeys().remove("One");
+        authority.getExternalKeys().remove("Two");
+        id  = getSession().save(authority);
         
         // Throw the reference away and get the a new one for the id
-        recipient = (Recipient) getSession().load(RecipientImpl.class, id);
-        assertNotNull("Node not found", recipient);
-        assertEquals("Test", recipient.getRecipient());
-        assertEquals(1, recipient.getExternalKeys().size());
-        
-        
+        authority = (DbAuthority) getSession().load(DbAuthorityImpl.class, id);
+        assertNotNull("Node not found", authority);
+        assertEquals("Test", authority.getRecipient());
+        assertEquals(1, authority.getExternalKeys().size());
     }
     
-    public void testNodePermissionEntry()
+    public void testAccessControlList()
     {
-        //      create a new Node
-        NodePermissionEntry nodePermission = new NodePermissionEntryImpl();
-        NodeKey key = new NodeKey("Random Protocol", "Random Identifier", "AAA");
-        nodePermission.setNodeKey(key);
-        nodePermission.setInherits(true);
+        // create a new access control list for the node
+        DbAccessControlList accessControlList = new DbAccessControlListImpl();
+        accessControlList.setNode(node);
+        accessControlList.setInherits(true);
         
-        Recipient recipient = new RecipientImpl();
+        DbAuthority recipient = new DbAuthorityImpl();
         recipient.setRecipient("Test");
         recipient.getExternalKeys().add("One");
         
-        PermissionReference permissionReference = new PermissionReferenceImpl();
-        permissionReference.setName("Test");
-        permissionReference.setTypeUri("TestUri");
-        permissionReference.setTypeName("TestName");
+        DbPermission permission = new DbPermissionImpl();
+        permission.setTypeQname(qname);
+        permission.setName("Test");
         
-        PermissionEntry permissionEntry = PermissionEntryImpl.create(nodePermission, permissionReference, recipient, true);
+        DbAccessControlEntry accessControlEntry = DbAccessControlEntryImpl.create(accessControlList, permission, recipient, true);
         
-        Serializable idNodePermision = getSession().save(nodePermission);
+        Serializable nodeAclId = getSession().save(accessControlList);
         getSession().save(recipient);
-        getSession().save(permissionReference);
-        Serializable idPermEnt = getSession().save(permissionEntry);
+        getSession().save(permission);
+        Serializable aceEntryId = getSession().save(accessControlEntry);
         
-        permissionEntry =  (PermissionEntry) getSession().load(PermissionEntryImpl.class, idPermEnt);
-        assertNotNull("Permission entry not found", permissionEntry);
-        assertTrue(permissionEntry.isAllowed());
-        assertNotNull(permissionEntry.getNodePermissionEntry());
-        assertTrue(permissionEntry.getNodePermissionEntry().getInherits());
-        assertNotNull(permissionEntry.getPermissionReference());
-        assertEquals("Test", permissionEntry.getPermissionReference().getName());
-        assertNotNull(permissionEntry.getRecipient());
-        assertEquals("Test", permissionEntry.getRecipient().getRecipient());
-        assertEquals(1, permissionEntry.getRecipient().getExternalKeys().size());
+        accessControlEntry =  (DbAccessControlEntry) getSession().load(DbAccessControlEntryImpl.class, aceEntryId);
+        assertNotNull("Permission entry not found", accessControlEntry);
+        assertTrue(accessControlEntry.isAllowed());
+        assertNotNull(accessControlEntry.getAccessControlList());
+        assertTrue(accessControlEntry.getAccessControlList().getInherits());
+        assertNotNull(accessControlEntry.getPermission());
+        assertEquals("Test", accessControlEntry.getPermission().getName());
+        assertNotNull(accessControlEntry.getAuthority());
+        assertEquals("Test", accessControlEntry.getAuthority().getRecipient());
+        assertEquals(1, accessControlEntry.getAuthority().getExternalKeys().size());
         
-        // Check traversal down
-        
-        nodePermission = (NodePermissionEntry) getSession().load(NodePermissionEntryImpl.class, idNodePermision);
-        assertEquals(1, nodePermission.getPermissionEntries().size());
-        
-        permissionEntry.delete();
-        getSession().delete(permissionEntry);
-        
-        nodePermission = (NodePermissionEntry) getSession().load(NodePermissionEntryImpl.class, idNodePermision);
-        assertEquals(0, nodePermission.getPermissionEntries().size());  
-        
-        
+        // Check that deletion of the list cascades
+        getSession().delete(accessControlList);
+        try
+        {
+            getSession().get(DbAccessControlListImpl.class, nodeAclId);
+            fail("Access control list was not deleted");
+        }
+        catch (ObjectDeletedException e)
+        {
+            // expected
+        }
+        try
+        {
+            getSession().get(DbAccessControlEntryImpl.class, aceEntryId);
+            fail("Access control entries were not cascade deleted");
+        }
+        catch (ObjectDeletedException e)
+        {
+            // expected
+        }
     }
-    
 }

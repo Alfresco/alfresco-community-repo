@@ -22,13 +22,11 @@
       <!-- forward assoc to root node -->
       <many-to-one
             name="rootNode"
-            not-null="false"
+            not-null="true"
             lazy="false"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             fetch="join" >
-         <column name="root_protocol" />
-         <column name="root_identifier" />
-         <column name="root_guid" />
+         <column name="root_node_id" />
       </many-to-one>
    </class>
    

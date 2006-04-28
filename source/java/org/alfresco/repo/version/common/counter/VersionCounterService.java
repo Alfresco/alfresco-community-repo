@@ -20,11 +20,11 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Version counter DAO service interface.
+ * Version counter service interface.
  * 
  * @author Roy Wetherall
  */
-public interface VersionCounterDaoService
+public interface VersionCounterService
 {
     /**
      * Helper method for simple patching

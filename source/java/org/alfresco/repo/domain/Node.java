@@ -33,38 +33,33 @@ import org.alfresco.service.namespace.QName;
 public interface Node
 {
     /**
-     * @return Returns the unique key for this node
+     * Convenience method to get the reference to the node
+     * 
+     * @return Returns the reference to this node
      */
-    public NodeKey getKey();
-
+    public NodeRef getNodeRef();
+    
     /**
-     * @param key the unique node key
+     * @return Returns the auto-generated ID
      */
-    public void setKey(NodeKey key);
+    public Long getId();
     
     public Store getStore();
     
     public void setStore(Store store);
     
+    public String getUuid();
+    
+    public void setUuid(String uuid);
+    
     public QName getTypeQName();
     
     public void setTypeQName(QName typeQName);
 
-    /**
-     * Set the status of the node.  This is compulsory, but a node
-     * status may exist without a node being present.
-     * 
-     * @param nodeStatus
-     */
-    public void setStatus(NodeStatus nodeStatus);
-    
-    /**
-     * Get the mandatory node status object
-     * 
-     * @return
-     */
-    public NodeStatus getStatus();
-    
+//    public NodeStatus getStatus();
+//    
+//    public void setStatus(NodeStatus status);
+//    
     public Set<QName> getAspects();
     
     /**
@@ -83,10 +78,7 @@ public interface Node
 
     public Map<QName, PropertyValue> getProperties();
 
-    /**
-     * Convenience method to get the reference to the node
-     * 
-     * @return Returns the reference to this node
-     */
-    public NodeRef getNodeRef();
+    public DbAccessControlList getAccessControlList();
+
+//    public void setAccessControlList(DbAccessControlList accessControlList);
 }

@@ -28,7 +28,7 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
-import org.alfresco.repo.version.common.counter.VersionCounterDaoService;
+import org.alfresco.repo.version.common.counter.VersionCounterService;
 import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -51,7 +51,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
      */
 	protected NodeService dbNodeService;
     protected VersionService versionService;
-    protected VersionCounterDaoService versionCounterDaoService;
+    protected VersionCounterService versionCounterDaoService;
     protected ContentService contentService;
 	protected DictionaryDAO dictionaryDAO;
     protected AuthenticationService authenticationService;
@@ -133,7 +133,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         // Get the services by name from the application context
         this.dbNodeService = (NodeService)applicationContext.getBean("dbNodeService");
         this.versionService = (VersionService)applicationContext.getBean("versionService");
-        this.versionCounterDaoService = (VersionCounterDaoService)applicationContext.getBean("versionCounterDaoService");
+        this.versionCounterDaoService = (VersionCounterService)applicationContext.getBean("versionCounterDaoService");
         this.contentService = (ContentService)applicationContext.getBean("contentService");
         this.authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
         this.authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");

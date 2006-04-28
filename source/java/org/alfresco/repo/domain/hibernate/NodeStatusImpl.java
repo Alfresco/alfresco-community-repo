@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeKey;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.util.EqualsHelper;
@@ -28,8 +29,19 @@ import org.alfresco.util.EqualsHelper;
 public class NodeStatusImpl implements NodeStatus
 {
     private NodeKey key;
+    private Node node;
     private String changeTxnId;
-    private boolean deleted;
+    
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(50);
+        sb.append("NodeStatus")
+          .append("[key=").append(key)
+          .append(", node=").append(node == null ? null : node.getNodeRef())
+          .append(", txn=").append(changeTxnId)
+          .append("]");
+        return sb.toString();
+    }
 
     public int hashCode()
     {
@@ -45,21 +57,8 @@ public class NodeStatusImpl implements NodeStatus
         else if (!(obj instanceof NodeStatusImpl))
             return false;
         NodeStatus that = (NodeStatus) obj;
-        return (EqualsHelper.nullSafeEquals(this.key, that.getKey())) &&
-               (EqualsHelper.nullSafeEquals(this.changeTxnId, that.getChangeTxnId())) &&
-               (this.deleted == that.isDeleted());
+        return (EqualsHelper.nullSafeEquals(this.key, that.getKey()));
                         
-    }
-    
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder(50);
-        sb.append("NodeStatus")
-          .append("[key=").append(key)
-          .append(", txn=").append(changeTxnId)
-          .append(", deleted=").append(deleted)
-          .append("]");
-        return sb.toString();
     }
     
     public NodeKey getKey()
@@ -70,6 +69,16 @@ public class NodeStatusImpl implements NodeStatus
     public void setKey(NodeKey key)
     {
         this.key = key;
+    }
+
+    public Node getNode()
+    {
+        return node;
+    }
+
+    public void setNode(Node node)
+    {
+        this.node = node;
     }
 
     public String getChangeTxnId()
@@ -84,11 +93,15 @@ public class NodeStatusImpl implements NodeStatus
 
     public boolean isDeleted()
     {
-        return deleted;
+        return (node == null);
     }
 
-    public void setDeleted(boolean deleted)
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setDeleted(boolean deleted)
     {
-        this.deleted = deleted;
+        // this is a convenience, derived property
     }
 }

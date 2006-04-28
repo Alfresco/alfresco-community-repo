@@ -37,6 +37,7 @@ import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.hibernate.ObjectDeletedException;
@@ -173,57 +174,89 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         return store;
     }
 
-    public Node newNode(Store store, String id, QName nodeTypeQName) throws InvalidTypeException
-    {
-        NodeKey key = new NodeKey(store.getKey(), id);
-
-        // create (or reuse) the mandatory node status
-        NodeStatus nodeStatus = (NodeStatus) getHibernateTemplate().get(NodeStatusImpl.class, key);
-        if (nodeStatus == null)
-        {
-            nodeStatus = new NodeStatusImpl();
-        }
-        // set required status properties
-        nodeStatus.setKey(key);
-        nodeStatus.setDeleted(false);
-        nodeStatus.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
-        // persist the nodestatus
-        getHibernateTemplate().save(nodeStatus);
-        
-        // build a concrete node based on a bootstrap type
-        Node node = new NodeImpl();
-        // set other required properties
-		node.setKey(key);
-        node.setTypeQName(nodeTypeQName);
-        node.setStore(store);
-        node.setStatus(nodeStatus);
-        // persist the node
-        getHibernateTemplate().save(node);
-        // done
-        return node;
-    }
-
-    public Node getNode(String protocol, String identifier, String id)
+    /**
+     * Fetch the node status, if it exists
+     */
+    public NodeStatus getNodeStatus(NodeRef nodeRef)
     {
         try
         {
-    		NodeKey nodeKey = new NodeKey(protocol, identifier, id);
-            Object obj = getHibernateTemplate().get(NodeImpl.class, nodeKey);
+            NodeKey nodeKey = new NodeKey(nodeRef);
+            Object obj = getHibernateTemplate().get(NodeStatusImpl.class, nodeKey);
             // done
-            return (Node) obj;
-        }
-        catch (ObjectDeletedException e)
-        {
-            return null;
+            return (NodeStatus) obj;
         }
         catch (DataAccessException e)
         {
             if (e.contains(ObjectDeletedException.class))
             {
-                // the object no loner exists
+                // the object no longer exists
                 return null;
             }
             throw e;
+        }
+    }
+
+    public void recordChangeId(NodeRef nodeRef)
+    {
+        NodeKey key = new NodeKey(nodeRef);
+        
+        NodeStatus status = (NodeStatus) getHibernateTemplate().get(NodeStatusImpl.class, key);
+        if (status == null)
+        {
+            // the node never existed or the status was deleted
+            return;
+        }
+        else
+        {
+            status.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        }
+    }
+
+    public Node newNode(Store store, String uuid, QName nodeTypeQName) throws InvalidTypeException
+    {
+        NodeKey key = new NodeKey(store.getKey(), uuid);
+
+        // build a concrete node based on a bootstrap type
+        Node node = new NodeImpl();
+        // set other required properties
+        node.setStore(store);
+        node.setUuid(uuid);
+        node.setTypeQName(nodeTypeQName);
+        // persist the node
+        getHibernateTemplate().save(node);
+        
+        // create (or reuse) the mandatory node status
+        NodeStatus status = (NodeStatus) getHibernateTemplate().get(NodeStatusImpl.class, key);
+        if (status == null)
+        {
+            status = new NodeStatusImpl();
+            status.setKey(key);
+        }
+        // set required status properties
+        status.setNode(node);
+        status.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        // persist the nodestatus
+        getHibernateTemplate().save(status);
+
+        // done
+        return node;
+    }
+
+    public Node getNode(NodeRef nodeRef)
+    {
+        // get it via the node status
+        NodeStatus status = getNodeStatus(nodeRef);
+        if (status == null)
+        {
+            // no status implies no node
+            return null;
+        }
+        else
+        {
+            // a status may have a node
+            Node node = status.getNode();
+            return node;
         }
     }
     
@@ -261,35 +294,21 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             deleteNodeAssoc(assoc);
         }
         // update the node status
-        NodeStatus nodeStatus = node.getStatus();
-        nodeStatus.setDeleted(true);
-        nodeStatus.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        NodeRef nodeRef = node.getNodeRef();
+        NodeStatus nodeStatus = getNodeStatus(nodeRef);
+        if (nodeStatus == null)
+        {
+            logger.warn("Node to be deleted does not have a status: \n" +
+                    "   node: " + node.getId());
+        }
+        else
+        {
+            nodeStatus.setNode(null);
+            nodeStatus.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        }
         // finally delete the node
         getHibernateTemplate().delete(node);
         // done
-    }
-
-    /**
-     * Fetch the node status, if it exists
-     */
-    public NodeStatus getNodeStatus(String protocol, String identifier, String id)
-    {
-        try
-        {
-            NodeKey nodeKey = new NodeKey(protocol, identifier, id);
-            Object obj = getHibernateTemplate().get(NodeStatusImpl.class, nodeKey);
-            // done
-            return (NodeStatus) obj;
-        }
-        catch (DataAccessException e)
-        {
-            if (e.contains(ObjectDeletedException.class))
-            {
-                // the object no loner exists
-                return null;
-            }
-            throw e;
-        }
     }
 
     public ChildAssoc newChildAssoc(
@@ -427,21 +446,15 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             final Node targetNode,
             final QName assocTypeQName)
     {
-        final NodeKey sourceKey = sourceNode.getKey();
-        final NodeKey targetKey = targetNode.getKey();
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
                 Query query = session.getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODE_ASSOC);
-                query.setString("sourceKeyProtocol", sourceKey.getProtocol())
-                     .setString("sourceKeyIdentifier", sourceKey.getIdentifier())
-                     .setString("sourceKeyGuid", sourceKey.getGuid())
+                query.setEntity("sourceNode", sourceNode)
+                     .setEntity("targetNode", targetNode)
                      .setString("assocTypeQName", assocTypeQName.toString())
-                     .setString("targetKeyProtocol", targetKey.getProtocol())
-                     .setString("targetKeyIdentifier", targetKey.getIdentifier())
-                     .setString("targetKeyGuid", targetKey.getGuid());
-                query.setMaxResults(1);
+                     .setMaxResults(1);
                 return query.uniqueResult();
             }
         };
@@ -458,15 +471,12 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     @SuppressWarnings("unchecked")
     public Collection<Node> getNodeAssocTargets(final Node sourceNode, final QName assocTypeQName)
     {
-        final NodeKey sourceKey = sourceNode.getKey();
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
                 Query query = session.getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODE_ASSOC_TARGETS);
-                query.setString("sourceKeyProtocol", sourceKey.getProtocol())
-                     .setString("sourceKeyIdentifier", sourceKey.getIdentifier())
-                     .setString("sourceKeyGuid", sourceKey.getGuid())
+                query.setEntity("sourceNode", sourceNode)
                      .setString("assocTypeQName", assocTypeQName.toString());
                 return query.list();
             }
@@ -479,15 +489,12 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     @SuppressWarnings("unchecked")
     public Collection<Node> getNodeAssocSources(final Node targetNode, final QName assocTypeQName)
     {
-        final NodeKey targetKey = targetNode.getKey();
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
                 Query query = session.getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODE_ASSOC_SOURCES);
-                query.setString("targetKeyProtocol", targetKey.getProtocol())
-                     .setString("targetKeyIdentifier", targetKey.getIdentifier())
-                     .setString("targetKeyGuid", targetKey.getGuid())
+                query.setEntity("targetNode", targetNode)
                      .setString("assocTypeQName", assocTypeQName.toString());
                 return query.list();
             }

@@ -64,7 +64,7 @@ public class GuestPersonPermissionPatch extends AbstractPatch
         {
             NodeRef personRef = personService.getPerson(guestId);
             permissionService.setInheritParentPermissions(personRef, false);
-            permissionService.deletePermission(personRef, guestId, PermissionService.CONSUMER, true);
+            permissionService.deletePermission(personRef, guestId, PermissionService.CONSUMER);
             permissionService.setPermission(personRef, guestId, PermissionService.READ, true);
         }
 

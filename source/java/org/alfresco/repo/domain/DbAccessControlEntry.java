@@ -14,7 +14,9 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.repo.security.permissions.impl.hibernate;
+package org.alfresco.repo.domain;
+
+
 
 /**
  * The interface against which permission entries are persisted
@@ -22,39 +24,45 @@ package org.alfresco.repo.security.permissions.impl.hibernate;
  * @author andyh
  */
 
-public interface PermissionEntry
+public interface DbAccessControlEntry
 {
     /**
-     * Get the identifier for this object.
-     * 
-     * @return
+     * @return Returns the identifier for this object
      */
     public long getId();
     
     /**
-     * Get the containing node permission entry.
-     * 
-     * @return
+     * @return Returns the containing access control list
      */
-    public NodePermissionEntry getNodePermissionEntry();
+    public DbAccessControlList getAccessControlList();
     
     /**
-     * Get the permission to which this entry applies.
-     * 
-     * @return
+     * @param acl the accession control list to which entry belongs
      */
-    public PermissionReference getPermissionReference();
+    public void setAccessControlList(DbAccessControlList acl);
     
     /**
-     * Get the recipient to which this entry applies.
-     * 
-     * @return
+     * @return Returns the permission to which this entry applies
      */
-    public Recipient getRecipient();
+    public DbPermission getPermission();
     
     /**
-     * Is this permission allowed?
-     * @return
+     * @param permission the permission to which the entry applies
+     */
+    public void setPermission(DbPermission permission);
+    
+    /**
+     * @return Returns the authority to which this entry applies
+     */
+    public DbAuthority getAuthority();
+    
+    /**
+     * @param authority the authority to which this entry applies
+     */
+    public void setAuthority(DbAuthority authority);
+    
+    /**
+     * @return Returns <tt>true</tt> if this permission is allowed 
      */
     public boolean isAllowed();
     
@@ -64,10 +72,4 @@ public interface PermissionEntry
      * @param allowed
      */
     public void setAllowed(boolean allowed);
-    
-    /**
-     * Delete this permission entry - allows for deleting of the bidirectional relationship to the node permission entry.
-     *
-     */
-    public void delete();
 }

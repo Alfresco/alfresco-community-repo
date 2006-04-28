@@ -35,7 +35,7 @@ import org.springframework.context.ApplicationContext;
 /**
  * @author Roy Wetherall
  */
-public class VersionCounterDaoServiceTest extends TestCase
+public class VersionCounterServiceTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
@@ -44,7 +44,7 @@ public class VersionCounterDaoServiceTest extends TestCase
 
     private TransactionService transactionService;
     private NodeService nodeService;
-    private VersionCounterDaoService counter;
+    private VersionCounterService counter;
     
     @Override
     public void setUp() throws Exception
@@ -52,7 +52,7 @@ public class VersionCounterDaoServiceTest extends TestCase
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
-        counter = (VersionCounterDaoService) ctx.getBean("versionCounterDaoService");
+        counter = (VersionCounterService) ctx.getBean("versionCounterService");
         
         storeRef1 = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "test1_" + System.currentTimeMillis());
         storeRef2 = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "test2_" + System.currentTimeMillis());

@@ -22,11 +22,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.domain.ChildAssoc;
+import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
-import org.alfresco.repo.domain.NodeKey;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.Store;
@@ -41,18 +44,23 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Derek Hulley
  */
-public class NodeImpl implements Node
+public class NodeImpl extends LifecycleAdapter implements Node
 {
-    private NodeKey key;
+    private Long id;
     private Store store;
+    private String uuid;
     private QName typeQName;
-    private NodeStatus status;
+//    private NodeStatus status;
     private Set<QName> aspects;
     private Collection<NodeAssoc> sourceNodeAssocs;
     private Collection<NodeAssoc> targetNodeAssocs;
     private Collection<ChildAssoc> parentAssocs;
     private Collection<ChildAssoc> childAssocs;
     private Map<QName, PropertyValue> properties;
+    private DbAccessControlList accessControlList;
+    
+    private transient ReadLock refReadLock;
+    private transient WriteLock refWriteLock;
     private transient NodeRef nodeRef;
 
     public NodeImpl()
@@ -63,6 +71,53 @@ public class NodeImpl implements Node
         parentAssocs = new ArrayList<ChildAssoc>(3);
         childAssocs = new ArrayList<ChildAssoc>(3);
         properties = new HashMap<QName, PropertyValue>(5);
+        
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        refReadLock = lock.readLock();
+        refWriteLock = lock.writeLock();
+    }
+
+    /**
+     * Thread-safe caching of the reference is provided
+     */
+    public NodeRef getNodeRef()
+    {
+        // first check if it is available
+        refReadLock.lock();
+        try
+        {
+            if (nodeRef != null)
+            {
+                return nodeRef;
+            }
+        }
+        finally
+        {
+            refReadLock.unlock();
+        }
+        // get write lock
+        refWriteLock.lock();
+        try
+        {
+            // double check
+            if (nodeRef == null )
+            {
+                nodeRef = new NodeRef(getStore().getStoreRef(), getUuid());
+            }
+            return nodeRef;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+    
+    /**
+     * @see #getNodeRef()
+     */
+    public String toString()
+    {
+        return getNodeRef().toString();
     }
     
     public boolean equals(Object obj)
@@ -80,31 +135,77 @@ public class NodeImpl implements Node
             return false;
         }
         Node that = (Node) obj;
-        return (this.getKey().equals(that.getKey()));
+        return (this.getNodeRef().equals(that.getNodeRef()));
     }
     
     public int hashCode()
     {
-        return getKey().hashCode();
+        return getNodeRef().hashCode();
     }
 
-    public NodeKey getKey() {
-		return key;
-	}
+//    @Override
+//    public boolean onDelete(Session session) throws CallbackException
+//    {
+//        // check if there is an access control list
+//        DbAccessControlList acl = getAccessControlList();
+//        if (acl != null)
+//        {
+//            session.delete(acl);
+//        }
+//        return NO_VETO;
+//    }
+//
 
-	public void setKey(NodeKey key) {
-		this.key = key;
-	}
-    
+    public Long getId()
+    {
+        return id;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setId(Long id)
+    {
+        this.id = id;
+    }
+
     public Store getStore()
     {
         return store;
     }
 
-    public synchronized void setStore(Store store)
+    public void setStore(Store store)
     {
-        this.store = store;
-        this.nodeRef = null;
+        refWriteLock.lock();
+        try
+        {
+            this.store = store;
+            this.nodeRef = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+
+    public String getUuid()
+    {
+        return uuid;
+    }
+
+    public void setUuid(String uuid)
+    {
+        refWriteLock.lock();
+        try
+        {
+            this.uuid = uuid;
+            this.nodeRef = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
 
     public QName getTypeQName()
@@ -117,16 +218,16 @@ public class NodeImpl implements Node
         this.typeQName = typeQName;
     }
 
-    public NodeStatus getStatus()
-    {
-        return status;
-    }
-
-    public void setStatus(NodeStatus status)
-    {
-        this.status = status;
-    }
-
+//    public NodeStatus getStatus()
+//    {
+//        return status;
+//    }
+//
+//    public void setStatus(NodeStatus status)
+//    {
+//        this.status = status;
+//    }
+//
     public Set<QName> getAspects()
     {
         return aspects;
@@ -211,23 +312,17 @@ public class NodeImpl implements Node
         this.properties = properties;
     }
 
-    /**
-     * Thread-safe caching of the reference is provided
-     */
-    public synchronized NodeRef getNodeRef()
+    public DbAccessControlList getAccessControlList()
     {
-        if (nodeRef == null && key != null)
-        {
-            nodeRef = new NodeRef(getStore().getStoreRef(), getKey().getGuid());
-        }
-        return nodeRef;
+        return accessControlList;
     }
-    
+
     /**
-     * @see #getNodeRef()
+     * For Hibernate use
      */
-    public String toString()
+    @SuppressWarnings("unused")
+    private void setAccessControlList(DbAccessControlList accessControlList)
     {
-        return getNodeRef().toString();
+        this.accessControlList = accessControlList;
     }
 }

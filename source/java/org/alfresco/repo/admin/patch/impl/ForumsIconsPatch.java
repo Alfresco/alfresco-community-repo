@@ -57,26 +57,41 @@ public class ForumsIconsPatch extends AbstractPatch
     {
         int changed = 0;
         String query = "TYPE:\"" + typeName.toString() + "\"";
-        ResultSet results = this.searchService.query(this.importerBootstrap.getStoreRef(), 
-                SearchService.LANGUAGE_LUCENE, query);
         
-        // if there are any results iterate through nodes and update icon property
-        if (results.length() > 0)
+        ResultSet results = null;
+        try
         {
-           for (NodeRef node : results.getNodeRefs())
-           {
-               String icon = (String)this.nodeService.getProperty(node, ContentModel.PROP_ICON);
-               if (icon != null && icon.length() > 0)
+            results = this.searchService.query(this.importerBootstrap.getStoreRef(), 
+                SearchService.LANGUAGE_LUCENE, query);
+            
+            // if there are any results iterate through nodes and update icon property
+            if (results.length() > 0)
+            {
+               for (NodeRef node : results.getNodeRefs())
                {
-                   int idx = icon.indexOf("_large");
-                   if (idx != -1)
+                   if (this.nodeService.exists(node))
                    {
-                       String newIcon = icon.substring(0, idx);
-                       this.nodeService.setProperty(node, ContentModel.PROP_ICON, (Serializable)newIcon);
-                       changed++;
+                       String icon = (String)this.nodeService.getProperty(node, ContentModel.PROP_ICON);
+                       if (icon != null && icon.length() > 0)
+                       {
+                           int idx = icon.indexOf("_large");
+                           if (idx != -1)
+                           {
+                               String newIcon = icon.substring(0, idx);
+                               this.nodeService.setProperty(node, ContentModel.PROP_ICON, (Serializable)newIcon);
+                               changed++;
+                           }
+                       }
                    }
                }
-           }
+            }
+        }
+        finally
+        {
+            if (results != null)
+            {
+                results.close();
+            }
         }
         
         return changed;

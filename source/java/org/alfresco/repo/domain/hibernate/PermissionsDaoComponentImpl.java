@@ -141,7 +141,12 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         DbAccessControlList acl = null;
         if (results.size() == 0)
         {
-            // we'll return null
+            // create it
+            if (create)
+            {
+                acl = createAccessControlList(nodeRef);
+            }
+            // else null will be returned
         }
         else if (results.size() > 0)
         {

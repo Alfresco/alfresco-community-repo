@@ -21,19 +21,22 @@
       <id name="id" column="id" type="long" >
          <generator class="native" />
       </id>
-      <!-- forward assoc to store -->
-      <many-to-one
-            name="store"
-            class="org.alfresco.repo.domain.hibernate.StoreImpl"
-            not-null="true"
-            lazy="no-proxy"
-            optimistic-lock="true"
-            fetch="select">
-         <column name="protocol" not-null="true" />
-         <column name="identifier" not-null="true" />
-      </many-to-one>
-      <!-- the store-unique identifier -->
-      <property name="uuid" column="uuid" type="string" length="36" />
+      <!-- the natural ID of the node -->
+      <natural-id mutable="true">
+         <!-- forward assoc to store -->
+         <many-to-one
+               name="store"
+               class="org.alfresco.repo.domain.hibernate.StoreImpl"
+               not-null="true"
+               lazy="no-proxy"
+               optimistic-lock="true"
+               fetch="select">
+            <column name="protocol" not-null="true" />
+            <column name="identifier" not-null="true" />
+         </many-to-one>
+         <!-- the store-unique identifier -->
+         <property name="uuid" column="uuid" type="string" length="36" />
+      </natural-id>
       <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
       <!-- inverse assoc to access control list -->
       <one-to-one 
@@ -43,15 +46,6 @@
             lazy="no-proxy"
             fetch="select"
             cascade="delete" /> 
-      <!-- inverse assoc to node status -->
-<!--
-      <one-to-one
-            name="status"
-            class="org.alfresco.repo.domain.hibernate.NodeStatusImpl"
-            property-ref="node"
-            lazy="no-proxy"
-            fetch="select" />
--->
       <!-- forward assoc to properties -->
       <map
             name="properties" 

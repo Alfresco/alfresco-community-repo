@@ -682,7 +682,7 @@ public class CreateSpaceWizard extends BaseWizardBean
       {
          return MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), "error_space"), 
-               ((FileExistsException)exception).getExisting().getName());
+               exception.getMessage());
       }
    }
 }

@@ -23,8 +23,6 @@ import org.alfresco.web.ui.common.Utils;
  */
 public abstract class BaseDialogBean implements IDialogBean
 {
-   protected static final String ERROR_ID = "error_generic";
-   
    // services common to most dialogs
    protected BrowseBean browseBean;
    protected NavigationBean navigator;
@@ -178,6 +176,14 @@ public abstract class BaseDialogBean implements IDialogBean
    }
    
    /**
+    * @return The error message lookup id
+    */
+   protected String getErrorMessageId()
+   {
+      return "error_generic";
+   }
+   
+   /**
     * Returns a formatted exception string for the given exception
     * 
     * @param exception The exception that got thrown
@@ -186,7 +192,7 @@ public abstract class BaseDialogBean implements IDialogBean
    protected String formatErrorMessage(Throwable exception)
    {
       return MessageFormat.format(Application.getMessage(
-            FacesContext.getCurrentInstance(), ERROR_ID), 
+            FacesContext.getCurrentInstance(), getErrorMessageId()), 
             exception.getMessage());
    }
 }

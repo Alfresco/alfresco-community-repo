@@ -5,8 +5,8 @@
 
       <dialogs>
          <dialog name="createSpace" page="/jsp/spaces/create-space-dialog.jsp" managed-bean="CreateSpaceDialog"
-                 icon="/images/icons/create_space_large.gif" title-id="new_space" 
-                 description-id="newspace_description" />
+                 icon="/images/icons/create_space_large.gif" title-id="create_space" 
+                 description-id="create_space_description" />
                  
          <dialog name="editSpace" page="/jsp/spaces/edit-space-dialog.jsp" managed-bean="EditSpaceDialog"
                  icon="/images/icons/create_space_large.gif" title-id="modify_space_properties" 

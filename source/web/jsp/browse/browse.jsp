@@ -193,7 +193,7 @@
                         <f:facet name="empty">
                            <%-- TODO: either build complete message in BrowseBean or have no icon... --%>
                            <h:outputFormat value="#{msg.no_space_items}" escape="false" rendered="#{NavigationBean.searchContext == null}">
-                              <f:param value="#{msg.new_space}" />
+                              <f:param value="#{msg.create_space}" />
                            </h:outputFormat>
                         </f:facet>
                         

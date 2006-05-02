@@ -17,7 +17,7 @@ public class CreateSpaceDialog extends CreateSpaceWizard
    @Override
    public String getFinishButtonLabel()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), "new_space");
+      return Application.getMessage(FacesContext.getCurrentInstance(), "create_space");
    }
    
    @Override

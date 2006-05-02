@@ -7,48 +7,95 @@
       	
       	<!-- Definition of an advanced space wizard  -->
          <wizard name="createSpace" managed-bean="CreateSpaceWizard"
-                 title-id="new_space_title" description-id="new_space_desc"
+                 title-id="create_space_title" description-id="create_space_desc"
                  icon="/images/icons/create_space_large.gif">
-            <step name="create-from" title-id="starting_space" description-id="new_space_step1_desc">
+            <step name="create-from" title-id="starting_space" description-id="create_space_step1_desc">
                <page path="/jsp/spaces/create-space-wizard/create-from.jsp"
-                     title-id="new_space_step1_title" 
-                     description-id="new_space_step1_desc"
+                     title-id="create_space_step1_title" 
+                     description-id="create_space_step1_desc"
                      instruction-id="default_instruction" />
             </step>
-            <step name="options" title-id="space_options" description-id="new_space_step2_desc">
+            <step name="options" title-id="space_options" description-id="create_space_step2_desc">
                <condition if="#{CreateSpaceWizard.createFrom == 'scratch'}">
                   <page path="/jsp/spaces/create-space-wizard/from-scratch.jsp" 
-                        title-id="new_space_step2_title" 
-                        description-id="new_space_step2_desc" 
+                        title-id="create_space_step2_title" 
+                        description-id="create_space_step2_desc" 
                         instruction-id="default_instruction" />
                </condition>
                <condition if="#{CreateSpaceWizard.createFrom == 'existing'}">
                   <page path="/jsp/spaces/create-space-wizard/from-existing.jsp" 
-                        title-id="new_space_step2_title" 
-                        description-id="new_space_step2_desc" 
+                        title-id="create_space_step2_title" 
+                        description-id="create_space_step2_desc" 
                         instruction-id="default_instruction" />
                </condition>
                <condition if="#{CreateSpaceWizard.createFrom == 'template'}">
                   <page path="/jsp/spaces/create-space-wizard/from-template.jsp" 
-                        title-id="new_space_step2_title" 
-                        description-id="new_space_step2_desc" 
+                        title-id="create_space_step2_title" 
+                        description-id="create_space_step2_desc" 
                         instruction-id="default_instruction" />
                </condition>
             </step>
-            <step name="details" title-id="space_details" description-id="new_space_step3_desc">
+            <step name="details" title-id="space_details" description-id="create_space_step3_desc">
                <page path="/jsp/spaces/create-space-wizard/details.jsp"
-                     title-id="new_space_step3_title" 
-                     description-id="new_space_step3_desc" 
+                     title-id="create_space_step3_title" 
+                     description-id="create_space_step3_desc" 
                      instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_desc">
                <page path="/jsp/wizard/summary.jsp"
                      title-id="summary" 
                      description-id="summary_desc" 
-                     instruction-id="new_space_finish_instruction" />
+                     instruction-id="create_space_finish_instruction" />
             </step>
          </wizard>
-
+         
+         <!-- Definition of the run action wizard -->
+         <wizard name="runAction" managed-bean="RunActionWizard"
+                 title-id="run_action_title" description-id="run_action_desc"
+                 icon="/images/icons/new_rule_large.gif">
+            <step name="actions" title-id="actions" description="">
+               <page path="/jsp/actions/actions.jsp" 
+                     title-id="run_action_step1_title"
+                     description=""
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_desc">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary" 
+                     description-id="summary_desc" 
+                     instruction-id="run_action_finish_instruction" />
+            </step>
+         </wizard>
+         
+         <!-- Definition of the create rule wizard -->
+         <wizard name="createRule" managed-bean="CreateRuleWizard"
+                 title-id="create_rule_title" description-id="create_rule_desc"
+                 icon="/images/icons/new_rule_large.gif">
+            <step name="conditions" title-id="conditions" description="">
+               <page path="/jsp/rules/conditions.jsp" 
+                     title-id="create_rule_step1_title"
+                     description=""
+                     instruction-id="default_instruction" />
+            </step>     
+            <step name="actions" title-id="actions" description="">
+               <page path="/jsp/actions/actions.jsp" 
+                     title-id="create_rule_step2_title"
+                     description=""
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="details" title-id="details" description="">
+               <page path="/jsp/rules/details.jsp" 
+                     title-id="create_rule_step3_title"
+                     description=""
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_desc">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary" 
+                     description-id="summary_desc" 
+                     instruction-id="create_rule_finish_instruction" />
+            </step>
+         </wizard>
       </wizards>
    </config>
    

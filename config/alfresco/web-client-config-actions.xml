@@ -327,7 +327,7 @@
             <permissions>
                <permission allow="true">CreateChildren</permission>
             </permissions>
-            <label-id>new_space</label-id>
+            <label-id>create_space</label-id>
             <image>/images/icons/create_space.gif</image>
             <action>dialog:createSpace</action>
             <!-- <action-listener>#{NewSpaceDialog.startWizard}</action-listener> -->
@@ -421,8 +421,7 @@
          <action id="run_action">
             <label-id>other_action</label-id>
             <image>/images/icons/action.gif</image>
-            <action>createAction</action>
-            <action-listener>#{NewActionWizard.startWizard}</action-listener>
+            <action>wizard:runAction</action>
          </action>
          
          <!-- Import into Space -->

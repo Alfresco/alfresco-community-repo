@@ -476,10 +476,10 @@
    
    <managed-bean>
       <description>
-         The bean that backs up the New Rule Wizard
+         The bean that backs up the Create Rule Wizard
       </description>
-      <managed-bean-name>NewRuleWizard</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewRuleWizard</managed-bean-class>
+      <managed-bean-name>CreateRuleWizard</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.rules.CreateRuleWizard</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -529,10 +529,63 @@
    
    <managed-bean>
       <description>
-         The bean that backs up the New Action Wizard
+         The bean that backs up the Edit Rule Wizard
       </description>
-      <managed-bean-name>NewActionWizard</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewActionWizard</managed-bean-class>
+      <managed-bean-name>EditRuleWizard</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.rules.EditRuleWizard</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>ruleService</property-name>
+         <value>#{RuleService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>actionService</property-name>
+         <value>#{ActionService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>mimetypeService</property-name>
+         <value>#{MimetypeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>rulesBean</property-name>
+         <value>#{RulesBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>personService</property-name>
+         <value>#{PersonService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>authorityService</property-name>
+         <value>#{AuthorityService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Run Action Wizard
+      </description>
+      <managed-bean-name>RunActionWizard</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.actions.RunActionWizard</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -803,7 +856,7 @@
          The bean that holds manage content rules state
       </description>
       <managed-bean-name>RulesBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.RulesBean</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.rules.RulesBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>browseBean</property-name>

@@ -74,7 +74,7 @@
                            </td>
                            <td align=right>
                               <%-- Current object actions --%>
-                              <a:actionLink value="#{msg.create_rule}" image="/images/icons/new_rule.gif" padding="4" action="createRule" actionListener="#{NewRuleWizard.startWizard}" />
+                              <a:actionLink value="#{msg.create_rule}" image="/images/icons/new_rule.gif" padding="4" action="wizard:createRule" />
                            </td>
                            <td class="separator" width=1></td>
                            <td width="125" style="padding-left:2px">
@@ -125,7 +125,7 @@
                                        <h:panelGroup>
                                           <a:booleanEvaluator value="#{r.local}">
                                              <a:actionLink value="#{r.title}" image="/images/icons/rule.gif" 
-                                                           actionListener="#{NewRuleWizard.startWizardForEdit}" action="editRule"
+                                                           actionListener="#{RulesBean.setupRuleAction}" action="wizard:editRule"
                                                            showLink="false">
                                                 <f:param name="id" value="#{r.id}" />
                                              </a:actionLink>
@@ -136,8 +136,8 @@
                                        </h:panelGroup>
                                     </f:facet>
                                     <a:booleanEvaluator value="#{r.local}">
-                                       <a:actionLink value="#{r.title}" actionListener="#{NewRuleWizard.startWizardForEdit}" 
-                                                     action="editRule">
+                                       <a:actionLink value="#{r.title}" actionListener="#{RulesBean.setupRuleAction}" 
+                                                     action="wizard:editRule">
                                           <f:param name="id" value="#{r.id}" />
                                        </a:actionLink>
                                     </a:booleanEvaluator>
@@ -197,7 +197,7 @@
                                        </a:actionLink>
                                        <a:actionLink value="#{msg.change_details}" image="/images/icons/change_rule.gif" 
                                                      showLink="false" styleClass="inlineAction"
-                                                     actionListener="#{NewRuleWizard.startWizardForEdit}" action="editRule">
+                                                     actionListener="#{RulesBean.setupRuleAction}" action="wizard:editRule">
                                           <f:param name="id" value="#{r.id}" />
                                        </a:actionLink>
                                     </a:booleanEvaluator>

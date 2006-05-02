@@ -23,6 +23,8 @@ import org.alfresco.web.ui.common.Utils;
  */
 public abstract class BaseDialogBean implements IDialogBean
 {
+   protected boolean isFinished = false;
+   
    // services common to most dialogs
    protected BrowseBean browseBean;
    protected NavigationBean navigator;
@@ -34,6 +36,9 @@ public abstract class BaseDialogBean implements IDialogBean
    {
       // tell any beans to update themselves so the UI gets refreshed
       UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
+      
+      // reset the isFinished flag
+      this.isFinished = false;
    }
    
    public String cancel()
@@ -45,30 +50,36 @@ public abstract class BaseDialogBean implements IDialogBean
    {
       String outcome = getDefaultFinishOutcome();
       
-      UserTransaction tx = null;
-   
-      try
+      // check the isFinished flag to stop the finish button
+      // being pressed multiple times
+      if (this.isFinished == false)
       {
-         FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context);
-         tx.begin();
-         
-         // call the actual implementation
-         outcome = finishImpl(context, outcome);
-         
-         // persist the changes
-         tx.commit();
-         
-         // allow any subclasses to perform post commit processing 
-         // i.e. resetting state or setting status messages
-         outcome = doPostCommitProcessing(context, outcome);
-      }
-      catch (Throwable e)
-      {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage(formatErrorMessage(e));
-         outcome = null;
+         this.isFinished = true;
+         UserTransaction tx = null;
+      
+         try
+         {
+            FacesContext context = FacesContext.getCurrentInstance();
+            tx = Repository.getUserTransaction(context);
+            tx.begin();
+            
+            // call the actual implementation
+            outcome = finishImpl(context, outcome);
+            
+            // persist the changes
+            tx.commit();
+            
+            // allow any subclasses to perform post commit processing 
+            // i.e. resetting state or setting status messages
+            outcome = doPostCommitProcessing(context, outcome);
+         }
+         catch (Throwable e)
+         {
+            // rollback the transaction
+            try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+            Utils.addErrorMessage(formatErrorMessage(e));
+            outcome = null;
+         }
       }
       
       return outcome;

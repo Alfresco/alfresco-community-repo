@@ -2,8 +2,6 @@ package org.alfresco.web.bean.wizard;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;

@@ -26,7 +26,6 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.version.common.counter.VersionCounterService;
 import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
@@ -92,7 +91,6 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
 	protected static final QName TEST_ASSOC = QName.createQName(TEST_NAMESPACE, "assoc1");	
     
     protected Collection<String> multiValue = null;
-    private AuthenticationComponent authenticationComponent;
     protected static final String MULTI_VALUE_1 = "multi1";
     protected static final String MULTI_VALUE_2 = "multi2";
     
@@ -133,10 +131,9 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         // Get the services by name from the application context
         this.dbNodeService = (NodeService)applicationContext.getBean("dbNodeService");
         this.versionService = (VersionService)applicationContext.getBean("versionService");
-        this.versionCounterDaoService = (VersionCounterService)applicationContext.getBean("versionCounterDaoService");
+        this.versionCounterDaoService = (VersionCounterService)applicationContext.getBean("versionCounterService");
         this.contentService = (ContentService)applicationContext.getBean("contentService");
         this.authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
-        this.authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
         this.authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("alfDaoImpl");
         

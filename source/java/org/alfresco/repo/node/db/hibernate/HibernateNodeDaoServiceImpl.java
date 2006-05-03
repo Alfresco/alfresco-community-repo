@@ -216,6 +216,27 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public Node newNode(Store store, String uuid, QName nodeTypeQName) throws InvalidTypeException
     {
         NodeKey key = new NodeKey(store.getKey(), uuid);
+        
+        // create (or reuse) the mandatory node status
+        NodeStatus status = (NodeStatus) getHibernateTemplate().get(NodeStatusImpl.class, key);
+        if (status == null)
+        {
+            status = new NodeStatusImpl();
+            status.setKey(key);
+        }
+        else
+        {
+            // The node existed at some point.
+            // Although unlikely, it is possible that the node was deleted in this transaction.
+            // If that is the case, then the session has to be flushed so that the database
+            // constraints aren't violated as the node creation will write to the database to
+            // get an ID
+            if (status.getChangeTxnId().equals(AlfrescoTransactionSupport.getTransactionId()))
+            {
+                // flush
+                getHibernateTemplate().flush();
+            }
+        }
 
         // build a concrete node based on a bootstrap type
         Node node = new NodeImpl();
@@ -225,14 +246,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         node.setTypeQName(nodeTypeQName);
         // persist the node
         getHibernateTemplate().save(node);
-        
-        // create (or reuse) the mandatory node status
-        NodeStatus status = (NodeStatus) getHibernateTemplate().get(NodeStatusImpl.class, key);
-        if (status == null)
-        {
-            status = new NodeStatusImpl();
-            status.setKey(key);
-        }
+
         // set required status properties
         status.setNode(node);
         status.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
@@ -322,6 +336,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         assoc.setTypeQName(assocTypeQName);
         assoc.setIsPrimary(isPrimary);
         assoc.setQname(qname);
+//        assoc.setIsArchived(false);
         assoc.buildAssociation(parentNode, childNode);
         // persist
         getHibernateTemplate().save(assoc);
@@ -434,6 +449,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     {
         NodeAssoc assoc = new NodeAssocImpl();
         assoc.setTypeQName(assocTypeQName);
+//        assoc.setIsArchived(false);
         assoc.buildAssociation(sourceNode, targetNode);
         // persist
         getHibernateTemplate().save(assoc);

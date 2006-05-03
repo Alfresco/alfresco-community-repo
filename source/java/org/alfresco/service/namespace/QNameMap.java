@@ -133,7 +133,7 @@ public class QNameMap<K,V> implements Map, Cloneable
     /**
      * @see java.util.Map#keySet()
      */
-    public Set keySet()
+    public Set<String> keySet()
     {
         return this.contents.keySet();
     }

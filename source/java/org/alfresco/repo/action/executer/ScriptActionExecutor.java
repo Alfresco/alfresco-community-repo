@@ -38,6 +38,7 @@ public class ScriptActionExecutor extends ActionExecuterAbstractBase
 {
     public static final String NAME = "script";
     public static final String PARAM_SCRIPTREF = "script-ref";
+    public static final String PARAM_SPACEREF = "space-ref";
     
     private ServiceRegistry serviceRegistry;
     private PersonService personService;
@@ -79,6 +80,12 @@ public class ScriptActionExecutor extends ActionExecuterAbstractBase
         if (nodeService.exists(actionedUponNodeRef))
         {
             NodeRef scriptRef = (NodeRef)action.getParameterValue(PARAM_SCRIPTREF);
+            NodeRef spaceRef = (NodeRef)action.getParameterValue(PARAM_SPACEREF);
+            if (spaceRef == null)
+            {
+                // get primary parent of the doc as no space has been specified
+                spaceRef = nodeService.getPrimaryParent(actionedUponNodeRef).getParentRef();
+            }
             
             if (nodeService.exists(scriptRef))
             {
@@ -95,7 +102,7 @@ public class ScriptActionExecutor extends ActionExecuterAbstractBase
                         getCompanyHome(),
                         homeSpaceRef,
                         actionedUponNodeRef,
-                        actionedUponNodeRef);
+                        spaceRef);
                 
                 // execute the script against the default model
                 this.serviceRegistry.getScriptService().executeScript(
@@ -112,6 +119,7 @@ public class ScriptActionExecutor extends ActionExecuterAbstractBase
     protected void addParameterDefintions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_SCRIPTREF, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_SCRIPTREF)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_SPACEREF, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_SPACEREF)));
     }
     
     private NodeRef getCompanyHome()

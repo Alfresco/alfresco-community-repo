@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,11 +32,14 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.model.FileExistsException;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
@@ -78,7 +82,7 @@ public final class Node implements Serializable
     private String path;
     private String id;
     private Set<QName> aspects = null;
-    private ScriptableQNameMap<String, Object> properties;
+    private ScriptableQNameMap<String, Serializable> properties;
     private boolean propsRetrieved = false;
     private ServiceRegistry services = null;
     private Boolean isDocument = null;
@@ -161,7 +165,7 @@ public final class Node implements Serializable
     }
     
     /**
-     * @return The display name for the node
+     * @return Helper to return the 'name' property for the node
      */
     public String getName()
     {
@@ -193,9 +197,22 @@ public final class Node implements Serializable
         return getName();
     }
     
+    /**
+     * Helper to set the 'name' property for the node.
+     * 
+     * @param name      Name to set
+     */
+    public void setName(String name)
+    {
+        if (name != null)
+        {
+            this.getProperties().put(ContentModel.PROP_NAME.toString(), name.toString());
+        }
+    }
+    
     public void jsSet_name(String name)
     {
-        this.getProperties().put(ContentModel.PROP_NAME.toString(), name);
+        setName(name);
     }
     
     /**
@@ -328,7 +345,7 @@ public final class Node implements Serializable
         if (this.propsRetrieved == false)
         {
             // this Map implements the Scriptable interface for native JS syntax property access
-            this.properties = new ScriptableQNameMap<String, Object>(this.services.getNamespaceService());
+            this.properties = new ScriptableQNameMap<String, Serializable>(this.services.getNamespaceService());
             
             Map<QName, Serializable> props = this.services.getNodeService().getProperties(this.nodeRef);
             for (QName qname : props.keySet())
@@ -606,14 +623,39 @@ public final class Node implements Serializable
      */
     public String getContent()
     {
-        ContentService contentService = this.services.getContentService();
-        ContentReader reader = contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
-        return (reader != null && reader.exists()) ? reader.getContentString() : "";
+        String content = "";
+        
+        ScriptContentData contentData = (ScriptContentData)getProperties().get(ContentModel.PROP_CONTENT);
+        if (contentData != null)
+        {
+            content = contentData.getContent();
+        }
+        
+        return content;
     }
     
     public String jsGet_content()
     {
         return getContent();
+    }
+    
+    /**
+     * Set the content for this node
+     * 
+     * @param content       Content string to set
+     */
+    public void setContent(String content)
+    {
+        ScriptContentData contentData = (ScriptContentData)getProperties().get(ContentModel.PROP_CONTENT);
+        if (contentData != null)
+        {
+            contentData.setContent(content);
+        }
+    }
+    
+    public void jsSet_content(String content)
+    {
+        setContent(content);
     }
     
     /**
@@ -705,6 +747,90 @@ public final class Node implements Serializable
     public TemplateImageResolver getImageResolver()
     {
         return this.imageResolver;
+    }
+    
+    /**
+     * Persist the properties of this Node.
+     */
+    public void save()
+    {
+        // persist properties back to the node in the DB 
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(this.properties.size());
+        for (String key : this.properties.keySet())
+        {
+            Serializable value = (Serializable)this.properties.get(key);
+            if (value instanceof Node)
+            {
+                // convert back to NodeRef
+                value = ((Node)value).getNodeRef();
+            }
+            else if (value instanceof ScriptContentData)
+            {
+                // convert back to ContentData
+                value = ((ScriptContentData)value).contentData;
+            }
+            props.put(QName.createQName(key), value);
+        }
+        this.services.getNodeService().setProperties(this.nodeRef, props);
+    }
+    
+    /**
+     * Create a new File node as a child of this node.
+     * <p>
+     * Once created the file should have content set using the <code>content</code> property.
+     * 
+     * @param name      Name of the file to create
+     * 
+     * @return Newly created Node or null if failed to create.
+     */
+    // TODO: create with type? create with content?
+    public Node createFile(String name)
+    {
+        Node node = null;
+        try
+        {
+            FileInfo fileInfo = this.services.getFileFolderService().create(
+                    this.nodeRef, name, ContentModel.TYPE_CONTENT);
+            node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver);
+        }
+        catch (FileExistsException fileErr)
+        {
+            // default of null will be returned
+            // TODO: how to report this kind of exception to the script writer?
+        }
+        catch (AccessDeniedException accessErr)
+        {
+            // default of null will be returned
+        }
+        
+        return node;
+    }
+    
+    /**
+     * Create a new folder node
+     * @param name
+     * @return
+     */
+    public Node createFolder(String name)
+    {
+        Node node = null;
+        try
+        {
+            FileInfo fileInfo = this.services.getFileFolderService().create(
+                    this.nodeRef, name, ContentModel.TYPE_FOLDER);
+            node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver);
+        }
+        catch (FileExistsException fileErr)
+        {
+            // default of null will be returned
+            // TODO: how to report this kind of exception to the script writer?
+        }
+        catch (AccessDeniedException accessErr)
+        {
+            // default of null will be returned
+        }
+        
+        return node;
     }
     
     /**
@@ -810,8 +936,34 @@ public final class Node implements Serializable
             return (reader != null && reader.exists()) ? reader.getContentString() : "";
         }
         
+        public String jsGet_content()
+        {
+            return getContent();
+        }
+        
         /**
-         * @return 
+         * Set the content stream
+         * 
+         * @param content   Content string to set
+         */
+        public void setContent(String content)
+        {
+            ContentService contentService = services.getContentService();
+            ContentWriter writer = contentService.getWriter(nodeRef, this.property, true);
+            writer.setMimetype(getMimetype());  // use existing mimetype value
+            writer.putContent(content);
+            
+            // update cached variables after putContent()
+            this.contentData = (ContentData)services.getNodeService().getProperty(nodeRef, this.property);
+        }
+        
+        public void jsSet_content(String content)
+        {
+            setContent(content);
+        }
+        
+        /**
+         * @return download URL to the content
          */
         public String getUrl()
         {
@@ -830,14 +982,29 @@ public final class Node implements Serializable
             }
         }
         
+        public String jsGet_url()
+        {
+            return getUrl();
+        }
+        
         public long getSize()
         {
             return contentData.getSize();
         }
         
+        public long jsGet_size()
+        {
+            return getSize();
+        }
+        
         public String getMimetype()
         {
             return contentData.getMimetype();
+        }
+        
+        public String jsGet_mimetype()
+        {
+            return getMimetype();
         }
         
         private ContentData contentData;

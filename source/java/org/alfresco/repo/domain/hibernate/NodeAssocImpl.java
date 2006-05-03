@@ -16,6 +16,10 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -33,10 +37,16 @@ public class NodeAssocImpl implements NodeAssoc
     private Node source;
     private Node target;
     private QName typeQName;
+    
+    private transient ReadLock refReadLock;
+    private transient WriteLock refWriteLock;
     private transient AssociationRef nodeAssocRef;
 
     public NodeAssocImpl()
     {
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        refReadLock = lock.readLock();
+        refWriteLock = lock.writeLock();
     }
 
     public void buildAssociation(Node sourceNode, Node targetNode)
@@ -62,15 +72,39 @@ public class NodeAssocImpl implements NodeAssoc
         this.getTarget().getSourceNodeAssocs().remove(this);
     }
     
-    public synchronized AssociationRef getNodeAssocRef()
+    public AssociationRef getNodeAssocRef()
     {
-        if (nodeAssocRef == null)
+        // first check if it is available
+        refReadLock.lock();
+        try
         {
-            nodeAssocRef = new AssociationRef(getSource().getNodeRef(),
-                    this.typeQName,
-                    getTarget().getNodeRef());
+            if (nodeAssocRef != null)
+            {
+                return nodeAssocRef;
+            }
         }
-        return nodeAssocRef;
+        finally
+        {
+            refReadLock.unlock();
+        }
+        // get write lock
+        refWriteLock.lock();
+        try
+        {
+            // double check
+            if (nodeAssocRef == null )
+            {
+                nodeAssocRef = new AssociationRef(
+                        getSource().getNodeRef(),
+                        this.typeQName,
+                        getTarget().getNodeRef());
+            }
+            return nodeAssocRef;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
 
     public String toString()
@@ -133,7 +167,16 @@ public class NodeAssocImpl implements NodeAssoc
      */
     private void setSource(Node source)
     {
-        this.source = source;
+        refWriteLock.lock();
+        try
+        {
+            this.source = source;
+            this.nodeAssocRef = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
 
     public Node getTarget()
@@ -146,7 +189,16 @@ public class NodeAssocImpl implements NodeAssoc
      */
     private void setTarget(Node target)
     {
-        this.target = target;
+        refWriteLock.lock();
+        try
+        {
+            this.target = target;
+            this.nodeAssocRef = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
 
     public QName getTypeQName()
@@ -156,6 +208,15 @@ public class NodeAssocImpl implements NodeAssoc
 
     public void setTypeQName(QName typeQName)
     {
-        this.typeQName = typeQName;
+        refWriteLock.lock();
+        try
+        {
+            this.typeQName = typeQName;
+            this.nodeAssocRef = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
 }

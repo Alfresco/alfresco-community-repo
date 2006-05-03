@@ -16,6 +16,10 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -34,10 +38,17 @@ public class ChildAssocImpl implements ChildAssoc
     private QName qName;
     private boolean isPrimary;
     private int index;
+    
+    private transient ReadLock refReadLock;
+    private transient WriteLock refWriteLock;
     private transient ChildAssociationRef childAssocRef;
     
     public ChildAssocImpl()
     {
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        refReadLock = lock.readLock();
+        refWriteLock = lock.writeLock();
+
         setIndex(Integer.MAX_VALUE);              // comes last
     }
 
@@ -64,19 +75,42 @@ public class ChildAssocImpl implements ChildAssoc
         this.getChild().getParentAssocs().remove(this);
     }
     
-    public synchronized ChildAssociationRef getChildAssocRef()
+    public ChildAssociationRef getChildAssocRef()
     {
-        if (childAssocRef == null)
+        // first check if it is available
+        refReadLock.lock();
+        try
         {
-            childAssocRef = new ChildAssociationRef(
-                    this.typeQName,
-                    getParent().getNodeRef(),
-                    this.qName,
-                    getChild().getNodeRef(),
-                    this.isPrimary,
-                    -1);
+            if (childAssocRef != null)
+            {
+                return childAssocRef;
+            }
         }
-        return childAssocRef;
+        finally
+        {
+            refReadLock.unlock();
+        }
+        // get write lock
+        refWriteLock.lock();
+        try
+        {
+            // double check
+            if (childAssocRef == null )
+            {
+                childAssocRef = new ChildAssociationRef(
+                        this.typeQName,
+                        getParent().getNodeRef(),
+                        this.qName,
+                        getChild().getNodeRef(),
+                        this.isPrimary,
+                        -1);
+            }
+            return childAssocRef;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
 
     public String toString()
@@ -161,6 +195,7 @@ public class ChildAssocImpl implements ChildAssoc
     /**
      * For Hibernate use
      */
+    @SuppressWarnings("unused")
     private void setId(Long id)
     {
         this.id = id;
@@ -176,7 +211,16 @@ public class ChildAssocImpl implements ChildAssoc
      */
     private void setParent(Node parentNode)
     {
-        this.parent = parentNode;
+        refWriteLock.lock();
+        try
+        {
+            this.parent = parentNode;
+            this.childAssocRef = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
 
     public Node getChild()
@@ -189,7 +233,16 @@ public class ChildAssocImpl implements ChildAssoc
      */
     private void setChild(Node node)
     {
-        child = node;
+        refWriteLock.lock();
+        try
+        {
+            child = node;
+            this.childAssocRef = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
     
     public QName getTypeQName()
@@ -199,7 +252,16 @@ public class ChildAssocImpl implements ChildAssoc
     
     public void setTypeQName(QName typeQName)
     {
-        this.typeQName = typeQName;
+        refWriteLock.lock();
+        try
+        {
+            this.typeQName = typeQName;
+            this.childAssocRef = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
     
     public QName getQname()
@@ -209,7 +271,16 @@ public class ChildAssocImpl implements ChildAssoc
 
     public void setQname(QName qname)
     {
-        this.qName = qname;
+        refWriteLock.lock();
+        try
+        {
+            this.qName = qname;
+            this.childAssocRef = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
 
     public boolean getIsPrimary()
@@ -219,7 +290,16 @@ public class ChildAssocImpl implements ChildAssoc
 
     public void setIsPrimary(boolean isPrimary)
     {
-        this.isPrimary = isPrimary;
+        refWriteLock.lock();
+        try
+        {
+            this.isPrimary = isPrimary;
+            this.childAssocRef = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
 
     public int getIndex()
@@ -229,6 +309,15 @@ public class ChildAssocImpl implements ChildAssoc
 
     public void setIndex(int index)
     {
-        this.index = index;
+        refWriteLock.lock();
+        try
+        {
+            this.index = index;
+            this.childAssocRef = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
 }

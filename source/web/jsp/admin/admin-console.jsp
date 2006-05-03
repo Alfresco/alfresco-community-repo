@@ -101,6 +101,9 @@
                                        <td><a:actionLink value="#{msg.manage_users}" image="/images/icons/users.gif" action="manageUsers" styleClass="title" actionListener="#{NewUserWizard.setupUsers}" /></td>
                                     </tr>
                                     <tr>
+                                       <td><a:actionLink value="#{msg.manage_groups}" image="/images/icons/group.gif" action="manageGroups" styleClass="title" /></td>
+                                    </tr>
+                                    <tr>
                                        <td><a:actionLink value="#{msg.category_management}" image="/images/icons/categories.gif" action="manageCategories" styleClass="title" /></td>
                                     </tr>
                                     <tr>

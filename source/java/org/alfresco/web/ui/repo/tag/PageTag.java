@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -41,10 +41,24 @@ public class PageTag extends TagSupport
    private final static String SCRIPTS_WEBDAV = "/scripts/webdav.js\"></script>\n";
    private final static String STYLES_START  = "<link rel=\"stylesheet\" href=\"";
    private final static String STYLES_MAIN  = "/css/main.css\" TYPE=\"text/css\">\n";
+
+/**
+ * Please ensure you understand the terms of the license before changing the contents of this file.
+ */
+
    private final static String ALF_URL   = "http://www.alfresco.com";
-   private final static String ALF_LOGO  = "/images/logo/alfresco_logo.gif";
-   private final static String ALF_TEXT  = "Content managed by Alfresco";
-   private final static String ALF_COPY  = "Alfresco Software Inc. (C) 2005-2006 All rights reserved.";
+   private final static String ALF_LOGO  = "http://www.alfresco.com/images/alfresco_community_horizont.gif";
+   private final static String ALF_TEXT  = "Alfresco Community";
+   private final static String ALF_COPY  = "Supplied free of charge with " +
+        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#support'>no support</a>, " +
+        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#certification'>no certification</a>, " +
+        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#maintenance'>no maintenance</a>, " +
+        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#warranty'>no warranty</a> and " +
+        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#indemnity'>no indemnity</a> by " +
+        "<a class=footer href='http://www.alfresco.com'>Alfresco</a> or its " +
+        "<a class=footer href='http://www.alfresco.com/partners/'>Certified Partners</a>. " +
+        "<a class=footer href='http://www.alfresco.com/services/support/'>Click here for support</a>. " +
+        "Alfresco Software Inc. © 2005-2006 All rights reserved.";
    
    private static Log logger = LogFactory.getLog(PageTag.class);
    private static String alfresco = null;
@@ -185,17 +199,22 @@ public class PageTag extends TagSupport
       return loginPage;
    }
 
+/**
+ * Please ensure you understand the terms of the license before changing the contents of this file.
+ */
+
    private String getAlfrescoButton()
    {
       if (alfresco == null)
       {
          String reqPath = ((HttpServletRequest)pageContext.getRequest()).getContextPath();
-         alfresco = "<center>" +
+         alfresco = "<center><table><tr><td>" +
                     "<a href='" + ALF_URL + "'>" +
-                    "<img border=0 alt='' title='" + ALF_TEXT + "' align=absmiddle src='" + reqPath + ALF_LOGO + "'>" +
-                    "</a>&nbsp;" +
-                    "<span style='font-family:Arial,Helvetica,sans-serif;font-size:10px'>" + ALF_COPY +
-                    "</span></center>";
+                    "<img border=0 alt='' title='" + ALF_TEXT + "' align=absmiddle src='" + ALF_LOGO + "'>" +
+                    "</a></td><td align=center>" +
+                    "<span class=footer>" + ALF_COPY +
+                    "</span></td><td><a href='http://sourceforge.net/projects/alfresco'><img border=0 alt='' title='SourceForge' align=absmiddle src='http://sflogo.sourceforge.net/sflogo.php?group_id=143373&type=1'></a>" +
+                    "</td></tr></table></center>";
       }
       
       return alfresco;

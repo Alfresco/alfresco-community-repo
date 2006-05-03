@@ -118,6 +118,26 @@ a.small:hover
    color: #4272B4;
 }
 
+a.footer:link, a.footer:visited
+{
+   font-size: 10px;
+   text-decoration: underline;
+   color: #003366;
+}
+
+a.footer:hover
+{
+   font-size: 10px;
+   text-decoration: underline;
+   color: #4272B4;
+}
+
+.footer
+{
+   font-family:Arial,Helvetica;
+   font-size: 10px;
+}
+
 .pageTitle
 {
    color: #003366;

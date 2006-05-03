@@ -192,6 +192,10 @@
          <to-view-id>/jsp/users/users.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
+         <from-outcome>manageGroups</from-outcome>
+         <to-view-id>/jsp/groups/groups.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
          <from-outcome>showSystemInfo</from-outcome>
          <to-view-id>/jsp/dialog/system-info.jsp</to-view-id>
       </navigation-case>
@@ -216,7 +220,7 @@
          <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
-   
+
    <navigation-rule>
       <from-view-id>/jsp/dialog/edit-text-inline.jsp</from-view-id>
       <navigation-case>
@@ -630,6 +634,35 @@
       <navigation-case>
          <from-outcome>summary</from-outcome>
          <to-view-id>/jsp/wizard/new-user/summary.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <!-- navigation rules for the Group Management pages -->
+   <navigation-rule>
+      <from-view-id>/jsp/groups/*</from-view-id>
+      <navigation-case>
+         <from-outcome>newGroup</from-outcome>
+         <to-view-id>/jsp/groups/new-group.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>deleteGroup</from-outcome>
+         <to-view-id>/jsp/groups/delete-group.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>addUser</from-outcome>
+         <to-view-id>/jsp/groups/add-user.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>deleteUser</from-outcome>
+         <to-view-id>/jsp/groups/delete-user.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>finish</from-outcome>
+         <to-view-id>/jsp/groups/groups.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>cancel</from-outcome>
+         <to-view-id>/jsp/groups/groups.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

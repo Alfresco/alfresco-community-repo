@@ -298,6 +298,27 @@
    
    <managed-bean>
       <description>
+         The bean that holds state for the Groups Management screens.
+      </description>
+      <managed-bean-name>GroupsBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.GroupsBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>authorityService</property-name>
+         <value>#{AuthorityService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>personService</property-name>
+         <value>#{PersonService}</value>
+      </managed-property>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
          The bean that holds state for the Category Management screens.
       </description>
       <managed-bean-name>CategoriesBean</managed-bean-name>

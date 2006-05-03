@@ -71,6 +71,7 @@ public class Application
    private static String contentTemplatesFolderName;
    private static String emailTemplatesFolderName;
    private static String savedSearchesFolderName;
+   private static String scriptsFolderName;
    
    /**
     * Private constructor to prevent instantiation of this class 
@@ -377,6 +378,23 @@ public class Application
    public static String getSavedSearchesFolderName(FacesContext context)
    {
       return getSavedSearchesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   
+   /**
+    * @return Return the JavaScript scripts folder name
+    */
+   public static String getScriptsFolderName(ServletContext context)
+   {
+      return getScriptsFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return Return the JavaScript scripts folder name
+    */
+   public static String getScriptsFolderName(FacesContext context)
+   {
+      return getScriptsFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
    }
    
    /**
@@ -726,6 +744,24 @@ public class Application
       }
       
       return savedSearchesFolderName;
+   }
+   
+   /**
+    * Returns the JavaScript scripts folder name
+    * 
+    * @param context The spring context
+    * @return The scripts folder name
+    */
+   private static String getScriptsFolderName(WebApplicationContext context)
+   {
+      if (scriptsFolderName == null)
+      {
+         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
+         Properties configuration = bootstrap.getConfiguration();
+         scriptsFolderName = configuration.getProperty("spaces.scripts.childname");
+      }
+      
+      return scriptsFolderName;
    }
    
    /**

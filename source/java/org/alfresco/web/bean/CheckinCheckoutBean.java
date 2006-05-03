@@ -549,7 +549,8 @@ public class CheckinCheckoutBean
             // calculate which editor screen to display
             if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(mimetype) ||
                 MimetypeMap.MIMETYPE_XML.equals(mimetype) ||
-                MimetypeMap.MIMETYPE_TEXT_CSS.equals(mimetype))
+                MimetypeMap.MIMETYPE_TEXT_CSS.equals(mimetype) ||
+                MimetypeMap.MIMETYPE_JAVASCRIPT.equals(mimetype))
             {
                // make content available to the editing screen
                if (reader != null)

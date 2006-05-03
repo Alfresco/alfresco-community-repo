@@ -76,6 +76,7 @@ public class CreateRuleWizard extends BaseActionWizard
    
    private static final Log logger = LogFactory.getLog(CreateRuleWizard.class);
    
+   
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
@@ -259,6 +260,7 @@ public class CreateRuleWizard extends BaseActionWizard
       
       return outcome;
    }
+   
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
@@ -515,6 +517,7 @@ public class CreateRuleWizard extends BaseActionWizard
       this.condition = condition;
    }
    
+   
    // ------------------------------------------------------------------------------
    // Action event handlers
    
@@ -646,6 +649,7 @@ public class CreateRuleWizard extends BaseActionWizard
       goToPage(FacesContext.getCurrentInstance(), this.returnViewId);
    }
    
+   
    // ------------------------------------------------------------------------------
    // Service Injection
    
@@ -666,6 +670,7 @@ public class CreateRuleWizard extends BaseActionWizard
    {
       this.rulesBean = rulesBean;
    }
+   
    
    // ------------------------------------------------------------------------------
    // Helper methods

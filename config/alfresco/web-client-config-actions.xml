@@ -372,6 +372,16 @@
             </params>
          </action>
          
+         <!-- Manage Deleted Items -->
+         <action id="manage_deleted_items">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <label-id>manage_deleted_items</label-id>
+            <image>/images/icons/trashcan.gif</image>
+            <action>dialog:manageDeletedItems</action>
+         </action>
+         
          <!-- Take Ownership of document -->
          <action id="take_ownership_doc">
             <permissions>
@@ -525,6 +535,7 @@
             <action idref="paste_all" />
             <action idref="manage_space_users" />
             <action idref="manage_space_rules" />
+            <action idref="manage_deleted_items" />
          </action-group>
          
          <!-- Actions Menu for Document Details screen -->

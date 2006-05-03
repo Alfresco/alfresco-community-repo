@@ -29,6 +29,7 @@ import org.alfresco.repo.action.executer.LinkCategoryActionExecuter;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.action.executer.RemoveFeaturesActionExecuter;
+import org.alfresco.repo.action.executer.ScriptActionExecutor;
 import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.repo.action.executer.SpecialiseTypeActionExecuter;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
@@ -94,6 +95,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
    public static final String PROP_MIMETYPE = "mimetype";
    public static final String PROP_MODEL_ASPECT = "modelaspect";
    public static final String PROP_TYPE_OR_ASPECT = "typeoraspect";
+   public static final String PROP_SCRIPT = "script";
    
    protected ActionService actionService;
    protected DictionaryService dictionaryService;
@@ -153,6 +155,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
       // default the checkin minor change
       this.currentActionProperties.put(PROP_CHECKIN_MINOR, new Boolean(true));
    }
+   
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
@@ -520,6 +523,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
       return this.imageTransformers;
    }
    
+   
    // ------------------------------------------------------------------------------
    // Action event handlers
    
@@ -750,6 +754,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
       usingTemplate = null;
    }
    
+   
    // ------------------------------------------------------------------------------
    // Service Injection
    
@@ -798,6 +803,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
    {
       this.authorityService = authorityService;
    }
+   
    
    // ------------------------------------------------------------------------------
    // Helper methods
@@ -1045,11 +1051,18 @@ public abstract class BaseActionWizard extends BaseWizardBean
          NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
          actionParams.put(ImporterActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
       }
-      else if (this.action.equals(SpecialiseTypeActionExecuter.NAME) == true)
+      else if (this.action.equals(SpecialiseTypeActionExecuter.NAME))
       {
-          // add the specialisation type
-          String objectType = (String)this.currentActionProperties.get(PROP_OBJECT_TYPE);
-          actionParams.put(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, QName.createQName(objectType));
+         // add the specialisation type
+         String objectType = (String)this.currentActionProperties.get(PROP_OBJECT_TYPE);
+         actionParams.put(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, QName.createQName(objectType));
+      }
+      else if (this.action.equals(ScriptActionExecutor.NAME))
+      {
+         // add the selected script noderef to the action properties
+         String id = (String)this.currentActionProperties.get(PROP_SCRIPT);
+         NodeRef scriptRef = new NodeRef(Repository.getStoreRef(), id);
+         actionParams.put(ScriptActionExecutor.PARAM_SCRIPTREF, scriptRef);
       }
       
       return actionParams;
@@ -1221,22 +1234,29 @@ public abstract class BaseActionWizard extends BaseWizardBean
             String spaceName = Repository.getNameForNode(this.nodeService, space);
             summary.append("'").append(spaceName).append("'");
          }
-         else if (SpecialiseTypeActionExecuter.NAME.equals(actionName) == true)
+         else if (SpecialiseTypeActionExecuter.NAME.equals(actionName))
          {
-             String label = null;
-             String objectType = (String)this.currentActionProperties.get(PROP_OBJECT_TYPE);
-             for (SelectItem item  : getObjectTypes())
-             {
-                if (item.getValue().equals(objectType) == true)
-                {
-                    label = item.getLabel();
-                    break;
-                }
-             }
-             
-             summary.append("'").append(label).append("'");
+            String label = null;
+            String objectType = (String)this.currentActionProperties.get(PROP_OBJECT_TYPE);
+            for (SelectItem item  : getObjectTypes())
+            {
+               if (item.getValue().equals(objectType) == true)
+               {
+                  label = item.getLabel();
+                  break;
+               }
+            }
+            
+            summary.append("'").append(label).append("'");
          }
-
+         else if (ScriptActionExecutor.NAME.equals(actionName))
+         {
+            String id = (String)this.currentActionProperties.get(PROP_SCRIPT);
+            NodeRef scriptRef = new NodeRef(Repository.getStoreRef(), id);
+            String scriptName = Repository.getNameForNode(this.nodeService, scriptRef);
+            summary.append("'").append(scriptName).append("'");
+         }
+         
          summaryResult = summary.toString();
       }
       
@@ -1269,6 +1289,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
    {
       return ACTION_PAGES_LOCATION + actionId + ".jsp";
    }
+   
    
    // ------------------------------------------------------------------------------
    // Inner classes

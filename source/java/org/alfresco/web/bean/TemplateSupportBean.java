@@ -37,7 +37,7 @@ import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 
 /**
- * Provide access to commonly used lists of templates.
+ * Provide access to commonly used lists of templates and script files.
  * <p>
  * The lists are cached for a small period of time to help performance in the client,
  * as generally the contents of the template folders are not changed frequently.
@@ -46,6 +46,9 @@ import org.alfresco.web.data.QuickSort;
  */
 public class TemplateSupportBean
 {
+   private static final String MSG_SELECT_TEMPLATE = "select_a_template";
+   private static final String MSG_SELECT_SCRIPT = "select_a_script";
+   
    /** "no selection" marker for SelectItem lists */
    public static final String NO_SELECTION = "none";
    
@@ -55,11 +58,14 @@ public class TemplateSupportBean
    /** The SearchService instance */
    private SearchService searchService;
    
-   /** cache of content templates that last 10 seconds - enough for a couple of page refreshes */
-   private ExpiringValueCache<List<SelectItem>> contentTemplates = new ExpiringValueCache<List<SelectItem>>(1000*10);
+   /** cache of content templates that lasts 30 seconds - enough for a couple of page refreshes */
+   private ExpiringValueCache<List<SelectItem>> contentTemplates = new ExpiringValueCache<List<SelectItem>>(1000*30);
    
-   /** cache of email templates that last 30 seconds - enough for a few page refreshes */
+   /** cache of email templates that lasts 30 seconds - enough for a few page refreshes */
    private ExpiringValueCache<List<SelectItem>> emailTemplates = new ExpiringValueCache<List<SelectItem>>(1000*30);
+   
+   /** cache of JavaScript files that lasts 30 seconds - enough for a few page refreshes */ 
+   private ExpiringValueCache<List<SelectItem>> scriptFiles = new ExpiringValueCache<List<SelectItem>>(1000*30);
    
    
    /**
@@ -92,7 +98,7 @@ public class TemplateSupportBean
                Application.getGlossaryFolderName(fc) + "/" +
                Application.getContentTemplatesFolderName(fc) + "//*";
          
-         templates = selectTemplateNodes(fc, xpath);
+         templates = selectDictionaryNodes(fc, xpath, MSG_SELECT_TEMPLATE);
          
          contentTemplates.put(templates);
       }
@@ -114,23 +120,45 @@ public class TemplateSupportBean
                Application.getGlossaryFolderName(fc) + "/" +
                Application.getEmailTemplatesFolderName(fc) + "//*";
          
-         templates = selectTemplateNodes(fc, xpath);
+         templates = selectDictionaryNodes(fc, xpath, MSG_SELECT_TEMPLATE);
          
          emailTemplates.put(templates);
       }
       
       return templates;
    }
+   
+   /**
+    * @return the list of available JavaScript files that can be applied to the current document.
+    */
+   public List<SelectItem> getScriptFiles()
+   {
+      List<SelectItem> scripts = this.scriptFiles.get();
+      if (scripts == null)
+      {
+         // get the scripts from the special Scripts folder
+         FacesContext fc = FacesContext.getCurrentInstance();
+         String xpath = Application.getRootPath(fc) + "/" + 
+               Application.getGlossaryFolderName(fc) + "/" +
+               Application.getScriptsFolderName(fc) + "//*";
+         
+         scripts = selectDictionaryNodes(fc, xpath, MSG_SELECT_SCRIPT);
+         
+         scriptFiles.put(scripts);
+      }
+      
+      return scripts;
+   }
 
    /**
     * @param context    FacesContext
-    * @param xpath      XPath to the template nodes to select
+    * @param xpath      XPath to the nodes to select
     * 
-    * @return List of SelectItem object from the template nodes found at the XPath
+    * @return List of SelectItem wrapper objects for the nodes found at the XPath
     */
-   private List<SelectItem> selectTemplateNodes(FacesContext fc, String xpath)
+   private List<SelectItem> selectDictionaryNodes(FacesContext fc, String xpath, String noSelectionLabel)
    {
-      List<SelectItem> templates = null;
+      List<SelectItem> wrappers = null;
       
       try
       {
@@ -138,7 +166,7 @@ public class TemplateSupportBean
          NamespaceService resolver = Repository.getServiceRegistry(fc).getNamespaceService();
          List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, resolver, false);
          
-         templates = new ArrayList<SelectItem>(results.size() + 1);
+         wrappers = new ArrayList<SelectItem>(results.size() + 1);
          if (results.size() != 0)
          {
             DictionaryService dd = Repository.getServiceRegistry(fc).getDictionaryService();
@@ -149,13 +177,13 @@ public class TemplateSupportBean
                   Node childNode = new Node(ref);
                   if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
                   {
-                     templates.add(new SelectItem(childNode.getId(), childNode.getName()));
+                     wrappers.add(new SelectItem(childNode.getId(), childNode.getName()));
                   }
                }
             }
             
             // make sure the list is sorted by the label
-            QuickSort sorter = new QuickSort(templates, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+            QuickSort sorter = new QuickSort(wrappers, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
             sorter.sort();
          }
       }
@@ -164,13 +192,13 @@ public class TemplateSupportBean
          // ignore the result if we cannot access the root
       }
       
-      // add an entry (at the start) to instruct the user to select a template
-      if (templates == null)
+      // add an entry (at the start) to instruct the user to select an item
+      if (wrappers == null)
       {
-         templates = new ArrayList<SelectItem>(1);
+         wrappers = new ArrayList<SelectItem>(1);
       }
-      templates.add(0, new SelectItem(NO_SELECTION, Application.getMessage(FacesContext.getCurrentInstance(), "select_a_template")));
+      wrappers.add(0, new SelectItem(NO_SELECTION, Application.getMessage(FacesContext.getCurrentInstance(), noSelectionLabel)));
       
-      return templates;
+      return wrappers;
    }
 }

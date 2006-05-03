@@ -23,6 +23,7 @@ import org.alfresco.repo.action.executer.LinkCategoryActionExecuter;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.action.executer.RemoveFeaturesActionExecuter;
+import org.alfresco.repo.action.executer.ScriptActionExecutor;
 import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.repo.action.executer.SpecialiseTypeActionExecuter;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
@@ -305,6 +306,11 @@ public class EditRuleWizard extends CreateRuleWizard
       {
           QName specialiseType = (QName)actionProps.get(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME);
           this.currentActionProperties.put(PROP_OBJECT_TYPE, specialiseType.toString());
+      }
+      else if (this.action.equals(ScriptActionExecutor.NAME))
+      {
+          NodeRef scriptRef = (NodeRef)actionProps.get(ScriptActionExecutor.PARAM_SCRIPTREF);
+          this.currentActionProperties.put(PROP_SCRIPT, scriptRef.getId());
       }
    }
 }

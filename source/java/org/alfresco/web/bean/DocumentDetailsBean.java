@@ -839,11 +839,12 @@ public class DocumentDetailsBean extends BaseDetailsBean
          }
          if (contentType != null)
          {
-            // set the property to true by default if the filetype is text/HTML content
+            // set the property to true by default if the filetype is a known content type
             if (MimetypeMap.MIMETYPE_HTML.equals(contentType) ||
                 MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(contentType) ||
                 MimetypeMap.MIMETYPE_XML.equals(contentType) ||
-                MimetypeMap.MIMETYPE_TEXT_CSS.equals(contentType))
+                MimetypeMap.MIMETYPE_TEXT_CSS.equals(contentType) ||
+                MimetypeMap.MIMETYPE_JAVASCRIPT.equals(contentType))
             {
                props.put(ContentModel.PROP_EDITINLINE, true);
             }

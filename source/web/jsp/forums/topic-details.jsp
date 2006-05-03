@@ -105,6 +105,26 @@
                      <table cellspacing="0" cellpadding="3" border="0" width="100%">
                         <tr>
                            <td width="100%" valign="top">
+                              <a:panel label="#{msg.links}" id="links-panel" progressive="true"
+                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       expanded='#{SpaceDetailsBean.panels["links-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
+                                 <table width="100%" cellspacing="2" cellpadding="2" border="0" align="center">
+                                    <tr>
+                                       <td>
+                                          <a:actionLink value="#{msg.view_in_webdav}" href="#{SpaceDetailsBean.webdavUrl}" target="new" id="link1" />
+                                       </td>
+                                       <td>
+                                          <a href='<%=request.getContextPath()%><a:outputText value="#{SpaceDetailsBean.bookmarkUrl}" id="out1" />' onclick="return false;"><a:outputText value="#{msg.details_page_bookmark}" id="out2" /></a>
+                                       </td>
+                                       <td>
+                                          <a href='<a:outputText value="#{SpaceDetailsBean.nodeRefUrl}" id="out3" />' onclick="return false;"><a:outputText value="#{msg.noderef_link}" id="out4" /></a>
+                                       </td>
+                                    </tr>
+                                 </table>
+                              </a:panel>
+                              
+                              <div style="padding:4px"></div>
+                              
                               <%-- wrapper comment used by the panel to add additional component facets --%>
                               <h:column id="props-panel-facets">
                                  <f:facet name="title">

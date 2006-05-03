@@ -102,3 +102,23 @@ function validateRegex(control, expression, requiresMatch, matchMessage, noMatch
    return result;
 }
 
+/**
+ * Ensures the value of the 'control' does not contain any illegal characters.
+ * 
+ * @return true if the file name is valid
+ */
+function validateName(control, message, showMessage)
+{
+   var result = true;
+   var pattern = /[\"\*\\\>\<\?\/\:\|\%\&\+\;\xA3\xAC]+/;
+   
+   var idx = control.value.search(pattern);
+   if (idx != -1)
+   {
+      informUser(control, control.value.charAt(idx) + " " + message, showMessage);
+      result = false;
+   }
+   
+   return result;
+}
+

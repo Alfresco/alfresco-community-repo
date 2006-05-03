@@ -20,13 +20,18 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<script type="text/javascript">
+<f:verbatim>
+<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
 
+<script type="text/javascript">
+   var finishButtonPressed = false;
    window.onload = pageLoaded;
    
    function pageLoaded()
    {
       document.getElementById("dialog:dialog-body:name").focus();
+      document.getElementById("dialog").onsubmit = validate;
+      document.getElementById("dialog:finish-button").onclick = function() {finishButtonPressed = true; clear_dialog();}
       checkButtonState();
    }
    
@@ -41,8 +46,24 @@
          document.getElementById("dialog:finish-button").disabled = false;
       }
    }
+   
+   function validate()
+   {
+      if (finishButtonPressed)
+      {
+         finishButtonPressed = false;
+         return validateName(document.getElementById("dialog:dialog-body:name"), 
+                             '</f:verbatim><a:outputText value="#{msg.validation_invalid_character}" /><f:verbatim>',
+                             true);
+      }
+      else
+      {
+         return true;
+      }
+   }
 
 </script>
+</f:verbatim>
 
 <%-- Create Space Dialog Fragment --%>
 

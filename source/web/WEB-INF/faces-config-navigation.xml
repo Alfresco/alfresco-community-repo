@@ -384,14 +384,6 @@
    <navigation-rule>
       <from-view-id>/jsp/dialog/rules.jsp</from-view-id>
       <navigation-case>
-         <from-outcome>createRule</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editRule</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>deleteRule</from-outcome>
          <to-view-id>/jsp/dialog/delete-rule.jsp</to-view-id>
       </navigation-case>
@@ -666,19 +658,6 @@
       </navigation-case>
    </navigation-rule>
    
-   <!-- navigation rule for the new space dialog -->
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/new-space.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/browse/browse.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/browse/browse.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
    <!-- navigation rule to cancel and finish from any wizard -->
    <navigation-rule>
       <from-view-id>/jsp/wizard/*</from-view-id>
@@ -689,35 +668,6 @@
       <navigation-case>
          <from-outcome>finish</from-outcome>
          <to-view-id>/jsp/browse/browse.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <!-- navigation rules for the advanced space wizard -->
-   <navigation-rule>
-      <from-view-id>/jsp/wizard/new-space/*</from-view-id>
-      <navigation-case>
-         <from-outcome>create-from</from-outcome>
-         <to-view-id>/jsp/wizard/new-space/create-from.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>from-scratch</from-outcome>
-         <to-view-id>/jsp/wizard/new-space/from-scratch.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>from-existing</from-outcome>
-         <to-view-id>/jsp/wizard/new-space/from-existing.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>from-template</from-outcome>
-         <to-view-id>/jsp/wizard/new-space/from-template.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>details</from-outcome>
-         <to-view-id>/jsp/wizard/new-space/details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>summary</from-outcome>
-         <to-view-id>/jsp/wizard/new-space/summary.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -762,197 +712,6 @@
          <to-view-id>/jsp/wizard/add-content/summary.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
-   
-   <!-- navigation rules for the new rule wizard -->
-   <navigation-rule>
-      <from-view-id>/jsp/wizard/new-rule/*</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/dialog/rules.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/dialog/rules.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>details</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>condition</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/condition.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>in-category</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/condition-in-category.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>is-subtype</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/condition-is-subtype.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>compare-mime-type</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/condition-has-mimetype.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>has-aspect</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/condition-has-aspect.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>compare-property-value</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/condition-contains-text.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>action</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>simple-workflow</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action-simple-workflow.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>link-category</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action-link-category.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>add-features</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action-add-features.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>remove-features</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action-remove-features.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>copy</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action-copy.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>move</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action-move.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>transform</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action-transform.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>transform-image</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action-transform-image.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>mail</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action-email.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>check-in</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action-check-in.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>check-out</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action-check-out.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>import</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action-import.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>specialise-type</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action-specialise-type.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>summary</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/summary.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/wizard/new-rule/condition.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>no-condition</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/action.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/wizard/new-rule/action.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>no-condition</from-outcome>
-         <to-view-id>/jsp/wizard/new-rule/condition.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <!-- navigation rules for the New Action Wizard -->
-   <navigation-rule>
-      <from-view-id>/jsp/wizard/create-action/*</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>action</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>simple-workflow</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action-simple-workflow.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>link-category</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action-link-category.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>add-features</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action-add-features.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>remove-features</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action-remove-features.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>copy</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action-copy.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>move</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action-move.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>transform</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action-transform.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>transform-image</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action-transform-image.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>mail</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action-email.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>check-in</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action-check-in.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>check-out</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action-check-out.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>import</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action-import.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>specialise-type</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action-specialise-type.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>summary</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/summary.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-
 
    <!-- Navigation for Admin Node Browser -->
    <navigation-rule>

@@ -26,36 +26,14 @@
 
 <r:page titleId="title_create_forum">
 
-<script language="JavaScript1.2">
-
-   window.onload = pageLoaded;
-   
-   function pageLoaded()
-   {
-      document.getElementById("create-forum:name").focus();
-      checkButtonState();
-   }
-   
-   function checkButtonState()
-   {
-      if (document.getElementById("create-forum:name").value.length == 0 )
-      {
-         document.getElementById("create-forum:ok-button").disabled = true;
-      }
-      else
-      {
-         document.getElementById("create-forum:ok-button").disabled = false;
-      }
-   }
-
-</script>
+<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
 
 <f:view>
    
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
-   <h:form acceptCharset="UTF-8" id="create-forum">
+   <h:form acceptCharset="UTF-8" id="create-forum" onsubmit="return validate();">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
@@ -168,7 +146,8 @@
                                  <tr>
                                     <td align="center">
                                        <h:commandButton id="ok-button" value="#{msg.create_forum}" action="#{CreateForumDialog.finish}" 
-                                                        styleClass="wizardButton" disabled="true" />
+                                                        styleClass="wizardButton" disabled="true" 
+                                                        onclick="finishButtonPressed = true" />
                                     </td>
                                  </tr>
                                  <tr>
@@ -198,6 +177,39 @@
     </table>
     
     </h:form>
+    
+    <script language="JavaScript1.2">
+      var finishButtonPressed = false;
+      document.getElementById("create-forum:name").focus();
+      
+      function checkButtonState()
+      {
+         if (document.getElementById("create-forum:name").value.length == 0 )
+         {
+            document.getElementById("create-forum:ok-button").disabled = true;
+         }
+         else
+         {
+            document.getElementById("create-forum:ok-button").disabled = false;
+         }
+      }
+      
+      function validate()
+      {
+         if (finishButtonPressed)
+         {
+            finishButtonPressed = false;
+            return validateName(document.getElementById("create-forum:name"), 
+                                '<a:outputText value="#{msg.validation_invalid_character}" />',
+                                true);
+         }
+         else
+         {
+            return true;
+         }
+      }
+   
+   </script>
     
 </f:view>
 

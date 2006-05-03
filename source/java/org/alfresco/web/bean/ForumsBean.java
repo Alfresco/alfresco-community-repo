@@ -930,7 +930,7 @@ public class ForumsBean implements IContextListener
       StringBuilder name = new StringBuilder("posted-");
       
       // add a timestamp
-      SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy-hh:mm:ss");
+      SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy-HH-mm-ss");
       name.append(dateFormat.format(new Date()));
       
       // add the HTML file extension

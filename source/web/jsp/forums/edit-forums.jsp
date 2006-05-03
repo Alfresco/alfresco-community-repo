@@ -26,26 +26,14 @@
 
 <r:page titleId="title_edit_forums">
 
-<script language="JavaScript1.2">
-   function checkButtonState()
-   {
-      if (document.getElementById("edit-forums:name").value.length == 0)
-      {
-         document.getElementById("edit-forums:ok-button").disabled = true;
-      }
-      else
-      {
-         document.getElementById("edit-forums:ok-button").disabled = false;
-      }
-   }
-</script>
+<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
 
 <f:view>
    
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
 
-   <h:form acceptCharset="UTF-8" id="edit-forums">
+   <h:form acceptCharset="UTF-8" id="edit-forums" onsubmit="return validate();">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
@@ -153,7 +141,8 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton id="ok-button" value="#{msg.ok}" action="#{EditForumsDialog.finish}" styleClass="wizardButton" />
+                                       <h:commandButton id="ok-button" value="#{msg.ok}" action="#{EditForumsDialog.finish}" 
+                                                        styleClass="wizardButton" onclick="finishButtonPressed = true" />
                                     </td>
                                  </tr>
                                  <tr>
@@ -183,6 +172,37 @@
     </table>
     
     </h:form>
+    
+   <script language="JavaScript1.2">
+      var finishButtonPressed = false;
+      
+      function checkButtonState()
+      {
+         if (document.getElementById("edit-forums:name").value.length == 0)
+         {
+            document.getElementById("edit-forums:ok-button").disabled = true;
+         }
+         else
+         {
+            document.getElementById("edit-forums:ok-button").disabled = false;
+         }
+      }
+      
+      function validate()
+      {
+         if (finishButtonPressed)
+         {
+            finishButtonPressed = false;
+            return validateName(document.getElementById("edit-forums:name"), 
+                                '<a:outputText value="#{msg.validation_invalid_character}" />',
+                                true);
+         }
+         else
+         {
+            return true;
+         }
+      }
+   </script>
     
 </f:view>
 

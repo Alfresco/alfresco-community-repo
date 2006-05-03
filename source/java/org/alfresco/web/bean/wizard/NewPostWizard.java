@@ -24,6 +24,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.bean.ForumsBean;
 import org.alfresco.web.bean.repository.Node;
@@ -127,14 +128,25 @@ public class NewPostWizard extends CreateContentWizard
     * @see org.alfresco.web.bean.wizard.BaseContentWizard#performCustomProcessing()
     */
    @Override
-   protected void performCustomProcessing()
+   protected void performCustomProcessing() throws Exception
    {
       if (this.editMode)
       {
          // update the content
-         Node currentDocument = this.browseBean.getDocument();
+         NodeRef postNode = this.browseBean.getDocument().getNodeRef();
          
-         ContentWriter writer = this.contentService.getWriter(currentDocument.getNodeRef(), 
+         // check that the name of this post does not contain the :
+         // character (used in previous versions), if it does rename
+         // the post.
+         String name = (String)this.nodeService.getProperty(
+               postNode, ContentModel.PROP_NAME);
+         if (name.indexOf(":") != -1)
+         {
+            String newName = name.replace(':', '-');
+            this.fileFolderService.rename(postNode, newName);
+         }
+                  
+         ContentWriter writer = this.contentService.getWriter(postNode, 
                ContentModel.PROP_CONTENT, true);
          if (writer != null)
          {

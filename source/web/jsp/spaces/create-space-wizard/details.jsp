@@ -22,15 +22,20 @@
 
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
-<%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
+
+<f:verbatim>
+<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
 
 <script type="text/javascript">
-
+   var finishButtonPressed = false;
    window.onload = pageLoaded;
    
    function pageLoaded()
    {
       document.getElementById("wizard:wizard-body:name").focus();
+      document.getElementById("wizard").onsubmit = validate;
+      document.getElementById("wizard:next-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
+      document.getElementById("wizard:finish-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
       checkButtonState();
    }
 
@@ -64,7 +69,25 @@
       
       checkButtonState();
    }
+   
+   function validate()
+   {
+      if (finishButtonPressed)
+      {
+         finishButtonPressed = false;
+         return validateName(document.getElementById("wizard:wizard-body:name"), 
+                             '</f:verbatim><a:outputText value="#{msg.validation_invalid_character}" /><f:verbatim>',
+                             true);
+      }
+      else
+      {
+         return true;
+      }
+   }
 </script>
+</f:verbatim>
+
+<a:errors message="#{msg.error_wizard}" styleClass="errorMessage" />
 
 <f:verbatim>
 <table cellpadding="3" cellspacing="2" border="0" width="100%">

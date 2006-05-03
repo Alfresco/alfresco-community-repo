@@ -622,7 +622,7 @@ public abstract class BaseContentWizard extends AbstractWizardBean
    /**
     * Performs any processing sub classes may wish to do before commit is called
     */
-   protected void performCustomProcessing()
+   protected void performCustomProcessing() throws Exception
    {
       // used by subclasses if necessary
    }

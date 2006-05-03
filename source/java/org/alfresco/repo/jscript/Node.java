@@ -38,7 +38,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
-import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
@@ -46,12 +45,11 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.util.StringUtils;
 
 /**
- * Node class implementation specific for use by ScriptService as part of the object model.
- * <p>
+ * Node class implementation, specific for use by ScriptService as part of the object model.
  * <p>
  * The class exposes Node properties, children and assocs as dynamically populated maps and lists.
  * The various collection classes are mirrored as JavaScript properties. So can be accessed using
- * standard JavaScript syntax, such as <code>node.children[0].properties.name</code>.
+ * standard JavaScript property syntax, such as <code>node.children[0].properties.name</code>.
  * <p>
  * Various helper methods are provided to access common and useful node variables such
  * as the content url and type information. 
@@ -268,24 +266,6 @@ public final class Node implements Serializable
     //public Node[] jsFunction_childrenByXPath(String xpath)
     //{
     //    return childrenByXPath(xpath);
-    //}
-    
-    /**
-     * @return A map capable of returning a List of Node objects from an NodeRef to a Saved Search
-     *         object. The Saved Search is executed and the resulting nodes supplied as a sequence.
-     */
-    //public Map getChildrenBySavedSearch()
-    //{
-    //    return new SavedSearchResultsMap(this, this.services);
-    //}
-    
-    /**
-     * @return A map capable of returning a List of Node objects from an NodeRef to a Lucene search
-     *         string. The Saved Search is executed and the resulting nodes supplied as a sequence.
-     */
-    //public Map getChildrenByLuceneSearch()
-    //{
-    //    return new LuceneSearchResultsMap(this, this.services);
     //}
     
     /**

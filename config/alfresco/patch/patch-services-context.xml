@@ -340,5 +340,20 @@
             <ref bean="searchService"/>
         </property>
     </bean>
-
+    
+    <bean id="patch.scriptsFolder" class="org.alfresco.repo.admin.patch.impl.ScriptsFolderPatch" parent="basePatch">
+        <property name="id"><value>patch.scriptsFolder</value></property>
+        <property name="description"><value>patch.scriptsFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>12</value></property>
+        <property name="targetSchema"><value>13</value></property>
+        <!-- helper beans for execution -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="messageSource">
+            <ref bean="bootstrapSpacesMessageSource" />
+        </property>   
+    </bean>
+    
 </beans>

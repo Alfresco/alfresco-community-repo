@@ -332,4 +332,19 @@
         </property>
     </bean>
     
+    <bean id="script" class="org.alfresco.repo.action.executer.ScriptActionExecutor" parent="action-executer">
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="storeUrl">
+           <value>${spaces.store}</value>
+        </property>
+        <property name="companyHomePath">
+           <value>/${spaces.company_home.childname}</value>
+        </property>
+    </bean>
+    
 </beans>

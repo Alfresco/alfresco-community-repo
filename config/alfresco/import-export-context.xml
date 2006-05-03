@@ -201,6 +201,7 @@
                 <prop key="spaces.templates.content.childname">${spaces.templates.content.childname}</prop>
                 <prop key="spaces.templates.email.childname">${spaces.templates.email.childname}</prop>
                 <prop key="spaces.savedsearches.childname">${spaces.savedsearches.childname}</prop>
+                <prop key="spaces.scripts.childname">${spaces.scripts.childname}</prop>
             </props>
         </property>
     </bean>

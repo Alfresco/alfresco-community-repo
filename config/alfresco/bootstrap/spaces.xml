@@ -58,6 +58,13 @@
                   <cm:title>${spaces.savedsearches.name}</cm:title>
                   <cm:description>${spaces.savedsearches.description}</cm:description>
                </cm:folder>
+               <cm:folder view:childName="${spaces.scripts.childname}">
+                  <app:uifacets />
+                  <cm:name>${spaces.scripts.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.scripts.name}</cm:title>
+                  <cm:description>${spaces.scripts.description}</cm:description>
+               </cm:folder>
             </cm:contains>
             </cm:folder>
             <cm:folder view:childName="${spaces.guest_home.childname}">

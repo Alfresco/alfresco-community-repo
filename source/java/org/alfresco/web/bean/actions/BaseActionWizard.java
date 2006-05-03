@@ -827,7 +827,9 @@ public abstract class BaseActionWizard extends BaseWizardBean
    }
    
    /**
-    * Build the param map for the current Action instance
+    * Build the param map for the current Action instance.
+    * <p>
+    * Based on the params set by the UI, build the params needed to create the action.
     * 
     * @return param map
     */
@@ -1063,6 +1065,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
          String id = (String)this.currentActionProperties.get(PROP_SCRIPT);
          NodeRef scriptRef = new NodeRef(Repository.getStoreRef(), id);
          actionParams.put(ScriptActionExecutor.PARAM_SCRIPTREF, scriptRef);
+         actionParams.put(ScriptActionExecutor.PARAM_SPACEREF, this.navigator.getCurrentNode().getNodeRef());
       }
       
       return actionParams;

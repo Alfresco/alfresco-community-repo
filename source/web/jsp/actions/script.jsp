@@ -103,8 +103,8 @@
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td><h:outputText value="#{msg.action_script_select}"/>:</td>
-                                    <td>
+                                    <td><nobr><h:outputText value="#{msg.action_script_select}"/>:</nobr></td>
+                                    <td width=100%>
                                        <%-- Scripts drop-down selector --%>
                                        <h:selectOneMenu value="#{WizardManager.bean.actionProperties.script}">
                                           <f:selectItems value="#{TemplateSupportBean.scriptFiles}" />

@@ -71,14 +71,14 @@
       </constructor-arg>
    </bean>
 
-   <!-- Commented out for now -->
-   <!-- <bean id="update" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">
+   <bean id="update" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">
       <constructor-arg>
          <list>
             <ref bean="on-property-update-trigger"/>
+            <ref bean="on-content-update-trigger"/>
          </list>
       </constructor-arg>
-   </bean> -->
+   </bean>
    
    <bean id="outbound" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">
       <constructor-arg>
@@ -99,6 +99,9 @@
       </property>
       <property name="authenticationComponent">
          <ref bean="authenticationComponent"/>
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService"/>
       </property>
    </bean>
    

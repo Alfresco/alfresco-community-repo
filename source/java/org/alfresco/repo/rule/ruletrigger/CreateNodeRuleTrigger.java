@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.rule.ruletrigger;
 
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -78,5 +79,8 @@ public class CreateNodeRuleTrigger extends SingleChildAssocRefPolicyRuleTrigger
             
             triggerRules(childAssocRef.getParentRef(), childAssocRef.getChildRef());
         }
+        
+        // Reguadless of whether the rule is triggered, mark this transaction as having created this node
+        AlfrescoTransactionSupport.bindResource(childAssocRef.getChildRef().toString(), childAssocRef.getChildRef().toString());         
     }
 }

@@ -30,7 +30,8 @@ public interface RuleType
 	 * Some rule type constants
 	 */
 	public static final String INBOUND = "inbound";
-	public static final String OUTGOING = "outgoing";
+    public static final String UPDATE = "update";
+	public static final String OUTBOUND = "outbound";
 	
 	/**
 	 * Get the name of the rule type.

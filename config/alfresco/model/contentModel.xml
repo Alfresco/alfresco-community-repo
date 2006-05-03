@@ -227,22 +227,27 @@
             <property name="cm:created">
                <title>Created</title>
                <type>d:datetime</type>
+               <protected>true</protected>
             </property>
             <property name="cm:creator">
                <title>Creator</title>
                <type>d:text</type>
+               <protected>true</protected>
             </property>
             <property name="cm:modified">
                <title>Modified</title>
                <type>d:datetime</type>
+               <protected>true</protected>
             </property>
             <property name="cm:modifier">
                <title>Modifier</title>
                <type>d:text</type>
+               <protected>true</protected>
             </property>
             <property name="cm:accessed">
                <title>Accessed</title>
                <type>d:datetime</type>
+               <protected>true</protected>
             </property>
          </properties>
       </aspect>

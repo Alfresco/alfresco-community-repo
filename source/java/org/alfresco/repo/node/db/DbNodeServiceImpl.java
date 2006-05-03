@@ -275,14 +275,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         addDefaultAspects(nodeTypeDef, node, childAssocRef.getChildRef(), properties);                
         
         // set the properties - it is a new node so only set properties if there are any
+        Map<QName, Serializable> propertiesBefore = getProperties(childAssocRef.getChildRef());
+        Map<QName, Serializable> propertiesAfter = null;
         if (properties.size() > 0)
         {
-            this.setProperties(node.getNodeRef(), properties);
+            propertiesAfter = setPropertiesImpl(childAssocRef.getChildRef(), properties);
         }        
 
         // Invoke policy behaviour
 		invokeOnCreateNode(childAssocRef);
         invokeOnUpdateNode(parentRef);
+        if (propertiesAfter != null)
+        {
+            invokeOnUpdateProperties(childAssocRef.getChildRef(), propertiesBefore, propertiesAfter);
+        }
         
 		// done
 		return childAssocRef;
@@ -853,6 +859,26 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 		// Invoke policy behaviours
 		invokeBeforeUpdateNode(nodeRef);
 
+        // Do the set properties
+        Map<QName, Serializable> propertiesBefore = getProperties(nodeRef);
+        Map<QName, Serializable> propertiesAfter = setPropertiesImpl(nodeRef, properties);
+
+		// Invoke policy behaviours
+		invokeOnUpdateNode(nodeRef);
+        invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
+    }
+    
+    /**
+     * Does the work of setting the property values.  Returns a map containing the state of the properties after the set 
+     * operation is complete.
+     * 
+     * @param nodeRef           the node reference
+     * @param properties        the map of property values
+     * @return                  the map of property values after the set operation is complete
+     * @throws InvalidNodeRefException
+     */
+    private Map<QName, Serializable> setPropertiesImpl(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
+    {
         if (properties == null)
         {
             throw new IllegalArgumentException("Properties may not be null");
@@ -863,8 +889,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // find the node
         Node node = getNodeNotNull(nodeRef);
-        // get the properties before
-        Map<QName, Serializable> propertiesBefore = getProperties(nodeRef);
 
         // copy properties onto node
         Map<QName, PropertyValue> nodeProperties = node.getProperties();
@@ -880,15 +904,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             nodeProperties.put(propertyQName, propertyValue);
         }
         
-        // store the properties after the change
-        Map<QName, Serializable> propertiesAfter = Collections.unmodifiableMap(properties);
-
-		// Invoke policy behaviours
-		invokeOnUpdateNode(nodeRef);
-        invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
-        
         // update the node status
         nodeDaoService.recordChangeId(nodeRef);
+        
+        // Return the properties after
+        return Collections.unmodifiableMap(properties);
     }
     
     /**
@@ -904,26 +924,40 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Invoke policy behaviours
 		invokeBeforeUpdateNode(nodeRef);
 		
+        // Do the set operation
+        Map<QName, Serializable> propertiesBefore = getProperties(nodeRef);
+        Map<QName, Serializable> propertiesAfter = setPropertyImpl(nodeRef, qname, value);
+        
+		// Invoke policy behaviours
+		invokeOnUpdateNode(nodeRef);
+        invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
+    }
+    
+    /**
+     * Does the work of setting a property value.  Returns the values of the properties after the set operation is
+     * complete.
+     * 
+     * @param nodeRef       the node reference
+     * @param qname         the qname of the property
+     * @param value         the value of the property
+     * @return              the values of the properties after the set operation is complete
+     * @throws InvalidNodeRefException
+     */
+    public Map<QName, Serializable> setPropertyImpl(NodeRef nodeRef, QName qname, Serializable value) throws InvalidNodeRefException
+    {
         // get the node
         Node node = getNodeNotNull(nodeRef);
-        // get properties before
-        Map<QName, Serializable> propertiesBefore = getProperties(nodeRef);
         
         Map<QName, PropertyValue> properties = node.getProperties();
         PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
         // get a persistable value
         PropertyValue propertyValue = makePropertyValue(propertyDef, value);
         properties.put(qname, propertyValue);
-
-        // get properties after the change
-        Map<QName, Serializable> propertiesAfter = getProperties(nodeRef);
-        
-		// Invoke policy behaviours
-		invokeOnUpdateNode(nodeRef);
-        invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
-        
+            
         // update the node status
         nodeDaoService.recordChangeId(nodeRef);
+        
+        return getProperties(nodeRef);    
     }
     
     /**

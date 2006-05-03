@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleType;
@@ -50,9 +51,11 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     /**
      * The authentication Component
      */
-
     protected AuthenticationComponent authenticationComponent;
 
+    /** The dictionary service */
+    protected DictionaryService dictionaryService;
+    
     /**
      * Set the policy component
      * 
@@ -78,12 +81,21 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     /**
      * Set the authenticationComponent
      */
-
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
         this.authenticationComponent = authenticationComponent;
     }
 
+    /**
+     * Set the dictionary service
+     * 
+     * @param dictionaryService     the dictionary service
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+    
     /**
      * Registration of an interested rule type
      */

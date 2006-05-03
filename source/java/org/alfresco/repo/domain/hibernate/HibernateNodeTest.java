@@ -263,6 +263,7 @@ public class HibernateNodeTest extends BaseSpringTest
         // make a content node
         Node contentNode = new NodeImpl();
         contentNode.setStore(store);
+        contentNode.setUuid(GUID.generate());
         contentNode.setTypeQName(ContentModel.TYPE_CONTENT);
         Serializable contentNodeId = getSession().save(contentNode);
 

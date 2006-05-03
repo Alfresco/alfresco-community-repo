@@ -46,6 +46,11 @@ public class ChildAssocImpl implements ChildAssoc
         // add the forward associations
         this.setParent(parentNode);
         this.setChild(childNode);
+        // Force initialization of the inverse collections
+        // so that we don't queue additions to them.
+        // This can go if we move to set-based collections
+        parentNode.getChildAssocs().size();
+        childNode.getParentAssocs().size();
         // add the inverse associations
         parentNode.getChildAssocs().add(this);
         childNode.getParentAssocs().add(this);

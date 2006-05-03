@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <!-- The authentication component.                                      -->
+
+    <!-- Jass authentication - most of the config goes somewhere else       -->
+       
+    <bean id="authenticationComponentImpl" 
+                 class="org.alfresco.repo.security.authentication.jaas.JAASAuthenticationComponent">
+        <property name="realm">
+            <value>DEFAULT.REALM</value>
+        </property>
+        <property name="jaasConfigEntryName">
+            <value>Alfresco</value>
+        </property>
+    </bean>
+
+		<bean id="alfDaoImpl" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+  			<property name="proxyInterfaces">
+   					<value>
+    						org.alfresco.repo.security.authentication.MutableAuthenticationDao
+   					</value>
+  			</property>
+  			<property name="transactionManager">
+   					<ref bean="transactionManager" />
+  			</property>
+  			<property name="target">
+   					<bean class="org.alfresco.repo.security.authentication.ntlm.NullMutableAuthenticationDao" />
+  			</property>
+  			<property name="transactionAttributes">
+    				<props>
+      					<prop key="*">${server.transaction.mode.default}</prop>
+    				</props>
+  			</property>
+ 		</bean>
+
+</beans>

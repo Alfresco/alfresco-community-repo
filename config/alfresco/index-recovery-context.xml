@@ -2,14 +2,22 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-    
-   <!-- full node index recovery -->
-   <bean id="indexRecoveryComponent" class="org.alfresco.repo.node.index.FtsIndexRecoveryComponent" >
+   
+   <bean id="indexRecoveryComponentBase" abstract="true" >
+      <property name="sessionFactory">
+         <ref bean="sessionFactory" />
+      </property>
       <property name="transactionService">
          <ref bean="transactionComponent" />
       </property>
+      <property name="indexer">
+         <ref bean="indexerComponent" />
+      </property>
       <property name="ftsIndexer">
          <ref bean="LuceneFullTextSearchIndexer" />
+      </property>
+      <property name="searcher">
+         <ref bean="searchService" />
       </property>
       <property name="nodeService">
           <ref bean="nodeService" />
@@ -17,8 +25,26 @@
       <property name="stores">
         <list>
             <value>workspace://SpacesStore</value>
+            <value>workspace://lightWeightVersionStore</value>
+            <value>user://alfrescoUserStore</value>
         </list>
       </property>
    </bean>
-    
+   
+   <!-- full node index recovery -->
+   <bean id="indexRecoveryComponent" class="org.alfresco.repo.node.index.FullIndexRecoveryComponent" parent="indexRecoveryComponentBase">
+      <property name="executeFullRecovery">
+          <value>false</value>                 <!-- enable this to start the full index recovery -->
+      </property>
+      <property name="runContinuously">
+          <value>false</value>                  <!-- ensure the index is up to date and then stop -->
+      </property>
+      <property name="waitTime">
+          <value>1000</value>                   <!-- milliseconds to wait between checks for new transactions -->
+      </property>
+      <property name="l2CacheMode">
+          <value>NORMAL</value>                 <!-- normal L2 cache usage (database is changed by this server only) -->
+      </property>
+   </bean>
+
 </beans>

@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.ntlm.NullMutableAuthenticationDao" />
+
+    <!-- The authentication component.                                      -->
+
+    <!-- Use the passthru authentication component to authenticate using    -->
+    <!-- user accounts on one or more Windows servers.                      -->
+    
+    <!-- Properties that specify the server(s) to use for passthru          -->
+    <!-- authentication :-                                                  -->
+    <!--   useLocalServer   use the local server for authentication         -->
+    <!--   domain           use domain controllers from the specified domain-->
+    <!--   servers          comma delimted list of server addresses or      -->
+    <!--                    names                                           -->
+       
+    <bean id="authenticationComponentImpl" class="org.alfresco.repo.security.authentication.ntlm.NTLMAuthenticationComponentImpl">
+        <property name="useLocalServer">
+            <value>true</value>
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="guestAccess">
+            <value>false</value>
+        </property>
+    </bean>
+    
+</beans>

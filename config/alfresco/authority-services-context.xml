@@ -7,12 +7,12 @@
 
 <!--                                                                          -->
 <!-- This implementation supports the identification of users as admin users. -->
-<!-- It does NOT support any other groupings of users.                        -->
+<!-- It also supports groups and allows groups and users to be arranged into  -->
+<!-- hierarchies.                                                             -->
 <!--                                                                          --> 
-
 <beans>
-    <bean id="authorityService" class="org.alfresco.repo.security.authority.SimpleAuthorityServiceImpl">
-        <!-- Wiring up of services on which this service depends -->
+    
+    <bean id="authorityService" class="org.alfresco.repo.security.authority.AuthorityServiceImpl">
         <property name="authenticationComponent">
             <ref bean="authenticationComponent" />
         </property>
@@ -21,6 +21,12 @@
         </property>
         <property name="nodeService">
             <ref bean="nodeService" />
+        </property>
+        <property name="authorityDAO">
+            <ref bean="authorityDAO" />
+        </property>
+        <property name="permissionServiceSPI">
+            <ref bean="permissionServiceImpl" />
         </property>
         <!--                                                                  -->
         <!-- A list of users with admin rights.                               -->
@@ -42,4 +48,28 @@
     		</set>
         </property>
     </bean>
+    
+    <!-- Authority DAO that stores group information along with user information, -->
+    <!-- in the repository.                                                       -->
+    <!--                                                                          -->
+    <!-- This bean uses the userToAuthorityCache configured in cache-context.xml  -->
+    <!--                                                                          -->
+    <bean id="authorityDAO" class="org.alfresco.repo.security.authority.AuthorityDAOImpl">   
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="searchService">
+            <ref bean="searchService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="userToAuthorityCache">
+            <ref bean="userToAuthorityCache" />
+        </property>
+    </bean>
+    
 </beans>

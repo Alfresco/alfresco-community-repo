@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<beans>
+   <!--
+    This file is not included in the application context by default.
+    If you include this file, please ensure that you review the sample
+    beans contained here.
+    -->
+	
+   <bean id="backupContentStore"
+         class="org.alfresco.repo.content.filestore.FileContentStore">
+      <constructor-arg>
+         <value>s:/backups/alfresco</value>
+      </constructor-arg>
+   </bean>
+
+   <bean id="primaryContentStoreBackupComponent"
+         class="org.alfresco.repo.content.replication.ContentStoreReplicator"
+         depends-on="fileContentStore, backupContentStore"
+         init-method="start">
+      <!-- content source -->
+      <property name="sourceStore">
+          <value>fileContentStore</value>
+      </property>
+      <!-- content target -->
+      <property name="targetStore">
+          <value>backupContentStore</value>
+      </property>
+      <!-- set to 'false' to perform a single pass before quitting -->
+      <property name="runContinuously">
+          <value>true</value>
+      </property>
+      <!-- time between passes -->
+      <property name="waitTime">
+          <value>60</value>
+      </property>
+   </bean>
+
+   <bean id="replicatingContentStore"
+         class="org.alfresco.repo.content.replication.ReplicatingContentStore" >
+      <!-- the preferred store for reads and writes -->
+      <property name="primaryStore">
+         <ref bean="fileContentStore" />
+      </property>
+      <!-- example of possible secondary store configuration -->
+      <property name="secondaryStores">
+         <list>
+            <ref bean="archiveStoreA" />
+            <ref bean="archiveStoreB" />
+         </list>
+      </property>
+      <!-- enable content missing from the primary store to be pulled in from the secondary stores -->
+      <property name="inbound">
+         <value>false</value>
+      </property>
+      <!-- enable replication from the primary to the secondary stores -->
+      <property name="outbound">
+         <value>false</value>
+      </property>
+      <!-- this is required if outbound replication is active, otherwise not -->
+      <property name="transactionService">
+         <ref bean="transactionComponent" />
+      </property>
+      <!-- set this to force outbound replication to be asynchronous -->
+      <property name="outboundThreadPoolExecutor">
+         <ref bean="threadPoolExecutor" />
+      </property>
+   </bean>
+
+</beans>

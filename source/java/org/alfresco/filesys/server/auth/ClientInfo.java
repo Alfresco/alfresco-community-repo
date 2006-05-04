@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -74,6 +74,14 @@ public class ClientInfo
     // Home folder node
     
     private NodeRef m_homeNode;
+
+    /**
+     * Default constructor
+     */
+    public ClientInfo()
+    {
+        setUserName("");
+    }
     
     /**
      * Class constructor

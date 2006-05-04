@@ -93,6 +93,16 @@ public class Type3NTLMMessage extends NTLMMessage
     }
     
     /**
+     * Return the length of the LM hash
+     * 
+     * @return int
+     */
+    public final int getLMHashLength()
+    {
+        return getShortValue(OffsetLMResponse);
+    }
+    
+    /**
      * Return the LM password hash
      * 
      * @return byte[]
@@ -100,6 +110,16 @@ public class Type3NTLMMessage extends NTLMMessage
     public final byte[] getLMHash()
     {
         return getByteValue(OffsetLMResponse);
+    }
+    
+    /**
+     * Return the length of the NTLM hash
+     * 
+     * @return int
+     */
+    public final int getNTLMHashLength()
+    {
+        return getShortValue(OffsetNTLMResponse);
     }
     
     /**

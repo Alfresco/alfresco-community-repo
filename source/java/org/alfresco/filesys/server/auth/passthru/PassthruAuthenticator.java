@@ -24,15 +24,15 @@ import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.server.SessionListener;
 import org.alfresco.filesys.server.SrvSession;
+import org.alfresco.filesys.server.auth.AuthContext;
 import org.alfresco.filesys.server.auth.ClientInfo;
-import org.alfresco.filesys.server.auth.SrvAuthenticator;
-import org.alfresco.filesys.server.auth.UserAccount;
+import org.alfresco.filesys.server.auth.CifsAuthenticator;
+import org.alfresco.filesys.server.auth.NTLanManAuthContext;
 import org.alfresco.filesys.server.config.InvalidConfigurationException;
 import org.alfresco.filesys.server.config.ServerConfiguration;
 import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.smb.server.SMBServer;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
-import org.alfresco.filesys.util.HexDump;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
@@ -46,7 +46,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author GKSpencer
  */
-public class PassthruAuthenticator extends SrvAuthenticator implements SessionListener
+public class PassthruAuthenticator extends CifsAuthenticator implements SessionListener
 {
     // Debug logging
 
@@ -77,9 +77,6 @@ public class PassthruAuthenticator extends SrvAuthenticator implements SessionLi
      */
     public PassthruAuthenticator()
     {
-        setAccessMode(SrvAuthenticator.USER_MODE);
-        setEncryptedPasswords(true);
-
         // Allocate the session table
 
         m_sessions = new Hashtable<String, PassthruDetails>();
@@ -97,7 +94,7 @@ public class PassthruAuthenticator extends SrvAuthenticator implements SessionLi
      */
     public int authenticateShareConnect(ClientInfo client, SharedDevice share, String sharePwd, SrvSession sess)
     {
-        return SrvAuthenticator.Writeable;
+        return CifsAuthenticator.Writeable;
     }
 
     /**
@@ -110,18 +107,16 @@ public class PassthruAuthenticator extends SrvAuthenticator implements SessionLi
      */
     public int authenticateUser(ClientInfo client, SrvSession sess, int alg)
     {
-        // Check if this is an SMB/CIFS null session logon.
-        //
         // The null session will only be allowed to connect to the IPC$ named pipe share.
 
-        if (client.isNullSession() && sess instanceof SMBSrvSession)
+        if (client.isNullSession())
         {
             // Debug
             
             if ( logger.isDebugEnabled())
                 logger.debug("Null CIFS logon allowed");
 
-            return SrvAuthenticator.AUTH_ALLOW;
+            return CifsAuthenticator.AUTH_ALLOW;
         }
 
         // Check if the client is already authenticated, and it is not a null logon
@@ -202,7 +197,7 @@ public class PassthruAuthenticator extends SrvAuthenticator implements SessionLi
                         
                         // Allow the user access as a guest
 
-                        authSts = SrvAuthenticator.AUTH_GUEST;
+                        authSts = CifsAuthenticator.AUTH_GUEST;
 
                         // Debug
 
@@ -255,7 +250,7 @@ public class PassthruAuthenticator extends SrvAuthenticator implements SessionLi
 
                         // Allow the user full access to the server
 
-                        authSts = SrvAuthenticator.AUTH_ALLOW;
+                        authSts = CifsAuthenticator.AUTH_ALLOW;
 
                         // Debug
 
@@ -336,35 +331,21 @@ public class PassthruAuthenticator extends SrvAuthenticator implements SessionLi
     }
 
     /**
-     * Get user account details for the specified user
+     * Return an authentication context for the new session
      * 
-     * @param user String
-     * @return UserAccount
+     * @return AuthContext
      */
-    public UserAccount getUserDetails(String user)
-    {
-
-        // No user details to return
-
-        return null;
-    }
-
-    /**
-     * Get a challenge key for a new session
-     * 
-     * @param sess SrvSession
-     * @return byte[]
-     */
-    public byte[] getChallengeKey(SrvSession sess)
+    public AuthContext getAuthContext( SMBSrvSession sess)
     {
 
         // Check for an SMB session
 
-        byte[] chKey = null;
+        AuthContext authCtx = null;
 
         // Check if the client is already authenticated, and it is not a null logon
         
-        if ( sess.hasClientInformation() && sess.getClientInformation().getAuthenticationToken() != null &&
+        if ( sess.hasAuthenticationContext() && sess.hasClientInformation() &&
+                sess.getClientInformation().getAuthenticationToken() != null &&
                 sess.getClientInformation().getLogonType() != ClientInfo.LogonNull)
         {
             // DEBUG
@@ -374,24 +355,7 @@ public class PassthruAuthenticator extends SrvAuthenticator implements SessionLi
 
             // Return the previous challenge, user is already authenticated
             
-            return sess.getChallengeKey();
-        }
-        else if (sess instanceof SMBSrvSession)
-        {
-
-            // Check if the SMB server listener has been initialized
-
-            if (m_server == null)
-            {
-
-                // Initialize the SMB server session listener so we receive callbacks when sessions
-                // are opened/closed on the SMB server
-
-                SMBSrvSession smbSess = (SMBSrvSession) sess;
-                m_server = smbSess.getSMBServer();
-
-                m_server.addSessionListener(this);
-            }
+            return sess.getAuthenticationContext();
         }
 
         try
@@ -410,13 +374,13 @@ public class PassthruAuthenticator extends SrvAuthenticator implements SessionLi
 
                 // Use the challenge key returned from the authentication server
 
-                chKey = authSess.getEncryptionKey();
+                authCtx = new NTLanManAuthContext( authSess.getEncryptionKey());
+                sess.setAuthenticationContext( authCtx);
 
                 // DEBUG
 
                 if (logger.isDebugEnabled())
-                    logger.debug("Passthru sessId=" + authSess.getSessionId() + ", negotiate key=["
-                            + HexDump.hexString(chKey) + "]");
+                    logger.debug("Passthru sessId=" + authSess.getSessionId() + ", auth ctx=" + authCtx);
             }
         }
         catch (Exception ex)
@@ -427,9 +391,9 @@ public class PassthruAuthenticator extends SrvAuthenticator implements SessionLi
             logger.error("Passthru error getting challenge", ex);
         }
 
-        // Return the challenge key
+        // Return the authentication context
 
-        return chKey;
+        return authCtx;
     }
 
     /**
@@ -563,6 +527,13 @@ public class PassthruAuthenticator extends SrvAuthenticator implements SessionLi
 
         if (m_passthruServers.getTotalServerCount() == 0)
             throw new AlfrescoRuntimeException("No valid authentication servers found for passthru");
+        
+        // Install the SMB server listener so we receive callbacks when sessions are
+        // opened/closed on the SMB server
+
+        SMBServer smbServer = (SMBServer) config.findServer( "SMB");
+        if ( smbServer != null)
+            smbServer.addSessionListener(this);
     }
 
     /**
@@ -639,8 +610,7 @@ public class PassthruAuthenticator extends SrvAuthenticator implements SessionLi
     {
 
         // Check if the client information has an empty user name, if so then do not close the
-        // authentication
-        // session
+        // authentication session
 
         if (sess.hasClientInformation() && sess.getClientInformation().getUserName() != null
                 && sess.getClientInformation().getUserName().length() > 0)

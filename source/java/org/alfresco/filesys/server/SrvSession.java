@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -23,6 +23,7 @@ import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.filesys.server.auth.AuthContext;
 import org.alfresco.filesys.server.auth.ClientInfo;
 import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.server.core.SharedDeviceList;
@@ -60,10 +61,6 @@ public abstract class SrvSession
 
     private ClientInfo m_clientInfo;
 
-    // Challenge key used for this session
-
-    private byte[] m_challenge;
-
     // Debug flags for this session
 
     private int m_debug;
@@ -85,6 +82,10 @@ public abstract class SrvSession
     
     private Object m_authToken;
 
+    //  Authentication context, used during the initial session setup phase
+    
+    private AuthContext m_authContext;
+    
     //  List of dynamic/temporary shares created for this session
     
     private SharedDeviceList m_dynamicShares;
@@ -155,26 +156,6 @@ public abstract class SrvSession
     }
     
     /**
-     * Return the session challenge key
-     * 
-     * @return byte[]
-     */
-    public final byte[] getChallengeKey()
-    {
-        return m_challenge;
-    }
-
-    /**
-     * Determine if the challenge key has been set for this session
-     * 
-     * @return boolean
-     */
-    public final boolean hasChallengeKey()
-    {
-        return m_challenge != null ? true : false;
-    }
-
-    /**
      * Return the process id
      * 
      * @return int
@@ -231,6 +212,26 @@ public abstract class SrvSession
         return m_clientInfo;
     }
 
+    /**
+     * Check if the session has an authentication context
+     * 
+     * @return boolean
+     */
+    public final boolean hasAuthenticationContext()
+    {
+        return m_authContext != null ? true : false;
+    }
+    
+    /**
+     * Return the authentication context for this sesion
+     * 
+     * @return AuthContext
+     */
+    public final AuthContext getAuthenticationContext()
+    {
+        return m_authContext;
+    }
+    
     /**
      * Determine if the session has any dynamic shares
      * 
@@ -343,6 +344,16 @@ public abstract class SrvSession
     }
     
     /**
+     * Set the authentication context, used during the initial session setup phase
+     * 
+     * @param ctx AuthContext
+     */
+    public final void setAuthenticationContext( AuthContext ctx)
+    {
+        m_authContext = ctx;
+    }
+    
+    /**
      * Set the client information
      * 
      * @param client ClientInfo
@@ -350,16 +361,6 @@ public abstract class SrvSession
     public final void setClientInformation(ClientInfo client)
     {
         m_clientInfo = client;
-    }
-
-    /**
-     * Set the session challenge key
-     * 
-     * @param key byte[]
-     */
-    public final void setChallengeKey(byte[] key)
-    {
-        m_challenge = key;
     }
 
     /**

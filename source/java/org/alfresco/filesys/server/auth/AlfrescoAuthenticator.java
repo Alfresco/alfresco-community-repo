@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -20,7 +20,6 @@ import java.security.NoSuchAlgorithmException;
 
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
-import org.alfresco.filesys.util.DataPacker;
 import org.alfresco.repo.security.authentication.NTLMMode;
 
 /**
@@ -34,7 +33,7 @@ import org.alfresco.repo.security.authentication.NTLMMode;
  * 
  * @author GKSpencer
  */
-public class AlfrescoAuthenticator extends SrvAuthenticator
+public class AlfrescoAuthenticator extends CifsAuthenticator
 {
     /**
      * Default Constructor
@@ -43,8 +42,6 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
      */
     public AlfrescoAuthenticator()
     {
-        setAccessMode(SrvAuthenticator.USER_MODE);
-        setEncryptedPasswords(true);
     }
 
     /**
@@ -82,7 +79,7 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
             if ( logger.isDebugEnabled())
                 logger.debug("Null CIFS logon allowed");
 
-            return SrvAuthenticator.AUTH_ALLOW;
+            return CifsAuthenticator.AUTH_ALLOW;
         }
 
         // Check if the client is already authenticated, and it is not a null logon
@@ -176,46 +173,6 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
     }
 
     /**
-     * Generate a challenge key
-     * 
-     * @param sess SrvSession
-     * @return byte[]
-     */
-    public byte[] getChallengeKey(SrvSession sess)
-    {
-        // In MD4 mode we generate the challenge locally
-
-        byte[] key = null;
-        
-        // Check if the client is already authenticated, and it is not a null logon
-        
-        if ( sess.hasClientInformation() && sess.getClientInformation().getAuthenticationToken() != null &&
-                sess.getClientInformation().getLogonType() != ClientInfo.LogonNull)
-        {
-            // Return the previous challenge, user is already authenticated
-            
-            key = sess.getChallengeKey();
-            
-            // DEBUG
-            
-            if ( logger.isDebugEnabled())
-                logger.debug("Re-using existing challenge, already authenticated");
-        }
-        else if ( m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
-        {
-            // Generate a new challenge key, pack the key and return
-    
-            key = new byte[8];
-    
-            DataPacker.putIntelLong(m_random.nextLong(), key, 0);
-        }
-
-        // Return the challenge
-        
-        return key;
-    }
-
-    /**
      * Perform MD4 user authentication
      * 
      * @param client Client information
@@ -234,7 +191,7 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
             // Check if the client has supplied an NTLM hashed password, if not then do not allow access
             
             if ( client.getPassword() == null)
-                return SrvAuthenticator.AUTH_BADPASSWORD;
+                return CifsAuthenticator.AUTH_BADPASSWORD;
             
             try
             {
@@ -244,21 +201,30 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
                 byte[] md4byts = m_md4Encoder.decodeHash(md4hash);
                 System.arraycopy(md4byts, 0, p21, 0, 16);
                 
+                // Get the challenge that was sent to the client
+                
+                NTLanManAuthContext authCtx = null;
+                
+                if ( sess.hasAuthenticationContext() && sess.getAuthenticationContext() instanceof NTLanManAuthContext)
+                    authCtx = (NTLanManAuthContext) sess.getAuthenticationContext();
+                else
+                    return CifsAuthenticator.AUTH_DISALLOW;
+                
                 // Generate the local hash of the password using the same challenge
                 
-                byte[] localHash = getEncryptor().doNTLM1Encryption(p21, sess.getChallengeKey());
+                byte[] localHash = getEncryptor().doNTLM1Encryption(p21, authCtx.getChallenge());
                 
                 // Validate the password
                 
                 byte[] clientHash = client.getPassword();
 
                 if ( clientHash == null || clientHash.length != localHash.length)
-                    return SrvAuthenticator.AUTH_BADPASSWORD;
+                    return CifsAuthenticator.AUTH_BADPASSWORD;
                 
                 for ( int i = 0; i < clientHash.length; i++)
                 {
                     if ( clientHash[i] != localHash[i])
-                        return SrvAuthenticator.AUTH_BADPASSWORD;
+                        return CifsAuthenticator.AUTH_BADPASSWORD;
                 }
                 
                 // Set the current user to be authenticated, save the authentication token
@@ -271,7 +237,7 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
                 
                 // Passwords match, grant access
                 
-                return SrvAuthenticator.AUTH_ALLOW;
+                return CifsAuthenticator.AUTH_ALLOW;
             }
             catch (NoSuchAlgorithmException ex)
             {
@@ -279,7 +245,7 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
             
             // Error during password check, do not allow access
             
-            return SrvAuthenticator.AUTH_DISALLOW;
+            return CifsAuthenticator.AUTH_DISALLOW;
         }
 
         // Check if this is an SMB/CIFS null session logon.
@@ -287,10 +253,10 @@ public class AlfrescoAuthenticator extends SrvAuthenticator
         // The null session will only be allowed to connect to the IPC$ named pipe share.
 
         if (client.isNullSession() && sess instanceof SMBSrvSession)
-            return SrvAuthenticator.AUTH_ALLOW;
+            return CifsAuthenticator.AUTH_ALLOW;
         
         // User does not exist, check if guest access is allowed
             
-        return allowGuest() ? SrvAuthenticator.AUTH_GUEST : SrvAuthenticator.AUTH_DISALLOW;
+        return allowGuest() ? CifsAuthenticator.AUTH_GUEST : CifsAuthenticator.AUTH_DISALLOW;
     }
 }

@@ -204,7 +204,7 @@ public abstract class NTLMMessage
      */
     protected final int getByteOffset(int offset)
     {
-        return getIntValue(m_offset + offset + 4);
+        return getIntValue(offset + 4);
     }
     
     /**
@@ -217,11 +217,11 @@ public abstract class NTLMMessage
     {
         // Get the byte block length
         
-        int bLen = getShortValue(m_offset + offset);
+        int bLen = getShortValue(offset);
         if ( bLen == 0)
             return null;
         
-        int bOff = getIntValue(m_offset + offset + 4);
+        int bOff = getIntValue(offset + 4);
         return getRawBytes(bOff, bLen);
     }
     

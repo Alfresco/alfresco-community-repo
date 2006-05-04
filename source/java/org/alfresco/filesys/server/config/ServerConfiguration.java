@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.Provider;
 import java.security.Security;
@@ -46,10 +45,7 @@ import org.alfresco.filesys.netbios.RFCNetBIOSProtocol;
 import org.alfresco.filesys.netbios.win32.Win32NetBIOS;
 import org.alfresco.filesys.server.NetworkServer;
 import org.alfresco.filesys.server.NetworkServerList;
-import org.alfresco.filesys.server.auth.LocalAuthenticator;
-import org.alfresco.filesys.server.auth.SrvAuthenticator;
-import org.alfresco.filesys.server.auth.UserAccount;
-import org.alfresco.filesys.server.auth.UserAccountList;
+import org.alfresco.filesys.server.auth.CifsAuthenticator;
 import org.alfresco.filesys.server.auth.acl.ACLParseException;
 import org.alfresco.filesys.server.auth.acl.AccessControl;
 import org.alfresco.filesys.server.auth.acl.AccessControlList;
@@ -68,8 +64,6 @@ import org.alfresco.filesys.server.filesys.DiskDeviceContext;
 import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
 import org.alfresco.filesys.server.filesys.HomeShareMapper;
-import org.alfresco.filesys.smb.Dialect;
-import org.alfresco.filesys.smb.DialectSelector;
 import org.alfresco.filesys.smb.ServerType;
 import org.alfresco.filesys.util.IPAddress;
 import org.alfresco.filesys.util.X64;
@@ -138,15 +132,19 @@ public class ServerConfiguration implements ApplicationListener
     };
 
     // Token name to substitute current server name into the CIFS server name
+
     private static final String TokenLocalName = "${localname}";
 
-    // Acegi authentication manager
+    // Authentication manager
+
     private AuthenticationManager authenticationManager;
 
     // Configuration service
+
     private ConfigService configService;
 
-    /** the device to connect use */
+    // Disk interface to use for shared filesystems
+    
     private DiskInterface diskInterface;
 
     // Runtime platform type
@@ -159,46 +157,53 @@ public class ServerConfiguration implements ApplicationListener
     private boolean m_ftpEnable = true;
 
     // Server name
+
     private String m_name;
 
     // Server type, used by the host announcer
+
     private int m_srvType = ServerType.WorkStation + ServerType.Server + ServerType.NTServer;
 
     // Active server list
+
     private NetworkServerList m_serverList;
 
     // Server comment
+
     private String m_comment;
 
     // Server domain
+
     private String m_domain;
 
     // Network broadcast mask string
+
     private String m_broadcast;
 
     // Announce the server to network neighborhood, announcement interval in
     // minutes
-    private boolean m_announce;
 
+    private boolean m_announce;
     private int m_announceInterval;
 
-    // Default SMB dialects to enable
-    private DialectSelector m_dialects;
-
     // List of shared devices
+
     private SharedDeviceList m_shareList;
 
     // Authenticator, used to authenticate users and share connections.
-    private SrvAuthenticator m_authenticator;
+
+    private CifsAuthenticator m_authenticator;
 
     // Share mapper
+
     private ShareMapper m_shareMapper;
 
     // Access control manager
+
     private AccessControlManager m_aclManager;
 
-    // Global access control list, applied to all shares that do not have access
-    // controls
+    // Global access control list, applied to all shares that do not have access controls
+
     private AccessControlList m_globalACLs;
 
     private boolean m_nbDebug = false;
@@ -206,31 +211,31 @@ public class ServerConfiguration implements ApplicationListener
     private boolean m_announceDebug = false;
 
     // Default session debugging setting
+
     private int m_sessDebug;
 
     // Flags to indicate if NetBIOS, native TCP/IP SMB and/or Win32 NetBIOS
     // should be enabled
+
     private boolean m_netBIOSEnable = true;
-
     private boolean m_tcpSMBEnable = false;
-
     private boolean m_win32NBEnable = false;
 
     // Address to bind the SMB server to, if null all local addresses are used
+
     private InetAddress m_smbBindAddress;
 
-    // Address to bind the NetBIOS name server to, if null all addresses are
-    // used
+    // Address to bind the NetBIOS name server to, if null all addresses are used
+
     private InetAddress m_nbBindAddress;
 
     // WINS servers
+
     private InetAddress m_winsPrimary;
     private InetAddress m_winsSecondary;
 
-    // User account list
-    private UserAccountList m_userList;
-
     // Enable/disable Macintosh extension SMBs
+
     private boolean m_macExtensions;
 
     // --------------------------------------------------------------------------------
@@ -238,13 +243,16 @@ public class ServerConfiguration implements ApplicationListener
     //
     // Server name to register under Win32 NetBIOS, if not set the main server
     // name is used
+
     private String m_win32NBName;
 
     // LANA to be used for Win32 NetBIOS, if not specified the first available
     // is used
+
     private int m_win32NBLANA = -1;
 
     // Send out host announcements via the Win32 NetBIOS interface
+
     private boolean m_win32NBAnnounce = false;
     private int m_win32NBAnnounceInterval;
     
@@ -277,10 +285,12 @@ public class ServerConfiguration implements ApplicationListener
     // Global server configuration
     //
     // Timezone name and offset from UTC in minutes
+
     private String m_timeZone;
     private int m_tzOffset;
 
     // JCE provider class name
+
     private String m_jceProviderClass;
 
     // Local server name and domain/workgroup name
@@ -288,7 +298,8 @@ public class ServerConfiguration implements ApplicationListener
     private String m_localName;
     private String m_localDomain;
 
-    /** flag indicating successful initialisation */
+    // flag to indicate successful initialization
+    
     private boolean initialised;
 
     // Main authentication service, public API
@@ -313,23 +324,6 @@ public class ServerConfiguration implements ApplicationListener
         // Allocate the shared device list
 
         m_shareList = new SharedDeviceList();
-
-        // Allocate the SMB dialect selector, and initialize using the default
-        // list of dialects
-
-        m_dialects = new DialectSelector();
-
-        m_dialects.AddDialect(Dialect.DOSLanMan1);
-        m_dialects.AddDialect(Dialect.DOSLanMan2);
-        m_dialects.AddDialect(Dialect.LanMan1);
-        m_dialects.AddDialect(Dialect.LanMan2);
-        m_dialects.AddDialect(Dialect.LanMan2_1);
-        m_dialects.AddDialect(Dialect.NT);
-
-        // Use the local authenticator, that allows locally defined users to connect to the
-        // server
-
-        setAuthenticator(new LocalAuthenticator(), null, true);
 
         // Use the default share mapper
 
@@ -1328,7 +1322,7 @@ public class ServerConfiguration implements ApplicationListener
                 
                 //  Parse the path
                 
-                FTPPath ftpPath = new FTPPath(rootPath);
+                new FTPPath(rootPath);
                 
                 //  Set the root path
                 
@@ -1419,10 +1413,32 @@ public class ServerConfiguration implements ApplicationListener
             }
         }
         
+        // Get the top level filesystems confgiruation element
+        
+        ConfigElement filesystems = config.getConfigElement("filesystems");
+        
         // Get the filesystem configuration elements
 
-        List<ConfigElement> filesysElems = config.getConfigElementList("filesystem");
+        List<ConfigElement> filesysElems = null;
+        if ( filesystems != null)
+        {
+            // Get the list of filesystems
+            
+            filesysElems = filesystems.getChildren();
+        }
+        else
+        {
+            // Check for the old style configuration
+            
+            filesysElems = config.getConfigElementList( "filesystem");
+            
+            // Warn that the configuration is using the old format
+            
+            logger.warn("Old style file-servers.xml configuration being used");
+        }
 
+        // Process the filesystems list
+        
         if (filesysElems != null)
         {
 
@@ -1494,6 +1510,12 @@ public class ServerConfiguration implements ApplicationListener
                 }
             }
         }
+        else
+        {
+            // No filesystems defined
+            
+            logger.warn("No filesystems defined");
+        }
     }
 
     /**
@@ -1544,7 +1566,7 @@ public class ServerConfiguration implements ApplicationListener
 
             String authType = authElem.getAttribute("type");
             if (authType == null)
-                throw new AlfrescoRuntimeException("Authenticator type not specified");
+                authType = "alfresco";
 
             // Get the authentication component type
             
@@ -1552,10 +1574,9 @@ public class ServerConfiguration implements ApplicationListener
             
             // Set the authenticator class to use
 
-            SrvAuthenticator auth = null;
-            if (authType.equalsIgnoreCase("local"))
-                auth = new LocalAuthenticator();
-            else if (authType.equalsIgnoreCase("passthru"))
+            CifsAuthenticator auth = null;
+
+            if (authType.equalsIgnoreCase("passthru"))
             {
                 // Check if the appropriate authentication component type is configured
                 
@@ -1567,14 +1588,6 @@ public class ServerConfiguration implements ApplicationListener
                 auth = loadAuthenticatorClass("org.alfresco.filesys.server.auth.passthru.PassthruAuthenticator");
                 if ( auth == null)
                     throw new AlfrescoRuntimeException("Failed to load passthru authenticator");
-            }
-            else if (authType.equalsIgnoreCase("acegi"))
-            {
-                // Load the Acegi authenticator dynamically
-                
-                auth = loadAuthenticatorClass("org.alfresco.filesys.server.auth.passthru.AcegiPassthruAuthenticator");
-                if ( auth == null)
-                    throw new AlfrescoRuntimeException("Failed to load Acegi passthru authenticator");
             }
             else if (authType.equalsIgnoreCase("alfresco"))
             {
@@ -1592,6 +1605,15 @@ public class ServerConfiguration implements ApplicationListener
                 if ( auth == null)
                     throw new AlfrescoRuntimeException("Failed to load Alfresco authenticator");
             }
+            else if( authType.equalsIgnoreCase("enterprise"))
+            {
+                // Load the Enterprise authenticator dynamically
+                
+                auth = loadAuthenticatorClass("org.alfresco.filesys.server.auth.EnterpriseCifsAuthenticator");
+                
+                if ( auth == null)
+                    throw new AlfrescoRuntimeException("Failed to load Enterprise authenticator");
+            }
             else
                 throw new AlfrescoRuntimeException("Invalid authenticator type, " + authType);
 
@@ -1605,31 +1627,6 @@ public class ServerConfiguration implements ApplicationListener
             setAuthenticator(auth, authElem, allowGuest);
             auth.setMapToGuest( mapGuest);
         }
-
-        // Add the users
-
-        ConfigElement usersElem = config.getConfigElement("users");
-        if (usersElem != null)
-        {
-
-            // Get the list of user elements
-
-            List<ConfigElement> userElemList = usersElem.getChildren();
-
-            for (int i = 0; i < userElemList.size(); i++)
-            {
-
-                // Get the current user element
-
-                ConfigElement curUserElem = userElemList.get(i);
-
-                if (curUserElem.getName().equals("localuser"))
-                {
-                    processUser(curUserElem);
-                }
-            }
-        }
-
     }
 
     /**
@@ -1721,62 +1718,6 @@ public class ServerConfiguration implements ApplicationListener
         // Return the access control list
 
         return acls;
-    }
-
-    /**
-     * Add a user account
-     * 
-     * @param user ConfigElement
-     */
-    private final void processUser(ConfigElement user)
-    {
-
-        // Get the username
-
-        String attr = user.getAttribute("name");
-        if (attr == null || attr.length() == 0)
-            throw new AlfrescoRuntimeException("User name not specified, or zero length");
-
-        // Check if the user already exists
-
-        String userName = attr;
-
-        if (hasUserAccounts() && getUserAccounts().findUser(userName) != null)
-            throw new AlfrescoRuntimeException("User " + userName + " already defined");
-
-        // Get the password for the account
-
-        ConfigElement elem = user.getChild("password");
-        if (elem == null)
-            throw new AlfrescoRuntimeException("No password specified for user " + userName);
-
-        String password = elem.getValue();
-
-        // Create the user account
-
-        UserAccount userAcc = new UserAccount(userName, password);
-
-        // Check if the user in an administrator
-
-        if (user.getChild("administrator") != null)
-            userAcc.setAdministrator(true);
-
-        // Get the real user name and comment
-
-        elem = user.getChild("realname");
-        if (elem != null)
-            userAcc.setRealName(elem.getValue());
-
-        elem = user.getChild("comment");
-        if (elem != null)
-            userAcc.setComment(elem.getValue());
-
-        // Add the user account
-
-        UserAccountList accList = getUserAccounts();
-        if (accList == null)
-            setUserAccounts(new UserAccountList());
-        getUserAccounts().addUser(userAcc);
     }
 
     /**
@@ -1938,11 +1879,11 @@ public class ServerConfiguration implements ApplicationListener
 
     /**
      * Get the authenticator object that is used to provide user and share connection
-     * authentication.
+     * authentication for CIFS.
      * 
-     * @return Authenticator
+     * @return CifsAuthenticator
      */
-    public final SrvAuthenticator getAuthenticator()
+    public final CifsAuthenticator getAuthenticator()
     {
         return m_authenticator;
     }
@@ -2058,16 +1999,6 @@ public class ServerConfiguration implements ApplicationListener
     }
 
     /**
-     * Return the enabled SMB dialects that the server will use when negotiating sessions.
-     * 
-     * @return DialectSelector
-     */
-    public final DialectSelector getEnabledDialects()
-    {
-        return m_dialects;
-    }
-
-    /**
      * Return the server name.
      * 
      * @return java.lang.String
@@ -2115,16 +2046,6 @@ public class ServerConfiguration implements ApplicationListener
     public final ShareMapper getShareMapper()
     {
         return m_shareMapper;
-    }
-
-    /**
-     * Return the user account list.
-     * 
-     * @return UserAccountList
-     */
-    public final UserAccountList getUserAccounts()
-    {
-        return m_userList;
     }
 
     /**
@@ -2471,18 +2392,6 @@ public class ServerConfiguration implements ApplicationListener
     }
 
     /**
-     * Determine if there are any user accounts defined.
-     * 
-     * @return boolean
-     */
-    public final boolean hasUserAccounts()
-    {
-        if (m_userList != null && m_userList.numberOfUsers() > 0)
-            return true;
-        return false;
-    }
-
-    /**
      * Determine if NetBIOS SMB is enabled
      * 
      * @return boolean
@@ -2543,18 +2452,17 @@ public class ServerConfiguration implements ApplicationListener
     }
     
     /**
-     * Set the authenticator to be used to authenticate users and share connections.
+     * Set the authenticator to be used to authenticate users and share connections for CIFS.
      * 
-     * @param auth SrvAuthenticator
+     * @param auth CifsAuthenticator
      * @param params ConfigElement
      * @param allowGuest boolean
      */
-    public final void setAuthenticator(SrvAuthenticator auth, ConfigElement params, boolean allowGuest)
+    public final void setAuthenticator(CifsAuthenticator auth, ConfigElement params, boolean allowGuest)
     {
 
         // Set the server authenticator mode and guest access
 
-        auth.setAccessMode(SrvAuthenticator.USER_MODE);
         auth.setAllowGuest(allowGuest);
 
         // Initialize the authenticator using the parameter values
@@ -2731,16 +2639,6 @@ public class ServerConfiguration implements ApplicationListener
     public final void setSessionDebugFlags(int flags)
     {
         m_sessDebug = flags;
-    }
-
-    /**
-     * Set the user account list.
-     * 
-     * @param users UserAccountList
-     */
-    public final void setUserAccounts(UserAccountList users)
-    {
-        m_userList = users;
     }
 
     /**
@@ -3061,14 +2959,14 @@ public class ServerConfiguration implements ApplicationListener
     }
     
     /**
-     * Load an authenticator using dyanmic loading
+     * Load a CIFS authenticator using dyanmic loading
      * 
      * @param className String
-     * @return SrvAuthenticator
+     * @return CifsAuthenticator
      */
-    private final SrvAuthenticator loadAuthenticatorClass(String className)
+    private final CifsAuthenticator loadAuthenticatorClass(String className)
     {
-        SrvAuthenticator srvAuth = null;
+        CifsAuthenticator srvAuth = null;
         
         try
         {
@@ -3078,8 +2976,8 @@ public class ServerConfiguration implements ApplicationListener
             
             // Verify that the class is an authenticator
             
-            if ( authObj instanceof SrvAuthenticator)
-                srvAuth = (SrvAuthenticator) authObj;
+            if ( authObj instanceof CifsAuthenticator)
+                srvAuth = (CifsAuthenticator) authObj;
         }
         catch (Exception ex)
         {

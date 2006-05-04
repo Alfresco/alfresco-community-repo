@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -24,6 +24,7 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -75,6 +76,14 @@ public class PasswordEncryptor
             // Check if DES is available
 
             Cipher.getInstance("DES");
+            
+            // Check if HMAC-MD5 is available
+            
+            Mac.getInstance("HMACMD5");
+            
+            // Indicate required algorithms are available
+            
+            algOK = true;
         }
         catch (NoSuchAlgorithmException ex)
         {
@@ -95,13 +104,15 @@ public class PasswordEncryptor
      * @param plainPwd Plaintext password string
      * @param encryptKey byte[] Encryption key
      * @param alg int Encryption algorithm
+     * @param userName String
+     * @param domain String
      * @return byte[] Encrypted password
      * @exception NoSuchAlgorithmException If a required encryption algorithm is not available
+     * @exception InvalidKeyException Key is invalid
      */
-    public byte[] generateEncryptedPassword(String plainPwd, byte[] encryptKey, int alg)
-            throws NoSuchAlgorithmException
+    public byte[] generateEncryptedPassword(String plainPwd, byte[] encryptKey, int alg, String userName, String domain)
+            throws NoSuchAlgorithmException, InvalidKeyException
     {
-
         // Get the password
 
         String pwd = plainPwd;
@@ -150,6 +161,41 @@ public class PasswordEncryptor
         // NTLM v2 encryption
 
         case NTLM2:
+            
+            // Get the MD4 hash of the plaintext password
+            
+            byte[] md4Hash = generateEncryptedPassword( plainPwd, encryptKey, MD4, null, null);
+            
+            // HMAC-MD5 the username + domain string using the MD4 hash as the key
+            
+            Mac hmacMd5 = Mac.getInstance("HMACMD5");
+            SecretKeySpec key = new SecretKeySpec( md4Hash, 0, md4Hash.length, "MD5");
+            
+            hmacMd5.init(key);
+            
+            // Build the username + domain string and convert to bytes
+            
+            StringBuilder str = new StringBuilder();
+            
+            str.append( userName.toUpperCase());
+            str.append( domain.toUpperCase());
+            
+            byte[] dataByts = null;
+            
+            try
+            {
+                // Convert the string to a byte array
+                
+                String dataStr = str.toString();
+                dataByts = dataStr.getBytes("UnicodeLittleUnmarked");
+            }
+            catch ( UnsupportedEncodingException ex)
+            {
+            }
+            
+            // Encrypt the username+domain bytes to generate the NTLMv2 hash
+            
+            encPwd = hmacMd5.doFinal( dataByts);
             break;
 
         // MD4 encryption
@@ -413,5 +459,47 @@ public class PasswordEncryptor
         throws NoSuchAlgorithmException
     {
         return P24(p21, c8);
+    }
+    
+    /**
+     * NTLM2 encryption of the MD4 hashed password
+     * 
+     * @param md4Hash byte[]
+     * @param userName String
+     * @param domain String
+     * @return byte[]
+     * @exception NoSuchAlgorithmException
+     */
+    public final byte[] doNTLM2Encryption(byte[] md4Hash, String userName, String domain)
+        throws NoSuchAlgorithmException, InvalidKeyException
+    {
+        //  Use the MD4 hashed password as the key for HMAC-MD5
+        
+        Mac hmacMd5 = Mac.getInstance("HMACMD5");
+        SecretKeySpec key = new SecretKeySpec(md4Hash, 0, md4Hash.length, "MD5");
+        
+        hmacMd5.init( key);
+        
+        // Build the data to be encrypted
+        
+        StringBuilder str = new StringBuilder();
+        
+        str.append(userName.toUpperCase());
+        str.append(domain.toUpperCase());
+        
+        String dataStr = str.toString();
+        byte[] dataByts = null;
+        
+        try
+        {
+            dataByts = dataStr.getBytes("UnicodeLittleUnmarked");
+        }
+        catch ( UnsupportedEncodingException ex)
+        {
+        }
+        
+        // Encrypt the data
+        
+        return hmacMd5.doFinal( dataByts);
     }
 }

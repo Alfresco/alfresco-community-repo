@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -19,7 +19,7 @@ package org.alfresco.filesys.server;
 import java.net.InetAddress;
 import java.util.Vector;
 
-import org.alfresco.filesys.server.auth.SrvAuthenticator;
+import org.alfresco.filesys.server.auth.CifsAuthenticator;
 import org.alfresco.filesys.server.auth.acl.AccessControlManager;
 import org.alfresco.filesys.server.config.ServerConfiguration;
 import org.alfresco.filesys.server.core.ShareMapper;
@@ -99,9 +99,9 @@ public abstract class NetworkServer
     /**
      * Return the authenticator for this server
      * 
-     * @return SrvAuthenticator
+     * @return CifsAuthenticator
      */
-    public final SrvAuthenticator getAuthenticator()
+    public final CifsAuthenticator getAuthenticator()
     {
         return getConfiguration().getAuthenticator();
     }

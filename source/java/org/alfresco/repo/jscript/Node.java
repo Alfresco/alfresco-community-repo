@@ -40,12 +40,17 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mozilla.javascript.NativeArray;
+import org.mozilla.javascript.ScriptableObject;
 import org.springframework.util.StringUtils;
 
 /**
@@ -85,6 +90,7 @@ public final class Node implements Serializable
     private ScriptableQNameMap<String, Serializable> properties;
     private boolean propsRetrieved = false;
     private ServiceRegistry services = null;
+    private NodeService nodeService = null;
     private Boolean isDocument = null;
     private Boolean isContainer = null;
     private String displayPath = null;
@@ -94,6 +100,9 @@ public final class Node implements Serializable
     private Node parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
     
+    
+    // ------------------------------------------------------------------------------
+    // Construction
     
     /**
      * Constructor
@@ -117,8 +126,13 @@ public final class Node implements Serializable
         this.nodeRef = nodeRef;
         this.id = nodeRef.getId();
         this.services = services;
+        this.nodeService = services.getNodeService();
         this.imageResolver = resolver;
     }
+    
+    
+    // ------------------------------------------------------------------------------
+    // Node Wrapper API 
     
     /**
      * @return The GUID for the node
@@ -153,7 +167,7 @@ public final class Node implements Serializable
     {
         if (this.type == null)
         {
-            this.type = this.services.getNodeService().getType(this.nodeRef);
+            this.type = this.nodeService.getType(this.nodeRef);
         }
         
         return type;
@@ -177,7 +191,7 @@ public final class Node implements Serializable
             // if we didn't find it as a property get the name from the association name
             if (this.name == null)
             {
-                ChildAssociationRef parentRef = this.services.getNodeService().getPrimaryParent(this.nodeRef);
+                ChildAssociationRef parentRef = this.nodeService.getPrimaryParent(this.nodeRef);
                 if (parentRef != null && parentRef.getQName() != null)
                 {
                     this.name = parentRef.getQName().getLocalName();
@@ -222,7 +236,7 @@ public final class Node implements Serializable
     {
         if (this.children == null)
         {
-            List<ChildAssociationRef> childRefs = this.services.getNodeService().getChildAssocs(this.nodeRef);
+            List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(this.nodeRef);
             this.children = new Node[childRefs.size()];
             for (int i=0; i<childRefs.size(); i++)
             {
@@ -301,7 +315,7 @@ public final class Node implements Serializable
             // this Map implements the Scriptable interface for native JS syntax property access
             this.assocs = new ScriptableQNameMap<String, Node[]>(this.services.getNamespaceService());
             
-            List<AssociationRef> refs = this.services.getNodeService().getTargetAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
+            List<AssociationRef> refs = this.nodeService.getTargetAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
             for (AssociationRef ref : refs)
             {
                 String qname = ref.getTypeQName().toString();
@@ -347,7 +361,7 @@ public final class Node implements Serializable
             // this Map implements the Scriptable interface for native JS syntax property access
             this.properties = new ScriptableQNameMap<String, Serializable>(this.services.getNamespaceService());
             
-            Map<QName, Serializable> props = this.services.getNodeService().getProperties(this.nodeRef);
+            Map<QName, Serializable> props = this.nodeService.getProperties(this.nodeRef);
             for (QName qname : props.keySet())
             {
                 Serializable propValue = props.get(qname);
@@ -423,7 +437,7 @@ public final class Node implements Serializable
     {
         if (this.aspects == null)
         {
-            this.aspects = this.services.getNodeService().getAspects(this.nodeRef);
+            this.aspects = this.nodeService.getAspects(this.nodeRef);
         }
         
         return this.aspects;
@@ -443,7 +457,7 @@ public final class Node implements Serializable
     {
         if (this.aspects == null)
         {
-            this.aspects = this.services.getNodeService().getAspects(this.nodeRef);
+            this.aspects = this.nodeService.getAspects(this.nodeRef);
         }
         
         if (aspect.startsWith(NAMESPACE_BEGIN))
@@ -474,7 +488,7 @@ public final class Node implements Serializable
         {
             try
             {
-                displayPath = this.services.getNodeService().getPath(this.nodeRef).toDisplayPath(this.services.getNodeService());
+                displayPath = this.nodeService.getPath(this.nodeRef).toDisplayPath(this.nodeService);
             }
             catch (AccessDeniedException err)
             {
@@ -583,7 +597,7 @@ public final class Node implements Serializable
     {
         if (parent == null)
         {
-            NodeRef parentRef = this.services.getNodeService().getPrimaryParent(nodeRef).getParentRef();
+            NodeRef parentRef = this.nodeService.getPrimaryParent(nodeRef).getParentRef();
             // handle root node (no parent!)
             if (parentRef != null)
             {
@@ -607,7 +621,7 @@ public final class Node implements Serializable
     {
         if (primaryParentAssoc == null)
         {
-            primaryParentAssoc = this.services.getNodeService().getPrimaryParent(nodeRef);
+            primaryParentAssoc = this.nodeService.getPrimaryParent(nodeRef);
         }
         return primaryParentAssoc;
     }
@@ -749,6 +763,10 @@ public final class Node implements Serializable
         return this.imageResolver;
     }
     
+    
+    // ------------------------------------------------------------------------------
+    // Create and Modify API  
+    
     /**
      * Persist the properties of this Node.
      */
@@ -771,11 +789,11 @@ public final class Node implements Serializable
             }
             props.put(QName.createQName(key), value);
         }
-        this.services.getNodeService().setProperties(this.nodeRef, props);
+        this.nodeService.setProperties(this.nodeRef, props);
     }
     
     /**
-     * Create a new File node as a child of this node.
+     * Create a new File (cm:content) node as a child of this node.
      * <p>
      * Once created the file should have content set using the <code>content</code> property.
      * 
@@ -783,15 +801,18 @@ public final class Node implements Serializable
      * 
      * @return Newly created Node or null if failed to create.
      */
-    // TODO: create with type? create with content?
     public Node createFile(String name)
     {
         Node node = null;
+        
         try
         {
-            FileInfo fileInfo = this.services.getFileFolderService().create(
-                    this.nodeRef, name, ContentModel.TYPE_CONTENT);
-            node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver);
+            if (name != null && name.length() != 0)
+            {
+                FileInfo fileInfo = this.services.getFileFolderService().create(
+                        this.nodeRef, name, ContentModel.TYPE_CONTENT);
+                node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver);
+            }
         }
         catch (FileExistsException fileErr)
         {
@@ -807,18 +828,24 @@ public final class Node implements Serializable
     }
     
     /**
-     * Create a new folder node
-     * @param name
-     * @return
+     * Create a new folder (cm:folder) node as a child of this node.
+     * 
+     * @param name      Name of the folder to create
+     * 
+     * @return Newly created Node or null if failed to create.
      */
     public Node createFolder(String name)
     {
         Node node = null;
+        
         try
         {
-            FileInfo fileInfo = this.services.getFileFolderService().create(
-                    this.nodeRef, name, ContentModel.TYPE_FOLDER);
-            node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver);
+            if (name != null && name.length() != 0)
+            {
+                FileInfo fileInfo = this.services.getFileFolderService().create(
+                        this.nodeRef, name, ContentModel.TYPE_FOLDER);
+                node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver);
+            }
         }
         catch (FileExistsException fileErr)
         {
@@ -831,6 +858,138 @@ public final class Node implements Serializable
         }
         
         return node;
+    }
+    
+    /**
+     * Create a new Node of the specified type as a child of this node.
+     * 
+     * @param name      Name of the node to create
+     * @param type      QName type (can either be fully qualified or short form such as 'cm:content')
+     * 
+     * @return Newly created Node or null if failed to create.
+     */
+    public Node createNode(String name, String type)
+    {
+        Node node = null;
+        
+        try
+        {
+            if (name != null && name.length() != 0 &&
+                type != null && type.length() != 0)
+            {
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+                props.put(ContentModel.PROP_NAME, name);
+                ChildAssociationRef childAssocRef = this.nodeService.createNode(
+                        this.nodeRef,
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(name)),
+                        QName.createQName(type),
+                        props);
+                node = new Node(childAssocRef.getChildRef(), this.services, this.imageResolver);
+            }
+        }
+        catch (AccessDeniedException accessErr)
+        {
+            // default of null will be returned
+        }
+        
+        return node;
+    }
+    
+    /**
+     * Delete this node. Any references to this Node or its NodeRef should be discarded!
+     */
+    public boolean delete()
+    {
+        boolean success = false;
+        
+        try
+        {
+            this.nodeService.deleteNode(this.nodeRef);
+            success = true;
+        }
+        catch (AccessDeniedException accessErr)
+        {
+            // default of false will be returned
+        }
+        catch (InvalidNodeRefException refErr)
+        {
+            // default of false will be returned
+        }
+        
+        return success;
+    }
+    
+    /**
+     * Copy this Node to a new parent destination.
+     * 
+     * @param destination Node
+     * 
+     * @return The newly copied Node instance or null if failed to copy.
+     */
+    public Node copy(Node destination)
+    {
+        Node copy = null;
+        
+        try
+        {
+            if (destination != null)
+            {
+                NodeRef copyRef = this.services.getCopyService().copy(
+                        this.nodeRef,
+                        destination.getNodeRef(),
+                        ContentModel.ASSOC_CONTAINS,
+                        getPrimaryParentAssoc().getQName(),
+                        false);
+                copy = new Node(copyRef, this.services, this.imageResolver);
+            }
+        }
+        catch (AccessDeniedException accessErr)
+        {
+            // default of null will be returned
+        }
+        catch (InvalidNodeRefException nodeErr)
+        {
+            // default of null will be returned
+        }
+        
+        return copy;
+    }
+    
+    /**
+     * Move this Node to a new parent destination.
+     * 
+     * @param destination Node
+     * 
+     * @return true on successful move, false on failure to move.
+     */
+    public boolean move(Node destination)
+    {
+        boolean success = false;
+        
+        try
+        {
+            if (destination != null)
+            {
+                this.primaryParentAssoc = this.nodeService.moveNode(
+                        this.nodeRef,
+                        destination.getNodeRef(),
+                        ContentModel.ASSOC_CONTAINS,
+                        getPrimaryParentAssoc().getQName());
+                this.parent = null; // has been changed - so reset it
+                success = true;
+            }
+        }
+        catch (AccessDeniedException accessErr)
+        {
+            // default of false will be returned
+        }
+        catch (InvalidNodeRefException refErr)
+        {
+            // default of false will be returned
+        }
+        
+        return success;
     }
     
     /**
@@ -838,7 +997,7 @@ public final class Node implements Serializable
      */
     public String toString()
     {
-        if (this.services.getNodeService().exists(nodeRef))
+        if (this.nodeService.exists(nodeRef))
         {
             return "Node Type: " + getType() + 
                    "\nNode Properties: " + this.getProperties().toString() + 
@@ -849,6 +1008,10 @@ public final class Node implements Serializable
             return "Node no longer exists: " + nodeRef;
         }
     }
+    
+    
+    // ------------------------------------------------------------------------------
+    // Private Helpers 
     
     /**
      * Return a list or a single Node from executing an xpath against the parent Node.
@@ -874,7 +1037,7 @@ public final class Node implements Serializable
             }
             else
             {
-                contextRef = this.services.getNodeService().getRootNode(nodeRef.getStoreRef());
+                contextRef = this.nodeService.getRootNode(nodeRef.getStoreRef());
             }
             List<NodeRef> nodes = this.services.getSearchService().selectNodes(
                     contextRef,
@@ -907,6 +1070,9 @@ public final class Node implements Serializable
         return result != null ? result : new Node[0];
     }
     
+    
+    // ------------------------------------------------------------------------------
+    // Inner Classes
     
     /**
      * Inner class wrapping and providing access to a ContentData property 

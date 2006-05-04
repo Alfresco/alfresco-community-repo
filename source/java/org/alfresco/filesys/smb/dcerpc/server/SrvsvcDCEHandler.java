@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -21,11 +21,9 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import org.alfresco.filesys.server.auth.acl.AccessControlManager;
-import org.alfresco.filesys.server.config.ServerConfiguration;
 import org.alfresco.filesys.server.core.ShareType;
 import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.server.core.SharedDeviceList;
-import org.alfresco.filesys.smb.Dialect;
 import org.alfresco.filesys.smb.SMBStatus;
 import org.alfresco.filesys.smb.dcerpc.DCEBuffer;
 import org.alfresco.filesys.smb.dcerpc.DCEBufferException;
@@ -375,19 +373,10 @@ public class SrvsvcDCEHandler implements DCEHandler
         srvInfo.setComment(srv.getComment());
         srvInfo.setServerType(srv.getServerType());
 
-        // Determine if the server is using the NT SMB dialect and set the platofmr id accordingly
+        // Return the platform id as Windows NT
 
-        ServerConfiguration srvConfig = srv.getConfiguration();
-        if (srvConfig != null && srvConfig.getEnabledDialects().hasDialect(Dialect.NT) == true)
-        {
-            srvInfo.setPlatformId(ServerInfo.PLATFORM_NT);
-            srvInfo.setVersion(5, 1);
-        }
-        else
-        {
-            srvInfo.setPlatformId(ServerInfo.PLATFORM_OS2);
-            srvInfo.setVersion(4, 0);
-        }
+        srvInfo.setPlatformId(ServerInfo.PLATFORM_NT);
+        srvInfo.setVersion(5, 1);
 
         // Write the server information to the DCE response
 

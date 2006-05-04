@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -18,8 +18,6 @@ package org.alfresco.filesys.smb.dcerpc.server;
 
 import java.io.IOException;
 
-import org.alfresco.filesys.server.config.ServerConfiguration;
-import org.alfresco.filesys.smb.Dialect;
 import org.alfresco.filesys.smb.SMBStatus;
 import org.alfresco.filesys.smb.dcerpc.DCEBuffer;
 import org.alfresco.filesys.smb.dcerpc.DCEBufferException;
@@ -152,19 +150,10 @@ public class WkssvcDCEHandler implements DCEHandler
         wkstaInfo.setWorkstationName(srv.getServerName());
         wkstaInfo.setDomain(srv.getConfiguration().getDomainName());
 
-        // Determine if the server is using the NT SMB dialect and set the platofmr id accordingly
+        // Return the platform type as Windows NT
 
-        ServerConfiguration srvConfig = sess.getServer().getConfiguration();
-        if (srvConfig != null && srvConfig.getEnabledDialects().hasDialect(Dialect.NT) == true)
-        {
-            wkstaInfo.setPlatformId(ServerInfo.PLATFORM_NT);
-            wkstaInfo.setVersion(5, 1);
-        }
-        else
-        {
-            wkstaInfo.setPlatformId(ServerInfo.PLATFORM_OS2);
-            wkstaInfo.setVersion(4, 0);
-        }
+        wkstaInfo.setPlatformId(ServerInfo.PLATFORM_NT);
+        wkstaInfo.setVersion(5, 1);
 
         // Write the server information to the DCE response
 

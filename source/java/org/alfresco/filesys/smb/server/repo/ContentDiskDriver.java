@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -306,7 +306,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
 
             // Default the filesystem to look like an 80Gb sized disk with 90% free space
             
-            context.setDiskInformation(new SrvDiskInfo(2560, 64, 512, 2304));
+            context.setDiskInformation(new SrvDiskInfo(2560000, 64, 512, 2304000));
             
             // Set parameters
             
@@ -333,59 +333,50 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             }                
         }
 
-        // Load the I/O control handler, if available
+        // Check if the client side drag and drop appliction has been enabled
         
-        try
+        ConfigElement dragDropElem = cfg.getChild( "dragAndDrop");
+        if ( dragDropElem != null)
         {
-            // Load the I/O control handler class
+            // Get the pseudo file name and path to the actual file on the local filesystem
             
-            Object ioctlObj = Class.forName("org.alfresco.filesys.server.smb.repo.ContentIOControlHandler").newInstance();
+            ConfigElement pseudoName = dragDropElem.getChild( "filename");
+            ConfigElement appPath    = dragDropElem.getChild( "path");
             
-            // Verify that the class is an I/O control interface
-            
-            if ( ioctlObj instanceof IOControlHandler)
+            if ( pseudoName != null && appPath != null)
             {
-                // Set the I/O control handler, and initialize
+                // Check that the application exists on the local filesystem
                 
-                m_ioHandler = (IOControlHandler) ioctlObj;
-                m_ioHandler.initialize( this, cifsHelper, transactionService, nodeService, checkInOutService);
+                URL appURL = this.getClass().getClassLoader().getResource(appPath.getValue());
+                if ( appURL == null)
+                    throw new DeviceContextException("Failed to find drag and drop application, " + appPath.getValue());
+                File appFile = new File(appURL.getFile());
+                if ( appFile.exists() == false)
+                    throw new DeviceContextException("Drag and drop application not found, " + appPath.getValue());
+                
+                // Create the pseudo file for the drag and drop application
+                
+                PseudoFile dragDropPseudo = new LocalPseudoFile( pseudoName.getValue(), appFile.getAbsolutePath());
+                context.setDragAndDropApp( dragDropPseudo);
             }
             
-            // Initialize the drag and drop pseudo application, if the I/O support has been enabled
-            
-            if ( m_ioHandler != null)
+            // Initialize the custom I/O handler
+
+            try
             {
-                ConfigElement dragDropElem = cfg.getChild( "dragAndDrop");
-                if ( dragDropElem != null)
-                {
-                    // Get the pseudo file name and path to the actual file on the local filesystem
-                    
-                    ConfigElement pseudoName = dragDropElem.getChild( "filename");
-                    ConfigElement appPath    = dragDropElem.getChild( "path");
-                    
-                    if ( pseudoName != null && appPath != null)
-                    {
-                        // Check that the application exists on the local filesystem
-                        
-                        URL appURL = this.getClass().getClassLoader().getResource(appPath.getValue());
-                        if ( appURL == null)
-                            throw new DeviceContextException("Failed to find drag and drop application, " + appPath.getValue());
-                        File appFile = new File(appURL.getFile());
-                        if ( appFile.exists() == false)
-                            throw new DeviceContextException("Drag and drop application not found, " + appPath.getValue());
-                        
-                        // Create the pseudo file for the drag and drop application
-                        
-                        PseudoFile dragDropPseudo = new LocalPseudoFile( pseudoName.getValue(), appFile.getAbsolutePath());
-                        context.setDragAndDropApp( dragDropPseudo);
-                    }
-                }
-            }            
-        }
-        catch (Exception ex)
-        {
-            if ( logger.isDebugEnabled())
-                logger.debug("No I/O control handler available");
+            	m_ioHandler = new ContentIOControlHandler();
+            	m_ioHandler.initialize( this, cifsHelper, transactionService, nodeService, checkInOutService);
+            }
+            catch (Exception ex)
+            {
+            	// Log the error
+            	
+            	logger.error("Failed to initialize I/O control handler", ex);
+            	
+            	//	Rethrow the exception
+            	
+            	throw new DeviceContextException("Failed to initialize I/O control handler");
+            }
         }
 
         // Check if URL link files are enabled

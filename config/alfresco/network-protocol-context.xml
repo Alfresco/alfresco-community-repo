@@ -7,6 +7,7 @@
       <constructor-arg>
          <list>
             <value>classpath:alfresco/file-servers.xml</value>
+            <value>classpath:alfresco/extension/file-servers-custom.xml</value>
          </list>
       </constructor-arg>
    </bean>

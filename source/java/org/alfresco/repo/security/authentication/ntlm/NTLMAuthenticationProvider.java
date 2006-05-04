@@ -19,6 +19,7 @@ package org.alfresco.repo.security.authentication.ntlm;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.Security;
@@ -519,7 +520,7 @@ public class NTLMAuthenticationProvider implements AuthenticationProvider
             
             String username = (String) ntlmToken.getPrincipal();
             String plainPwd = (String) ntlmToken.getCredentials();
-            byte[] ntlm1Pwd = m_encryptor.generateEncryptedPassword( plainPwd, authSess.getEncryptionKey(), PasswordEncryptor.NTLM1);
+            byte[] ntlm1Pwd = m_encryptor.generateEncryptedPassword( plainPwd, authSess.getEncryptionKey(), PasswordEncryptor.NTLM1, null, null);
             
             // Send the logon request to the authentication server
             //
@@ -559,6 +560,12 @@ public class NTLMAuthenticationProvider implements AuthenticationProvider
             // JCE provider does not have the required encryption/hashing algorithms
             
             throw new AuthenticationServiceException("JCE provider error", ex);
+        }
+        catch (InvalidKeyException ex)
+        {
+            // Problem creating key during encryption
+            
+            throw new AuthenticationServiceException("Invalid key error", ex);
         }
         catch (IOException ex)
         {

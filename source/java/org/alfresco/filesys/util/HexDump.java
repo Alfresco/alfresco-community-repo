@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -28,10 +28,19 @@ public final class HexDump
      * Hex dump a byte array
      * 
      * @param byt Byte array to dump
+     */
+    public static final void Dump(byte[] byt)
+    {
+        Dump(byt, byt.length, 0, System.out);
+    }
+
+    /**
+     * Hex dump a byte array
+     * 
+     * @param byt Byte array to dump
      * @param len Length of data to dump
      * @param offset Offset to start data dump
      */
-
     public static final void Dump(byte[] byt, int len, int offset)
     {
         Dump(byt, len, offset, System.out);
@@ -51,8 +60,8 @@ public final class HexDump
 
         // Create buffers for the ASCII and Hex output
 
-        StringBuffer ascBuf = new StringBuffer();
-        StringBuffer hexBuf = new StringBuffer();
+        StringBuilder ascBuf = new StringBuilder();
+        StringBuilder hexBuf = new StringBuilder();
 
         // Dump 16 byte blocks from the array until the length has been
         // reached
@@ -122,7 +131,7 @@ public final class HexDump
      */
     public static final String hexString(byte[] buf)
     {
-        return hexString(buf, buf.length, null);
+        return hexString(buf, 0, buf.length, null);
     }
 
     /**
@@ -134,18 +143,19 @@ public final class HexDump
      */
     public static final String hexString(byte[] buf, String gap)
     {
-        return hexString(buf, buf.length, gap);
+        return hexString(buf, 0, buf.length, gap);
     }
 
     /**
      * Generate a hex string for the specified bytes
      * 
      * @param buf byte[]
+     * @param off int
      * @param len int
      * @param gap String
      * @return String
      */
-    public static final String hexString(byte[] buf, int len, String gap)
+    public static final String hexString(byte[] buf, int off, int len, String gap)
     {
 
         // Check if the buffer is valid
@@ -155,11 +165,11 @@ public final class HexDump
 
         // Create a string buffer for the hex string
 
-        int buflen = buf.length * 2;
+        int buflen = (buf.length - off) * 2;
         if (gap != null)
             buflen += buf.length * gap.length();
 
-        StringBuffer hex = new StringBuffer(buflen);
+        StringBuilder hex = new StringBuilder(buflen);
 
         // Convert the bytes to hex-ASCII
 
@@ -168,7 +178,7 @@ public final class HexDump
 
             // Get the current byte
 
-            int curbyt = (int) (buf[i] & 0x00FF);
+            int curbyt = (int) (buf[off + i] & 0x00FF);
 
             // Output the hex string
 
@@ -197,7 +207,7 @@ public final class HexDump
 
         // Create a buffer position string
 
-        StringBuffer posStr = new StringBuffer("" + off + " - ");
+        StringBuilder posStr = new StringBuilder("" + off + " - ");
         while (posStr.length() < 8)
             posStr.insert(0, " ");
 
@@ -216,7 +226,7 @@ public final class HexDump
      * @return New offset value
      */
 
-    private static final int generateLine(byte[] byt, int off, StringBuffer ascBuf, StringBuffer hexBuf)
+    private static final int generateLine(byte[] byt, int off, StringBuilder ascBuf, StringBuilder hexBuf)
     {
 
         // Check if there is enough buffer space to dump 16 bytes

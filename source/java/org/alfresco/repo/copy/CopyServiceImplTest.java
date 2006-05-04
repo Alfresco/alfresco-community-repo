@@ -315,22 +315,33 @@ public class CopyServiceImplTest extends BaseSpringTest
 	 */
 	public void testCopyToNewNode()
 	{
+        // Check that the node has no copies
+        List<NodeRef> copies = this.copyService.getCopies(this.sourceNodeRef);
+        assertNotNull(copies);
+        assertTrue(copies.isEmpty());
+        
 		// Copy to new node without copying children
 		NodeRef copy = this.copyService.copy(
 				this.sourceNodeRef,
 				this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
 				QName.createQName("{test}copyAssoc"));		
-		checkCopiedNode(this.sourceNodeRef, copy, true, true, false);
+		checkCopiedNode(this.sourceNodeRef, copy, true, true, false);        
+        List<NodeRef> copies2 = this.copyService.getCopies(this.sourceNodeRef);
+        assertNotNull(copies2);
+        assertEquals(1, copies2.size());
 		
         // Copy to new node, copying children
 		NodeRef copy2 = this.copyService.copy(
 				this.sourceNodeRef,
 				this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
-				QName.createQName("{test}copyAssoc"),
+				QName.createQName("{test}copyAssoc2"),
 				true);
 		checkCopiedNode(this.sourceNodeRef, copy2, true, true, true);
+        List<NodeRef> copies3 = this.copyService.getCopies(this.sourceNodeRef);
+        assertNotNull(copies3);
+        assertEquals(2, copies3.size());
 		
 		// Check that a copy of a copy works correctly
 		NodeRef copyOfCopy = this.copyService.copy(

@@ -17,6 +17,7 @@
 package org.alfresco.repo.copy;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -31,10 +32,10 @@ import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -44,6 +45,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -56,29 +59,22 @@ import org.alfresco.util.ParameterCheck;
  */
 public class CopyServiceImpl implements CopyService
 {
-    /**
-     * The node service
-     */
+    /** The node service */
     private NodeService nodeService;
 	
-	/**
-	 * The dictionary service
-	 */
+	/** The dictionary service*/
 	private DictionaryService dictionaryService; 	
 	
-	/**
-	 * Policy component
-	 */
+    /** The search service */
+    private SearchService searchService;
+    
+	/** Policy component */
 	private PolicyComponent policyComponent;
     
-    /**
-     * Rule service
-     */
+    /** Rule service */
     private RuleService ruleService;
 
-	/**
-	 * Policy delegates
-	 */
+	/** Policy delegates */
 	private ClassPolicyDelegate<CopyServicePolicies.OnCopyNodePolicy> onCopyNodeDelegate;
 	private ClassPolicyDelegate<CopyServicePolicies.OnCopyCompletePolicy> onCopyCompleteDelegate;
     
@@ -111,6 +107,16 @@ public class CopyServiceImpl implements CopyService
 	{
 		this.policyComponent = policyComponent;
 	}
+    
+    /**
+     * Sets the search service
+     * 
+     * @param searchService     the search service
+     */
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
     
     /**
      * Set the rule service
@@ -804,4 +810,33 @@ public class CopyServiceImpl implements CopyService
 	{
 		// Do nothing since we do not want the copy from aspect to be relative to the copied nodes
 	}
+    
+    public List<NodeRef> getCopies(NodeRef nodeRef)
+    {
+        List<NodeRef> copies = new ArrayList<NodeRef>();
+        
+        // Do a search to find the origional document
+        ResultSet resultSet = null;
+        try
+        {
+            resultSet = this.searchService.query(
+                    nodeRef.getStoreRef(), 
+                    SearchService.LANGUAGE_LUCENE, 
+                    "+@\\{http\\://www.alfresco.org/model/content/1.0\\}" + ContentModel.PROP_COPY_REFERENCE.getLocalName() + ":\"" + nodeRef.toString() + "\"");
+            
+            for (NodeRef copy : resultSet.getNodeRefs())
+            {
+                copies.add(copy);
+            }
+        }
+        finally
+        {
+            if (resultSet != null)
+            {
+                resultSet.close();
+            }
+        }
+        
+        return copies;
+    }
 }

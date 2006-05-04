@@ -470,6 +470,9 @@
         <property name="ruleService">
             <ref bean="ruleService" />
         </property>
+        <property name="searchService">
+            <ref bean="SearchService" />
+        </property>
     </bean>
 
     <!--                           -->

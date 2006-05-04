@@ -21,6 +21,7 @@ package org.alfresco.repo.action.executer;
 
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -28,6 +29,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -39,11 +41,14 @@ import org.alfresco.service.namespace.QName;
  */
 public class CopyActionExecuter extends ActionExecuterAbstractBase
 {
+    public static final String ERR_OVERWRITE = "Unable to overwrite copy because more than one have been found.";
+    
     public static final String NAME = "copy";
     public static final String PARAM_DESTINATION_FOLDER = "destination-folder";
     public static final String PARAM_ASSOC_TYPE_QNAME = "assoc-type";
     public static final String PARAM_ASSOC_QNAME = "assoc-name";
     public static final String PARAM_DEEP_COPY = "deep-copy";
+    public static final String PARAM_OVERWRITE_COPY = "overwrite-copy";
     
     /**
      * Node operations service
@@ -55,17 +60,30 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
 	 */
 	private NodeService nodeService;
 	
+    /**
+     * Sets the node service
+     * 
+     * @param nodeService   the node service
+     */
 	public void setNodeService(NodeService nodeService) 
 	{
 		this.nodeService = nodeService;
 	}
 	
+    /**
+     * Sets the copy service
+     * 
+     * @param copyService   the copy service
+     */
 	public void setCopyService(CopyService copyService) 
 	{
 		this.copyService = copyService;
 	}
     
 
+    /**
+     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefintions(java.util.List)
+     */
 	@Override
 	protected void addParameterDefintions(List<ParameterDefinition> paramList) 
 	{
@@ -73,6 +91,7 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
 		paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_TYPE_QNAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASSOC_TYPE_QNAME)));
 		paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_QNAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASSOC_QNAME)));
 		paramList.add(new ParameterDefinitionImpl(PARAM_DEEP_COPY, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_DEEP_COPY)));		
+        paramList.add(new ParameterDefinitionImpl(PARAM_OVERWRITE_COPY, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_OVERWRITE_COPY)));
 	}
 
     /**
@@ -86,15 +105,70 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
 	        QName destinationAssocTypeQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_TYPE_QNAME);
 	        QName destinationAssocQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_QNAME);
 	        
-	        // TODO get this from a parameter value
+	        // Get the deep copy value
 	        boolean deepCopy = false;
+            Boolean deepCopyValue = (Boolean)ruleAction.getParameterValue(PARAM_DEEP_COPY);
+            if (deepCopyValue != null)
+            {
+                deepCopy = deepCopyValue.booleanValue();
+            }
 	        
-	        this.copyService.copy(
+            // Get the overwirte value
+            boolean overwrite = true;
+            Boolean overwriteValue = (Boolean)ruleAction.getParameterValue(PARAM_OVERWRITE_COPY);
+            if (overwriteValue != null)
+            {
+                overwrite = overwriteValue.booleanValue();
+            }
+            
+            // Since we are overwriting we need to figure out whether the destination node exists
+            NodeRef destinationNodeRef = null;
+            if (overwrite == true)
+            {
+                // Try and find copies of the actioned upon node reference
+                List<NodeRef> copies = this.copyService.getCopies(actionedUponNodeRef);
+                if (copies != null && copies.isEmpty() == false)
+                {
+                    for (NodeRef copy : copies)
+                    {
+                        // Ignore if the copy is a working copy
+                        if (this.nodeService.hasAspect(copy, ContentModel.ASPECT_WORKING_COPY) == false)
+                        {
+                            // We can assume that we are looking for a node created by this action so the primary parent will
+                            // match the destination folder
+                            NodeRef parent = this.nodeService.getPrimaryParent(copy).getParentRef();
+                            if (parent.equals(destinationParent) == true)
+                            {
+                                if (destinationNodeRef == null)
+                                {
+                                    destinationNodeRef = copy;
+                                }
+                                else
+                                {
+                                    throw new RuleServiceException(ERR_OVERWRITE);
+                                }
+                            }
+                            
+                        }
+                    }
+                }
+            }
+            
+            if (destinationNodeRef != null)
+            {
+                // Overwrite the state of the destination node ref with the actioned upon node state
+                this.copyService.copy(actionedUponNodeRef, destinationNodeRef);
+            }
+            else
+            {
+                // Create a new copy of the node
+                this.copyService.copy(
 	                actionedUponNodeRef, 
 	                destinationParent,
 	                destinationAssocTypeQName,
 	                destinationAssocQName,
 	                deepCopy);
+            }
 		}
     }
 }

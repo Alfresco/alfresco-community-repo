@@ -16,6 +16,8 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import java.util.List;
+
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -115,5 +117,13 @@ public interface CopyService
      * @param sourceNodeRef         the source node reference
      * @param destinationNodeRef    the destination node reference
      */
-    public void copy(NodeRef sourceNodeRef, NodeRef destinationNodeRef);        
+    public void copy(NodeRef sourceNodeRef, NodeRef destinationNodeRef);   
+    
+    /**
+     * Gets all the copies of a given node that have been made using this service.
+     * 
+     * @param nodeRef   the origional node reference
+     * @return          a list of copies, empty is none
+     */
+    public List<NodeRef> getCopies(NodeRef nodeRef);
 }

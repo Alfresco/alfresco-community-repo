@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +45,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public class TransformActionExecuter extends ActionExecuterAbstractBase 
 {
+    /** Error messages */
+    public static final String ERR_OVERWRITE = "Unable to overwrite copy because more than one have been found.";
+    
     /**
      * The logger
      */
@@ -57,6 +61,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
 	public static final String PARAM_DESTINATION_FOLDER = "destination-folder";
     public static final String PARAM_ASSOC_TYPE_QNAME = "assoc-type";
     public static final String PARAM_ASSOC_QNAME = "assoc-name";
+    public static final String PARAM_OVERWRITE_COPY = "overwrite-copy";
 	
 	private DictionaryService dictionaryService;
 	private NodeService nodeService;
@@ -124,6 +129,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
 		paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
 		paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_TYPE_QNAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASSOC_TYPE_QNAME)));
 		paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_QNAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASSOC_QNAME)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_OVERWRITE_COPY, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_OVERWRITE_COPY)));
 	}
 
 	/**
@@ -154,14 +160,59 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         QName destinationAssocTypeQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_TYPE_QNAME);
         QName destinationAssocQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_QNAME);
         
-		// Copy the content node
-        NodeRef copyNodeRef = this.copyService.copy(
-                actionedUponNodeRef, 
-                destinationParent,
-                destinationAssocTypeQName,
-                destinationAssocQName,
-                false);
-		
+        // Get the overwirte value
+        boolean overwrite = true;
+        Boolean overwriteValue = (Boolean)ruleAction.getParameterValue(PARAM_OVERWRITE_COPY);
+        if (overwriteValue != null)
+        {
+            overwrite = overwriteValue.booleanValue();
+        }
+        
+        // Since we are overwriting we need to figure out whether the destination node exists
+        NodeRef copyNodeRef = null;
+        if (overwrite == true)
+        {
+            // Try and find copies of the actioned upon node reference
+            List<NodeRef> copies = this.copyService.getCopies(actionedUponNodeRef);
+            if (copies != null && copies.isEmpty() == false)
+            {
+                for (NodeRef copy : copies)
+                {
+                    // Ignore if the copy is a working copy
+                    if (this.nodeService.hasAspect(copy, ContentModel.ASPECT_WORKING_COPY) == false)
+                    {
+                        // We can assume that we are looking for a node created by this action so the primary parent will
+                        // match the destination folder
+                        NodeRef parent = this.nodeService.getPrimaryParent(copy).getParentRef();
+                        if (parent.equals(destinationParent) == true)
+                        {
+                            if (copyNodeRef == null)
+                            {
+                                copyNodeRef = copy;
+                            }
+                            else
+                            {
+                                throw new RuleServiceException(ERR_OVERWRITE);
+                            }
+                        }
+                        
+                    }
+                }
+            }
+        }
+        
+        boolean newCopy = false;
+        if (copyNodeRef == null)
+        {
+    		// Copy the content node
+            copyNodeRef = this.copyService.copy(
+                    actionedUponNodeRef, 
+                    destinationParent,
+                    destinationAssocTypeQName,
+                    destinationAssocQName,
+                    false);
+            newCopy = true;
+        }		
         
         // Get the content reader
         ContentReader contentReader = this.contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
@@ -179,15 +230,18 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         contentWriter.setMimetype(mimeType);                        // new mimetype
         contentWriter.setEncoding(contentReader.getEncoding());     // original encoding
 
-        // Adjust the name of the copy
-        String originalName = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
-        String newName = transformName(originalName, originalMimetype, mimeType);
-        nodeService.setProperty(copyNodeRef, ContentModel.PROP_NAME, newName);
-        String originalTitle = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TITLE);
-        if (originalTitle != null && originalTitle.length() > 0)
+        if (newCopy == true)
         {
-            String newTitle = transformName(originalTitle, originalMimetype, mimeType);
-            nodeService.setProperty(copyNodeRef, ContentModel.PROP_TITLE, newTitle);
+            // Adjust the name of the copy
+            String originalName = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
+            String newName = transformName(originalName, originalMimetype, mimeType);
+            nodeService.setProperty(copyNodeRef, ContentModel.PROP_NAME, newName);
+            String originalTitle = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TITLE);
+            if (originalTitle != null && originalTitle.length() > 0)
+            {
+                String newTitle = transformName(originalTitle, originalMimetype, mimeType);
+                nodeService.setProperty(copyNodeRef, ContentModel.PROP_TITLE, newTitle);
+            }
         }
 		
 		// Try and transform the content
@@ -204,8 +258,11 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
                         "   writer: " + contentWriter + "\n" +
                         "   action: " + this);
             }
-            // TODO: Revisit this for alternative solutions
-            nodeService.deleteNode(copyNodeRef);
+            //if (newCopy == true)
+            //{
+                // TODO: Revisit this for alternative solutions
+            //    nodeService.deleteNode(copyNodeRef);
+           // }
         }        
 	}	
 	

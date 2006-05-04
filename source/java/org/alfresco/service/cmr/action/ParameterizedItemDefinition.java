@@ -49,6 +49,13 @@ public interface ParameterizedItemDefinition
 	 * @return	true if ashoc properties are allowed, false otherwise
 	 */
 	public boolean getAdhocPropertiesAllowed();
+    
+    /**
+     * Indicates whether the parameterized item has any parameter definitions
+     * 
+     * @return` true if the parameterized item has any parameter definitions, false otherwise
+     */
+    public boolean hasParameterDefinitions();
 	
 	/**
 	 * A list containing the parmameter defintions for this rule item.

@@ -191,6 +191,14 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
     }
     
     /**
+     * @see org.alfresco.service.cmr.action.ParameterizedItemDefinition#hasParameterDefinitions()
+     */
+    public boolean hasParameterDefinitions()
+    {
+        return (this.parameterDefinitions.isEmpty() == false);
+    }
+    
+    /**
      * @see org.alfresco.service.cmr.action.ParameterizedItemDefinition#getParameterDefinitions()
      */
     public List<ParameterDefinition> getParameterDefinitions()

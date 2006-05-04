@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -23,7 +23,7 @@ import org.alfresco.filesys.util.DataPacker;
  * <p>
  * The NT SMB dialect uses parameters that are not always word/longword aligned.
  */
-class NTParameterPacker
+public class NTParameterPacker
 {
 
     // Buffer and current offset

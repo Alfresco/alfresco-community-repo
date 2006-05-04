@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -179,7 +179,7 @@ public class Win32NetBIOSLanaMonitor extends Thread
         // DEBUG
 
         if (logger.isDebugEnabled() && hasDebug())
-            logger.debug("[SMB] Win32 NetBIOS register listener for LANA " + lana);
+            logger.debug("Win32 NetBIOS register listener for LANA " + lana);
     }
 
     /**
@@ -221,7 +221,7 @@ public class Win32NetBIOSLanaMonitor extends Thread
                 // DEBUG
 
                 if (logger.isDebugEnabled() && hasDebug())
-                    logger.debug("[SMB] Win32 NetBIOS initialization error", ex);
+                    logger.debug("Win32 NetBIOS initialization error", ex);
                 
                 // Shutdown the LANA monitor thread
                 
@@ -273,7 +273,7 @@ public class Win32NetBIOSLanaMonitor extends Thread
                         // DEBUG
 
                         if (logger.isDebugEnabled() && hasDebug())
-                            logger.debug("[SMB] Win32 NetBIOS found new LANA, " + lana);
+                            logger.debug("Win32 NetBIOS found new LANA, " + lana);
 
                         // Create a single Win32 NetBIOS session handler using the specified LANA
 
@@ -289,7 +289,7 @@ public class Win32NetBIOSLanaMonitor extends Thread
                             // DEBUG
 
                             if (logger.isDebugEnabled() && hasDebug())
-                                logger.debug("[SMB] Win32 NetBIOS failed to create session handler for LANA " + lana,
+                                logger.debug("Win32 NetBIOS failed to create session handler for LANA " + lana,
                                         ex);
 
                             // Clear the session handler
@@ -316,7 +316,7 @@ public class Win32NetBIOSLanaMonitor extends Thread
                             // DEBUG
 
                             if (logger.isDebugEnabled() && hasDebug())
-                                logger.debug("[SMB] Win32 NetBIOS created session handler on LANA " + lana);
+                                logger.debug("Win32 NetBIOS created session handler on LANA " + lana);
 
                             // Check if a host announcer should be enabled
 
@@ -336,7 +336,7 @@ public class Win32NetBIOSLanaMonitor extends Thread
                                 // DEBUG
 
                                 if (logger.isDebugEnabled() && hasDebug())
-                                    logger.debug("[SMB] Win32 NetBIOS host announcer enabled on LANA " + lana);
+                                    logger.debug("Win32 NetBIOS host announcer enabled on LANA " + lana);
                             }
 
                             // Set the LANA in the available LANA list, and set the current status to online
@@ -364,7 +364,7 @@ public class Win32NetBIOSLanaMonitor extends Thread
                             // DEBUG
 
                             if (logger.isDebugEnabled() && hasDebug())
-                                logger.debug("[SMB] Win32 NetBIOS LANA online - " + lana);
+                                logger.debug("Win32 NetBIOS LANA online - " + lana);
                         }
                     }
                 }
@@ -378,7 +378,7 @@ public class Win32NetBIOSLanaMonitor extends Thread
                         // DEBUG
 
                         if (logger.isDebugEnabled() && hasDebug())
-                            logger.debug("[SMB] Win32 NetBIOS LANA offline - " + i);
+                            logger.debug("Win32 NetBIOS LANA offline - " + i);
 
                         // Change the LANA status
                         

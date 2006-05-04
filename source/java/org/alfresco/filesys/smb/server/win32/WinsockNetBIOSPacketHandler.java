@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -127,6 +127,8 @@ public class WinsockNetBIOSPacketHandler extends PacketHandler
 
                     int rxlen2 = m_sessSock.read(pkt.getBuffer(), rxlen + 4, pkt.getBufferLength() - (rxlen + 4));
 
+                    System.out.println("Winsock rx2 len=" + rxlen2);
+                    
                     if ( rxlen2 == ReceiveBufferSizeError)
                         throw new WinsockNetBIOSException(WinsockError.WsaEMsgSize);
 
@@ -140,7 +142,8 @@ public class WinsockNetBIOSPacketHandler extends PacketHandler
         {
             // Check if the remote client has closed the socket
             
-            if ( ex.getErrorCode() == WinsockError.WsaEConnReset)
+            if ( ex.getErrorCode() == WinsockError.WsaEConnReset ||
+                     ex.getErrorCode() == WinsockError.WsaEDiscon)
             {
                 // Indicate that the socket has been closed
                 

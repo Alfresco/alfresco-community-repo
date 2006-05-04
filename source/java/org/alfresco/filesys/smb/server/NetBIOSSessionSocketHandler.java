@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -64,7 +64,7 @@ public class NetBIOSSessionSocketHandler extends SessionSocketHandler
                 // Debug
 
                 if (logger.isDebugEnabled() && hasDebug())
-                    logger.debug("[SMB] Waiting for NetBIOS session request ...");
+                    logger.debug("Waiting for NetBIOS session request ...");
 
                 // Wait for a connection
 
@@ -73,7 +73,7 @@ public class NetBIOSSessionSocketHandler extends SessionSocketHandler
                 // Debug
 
                 if (logger.isDebugEnabled() && hasDebug())
-                    logger.debug("[SMB] NetBIOS session request received from "
+                    logger.debug("NetBIOS session request received from "
                             + sessSock.getInetAddress().getHostAddress());
 
                 try
@@ -107,7 +107,7 @@ public class NetBIOSSessionSocketHandler extends SessionSocketHandler
 
                     // Debug
 
-                    logger.error("[SMB] NetBIOS Failed to create session, ", ex);
+                    logger.error("NetBIOS Failed to create session, ", ex);
                 }
             }
         }
@@ -118,7 +118,7 @@ public class NetBIOSSessionSocketHandler extends SessionSocketHandler
             // causes an exception to be thrown.
 
             if (hasShutdown() == false)
-                logger.error("[SMB] NetBIOS Socket error : ", ex);
+                logger.error("NetBIOS Socket error : ", ex);
         }
         catch (Exception ex)
         {
@@ -127,13 +127,13 @@ public class NetBIOSSessionSocketHandler extends SessionSocketHandler
             // causes an exception to be thrown.
 
             if (hasShutdown() == false)
-                logger.error("[SMB] NetBIOS Server error : ", ex);
+                logger.error("NetBIOS Server error : ", ex);
         }
 
         // Debug
 
         if (logger.isDebugEnabled() && hasDebug())
-            logger.debug("[SMB] NetBIOS session handler closed");
+            logger.debug("NetBIOS session handler closed");
     }
 
     /**
@@ -169,7 +169,7 @@ public class NetBIOSSessionSocketHandler extends SessionSocketHandler
         // DEBUG
 
         if (logger.isDebugEnabled() && sockDbg)
-            logger.debug("[SMB] TCP NetBIOS session handler created");
+            logger.debug("TCP NetBIOS session handler created");
 
         // Check if a host announcer should be created
 
@@ -220,7 +220,7 @@ public class NetBIOSSessionSocketHandler extends SessionSocketHandler
             // DEBUG
 
             if (logger.isDebugEnabled() && sockDbg)
-                logger.debug("[SMB] TCP NetBIOS host announcer created");
+                logger.debug("TCP NetBIOS host announcer created");
         }
     }
 }

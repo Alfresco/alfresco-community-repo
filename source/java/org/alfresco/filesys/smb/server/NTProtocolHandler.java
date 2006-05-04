@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -23,9 +23,8 @@ import org.alfresco.filesys.locking.FileLock;
 import org.alfresco.filesys.locking.LockConflictException;
 import org.alfresco.filesys.locking.NotLockedException;
 import org.alfresco.filesys.netbios.RFCNetBIOSProtocol;
-import org.alfresco.filesys.server.auth.ClientInfo;
+import org.alfresco.filesys.server.auth.CifsAuthenticator;
 import org.alfresco.filesys.server.auth.InvalidUserException;
-import org.alfresco.filesys.server.auth.SrvAuthenticator;
 import org.alfresco.filesys.server.auth.acl.AccessControl;
 import org.alfresco.filesys.server.auth.acl.AccessControlManager;
 import org.alfresco.filesys.server.core.InvalidDeviceInterfaceException;
@@ -81,7 +80,6 @@ import org.alfresco.filesys.smb.server.ntfs.NTFSStreamsInterface;
 import org.alfresco.filesys.smb.server.ntfs.StreamInfoList;
 import org.alfresco.filesys.util.DataBuffer;
 import org.alfresco.filesys.util.DataPacker;
-import org.alfresco.filesys.util.HexDump;
 import org.alfresco.filesys.util.WildCard;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -111,8 +109,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
     public static final int FileSizeChangeRate = 10;
 
     // Security descriptor to allow Everyone access, returned by the QuerySecurityDescrptor NT
-    // transaction
-    // when NTFS streams are enabled for a virtual filesystem.
+    // transaction when NTFS streams are enabled for a virtual filesystem.
 
     private static byte[] _sdEveryOne = { 0x01, 0x00, 0x04, (byte) 0x80, 0x14, 0x00, 0x00, 0x00,
                                           0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -391,244 +388,29 @@ public class NTProtocolHandler extends CoreProtocolHandler
             TooManyConnectionsException
     {
 
-        // Check that the received packet looks like a valid NT session setup andX request
-
-        if (m_smbPkt.checkPacketIsValid(13, 0) == false)
+        // Call the authenticator to process the session setup
+        
+        CifsAuthenticator cifsAuthenticator = m_sess.getServer().getAuthenticator();
+        
+        try
         {
-            m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            // Process the session setup request, build the response
+            
+            cifsAuthenticator.processSessionSetup( m_sess, m_smbPkt, outPkt);
+        }
+        catch (SMBSrvException ex)
+        {
+            // Return an error response to the client
+            
+            m_sess.sendErrorResponseSMB( ex.getNTErrorCode(), ex.getErrorCode(), ex.getErrorClass());
             return;
         }
-
-        // Extract the session details
-
-        int maxBufSize = m_smbPkt.getParameter(2);
-        int maxMpx = m_smbPkt.getParameter(3);
-        int vcNum = m_smbPkt.getParameter(4);
-        int sessKey = m_smbPkt.getParameterLong(5);
-        int ascPwdLen = m_smbPkt.getParameter(7);
-        int uniPwdLen = m_smbPkt.getParameter(8);
-        int capabs = m_smbPkt.getParameter(11);
-
-        // Extract the client details from the session setup request
-
-        int dataPos = m_smbPkt.getByteOffset();
-        int dataLen = m_smbPkt.getByteCount();
-        byte[] buf = m_smbPkt.getBuffer();
-
-        // Determine if ASCII or unicode strings are being used
-
-        boolean isUni = m_smbPkt.isUnicode();
-
-        // Extract the password strings
-
-        byte[] ascPwd = m_smbPkt.unpackBytes(ascPwdLen);
-        byte[] uniPwd = m_smbPkt.unpackBytes(uniPwdLen);
-
-        // Extract the user name string
-
-        String user = m_smbPkt.unpackString(isUni);
-
-        if (user == null)
-        {
-            m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
-            return;
-        }
-
-        // Extract the clients primary domain name string
-
-        String domain = "";
-
-        if (m_smbPkt.hasMoreData())
-        {
-
-            // Extract the callers domain name
-
-            domain = m_smbPkt.unpackString(isUni);
-
-            if (domain == null)
-            {
-                m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError,
-                        SMBStatus.ErrSrv);
-                return;
-            }
-        }
-
-        // Extract the clients native operating system
-
-        String clientOS = "";
-
-        if (m_smbPkt.hasMoreData())
-        {
-
-            // Extract the callers operating system name
-
-            clientOS = m_smbPkt.unpackString(isUni);
-
-            if (clientOS == null)
-            {
-                m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError,
-                        SMBStatus.ErrSrv);
-                return;
-            }
-        }
-
-        // DEBUG
-
-        if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
-        {
-            logger.debug("NT Session setup from user=" + user + ", password="
-                    + (uniPwd != null ? HexDump.hexString(uniPwd) : "none") + ", ANSIpwd="
-                    + (ascPwd != null ? HexDump.hexString(ascPwd) : "none") + ", domain=" + domain + ", os=" + clientOS
-                    + ", VC=" + vcNum + ", maxBuf=" + maxBufSize + ", maxMpx=" + maxMpx
-                    + ", challenge=" + HexDump.hexString(m_sess.getChallengeKey()));
-            logger.debug("  MID=" + m_smbPkt.getMultiplexId() + ", UID=" + m_smbPkt.getUserId() + ", PID="
-                    + m_smbPkt.getProcessId());
-        }
-
-        // Store the client maximum buffer size, maximum multiplexed requests count and client
-        // capability flags
-
-        m_sess.setClientMaximumBufferSize(maxBufSize);
-        m_sess.setClientMaximumMultiplex(maxMpx);
-        m_sess.setClientCapabilities(capabs);
-
-        // Create the client information and store in the session
-
-        ClientInfo client = new ClientInfo(user, uniPwd);
-        client.setANSIPassword(ascPwd);
-        client.setDomain(domain);
-        client.setOperatingSystem(clientOS);
-
-        if (m_sess.hasRemoteAddress())
-            client.setClientAddress(m_sess.getRemoteAddress().getHostAddress());
-
-        // Check if this is a null session logon
-
-        if (user.length() == 0 && domain.length() == 0 && uniPwdLen == 0 && ascPwdLen == 1)
-            client.setLogonType(ClientInfo.LogonNull);
-
-        // Authenticate the user, if the server is using user mode security
-
-        SrvAuthenticator auth = getSession().getSMBServer().getAuthenticator();
-        boolean isGuest = false;
-
-        if (auth != null && auth.getAccessMode() == SrvAuthenticator.USER_MODE)
-        {
-
-            // Validate the user
-
-            int sts = auth.authenticateUser(client, m_sess, SrvAuthenticator.NTLM1);
-
-            if (sts > 0 && (sts & SrvAuthenticator.AUTH_GUEST) != 0)
-            {
-
-                // Guest logon
-
-                isGuest = true;
-
-                // DEBUG
-
-                if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
-                    logger.debug("User " + user + ", logged on as guest");
-            }
-            else if (sts != SrvAuthenticator.AUTH_ALLOW)
-            {
-
-                // Check if the session already has valid client details and the new client details
-                // have null username/password
-                // values
-
-                if (getSession().getClientInformation() != null && client.getUserName().length() == 0)
-                {
-
-                    // Use the existing client information details
-
-                    client = getSession().getClientInformation();
-
-                    // DEBUG
-
-                    if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
-                        logger.debug("Null client information, reusing existing client=" + client);
-                }
-                else
-                {
-
-                    // Invalid user, reject the session setup request
-
-                    m_sess.sendErrorResponseSMB(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
-
-                    // DEBUG
-
-                    if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
-                        logger.debug("User " + user + ", access denied");
-                    return;
-                }
-            }
-            else if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
-            {
-
-                // DEBUG
-
-                logger.debug("User " + user + " logged on "
-                        + (client != null ? " (type " + client.getLogonTypeString() + ")" : ""));
-            }
-        }
-
-        // Update the client information if not already set
-
-        if (getSession().getClientInformation() == null
-                || getSession().getClientInformation().getUserName().length() == 0)
-        {
-
-            // Set the client details for the session
-
-            getSession().setClientInformation(client);
-        }
-
-        // Set the guest flag for the client, indicate that the session is logged on
-
-        client.setGuest(isGuest);
-        getSession().setLoggedOn(true);
-
-        // Build the session setup response SMB
-
-        outPkt.setParameterCount(3);
-        outPkt.setParameter(0, 0); // No chained response
-        outPkt.setParameter(1, 0); // Offset to chained response
-        outPkt.setParameter(2, isGuest ? 1 : 0);
-        outPkt.setByteCount(0);
-
-        outPkt.setTreeId(0);
-        outPkt.setUserId(0);
-
-        // Set the various flags
-
-        int flags = outPkt.getFlags();
-        flags &= ~SMBSrvPacket.FLG_CASELESS;
-        outPkt.setFlags(flags);
-
-        int flags2 = SMBSrvPacket.FLG2_LONGFILENAMES;
-        if (isUni)
-            flags2 += SMBSrvPacket.FLG2_UNICODE;
-        outPkt.setFlags2(flags2);
-
-        // Pack the OS, dialect and domain name strings.
-
-        int pos = outPkt.getByteOffset();
-        buf = outPkt.getBuffer();
-
-        if (isUni)
-            pos = DataPacker.wordAlign(pos);
-
-        pos = DataPacker.putString("Java", buf, pos, true, isUni);
-        pos = DataPacker.putString("Alfresco CIFS Server " + m_sess.getServer().isVersion(), buf, pos, true, isUni);
-        pos = DataPacker.putString(m_sess.getServer().getConfiguration().getDomainName(), buf, pos, true, isUni);
-
-        outPkt.setByteCount(pos - outPkt.getByteOffset());
-
+        
         // Check if there is a chained command, or commands
 
-        if (m_smbPkt.hasAndXCommand() && dataPos < m_smbPkt.getReceivedLength())
+        int pos = outPkt.getLength();
+        
+        if (m_smbPkt.hasAndXCommand() && m_smbPkt.getPosition() < m_smbPkt.getReceivedLength())
         {
 
             // Process any chained commands, AndX
@@ -638,23 +420,28 @@ public class NTProtocolHandler extends CoreProtocolHandler
         }
         else
         {
-
             // Indicate that there are no chained replies
 
             outPkt.setAndXCommand(SMBSrvPacket.NO_ANDX_CMD);
         }
 
-        // Send the negotiate response
+        // Send the session setup response
 
         m_sess.sendResponseSMB(outPkt, pos);
 
-        // Update the session state
+        // Update the session state if the response indicates a success status. A multi stage session setup
+        // response returns a warning status.
+        
+        if ( outPkt.getLongErrorCode() == SMBStatus.NTSuccess)
+        {
+            // Update the session state
 
-        m_sess.setState(SMBSrvSessionState.SMBSESSION);
+            m_sess.setState(SMBSrvSessionState.SMBSESSION);
 
-        // Notify listeners that a user has logged onto the session
-
-        m_sess.getSMBServer().sessionLoggedOn(m_sess);
+            // Notify listeners that a user has logged onto the session
+    
+            m_sess.getSMBServer().sessionLoggedOn(m_sess);
+        }
     }
 
     /**
@@ -790,7 +577,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
         // Extract the parameters
 
-        int flags = m_smbPkt.getAndXParameter(cmdOff, 2);
+//        int flags = m_smbPkt.getAndXParameter(cmdOff, 2);
         int pwdLen = m_smbPkt.getAndXParameter(cmdOff, 3);
 
         // Reset the byte pointer for data unpacking
@@ -927,10 +714,10 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
         // Authenticate the share connect, if the server is using share mode security
 
-        SrvAuthenticator auth = getSession().getSMBServer().getAuthenticator();
+        CifsAuthenticator auth = getSession().getSMBServer().getAuthenticator();
         int sharePerm = FileAccess.Writeable;
 
-        if (auth != null && auth.getAccessMode() == SrvAuthenticator.SHARE_MODE)
+        if (auth != null)
         {
 
             // Validate the share connection
@@ -1221,8 +1008,8 @@ public class NTProtocolHandler extends CoreProtocolHandler
         // Get the file id from the request
 
         int fid = m_smbPkt.getAndXParameter(cmdOff, 0);
-        int ftime = m_smbPkt.getAndXParameter(cmdOff, 1);
-        int fdate = m_smbPkt.getAndXParameter(cmdOff, 2);
+//        int ftime = m_smbPkt.getAndXParameter(cmdOff, 1);
+//        int fdate = m_smbPkt.getAndXParameter(cmdOff, 2);
 
         NetworkFile netFile = conn.findFile(fid);
 
@@ -1308,7 +1095,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
         // Extract the parameters
 
-        int flags = m_smbPkt.getParameter(2);
+//        int flags = m_smbPkt.getParameter(2);
         int pwdLen = m_smbPkt.getParameter(3);
 
         // Initialize the byte area pointer
@@ -1446,7 +1233,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
         // Authenticate the share connection depending upon the security mode the server is running
         // under
 
-        SrvAuthenticator auth = getSession().getSMBServer().getAuthenticator();
+        CifsAuthenticator auth = getSession().getSMBServer().getAuthenticator();
         int sharePerm = FileAccess.Writeable;
 
         if (auth != null)
@@ -1628,8 +1415,8 @@ public class NTProtocolHandler extends CoreProtocolHandler
         // Get the file id from the request
 
         int fid = m_smbPkt.getParameter(0);
-        int ftime = m_smbPkt.getParameter(1);
-        int fdate = m_smbPkt.getParameter(2);
+//        int ftime = m_smbPkt.getParameter(1);
+//        int fdate = m_smbPkt.getParameter(2);
 
         NetworkFile netFile = conn.findFile(fid);
 
@@ -2335,14 +2122,6 @@ public class NTProtocolHandler extends CoreProtocolHandler
     protected final void procLogoffAndX(SMBSrvPacket outPkt) throws java.io.IOException, SMBSrvException
     {
 
-        // Check that the received packet looks like a valid logoff andX request
-
-        if (m_smbPkt.checkPacketIsValid(15, 1) == false)
-        {
-            m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
-            return;
-        }
-
         // Return a success status SMB
 
         m_sess.sendSuccessResponseSMB();
@@ -2409,7 +2188,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
         // Extract the open file parameters
 
-        int flags = m_smbPkt.getParameter(2);
+//        int flags = m_smbPkt.getParameter(2);
         int access = m_smbPkt.getParameter(3);
         int srchAttr = m_smbPkt.getParameter(4);
         int fileAttr = m_smbPkt.getParameter(5);
@@ -2878,9 +2657,6 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
         // Access the disk interface and rename the requested file
 
-        int fid;
-        NetworkFile netFile = null;
-
         try
         {
 
@@ -3021,9 +2797,6 @@ public class NTProtocolHandler extends CoreProtocolHandler
             logger.debug("File Delete [" + treeId + "] name=" + fileName);
 
         // Access the disk interface and delete the file(s)
-
-        int fid;
-        NetworkFile netFile = null;
 
         try
         {
@@ -3632,7 +3405,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
         int searchId = paramBuf.getShort();
         int maxFiles = paramBuf.getShort();
         int infoLevl = paramBuf.getShort();
-        int reskey = paramBuf.getInt();
+        paramBuf.getInt();
         int srchFlag = paramBuf.getShort();
 
         String resumeName = paramBuf.getString(tbuf.isUnicode());
@@ -3640,15 +3413,9 @@ public class NTProtocolHandler extends CoreProtocolHandler
         // Access the shared device disk interface
 
         SearchContext ctx = null;
-        DiskInterface disk = null;
 
         try
         {
-
-            // Access the disk interface
-
-            disk = (DiskInterface) conn.getSharedDevice().getInterface();
-
             // Retrieve the search context
 
             ctx = m_sess.getSearchContext(searchId);
@@ -3809,18 +3576,6 @@ public class NTProtocolHandler extends CoreProtocolHandler
             // Search path does not exist
 
             m_sess.sendErrorResponseSMB(SMBStatus.DOSNoMoreFiles, SMBStatus.ErrDos);
-        }
-        catch (InvalidDeviceInterfaceException ex)
-        {
-
-            // Deallocate the search
-
-            if (searchId != -1)
-                m_sess.deallocateSearchSlot(searchId);
-
-            // Failed to get/initialize the disk interface
-
-            m_sess.sendErrorResponseSMB(SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
         }
         catch (UnsupportedInfoLevelException ex)
         {
@@ -5300,9 +5055,9 @@ public class NTProtocolHandler extends CoreProtocolHandler
             if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_FILEIO))
                 logger.debug("File Write Error [" + netFile.getFileId() + "] : " + ex.toString());
 
-            // Failed to read the file
+            // Failed to write the file
 
-            m_sess.sendErrorResponseSMB(SMBStatus.HRDWriteFault, SMBStatus.ErrHrd);
+            m_sess.sendErrorResponseSMB(SMBStatus.NTDiskFull, SMBStatus.HRDWriteFault, SMBStatus.ErrHrd);
             return;
         }
 
@@ -7086,7 +6841,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
         // Unpack the request details
 
-        DataBuffer paramBuf = tbuf.getParameterBuffer();
+//        DataBuffer paramBuf = tbuf.getParameterBuffer();
 
         // Get the tree connection details
 

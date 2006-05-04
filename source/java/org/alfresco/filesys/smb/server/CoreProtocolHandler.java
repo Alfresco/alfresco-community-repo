@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -19,8 +19,8 @@ package org.alfresco.filesys.smb.server;
 import java.io.IOException;
 
 import org.alfresco.filesys.netbios.RFCNetBIOSProtocol;
+import org.alfresco.filesys.server.auth.CifsAuthenticator;
 import org.alfresco.filesys.server.auth.InvalidUserException;
-import org.alfresco.filesys.server.auth.SrvAuthenticator;
 import org.alfresco.filesys.server.core.InvalidDeviceInterfaceException;
 import org.alfresco.filesys.server.core.ShareType;
 import org.alfresco.filesys.server.core.SharedDevice;
@@ -3131,7 +3131,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // Authenticate the share connection depending upon the security mode the server is running
         // under
 
-        SrvAuthenticator auth = getSession().getSMBServer().getAuthenticator();
+        CifsAuthenticator auth = getSession().getSMBServer().getAuthenticator();
         int filePerm = FileAccess.Writeable;
 
         if (auth != null)

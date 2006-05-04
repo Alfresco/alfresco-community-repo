@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -29,7 +29,8 @@ import org.alfresco.filesys.netbios.NetBIOSPacket;
 import org.alfresco.filesys.netbios.NetBIOSSession;
 import org.alfresco.filesys.netbios.RFCNetBIOSProtocol;
 import org.alfresco.filesys.server.SrvSession;
-import org.alfresco.filesys.server.auth.SrvAuthenticator;
+import org.alfresco.filesys.server.auth.AuthenticatorException;
+import org.alfresco.filesys.server.auth.CifsAuthenticator;
 import org.alfresco.filesys.server.core.DeviceInterface;
 import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.server.filesys.DiskDeviceContext;
@@ -66,17 +67,18 @@ import org.apache.commons.logging.LogFactory;
 public class SMBSrvSession extends SrvSession implements Runnable
 {
     // Debug logging
+    
     private static Log logger = LogFactory.getLog("org.alfresco.smb.protocol");
 
     // Define the default receive buffer size to allocate.
 
-    private static final int DefaultBufferSize = 0x010000 + RFCNetBIOSProtocol.HEADER_LEN;
-    private static final int LanManBufferSize = 8192;
+    public static final int DefaultBufferSize = 0x010000 + RFCNetBIOSProtocol.HEADER_LEN;
+    public static final int LanManBufferSize = 8192;
 
     // Default and maximum number of connection slots
 
-    private static final int DefaultConnections = 4;
-    private static final int MaxConnections = 16;
+    public static final int DefaultConnections = 4;
+    public static final int MaxConnections = 16;
 
     // Tree ids are 16bit values
 
@@ -92,12 +94,12 @@ public class SMBSrvSession extends SrvSession implements Runnable
     //
     // Setting NTMaxMultiplexed to one will disable asynchronous notifications on the client
 
-    private static final int LanManMaxMultiplexed = 1;
-    private static final int NTMaxMultiplexed = 4;
+    public static final int LanManMaxMultiplexed = 1;
+    public static final int NTMaxMultiplexed = 4;
 
     // Maximum number of virtual circuits
 
-    private static final int MaxVirtualCircuits = 0;
+    public static final int MaxVirtualCircuits = 0;
 
     // Packet handler used to send/receive SMB packets over a particular protocol
 
@@ -148,7 +150,7 @@ public class SMBSrvSession extends SrvSession implements Runnable
     private NotifyRequestList m_notifyList;
     private boolean m_notifyPending;
 
-    // Default SMB/CIFS flags anf flags2, ORed with the SMB packet flags/flags2 before sending a
+    // Default SMB/CIFS flags and flags2, ORed with the SMB packet flags/flags2 before sending a
     // response to the client.
 
     private int m_defFlags;
@@ -171,6 +173,10 @@ public class SMBSrvSession extends SrvSession implements Runnable
 
     private int m_clientCaps;
 
+    // Session setup object, temporarily stored by an authenticator when the authentication is multi-stage
+    
+    private Object m_setupObject;
+    
     // Debug flag values
 
     public static final int DBG_NETBIOS =   0x00000001; // NetBIOS layer
@@ -188,10 +194,10 @@ public class SMBSrvSession extends SrvSession implements Runnable
     public static final int DBG_LOCK =      0x00001000; // Lock/unlock requests
     public static final int DBG_PKTTYPE =   0x00002000; // Received packet type
     public static final int DBG_DCERPC =    0x00004000; // DCE/RPC
-    public static final int DBG_STATECACHE = 0x00008000; // File state cache
-    public static final int DBG_NOTIFY = 0x00010000; // Asynchronous change notification
-    public static final int DBG_STREAMS = 0x00020000; // NTFS streams
-    public static final int DBG_SOCKET = 0x00040000; // NetBIOS/native SMB socket connections
+    public static final int DBG_STATECACHE =0x00008000; // File state cache
+    public static final int DBG_NOTIFY =    0x00010000; // Asynchronous change notification
+    public static final int DBG_STREAMS =   0x00020000; // NTFS streams
+    public static final int DBG_SOCKET =    0x00040000; // NetBIOS/native SMB socket connections
 
     /**
      * Class constructor.
@@ -807,6 +813,36 @@ public class SMBSrvSession extends SrvSession implements Runnable
     }
 
     /**
+     * Determine if the session has a setup object
+     * 
+     * @return boolean
+     */
+    public final boolean hasSetupObject()
+    {
+        return m_setupObject != null;
+    }
+
+    /**
+     * Return the session setup object
+     * 
+     * @return Object
+     */
+    public final Object getSetupObject()
+    {
+        return m_setupObject;
+    }
+    
+    /**
+     * Return the session state
+     * 
+     * @return int
+     */
+    public final int isState()
+    {
+        return m_state;
+    }
+    
+    /**
      * Hangup the session.
      * 
      * @param reason java.lang.String Reason the session is being closed.
@@ -947,11 +983,26 @@ public class SMBSrvSession extends SrvSession implements Runnable
         if (logger.isDebugEnabled() && hasDebug(DBG_STATE))
             logger.debug("State changed to " + SMBSrvSessionState.getStateAsString(state));
 
+        // Clear the setup object if the new state is the main session state
+        
+        if ( state == SMBSrvSessionState.SMBSESSION)
+            m_setupObject = null;
+        
         // Change the session state
 
         m_state = state;
     }
 
+    /**
+     * Set the setup object
+     * 
+     * @param obj Object
+     */
+    public final void setSetupObject( Object obj)
+    {
+        m_setupObject = obj;
+    }
+    
     /**
      * Process the NetBIOS session request message, either accept the session request and send back
      * a NetBIOS accept or reject the session and send back a NetBIOS reject and hangup the session.
@@ -1122,7 +1173,7 @@ public class SMBSrvSession extends SrvSession implements Runnable
 
         // Find the highest level SMB dialect that the server and client both support
 
-        DialectSelector dia = getSMBServer().getSMBDialects();
+        DialectSelector dia = getSMBServer().getConfiguration().getAuthenticator().getEnabledDialects();
         int diaIdx = -1;
 
         for (int i = 0; i < Dialect.Max; i++)
@@ -1198,13 +1249,16 @@ public class SMBSrvSession extends SrvSession implements Runnable
             {
 
                 // Could not get a protocol handler for the selected SMB dialect, indicate to the
-                // client
-                // that no suitable dialect available.
+                // client that no suitable dialect available.
 
                 diaIdx = -1;
             }
         }
 
+        // Check if the extended security flag has been set by the client
+        
+        boolean extendedSecurity = (m_smbPkt.getFlags2() & SMBSrvPacket.FLG2_EXTENDEDSECURITY) != 0 ? true : false;
+        
         // Build the negotiate response SMB for Core dialect
 
         if (m_dialect == -1 || m_dialect <= Dialect.CorePlus)
@@ -1228,35 +1282,19 @@ public class SMBSrvSession extends SrvSession implements Runnable
             m_smbPkt.setFlags2(SMBSrvPacket.FLG2_LONGFILENAMES);
 
             // Access the authenticator for this server and determine if the server is in share or
-            // user level
-            // security mode.
+            // user level security mode.
 
-            SrvAuthenticator auth = getServer().getConfiguration().getAuthenticator();
-            int secMode = 0;
-
-            if (auth != null)
-            {
-
-                // Check if the server is in share or user level security mode
-
-                if (auth.getAccessMode() == SrvAuthenticator.USER_MODE)
-                    secMode = 1;
-
-                // Check if encrypted passwords should be used by the client
-
-                if (auth.hasEncryptPasswords())
-                    secMode += 2;
-            }
+            CifsAuthenticator auth = getServer().getConfiguration().getAuthenticator();
 
             // LanMan dialect negotiate response
 
             m_smbPkt.setParameterCount(13);
             m_smbPkt.setParameter(0, diaIdx);
-            m_smbPkt.setParameter(1, secMode); // Security mode, encrypt passwords
+            m_smbPkt.setParameter(1, auth.getSecurityMode());
             m_smbPkt.setParameter(2, LanManBufferSize);
             m_smbPkt.setParameter(3, LanManMaxMultiplexed); // maximum multiplexed requests
-            m_smbPkt.setParameter(4, MaxVirtualCircuits); // maximum number of virtual circuits
-            m_smbPkt.setParameter(5, 0); // read/write raw mode support
+            m_smbPkt.setParameter(4, MaxVirtualCircuits);   // maximum number of virtual circuits
+            m_smbPkt.setParameter(5, 0);                    // read/write raw mode support
 
             // Create a session token, using the system clock
 
@@ -1274,43 +1312,32 @@ public class SMBSrvSession extends SrvSession implements Runnable
 
             // Encryption key length
 
-            m_smbPkt.setParameter(11, 8); // Encryption key length
+            m_smbPkt.setParameter(11, auth.getEncryptionKeyLength());
             m_smbPkt.setParameter(12, 0);
-
-            // Encryption key and primary domain string should be returned in the byte area
-
-            setChallengeKey(auth.getChallengeKey(this));
-            int pos = m_smbPkt.getByteOffset();
-            byte[] buf = m_smbPkt.getBuffer();
-
-            if (hasChallengeKey() == false)
-            {
-
-                // Return a dummy encryption key
-
-                for (int i = 0; i < 8; i++)
-                    buf[pos++] = 0;
-            }
-            else
-            {
-
-                // Store the encryption key
-
-                byte[] key = getChallengeKey();
-                for (int i = 0; i < key.length; i++)
-                    buf[pos++] = key[i];
-            }
-
-            // Set the local domain name
-
-            String domain = getServer().getConfiguration().getDomainName();
-            if (domain != null)
-                pos = DataPacker.putString(domain, buf, pos, true);
-
-            m_smbPkt.setByteCount(pos - m_smbPkt.getByteOffset());
 
             m_smbPkt.setTreeId(0);
             m_smbPkt.setUserId(0);
+            
+            // Let the authenticator pack any remaining fields in the negotiate response
+            
+            try
+            {
+                // Pack the remaining negotiate response fields
+
+                auth.generateNegotiateResponse( this, m_smbPkt, extendedSecurity);
+            }
+            catch ( AuthenticatorException ex)
+            {
+                // Log the error
+                
+                if ( logger.isErrorEnabled())
+                    logger.error("Negotiate error", ex);
+                
+                // Close the session
+                
+                setState(SMBSrvSessionState.NBHANGUP);
+                return;
+            }
         }
         else if (m_dialect == Dialect.NT)
         {
@@ -1323,33 +1350,18 @@ public class SMBSrvSession extends SrvSession implements Runnable
             // Access the authenticator for this server and determine if the server is in share or
             // user level security mode.
 
-            SrvAuthenticator auth = getServer().getConfiguration().getAuthenticator();
-            int secMode = 0;
-
-            if (auth != null)
-            {
-
-                // Check if the server is in share or user level security mode
-
-                if (auth.getAccessMode() == SrvAuthenticator.USER_MODE)
-                    secMode = 1;
-
-                // Check if encrypted passwords should be used by the client
-
-                if (auth.hasEncryptPasswords())
-                    secMode += 2;
-            }
+            CifsAuthenticator auth = getServer().getConfiguration().getAuthenticator();
 
             // NT dialect negotiate response
 
             NTParameterPacker nt = new NTParameterPacker(m_smbPkt.getBuffer());
 
             m_smbPkt.setParameterCount(17);
-            nt.packWord(diaIdx); // selected dialect index
-            nt.packByte(secMode); // security mode
-            nt.packWord(NTMaxMultiplexed); // maximum multiplexed requests
-            // setting to 1 will disable change notify requests from the client
-            nt.packWord(MaxVirtualCircuits); // maximum number of virtual circuits
+            nt.packWord(diaIdx);                // selected dialect index
+            nt.packByte(auth.getSecurityMode());
+            nt.packWord(NTMaxMultiplexed);      // maximum multiplexed requests
+                                                // setting to 1 will disable change notify requests from the client
+            nt.packWord(MaxVirtualCircuits);    // maximum number of virtual circuits
 
             int maxBufSize = m_smbPkt.getBuffer().length - RFCNetBIOSProtocol.HEADER_LEN;
             nt.packInt(maxBufSize);
@@ -1360,10 +1372,13 @@ public class SMBSrvSession extends SrvSession implements Runnable
 
             nt.packInt((int) (System.currentTimeMillis() & 0xFFFFFFFFL));
 
-            // Set server capabilities
+            // Set server capabilities, switch off extended security if the client does not support it
 
-            nt.packInt(Capability.Unicode + Capability.RemoteAPIs + Capability.NTSMBs + Capability.NTFind
-                    + Capability.NTStatus + Capability.LargeFiles + Capability.LargeRead + Capability.LargeWrite);
+            int srvCapabs = auth.getServerCapabilities();
+            if ( extendedSecurity == false)
+                srvCapabs &= ~Capability.ExtendedSecurity;
+            
+            nt.packInt(srvCapabs);
 
             // Return the current server date/time, and timezone offset
 
@@ -1374,53 +1389,34 @@ public class SMBSrvSession extends SrvSession implements Runnable
 
             // Encryption key length
 
-            nt.packByte(8); // encryption key length
-
-            // Encryption key and primary domain string should be returned in the byte area
-
-            setChallengeKey(auth.getChallengeKey(this));
-
-            int pos = m_smbPkt.getByteOffset();
-            byte[] buf = m_smbPkt.getBuffer();
-
-            if (hasChallengeKey() == false)
-            {
-
-                // Return a dummy encryption key
-
-                for (int i = 0; i < 8; i++)
-                    buf[pos++] = 0;
-            }
-            else
-            {
-
-                // Store the encryption key
-
-                byte[] key = getChallengeKey();
-
-                for (int i = 0; i < key.length; i++)
-                    buf[pos++] = key[i];
-            }
-
-            // Pack the local domain name
-
-            String domain = getServer().getConfiguration().getDomainName();
-            if (domain != null)
-                pos = DataPacker.putUnicodeString(domain, buf, pos, true);
-
-            // Pack the server name
-
-            pos = DataPacker.putUnicodeString(getServerName(), buf, pos, true);
-
-            // Set the packet length
-
-            m_smbPkt.setByteCount(pos - m_smbPkt.getByteOffset());
+            nt.packByte( auth.getEncryptionKeyLength());
 
             m_smbPkt.setFlags( getDefaultFlags());
             m_smbPkt.setFlags2( getDefaultFlags2());
             
             m_smbPkt.setTreeId(0);
             m_smbPkt.setUserId(0);
+            
+            // Let the authenticator pack any remaining fields in the negotiate response
+            
+            try
+            {
+                // Pack the remaining negotiate response fields
+
+                auth.generateNegotiateResponse( this, m_smbPkt, extendedSecurity);
+            }
+            catch ( AuthenticatorException ex)
+            {
+                // Log the error
+                
+                if ( logger.isErrorEnabled())
+                    logger.error("Negotiate error", ex);
+                
+                // Close the session
+                
+                setState(SMBSrvSessionState.NBHANGUP);
+                return;
+            }
         }
 
         // Make sure the response flag is set
@@ -1433,8 +1429,7 @@ public class SMBSrvSession extends SrvSession implements Runnable
         m_pktHandler.writePacket(m_smbPkt, m_smbPkt.getLength());
 
         // Check if the negotiated SMB dialect supports the session setup command, if not then
-        // bypass
-        // the session setup phase.
+        // bypass the session setup phase.
 
         if (m_dialect == -1)
             setState(SMBSrvSessionState.NBHANGUP);
@@ -1724,7 +1719,7 @@ public class SMBSrvSession extends SrvSession implements Runnable
         // Mask out certain flags that the client may have sent
 
         int flags2 = pkt.getFlags2() | getDefaultFlags2();
-        flags2 &= ~(SMBPacket.FLG2_EXTENDEDATTRIB + SMBPacket.FLG2_EXTENDNEGOTIATE + SMBPacket.FLG2_DFSRESOLVE + SMBPacket.FLG2_SECURITYSIGS);
+        flags2 &= ~(SMBPacket.FLG2_EXTENDEDATTRIB + SMBPacket.FLG2_DFSRESOLVE + SMBPacket.FLG2_SECURITYSIGS);
 
         pkt.setFlags2(flags2);
 

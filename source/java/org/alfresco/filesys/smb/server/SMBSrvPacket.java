@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -74,20 +74,21 @@ public class SMBSrvPacket
 
     // Flag bits
 
-    public static final int FLG_SUBDIALECT = 0x01;
-    public static final int FLG_CASELESS = 0x08;
-    public static final int FLG_CANONICAL = 0x10;
-    public static final int FLG_OPLOCK = 0x20;
-    public static final int FLG_NOTIFY = 0x40;
-    public static final int FLG_RESPONSE = 0x80;
+    public static final int FLG_SUBDIALECT          = 0x01;
+    public static final int FLG_CASELESS            = 0x08;
+    public static final int FLG_CANONICAL           = 0x10;
+    public static final int FLG_OPLOCK              = 0x20;
+    public static final int FLG_NOTIFY              = 0x40;
+    public static final int FLG_RESPONSE            = 0x80;
 
     // Flag2 bits
 
-    public static final int FLG2_LONGFILENAMES = 0x0001;
-    public static final int FLG2_EXTENDEDATTRIB = 0x0002;
-    public static final int FLG2_READIFEXE = 0x2000;
-    public static final int FLG2_LONGERRORCODE = 0x4000;
-    public static final int FLG2_UNICODE = 0x8000;
+    public static final int FLG2_LONGFILENAMES      = 0x0001;
+    public static final int FLG2_EXTENDEDATTRIB     = 0x0002;
+    public static final int FLG2_EXTENDEDSECURITY   = 0x0800;
+    public static final int FLG2_READIFEXE          = 0x2000;
+    public static final int FLG2_LONGERRORCODE      = 0x4000;
+    public static final int FLG2_UNICODE            = 0x8000;
 
     // Security mode bits
 

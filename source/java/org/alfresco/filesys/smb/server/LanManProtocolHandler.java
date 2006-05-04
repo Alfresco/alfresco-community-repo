@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -20,9 +20,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.alfresco.filesys.netbios.RFCNetBIOSProtocol;
+import org.alfresco.filesys.server.auth.CifsAuthenticator;
 import org.alfresco.filesys.server.auth.ClientInfo;
 import org.alfresco.filesys.server.auth.InvalidUserException;
-import org.alfresco.filesys.server.auth.SrvAuthenticator;
 import org.alfresco.filesys.server.core.InvalidDeviceInterfaceException;
 import org.alfresco.filesys.server.core.ShareType;
 import org.alfresco.filesys.server.core.SharedDevice;
@@ -302,10 +302,10 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         // Authenticate the share connect, if the server is using share mode security
 
-        SrvAuthenticator auth = getSession().getSMBServer().getAuthenticator();
+        CifsAuthenticator auth = getSession().getSMBServer().getAuthenticator();
         int filePerm = FileAccess.Writeable;
 
-        if (auth != null && auth.getAccessMode() == SrvAuthenticator.SHARE_MODE)
+        if (auth != null)
         {
 
             // Validate the share connection
@@ -1233,18 +1233,18 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         // Authenticate the user, if the server is using user mode security
 
-        SrvAuthenticator auth = getSession().getSMBServer().getAuthenticator();
+        CifsAuthenticator auth = getSession().getSMBServer().getAuthenticator();
         boolean isGuest = false;
 
-        if (auth != null && auth.getAccessMode() == SrvAuthenticator.USER_MODE)
+        if (auth != null)
         {
 
             // Validate the user
 
-            int sts = auth.authenticateUser(client, m_sess, SrvAuthenticator.LANMAN);
-            if (sts > 0 && (sts & SrvAuthenticator.AUTH_GUEST) != 0)
+            int sts = auth.authenticateUser(client, m_sess, CifsAuthenticator.LANMAN);
+            if (sts > 0 && (sts & CifsAuthenticator.AUTH_GUEST) != 0)
                 isGuest = true;
-            else if (sts != SrvAuthenticator.AUTH_ALLOW)
+            else if (sts != CifsAuthenticator.AUTH_ALLOW)
             {
 
                 // Invalid user, reject the session setup request
@@ -2569,7 +2569,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
         // Authenticate the share connection depending upon the security mode the server is running
         // under
 
-        SrvAuthenticator auth = getSession().getSMBServer().getAuthenticator();
+        CifsAuthenticator auth = getSession().getSMBServer().getAuthenticator();
         int filePerm = FileAccess.Writeable;
 
         if (auth != null)

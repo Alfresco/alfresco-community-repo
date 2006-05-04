@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -63,7 +63,7 @@ public class TcpipSMBSessionSocketHandler extends SessionSocketHandler
                 // Debug
 
                 if (logger.isDebugEnabled() && hasDebug())
-                    logger.debug("[SMB] Waiting for TCP-SMB session request ...");
+                    logger.debug("Waiting for TCP-SMB session request ...");
 
                 // Wait for a connection
 
@@ -72,7 +72,7 @@ public class TcpipSMBSessionSocketHandler extends SessionSocketHandler
                 // Debug
 
                 if (logger.isDebugEnabled() && hasDebug())
-                    logger.debug("[SMB] TCP-SMB session request received from "
+                    logger.debug("TCP-SMB session request received from "
                             + sessSock.getInetAddress().getHostAddress());
 
                 try
@@ -106,7 +106,7 @@ public class TcpipSMBSessionSocketHandler extends SessionSocketHandler
 
                     // Debug
 
-                    logger.error("[SMB] TCP-SMB Failed to create session, ", ex);
+                    logger.error("TCP-SMB Failed to create session, ", ex);
                 }
             }
         }
@@ -117,7 +117,7 @@ public class TcpipSMBSessionSocketHandler extends SessionSocketHandler
             // causes an exception to be thrown.
 
             if (hasShutdown() == false)
-                logger.error("[SMB] TCP-SMB Socket error : ", ex);
+                logger.error("TCP-SMB Socket error : ", ex);
         }
         catch (Exception ex)
         {
@@ -126,13 +126,13 @@ public class TcpipSMBSessionSocketHandler extends SessionSocketHandler
             // causes an exception to be thrown.
 
             if (hasShutdown() == false)
-                logger.error("[SMB] TCP-SMB Server error : ", ex);
+                logger.error("TCP-SMB Server error : ", ex);
         }
 
         // Debug
 
         if (logger.isDebugEnabled() && hasDebug())
-            logger.debug("[SMB] TCP-SMB session handler closed");
+            logger.debug("TCP-SMB session handler closed");
     }
 
     /**
@@ -166,6 +166,6 @@ public class TcpipSMBSessionSocketHandler extends SessionSocketHandler
         // DEBUG
 
         if (logger.isDebugEnabled() && sockDbg)
-            logger.debug("[SMB] Native SMB TCP session handler created");
+            logger.debug("Native SMB TCP session handler created");
     }
 }

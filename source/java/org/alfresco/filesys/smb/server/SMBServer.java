@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -21,20 +21,18 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
+import java.util.UUID;
 import java.util.Vector;
 
 import org.alfresco.filesys.netbios.NetworkSettings;
 import org.alfresco.filesys.server.ServerListener;
 import org.alfresco.filesys.server.SrvSessionList;
-import org.alfresco.filesys.server.auth.SrvAuthenticator;
-import org.alfresco.filesys.server.auth.UserAccountList;
 import org.alfresco.filesys.server.config.ServerConfiguration;
 import org.alfresco.filesys.server.core.InvalidDeviceInterfaceException;
 import org.alfresco.filesys.server.core.ShareType;
 import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.NetworkFileServer;
-import org.alfresco.filesys.smb.DialectSelector;
 import org.alfresco.filesys.smb.SMBException;
 import org.alfresco.filesys.smb.ServerType;
 import org.alfresco.filesys.smb.mailslot.HostAnnouncer;
@@ -44,10 +42,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * <p>
- * Creates an SMB server with the specified host name.
- * <p>
- * The server can optionally announce itself so that it will appear under the Network Neighborhood,
+ * SMB Server Class
+ * 
+ * <p>Creates an SMB server with the specified host name.
+ * 
+ * <p>The server can optionally announce itself so that it will appear under the Network Neighborhood,
  * by enabling the host announcer in the server configuration or using the enableAnnouncer() method.
  */
 public class SMBServer extends NetworkFileServer implements Runnable
@@ -90,6 +89,10 @@ public class SMBServer extends NetworkFileServer implements Runnable
     private boolean m_shutdown = false;
     private boolean m_active = false;
 
+    // Server GUID
+    
+    private UUID m_serverGUID;
+    
     /**
      * Create an SMB server using the specified configuration.
      *
@@ -114,8 +117,7 @@ public class SMBServer extends NetworkFileServer implements Runnable
     {
 
         // For disk devices check if the shared device is read-only, this should also check if the
-        // shared device
-        // path actully exists.
+        // shared device path actully exists.
 
         if (shr.getType() == ShareType.DISK)
         {
@@ -132,7 +134,7 @@ public class SMBServer extends NetworkFileServer implements Runnable
         // Debug
 
         if (logger.isInfoEnabled())
-            logger.info("[SMB] Add Share " + shr.toString() + " : " + sts);
+            logger.info("Add Share " + shr.toString() + " : " + sts);
 
         // Return the add share status
 
@@ -396,26 +398,6 @@ public class SMBServer extends NetworkFileServer implements Runnable
     }
 
     /**
-     * Return the list of SMB dialects that this server supports.
-     * 
-     * @return DialectSelector
-     */
-    public final DialectSelector getSMBDialects()
-    {
-        return getConfiguration().getEnabledDialects();
-    }
-
-    /**
-     * Return the list of user accounts.
-     * 
-     * @return UserAccountList
-     */
-    public final UserAccountList getUserAccountList()
-    {
-        return getConfiguration().getUserAccounts();
-    }
-
-    /**
      * Return the active session list
      * 
      * @return SrvSessionList
@@ -439,50 +421,42 @@ public class SMBServer extends NetworkFileServer implements Runnable
 
         boolean isWindows = isWindowsNTOnwards();
 
+        // Generate a GUID for the server based on the server name
+        
+        m_serverGUID = UUID.nameUUIDFromBytes( getServerName().getBytes());
+        
         // Debug
 
         if (logger.isInfoEnabled())
         {
 
-            // Dump the server name/version and Java runtime details
+            // Dump the server name and GUID
 
-            logger.info("[SMB] SMB Server " + getServerName() + " starting");
-            logger.info("[SMB] Version " + isVersion());
-            logger.info("[SMB] Java VM " + System.getProperty("java.vm.version"));
-            logger.info("[SMB] OS " + System.getProperty("os.name") + ", version " + System.getProperty("os.version"));
+            logger.info("SMB Server " + getServerName() + " starting");
+            logger.info("GUID " + m_serverGUID);
 
             // Output the authenticator details
 
             if (getAuthenticator() != null)
-            {
-                String mode = getAuthenticator().getAccessMode() == SrvAuthenticator.SHARE_MODE ? "SHARE" : "USER";
-                logger.info("[SMB] Using authenticator " + getAuthenticator().getClass().getName() + ", mode=" + mode);
-
-                // Display the count of user accounts
-
-                if (getUserAccountList() != null)
-                    logger.info("[SMB] " + getUserAccountList().numberOfUsers() + " user accounts defined");
-                else
-                    logger.info("[SMB] No user accounts defined");
-            }
+                logger.info("Using authenticator " + getAuthenticator().getClass().getName());
 
             // Display the timezone offset/name
 
             if (getConfiguration().getTimeZone() != null)
-                logger.info("[SMB] Server timezone " + getConfiguration().getTimeZone() + ", offset from UTC = "
+                logger.info("Server timezone " + getConfiguration().getTimeZone() + ", offset from UTC = "
                         + getConfiguration().getTimeZoneOffset() / 60 + "hrs");
             else
-                logger.info("[SMB] Server timezone offset = " + getConfiguration().getTimeZoneOffset() / 60 + "hrs");
+                logger.info("Server timezone offset = " + getConfiguration().getTimeZoneOffset() / 60 + "hrs");
 
             // Dump the share list
 
-            logger.info("[SMB] Shares:");
+            logger.info("Shares:");
             Enumeration<SharedDevice> enm = getFullShareList(getServerName(), null).enumerateShares();
 
             while (enm.hasMoreElements())
             {
                 SharedDevice share = enm.nextElement();
-                logger.info("[SMB]  " + share.toString() + " " + share.getContext().toString());
+                logger.info(" " + share.toString() + " " + share.getContext().toString());
             }
         }
 
@@ -574,7 +548,7 @@ public class SMBServer extends NetworkFileServer implements Runnable
 
                 // DEBUG
 
-                logger.info("[SMB] No valid session handlers, server closing");
+                logger.info("No valid session handlers, server closing");
             }
         }
         catch (SMBException ex)
@@ -597,7 +571,7 @@ public class SMBServer extends NetworkFileServer implements Runnable
 
             if (m_shutdown == false)
             {
-                logger.error("[SMB] Server error : ", ex);
+                logger.error("Server error : ", ex);
 
                 // Store the error, fire a server error event
 
@@ -609,7 +583,7 @@ public class SMBServer extends NetworkFileServer implements Runnable
         // Debug
 
         if (logger.isInfoEnabled())
-            logger.info("[SMB] SMB Server shutting down ...");
+            logger.info("SMB Server shutting down ...");
 
         // Close the host announcer and session handlers
 
@@ -837,7 +811,17 @@ public class SMBServer extends NetworkFileServer implements Runnable
 
             // DEBUG
 
-            logger.error("[SMB] Error getting local IP addresses", ex);
+            logger.error("Error getting local IP addresses", ex);
         }
+    }
+    
+    /**
+     * Return the server GUID
+     * 
+     * @return UUID
+     */
+    public final UUID getServerGUID()
+    {
+        return m_serverGUID;
     }
 }

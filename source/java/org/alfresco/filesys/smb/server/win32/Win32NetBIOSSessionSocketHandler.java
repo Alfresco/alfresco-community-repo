@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -134,7 +134,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
         // Debug
 
         if (logger.isDebugEnabled() && hasDebug())
-            logger.debug("[SMB] Win32 NetBIOS server " + m_srvName + " (using " + 
+            logger.debug("Win32 NetBIOS server " + m_srvName + " (using " + 
                     (isUsingWinsock() ? "Winsock" : "Netbios() API") + ")");
 
         // Set the LANA offline polling interval
@@ -176,7 +176,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
         // Debug
 
         if (logger.isDebugEnabled() && hasDebug())
-            logger.debug("[SMB] Win32 NetBIOS server " + m_srvName + " (using " + 
+            logger.debug("Win32 NetBIOS server " + m_srvName + " (using " + 
                     (isUsingWinsock() ? "Winsock" : "Netbios() API") + ")");
 
         // Set the LANA offline polling interval
@@ -215,7 +215,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
         // Debug
 
         if (logger.isDebugEnabled() && hasDebug())
-            logger.debug("[SMB] Win32 NetBIOS server " + m_srvName + " (using " + 
+            logger.debug("Win32 NetBIOS server " + m_srvName + " (using " + 
                     (isUsingWinsock() ? "Winsock" : "Netbios() API") + ")");
 
         // Set the LANA offline polling interval
@@ -504,7 +504,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
 
                         if (logger.isDebugEnabled() && hasDebug())
                         {
-                            logger.debug("[SMB] Win32 NetBIOS Failed To ReInitialize LANA");
+                            logger.debug("Win32 NetBIOS Failed To ReInitialize LANA");
                             logger.debug("  " + ex.getMessage());
                         }
                     }
@@ -512,7 +512,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
                     // DEBUG
 
                     if (logger.isDebugEnabled() && hasDebug() && isLANAValid())
-                        logger.debug("[SMB] Win32 NetBIOS LANA " + getLANANumber() + " Back Online");
+                        logger.debug("Win32 NetBIOS LANA " + getLANANumber() + " Back Online");
                 }
             }
         }
@@ -524,7 +524,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
 
             if (hasShutdown() == false)
             {
-                logger.debug("[SMB] Win32 NetBIOS Server error : " + ex.toString());
+                logger.debug("Win32 NetBIOS Server error : " + ex.toString());
                 logger.debug(ex);
             }
         }
@@ -532,7 +532,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
         // Debug
 
         if (logger.isDebugEnabled() && hasDebug())
-            logger.debug("[SMB] Win32 NetBIOS session handler closed");
+            logger.debug("Win32 NetBIOS session handler closed");
     }
 
     /**
@@ -546,7 +546,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
         // Debug
 
         if (logger.isDebugEnabled() && hasDebug())
-            logger.debug("[SMB] Waiting for Win32 NetBIOS session request (Netbios API) ...");
+            logger.debug("Waiting for Win32 NetBIOS session request (Netbios API) ...");
 
         // Clear the caller name
 
@@ -585,7 +585,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
                 // Debug
 
                 if (logger.isDebugEnabled() && hasDebug())
-                    logger.debug("[SMB] Win32 NetBIOS session request received, lsn=" + lsn + ", caller=["
+                    logger.debug("Win32 NetBIOS session request received, lsn=" + lsn + ", caller=["
                             + callerName + "]");
 
                 // Create a packet handler for the session
@@ -616,7 +616,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
                 // Debug
 
                 if (logger.isDebugEnabled() && hasDebug())
-                    logger.debug("[SMB] Win32 NetBIOS Failed to create session, " + ex.toString());
+                    logger.debug("Win32 NetBIOS Failed to create session, " + ex.toString());
             }
         }
         else
@@ -637,10 +637,10 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
                 // DEBUG
 
                 if (logger.isDebugEnabled() && hasDebug())
-                    logger.debug("[SMB] Win32 NetBIOS LANA offline/disabled, LANA=" + getLANANumber());
+                    logger.debug("Win32 NetBIOS LANA offline/disabled, LANA=" + getLANANumber());
             }
             else if (logger.isDebugEnabled() && hasDebug())
-                logger.debug("[SMB] Win32 NetBIOS Listen error, 0x" + Integer.toHexString(-lsn) + ", "
+                logger.debug("Win32 NetBIOS Listen error, 0x" + Integer.toHexString(-lsn) + ", "
                         + NetBIOS.getErrorString(-lsn));
         }
     }
@@ -656,7 +656,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
         // Debug
 
         if (logger.isDebugEnabled() && hasDebug())
-            logger.debug("[SMB] Waiting for Win32 NetBIOS session request (Winsock) ...");
+            logger.debug("Waiting for Win32 NetBIOS session request (Winsock) ...");
         
         // Wait for a new NetBIOS session
 
@@ -700,7 +700,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
                     // Debug
 
                     if (logger.isDebugEnabled() && hasDebug())
-                        logger.debug("[SMB] Winsock NetBIOS network down, LANA=" + m_lana);
+                        logger.debug("Winsock NetBIOS network down, LANA=" + m_lana);
                 }
             }
             else
@@ -708,7 +708,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
                 // Debug
 
                 if (hasShutdown() == false && logger.isDebugEnabled() && hasDebug())
-                    logger.debug("[SMB] Winsock NetBIOS listen error, " + ex.getMessage());
+                    logger.debug("Winsock NetBIOS listen error, " + ex.getMessage());
             }
         }
 
@@ -730,7 +730,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
                 // Debug
 
                 if (logger.isDebugEnabled() && hasDebug())
-                    logger.debug("[SMB] Winsock NetBIOS session request received, caller="
+                    logger.debug("Winsock NetBIOS session request received, caller="
                             + sessSock.getName());
 
                 // Create a packet handler for the session
@@ -761,7 +761,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
                 // Debug
 
                 if (logger.isDebugEnabled() && hasDebug())
-                    logger.debug("[SMB] Winsock NetBIOS Failed to create session, " + ex.toString());
+                    logger.debug("Winsock NetBIOS Failed to create session, " + ex.toString());
             }
         }
     }
@@ -794,7 +794,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
                     lanaStr.append(" ");
                 }
             }
-            logger.debug("[SMB] Win32 NetBIOS Available LANAs: " + lanaStr.toString());
+            logger.debug("Win32 NetBIOS Available LANAs: " + lanaStr.toString());
         }
 
         // Check if the Win32 NetBIOS session handler should use a particular LANA/network adapter
@@ -821,7 +821,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
 
                 if (logger.isDebugEnabled() && sockDbg)
                 {
-                    logger.debug("[SMB] Win32 NetBIOS failed to create session handler for LANA "
+                    logger.debug("Win32 NetBIOS failed to create session handler for LANA "
                             + config.getWin32LANA());
                     logger.debug("      " + ex.getMessage());
                 }
@@ -840,7 +840,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
             // DEBUG
 
             if (logger.isDebugEnabled() && sockDbg)
-                logger.debug("[SMB] Win32 NetBIOS created session handler on LANA " + config.getWin32LANA());
+                logger.debug("Win32 NetBIOS created session handler on LANA " + config.getWin32LANA());
 
             // Check if a host announcer should be enabled
 
@@ -879,7 +879,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
                 // DEBUG
 
                 if (logger.isDebugEnabled() && sockDbg)
-                    logger.debug("[SMB] Win32 NetBIOS host announcer enabled on LANA " + config.getWin32LANA());
+                    logger.debug("Win32 NetBIOS host announcer enabled on LANA " + config.getWin32LANA());
             }
             
             // Check if the session handler implements the LANA listener interface
@@ -921,7 +921,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
 
                         if (logger.isDebugEnabled() && sockDbg)
                         {
-                            logger.debug("[SMB] Win32 NetBIOS failed to create session handler for LANA " + lana);
+                            logger.debug("Win32 NetBIOS failed to create session handler for LANA " + lana);
                             logger.debug("      " + ex.getMessage());
                         }
                     }
@@ -939,7 +939,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
                     // DEBUG
 
                     if (logger.isDebugEnabled() && sockDbg)
-                        logger.debug("[SMB] Win32 NetBIOS created session handler on LANA " + lana);
+                        logger.debug("Win32 NetBIOS created session handler on LANA " + lana);
 
                     // Check if a host announcer should be enabled
 
@@ -978,7 +978,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
                         // DEBUG
 
                         if (logger.isDebugEnabled() && sockDbg)
-                            logger.debug("[SMB] Win32 NetBIOS host announcer enabled on LANA " + lana);
+                            logger.debug("Win32 NetBIOS host announcer enabled on LANA " + lana);
                     }
 
                     // Check if the session handler implements the LANA listener interface

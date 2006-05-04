@@ -31,6 +31,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -51,6 +52,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Wrapper;
 import org.springframework.util.StringUtils;
 
 /**
@@ -87,8 +89,7 @@ public final class Node implements Serializable
     private String path;
     private String id;
     private Set<QName> aspects = null;
-    private ScriptableQNameMap<String, Serializable> properties;
-    private boolean propsRetrieved = false;
+    private ScriptableQNameMap<String, Serializable> properties = null;
     private ServiceRegistry services = null;
     private NodeService nodeService = null;
     private Boolean isDocument = null;
@@ -356,7 +357,7 @@ public final class Node implements Serializable
      */
     public Map<String, Object> getProperties()
     {
-        if (this.propsRetrieved == false)
+        if (this.properties == null)
         {
             // this Map implements the Scriptable interface for native JS syntax property access
             this.properties = new ScriptableQNameMap<String, Serializable>(this.services.getNamespaceService());
@@ -379,8 +380,6 @@ public final class Node implements Serializable
                 }
                 this.properties.put(qname.toString(), propValue);
             }
-            
-            this.propsRetrieved = true;
         }
         
         return this.properties;
@@ -449,7 +448,7 @@ public final class Node implements Serializable
     }
     
     /**
-     * @param aspect The aspect name to test for
+     * @param aspect    The aspect name to test for (full qualified or short-name form)
      * 
      * @return true if the node has the aspect false otherwise
      */
@@ -462,7 +461,7 @@ public final class Node implements Serializable
         
         if (aspect.startsWith(NAMESPACE_BEGIN))
         {
-            return aspects.contains((QName.createQName(aspect)));
+            return aspects.contains((createQName(aspect)));
         }
         else
         {
@@ -787,7 +786,12 @@ public final class Node implements Serializable
                 // convert back to ContentData
                 value = ((ScriptContentData)value).contentData;
             }
-            props.put(QName.createQName(key), value);
+            else if (value instanceof Wrapper)
+            {
+                // unwrap a Java object from a JavaScript wrapper
+                value = (Serializable)((Wrapper)value).unwrap();
+            }
+            props.put(createQName(key), value);
         }
         this.nodeService.setProperties(this.nodeRef, props);
     }
@@ -883,7 +887,7 @@ public final class Node implements Serializable
                         this.nodeRef,
                         ContentModel.ASSOC_CONTAINS,
                         QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(name)),
-                        QName.createQName(type),
+                        createQName(type),
                         props);
                 node = new Node(childAssocRef.getChildRef(), this.services, this.imageResolver);
             }
@@ -990,6 +994,83 @@ public final class Node implements Serializable
         }
         
         return success;
+    }
+    
+    /**
+     * Add an aspect to the Node.
+     * 
+     * @param type      Type name of the aspect to add
+     * @param props     Object (generally an assocative array) providing the named properties
+     *                  for the aspect - any mandatory properties for the aspect must be provided!
+     *                  
+     * @return true if the aspect was added successfully, false if an error occured.
+     */
+    public boolean addAspect(String type, Object properties)
+    {
+        boolean success = false;
+        
+        if (type != null && type.length() != 0)
+        {
+            try
+            {
+                Map<QName, Serializable> aspectProps = null;
+                if (properties instanceof ScriptableObject)
+                {
+                    ScriptableObject props = (ScriptableObject)properties;
+                    // we need to get all the keys to the properties provided
+                    // and convert them to a Map of QName to Serializable objects
+                    Object[] propIds = props.getIds();
+                    aspectProps = new HashMap<QName, Serializable>(propIds.length);
+                    for (int i=0; i<propIds.length; i++)
+                    {
+                        // work on each key in turn
+                        Object propId = propIds[i];
+                        
+                        // we are only interested in keys that are formed of Strings i.e. QName.toString()
+                        if (propId instanceof String)
+                        {
+                            // get the value out for the specified key - make sure it is Serializable
+                            Object value = props.get((String)propId, props);
+                            if (value instanceof Wrapper)
+                            {
+                                value = ((Wrapper)value).unwrap();
+                            }
+                            if (value instanceof Serializable)
+                            {
+                                aspectProps.put(createQName((String)propId), (Serializable)value);
+                            }
+                        }
+                    }
+                }
+                QName aspectQName = createQName(type);
+                this.nodeService.addAspect(this.nodeRef, aspectQName, aspectProps);
+                
+                // reset the relevant cached node members
+                this.aspects = null;
+                this.properties = null;
+                success = true;
+            }
+            catch (InvalidAspectException aspectErr)
+            {
+                // default of failed will be returned
+            }
+        }
+        
+        return success;
+    }
+    
+    private QName createQName(String s)
+    {
+        QName qname;
+        if (s.indexOf(NAMESPACE_BEGIN) != -1)
+        {
+            qname = QName.createQName(s);
+        }
+        else
+        {
+            qname = QName.createQName(s, this.services.getNamespaceService());
+        }
+        return qname;
     }
     
     /**

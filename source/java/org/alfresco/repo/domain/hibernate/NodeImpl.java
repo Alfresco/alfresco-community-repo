@@ -30,7 +30,6 @@ import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
-import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.service.cmr.repository.NodeRef;

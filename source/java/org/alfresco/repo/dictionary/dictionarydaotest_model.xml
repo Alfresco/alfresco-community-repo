@@ -110,6 +110,7 @@
    
       <type name="test:file">
          <parent>test:base</parent>
+         <archive>true</archive>
          
          <properties>
             <property name="test:fileprop">

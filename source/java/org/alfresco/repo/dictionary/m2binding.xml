@@ -60,6 +60,7 @@
       <value name="title" field="title" usage="optional"/>
       <value name="description" field="description" usage="optional"/>
       <value name="parent" field="parentName" usage="optional"/>
+      <value name="archive" field="archive" usage="optional"/>
       
       <structure name="properties" usage="optional">
          <collection field="properties" item-type="org.alfresco.repo.dictionary.M2Property" factory="org.alfresco.repo.dictionary.M2Model.createList"/>

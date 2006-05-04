@@ -17,7 +17,9 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.Serializable;
+import java.util.StringTokenizer;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 
@@ -39,6 +41,8 @@ public class ChildAssociationRef
         implements EntityRef, Comparable<ChildAssociationRef>, Serializable
 {
     private static final long serialVersionUID = 4051322336257127729L;
+    
+    private static final String FILLER = "|";
 
     private QName assocTypeQName;
     private NodeRef parentRef;
@@ -97,7 +101,47 @@ public class ChildAssociationRef
     {
         this(assocTypeQName, parentRef, childQName, childRef, false, -1);
     }
+    
+    /**
+     * @param childAssocRefStr a string of the form <b>parentNodeRef|childNodeRef|assocTypeQName|assocQName|isPrimary|nthSibling</b>
+     */
+    public ChildAssociationRef(String childAssocRefStr)
+    {
+        StringTokenizer tokenizer = new StringTokenizer(childAssocRefStr, FILLER);
+        if (tokenizer.countTokens() != 6)
+        {
+            throw new AlfrescoRuntimeException("Unable to parse child association string: " + childAssocRefStr);
+        }
+        String parentNodeRefStr = tokenizer.nextToken();
+        String childNodeRefStr = tokenizer.nextToken();
+        String assocTypeQNameStr = tokenizer.nextToken();
+        String assocQNameStr = tokenizer.nextToken();
+        String isPrimaryStr = tokenizer.nextToken();
+        String nthSiblingStr = tokenizer.nextToken();
+        
+        this.parentRef = new NodeRef(parentNodeRefStr);
+        this.childRef = new NodeRef(childNodeRefStr);
+        this.assocTypeQName = QName.createQName(assocTypeQNameStr);
+        this.childQName = QName.createQName(assocQNameStr);
+        this.isPrimary = Boolean.parseBoolean(isPrimaryStr);
+        this.nthSibling = Integer.parseInt(nthSiblingStr);
+    }
 
+    /**
+     * @return Returns a string of the form <b>parentNodeRef|childNodeRef|assocTypeQName|assocQName|isPrimary|nthSibling</b>
+     */
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(250);
+        sb.append(parentRef).append(FILLER)
+          .append(childRef).append(FILLER)
+          .append(assocTypeQName).append(FILLER)
+          .append(childQName).append(FILLER)
+          .append(isPrimary).append(FILLER)
+          .append(nthSibling);
+        return sb.toString();
+    }
+    
     /**
      * Compares:
      * <ul>
@@ -144,16 +188,6 @@ public class ChildAssociationRef
         return (thisVal < anotherVal ? -1 : (thisVal == anotherVal ? 0 : 1));
     }
 
-    public String toString()
-    {
-        StringBuffer sb = new StringBuffer();
-        sb.append("[").append(getTypeQName()).append("]");
-        sb.append(getParentRef());
-        sb.append(" --- ").append(getQName()).append(" ---> ");
-        sb.append(getChildRef());
-        return sb.toString();
-    }
-    
     /**
      * Get the qualified name of the association type
      * 

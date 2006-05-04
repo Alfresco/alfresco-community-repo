@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
@@ -183,6 +185,34 @@ public class PropertyValue implements Cloneable, Serializable
                 return DefaultTypeConverter.INSTANCE.convert(NodeRef.class, value);
             }
         },
+        CHILD_ASSOC_REF
+        {
+            @Override
+            protected ValueType getPersistedType(Serializable value)
+            {
+                return ValueType.STRING;
+            }
+
+            @Override
+            Serializable convert(Serializable value)
+            {
+                return DefaultTypeConverter.INSTANCE.convert(ChildAssociationRef.class, value);
+            }
+        },
+        ASSOC_REF
+        {
+            @Override
+            protected ValueType getPersistedType(Serializable value)
+            {
+                return ValueType.STRING;
+            }
+
+            @Override
+            Serializable convert(Serializable value)
+            {
+                return DefaultTypeConverter.INSTANCE.convert(AssociationRef.class, value);
+            }
+        },
         QNAME
         {
             @Override
@@ -296,6 +326,14 @@ public class PropertyValue implements Cloneable, Serializable
         {
             return ValueType.NODEREF;
         }
+        else if (value instanceof ChildAssociationRef)
+        {
+            return ValueType.CHILD_ASSOC_REF;
+        }
+        else if (value instanceof AssociationRef)
+        {
+            return ValueType.ASSOC_REF;
+        }
         else if (value instanceof QName)
         {
             return ValueType.QNAME;
@@ -328,6 +366,8 @@ public class PropertyValue implements Cloneable, Serializable
         valueTypesByPropertyType.put(DataTypeDefinition.CONTENT, ValueType.CONTENT);
         valueTypesByPropertyType.put(DataTypeDefinition.TEXT, ValueType.STRING);
         valueTypesByPropertyType.put(DataTypeDefinition.NODE_REF, ValueType.NODEREF);
+        valueTypesByPropertyType.put(DataTypeDefinition.CHILD_ASSOC_REF, ValueType.CHILD_ASSOC_REF);
+        valueTypesByPropertyType.put(DataTypeDefinition.ASSOC_REF, ValueType.ASSOC_REF);
         valueTypesByPropertyType.put(DataTypeDefinition.PATH, ValueType.PATH);
         valueTypesByPropertyType.put(DataTypeDefinition.QNAME, ValueType.QNAME);
     }

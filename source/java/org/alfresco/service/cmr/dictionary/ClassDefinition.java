@@ -58,6 +58,11 @@ public interface ClassDefinition
      * @return true => aspect, false => type
      */
     public boolean isAspect();
+    
+    /**
+     * @return Return true if the type should be archived on delete
+     */
+    public boolean isArchive();
 
     /**
      * @return the properties of the class, including inherited properties

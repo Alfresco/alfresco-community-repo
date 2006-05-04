@@ -45,6 +45,8 @@ public interface DataTypeDefinition
     public QName QNAME = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "qname");
     public QName CATEGORY = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "category");
     public QName NODE_REF = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "noderef");
+    public QName CHILD_ASSOC_REF = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "childassocref");
+    public QName ASSOC_REF = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "assocref");
     public QName PATH = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "path");
     
     

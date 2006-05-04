@@ -122,6 +122,53 @@
 		<aspect name="sys:incomplete">
 			<title>Incomplete</title>
 		</aspect>
+      
+      <!-- details stored on archived nodes -->
+      <aspect name="sys:archived">
+         <title>Archived</title>
+         <properties>
+            <property name="sys:archivedOriginalParent">
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="sys:archivedBy">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="sys:archivedDate">
+               <type>d:datetime</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      <aspect name="sys:archived-assocs">
+         <properties>
+            <property name="sys:archivedParentAssocs">
+               <type>d:childassocref</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="false" />
+            </property>
+            <property name="sys:archivedChildAssocs">
+               <type>d:childassocref</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="false" />
+            </property>
+            <property name="sys:archivedSourceAssocs">
+               <type>d:assocref</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="false" />
+            </property>
+            <property name="sys:archivedTargetAssocs">
+               <type>d:assocref</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="false" />
+            </property>
+         </properties>
+      </aspect>
 
 	</aspects>
 

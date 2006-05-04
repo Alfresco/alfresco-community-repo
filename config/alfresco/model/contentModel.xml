@@ -44,6 +44,7 @@
       <type name="cm:folder">
          <title>Folder</title>
          <parent>cm:cmobject</parent>
+         <archive>true</archive>
          <properties>
             <property name="cm:orderedchildren">
                <type>d:boolean</type>
@@ -68,6 +69,7 @@
       <type name="cm:content">
          <title>Content</title>
          <parent>cm:cmobject</parent>
+         <archive>true</archive>
          <properties>
             <property name="cm:content">
                <type>d:content</type>

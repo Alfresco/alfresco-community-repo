@@ -186,6 +186,23 @@
         </property>
     </bean>
 
+    <bean id="spacesArchiveStoreImporter" parent="storeImporter" abstract="true">
+        <property name="storeUrl">
+            <value>${spaces.archive.store}</value>
+        </property>
+        <property name="mustNotExistStoreUrls">
+            <list>
+                <value>${spaces.archive.store}</value>
+            </list>
+        </property>
+<!--        
+        <property name="configuration">
+            <props>
+            </props>
+        </property>
+-->
+    </bean>
+
     <bean id="spacesStoreImporter" parent="storeImporter" abstract="true">
         <property name="storeUrl">
             <value>${spaces.store}</value>

@@ -373,16 +373,21 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         return ret;
     }
     
-    private int countNodesById(NodeRef nodeRef)
+    private int countNodesByReference(NodeRef nodeRef)
     {
         String query =
                 "select count(node.uuid)" +
                 " from " +
                 NodeImpl.class.getName() + " node" +
-                " where node.uuid = ?";
+                " where" +
+                "    node.uuid = ? and" +
+                "    node.store.key.protocol = ? and" +
+                "    node.store.key.identifier = ?";
         Session session = getSession();
         List results = session.createQuery(query)
             .setString(0, nodeRef.getId())
+            .setString(1, nodeRef.getStoreRef().getProtocol())
+            .setString(2, nodeRef.getStoreRef().getIdentifier())
             .list();
         Integer count = (Integer) results.get(0);
         return count.intValue();
@@ -591,7 +596,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ContentModel.TYPE_CONTAINER);
         NodeRef nodeRef = assocRef.getChildRef();
         // count the nodes with the given id
-        int count = countNodesById(nodeRef);
+        int count = countNodesByReference(nodeRef);
         assertEquals("Unexpected number of nodes present", 1, count);
     }
     
@@ -693,11 +698,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         
         // delete n1
         nodeService.deleteNode(n1Ref);
-        assertEquals("Node not directly deleted", 0, countNodesById(n1Ref));
-        assertEquals("Node not cascade deleted", 0, countNodesById(n3Ref));
-        assertEquals("Node incorrectly cascade deleted", 1, countNodesById(n4Ref));
-        assertEquals("Node not cascade deleted", 0, countNodesById(n6Ref));
-        assertEquals("Node not cascade deleted", 0, countNodesById(n8Ref));
+        assertEquals("Node not directly deleted", 0, countNodesByReference(n1Ref));
+        assertEquals("Node not cascade deleted", 0, countNodesByReference(n3Ref));
+        assertEquals("Node incorrectly cascade deleted", 1, countNodesByReference(n4Ref));
+        assertEquals("Node not cascade deleted", 0, countNodesByReference(n6Ref));
+        assertEquals("Node not cascade deleted", 0, countNodesByReference(n8Ref));
         
         // commit to check
         setComplete();

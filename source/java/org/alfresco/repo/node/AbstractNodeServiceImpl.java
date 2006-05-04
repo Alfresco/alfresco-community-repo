@@ -113,13 +113,15 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     private AssociationPolicyDelegate<OnDeleteAssociationPolicy> onDeleteAssociationDelegate;
 
     /**
-     * @param policyComponent  the component with which to register class policies and behaviour
-     * @param dictionaryService
-     *            used to check that node operations conform to the model
+     * 
      */
-    protected AbstractNodeServiceImpl(PolicyComponent policyComponent)
+    protected AbstractNodeServiceImpl()
     {
         this.uuid = GUID.generate();
+    }
+
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
         this.policyComponent = policyComponent;
     }
 

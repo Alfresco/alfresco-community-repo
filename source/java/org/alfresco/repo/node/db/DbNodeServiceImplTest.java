@@ -112,7 +112,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
      *   <li>deletion</li>
      * </ul>
      */
-    public void testNodeStatus() throws Exception
+    public void testNodeStatus() throws Throwable
     {
         Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
         // get the node to play with
@@ -190,13 +190,13 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
             public Object doWork()
             {
                 // check n6
-                NodeStatus n6Status = nodeDaoService.getNodeStatus(n6Ref);
+                NodeStatus n6Status = nodeDaoService.getNodeStatus(n6Ref, false);
                 if (!n6Status.isDeleted())
                 {
                     throw new RuntimeException("Deleted node does not have deleted status");
                 }
                 // n8 is a primary child - it should be deleted too
-                NodeStatus n8Status = nodeDaoService.getNodeStatus(n8Ref);
+                NodeStatus n8Status = nodeDaoService.getNodeStatus(n8Ref, false);
                 if (!n8Status.isDeleted())
                 {
                     throw new RuntimeException("Cascade-deleted node does not have deleted status");
@@ -228,7 +228,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         TransactionUtil.executeInUserTransaction(txnService, checkRecreateWork);
     }
     
-    private void executeAndCheck(NodeRef nodeRef, TransactionWork<Object> work) throws Exception
+    private void executeAndCheck(NodeRef nodeRef, TransactionWork<Object> work) throws Throwable
     {
         UserTransaction txn = txnService.getUserTransaction();
         txn.begin();
@@ -248,7 +248,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
             assertEquals("Change didn't update status", currentTxnId, newStatus.getChangeTxnId());
             txn.commit();
         }
-        catch (Exception e)
+        catch (Throwable e)
         {
             try { txn.rollback(); } catch (Throwable ee) {}
             throw e;

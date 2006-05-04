@@ -19,17 +19,29 @@
       </property>
    </bean>
    
+   <!-- Map stores to archive stores -->
+   <bean id="storeArchiveMap" class="org.alfresco.repo.node.StoreArchiveMap">
+      <property name="archiveMap">
+         <map>
+            <entry key="workspace://SpacesStore"><value>archive://SpacesStore</value></entry>
+         </map>
+      </property>
+   </bean>
+   
    <!-- NodeService implemented to persist to Database -->
    <bean id="dbNodeService" class="org.alfresco.repo.node.db.DbNodeServiceImpl" init-method="init" >
-      <constructor-arg>
-         <ref bean="policyComponent"/>
-      </constructor-arg>
-      <constructor-arg>
+      <property name="dictionaryService">
          <ref bean="dictionaryService" />
-      </constructor-arg>
-      <constructor-arg>
+      </property>
+      <property name="nodeDaoService">
          <ref bean="nodeDaoService" />
-      </constructor-arg>
+      </property>
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <property name="storeArchiveMap">
+         <ref bean="storeArchiveMap"/>
+      </property>
    </bean>
    
    <!-- Handles policy callbacks to ensure that node hierarchy gets indexed -->

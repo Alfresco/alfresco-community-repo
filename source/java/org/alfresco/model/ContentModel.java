@@ -39,6 +39,17 @@ public interface ContentModel
     // tag for incomplete nodes
     static final QName ASPECT_INCOMPLETE = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "incomplete");
     
+    // archived nodes aspect constants
+    static final QName ASPECT_ARCHIVED = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archived");
+    static final QName PROP_ARCHIVED_ORIGINAL_PARENT = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedOriginalParent");
+    static final QName PROP_ARCHIVED_BY = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedBy");
+    static final QName PROP_ARCHIVED_DATE = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedDate");
+    static final QName ASPECT_ARCHIVED_ASSOCS = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archived-assocs");
+    static final QName PROP_ARCHIVED_PARENT_ASSOCS = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedParentAssocs");
+    static final QName PROP_ARCHIVED_CHILD_ASSOCS = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedChildAssocs");
+    static final QName PROP_ARCHIVED_SOURCE_ASSOCS = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedSourceAssocs");
+    static final QName PROP_ARCHIVED_TARGET_ASSOCS = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedTargetAssocs");
+    
     // referenceable aspect constants
     static final QName TYPE_REFERENCE = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "reference");
     static final QName PROP_REFERENCE = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "reference");
@@ -60,8 +71,6 @@ public interface ContentModel
     static final QName PROP_SYS_VERSION_SCHEMA = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "versionSchema");
     static final QName PROP_SYS_VERSION_EDITION = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "versionEdition"); 
 
-    
-    
     //
     // Content Model Definitions
     //

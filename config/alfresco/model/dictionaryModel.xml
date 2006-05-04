@@ -78,6 +78,16 @@
          <java-class>org.alfresco.service.cmr.repository.NodeRef</java-class>
       </data-type>
 
+      <data-type name="d:childassocref">
+         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <java-class>org.alfresco.service.cmr.repository.ChildAssociationRef</java-class>
+      </data-type>
+
+      <data-type name="d:assocref">
+         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <java-class>org.alfresco.service.cmr.repository.AssociationRef</java-class>
+      </data-type>
+
       <data-type name="d:path">
          <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
          <java-class>org.alfresco.service.cmr.repository.Path</java-class>

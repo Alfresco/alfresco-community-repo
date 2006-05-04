@@ -130,7 +130,11 @@ import org.alfresco.service.namespace.QName;
         return type.isAspect();
     }
 
-    
+    public boolean isArchive()
+    {
+        return type.isArchive();
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.ClassDefinition#getProperties()
      */

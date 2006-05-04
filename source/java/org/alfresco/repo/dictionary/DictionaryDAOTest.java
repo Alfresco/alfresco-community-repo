@@ -145,6 +145,17 @@ public class DictionaryDAOTest extends TestCase
         // make sure it is the correct type of constraint
         assertTrue("Expected type REGEX constraint", constraint instanceof RegexConstraint);
     }
+
+    public void testArchive()
+    {
+        QName testFileQName = QName.createQName(TEST_URL, "file");
+        ClassDefinition fileClassDef = service.getClass(testFileQName);
+        assertTrue("File type should have the archive flag", fileClassDef.isArchive());
+
+        QName testFolderQName = QName.createQName(TEST_URL, "folder");
+        ClassDefinition folderClassDef = service.getClass(testFolderQName);
+        assertFalse("Folder type should not have the archive flag", folderClassDef.isArchive());
+    }
     
     public void testMandatoryEnforced()
     {

@@ -177,14 +177,13 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     /**
      * Fetch the node status, if it exists
      */
-    public NodeStatus getNodeStatus(NodeRef nodeRef)
+    public NodeStatus getNodeStatus(NodeRef nodeRef, boolean create)
     {
+        NodeKey nodeKey = new NodeKey(nodeRef);
+        NodeStatus status = null;
         try
         {
-            NodeKey nodeKey = new NodeKey(nodeRef);
-            Object obj = getHibernateTemplate().get(NodeStatusImpl.class, nodeKey);
-            // done
-            return (NodeStatus) obj;
+            status = (NodeStatus) getHibernateTemplate().get(NodeStatusImpl.class, nodeKey);
         }
         catch (DataAccessException e)
         {
@@ -195,6 +194,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
             throw e;
         }
+        // create if necessary
+        if (status == null && create)
+        {
+            status = new NodeStatusImpl();
+            status.setKey(nodeKey);
+            status.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+            getHibernateTemplate().save(status);
+        }
+        // done
+        return status;
     }
 
     public void recordChangeId(NodeRef nodeRef)
@@ -260,7 +269,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public Node getNode(NodeRef nodeRef)
     {
         // get it via the node status
-        NodeStatus status = getNodeStatus(nodeRef);
+        NodeStatus status = getNodeStatus(nodeRef, false);
         if (status == null)
         {
             // no status implies no node
@@ -309,17 +318,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
         // update the node status
         NodeRef nodeRef = node.getNodeRef();
-        NodeStatus nodeStatus = getNodeStatus(nodeRef);
-        if (nodeStatus == null)
-        {
-            logger.warn("Node to be deleted does not have a status: \n" +
-                    "   node: " + node.getId());
-        }
-        else
-        {
-            nodeStatus.setNode(null);
-            nodeStatus.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
-        }
+        NodeStatus nodeStatus = getNodeStatus(nodeRef, true);
+        nodeStatus.setNode(null);
+        nodeStatus.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
         // finally delete the node
         getHibernateTemplate().delete(node);
         // done

@@ -17,7 +17,9 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.Serializable;
+import java.util.StringTokenizer;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 
@@ -29,6 +31,8 @@ import org.alfresco.util.EqualsHelper;
 public class AssociationRef implements EntityRef, Serializable
 {
     private static final long serialVersionUID = 3977867284482439475L;
+    
+    private static final String FILLER = "|";
 
     private NodeRef sourceRef;
     private QName assocTypeQName;
@@ -65,32 +69,36 @@ public class AssociationRef implements EntityRef, Serializable
             throw new IllegalArgumentException("Target reference may not be null");
         }
     }
-
+    
     /**
-     * Get the qualified name of the source-target association
-     * 
-     * @return Returns the qualified name of the source-target association.
+     * @param childAssocRefStr a string of the form <b>sourceNodeRef|targetNodeRef|assocTypeQName</b>
      */
-    public QName getTypeQName()
+    public AssociationRef(String assocRefStr)
     {
-        return assocTypeQName;
+        StringTokenizer tokenizer = new StringTokenizer(assocRefStr, FILLER);
+        if (tokenizer.countTokens() != 3)
+        {
+            throw new AlfrescoRuntimeException("Unable to parse association string: " + assocRefStr);
+        }
+        String sourceNodeRefStr = tokenizer.nextToken();
+        String targetNodeRefStr = tokenizer.nextToken();
+        String assocTypeQNameStr = tokenizer.nextToken();
+        
+        this.sourceRef = new NodeRef(sourceNodeRefStr);
+        this.targetRef = new NodeRef(targetNodeRefStr);
+        this.assocTypeQName = QName.createQName(assocTypeQNameStr);
     }
 
     /**
-     * @return Returns the child node reference - never null
+     * @return Returns a string of the form <b>sourceNodeRef|targetNodeRef|assocTypeQName|assocQName</b>
      */
-    public NodeRef getTargetRef()
+    public String toString()
     {
-        return targetRef;
-    }
-
-    /**
-     * @return Returns the parent node reference, which may be null if this
-     *         represents the imaginary reference to the root node
-     */
-    public NodeRef getSourceRef()
-    {
-        return sourceRef;
+        StringBuilder sb = new StringBuilder(180);
+        sb.append(sourceRef).append(FILLER)
+          .append(targetRef).append(FILLER)
+          .append(assocTypeQName);
+        return sb.toString();
     }
 
     /**
@@ -126,12 +134,30 @@ public class AssociationRef implements EntityRef, Serializable
         return hashCode;
     }
 
-    public String toString()
+    /**
+     * Get the qualified name of the source-target association
+     * 
+     * @return Returns the qualified name of the source-target association.
+     */
+    public QName getTypeQName()
     {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(getSourceRef());
-        buffer.append(" --- ").append(getTypeQName()).append(" ---> ");
-        buffer.append(getTargetRef());
-        return buffer.toString();
+        return assocTypeQName;
+    }
+
+    /**
+     * @return Returns the child node reference - never null
+     */
+    public NodeRef getTargetRef()
+    {
+        return targetRef;
+    }
+
+    /**
+     * @return Returns the parent node reference, which may be null if this
+     *         represents the imaginary reference to the root node
+     */
+    public NodeRef getSourceRef()
+    {
+        return sourceRef;
     }
 }

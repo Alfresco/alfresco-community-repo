@@ -32,6 +32,7 @@ public abstract class M2Class
     private String title = null;
     private String description = null;
     private String parentName = null;
+    private boolean archive = false;
     
     private List<M2Property> properties = new ArrayList<M2Property>();
     private List<M2PropertyOverride> propertyOverrides = new ArrayList<M2PropertyOverride>();
@@ -91,6 +92,16 @@ public abstract class M2Class
     }
     
     
+    public boolean isArchive()
+    {
+        return archive;
+    }
+
+    public void setArchive(boolean archive)
+    {
+        this.archive = archive;
+    }
+
     public M2Property createProperty(String name)
     {
         M2Property property = new M2Property();

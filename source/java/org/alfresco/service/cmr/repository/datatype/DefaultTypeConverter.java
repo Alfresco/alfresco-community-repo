@@ -30,8 +30,11 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.EntityRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
@@ -219,6 +222,24 @@ public class DefaultTypeConverter
                     public NodeRef convert(String source)
                     {
                         return new NodeRef(source);
+                    }
+            
+                });
+
+        INSTANCE.addConverter(String.class, ChildAssociationRef.class, new TypeConverter.Converter<String, ChildAssociationRef>()
+                {
+                    public ChildAssociationRef convert(String source)
+                    {
+                        return new ChildAssociationRef(source);
+                    }
+            
+                });
+
+        INSTANCE.addConverter(String.class, AssociationRef.class, new TypeConverter.Converter<String, AssociationRef>()
+                {
+                    public AssociationRef convert(String source)
+                    {
+                        return new AssociationRef(source);
                     }
             
                 });
@@ -582,19 +603,19 @@ public class DefaultTypeConverter
         INSTANCE.addDynamicTwoStageConverter(QName.class, String.class, InputStream.class);
 
         //
-        // NodeRef
+        // EntityRef (NodeRef, ChildAssociationRef, NodeAssociationRef)
         //
         
-        INSTANCE.addConverter(NodeRef.class, String.class, new TypeConverter.Converter<NodeRef, String>()
+        INSTANCE.addConverter(EntityRef.class, String.class, new TypeConverter.Converter<EntityRef, String>()
         {
-            public String convert(NodeRef source)
+            public String convert(EntityRef source)
             {
                 return source.toString();
             }
         });
         
-        INSTANCE.addDynamicTwoStageConverter(NodeRef.class, String.class, InputStream.class);
-        
+        INSTANCE.addDynamicTwoStageConverter(EntityRef.class, String.class, InputStream.class);
+
         //
         // ContentData
         //

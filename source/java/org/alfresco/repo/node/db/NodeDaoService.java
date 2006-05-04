@@ -70,10 +70,11 @@ public interface NodeDaoService
      * <code>null</code> is returned.
      * 
      * @param nodeRef the node reference
+     * @param create true to create the entity if it doesn't exist
      * @return Returns the node status if the node exists or once existed, otherwise
-     *      returns <code>null</code>.
+     *      returns <code>null</code> if <code>create == false</code>
      */
-    public NodeStatus getNodeStatus(NodeRef nodeRef);
+    public NodeStatus getNodeStatus(NodeRef nodeRef, boolean create);
     
     /**
      * Sets the current transaction ID on the node status.  Note that the node

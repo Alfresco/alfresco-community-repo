@@ -46,6 +46,7 @@ import org.alfresco.service.namespace.QName;
     protected M2Class m2Class;
     protected QName name;
     protected QName parentName = null;
+    protected boolean archive = false;
     
     private Map<QName, M2PropertyOverride> propertyOverrides = new HashMap<QName, M2PropertyOverride>();
     private Map<QName, PropertyDefinition> properties = new HashMap<QName, PropertyDefinition>();
@@ -73,6 +74,7 @@ import org.alfresco.service.namespace.QName;
         
         // Resolve Names
         this.name = QName.createQName(m2Class.getName(), resolver);
+        this.archive = m2Class.isArchive();
         if (m2Class.getParentName() != null && m2Class.getParentName().length() > 0)
         {
             this.parentName = QName.createQName(m2Class.getParentName(), resolver);
@@ -316,14 +318,6 @@ import org.alfresco.service.namespace.QName;
         }
         return value;
     }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ClassDefinition#isAspect()
-     */
-    public boolean isAspect()
-    {
-        return (m2Class instanceof M2Aspect);
-    }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.ClassDefinition#getParentName()
@@ -333,6 +327,19 @@ import org.alfresco.service.namespace.QName;
         return parentName;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.ClassDefinition#isAspect()
+     */
+    public boolean isAspect()
+    {
+        return (m2Class instanceof M2Aspect);
+    }
+    
+    public boolean isArchive()
+    {
+        return archive;
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.ClassDefinition#getProperties()
      */

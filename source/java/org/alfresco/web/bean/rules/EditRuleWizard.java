@@ -96,29 +96,38 @@ public class EditRuleWizard extends CreateRuleWizard
       List<ActionCondition> conditions = rule.getActionConditions();
       for (ActionCondition condition : conditions)
       {
-         Map<String, Serializable> params = populateCondition(condition);
-         this.allConditionsProperties.add(params);
+         this.currentConditionProperties = new HashMap<String, Serializable>(3);
+         this.condition = condition.getActionConditionDefinitionName();
+         populateCondition(condition.getParameterValues());
+         
+         // add the name, summary and not condition flag
+         this.currentConditionProperties.put(PROP_CONDITION_NAME, this.condition);
+         this.currentConditionProperties.put(PROP_CONDITION_NOT, 
+               Boolean.valueOf(condition.getInvertCondition()));
+         this.currentConditionProperties.put(PROP_CONDITION_SUMMARY, buildConditionSummary());
+      
+         // add the populated currentConditionProperties to the list
+         this.allConditionsProperties.add(this.currentConditionProperties);
       }
       
+      // populate the actions list with maps of properties representing each action
       List<Action> actions = rule.getActions();
       for (Action action : actions)
       {
-         // use the base class version of populateActionFromProperties(), 
-         // but for this we need to setup the currentActionProperties and 
-         // action variables
          this.currentActionProperties = new HashMap<String, Serializable>(3);
          this.action = action.getActionDefinitionName();
          populateAction(action.getParameterValues());
          
          // also add the name and summary 
          this.currentActionProperties.put(PROP_ACTION_NAME, this.action);
-         // generate the summary
-         this.currentActionProperties.put(PROP_ACTION_SUMMARY, 
-               buildActionSummary(this.currentActionProperties));
+         this.currentActionProperties.put(PROP_ACTION_SUMMARY, buildActionSummary());
          
          // add the populated currentActionProperties to the list
          this.allActionsProperties.add(this.currentActionProperties);
       }
+      
+      // reset the current condition
+      this.condition = null;
       
       // reset the current action
       this.action = null;
@@ -129,44 +138,33 @@ public class EditRuleWizard extends CreateRuleWizard
     * 
     * @param condition The condition to build the map for
     */
-   protected Map<String, Serializable> populateCondition(ActionCondition condition)
+   protected void populateCondition(Map<String, Serializable> conditionProps)
    {
-      // find out what the condition is called
-      Map<String, Serializable> condProps = new HashMap<String, Serializable>(3);
-      String name = condition.getActionConditionDefinitionName();
-      condProps.put(PROP_CONDITION_NAME, name);
-      
-      // add the appropriate properties
-      Map<String, Serializable> repoCondProps = condition.getParameterValues();
-      if (name.equals(ComparePropertyValueEvaluator.NAME))
+      if (ComparePropertyValueEvaluator.NAME.equals(this.condition))
       {
-         condProps.put(PROP_CONTAINS_TEXT, (String)repoCondProps.get(ComparePropertyValueEvaluator.PARAM_VALUE));
+         String propValue = (String)conditionProps.get(ComparePropertyValueEvaluator.PARAM_VALUE);
+         this.currentConditionProperties.put(PROP_CONTAINS_TEXT, propValue);
       }
-      else if (name.equals(InCategoryEvaluator.NAME))
+      else if (InCategoryEvaluator.NAME.equals(this.condition))
       {
-         NodeRef catNodeRef = (NodeRef)repoCondProps.get(InCategoryEvaluator.PARAM_CATEGORY_VALUE);
-         condProps.put(PROP_CATEGORY, catNodeRef);
+         NodeRef catNodeRef = (NodeRef)conditionProps.get(InCategoryEvaluator.PARAM_CATEGORY_VALUE);
+         this.currentConditionProperties.put(PROP_CATEGORY, catNodeRef);
       }
-      else if (name.equals(IsSubTypeEvaluator.NAME))
+      else if (IsSubTypeEvaluator.NAME.equals(this.condition))
       {
-         condProps.put(PROP_MODEL_TYPE, ((QName)repoCondProps.get(IsSubTypeEvaluator.PARAM_TYPE)).toString());
+         QName type = (QName)conditionProps.get(IsSubTypeEvaluator.PARAM_TYPE);
+         this.currentConditionProperties.put(PROP_MODEL_TYPE, type.toString());
       }
-      else if (name.equals(HasAspectEvaluator.NAME))
+      else if (HasAspectEvaluator.NAME.equals(this.condition))
       {
-         condProps.put(PROP_ASPECT, ((QName)repoCondProps.get(HasAspectEvaluator.PARAM_ASPECT)).toString());
+         QName aspect = (QName)conditionProps.get(HasAspectEvaluator.PARAM_ASPECT);
+         this.currentConditionProperties.put(PROP_ASPECT, aspect.toString());
       }
-      else if (name.equals(CompareMimeTypeEvaluator.NAME))
+      else if (CompareMimeTypeEvaluator.NAME.equals(this.condition))
       {
-          condProps.put(PROP_MIMETYPE, repoCondProps.get(CompareMimeTypeEvaluator.PARAM_VALUE));
+         String mimeType = (String)conditionProps.get(CompareMimeTypeEvaluator.PARAM_VALUE);
+         this.currentConditionProperties.put(PROP_MIMETYPE, mimeType);
       }
-      
-      // specify whether the condition result should be inverted
-      condProps.put(PROP_CONDITION_NOT, Boolean.valueOf(condition.getInvertCondition()));
-      
-      // generate the summary 
-      condProps.put(PROP_CONDITION_SUMMARY, buildConditionSummary(condProps));
-         
-      return condProps;
    }
    
    /**

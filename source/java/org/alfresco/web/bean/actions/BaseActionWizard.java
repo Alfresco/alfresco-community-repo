@@ -22,6 +22,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.CheckInActionExecuter;
 import org.alfresco.repo.action.executer.CheckOutActionExecuter;
+import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.action.executer.CopyActionExecuter;
 import org.alfresco.repo.action.executer.ImageTransformActionExecuter;
 import org.alfresco.repo.action.executer.ImporterActionExecuter;
@@ -543,41 +544,15 @@ public abstract class BaseActionWizard extends BaseWizardBean
       actionProps.put(PROP_ACTION_NAME, this.action);
       this.currentActionProperties = actionProps;
       
-      if (SimpleWorkflowActionExecuter.NAME.equals(this.action))
+      // setup any defaults for the UI or handle actions with no parameters
+      String overridenViewId = setupUIDefaultsForAction(actionProps);
+      if (overridenViewId != null)
       {
-         this.currentActionProperties.put("approveAction", "move");
-         this.currentActionProperties.put("rejectStepPresent", "yes");
-         this.currentActionProperties.put("rejectAction", "move");
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Added '" + SimpleWorkflowActionExecuter.NAME + 
-                  "' action to list");
+         viewId = overridenViewId;
       }
-      else if (CheckInActionExecuter.NAME.equals(this.action))
-      {
-         this.currentActionProperties.put(PROP_CHECKIN_MINOR, new Boolean(true));
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Added '" + CheckInActionExecuter.NAME + 
-                  "' action to list");
-      }
-      else if ("extract-metadata".equals(this.action))
-      {
-         // This one (currently) has no parameters, so just add it...
-         actionProps.put(PROP_ACTION_SUMMARY, buildActionSummary(actionProps));
-         this.allActionsProperties.add(actionProps);
-         
-         // come back to the same page we're on now
-         viewId = this.returnViewId;
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Added 'extract-metadata' action to list");
-      }
-      else
-      {
-         if (logger.isDebugEnabled())
+      
+      if (logger.isDebugEnabled())
             logger.debug("Added '" + this.action + "' action to list");
-      }
       
       // reset the selected action drop down
       this.action = null;
@@ -615,7 +590,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
    public void addAction()
    {
       FacesContext context = FacesContext.getCurrentInstance();
-      String summary = buildActionSummary(this.currentActionProperties);
+      String summary = buildActionSummary();
       
       if (summary != null)
       {
@@ -827,6 +802,41 @@ public abstract class BaseActionWizard extends BaseWizardBean
    }
    
    /**
+    * Sets up any default state required by the UI for collecting the 
+    * action settings. The view id to use for the action UI can also
+    * be overridden by returing the path to the relevant JSP.
+    * 
+    * @props The map of properties being used for the current action
+    * @return An optional overridden JSP to use for action settings collection
+    */
+   protected String setupUIDefaultsForAction(HashMap<String, Serializable> props)
+   {
+      String overridenViewId = null;
+      
+      if (SimpleWorkflowActionExecuter.NAME.equals(this.action))
+      {
+         this.currentActionProperties.put("approveAction", "move");
+         this.currentActionProperties.put("rejectStepPresent", "yes");
+         this.currentActionProperties.put("rejectAction", "move");
+      }
+      else if (CheckInActionExecuter.NAME.equals(this.action))
+      {
+         this.currentActionProperties.put(PROP_CHECKIN_MINOR, new Boolean(true));
+      }
+      else if (ContentMetadataExtracter.NAME.equals(this.action))
+      {
+         // This one (currently) has no parameters, so just add it...
+         props.put(PROP_ACTION_SUMMARY, buildActionSummary());
+         this.allActionsProperties.add(props);
+         
+         // come back to the same page we're on now
+         overridenViewId = this.returnViewId;
+      }
+      
+      return overridenViewId;
+   }
+   
+   /**
     * Build the param map for the current Action instance.
     * <p>
     * Based on the params set by the UI, build the params needed to create the action.
@@ -838,17 +848,17 @@ public abstract class BaseActionWizard extends BaseWizardBean
       // set up parameters maps for the action
       Map<String, Serializable> actionParams = new HashMap<String, Serializable>();
       
-      if (this.action.equals(AddFeaturesActionExecuter.NAME))
+      if (AddFeaturesActionExecuter.NAME.equals(this.action))
       {
          QName aspect = Repository.resolveToQName((String)this.currentActionProperties.get(PROP_ASPECT));
          actionParams.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, aspect);
       }
-      else if (this.action.equals(RemoveFeaturesActionExecuter.NAME))
+      else if (RemoveFeaturesActionExecuter.NAME.equals(this.action))
       {
          QName aspect = Repository.resolveToQName((String)this.currentActionProperties.get(PROP_ASPECT));
          actionParams.put(RemoveFeaturesActionExecuter.PARAM_ASPECT_NAME, aspect);
       }
-      else if (this.action.equals(CopyActionExecuter.NAME))
+      else if (CopyActionExecuter.NAME.equals(this.action))
       {
          // add the destination space id to the action properties
          NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
@@ -861,7 +871,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
          actionParams.put(CopyActionExecuter.PARAM_ASSOC_QNAME, 
                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy"));
       }
-      else if (this.action.equals(MoveActionExecuter.NAME))
+      else if (MoveActionExecuter.NAME.equals(this.action))
       {
          // add the destination space id to the action properties
          NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
@@ -874,7 +884,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
          actionParams.put(MoveActionExecuter.PARAM_ASSOC_QNAME, 
                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "move"));
       }
-      else if (this.action.equals(SimpleWorkflowActionExecuter.NAME))
+      else if (SimpleWorkflowActionExecuter.NAME.equals(this.action))
       {
          // add the approve step name
          actionParams.put(SimpleWorkflowActionExecuter.PARAM_APPROVE_STEP,
@@ -941,7 +951,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
             actionParams.put(SimpleWorkflowActionExecuter.PARAM_REJECT_FOLDER, rejectDestNodeRef);
          }
       }
-      else if (this.action.equals(LinkCategoryActionExecuter.NAME))
+      else if (LinkCategoryActionExecuter.NAME.equals(this.action))
       {
          // add the classifiable aspect
          actionParams.put(LinkCategoryActionExecuter.PARAM_CATEGORY_ASPECT,
@@ -952,7 +962,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
          actionParams.put(LinkCategoryActionExecuter.PARAM_CATEGORY_VALUE, 
                catNodeRef);
       }
-      else if (this.action.equals(CheckOutActionExecuter.NAME))
+      else if (CheckOutActionExecuter.NAME.equals(this.action))
       {
          // specify the location the checked out working copy should go
          // add the destination space id to the action properties
@@ -966,7 +976,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
          actionParams.put(CheckOutActionExecuter.PARAM_ASSOC_QNAME, 
                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "checkout"));
       }
-      else if (this.action.equals(CheckInActionExecuter.NAME))
+      else if (CheckInActionExecuter.NAME.equals(this.action))
       {
          // add the description for the checkin to the action params
          actionParams.put(CheckInActionExecuter.PARAM_DESCRIPTION, 
@@ -976,7 +986,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
          actionParams.put(CheckInActionExecuter.PARAM_MINOR_CHANGE,
                this.currentActionProperties.get(PROP_CHECKIN_MINOR));
       }
-      else if (this.action.equals(TransformActionExecuter.NAME))
+      else if (TransformActionExecuter.NAME.equals(this.action))
       {
          // add the transformer to use
          actionParams.put(TransformActionExecuter.PARAM_MIME_TYPE,
@@ -993,7 +1003,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
          actionParams.put(TransformActionExecuter.PARAM_ASSOC_QNAME, 
                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy"));
       }
-      else if (this.action.equals(ImageTransformActionExecuter.NAME))
+      else if (ImageTransformActionExecuter.NAME.equals(this.action))
       {
          // add the transformer to use
          actionParams.put(ImageTransformActionExecuter.PARAM_MIME_TYPE,
@@ -1014,7 +1024,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
          actionParams.put(TransformActionExecuter.PARAM_ASSOC_QNAME, 
                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy"));
       }
-      else if (this.action.equals(MailActionExecuter.NAME))
+      else if (MailActionExecuter.NAME.equals(this.action))
       {
          // add the person(s) it's going to as a list of authorities
          List<String> recipients = new ArrayList<String>(emailRecipients.size());
@@ -1044,7 +1054,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
             actionParams.put(MailActionExecuter.PARAM_TEMPLATE, new NodeRef(Repository.getStoreRef(), this.usingTemplate));
          }
       }
-      else if (this.action.equals(ImporterActionExecuter.NAME))
+      else if (ImporterActionExecuter.NAME.equals(this.action))
       {
          // add the encoding
          actionParams.put(ImporterActionExecuter.PARAM_ENCODING, IMPORT_ENCODING);
@@ -1053,13 +1063,13 @@ public abstract class BaseActionWizard extends BaseWizardBean
          NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
          actionParams.put(ImporterActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
       }
-      else if (this.action.equals(SpecialiseTypeActionExecuter.NAME))
+      else if (SpecialiseTypeActionExecuter.NAME.equals(this.action))
       {
          // add the specialisation type
          String objectType = (String)this.currentActionProperties.get(PROP_OBJECT_TYPE);
          actionParams.put(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, QName.createQName(objectType));
       }
-      else if (this.action.equals(ScriptActionExecutor.NAME))
+      else if (ScriptActionExecutor.NAME.equals(this.action))
       {
          // add the selected script noderef to the action properties
          String id = (String)this.currentActionProperties.get(PROP_SCRIPT);
@@ -1072,11 +1082,11 @@ public abstract class BaseActionWizard extends BaseWizardBean
    }
    
    /**
-    * Returns a summary string for the given action parameters
+    * Returns a summary string for the current action
     * 
     * @return The summary or null if a summary could not be built
     */
-   protected String buildActionSummary(Map<String, Serializable> props)
+   protected String buildActionSummary()
    {
       String summaryResult = null;
       

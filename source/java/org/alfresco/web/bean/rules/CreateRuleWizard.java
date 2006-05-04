@@ -21,6 +21,9 @@ import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.evaluator.HasAspectEvaluator;
 import org.alfresco.repo.action.evaluator.InCategoryEvaluator;
 import org.alfresco.repo.action.evaluator.IsSubTypeEvaluator;
+import org.alfresco.repo.action.executer.CheckInActionExecuter;
+import org.alfresco.repo.action.executer.ContentMetadataExtracter;
+import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
@@ -535,27 +538,17 @@ public class CreateRuleWizard extends BaseActionWizard
       
       HashMap<String, Serializable> condProps = new HashMap<String, Serializable>(3);
       condProps.put(PROP_CONDITION_NAME, this.condition);
+      this.currentConditionProperties = condProps;
          
-      if ("no-condition".equals(this.condition))
+      // setup any defaults for the UI or handle actions with no parameters
+      String overridenViewId = setupUIDefaultsForCondition(condProps);
+      if (overridenViewId != null)
       {
-         condProps.put(PROP_CONDITION_SUMMARY, Application.getMessage(
-               FacesContext.getCurrentInstance(), "condition_no_condition"));
-         condProps.put(PROP_CONDITION_NOT, Boolean.FALSE);
-         this.allConditionsProperties.add(condProps);
-         
-         // come back to the same page we're on now
-         viewId = this.returnViewId;
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Add 'no-condition' condition to list");
+         viewId = overridenViewId;
       }
-      else if (this.condition != null)
-      {
-         this.currentConditionProperties = condProps;
-         
-         if (logger.isDebugEnabled())
+      
+      if (logger.isDebugEnabled())
             logger.debug("Added '" + this.condition + "' condition to list");
-      }
       
       // reset the selected condition drop down
       this.condition = null;
@@ -593,7 +586,7 @@ public class CreateRuleWizard extends BaseActionWizard
    public void addCondition()
    {
       FacesContext context = FacesContext.getCurrentInstance();
-      String summary = buildConditionSummary(this.currentConditionProperties);
+      String summary = buildConditionSummary();
       
       if (summary != null)
       {
@@ -676,6 +669,33 @@ public class CreateRuleWizard extends BaseActionWizard
    // Helper methods
    
    /**
+    * Sets up any default state required by the UI for collecting the 
+    * condition settings. The view id to use for the condition UI can also
+    * be overridden by returing the path to the relevant JSP.
+    * 
+    * @props The map of properties being used for the current condition
+    * @return An optional overridden JSP to use for condition settings collection
+    */
+   protected String setupUIDefaultsForCondition(HashMap<String, Serializable> props)
+   {
+      String overridenViewId = null;
+      
+      if ("no-condition".equals(this.condition))
+      {
+         // there are no parameters so just add it
+         props.put(PROP_CONDITION_SUMMARY, Application.getMessage(
+               FacesContext.getCurrentInstance(), "condition_no_condition"));
+         props.put(PROP_CONDITION_NOT, Boolean.FALSE);
+         this.allConditionsProperties.add(props);
+         
+         // come back to the same page we're on now
+         overridenViewId = this.returnViewId;
+      }
+      
+      return overridenViewId;
+   }
+   
+   /**
     * Builds the Map of properties for the given condition in the format the repo is expecting
     * 
     * @param params The Map of properties built from the UI
@@ -717,15 +737,15 @@ public class CreateRuleWizard extends BaseActionWizard
    }
    
    /**
-    * Returns a summary string for the given condition parameters
+    * Returns a summary string for the current condition
     * 
     * @return The summary or null if a summary could not be built
     */
-   protected String buildConditionSummary(Map<String, Serializable> props)
+   protected String buildConditionSummary()
    {
       String summaryResult = null;
       
-      String condName = (String)props.get(PROP_CONDITION_NAME);
+      String condName = (String)this.currentConditionProperties.get(PROP_CONDITION_NAME);
       if (condName != null)
       {
          StringBuilder summary = new StringBuilder();
@@ -734,7 +754,7 @@ public class CreateRuleWizard extends BaseActionWizard
          
          // JSF is putting the boolean into the map as a Boolean object so we
          // need to handle that - adding a converter doesn't seem to help!
-         Boolean not = (Boolean)props.get(PROP_CONDITION_NOT);
+         Boolean not = (Boolean)this.currentConditionProperties.get(PROP_CONDITION_NOT);
          if (not.booleanValue())
          {
             msgId = msgId + "_not";
@@ -749,19 +769,20 @@ public class CreateRuleWizard extends BaseActionWizard
          // define a summary to be added for each condition
          if (InCategoryEvaluator.NAME.equals(condName))
          {
-            String name = Repository.getNameForNode(this.nodeService, (NodeRef)props.get(PROP_CATEGORY));
+            String name = Repository.getNameForNode(this.nodeService, 
+                  (NodeRef)this.currentConditionProperties.get(PROP_CATEGORY));
             summary.append("'").append(name).append("'");
          }
          else if (ComparePropertyValueEvaluator.NAME.equals(condName))
          {
             summary.append("'");
-            summary.append(props.get(PROP_CONTAINS_TEXT));
+            summary.append(this.currentConditionProperties.get(PROP_CONTAINS_TEXT));
             summary.append("'");
          }
          else if (IsSubTypeEvaluator.NAME.equals(condName))
          {
             // find the label used by looking through the SelectItem list
-            String typeName = (String)props.get(PROP_MODEL_TYPE);
+            String typeName = (String)this.currentConditionProperties.get(PROP_MODEL_TYPE);
             for (SelectItem item : this.getModelTypes())
             {
                if (item.getValue().equals(typeName))
@@ -774,7 +795,7 @@ public class CreateRuleWizard extends BaseActionWizard
          else if (HasAspectEvaluator.NAME.equals(condName))
          {
             // find the label used by looking through the SelectItem list
-            String aspectName = (String)props.get(PROP_ASPECT);
+            String aspectName = (String)this.currentConditionProperties.get(PROP_ASPECT);
             for (SelectItem item : this.getAspects())
             {
                if (item.getValue().equals(aspectName))
@@ -786,7 +807,7 @@ public class CreateRuleWizard extends BaseActionWizard
          }
          else if (CompareMimeTypeEvaluator.NAME.equals(condName))
          {
-            String mimetype = (String)props.get(PROP_MIMETYPE);
+            String mimetype = (String)this.currentConditionProperties.get(PROP_MIMETYPE);
             for (SelectItem item : this.getMimeTypes())
             {
                if (item.getValue().equals(mimetype))

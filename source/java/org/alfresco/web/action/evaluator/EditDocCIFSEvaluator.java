@@ -46,7 +46,7 @@ public final class EditDocCIFSEvaluator implements ActionEvaluator
       if (dd.isSubClass(node.getType(), ContentModel.TYPE_CONTENT))
       {
          if (node.hasAspect(ContentModel.ASPECT_INLINEEDITABLE) == false &&
-             "webdav".equals(Application.getClientConfig(fc).getEditLinkType()))
+             "cifs".equals(Application.getClientConfig(fc).getEditLinkType()))
          {
             if (node.isWorkingCopyOwner() == true ||
                 (node.isLocked() == false && node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false))

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -14,7 +14,6 @@
  * language governing permissions and limitations under the
  * License.
  */
-
 package org.alfresco.filesys.smb.server.repo.pseudo;
 
 import org.alfresco.filesys.server.SrvSession;
@@ -136,27 +135,18 @@ public class ContentPseudoFileImpl implements PseudoFileInterface
             if ( fstate == null)
                 ctx.getStateTable().findFileState( path, true, true);
             
-            // Check if the folder name starts with 'DRAG', if so then enable the drag and drop pseudo file
-            // for this folder
+            // Enable the drag and drop pseudo file
             
-            String[] allPaths = FileName.splitAllPaths( path);
-            String lastPath = allPaths[allPaths.length - 1].toUpperCase();
-            
-            if ( lastPath.startsWith("DRAG") && fstate.hasPseudoFiles() == false)
-            {
-                // Enable the drag and drop pseudo file
-                
-                fstate.addPseudoFile( ctx.getDragAndDropApp());
+            fstate.addPseudoFile( ctx.getDragAndDropApp());
 
-                // Update the count of pseudo files added
-                
-                pseudoCnt++;
-                
-                // DEBUG
-                
-                if ( logger.isInfoEnabled())
-                    logger.info("Added drag/drop pseudo file for " + path);
-            }
+            // Update the count of pseudo files added
+            
+            pseudoCnt++;
+            
+            // DEBUG
+            
+            if ( logger.isInfoEnabled())
+                logger.info("Added drag/drop pseudo file for " + path);
         }
 
         // Add the URL link pseudo file, if enabled

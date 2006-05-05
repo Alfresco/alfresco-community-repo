@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -305,7 +306,7 @@ public final class Node implements Serializable
      * 
      * The Map returned implements the Scriptable interface to allow access to the assoc arrays via
      * JavaScript associative array access. This means associations of this node can be access thus:
-     * <code>node.getAssocs()["translations"][0]</code>
+     * <code>node.assocs["translations"][0]</code>
      * 
      * @return associations as a Map of assoc name to an Array of Nodes.
      */
@@ -351,7 +352,7 @@ public final class Node implements Serializable
      * 
      * The Map returned implements the Scriptable interface to allow access to the properties via
      * JavaScript associative array access. This means properties of a node can be access thus:
-     * <code>node.getProperties()["name"]</code>
+     * <code>node.properties["name"]</code>
      * 
      * @return Map of properties for this Node.
      */
@@ -454,28 +455,30 @@ public final class Node implements Serializable
      */
     public boolean hasAspect(String aspect)
     {
-        if (this.aspects == null)
+        return getAspects().contains(createQName(aspect));
+    }
+    
+    /**
+     * Return true if the user has the specified permission on the node.
+     * <p>
+     * The default permissions are found in <code>org.alfresco.service.cmr.security.PermissionService</code>.
+     * Most commonly used are "Write", "Delete" and "AddChildren".
+     * 
+     * @param permission as found in <code>org.alfresco.service.cmr.security.PermissionService</code>
+     * 
+     * @return true if the user has the specified permission on the node.
+     */
+    public boolean hasPermission(String permission)
+    {
+        boolean allowed = false;
+        
+        if (permission != null && permission.length() != 0)
         {
-            this.aspects = this.nodeService.getAspects(this.nodeRef);
+            AccessStatus status = this.services.getPermissionService().hasPermission(this.nodeRef, permission);
+            allowed = (AccessStatus.ALLOWED == status);
         }
         
-        if (aspect.startsWith(NAMESPACE_BEGIN))
-        {
-            return aspects.contains((createQName(aspect)));
-        }
-        else
-        {
-            boolean found = false;
-            for (QName qname : this.aspects)
-            {
-                if (qname.toPrefixString(this.services.getNamespaceService()).equals(aspect))
-                {
-                    found = true;
-                    break;
-                }
-            }
-            return found;
-        }
+        return allowed;
     }
     
     /**
@@ -997,6 +1000,19 @@ public final class Node implements Serializable
     }
     
     /**
+     * Add an aspect to the Node. As no properties are provided in this call, it can only be
+     * used to add aspects that do not require any mandatory properties.
+     * 
+     * @param type      Type name of the aspect to add
+     *                  
+     * @return true if the aspect was added successfully, false if an error occured.
+     */
+    public boolean addAspect(String type)
+    {
+        return addAspect(type, null);
+    }
+    
+    /**
      * Add an aspect to the Node.
      * 
      * @param type      Type name of the aspect to add
@@ -1059,6 +1075,13 @@ public final class Node implements Serializable
         return success;
     }
     
+    /**
+     * Helper to create a QName from either a fully qualified or short-name QName string
+     * 
+     * @param s     Fully qualified or short-name QName string
+     * 
+     * @return QName
+     */
     private QName createQName(String s)
     {
         QName qname;

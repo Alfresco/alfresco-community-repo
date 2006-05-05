@@ -58,7 +58,7 @@ import org.springframework.context.ApplicationContext;
 public class AuthenticationTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
+
     private NodeService nodeService;
 
     private SearchService searchService;
@@ -84,11 +84,11 @@ public class AuthenticationTest extends TestCase
     private TicketComponent ticketComponent;
 
     private AuthenticationService authenticationService;
-    
+
     private AuthenticationService pubAuthenticationService;
 
     private AuthenticationComponent authenticationComponent;
-    
+
     private PermissionServiceSPI permissionServiceSPI;
 
     private UserTransaction userTransaction;
@@ -118,7 +118,6 @@ public class AuthenticationTest extends TestCase
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponentImpl");
         permissionServiceSPI = (PermissionServiceSPI) ctx.getBean("permissionService");
-        
 
         dao = (MutableAuthenticationDao) ctx.getBean("alfDaoImpl");
         authenticationManager = (AuthenticationManager) ctx.getBean("authenticationManager");
@@ -157,8 +156,8 @@ public class AuthenticationTest extends TestCase
         dao.setDictionaryService(dictionaryService);
         dao.setNamespaceService(getNamespacePrefixReolsver(""));
         dao.setPasswordEncoder(passwordEncoder);
-        
-        if(dao.getUserOrNull("andy") != null)
+
+        if (dao.getUserOrNull("andy") != null)
         {
             dao.deleteUser("andy");
         }
@@ -179,36 +178,35 @@ public class AuthenticationTest extends TestCase
         return properties;
     }
 
-    
-   public void xtestScalability()
+    public void xtestScalability()
     {
         long create = 0;
         long count = 0;
-       
+
         long start;
         long end;
         authenticationComponent.authenticate("admin", "admin".toCharArray());
-        for(int i = 0; i < 10000; i++)
+        for (int i = 0; i < 10000; i++)
         {
-            String id = "TestUser-"+i;
+            String id = "TestUser-" + i;
             start = System.nanoTime();
             authenticationService.createAuthentication(id, id.toCharArray());
             end = System.nanoTime();
             create += (end - start);
-            
-            if((i > 0) && (i % 100 == 0))
+
+            if ((i > 0) && (i % 100 == 0))
             {
-                System.out.println("Count = "+i);
-                System.out.println("Average create : "+(create/i/1000000.0f));
+                System.out.println("Count = " + i);
+                System.out.println("Average create : " + (create / i / 1000000.0f));
                 start = System.nanoTime();
                 dao.userExists(id);
                 end = System.nanoTime();
-                System.out.println("Exists : "+((end-start)/1000000.0f));
+                System.out.println("Exists : " + ((end - start) / 1000000.0f));
             }
         }
         authenticationComponent.clearCurrentSecurityContext();
     }
-    
+
     public void testCreateAndyUserAndOtherCRUD() throws NoSuchAlgorithmException, UnsupportedEncodingException
     {
         RepositoryAuthenticationDao dao = new RepositoryAuthenticationDao();
@@ -505,7 +503,7 @@ public class AuthenticationTest extends TestCase
         tc.validateTicket(ticket);
         tc.validateTicket(ticket);
         tc.validateTicket(ticket);
-        
+
         synchronized (this)
         {
             try
@@ -527,7 +525,7 @@ public class AuthenticationTest extends TestCase
         {
 
         }
-        
+
         try
         {
             tc.validateTicket(ticket);
@@ -537,7 +535,7 @@ public class AuthenticationTest extends TestCase
         {
 
         }
-        
+
         try
         {
             tc.validateTicket(ticket);
@@ -547,8 +545,7 @@ public class AuthenticationTest extends TestCase
         {
 
         }
-        
-        
+
         synchronized (this)
         {
             try
@@ -561,7 +558,7 @@ public class AuthenticationTest extends TestCase
                 e.printStackTrace();
             }
         }
-        
+
         try
         {
             tc.validateTicket(ticket);
@@ -614,7 +611,7 @@ public class AuthenticationTest extends TestCase
         // assertNull(dao.getUserOrNull("Andy"));
 
     }
-    
+
     public void testAuthenticationService1()
     {
         authenticationService.createAuthentication("GUEST", "".toCharArray());
@@ -650,7 +647,7 @@ public class AuthenticationTest extends TestCase
 
         }
     }
-    
+
     public void testAuthenticationService2()
     {
         authenticationService.createAuthentication("GUEST", "".toCharArray());
@@ -686,9 +683,7 @@ public class AuthenticationTest extends TestCase
 
         }
     }
-    
-    
-    
+
     public void testAuthenticationService3()
     {
         authenticationService.createAuthentication("GUEST", "".toCharArray());
@@ -732,9 +727,9 @@ public class AuthenticationTest extends TestCase
         {
 
         }
-        
+
     }
-    
+
     public void testAuthenticationService4()
     {
         authenticationService.createAuthentication("GUEST", "".toCharArray());
@@ -765,15 +760,15 @@ public class AuthenticationTest extends TestCase
         // instance
         String ticket = authenticationService.getCurrentTicket();
         // validate our ticket is still valid
-        
+
         authenticationService.clearCurrentSecurityContext();
         authenticationService.validate(ticket);
 
         // destroy the ticket instance
         authenticationService.invalidateTicket(ticket);
-        
+
         Authentication current = authenticationComponent.getCurrentAuthentication();
-        if(current != null)
+        if (current != null)
         {
             // Still authentication
             assertTrue(current.isAuthenticated());
@@ -790,7 +785,7 @@ public class AuthenticationTest extends TestCase
         }
 
     }
-    
+
     public void testAuthenticationService()
     {
         authenticationService.createAuthentication("GUEST", "".toCharArray());
@@ -816,8 +811,11 @@ public class AuthenticationTest extends TestCase
         // authenticate again to assert password changed
         authenticationService.authenticate("Andy", "auth3".toCharArray());
 
-      
-        authenticationService.authenticate("Andy", "auth3".toCharArray());
+        // update the authentication
+        authenticationService.updateAuthentication("Andy", "auth3".toCharArray(), "auth4".toCharArray());
+        authenticationService.authenticate("Andy", "auth4".toCharArray());
+
+        authenticationService.authenticate("Andy", "auth4".toCharArray());
         // get the ticket that represents the current user authentication
         // instance
         String ticket = authenticationService.getCurrentTicket();
@@ -826,15 +824,74 @@ public class AuthenticationTest extends TestCase
 
         // destroy the ticket instance
         authenticationService.invalidateTicket(ticket);
-       
-        
+
         Authentication current = authenticationComponent.getCurrentAuthentication();
-        if(current != null)
+        if (current != null)
         {
             assertTrue(current.isAuthenticated());
         }
 
-        
+        authenticationService.authenticate("Andy", "auth4".toCharArray());
+
+        authenticationService.updateAuthentication("Andy", "auth4".toCharArray(), "auth5".toCharArray());
+
+        authenticationService.authenticate("Andy", "auth5".toCharArray());
+
+        // clear any context and check we are no longer authenticated
+        authenticationService.clearCurrentSecurityContext();
+        assertNull(authenticationService.getCurrentUserName());
+
+        dao.deleteUser("Andy");
+        // assertNull(dao.getUserOrNull("Andy"));
+    }
+
+    public void testAuthenticationService0()
+    {
+        authenticationService.createAuthentication("GUEST", "".toCharArray());
+        authenticationService.authenticate("GUEST", "".toCharArray());
+
+        // create an authentication object e.g. the user
+        authenticationService.createAuthentication("Andy", "auth1".toCharArray());
+
+        // authenticate with this user details
+        authenticationService.authenticate("Andy", "auth1".toCharArray());
+
+        // assert the user is authenticated
+        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        // delete the user authentication object
+
+        authenticationService.clearCurrentSecurityContext();
+        authenticationService.deleteAuthentication("Andy");
+
+        // create a new authentication user object
+        authenticationService.createAuthentication("Andy", "auth2".toCharArray());
+        // change the password
+        authenticationService.setAuthentication("Andy", "auth3".toCharArray());
+        // authenticate again to assert password changed
+        authenticationService.authenticate("Andy", "auth3".toCharArray());
+
+        // update the authentication
+        authenticationService.updateAuthentication("Andy", "auth3".toCharArray(), "auth4".toCharArray());
+        authenticationService.authenticate("Andy", "auth4".toCharArray());
+
+        authenticationService.authenticate("Andy", "auth4".toCharArray());
+        // get the ticket that represents the current user authentication
+        // instance
+        String ticket = authenticationService.getCurrentTicket();
+        // validate our ticket is still valid
+        authenticationService.validate(ticket);
+
+        // destroy the ticket instance
+        authenticationService.invalidateTicket(ticket);
+
+        Authentication current = authenticationComponent.getCurrentAuthentication();
+        if (current != null)
+        {
+            assertTrue(current.isAuthenticated());
+        }
+
+        authenticationService.authenticate("Andy", "auth4".toCharArray());
+
         // clear any context and check we are no longer authenticated
         authenticationService.clearCurrentSecurityContext();
         assertNull(authenticationService.getCurrentUserName());
@@ -845,15 +902,15 @@ public class AuthenticationTest extends TestCase
 
     public void testPubAuthenticationService1()
     {
-        authenticationComponent.setSystemUserAsCurrentUser();   
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("GUEST", "".toCharArray());
         authenticationComponent.clearCurrentSecurityContext();
-        
+
         pubAuthenticationService.authenticate("GUEST", "".toCharArray());
 
         // create an authentication object e.g. the user
-        
-        authenticationComponent.setSystemUserAsCurrentUser(); 
+
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("Andy", "auth1".toCharArray());
         authenticationComponent.clearCurrentSecurityContext();
 
@@ -865,13 +922,13 @@ public class AuthenticationTest extends TestCase
         // delete the user authentication object
 
         pubAuthenticationService.clearCurrentSecurityContext();
-        
-        authenticationComponent.setSystemUserAsCurrentUser();  
+
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.deleteAuthentication("Andy");
         authenticationComponent.clearCurrentSecurityContext();
 
         // create a new authentication user object
-        authenticationComponent.setSystemUserAsCurrentUser();  
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("Andy", "auth2".toCharArray());
         // change the password
         pubAuthenticationService.setAuthentication("Andy", "auth3".toCharArray());
@@ -888,20 +945,20 @@ public class AuthenticationTest extends TestCase
         {
 
         }
-        
+
     }
-    
+
     public void testPubAuthenticationService2()
     {
-        authenticationComponent.setSystemUserAsCurrentUser();   
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("GUEST", "".toCharArray());
         authenticationComponent.clearCurrentSecurityContext();
-        
+
         pubAuthenticationService.authenticate("GUEST", "".toCharArray());
 
         // create an authentication object e.g. the user
-        
-        authenticationComponent.setSystemUserAsCurrentUser(); 
+
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("Andy", "auth1".toCharArray());
         authenticationComponent.clearCurrentSecurityContext();
 
@@ -913,13 +970,13 @@ public class AuthenticationTest extends TestCase
         // delete the user authentication object
 
         pubAuthenticationService.clearCurrentSecurityContext();
-        
-        authenticationComponent.setSystemUserAsCurrentUser();  
+
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.deleteAuthentication("Andy");
         authenticationComponent.clearCurrentSecurityContext();
 
         // create a new authentication user object
-        authenticationComponent.setSystemUserAsCurrentUser();  
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("Andy", "auth2".toCharArray());
         // change the password
         pubAuthenticationService.setAuthentication("Andy", "auth3".toCharArray());
@@ -927,7 +984,6 @@ public class AuthenticationTest extends TestCase
         // authenticate again to assert password changed
         pubAuthenticationService.authenticate("Andy", "auth3".toCharArray());
 
-       
         try
         {
             pubAuthenticationService.authenticate("Andy", "auth2".toCharArray());
@@ -938,20 +994,18 @@ public class AuthenticationTest extends TestCase
 
         }
     }
-    
-    
 
     public void testPubAuthenticationService3()
     {
-        authenticationComponent.setSystemUserAsCurrentUser();   
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("GUEST", "".toCharArray());
         authenticationComponent.clearCurrentSecurityContext();
-        
+
         pubAuthenticationService.authenticate("GUEST", "".toCharArray());
 
         // create an authentication object e.g. the user
-        
-        authenticationComponent.setSystemUserAsCurrentUser(); 
+
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("Andy", "auth1".toCharArray());
         authenticationComponent.clearCurrentSecurityContext();
 
@@ -963,13 +1017,13 @@ public class AuthenticationTest extends TestCase
         // delete the user authentication object
 
         pubAuthenticationService.clearCurrentSecurityContext();
-        
-        authenticationComponent.setSystemUserAsCurrentUser();  
+
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.deleteAuthentication("Andy");
         authenticationComponent.clearCurrentSecurityContext();
 
         // create a new authentication user object
-        authenticationComponent.setSystemUserAsCurrentUser();  
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("Andy", "auth2".toCharArray());
         // change the password
         pubAuthenticationService.setAuthentication("Andy", "auth3".toCharArray());
@@ -978,14 +1032,13 @@ public class AuthenticationTest extends TestCase
         // authenticate again to assert password changed
         pubAuthenticationService.authenticate("Andy", "auth3".toCharArray());
 
-
         pubAuthenticationService.authenticate("Andy", "auth3".toCharArray());
         // get the ticket that represents the current user authentication
         // instance
         String ticket = pubAuthenticationService.getCurrentTicket();
         authenticationComponent.clearCurrentSecurityContext();
         assertNull(authenticationComponent.getCurrentAuthentication());
-        
+
         // validate our ticket is still valid
         pubAuthenticationService.validate(ticket);
 
@@ -1001,33 +1054,30 @@ public class AuthenticationTest extends TestCase
 
         }
     }
-    
+
     public void testPubAuthenticationService()
     {
-        //pubAuthenticationService.authenticateAsGuest();
-        //authenticationComponent.clearCurrentSecurityContext();
-        
+        // pubAuthenticationService.authenticateAsGuest();
+        // authenticationComponent.clearCurrentSecurityContext();
+
         assertNull(authenticationComponent.getCurrentAuthentication());
-        authenticationComponent.setSystemUserAsCurrentUser();   
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("GUEST", "".toCharArray());
         authenticationComponent.clearCurrentSecurityContext();
-        
+
         assertNull(authenticationComponent.getCurrentAuthentication());
         pubAuthenticationService.authenticate("GUEST", "".toCharArray());
         pubAuthenticationService.authenticate("GUEST", "".toCharArray());
         authenticationComponent.clearCurrentSecurityContext();
         assertNull(authenticationComponent.getCurrentAuthentication());
-        
-   
-      
+
         pubAuthenticationService.authenticateAsGuest();
         authenticationComponent.clearCurrentSecurityContext();
         assertNull(authenticationComponent.getCurrentAuthentication());
-        
 
         // create an authentication object e.g. the user
-        
-        authenticationComponent.setSystemUserAsCurrentUser(); 
+
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("Andy", "auth1".toCharArray());
         authenticationComponent.clearCurrentSecurityContext();
 
@@ -1039,13 +1089,13 @@ public class AuthenticationTest extends TestCase
         // delete the user authentication object
 
         pubAuthenticationService.clearCurrentSecurityContext();
-        
-        authenticationComponent.setSystemUserAsCurrentUser();  
+
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.deleteAuthentication("Andy");
         authenticationComponent.clearCurrentSecurityContext();
 
         // create a new authentication user object
-        authenticationComponent.setSystemUserAsCurrentUser();  
+        authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("Andy", "auth2".toCharArray());
         // change the password
         pubAuthenticationService.setAuthentication("Andy", "auth3".toCharArray());
@@ -1064,14 +1114,89 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService.invalidateTicket(ticket);
 
     }
+    
+    public void testPubAuthenticationService0()
+    {
+        // pubAuthenticationService.authenticateAsGuest();
+        // authenticationComponent.clearCurrentSecurityContext();
+
+        assertNull(authenticationComponent.getCurrentAuthentication());
+        authenticationComponent.setSystemUserAsCurrentUser();
+        pubAuthenticationService.createAuthentication("GUEST", "".toCharArray());
+        authenticationComponent.clearCurrentSecurityContext();
+
+        assertNull(authenticationComponent.getCurrentAuthentication());
+        pubAuthenticationService.authenticate("GUEST", "".toCharArray());
+        pubAuthenticationService.authenticate("GUEST", "".toCharArray());
+        authenticationComponent.clearCurrentSecurityContext();
+        assertNull(authenticationComponent.getCurrentAuthentication());
+
+        pubAuthenticationService.authenticateAsGuest();
+        authenticationComponent.clearCurrentSecurityContext();
+        assertNull(authenticationComponent.getCurrentAuthentication());
+
+        // create an authentication object e.g. the user
+
+        authenticationComponent.setSystemUserAsCurrentUser();
+        pubAuthenticationService.createAuthentication("Andy", "auth1".toCharArray());
+        authenticationComponent.clearCurrentSecurityContext();
+
+        // authenticate with this user details
+        pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
+
+        // assert the user is authenticated
+        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        // delete the user authentication object
+
+        pubAuthenticationService.clearCurrentSecurityContext();
+
+        authenticationComponent.setSystemUserAsCurrentUser();
+        pubAuthenticationService.deleteAuthentication("Andy");
+        authenticationComponent.clearCurrentSecurityContext();
+
+        // create a new authentication user object
+        authenticationComponent.setSystemUserAsCurrentUser();
+        pubAuthenticationService.createAuthentication("Andy", "auth2".toCharArray());
+        // change the password
+        pubAuthenticationService.setAuthentication("Andy", "auth3".toCharArray());
+        authenticationComponent.clearCurrentSecurityContext();
+        // authenticate again to assert password changed
+        pubAuthenticationService.authenticate("Andy", "auth3".toCharArray());
+
+        pubAuthenticationService.authenticate("Andy", "auth3".toCharArray());
+        // get the ticket that represents the current user authentication
+        // instance
+        String ticket = pubAuthenticationService.getCurrentTicket();
+        // validate our ticket is still valid
+        pubAuthenticationService.validate(ticket);
+
+        // destroy the ticket instance
+        pubAuthenticationService.invalidateTicket(ticket);
+        
+        authenticationComponent.clearCurrentSecurityContext();
+        
+        pubAuthenticationService.authenticate("Andy", "auth3".toCharArray());
+        pubAuthenticationService.updateAuthentication("Andy", "auth3".toCharArray(), "auth4".toCharArray());
+        pubAuthenticationService.authenticate("Andy", "auth4".toCharArray());
+        
+        try
+        {
+             pubAuthenticationService.updateAuthentication("Andy", "auth3".toCharArray(), "auth4".toCharArray());
+             fail("Should not be able to update");
+        }
+        catch(AuthenticationException ae)
+        {
+            
+        }
+
+    }
 
     public void testAbstractAuthenticationComponentGuestUserSupport()
     {
         authenticationComponent.setGuestUserAsCurrentUser();
         assertEquals(authenticationComponent.getCurrentUserName(), authenticationComponent.getGuestUserName());
     }
-    
-    
+
     public void testPassThroughLogin()
     {
         authenticationService.createAuthentication("Andy", "auth1".toCharArray());
@@ -1079,7 +1204,7 @@ public class AuthenticationTest extends TestCase
         authenticationComponent.setCurrentUser("Andy");
         assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
 
-        //authenticationService.deleteAuthentication("andy");
+        // authenticationService.deleteAuthentication("andy");
     }
 
     private String getUserName(Authentication authentication)

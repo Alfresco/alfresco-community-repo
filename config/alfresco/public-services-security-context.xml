@@ -586,6 +586,7 @@
  
    <!-- Authentication is excluded as it sets or cleas authentication -->
    <!-- The same for validate ticaket -->
+   <!-- Update authentication checks internally -->
    <bean id="AuthenticationService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>

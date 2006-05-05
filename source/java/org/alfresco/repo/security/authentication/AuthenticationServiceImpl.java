@@ -65,6 +65,15 @@ public class AuthenticationServiceImpl implements AuthenticationService
     public void updateAuthentication(String userName, char[] oldPassword, char[] newPassword)
             throws AuthenticationException
     {
+        String currentUser = AuthenticationUtil.getCurrentUserName();
+        try
+        {
+            authenticate(userName, oldPassword);
+        }
+        finally
+        {
+            AuthenticationUtil.setCurrentUser(currentUser);
+        }
         authenticationDao.updateUser(userName, newPassword);
     }
 

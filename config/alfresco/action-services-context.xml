@@ -347,4 +347,19 @@
         </property>
     </bean>
     
+    <bean id="execute-all-rules" class="org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="actionService">
+            <ref bean="ActionService" />
+        </property>
+        <property name="ruleService">
+            <ref bean="RuleService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService" />
+        </property>
+    </bean>
+    
 </beans>

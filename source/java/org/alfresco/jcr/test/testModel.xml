@@ -1,0 +1,152 @@
+<model name="jcrtest:jcrtestmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>JCR Test Model Definitions</description>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+      <import uri="" prefix=""/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/test/jcr/1.0" prefix="jcrtest"/>
+   </namespaces>
+
+   <types>
+      <type name="jcrtest:basetesttype">
+         <title>Base Test Type</title>
+         <parent>sys:base</parent>
+         <associations>
+            <child-association name="jcrtest:children">
+               <target>
+                  <class>sys:base</class>
+               </target>
+            </child-association>
+         </associations>
+      </type>
+   
+      <type name="jcrtest:testtype">
+         <title>Test Type</title>
+         <parent>jcrtest:basetesttype</parent>
+         <properties>
+            <property name="jcrtest:booleanProp">
+               <type>d:boolean</type>
+            </property>
+            <property name="jcrtest:dateProp">
+               <type>d:date</type>
+            </property>
+            <property name="jcrtest:doubleProp">
+               <type>d:double</type>
+            </property>
+            <property name="jcrtest:longProp">
+               <type>d:long</type>
+            </property>
+            <property name="jcrtest:nameProp">
+               <type>d:qname</type>
+            </property>
+            <property name="jcrtest:stringProp">
+               <type>d:text</type>
+            </property>
+            <property name="jcrtest:multiProp">
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+             <property name="jcrtest:prop1">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="jcrtest:testdoc">
+         <title>Test Doc Type</title>
+         <parent>jcrtest:basetesttype</parent>
+         <properties>
+            <property name="jcrtest:title">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="jcrtest:testpara">
+         <title>Test Doc Type</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="jcrtest:subtitle">
+               <type>d:text</type>
+            </property>
+            <property name="jcrtest:content">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+
+      <type name="jcrtest:testsetprop">
+         <title>Test Set Properties</title>
+         <parent>jcrtest:basetesttype</parent>
+         <properties>
+            <property name="jcrtest:setBoolean">
+               <type>d:boolean</type>
+            </property>
+            <property name="jcrtest:setMultiBoolean">
+               <type>d:boolean</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="jcrtest:setDate">
+               <type>d:date</type>
+            </property>
+            <property name="jcrtest:setMultiDate">
+               <type>d:date</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="jcrtest:setDouble">
+               <type>d:double</type>
+            </property>
+            <property name="jcrtest:setMultiDouble">
+               <type>d:double</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="jcrtest:setLong">
+               <type>d:long</type>
+            </property>
+            <property name="jcrtest:setMultiLong">
+               <type>d:long</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="jcrtest:setName">
+               <type>d:qname</type>
+            </property>
+            <property name="jcrtest:setMultiName">
+               <type>d:qname</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="jcrtest:setString">
+               <type>d:text</type>
+            </property>
+            <property name="jcrtest:setMultiString">
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="jcrtest:setContent">
+               <type>d:content</type>
+            </property>
+            <property name="jcrtest:setNodeRef">
+               <type>d:noderef</type>
+            </property>
+            <property name="jcrtest:setMultiNodeRef">
+               <type>d:noderef</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="jcrtest:setAny">
+               <type>d:any</type>
+            </property>
+            <property name="jcrtest:setMultipleAny">
+               <type>d:any</type>
+               <multiple>true</multiple>
+            </property>
+         </properties>
+      </type>
+      
+   </types>
+   
+</model>

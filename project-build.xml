@@ -21,9 +21,9 @@
                author="true" version="true" doctitle="Alfresco Content Management Service API Specification" 
                windowtitle="Alfresco Content Management Service API" classpathref="classpath.compile">
          <bottom>${javadoc.copyright}</bottom>
-      </javadoc>  
+      </javadoc>
    </target>
-   
+
    <target name="build-single-jar" depends="common.compile-java" description="Build an self-contained executable jar" >
       <property name="dir.one-jar" value="${dir.build}/one-jar" />
       <!-- extract the one-jar file -->
@@ -51,5 +51,37 @@
          </fileset>
       </jar>
    </target>
-  
+
+   <target name="build-tck" depends="package-jar" description="Builds the JCR TCK war file">
+      <war warfile="${dir.dist}/${tck.file.name.war}" webxml="${dir.src.webinf}\JCRTCK\web.xml">
+         <fileset dir="${dir.src.web}" excludes="WEB-INF/**" />
+         <webinf dir="${dir.project.installer}" includes="licenses/**"/>
+         <webinf dir="${dir.src.webinf}" includes="${webinf.includes}" excludes="${webinf.excludes}"/>
+         <lib dir="${dir.common.lib}" includes="${webinf.lib.includes}" excludes="${tck.webinf.lib.excludes}" />
+         <lib dir="${dir.common.lib}/jibx" includes="*.jar" />
+         <lib dir="${dir.common.lib}/openoffice" includes="*.jar" />
+         <lib dir="${dir.common.lib}/jmagick" includes="*.jar" />
+         <lib dir="${dir.common.lib}/commons" includes="*.jar" />
+         <lib dir="${dir.common.lib}/jgroups" includes="*.jar" />
+         <lib dir="${dir.common.lib}/treecache" includes="*.jar" />
+         <lib dir="${dir.common.lib}/swarmcache" includes="*.jar" />
+         <lib dir="${dir.dist}" includes="${file.name.jar}" />
+         <lib dir="${dir.project.core}/build/dist" includes="${dir.name.core}.jar" />
+         <lib dir="${dir.project.repository}/build/dist" includes="${dir.name.repository}.jar" />
+         <classes dir="${dir.config.repository}"/>
+         <classes dir="${dir.config.jcr}"/>
+         <classes file="${dir.project.core}/source/java/log4j.properties" prefix="WEB-INF/classes"/>
+      </war>
+   </target>
+
+   <target name="deploy-tck" depends="build-tck">
+      <copy file="${dir.dist}/${tck.file.name.war}" todir="${tck.dir.deploy}/bin/tck-webapp/webapps" />
+   </target>
+
+   <target name="start-tck" depends="init">
+      <exec dir="${tck.dir.deploy}/bin/tck-webapp" executable="cmd.exe" spawn="true">
+         <arg line="/k start server.bat -debug socket" />
+      </exec>
+   </target>
+
 </project>

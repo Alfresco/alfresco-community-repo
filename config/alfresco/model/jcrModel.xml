@@ -1,0 +1,62 @@
+<model name="jcr:jcrmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>JCR Model Definitions</description>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.jcp.org/jcr/1.0" prefix="jcr"/>
+      <namespace uri="http://www.jcp.org/jcr/nt/1.0" prefix="nt"/>
+      <namespace uri="http://www.jcp.org/jcr/mix/1.0" prefix="mix"/>
+      <namespace uri="http://www.jcp.org/jcr/sv/1.0" prefix="sv"/>
+      <namespace uri="http://www.w3.org/XML/1998/namespace" prefix="xml"/>
+   </namespaces>
+   
+   <types>
+      
+      <type name="nt:base">
+         <properties>
+            <property name="jcr:primaryType">
+               <type>d:qname</type>
+               <protected>true</protected>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="jcr:mixinTypes">
+               <type>d:qname</type>
+               <protected>true</protected>
+               <multiple>true</multiple>
+            </property>
+         </properties>
+      </type>
+   
+   </types>
+
+   <aspects>
+      
+      <aspect name="mix:referenceable">
+         <properties>
+            <property name="jcr:uuid">
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="mix:lockable">
+         <properties>
+            <property name="jcr:lockOwner">
+               <type>d:text</type>
+            </property>
+            <property name="jcr:lockIsDeep">
+               <type>d:boolean</type>
+            </property>
+         </properties>            
+      </aspect>
+      
+   </aspects>
+   
+</model>

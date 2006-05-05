@@ -23,6 +23,7 @@
     <import resource="classpath:alfresco/policy-context.xml" />
     <import resource="classpath:alfresco/import-export-context.xml" />
     <import resource="classpath:alfresco/bootstrap-context.xml" />
+    <import resource="classpath:alfresco/jcr-api-context.xml" />
     <import resource="classpath*:alfresco/patch/*-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />
 

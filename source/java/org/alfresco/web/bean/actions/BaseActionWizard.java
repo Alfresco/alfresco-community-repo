@@ -22,7 +22,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.CheckInActionExecuter;
 import org.alfresco.repo.action.executer.CheckOutActionExecuter;
-import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.action.executer.CopyActionExecuter;
 import org.alfresco.repo.action.executer.ImageTransformActionExecuter;
 import org.alfresco.repo.action.executer.ImporterActionExecuter;
@@ -544,18 +543,29 @@ public abstract class BaseActionWizard extends BaseWizardBean
       actionProps.put(PROP_ACTION_NAME, this.action);
       this.currentActionProperties = actionProps;
       
-      // setup any defaults for the UI or handle actions with no parameters
-      String overridenViewId = setupUIDefaultsForAction(actionProps);
-      if (overridenViewId != null)
+      // determine whether the action being added has any parameters
+      ActionDefinition actionDef = this.actionService.getActionDefinition(this.action);
+      if (actionDef.hasParameterDefinitions())
       {
-         viewId = overridenViewId;
+         // setup any defaults for the UI and override the viewId if necessary
+         String overridenViewId = setupUIDefaultsForAction(actionProps);
+         if (overridenViewId != null)
+         {
+            viewId = overridenViewId;
+         }
+      }
+      else
+      {
+         // just add the action to the list and use the title as the summary
+         actionProps.put(PROP_ACTION_SUMMARY, actionDef.getTitle());
+         this.allActionsProperties.add(actionProps);
+         
+         // come back to the same page we're on now as there are no params to collect
+         viewId = this.returnViewId;
       }
       
       if (logger.isDebugEnabled())
             logger.debug("Added '" + this.action + "' action to list");
-      
-      // reset the selected action drop down
-      this.action = null;
       
       // go to the page to collect the settings
       goToPage(context, viewId);
@@ -597,14 +607,13 @@ public abstract class BaseActionWizard extends BaseWizardBean
          this.currentActionProperties.put(PROP_ACTION_SUMMARY, summary);
       }
       
-      if (this.editingAction)
-      {
-         this.action = null;
-      }
-      else
+      if (this.editingAction == false)
       {
          this.allActionsProperties.add(this.currentActionProperties);
       }
+      
+      // reset the action drop down
+      this.action = null;
       
       // refresh the wizard
       goToPage(context, this.returnViewId);
@@ -633,14 +642,13 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    public void cancelAddAction()
    {
-      if (this.editingAction)
-      {
-         this.action = null;
-      }
-      else
+      if (this.editingAction == false)
       {
          this.currentActionProperties.clear();
       }
+      
+      // reset the action drop down
+      this.action = null;
       
       // refresh the wizard
       goToPage(FacesContext.getCurrentInstance(), this.returnViewId);
@@ -823,15 +831,6 @@ public abstract class BaseActionWizard extends BaseWizardBean
       {
          this.currentActionProperties.put(PROP_CHECKIN_MINOR, new Boolean(true));
       }
-      else if (ContentMetadataExtracter.NAME.equals(this.action))
-      {
-         // This one (currently) has no parameters, so just add it...
-         props.put(PROP_ACTION_SUMMARY, buildActionSummary());
-         this.allActionsProperties.add(props);
-         
-         // come back to the same page we're on now
-         overridenViewId = this.returnViewId;
-      }
       
       return overridenViewId;
    }
@@ -846,48 +845,48 @@ public abstract class BaseActionWizard extends BaseWizardBean
    protected Map<String, Serializable> buildActionParams()
    {
       // set up parameters maps for the action
-      Map<String, Serializable> actionParams = new HashMap<String, Serializable>();
+      Map<String, Serializable> repoParams = new HashMap<String, Serializable>();
       
       if (AddFeaturesActionExecuter.NAME.equals(this.action))
       {
          QName aspect = Repository.resolveToQName((String)this.currentActionProperties.get(PROP_ASPECT));
-         actionParams.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, aspect);
+         repoParams.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, aspect);
       }
       else if (RemoveFeaturesActionExecuter.NAME.equals(this.action))
       {
          QName aspect = Repository.resolveToQName((String)this.currentActionProperties.get(PROP_ASPECT));
-         actionParams.put(RemoveFeaturesActionExecuter.PARAM_ASPECT_NAME, aspect);
+         repoParams.put(RemoveFeaturesActionExecuter.PARAM_ASPECT_NAME, aspect);
       }
       else if (CopyActionExecuter.NAME.equals(this.action))
       {
          // add the destination space id to the action properties
          NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         actionParams.put(CopyActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
+         repoParams.put(CopyActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
          
          // add the type and name of the association to create when the copy
          // is performed
-         actionParams.put(CopyActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
+         repoParams.put(CopyActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
                ContentModel.ASSOC_CONTAINS);
-         actionParams.put(CopyActionExecuter.PARAM_ASSOC_QNAME, 
+         repoParams.put(CopyActionExecuter.PARAM_ASSOC_QNAME, 
                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy"));
       }
       else if (MoveActionExecuter.NAME.equals(this.action))
       {
          // add the destination space id to the action properties
          NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         actionParams.put(MoveActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
+         repoParams.put(MoveActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
          
          // add the type and name of the association to create when the move
          // is performed
-         actionParams.put(MoveActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
+         repoParams.put(MoveActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
                ContentModel.ASSOC_CONTAINS);
-         actionParams.put(MoveActionExecuter.PARAM_ASSOC_QNAME, 
+         repoParams.put(MoveActionExecuter.PARAM_ASSOC_QNAME, 
                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "move"));
       }
       else if (SimpleWorkflowActionExecuter.NAME.equals(this.action))
       {
          // add the approve step name
-         actionParams.put(SimpleWorkflowActionExecuter.PARAM_APPROVE_STEP,
+         repoParams.put(SimpleWorkflowActionExecuter.PARAM_APPROVE_STEP,
                (String)this.currentActionProperties.get(PROP_APPROVE_STEP_NAME));
          
          // add whether the approve step will copy or move the content
@@ -898,7 +897,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
             approveMove = false;
          }
          
-         actionParams.put(SimpleWorkflowActionExecuter.PARAM_APPROVE_MOVE, Boolean.valueOf(approveMove));
+         repoParams.put(SimpleWorkflowActionExecuter.PARAM_APPROVE_MOVE, Boolean.valueOf(approveMove));
          
          // add the destination folder of the content
          NodeRef approveDestNodeRef = null;
@@ -911,7 +910,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
          {
             approveDestNodeRef = new NodeRef((String)approveDestNode);
          }
-         actionParams.put(SimpleWorkflowActionExecuter.PARAM_APPROVE_FOLDER, approveDestNodeRef);
+         repoParams.put(SimpleWorkflowActionExecuter.PARAM_APPROVE_FOLDER, approveDestNodeRef);
          
          // determine whether we have a reject step or not
          boolean requireReject = true;
@@ -924,7 +923,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
          if (requireReject)
          {
             // add the reject step name
-            actionParams.put(SimpleWorkflowActionExecuter.PARAM_REJECT_STEP,
+            repoParams.put(SimpleWorkflowActionExecuter.PARAM_REJECT_STEP,
                   (String)this.currentActionProperties.get(PROP_REJECT_STEP_NAME));
          
             // add whether the reject step will copy or move the content
@@ -935,7 +934,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
                rejectMove = false;
             }
             
-            actionParams.put(SimpleWorkflowActionExecuter.PARAM_REJECT_MOVE, Boolean.valueOf(rejectMove));
+            repoParams.put(SimpleWorkflowActionExecuter.PARAM_REJECT_MOVE, Boolean.valueOf(rejectMove));
             
             // add the destination folder of the content
             NodeRef rejectDestNodeRef = null;
@@ -948,18 +947,18 @@ public abstract class BaseActionWizard extends BaseWizardBean
             {
                rejectDestNodeRef = new NodeRef((String)rejectDestNode);
             }
-            actionParams.put(SimpleWorkflowActionExecuter.PARAM_REJECT_FOLDER, rejectDestNodeRef);
+            repoParams.put(SimpleWorkflowActionExecuter.PARAM_REJECT_FOLDER, rejectDestNodeRef);
          }
       }
       else if (LinkCategoryActionExecuter.NAME.equals(this.action))
       {
          // add the classifiable aspect
-         actionParams.put(LinkCategoryActionExecuter.PARAM_CATEGORY_ASPECT,
+         repoParams.put(LinkCategoryActionExecuter.PARAM_CATEGORY_ASPECT,
                ContentModel.ASPECT_GEN_CLASSIFIABLE);
          
          // put the selected category in the action params
          NodeRef catNodeRef = (NodeRef)this.currentActionProperties.get(PROP_CATEGORY);
-         actionParams.put(LinkCategoryActionExecuter.PARAM_CATEGORY_VALUE, 
+         repoParams.put(LinkCategoryActionExecuter.PARAM_CATEGORY_VALUE, 
                catNodeRef);
       }
       else if (CheckOutActionExecuter.NAME.equals(this.action))
@@ -967,61 +966,61 @@ public abstract class BaseActionWizard extends BaseWizardBean
          // specify the location the checked out working copy should go
          // add the destination space id to the action properties
          NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         actionParams.put(CheckOutActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
+         repoParams.put(CheckOutActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
          
          // add the type and name of the association to create when the 
          // check out is performed
-         actionParams.put(CheckOutActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
+         repoParams.put(CheckOutActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
                ContentModel.ASSOC_CONTAINS);
-         actionParams.put(CheckOutActionExecuter.PARAM_ASSOC_QNAME, 
+         repoParams.put(CheckOutActionExecuter.PARAM_ASSOC_QNAME, 
                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "checkout"));
       }
       else if (CheckInActionExecuter.NAME.equals(this.action))
       {
          // add the description for the checkin to the action params
-         actionParams.put(CheckInActionExecuter.PARAM_DESCRIPTION, 
+         repoParams.put(CheckInActionExecuter.PARAM_DESCRIPTION, 
                this.currentActionProperties.get(PROP_CHECKIN_DESC));
          
          // add the minor change flag
-         actionParams.put(CheckInActionExecuter.PARAM_MINOR_CHANGE,
+         repoParams.put(CheckInActionExecuter.PARAM_MINOR_CHANGE,
                this.currentActionProperties.get(PROP_CHECKIN_MINOR));
       }
       else if (TransformActionExecuter.NAME.equals(this.action))
       {
          // add the transformer to use
-         actionParams.put(TransformActionExecuter.PARAM_MIME_TYPE,
+         repoParams.put(TransformActionExecuter.PARAM_MIME_TYPE,
                this.currentActionProperties.get(PROP_TRANSFORMER));
          
          // add the destination space id to the action properties
          NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         actionParams.put(TransformActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
+         repoParams.put(TransformActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
          
          // add the type and name of the association to create when the copy
          // is performed
-         actionParams.put(TransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
+         repoParams.put(TransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
                ContentModel.ASSOC_CONTAINS);
-         actionParams.put(TransformActionExecuter.PARAM_ASSOC_QNAME, 
+         repoParams.put(TransformActionExecuter.PARAM_ASSOC_QNAME, 
                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy"));
       }
       else if (ImageTransformActionExecuter.NAME.equals(this.action))
       {
          // add the transformer to use
-         actionParams.put(ImageTransformActionExecuter.PARAM_MIME_TYPE,
+         repoParams.put(ImageTransformActionExecuter.PARAM_MIME_TYPE,
                this.currentActionProperties.get(PROP_IMAGE_TRANSFORMER));
          
          // add the options
-         actionParams.put(ImageTransformActionExecuter.PARAM_CONVERT_COMMAND, 
+         repoParams.put(ImageTransformActionExecuter.PARAM_CONVERT_COMMAND, 
                this.currentActionProperties.get(PROP_TRANSFORM_OPTIONS));
          
          // add the destination space id to the action properties
          NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         actionParams.put(TransformActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
+         repoParams.put(TransformActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
          
          // add the type and name of the association to create when the copy
          // is performed
-         actionParams.put(TransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
+         repoParams.put(TransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
                ContentModel.ASSOC_CONTAINS);
-         actionParams.put(TransformActionExecuter.PARAM_ASSOC_QNAME, 
+         repoParams.put(TransformActionExecuter.PARAM_ASSOC_QNAME, 
                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy"));
       }
       else if (MailActionExecuter.NAME.equals(this.action))
@@ -1034,51 +1033,51 @@ public abstract class BaseActionWizard extends BaseWizardBean
             recipients.add(wrapper.authority);
          }
          
-         actionParams.put(MailActionExecuter.PARAM_TO_MANY, (Serializable)recipients);
+         repoParams.put(MailActionExecuter.PARAM_TO_MANY, (Serializable)recipients);
          
          // add the actual email text to send
-         actionParams.put(MailActionExecuter.PARAM_TEXT, 
+         repoParams.put(MailActionExecuter.PARAM_TEXT, 
          this.currentActionProperties.get(PROP_MESSAGE));    
              
          // add the subject for the email
-         actionParams.put(MailActionExecuter.PARAM_SUBJECT,
+         repoParams.put(MailActionExecuter.PARAM_SUBJECT,
                this.currentActionProperties.get(PROP_SUBJECT));
          
          // add the from address
          String from = Application.getClientConfig(FacesContext.getCurrentInstance()).getFromEmailAddress();
-         actionParams.put(MailActionExecuter.PARAM_FROM, from);
+         repoParams.put(MailActionExecuter.PARAM_FROM, from);
          
          // add the template if one was selected by the user
          if (this.usingTemplate != null)
          {
-            actionParams.put(MailActionExecuter.PARAM_TEMPLATE, new NodeRef(Repository.getStoreRef(), this.usingTemplate));
+            repoParams.put(MailActionExecuter.PARAM_TEMPLATE, new NodeRef(Repository.getStoreRef(), this.usingTemplate));
          }
       }
       else if (ImporterActionExecuter.NAME.equals(this.action))
       {
          // add the encoding
-         actionParams.put(ImporterActionExecuter.PARAM_ENCODING, IMPORT_ENCODING);
+         repoParams.put(ImporterActionExecuter.PARAM_ENCODING, IMPORT_ENCODING);
          
          // add the destination for the import
          NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         actionParams.put(ImporterActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
+         repoParams.put(ImporterActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
       }
       else if (SpecialiseTypeActionExecuter.NAME.equals(this.action))
       {
          // add the specialisation type
          String objectType = (String)this.currentActionProperties.get(PROP_OBJECT_TYPE);
-         actionParams.put(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, QName.createQName(objectType));
+         repoParams.put(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, QName.createQName(objectType));
       }
       else if (ScriptActionExecutor.NAME.equals(this.action))
       {
          // add the selected script noderef to the action properties
          String id = (String)this.currentActionProperties.get(PROP_SCRIPT);
          NodeRef scriptRef = new NodeRef(Repository.getStoreRef(), id);
-         actionParams.put(ScriptActionExecutor.PARAM_SCRIPTREF, scriptRef);
-         actionParams.put(ScriptActionExecutor.PARAM_SPACEREF, this.navigator.getCurrentNode().getNodeRef());
+         repoParams.put(ScriptActionExecutor.PARAM_SCRIPTREF, scriptRef);
+         repoParams.put(ScriptActionExecutor.PARAM_SPACEREF, this.navigator.getCurrentNode().getNodeRef());
       }
       
-      return actionParams;
+      return repoParams;
    }
    
    /**
@@ -1088,192 +1087,235 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    protected String buildActionSummary()
    {
-      String summaryResult = null;
+      String summary = null;
+      FacesContext context = FacesContext.getCurrentInstance();
       
-      String actionName = (String)this.currentActionProperties.get(PROP_ACTION_NAME);
-      if (actionName != null)
+      if (AddFeaturesActionExecuter.NAME.equals(this.action))
       {
-         StringBuilder summary = new StringBuilder();
-         summary.append(Application.getMessage(FacesContext.getCurrentInstance(), 
-               "action_" + actionName.replace('-', '_')));
-         summary.append(" ");
+         String label = null;
+         String aspect = (String)this.currentActionProperties.get(PROP_ASPECT);
+            
+         // find the label used by looking through the SelectItem list
+         for (SelectItem item : this.getAspects())
+         {
+            if (item.getValue().equals(aspect))
+            {
+               label = item.getLabel();
+               break;
+            }
+         }
+
+         summary = MessageFormat.format(Application.getMessage(context, "action_add_features"),
+               new Object[] {label});
+      }
+      else if (RemoveFeaturesActionExecuter.NAME.equals(this.action))
+      {
+         String label = null;
+         String aspect = (String)this.currentActionProperties.get(PROP_ASPECT);
+            
+         // find the label used by looking through the SelectItem list
+         for (SelectItem item : this.getAspects())
+         {
+            if (item.getValue().equals(aspect))
+            {
+               label = item.getLabel();
+               break;
+            }
+         }
+
+         summary = MessageFormat.format(Application.getMessage(context, "action_remove_features"),
+               new Object[] {label});
+      }
+      else if (CopyActionExecuter.NAME.equals(this.action))
+      {
+         NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
+         String spaceName = Repository.getNameForNode(this.nodeService, space);
          
-         // define a summary to be added for each action
-         if (AddFeaturesActionExecuter.NAME.equals(actionName) || RemoveFeaturesActionExecuter.NAME.equals(actionName))
+         summary = MessageFormat.format(Application.getMessage(context, "action_copy"),
+               new Object[] {spaceName});
+      }
+      else if (MoveActionExecuter.NAME.equals(this.action))
+      {
+         NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
+         String spaceName = Repository.getNameForNode(this.nodeService, space);
+         
+         summary = MessageFormat.format(Application.getMessage(context, "action_move"),
+               new Object[] {spaceName});
+      }
+      else if (SimpleWorkflowActionExecuter.NAME.equals(this.action))
+      {
+         String approveStepName = (String)this.currentActionProperties.get(PROP_APPROVE_STEP_NAME);
+         String approveAction = (String)this.currentActionProperties.get(PROP_APPROVE_ACTION);
+         NodeRef approveFolder = (NodeRef)this.currentActionProperties.get(PROP_APPROVE_FOLDER);
+         String approveFolderName = Repository.getNameForNode(this.nodeService, approveFolder);
+         String approveMsg = MessageFormat.format(Application.getMessage(context, "action_simple_workflow"), 
+               new Object[] {Application.getMessage(context, approveAction), 
+                             approveFolderName, approveStepName});
+         
+         String rejectMsg = null;
+         String rejectStep = (String)this.currentActionProperties.get(PROP_REJECT_STEP_PRESENT);
+         if (rejectStep != null && "yes".equals(rejectStep))
          {
-            String aspect = (String)this.currentActionProperties.get(PROP_ASPECT);
-            
-            // find the label used by looking through the SelectItem list
-            for (SelectItem item : this.getAspects())
+            String rejectStepName = (String)this.currentActionProperties.get(PROP_REJECT_STEP_NAME);
+            String rejectAction = (String)this.currentActionProperties.get(PROP_REJECT_ACTION);
+            NodeRef rejectFolder = (NodeRef)this.currentActionProperties.get(PROP_REJECT_FOLDER);
+            String rejectFolderName = Repository.getNameForNode(this.nodeService, rejectFolder);
+            rejectMsg = MessageFormat.format(Application.getMessage(context, "action_simple_workflow"), 
+               new Object[] {Application.getMessage(context, rejectAction),
+                             rejectFolderName, rejectStepName});
+         }
+         
+         StringBuilder builder = new StringBuilder(approveMsg);
+         if (rejectMsg != null)
+         {
+            builder.append(" ");
+            builder.append(rejectMsg);
+         }
+         
+         summary = builder.toString();
+      }
+      else if (LinkCategoryActionExecuter.NAME.equals(this.action))
+      {
+         NodeRef cat = (NodeRef)this.currentActionProperties.get(PROP_CATEGORY);
+         String name = Repository.getNameForNode(this.nodeService, cat);
+         
+         summary = MessageFormat.format(Application.getMessage(context, "action_link_category"),
+               new Object[] {name});
+      }
+      else if (CheckOutActionExecuter.NAME.equals(this.action))
+      {
+         NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
+         String spaceName = Repository.getNameForNode(this.nodeService, space);
+         
+         summary = MessageFormat.format(Application.getMessage(context, "action_check_out"),
+               new Object[] {spaceName});
+      }
+      else if (CheckInActionExecuter.NAME.equals(this.action))
+      {
+         String comment = (String)this.currentActionProperties.get(PROP_CHECKIN_DESC);
+         Boolean minorChange = (Boolean)this.currentActionProperties.get(PROP_CHECKIN_MINOR);
+         String change = null;
+         if (minorChange != null && minorChange.booleanValue())
+         {
+            change = Application.getMessage(context, "minor_change");
+         }
+         else
+         {
+            change = Application.getMessage(context, "major_change");
+         }
+         
+         summary = MessageFormat.format(Application.getMessage(context, "action_check_in"),
+               new Object[] {change, comment});
+      }
+      else if (TransformActionExecuter.NAME.equals(this.action))
+      {
+         String label = null;
+         NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
+         String name = Repository.getNameForNode(this.nodeService, space);
+         String transformer = (String)this.currentActionProperties.get(PROP_TRANSFORMER);
+         
+         // find the label used by looking through the SelectItem list
+         for (SelectItem item : this.getTransformers())
+         {
+            if (item.getValue().equals(transformer))
             {
-               if (item.getValue().equals(aspect))
+               label = item.getLabel();
+               break;
+            }
+         }
+         
+         summary = MessageFormat.format(Application.getMessage(context, "action_transform"),
+               new Object[] {name, label});
+      }
+      else if (ImageTransformActionExecuter.NAME.equals(this.action))
+      {
+         String label = null;
+         NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
+         String name = Repository.getNameForNode(this.nodeService, space);
+         String transformer = (String)this.currentActionProperties.get(PROP_IMAGE_TRANSFORMER);
+         String option = (String)this.currentActionProperties.get(PROP_TRANSFORM_OPTIONS);
+         
+         // find the label used by looking through the SelectItem list
+         for (SelectItem item : this.getImageTransformers())
+         {
+            if (item.getValue().equals(transformer))
+            {
+               label = item.getLabel();
+               break;
+            }
+         }
+         
+         summary = MessageFormat.format(Application.getMessage(context, "action_transform_image"),
+               new Object[] {name, label, option});
+      }
+      else if (MailActionExecuter.NAME.equals(this.action))
+      {
+         String addresses = (String)this.currentActionProperties.get(PROP_TO);
+         
+         if (addresses == null || addresses.length() == 0)
+         {
+            if (this.emailRecipients.size() != 0)
+            {
+               StringBuilder builder = new StringBuilder();
+               
+               for (int i=0; i<this.emailRecipients.size(); i++)
                {
-                  summary.append("'").append(item.getLabel()).append("'");
-                  break;
-               }
-            }
-         }
-         else if (SimpleWorkflowActionExecuter.NAME.equals(actionName))
-         {
-            // just leave the summary as the title for now
-            String approveStepName = (String)this.currentActionProperties.get(PROP_APPROVE_STEP_NAME);
-            String approveAction = (String)this.currentActionProperties.get(PROP_APPROVE_ACTION);
-            NodeRef approveFolder = (NodeRef)this.currentActionProperties.get(PROP_APPROVE_FOLDER);
-            String approveFolderName = Repository.getNameForNode(this.nodeService, approveFolder);
-            String approveMsg = MessageFormat.format(summary.toString(), 
-                  new Object[] {Application.getMessage(FacesContext.getCurrentInstance(), approveAction), 
-                                approveFolderName, approveStepName});
-            
-            String rejectStep = (String)this.currentActionProperties.get(PROP_REJECT_STEP_PRESENT);
-            
-            String rejectMsg = null;
-            if (rejectStep != null && "yes".equals(rejectStep))
-            {
-               String rejectStepName = (String)this.currentActionProperties.get(PROP_REJECT_STEP_NAME);
-               String rejectAction = (String)this.currentActionProperties.get(PROP_REJECT_ACTION);
-               NodeRef rejectFolder = (NodeRef)this.currentActionProperties.get(PROP_REJECT_FOLDER);
-               String rejectFolderName = Repository.getNameForNode(this.nodeService, rejectFolder);
-               rejectMsg = MessageFormat.format(summary.toString(), 
-                  new Object[] {Application.getMessage(FacesContext.getCurrentInstance(), rejectAction),
-                                rejectFolderName, rejectStepName});
-            }
-            
-            summary = new StringBuilder(approveMsg);
-            if (rejectMsg != null)
-            {
-               summary.append(" ");
-               summary.append(rejectMsg);
-            }
-         }
-         else if (LinkCategoryActionExecuter.NAME.equals(actionName))
-         {
-            NodeRef cat = (NodeRef)this.currentActionProperties.get(PROP_CATEGORY);
-            String name = Repository.getNameForNode(this.nodeService, cat);
-            summary.append("'").append(name).append("'");
-         }
-         else if (TransformActionExecuter.NAME.equals(actionName))
-         {
-            NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-            String name = Repository.getNameForNode(this.nodeService, space);
-            String transformer = (String)this.currentActionProperties.get(PROP_TRANSFORMER);
-            
-            // find the label used by looking through the SelectItem list
-            for (SelectItem item : this.getTransformers())
-            {
-               if (item.getValue().equals(transformer))
-               {
-                  transformer = item.getLabel();
-                  break;
-               }
-            }
-            
-            // recreate the summary object as it contains parameters
-            String msg = MessageFormat.format(summary.toString(), new Object[] {name, transformer});
-            summary = new StringBuilder(msg);
-         }
-         else if (ImageTransformActionExecuter.NAME.equals(actionName))
-         {
-            NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-            String name = Repository.getNameForNode(this.nodeService, space);
-            String transformer = (String)this.currentActionProperties.get(PROP_IMAGE_TRANSFORMER);
-            String option = (String)this.currentActionProperties.get(PROP_TRANSFORM_OPTIONS);
-            
-            // find the label used by looking through the SelectItem list
-            for (SelectItem item : this.getImageTransformers())
-            {
-               if (item.getValue().equals(transformer))
-               {
-                  transformer = item.getLabel();
-                  break;
-               }
-            }
-            
-            // recreate the summary object as it contains parameters
-            String msg = MessageFormat.format(summary.toString(), new Object[] {name, transformer, option});
-            summary = new StringBuilder(msg);
-         }
-         else if (CopyActionExecuter.NAME.equals(actionName) || "move".equals(actionName) || "check-out".equals(actionName))
-         {
-            NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-            String spaceName = Repository.getNameForNode(this.nodeService, space);
-            summary.append("'").append(spaceName).append("'");
-         }
-         else if (MailActionExecuter.NAME.equals(actionName))
-         {
-            String address = (String)this.currentActionProperties.get(PROP_TO);
-            if (address != null && address.length() != 0)
-            {
-               summary.append("'").append(address).append("'");
-            }
-            else
-            {
-               if (this.emailRecipients.size() != 0)
-               {
-                  summary.append("'");
-                  for (int i=0; i<this.emailRecipients.size(); i++)
+                  RecipientWrapper wrapper = this.emailRecipients.get(i);
+                  if (i != 0)
                   {
-                     RecipientWrapper wrapper = this.emailRecipients.get(i);
-                     if (i != 0)
-                     {
-                        summary.append(", ");
-                     }
-                     summary.append(wrapper.getName());
+                     builder.append(", ");
                   }
-                  summary.append("'");
+                  builder.append(wrapper.getName());
                }
+               
+               addresses = builder.toString();
             }
-         }
-         else if (CheckInActionExecuter.NAME.equals(actionName))
-         {
-            String comment = (String)this.currentActionProperties.get(PROP_CHECKIN_DESC);
-            Boolean minorChange = (Boolean)this.currentActionProperties.get(PROP_CHECKIN_MINOR);
-            String change = null;
-            if (minorChange != null && minorChange.booleanValue())
-            {
-               change = Application.getMessage(FacesContext.getCurrentInstance(), "minor_change");
-            }
-            else
-            {
-               change = Application.getMessage(FacesContext.getCurrentInstance(), "major_change");
-            }
-            
-            // recreate the summary object as it contains parameters
-            String msg = MessageFormat.format(summary.toString(), new Object[] {change, comment});
-            summary = new StringBuilder(msg);
-         }
-         else if (ImporterActionExecuter.NAME.equals(actionName))
-         {
-            NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-            String spaceName = Repository.getNameForNode(this.nodeService, space);
-            summary.append("'").append(spaceName).append("'");
-         }
-         else if (SpecialiseTypeActionExecuter.NAME.equals(actionName))
-         {
-            String label = null;
-            String objectType = (String)this.currentActionProperties.get(PROP_OBJECT_TYPE);
-            for (SelectItem item  : getObjectTypes())
-            {
-               if (item.getValue().equals(objectType) == true)
-               {
-                  label = item.getLabel();
-                  break;
-               }
-            }
-            
-            summary.append("'").append(label).append("'");
-         }
-         else if (ScriptActionExecutor.NAME.equals(actionName))
-         {
-            String id = (String)this.currentActionProperties.get(PROP_SCRIPT);
-            NodeRef scriptRef = new NodeRef(Repository.getStoreRef(), id);
-            String scriptName = Repository.getNameForNode(this.nodeService, scriptRef);
-            summary.append("'").append(scriptName).append("'");
          }
          
-         summaryResult = summary.toString();
+         summary = MessageFormat.format(Application.getMessage(context, "action_mail"),
+               new Object[] {addresses});
+      }
+      else if (ImporterActionExecuter.NAME.equals(this.action))
+      {
+         NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
+         String spaceName = Repository.getNameForNode(this.nodeService, space);
+         
+         summary = MessageFormat.format(Application.getMessage(context, "action_import"),
+               new Object[] {spaceName});
+      }
+      else if (SpecialiseTypeActionExecuter.NAME.equals(this.action))
+      {
+         String label = null;
+         String objectType = (String)this.currentActionProperties.get(PROP_OBJECT_TYPE);
+         for (SelectItem item  : getObjectTypes())
+         {
+            if (item.getValue().equals(objectType) == true)
+            {
+               label = item.getLabel();
+               break;
+            }
+         }
+            
+         summary = MessageFormat.format(Application.getMessage(context, "action_specialise_type"),
+               new Object[] {label});
+      }
+      else if (ScriptActionExecutor.NAME.equals(this.action))
+      {
+         String id = (String)this.currentActionProperties.get(PROP_SCRIPT);
+         NodeRef scriptRef = new NodeRef(Repository.getStoreRef(), id);
+         String scriptName = Repository.getNameForNode(this.nodeService, scriptRef);
+         
+         summary = MessageFormat.format(Application.getMessage(context, "action_script"),
+               new Object[] {scriptName});
+      }
+      else
+      {
+         // as the default case (i.e. for actions with no parameters) use the title
+         ActionDefinition actionDef = this.actionService.getActionDefinition(this.action);
+         summary = actionDef.getTitle();
       }
       
-      return summaryResult;
+      return summary;
    }
    
    /**

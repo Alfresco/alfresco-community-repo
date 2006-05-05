@@ -1,6 +1,7 @@
 package org.alfresco.web.bean.rules;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,9 +22,6 @@ import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.evaluator.HasAspectEvaluator;
 import org.alfresco.repo.action.evaluator.InCategoryEvaluator;
 import org.alfresco.repo.action.evaluator.IsSubTypeEvaluator;
-import org.alfresco.repo.action.executer.CheckInActionExecuter;
-import org.alfresco.repo.action.executer.ContentMetadataExtracter;
-import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
@@ -231,11 +229,14 @@ public class CreateRuleWizard extends BaseActionWizard
       // add all the conditions to the rule
       for (Map<String, Serializable> condParams : this.allConditionsProperties)
       {
-         Map<String, Serializable> repoCondParams = buildConditionParams(condParams);
+         String conditionName = (String)condParams.get(PROP_CONDITION_NAME);
+         this.condition = conditionName;
+         this.currentConditionProperties = condParams;
+         Map<String, Serializable> repoCondParams = buildConditionParams();
          
          // add the condition to the rule
-         ActionCondition condition = this.actionService.createActionCondition(
-               (String)condParams.get(PROP_CONDITION_NAME));
+         ActionCondition condition = this.actionService.
+               createActionCondition(conditionName);
          condition.setParameterValues(repoCondParams);
          
          // specify whether the condition result should be inverted
@@ -539,19 +540,32 @@ public class CreateRuleWizard extends BaseActionWizard
       HashMap<String, Serializable> condProps = new HashMap<String, Serializable>(3);
       condProps.put(PROP_CONDITION_NAME, this.condition);
       this.currentConditionProperties = condProps;
-         
-      // setup any defaults for the UI or handle actions with no parameters
-      String overridenViewId = setupUIDefaultsForCondition(condProps);
-      if (overridenViewId != null)
+      
+      // determine whether the condition being added has any parameters
+      ActionConditionDefinition conditionDef = this.actionService.
+            getActionConditionDefinition(this.condition);
+      if (conditionDef.hasParameterDefinitions())
       {
-         viewId = overridenViewId;
+         // setup any defaults for the UI and override the viewId if necessary
+         String overridenViewId = setupUIDefaultsForCondition(condProps);
+         if (overridenViewId != null)
+         {
+            viewId = overridenViewId;
+         }
+      }
+      else
+      {
+         // just add the condition to the list and use the title as the summary
+         condProps.put(PROP_CONDITION_SUMMARY, conditionDef.getTitle());
+         condProps.put(PROP_CONDITION_NOT, Boolean.FALSE);
+         this.allConditionsProperties.add(condProps);
+         
+         // come back to the same page we're on now as there are no params to collect
+         viewId = this.returnViewId;
       }
       
       if (logger.isDebugEnabled())
             logger.debug("Added '" + this.condition + "' condition to list");
-      
-      // reset the selected condition drop down
-      this.condition = null;
       
       // go to the page to collect the settings
       goToPage(context, viewId);
@@ -593,14 +607,13 @@ public class CreateRuleWizard extends BaseActionWizard
          this.currentConditionProperties.put(PROP_CONDITION_SUMMARY, summary);
       }
       
-      if (this.editingCondition)
-      {
-         this.condition = null;
-      }
-      else
+      if (this.editingCondition == false)
       {
          this.allConditionsProperties.add(this.currentConditionProperties);
       }
+      
+      // reset the action drop down
+      this.condition = null;
       
       // refresh the wizard
       goToPage(context, this.returnViewId);
@@ -629,14 +642,13 @@ public class CreateRuleWizard extends BaseActionWizard
     */
    public void cancelAddCondition()
    {
-      if (this.editingCondition)
-      {
-         this.condition = null;
-      }
-      else
+      if (this.editingCondition == false)
       {
          this.currentConditionProperties.clear();
       }
+      
+      // reset the action drop down
+      this.condition = null;
       
       // refresh the wizard
       goToPage(FacesContext.getCurrentInstance(), this.returnViewId);
@@ -678,59 +690,52 @@ public class CreateRuleWizard extends BaseActionWizard
     */
    protected String setupUIDefaultsForCondition(HashMap<String, Serializable> props)
    {
-      String overridenViewId = null;
+      // NOTE: none of the built in conditions have any defaults to setup
       
-      if ("no-condition".equals(this.condition))
-      {
-         // there are no parameters so just add it
-         props.put(PROP_CONDITION_SUMMARY, Application.getMessage(
-               FacesContext.getCurrentInstance(), "condition_no_condition"));
-         props.put(PROP_CONDITION_NOT, Boolean.FALSE);
-         this.allConditionsProperties.add(props);
-         
-         // come back to the same page we're on now
-         overridenViewId = this.returnViewId;
-      }
-      
-      return overridenViewId;
+      return null;
    }
    
    /**
     * Builds the Map of properties for the given condition in the format the repo is expecting
     * 
-    * @param params The Map of properties built from the UI
     * @return The Map the repo is expecting
     */
-   protected Map<String, Serializable> buildConditionParams(Map<String, Serializable> params)
+   protected Map<String, Serializable> buildConditionParams()
    {
-      Map<String, Serializable> repoParams = new HashMap<String, Serializable>(params.size());
+      Map<String, Serializable> repoParams = new HashMap<String, Serializable>();
       
-      String condName = (String)params.get(PROP_CONDITION_NAME);
-      if (ComparePropertyValueEvaluator.NAME.equals(condName))
+      if (ComparePropertyValueEvaluator.NAME.equals(this.condition))
       {
-         repoParams.put(ComparePropertyValueEvaluator.PARAM_VALUE, params.get(PROP_CONTAINS_TEXT));
+         // add the text to compare
+         String text = (String)this.currentConditionProperties.get(PROP_CONTAINS_TEXT);
+         repoParams.put(ComparePropertyValueEvaluator.PARAM_VALUE, text);
       }
-      else if (InCategoryEvaluator.NAME.equals(condName))
+      else if (InCategoryEvaluator.NAME.equals(this.condition))
       {
          // put the selected category in the condition params
-         repoParams.put(InCategoryEvaluator.PARAM_CATEGORY_VALUE, params.get(PROP_CATEGORY));
+         NodeRef nodeRef = (NodeRef)this.currentConditionProperties.get(PROP_CATEGORY);
+         repoParams.put(InCategoryEvaluator.PARAM_CATEGORY_VALUE, nodeRef);
          
          // add the classifiable aspect
          repoParams.put(InCategoryEvaluator.PARAM_CATEGORY_ASPECT, ContentModel.ASPECT_GEN_CLASSIFIABLE);
       }
-      else if (IsSubTypeEvaluator.NAME.equals(condName))
+      else if (IsSubTypeEvaluator.NAME.equals(this.condition))
       {
          // add the model type
-         repoParams.put(IsSubTypeEvaluator.PARAM_TYPE, QName.createQName((String)params.get(PROP_MODEL_TYPE)));
+         QName type = QName.createQName((String)this.currentConditionProperties.get(PROP_MODEL_TYPE));
+         repoParams.put(IsSubTypeEvaluator.PARAM_TYPE, type);
       }
-      else if (HasAspectEvaluator.NAME.equals(condName))
+      else if (HasAspectEvaluator.NAME.equals(this.condition))
       {
          // add the aspect
-         repoParams.put(HasAspectEvaluator.PARAM_ASPECT, QName.createQName((String)params.get(PROP_ASPECT)));
+         QName aspect = QName.createQName((String)this.currentConditionProperties.get(PROP_ASPECT));
+         repoParams.put(HasAspectEvaluator.PARAM_ASPECT, aspect);
       }
-      else if (CompareMimeTypeEvaluator.NAME.equals(condName))
+      else if (CompareMimeTypeEvaluator.NAME.equals(this.condition))
       {
-          repoParams.put(CompareMimeTypeEvaluator.PARAM_VALUE, params.get(PROP_MIMETYPE));
+         // add the mimetype
+         String mimeType = (String)this.currentConditionProperties.get(PROP_MIMETYPE);
+         repoParams.put(CompareMimeTypeEvaluator.PARAM_VALUE, mimeType);
       }
       
       return repoParams;
@@ -743,85 +748,93 @@ public class CreateRuleWizard extends BaseActionWizard
     */
    protected String buildConditionSummary()
    {
-      String summaryResult = null;
-      
-      String condName = (String)this.currentConditionProperties.get(PROP_CONDITION_NAME);
-      if (condName != null)
+      String summary = null;
+      FacesContext context = FacesContext.getCurrentInstance();
+      Boolean not = (Boolean)this.currentConditionProperties.get(PROP_CONDITION_NOT);
+         
+      if (ComparePropertyValueEvaluator.NAME.equals(this.condition))
       {
-         StringBuilder summary = new StringBuilder();
+         String msgId = not.booleanValue() ? 
+               "condition_compare_property_value_not" : "condition_compare_property_value";
          
-         String msgId = "condition_" + condName.replace('-', '_');
+         String text = (String)this.currentConditionProperties.get(PROP_CONTAINS_TEXT);
          
-         // JSF is putting the boolean into the map as a Boolean object so we
-         // need to handle that - adding a converter doesn't seem to help!
-         Boolean not = (Boolean)this.currentConditionProperties.get(PROP_CONDITION_NOT);
-         if (not.booleanValue())
+         summary = MessageFormat.format(Application.getMessage(context, msgId),
+               new Object[] {text});
+      }
+      else if (InCategoryEvaluator.NAME.equals(this.condition))
+      {
+         String msgId = not.booleanValue() ? "condition_in_category_not" : "condition_in_category";
+         
+         String name = Repository.getNameForNode(this.nodeService, 
+               (NodeRef)this.currentConditionProperties.get(PROP_CATEGORY));
+         
+         summary = MessageFormat.format(Application.getMessage(context, msgId),
+               new Object[] {name});
+      }
+      else if (IsSubTypeEvaluator.NAME.equals(this.condition))
+      {
+         String msgId = not.booleanValue() ? "condition_is_subtype_not" : "condition_is_subtype";
+         
+         String label = null;
+         String typeName = (String)this.currentConditionProperties.get(PROP_MODEL_TYPE);
+         for (SelectItem item : this.getModelTypes())
          {
-            msgId = msgId + "_not";
-         }
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Looking up condition summary string: " + msgId);
-         
-         summary.append(Application.getMessage(FacesContext.getCurrentInstance(), msgId));
-         summary.append(" ");
-         
-         // define a summary to be added for each condition
-         if (InCategoryEvaluator.NAME.equals(condName))
-         {
-            String name = Repository.getNameForNode(this.nodeService, 
-                  (NodeRef)this.currentConditionProperties.get(PROP_CATEGORY));
-            summary.append("'").append(name).append("'");
-         }
-         else if (ComparePropertyValueEvaluator.NAME.equals(condName))
-         {
-            summary.append("'");
-            summary.append(this.currentConditionProperties.get(PROP_CONTAINS_TEXT));
-            summary.append("'");
-         }
-         else if (IsSubTypeEvaluator.NAME.equals(condName))
-         {
-            // find the label used by looking through the SelectItem list
-            String typeName = (String)this.currentConditionProperties.get(PROP_MODEL_TYPE);
-            for (SelectItem item : this.getModelTypes())
+            if (item.getValue().equals(typeName))
             {
-               if (item.getValue().equals(typeName))
-               {
-                  summary.append("'").append(item.getLabel()).append("'");
-                  break;
-               }
-            }
-         }
-         else if (HasAspectEvaluator.NAME.equals(condName))
-         {
-            // find the label used by looking through the SelectItem list
-            String aspectName = (String)this.currentConditionProperties.get(PROP_ASPECT);
-            for (SelectItem item : this.getAspects())
-            {
-               if (item.getValue().equals(aspectName))
-               {
-                  summary.append("'").append(item.getLabel()).append("'");
-                  break;
-               }
-            }
-         }
-         else if (CompareMimeTypeEvaluator.NAME.equals(condName))
-         {
-            String mimetype = (String)this.currentConditionProperties.get(PROP_MIMETYPE);
-            for (SelectItem item : this.getMimeTypes())
-            {
-               if (item.getValue().equals(mimetype))
-               {
-                  summary.append("'").append(item.getLabel()).append("'");
-                  break;
-               }
+               label = item.getLabel();
+               break;
             }
          }
          
-         summaryResult = summary.toString();
+         summary = MessageFormat.format(Application.getMessage(context, msgId),
+               new Object[] {label});
+      }
+      else if (HasAspectEvaluator.NAME.equals(this.condition))
+      {
+         String msgId = not.booleanValue() ? "condition_has_aspect_not" : "condition_has_aspect";
+         
+         String label = null;
+         String aspectName = (String)this.currentConditionProperties.get(PROP_ASPECT);
+         for (SelectItem item : this.getAspects())
+         {
+            if (item.getValue().equals(aspectName))
+            {
+               label = item.getLabel();
+               break;
+            }
+         }
+         
+         summary = MessageFormat.format(Application.getMessage(context, msgId),
+               new Object[] {label});
+      }
+      else if (CompareMimeTypeEvaluator.NAME.equals(this.condition))
+      {
+         String msgId = not.booleanValue() ? "condition_compare_mime_type_not" : "condition_compare_mime_type";
+         
+         String label = null;
+         String mimetype = (String)this.currentConditionProperties.get(PROP_MIMETYPE);
+         for (SelectItem item : this.getMimeTypes())
+         {
+            if (item.getValue().equals(mimetype))
+            {
+               label = item.getLabel();
+               break;
+            }
+         }
+         
+         summary = MessageFormat.format(Application.getMessage(context, msgId),
+               new Object[] {label});
+      }
+      else
+      {
+         // as the default case (i.e. for conditions with no parameters) use the title
+         ActionConditionDefinition conditionDef = this.actionService.
+               getActionConditionDefinition(this.condition);
+         summary = conditionDef.getTitle();
       }
       
-      return summaryResult;
+      return summary;
    }
    
    /**

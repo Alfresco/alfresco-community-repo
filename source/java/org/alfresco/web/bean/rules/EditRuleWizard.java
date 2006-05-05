@@ -175,27 +175,27 @@ public class EditRuleWizard extends CreateRuleWizard
     */
    protected void populateAction(Map<String, Serializable> actionProps)
    {
-      if (this.action.equals(AddFeaturesActionExecuter.NAME))
+      if (AddFeaturesActionExecuter.NAME.equals(this.action))
       {
          QName aspect = (QName)actionProps.get(AddFeaturesActionExecuter.PARAM_ASPECT_NAME);
          this.currentActionProperties.put(PROP_ASPECT, aspect.toString());
       }
-      else if (this.action.equals(RemoveFeaturesActionExecuter.NAME))
+      else if (RemoveFeaturesActionExecuter.NAME.equals(this.action))
       {
           QName aspect = (QName)actionProps.get(RemoveFeaturesActionExecuter.PARAM_ASPECT_NAME);
           this.currentActionProperties.put(PROP_ASPECT, aspect.toString());
       }
-      else if (this.action.equals(CopyActionExecuter.NAME))
+      else if (CopyActionExecuter.NAME.equals(this.action))
       {
          NodeRef destNodeRef = (NodeRef)actionProps.get(CopyActionExecuter.PARAM_DESTINATION_FOLDER);
          this.currentActionProperties.put(PROP_DESTINATION, destNodeRef);
       }
-      else if (this.action.equals(MoveActionExecuter.NAME))
+      else if (MoveActionExecuter.NAME.equals(this.action))
       {
          NodeRef destNodeRef = (NodeRef)actionProps.get(MoveActionExecuter.PARAM_DESTINATION_FOLDER);
          this.currentActionProperties.put(PROP_DESTINATION, destNodeRef);
       }
-      else if (this.action.equals(SimpleWorkflowActionExecuter.NAME))
+      else if (SimpleWorkflowActionExecuter.NAME.equals(this.action))
       {
          String approveStep = (String)actionProps.get(SimpleWorkflowActionExecuter.PARAM_APPROVE_STEP);
          Boolean approveMove = (Boolean)actionProps.get(SimpleWorkflowActionExecuter.PARAM_APPROVE_MOVE);
@@ -223,17 +223,17 @@ public class EditRuleWizard extends CreateRuleWizard
             this.currentActionProperties.put(PROP_REJECT_FOLDER, rejectFolderNode);
          }
       }
-      else if (this.action.equals(LinkCategoryActionExecuter.NAME))
+      else if (LinkCategoryActionExecuter.NAME.equals(this.action))
       {
          NodeRef catNodeRef = (NodeRef)actionProps.get(LinkCategoryActionExecuter.PARAM_CATEGORY_VALUE);
          this.currentActionProperties.put(PROP_CATEGORY, catNodeRef);
       }
-      else if (this.action.equals(CheckOutActionExecuter.NAME))
+      else if (CheckOutActionExecuter.NAME.equals(this.action))
       {
          NodeRef destNodeRef = (NodeRef)actionProps.get(CheckOutActionExecuter.PARAM_DESTINATION_FOLDER);
          this.currentActionProperties.put(PROP_DESTINATION, destNodeRef);
       }
-      else if (this.action.equals(CheckInActionExecuter.NAME))
+      else if (CheckInActionExecuter.NAME.equals(this.action))
       {
          String checkDesc = (String)actionProps.get(CheckInActionExecuter.PARAM_DESCRIPTION);
          this.currentActionProperties.put(PROP_CHECKIN_DESC, checkDesc);
@@ -241,7 +241,7 @@ public class EditRuleWizard extends CreateRuleWizard
          Boolean minorChange = (Boolean)actionProps.get(CheckInActionExecuter.PARAM_MINOR_CHANGE);
          this.currentActionProperties.put(PROP_CHECKIN_MINOR, minorChange);
       }
-      else if (this.action.equals(TransformActionExecuter.NAME))
+      else if (TransformActionExecuter.NAME.equals(this.action))
       {
          String transformer = (String)actionProps.get(TransformActionExecuter.PARAM_MIME_TYPE);
          this.currentActionProperties.put(PROP_TRANSFORMER, transformer);
@@ -249,7 +249,7 @@ public class EditRuleWizard extends CreateRuleWizard
          NodeRef destNodeRef = (NodeRef)actionProps.get(CopyActionExecuter.PARAM_DESTINATION_FOLDER);
          this.currentActionProperties.put(PROP_DESTINATION, destNodeRef);
       }
-      else if (this.action.equals(ImageTransformActionExecuter.NAME))
+      else if (ImageTransformActionExecuter.NAME.equals(this.action))
       {
          String transformer = (String)actionProps.get(TransformActionExecuter.PARAM_MIME_TYPE);
          this.currentActionProperties.put(PROP_IMAGE_TRANSFORMER, transformer);
@@ -260,7 +260,7 @@ public class EditRuleWizard extends CreateRuleWizard
          NodeRef destNodeRef = (NodeRef)actionProps.get(CopyActionExecuter.PARAM_DESTINATION_FOLDER);
          this.currentActionProperties.put(PROP_DESTINATION, destNodeRef);
       }
-      else if (this.action.equals(MailActionExecuter.NAME))
+      else if (MailActionExecuter.NAME.equals(this.action))
       {
          String subject = (String)actionProps.get(MailActionExecuter.PARAM_SUBJECT);
          this.currentActionProperties.put(PROP_SUBJECT, subject);
@@ -295,17 +295,17 @@ public class EditRuleWizard extends CreateRuleWizard
             this.usingTemplate = templateRef.getId();
          }
       }
-      else if (this.action.equals(ImporterActionExecuter.NAME))
+      else if (ImporterActionExecuter.NAME.equals(this.action))
       {
          NodeRef destNodeRef = (NodeRef)actionProps.get(ImporterActionExecuter.PARAM_DESTINATION_FOLDER);
          this.currentActionProperties.put(PROP_DESTINATION, destNodeRef);
       }
-      else if (this.action.equals(SpecialiseTypeActionExecuter.NAME) == true)
+      else if (SpecialiseTypeActionExecuter.NAME.equals(this.action))
       {
           QName specialiseType = (QName)actionProps.get(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME);
           this.currentActionProperties.put(PROP_OBJECT_TYPE, specialiseType.toString());
       }
-      else if (this.action.equals(ScriptActionExecutor.NAME))
+      else if (ScriptActionExecutor.NAME.equals(this.action))
       {
           NodeRef scriptRef = (NodeRef)actionProps.get(ScriptActionExecutor.PARAM_SCRIPTREF);
           this.currentActionProperties.put(PROP_SCRIPT, scriptRef.getId());

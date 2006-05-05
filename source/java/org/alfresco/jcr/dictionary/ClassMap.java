@@ -67,6 +67,9 @@ public class ClassMap
         removeMixin.put(ContentModel.ASPECT_VERSIONABLE, new VersionableMixin());
     }
 
+    /** Default Mixin behaviour **/
+    private static DefaultMixin defaultMixin = new DefaultMixin();
+    
     
     /**
      * Convert an Alfresco Class to a JCR Type
@@ -100,7 +103,8 @@ public class ClassMap
      */
     public static AddMixin getAddMixin(QName alfrescoClass)
     {
-        return addMixin.get(alfrescoClass);
+        AddMixin mixin = addMixin.get(alfrescoClass);
+        return (mixin == null) ? defaultMixin : mixin;
     }
     
     /**
@@ -111,7 +115,8 @@ public class ClassMap
      */
     public static RemoveMixin getRemoveMixin(QName alfrescoClass)
     {
-        return removeMixin.get(alfrescoClass);
+        RemoveMixin mixin = removeMixin.get(alfrescoClass);
+        return (mixin == null) ? defaultMixin : mixin;
     }
     
     /**
@@ -136,4 +141,43 @@ public class ClassMap
         public void postRemoveMixin(SessionImpl session, NodeRef nodeRef);
     }
     
+    
+    /**
+     * Default NOOP Mixin behaviour
+     */
+    private static class DefaultMixin implements AddMixin, RemoveMixin
+    {
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.jcr.dictionary.ClassMap.AddMixin#preAddMixin(org.alfresco.jcr.session.SessionImpl, org.alfresco.service.cmr.repository.NodeRef)
+         */
+        public Map<QName, Serializable> preAddMixin(SessionImpl session, NodeRef nodeRef)
+        {
+            return null;
+        }
+
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.jcr.dictionary.ClassMap.AddMixin#postAddMixin(org.alfresco.jcr.session.SessionImpl, org.alfresco.service.cmr.repository.NodeRef)
+         */
+        public void postAddMixin(SessionImpl session, NodeRef nodeRef)
+        {
+        }
+
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.jcr.dictionary.ClassMap.RemoveMixin#preRemoveMixin(org.alfresco.jcr.session.SessionImpl, org.alfresco.service.cmr.repository.NodeRef)
+         */
+        public void preRemoveMixin(SessionImpl session, NodeRef nodeRef)
+        {
+        }
+
+        /*
+         *  (non-Javadoc)
+         * @see org.alfresco.jcr.dictionary.ClassMap.RemoveMixin#postRemoveMixin(org.alfresco.jcr.session.SessionImpl, org.alfresco.service.cmr.repository.NodeRef)
+         */
+        public void postRemoveMixin(SessionImpl session, NodeRef nodeRef)
+        {
+        }
+    }
 }

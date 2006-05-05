@@ -30,20 +30,36 @@
    </config>
    
    <config evaluator="string-compare" condition="Filesystems">
-      <filesystem name="Alfresco">
-         <store>workspace://SpacesStore</store>
-         <rootPath>/app:company_home</rootPath>
-        <urlFile>
-            <filename>__AlfrescoClient.url</filename>
-            <webpath>http://localhost:8080/alfresco/</webpath>
-         </urlFile>
+	  <filesystems>
+         <filesystem name="Alfresco">
+            <store>workspace://SpacesStore</store>
+            <rootPath>/app:company_home</rootPath>
+
+			<!-- Add a URL file to each folder that links back to the web client -->
+			<urlFile>
+               <filename>__AlfrescoClient.url</filename>
+               <webpath>http://localhost:8080/alfresco/</webpath>
+            </urlFile>
+
+			<!-- Mark locked files as offline --> 
+		    <offlineFiles/>
+
+			<!-- Client side drag and drop application for check in/out via CIFS -->
+<!--			 
+            <dragAndDrop>
+               <filename>__Alfresco.exe</filename>
+               <path>alfresco/desktop/Alfresco.exe</path>
+            </dragAndDrop>
+-->		  
+			 			 
 <!--
-         <accessControl default="Write">
-            <user name="admin" access="Write"/>
-            <address subnet="90.1.0.0" mask="255.255.0.0" access="Write"/>
-         </accessControl>
+            <accessControl default="Write">
+               <user name="admin" access="Write"/>
+               <address subnet="90.1.0.0" mask="255.255.0.0" access="Write"/>
+            </accessControl>
 -->
-      </filesystem>
+         </filesystem>
+      </filesystems>
    </config>
 
    <config evaluator="string-compare" condition="Filesystem Security">

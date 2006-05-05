@@ -110,7 +110,10 @@ public class SpaceDetailsBean extends BaseDetailsBean
       if (ContentModel.TYPE_FOLDERLINK.equals(space.getType()))
       {
          NodeRef destRef = (NodeRef)space.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         space = new Node(destRef);
+         if (nodeService.exists(destRef))
+         {
+            space = new Node(destRef);
+         }
       }
       return space;
    }

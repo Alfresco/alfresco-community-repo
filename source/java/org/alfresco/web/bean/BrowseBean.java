@@ -862,30 +862,62 @@ public class BrowseBean implements IContextListener
    public NodePropertyResolver resolverLinkDownload = new NodePropertyResolver() {
       public Object get(Node node) {
          NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         String destName = Repository.getNameForNode(nodeService, destRef);
-         return DownloadContentServlet.generateDownloadURL(node.getNodeRef(), destName);
+         if (nodeService.exists(destRef) == true)
+         {
+            String destName = Repository.getNameForNode(nodeService, destRef);
+            return DownloadContentServlet.generateDownloadURL(node.getNodeRef(), destName);
+         }
+         else
+         {
+            // TODO: link object is missing - navigate to a page with appropriate message
+            return "#";
+         }
       }
    };
    
    public NodePropertyResolver resolverLinkUrl = new NodePropertyResolver() {
       public Object get(Node node) {
          NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         String destName = Repository.getNameForNode(nodeService, destRef);
-         return DownloadContentServlet.generateBrowserURL(destRef, destName);
+         if (nodeService.exists(destRef) == true)
+         {
+            String destName = Repository.getNameForNode(nodeService, destRef);
+            return DownloadContentServlet.generateBrowserURL(destRef, destName);
+         }
+         else
+         {
+            // TODO: link object is missing - navigate to a page with appropriate message
+            return "#";
+         }
       }
    };
    
    public NodePropertyResolver resolverLinkWebdavUrl = new NodePropertyResolver() {
       public Object get(Node node) {
          NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         return Utils.generateURL(FacesContext.getCurrentInstance(), new Node(destRef), URLMode.WEBDAV); 
+         if (nodeService.exists(destRef) == true)
+         {
+            return Utils.generateURL(FacesContext.getCurrentInstance(), new Node(destRef), URLMode.WEBDAV);
+         }
+         else
+         {
+            // TODO: link object is missing - navigate to a page with appropriate message
+            return "#";
+         }
       }   
    };
    
    public NodePropertyResolver resolverLinkCifsPath = new NodePropertyResolver() {
       public Object get(Node node) {
          NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         return Utils.generateURL(FacesContext.getCurrentInstance(), new Node(destRef), URLMode.CIFS);
+         if (nodeService.exists(destRef) == true)
+         {
+            return Utils.generateURL(FacesContext.getCurrentInstance(), new Node(destRef), URLMode.CIFS);
+         }
+         else
+         {
+            // TODO: link object is missing - navigate to a page with appropriate message
+            return "#";
+         }
       }
    };
    

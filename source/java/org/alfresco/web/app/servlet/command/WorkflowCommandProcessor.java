@@ -20,6 +20,8 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.ServiceRegistry;
 
@@ -44,7 +46,7 @@ public final class WorkflowCommandProcessor extends BaseNodeCommandProcessor
    /**
     * @see org.alfresco.web.app.servlet.command.CommandProcessor#process(org.alfresco.service.ServiceRegistry, java.lang.String)
     */
-   public void process(ServiceRegistry serviceRegistry, String command)
+   public void process(ServiceRegistry serviceRegistry, HttpSession session, String command)
    {
       Map<String, Object> properties = new HashMap<String, Object>(1, 1.0f);
       // all workflow commands use a "target" Node property as an argument

@@ -158,7 +158,10 @@ public class DocumentDetailsBean extends BaseDetailsBean
       if (ContentModel.TYPE_FILELINK.equals(document.getType()))
       {
          NodeRef destRef = (NodeRef)document.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         document = new Node(destRef);
+         if (nodeService.exists(destRef))
+         {
+            document = new Node(destRef);
+         }
       }
       return document;
    }

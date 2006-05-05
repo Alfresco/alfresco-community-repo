@@ -18,6 +18,8 @@ package org.alfresco.web.app.servlet.command;
 
 import java.io.PrintWriter;
 
+import javax.servlet.http.HttpSession;
+
 import org.alfresco.service.ServiceRegistry;
 
 /**
@@ -57,10 +59,11 @@ public interface CommandProcessor
     * they can be constructed later. If the supplied command is unknown to it then an
     * exception should be thrown to indicate this.
     *  
-    * @param serviceRegistry  serviceRegistry
+    * @param serviceRegistry  ServiceRegistry
+    * @param session          HttpSession
     * @param command          Name of the command to construct and execute
     */
-   public void process(ServiceRegistry serviceRegistry, String command);
+   public void process(ServiceRegistry serviceRegistry, HttpSession session, String command);
    
    /**
     * Output a simple status message to the supplied PrintWriter.

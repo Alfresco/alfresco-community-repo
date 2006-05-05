@@ -44,7 +44,7 @@ public final class ApproveWorkflowCommand implements Command
    /**
     * @see org.alfresco.web.app.servlet.command.Command#execute(org.alfresco.service.ServiceRegistry, java.util.Map)
     */
-   public void execute(ServiceRegistry serviceRegistry, Map<String, Object> properties)
+   public Object execute(ServiceRegistry serviceRegistry, Map<String, Object> properties)
    {
       // get the target Node for the command
       NodeRef nodeRef = (NodeRef)properties.get(PROP_TARGET);
@@ -55,5 +55,7 @@ public final class ApproveWorkflowCommand implements Command
       }
       
       WorkflowUtil.approve(nodeRef, serviceRegistry.getNodeService(), serviceRegistry.getCopyService());
+      
+      return true;
    }
 }

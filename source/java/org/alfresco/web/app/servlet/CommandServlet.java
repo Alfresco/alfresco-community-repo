@@ -127,7 +127,7 @@ public class CommandServlet extends BaseServlet
             txn.begin();
             
             // inform the processor to execute the specified command
-            processor.process(serviceRegistry, command);
+            processor.process(serviceRegistry, req.getSession(), command);
             
             // commit the transaction
             txn.commit();

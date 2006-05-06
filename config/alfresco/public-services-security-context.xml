@@ -348,6 +348,8 @@
                org.alfresco.service.cmr.repository.NodeService.getSourceAssocs=ROLE_AUTHENTICATED
                org.alfresco.service.cmr.repository.NodeService.getPath=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.getPaths=ACL_NODE.0.sys:base.ReadProperties
+               org.alfresco.service.cmr.repository.NodeService.getStoreArchiveNode=ACL_NODE.0.sys:base.Read
+               org.alfresco.service.cmr.repository.NodeService.restoreNode=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.CreateChildren
             </value>
         </property>
     </bean>

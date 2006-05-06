@@ -39,9 +39,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
-import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -534,29 +532,19 @@ public class NodeServiceImpl implements NodeService, VersionModel
         return paths;
     }
 
-    public List<NodeRef> selectNodes(NodeRef contextNode, String XPath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks)
+    /**
+     * @throws UnsupportedOperationException always
+     */
+    public NodeRef getStoreArchiveNode(StoreRef storeRef)
     {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
 
-    public List<Serializable> selectProperties(NodeRef contextNode, String XPath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks)
+    /**
+     * @throws UnsupportedOperationException always
+     */
+    public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef targetParentNodeRef, QName assocTypeQName, QName assocQName)
     {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
-
-    public boolean contains(NodeRef nodeRef, QName property, String sqlLikePattern)
-    {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean like(NodeRef nodeRef, QName property, String sqlLikePattern, boolean includeFTS)
-    {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException();
-    }
-    
-    
 }

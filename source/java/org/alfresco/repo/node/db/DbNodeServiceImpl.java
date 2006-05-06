@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
@@ -81,6 +82,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     public DbNodeServiceImpl()
     {
+        storeArchiveMap = new StoreArchiveMap();        // in case it is not set
     }
 
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -115,22 +117,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return unchecked;
     }
     
-    /**
-     * Performs a null-safe get of the store
-     * @param storeRef the store to retrieve
-     * @return Returns the store entity (never null)
-     * @throws InvalidStoreRefException if the referenced store could not be found
-     */
-    private Store getStoreNotNull(StoreRef storeRef) throws InvalidStoreRefException
-    {
-        Store unchecked = nodeDaoService.getStore(storeRef.getProtocol(), storeRef.getIdentifier());
-        if (unchecked == null)
-        {
-            throw new InvalidStoreRefException("Store does not exist: " + storeRef, storeRef);
-        }
-        return unchecked;
-    }
-
     public boolean exists(StoreRef storeRef)
     {
         Store store = nodeDaoService.getStore(storeRef.getProtocol(), storeRef.getIdentifier());
@@ -429,6 +415,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeBeforeUpdateNode(oldParentNode.getNodeRef());    // old parent will be updated
         invokeBeforeUpdateNode(newParentRef);                  // new parent ditto
         
+        // If the node is moving stores, then drag the node hierarchy with it
+        if (!nodeToMoveRef.getStoreRef().equals(newParentRef.getStoreRef()))
+        {
+            Store newStore = newParentNode.getStore();
+            moveNodeToStore(nodeToMove, newStore);
+            // the node reference will have changed too
+            nodeToMoveRef = nodeToMove.getNodeRef();
+        }
+        
         // remove the child assoc from the old parent
         // don't cascade as we will still need the node afterwards
         nodeDaoService.deleteChildAssoc(oldAssoc, false);
@@ -668,209 +663,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 		
 		// Invoke policy behaviours
 		invokeOnDeleteNode(childAssocRef, nodeTypeQName, nodeAspectQNames);
-    }
-    
-    private void archiveNode(NodeRef nodeRef, StoreRef archiveStoreRef)
-    {
-        Node node = getNodeNotNull(nodeRef);
-        Store archiveStore = getStoreNotNull(archiveStoreRef);
-        ChildAssoc primaryParentAssoc = nodeDaoService.getPrimaryParentAssoc(node);
-        
-        // add the aspect
-        node.getAspects().add(ContentModel.ASPECT_ARCHIVED);
-        Map<QName, PropertyValue> properties = node.getProperties();
-        PropertyValue archivedByProperty = makePropertyValue(
-                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_BY),
-                AuthenticationUtil.getCurrentUserName());
-        properties.put(ContentModel.PROP_ARCHIVED_BY, archivedByProperty);
-        PropertyValue archivedDateProperty = makePropertyValue(
-                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_DATE),
-                new Date());
-        properties.put(ContentModel.PROP_ARCHIVED_DATE, archivedDateProperty);
-        PropertyValue archivedPrimaryParentNodeRefProperty = makePropertyValue(
-                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT),
-                primaryParentAssoc.getParent().getNodeRef());
-        properties.put(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT, archivedPrimaryParentNodeRefProperty);
-        
-        // get the IDs of all the node's primary children, including its own
-        Map<Long, Node> nodesById = new HashMap<Long, Node>(29);
-        getPrimaryChildren(node, nodesById);
-        
-        // move each node into the archive store
-        for (Node nodeToMove : nodesById.values())
-        {
-            NodeRef oldNodeRef = nodeToMove.getNodeRef();
-            nodeToMove.setStore(archiveStore);
-            NodeRef newNodeRef = nodeToMove.getNodeRef();
-            
-            // update change statuses
-            String txnId = AlfrescoTransactionSupport.getTransactionId();
-            NodeStatus oldNodeStatus = nodeDaoService.getNodeStatus(oldNodeRef, true);
-            oldNodeStatus.setNode(null);
-            oldNodeStatus.setChangeTxnId(txnId);
-            NodeStatus newNodeStatus = nodeDaoService.getNodeStatus(newNodeRef, true);
-            newNodeStatus.setNode(nodeToMove);
-            newNodeStatus.setChangeTxnId(txnId);
-        }
-        
-        // archive all the associations between the archived nodes and non-archived nodes
-        for (Node nodeToArchive : nodesById.values())
-        {
-            archiveAssocs(nodeToArchive, nodesById);
-        }
-        
-        // the node reference has changed due to the store move
-        nodeRef = node.getNodeRef();
-
-        // now associate the top-level node with the root of the new store
-        NodeRef archiveStoreRootNodeRef = getRootNode(archiveStoreRef);
-        Node archiveStoreRootNode = getNodeNotNull(archiveStoreRootNodeRef);
-        QName assocTypeQName = ContentModel.ASSOC_CHILDREN;
-        QName assocQName = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedItem");
-        
-        invokeBeforeCreateChildAssociation(archiveStoreRootNodeRef, nodeRef, assocTypeQName, assocQName);
-        invokeBeforeUpdateNode(archiveStoreRootNodeRef);
-        
-        // create a new assoc
-        ChildAssoc newAssoc = nodeDaoService.newChildAssoc(archiveStoreRootNode, node, true, assocTypeQName, assocQName);
-        
-        // invoke policy behaviour
-        invokeOnCreateChildAssociation(newAssoc.getChildAssocRef());
-        invokeOnUpdateNode(archiveStoreRootNodeRef);
-    }
-    
-    /**
-     * Fill the map of all primary children below the given node.
-     * The given node will be added to the map and the method is recursive
-     * to all primary children.
-     */
-    private void getPrimaryChildren(Node node, Map<Long, Node> nodesById)
-    {
-        Long id = node.getId();
-        if (nodesById.containsKey(id))
-        {
-            // this ID was already added - circular reference
-            logger.warn("Circular hierarchy found including node " + id);
-            return;
-        }
-        // add the node to the map
-        nodesById.put(id, node);
-        // recurse into the primary children
-        Collection<ChildAssoc> childAssocs = node.getChildAssocs();
-        for (ChildAssoc childAssoc : childAssocs)
-        {
-            // cascade into primary associations
-            if (childAssoc.getIsPrimary())
-            {
-                Node primaryChild = childAssoc.getChild();
-                getPrimaryChildren(primaryChild, nodesById);
-            }
-        }
-    }
-    
-    /**
-     * Archive all associations to and from the given node, with the
-     * exception of associations to or from nodes in the given map.
-     * @param node the node whose associations must be archived
-     * @param nodesById a map of nodes partaking in the archival process
-     */
-    private void archiveAssocs(Node node, Map<Long, Node> nodesById)
-    {
-        List<ChildAssoc> childAssocsToDelete = new ArrayList<ChildAssoc>(5);
-        // child associations
-        ArrayList<ChildAssociationRef> archivedChildAssocRefs = new ArrayList<ChildAssociationRef>(5);
-        for (ChildAssoc assoc : node.getChildAssocs())
-        {
-            Long relatedNodeId = assoc.getChild().getId();
-            if (nodesById.containsKey(relatedNodeId))
-            {
-                // a sibling in the archive process
-                continue;
-            }
-            childAssocsToDelete.add(assoc);
-            archivedChildAssocRefs.add(assoc.getChildAssocRef());
-        }
-        // parent associations
-        ArrayList<ChildAssociationRef> archivedParentAssocRefs = new ArrayList<ChildAssociationRef>(5);
-        for (ChildAssoc assoc : node.getParentAssocs())
-        {
-            Long relatedNodeId = assoc.getParent().getId();
-            if (nodesById.containsKey(relatedNodeId))
-            {
-                // a sibling in the archive process
-                continue;
-            }
-            childAssocsToDelete.add(assoc);
-            archivedParentAssocRefs.add(assoc.getChildAssocRef());
-        }
-
-        List<NodeAssoc> nodeAssocsToDelete = new ArrayList<NodeAssoc>(5);
-        // source associations
-        ArrayList<AssociationRef> archivedSourceAssocRefs = new ArrayList<AssociationRef>(5);
-        for (NodeAssoc assoc : node.getSourceNodeAssocs())
-        {
-            Long relatedNodeId = assoc.getSource().getId();
-            if (nodesById.containsKey(relatedNodeId))
-            {
-                // a sibling in the archive process
-                continue;
-            }
-            nodeAssocsToDelete.add(assoc);
-            archivedSourceAssocRefs.add(assoc.getNodeAssocRef());
-        }
-        // target associations
-        ArrayList<AssociationRef> archivedTargetAssocRefs = new ArrayList<AssociationRef>(5);
-        for (NodeAssoc assoc : node.getTargetNodeAssocs())
-        {
-            Long relatedNodeId = assoc.getSource().getId();
-            if (nodesById.containsKey(relatedNodeId))
-            {
-                // a sibling in the archive process
-                continue;
-            }
-            nodeAssocsToDelete.add(assoc);
-            archivedTargetAssocRefs.add(assoc.getNodeAssocRef());
-        }
-        // delete child assocs
-        for (ChildAssoc assoc : childAssocsToDelete)
-        {
-            nodeDaoService.deleteChildAssoc(assoc, false);
-        }
-        // delete node assocs
-        for (NodeAssoc assoc : nodeAssocsToDelete)
-        {
-            nodeDaoService.deleteNodeAssoc(assoc);
-        }
-        
-        // add archived aspect
-        node.getAspects().add(ContentModel.ASPECT_ARCHIVED_ASSOCS);
-        // set properties
-        Map<QName, PropertyValue> properties = node.getProperties();
-        
-        if (archivedParentAssocRefs.size() > 0)
-        {
-            PropertyDefinition propertyDef = dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_PARENT_ASSOCS);
-            PropertyValue propertyValue = makePropertyValue(propertyDef, archivedParentAssocRefs);
-            properties.put(ContentModel.PROP_ARCHIVED_PARENT_ASSOCS, propertyValue);
-        }
-        if (archivedChildAssocRefs.size() > 0)
-        {
-            PropertyDefinition propertyDef = dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_CHILD_ASSOCS);
-            PropertyValue propertyValue = makePropertyValue(propertyDef, archivedChildAssocRefs);
-            properties.put(ContentModel.PROP_ARCHIVED_CHILD_ASSOCS, propertyValue);
-        }
-        if (archivedSourceAssocRefs.size() > 0)
-        {
-            PropertyDefinition propertyDef = dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS);
-            PropertyValue propertyValue = makePropertyValue(propertyDef, archivedSourceAssocRefs);
-            properties.put(ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS, propertyValue);
-        }
-        if (archivedTargetAssocRefs.size() > 0)
-        {
-            PropertyDefinition propertyDef = dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_TARGET_ASSOCS);
-            PropertyValue propertyValue = makePropertyValue(propertyDef, archivedTargetAssocRefs);
-            properties.put(ContentModel.PROP_ARCHIVED_TARGET_ASSOCS, propertyValue);
-        }
     }
     
     public ChildAssociationRef addChild(NodeRef parentRef, NodeRef childRef, QName assocTypeQName, QName assocQName)
@@ -1481,5 +1273,389 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // done
         return paths;
+    }
+    
+    private void archiveNode(NodeRef nodeRef, StoreRef archiveStoreRef)
+    {
+        Node node = getNodeNotNull(nodeRef);
+        ChildAssoc primaryParentAssoc = nodeDaoService.getPrimaryParentAssoc(node);
+        
+        // add the aspect
+        node.getAspects().add(ContentModel.ASPECT_ARCHIVED);
+        Map<QName, PropertyValue> properties = node.getProperties();
+        PropertyValue archivedByProperty = makePropertyValue(
+                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_BY),
+                AuthenticationUtil.getCurrentUserName());
+        properties.put(ContentModel.PROP_ARCHIVED_BY, archivedByProperty);
+        PropertyValue archivedDateProperty = makePropertyValue(
+                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_DATE),
+                new Date());
+        properties.put(ContentModel.PROP_ARCHIVED_DATE, archivedDateProperty);
+        PropertyValue archivedPrimaryParentNodeRefProperty = makePropertyValue(
+                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC),
+                primaryParentAssoc.getChildAssocRef());
+        properties.put(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC, archivedPrimaryParentNodeRefProperty);
+        
+        // move the node
+        NodeRef archiveStoreRootNodeRef = getRootNode(archiveStoreRef);
+        moveNode(
+                nodeRef,
+                archiveStoreRootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedItem"));
+        
+        // get the IDs of all the node's primary children, including its own
+        Map<Long, Node> nodesById = getNodeHierarchy(node, null);
+        
+        // Archive all the associations between the archived nodes and non-archived nodes
+        for (Node nodeToArchive : nodesById.values())
+        {
+            archiveAssocs(nodeToArchive, nodesById);
+        }
+        
+        // the node reference has changed due to the store move
+        nodeRef = node.getNodeRef();
+    }
+    
+    /**
+     * Performs all the necessary housekeeping involved in changing a node's store.
+     * This method cascades down through all the primary children of the node as
+     * well.
+     * 
+     * @param node the node whose store is changing
+     * @param store the new store for the node
+     */
+    private void moveNodeToStore(Node node, Store store)
+    {
+        // get the IDs of all the node's primary children, including its own
+        Map<Long, Node> nodesById = getNodeHierarchy(node, null);
+        
+        // move each node into the archive store
+        for (Node nodeToMove : nodesById.values())
+        {
+            NodeRef oldNodeRef = nodeToMove.getNodeRef();
+            nodeToMove.setStore(store);
+            NodeRef newNodeRef = nodeToMove.getNodeRef();
+            
+            // update change statuses
+            String txnId = AlfrescoTransactionSupport.getTransactionId();
+            NodeStatus oldNodeStatus = nodeDaoService.getNodeStatus(oldNodeRef, true);
+            oldNodeStatus.setNode(null);
+            oldNodeStatus.setChangeTxnId(txnId);
+            NodeStatus newNodeStatus = nodeDaoService.getNodeStatus(newNodeRef, true);
+            newNodeStatus.setNode(nodeToMove);
+            newNodeStatus.setChangeTxnId(txnId);
+        }
+    }
+    
+    /**
+     * Fill the map of all primary children below the given node.
+     * The given node will be added to the map and the method is recursive
+     * to all primary children.
+     * 
+     * @param node the start of the hierarchy
+     * @param nodesById a map of nodes that will be reused as the return value
+     * @return Returns a map of nodes in the hierarchy keyed by their IDs
+     */
+    private Map<Long, Node> getNodeHierarchy(Node node, Map<Long, Node> nodesById)
+    {
+        if (nodesById == null)
+        {
+            nodesById = new HashMap<Long, Node>(23);
+        }
+        
+        Long id = node.getId();
+        if (nodesById.containsKey(id))
+        {
+            // this ID was already added - circular reference
+            logger.warn("Circular hierarchy found including node " + id);
+            return nodesById;
+        }
+        // add the node to the map
+        nodesById.put(id, node);
+        // recurse into the primary children
+        Collection<ChildAssoc> childAssocs = node.getChildAssocs();
+        for (ChildAssoc childAssoc : childAssocs)
+        {
+            // cascade into primary associations
+            if (childAssoc.getIsPrimary())
+            {
+                Node primaryChild = childAssoc.getChild();
+                nodesById = getNodeHierarchy(primaryChild, nodesById);
+            }
+        }
+        return nodesById;
+    }
+    
+    /**
+     * Archive all associations to and from the given node, with the
+     * exception of associations to or from nodes in the given map.
+     * <p>
+     * Primary parent associations are also ignored.
+     * 
+     * @param node the node whose associations must be archived
+     * @param nodesById a map of nodes partaking in the archival process
+     */
+    private void archiveAssocs(Node node, Map<Long, Node> nodesById)
+    {
+        List<ChildAssoc> childAssocsToDelete = new ArrayList<ChildAssoc>(5);
+        // child associations
+        ArrayList<ChildAssociationRef> archivedChildAssocRefs = new ArrayList<ChildAssociationRef>(5);
+        for (ChildAssoc assoc : node.getChildAssocs())
+        {
+            Long relatedNodeId = assoc.getChild().getId();
+            if (nodesById.containsKey(relatedNodeId))
+            {
+                // a sibling in the archive process
+                continue;
+            }
+            childAssocsToDelete.add(assoc);
+            archivedChildAssocRefs.add(assoc.getChildAssocRef());
+        }
+        // parent associations
+        ArrayList<ChildAssociationRef> archivedParentAssocRefs = new ArrayList<ChildAssociationRef>(5);
+        for (ChildAssoc assoc : node.getParentAssocs())
+        {
+            Long relatedNodeId = assoc.getParent().getId();
+            if (nodesById.containsKey(relatedNodeId))
+            {
+                // a sibling in the archive process
+                continue;
+            }
+            else if (assoc.getIsPrimary())
+            {
+                // ignore the primary parent as this is handled more specifically
+                continue;
+            }
+            childAssocsToDelete.add(assoc);
+            archivedParentAssocRefs.add(assoc.getChildAssocRef());
+        }
+
+        List<NodeAssoc> nodeAssocsToDelete = new ArrayList<NodeAssoc>(5);
+        // source associations
+        ArrayList<AssociationRef> archivedSourceAssocRefs = new ArrayList<AssociationRef>(5);
+        for (NodeAssoc assoc : node.getSourceNodeAssocs())
+        {
+            Long relatedNodeId = assoc.getSource().getId();
+            if (nodesById.containsKey(relatedNodeId))
+            {
+                // a sibling in the archive process
+                continue;
+            }
+            nodeAssocsToDelete.add(assoc);
+            archivedSourceAssocRefs.add(assoc.getNodeAssocRef());
+        }
+        // target associations
+        ArrayList<AssociationRef> archivedTargetAssocRefs = new ArrayList<AssociationRef>(5);
+        for (NodeAssoc assoc : node.getTargetNodeAssocs())
+        {
+            Long relatedNodeId = assoc.getTarget().getId();
+            if (nodesById.containsKey(relatedNodeId))
+            {
+                // a sibling in the archive process
+                continue;
+            }
+            nodeAssocsToDelete.add(assoc);
+            archivedTargetAssocRefs.add(assoc.getNodeAssocRef());
+        }
+        // delete child assocs
+        for (ChildAssoc assoc : childAssocsToDelete)
+        {
+            nodeDaoService.deleteChildAssoc(assoc, false);
+        }
+        // delete node assocs
+        for (NodeAssoc assoc : nodeAssocsToDelete)
+        {
+            nodeDaoService.deleteNodeAssoc(assoc);
+        }
+        
+        // add archived aspect
+        node.getAspects().add(ContentModel.ASPECT_ARCHIVED_ASSOCS);
+        // set properties
+        Map<QName, PropertyValue> properties = node.getProperties();
+        
+        if (archivedParentAssocRefs.size() > 0)
+        {
+            PropertyDefinition propertyDef = dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_PARENT_ASSOCS);
+            PropertyValue propertyValue = makePropertyValue(propertyDef, archivedParentAssocRefs);
+            properties.put(ContentModel.PROP_ARCHIVED_PARENT_ASSOCS, propertyValue);
+        }
+        if (archivedChildAssocRefs.size() > 0)
+        {
+            PropertyDefinition propertyDef = dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_CHILD_ASSOCS);
+            PropertyValue propertyValue = makePropertyValue(propertyDef, archivedChildAssocRefs);
+            properties.put(ContentModel.PROP_ARCHIVED_CHILD_ASSOCS, propertyValue);
+        }
+        if (archivedSourceAssocRefs.size() > 0)
+        {
+            PropertyDefinition propertyDef = dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS);
+            PropertyValue propertyValue = makePropertyValue(propertyDef, archivedSourceAssocRefs);
+            properties.put(ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS, propertyValue);
+        }
+        if (archivedTargetAssocRefs.size() > 0)
+        {
+            PropertyDefinition propertyDef = dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_TARGET_ASSOCS);
+            PropertyValue propertyValue = makePropertyValue(propertyDef, archivedTargetAssocRefs);
+            properties.put(ContentModel.PROP_ARCHIVED_TARGET_ASSOCS, propertyValue);
+        }
+    }
+
+    public NodeRef getStoreArchiveNode(StoreRef storeRef)
+    {
+        StoreRef archiveStoreRef = storeArchiveMap.getArchiveMap().get(storeRef);
+        if (archiveStoreRef == null)
+        {
+            // no mapping for the given store
+            return null;
+        }
+        else
+        {
+            return getRootNode(archiveStoreRef);
+        }
+    }
+
+    public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef targetParentNodeRef, QName assocTypeQName, QName assocQName)
+    {
+        Node archivedNode = getNodeNotNull(archivedNodeRef);
+        Set<QName> aspects = archivedNode.getAspects();
+        Map<QName, PropertyValue> properties = archivedNode.getProperties();
+        // the node must be a top-level archive node
+        if (!aspects.contains(ContentModel.ASPECT_ARCHIVED))
+        {
+            throw new AlfrescoRuntimeException("The node to archive is not an archive node");
+        }
+        ChildAssociationRef originalPrimaryParentAssocRef = (ChildAssociationRef) makeSerializableValue(
+                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC),
+                properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC));
+        // remove the aspect archived aspect
+        aspects.remove(ContentModel.ASPECT_ARCHIVED);
+        properties.remove(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+        properties.remove(ContentModel.PROP_ARCHIVED_BY);
+        properties.remove(ContentModel.PROP_ARCHIVED_DATE);
+        
+        if (targetParentNodeRef == null)
+        {
+            // we must restore to the original location
+            targetParentNodeRef = originalPrimaryParentAssocRef.getParentRef();
+        }
+        // check the associations
+        if (assocTypeQName == null)
+        {
+            assocTypeQName = originalPrimaryParentAssocRef.getTypeQName();
+        }
+        if (assocQName == null)
+        {
+            assocQName = originalPrimaryParentAssocRef.getQName();
+        }
+
+        // move the node to the target parent, which may or may not be the original parent
+        moveNode(
+                archivedNodeRef,
+                targetParentNodeRef,
+                assocTypeQName,
+                assocQName);
+
+        // get the IDs of all the node's primary children, including its own
+        Map<Long, Node> restoredNodesById = getNodeHierarchy(archivedNode, null);
+        // Restore the archived associations, if required
+        for (Node restoredNode : restoredNodesById.values())
+        {
+            restoreAssocs(restoredNode);
+        }
+        
+        // the node reference has changed due to the store move
+        NodeRef restoredNodeRef = archivedNode.getNodeRef();
+        
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Restored node: \n" +
+                    "   original noderef: " + archivedNodeRef + "\n" +
+                    "   restored noderef: " + restoredNodeRef + "\n" +
+                    "   new parent: " + targetParentNodeRef);
+        }
+        return restoredNodeRef;
+    }
+
+    private void restoreAssocs(Node node)
+    {
+        NodeRef nodeRef = node.getNodeRef();
+        // set properties
+        Map<QName, PropertyValue> properties = node.getProperties();
+
+        // restore parent associations
+        Collection<ChildAssociationRef> parentAssocRefs = (Collection<ChildAssociationRef>) getProperty(
+                nodeRef,
+                ContentModel.PROP_ARCHIVED_PARENT_ASSOCS);
+        if (parentAssocRefs != null)
+        {
+            for (ChildAssociationRef assocRef : parentAssocRefs)
+            {
+                NodeRef parentNodeRef = assocRef.getParentRef();
+                if (!exists(parentNodeRef))
+                {
+                    continue;
+                }
+                Node parentNode = getNodeNotNull(parentNodeRef);
+                nodeDaoService.newChildAssoc(parentNode, node, assocRef.isPrimary(), assocRef.getTypeQName(), assocRef.getQName());
+            }
+            properties.remove(ContentModel.PROP_ARCHIVED_PARENT_ASSOCS);
+        }
+        // restore child associations
+        Collection<ChildAssociationRef> childAssocRefs = (Collection<ChildAssociationRef>) getProperty(
+                nodeRef,
+                ContentModel.PROP_ARCHIVED_CHILD_ASSOCS);
+        if (childAssocRefs != null)
+        {
+            for (ChildAssociationRef assocRef : childAssocRefs)
+            {
+                NodeRef childNodeRef = assocRef.getChildRef();
+                if (!exists(childNodeRef))
+                {
+                    continue;
+                }
+                Node childNode = getNodeNotNull(childNodeRef);
+                nodeDaoService.newChildAssoc(node, childNode, assocRef.isPrimary(), assocRef.getTypeQName(), assocRef.getQName());
+            }
+            properties.remove(ContentModel.PROP_ARCHIVED_CHILD_ASSOCS);
+        }
+        // restore source associations
+        Collection<AssociationRef> sourceAssocRefs = (Collection<AssociationRef>) getProperty(
+                nodeRef,
+                ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS);
+        if (sourceAssocRefs != null)
+        {
+            for (AssociationRef assocRef : sourceAssocRefs)
+            {
+                NodeRef sourceNodeRef = assocRef.getSourceRef();
+                if (!exists(sourceNodeRef))
+                {
+                    continue;
+                }
+                Node sourceNode = getNodeNotNull(sourceNodeRef);
+                nodeDaoService.newNodeAssoc(sourceNode, node, assocRef.getTypeQName());
+            }
+            properties.remove(ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS);
+        }
+        // restore target associations
+        Collection<AssociationRef> targetAssocRefs = (Collection<AssociationRef>) getProperty(
+                nodeRef,
+                ContentModel.PROP_ARCHIVED_TARGET_ASSOCS);
+        if (targetAssocRefs != null)
+        {
+            for (AssociationRef assocRef : targetAssocRefs)
+            {
+                NodeRef targetNodeRef = assocRef.getTargetRef();
+                if (!exists(targetNodeRef))
+                {
+                    continue;
+                }
+                Node targetNode = getNodeNotNull(targetNodeRef);
+                nodeDaoService.newNodeAssoc(node, targetNode, assocRef.getTypeQName());
+            }
+            properties.remove(ContentModel.PROP_ARCHIVED_TARGET_ASSOCS);
+        }
+        // remove the aspect
+        node.getAspects().remove(ContentModel.ASPECT_ARCHIVED_ASSOCS);
     }
 }

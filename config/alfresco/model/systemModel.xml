@@ -127,8 +127,8 @@
       <aspect name="sys:archived">
          <title>Archived</title>
          <properties>
-            <property name="sys:archivedOriginalParent">
-               <type>d:noderef</type>
+            <property name="sys:archivedOriginalParentAssoc">
+               <type>d:childassocref</type>
                <mandatory>true</mandatory>
             </property>
             <property name="sys:archivedBy">

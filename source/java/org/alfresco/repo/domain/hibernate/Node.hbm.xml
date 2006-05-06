@@ -145,7 +145,7 @@
             name="node"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             column="node_id"
-            unique="true"
+            unique="false"
             not-null="false"
             fetch="join"
             lazy="false" />

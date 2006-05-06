@@ -119,6 +119,10 @@ public interface NodeService
      * <p>
      * This involves changing the node's primary parent and possibly the name of the
      * association referencing it.
+     * <p>
+     * If the new parent is in a different store from the original, then the entire
+     * node hierarchy is moved to the new store.  Inter-store associations are not
+     * affected.
      *  
      * @param nodeToMoveRef the node to move
      * @param newParentRef the new parent of the moved node
@@ -475,4 +479,29 @@ public interface NodeService
      * @throws InvalidNodeRefException if the node could not be found
      */
     public List<Path> getPaths(NodeRef nodeRef, boolean primaryOnly) throws InvalidNodeRefException;
+    
+    /**
+     * Get the node where archived items will have gone when deleted from the given store.
+     * 
+     * @param storeRef the store that items were deleted from
+     * @return Returns the archive node parent
+     */
+    public NodeRef getStoreArchiveNode(StoreRef storeRef);
+
+    /**
+     * Restore an individual node (along with its sub-tree nodes) to the target location.
+     * The archived node must have the {@link org.alfresco.model.ContentModel#ASPECT_ARCHIVED archived aspect}
+     * set against it.
+     * 
+     * @param archivedNodeRef the archived node
+     * @param targetParentNodeRef
+     * @param assocTypeQName
+     * @param assocQName
+     * @return Returns the reference to the newly created node 
+     */
+    public NodeRef restoreNode(
+            NodeRef archivedNodeRef,
+            NodeRef targetParentNodeRef,
+            QName assocTypeQName,
+            QName assocQName);
 }

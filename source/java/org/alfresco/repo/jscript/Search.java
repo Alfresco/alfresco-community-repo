@@ -81,13 +81,20 @@ public final class Search
      */
     public Node[] luceneSearch(String search)
     {
-        return query(search);
+        if (search != null && search.length() != 0)
+        {
+           return query(search);
+        }
+        else
+        {
+           return new Node[0];
+        }
     }
     
     /**
      * Execute a saved Lucene search
      * 
-     * @param savedSearch   Node that contains the saved lucene search content
+     * @param savedSearch   Node that contains the saved search XML content
      * 
      * @return Node[] of results from the search - can be empty but not null
      */
@@ -98,19 +105,22 @@ public final class Search
         // read the Saved Search XML on the specified node - and get the Lucene search from it
         try
         {
-            ContentReader content = this.services.getContentService().getReader(
-                    savedSearch.getNodeRef(), ContentModel.PROP_CONTENT);
-            if (content != null && content.exists())
+            if (savedSearch != null)
             {
-                // get the root element
-                SAXReader reader = new SAXReader();
-                Document document = reader.read(new StringReader(content.getContentString()));
-                Element rootElement = document.getRootElement();
-                
-                Element queryElement = rootElement.element("query");
-                if (queryElement != null)
+                ContentReader content = this.services.getContentService().getReader(
+                       savedSearch.getNodeRef(), ContentModel.PROP_CONTENT);
+                if (content != null && content.exists())
                 {
-                    search = queryElement.getText();
+                    // get the root element
+                    SAXReader reader = new SAXReader();
+                    Document document = reader.read(new StringReader(content.getContentString()));
+                    Element rootElement = document.getRootElement();
+                    
+                    Element queryElement = rootElement.element("query");
+                    if (queryElement != null)
+                    {
+                        search = queryElement.getText();
+                    }
                 }
             }
         }
@@ -120,6 +130,25 @@ public final class Search
         }
         
         return search != null ? query(search) : new Node[0];
+    }
+    
+    /**
+     * Execute a saved Lucene search
+     * 
+     * @param searchRef    NodeRef string that points to the node containing saved search XML content
+     * 
+     * @return Node[] of results from the search - can be empty but not null
+     */
+    public Node[] savedSearch(String searchRef)
+    {
+        if (searchRef != null)
+        {
+            return savedSearch(new Node(new NodeRef(searchRef), services, null));
+        }
+        else
+        {
+            return new Node[0];
+        }
     }
     
     private Node[] query(String search)

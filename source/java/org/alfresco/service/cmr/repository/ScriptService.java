@@ -24,15 +24,15 @@ import org.alfresco.service.namespace.QName;
 /**
  * Script Service.
  * <p>
- * Provides an interface to services for executing the JavaScript engine against a script file
- * against a Java object based scripting data model.
+ * Provides an interface to services for executing a JavaScript engine script file against a
+ * Java object based scripting data-model.
  * <p>
- * The template file can either be in the repository (passed as NodeRef string) or on the classpath.
+ * The script file can either be in the repository (passed as NodeRef string) or on the classpath.
  * Also a script String can be passed directly to the service via the executeScriptString() methods.
  * Java objects are passed into the scripting engine and methods can be accessed directly from the script. 
  * <p>
  * A script is executed within a single transaction, any modifications to nodes or properties that fail
- * and cause a rollback will rollback the entire script transaction.
+ * and cause a rollback which will rollback all repoistory modifications made by the script.
  * 
  * @author Kevin Roast
  */

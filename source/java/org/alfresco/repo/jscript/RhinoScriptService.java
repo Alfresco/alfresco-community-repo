@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
@@ -245,23 +246,49 @@ public class RhinoScriptService implements ScriptService
     public static Map<String, Object> buildDefaultModel(ServiceRegistry services,
             NodeRef person, NodeRef companyHome, NodeRef userHome, NodeRef document, NodeRef space)
     {
+        return buildDefaultModel(services, person, companyHome, userHome, document, space, null);
+    }
+    
+    /**
+     * Create the default data-model available to scripts as global scope level objects:
+     * <p>
+     * 'companyhome' - the Company Home node<br>
+     * 'userhome' - the current user home space node<br>
+     * 'person' - the node representing the current user Person<br>
+     * 'document' - document context node (may not be available)<br>
+     * 'space' - space context node (may not be available)
+     * 
+     * @param services      ServiceRegistry
+     * @param person        The current user Person Node
+     * @param companyHome   The CompanyHome ref
+     * @param userHome      The User home space ref
+     * @param document      Optional ref to a document Node
+     * @param space         Optional ref to a space Node
+     * @param resolver      Image resolver to resolve icon images etc.
+     * 
+     * @return A Map of global scope scriptable Node objects
+     */
+    public static Map<String, Object> buildDefaultModel(ServiceRegistry services,
+            NodeRef person, NodeRef companyHome, NodeRef userHome, NodeRef document, NodeRef space,
+            TemplateImageResolver resolver)
+    {
         Map<String, Object> model = new HashMap<String, Object>();
         
         // add the well known node wrapper objects
-        model.put("companyhome", new Node(companyHome, services, null));
-        model.put("userhome", new Node(userHome, services, null));
-        model.put("person", new Node(person, services, null));
+        model.put("companyhome", new Node(companyHome, services, resolver));
+        model.put("userhome", new Node(userHome, services, resolver));
+        model.put("person", new Node(person, services, resolver));
         if (document != null)
         {
-            model.put("document", new Node(document, services, null));
+            model.put("document", new Node(document, services, resolver));
         }
         if (space != null)
         {
-            model.put("space", new Node(space, services, null));
+            model.put("space", new Node(space, services, resolver));
         }
         
         // add other useful util objects
-        model.put("search", new Search(services, companyHome.getStoreRef(), null));
+        model.put("search", new Search(services, companyHome.getStoreRef(), resolver));
         
         return model;
     }

@@ -157,9 +157,9 @@ public final class Node implements Serializable
         return this.nodeRef;
     }
     
-    public NodeRef jsGet_nodeRef()
+    public String jsGet_nodeRef()
     {
-        return getNodeRef();
+        return getNodeRef().toString();
     }
     
     /**
@@ -175,9 +175,9 @@ public final class Node implements Serializable
         return type;
     }
     
-    public QName jsGet_type()
+    public String jsGet_type()
     {
-        return getType();
+        return getType().toString();
     }
     
     /**
@@ -443,9 +443,16 @@ public final class Node implements Serializable
         return this.aspects;
     }
     
-    public QName[] jsGet_aspects()
+    public String[] jsGet_aspects()
     {
-        return getAspects().toArray(new QName[getAspects().size()]);
+        Set<QName> aspects = getAspects();
+        String[] result = new String[aspects.size()];
+        int count = 0;
+        for (QName qname : aspects)
+        {
+           result[count++] = qname.toString();
+        }
+        return result;
     }
     
     /**
@@ -928,13 +935,27 @@ public final class Node implements Serializable
     }
     
     /**
-     * Copy this Node to a new parent destination.
+     * Copy this Node to a new parent destination. Note that children of the source
+     * Node are not copied.
      * 
      * @param destination Node
      * 
      * @return The newly copied Node instance or null if failed to copy.
      */
     public Node copy(Node destination)
+    {
+        return copy(destination, false);
+    }
+    
+    /**
+     * Copy this Node and potentially all child nodes to a new parent destination.
+     * 
+     * @param destination  Node
+     * @param deepCopy     True for a deep copy, false otherwise.
+     * 
+     * @return The newly copied Node instance or null if failed to copy.
+     */
+    public Node copy(Node destination, boolean deepCopy)
     {
         Node copy = null;
         
@@ -947,7 +968,7 @@ public final class Node implements Serializable
                         destination.getNodeRef(),
                         ContentModel.ASSOC_CONTAINS,
                         getPrimaryParentAssoc().getQName(),
-                        false);
+                        deepCopy);
                 copy = new Node(copyRef, this.services, this.imageResolver);
             }
         }

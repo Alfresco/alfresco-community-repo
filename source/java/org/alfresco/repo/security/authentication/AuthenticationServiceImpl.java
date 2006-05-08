@@ -109,6 +109,11 @@ public class AuthenticationServiceImpl implements AuthenticationService
             throw ae;
         }
     }
+    
+    public boolean authenticationExists(String userName)
+    {
+        return authenticationDao.userExists(userName);
+    }
 
     public String getCurrentUserName() throws AuthenticationException
     {

@@ -230,6 +230,11 @@ public class TestAuthenticationServiceImpl implements AuthenticationService
         }
     }
 
+    public boolean authenticationExists(String userName)
+    {
+        return userNamesAndPasswords.containsKey(userName);
+    }
+
     public String getCurrentUserName() throws AuthenticationException
     {
         Context context = ContextHolder.getContext();

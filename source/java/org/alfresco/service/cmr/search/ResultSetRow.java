@@ -35,39 +35,41 @@ import org.alfresco.service.namespace.QName;
 public interface ResultSetRow
 {
     /**
-     * Get the values of all available node properties
+     * Get the values of all available node properties.  These are only properties
+     * that were stored in the query results and can vary depending on the query
+     * language that was used.
      * 
-     * @return
+     * @return Returns all the available node properties
      */
     public Map<Path, Serializable> getValues();
 
     /**
      * Get a node property by path
      * 
-     * @param path
-     * @return
+     * @param path the path to the value required
+     * @return Returns the value of the property at the given path
      */
     public Serializable getValue(Path path);
 
     /**
-     * Get a node value by name
+     * Get a node property value by name
      * 
-     * @param qname
-     * @return
+     * @param qname the property name
+     * @return Returns the node property for the given name
      */
     public Serializable getValue(QName qname);
     
     /**
-     * The refernce to the node that equates to this row in the result set
+     * The reference to the node that equates to this row in the result set
      * 
-     * @return
+     * @return Returns the reference to the node that makes this result 
      */
     public NodeRef getNodeRef();
 
     /**
      * Get the score for this row in the result set
      * 
-     * @return
+     * @return Returns the score for this row in the resultset
      */
     public float getScore(); // Score is score + rank + potentially other
                                 // stuff
@@ -75,26 +77,25 @@ public interface ResultSetRow
     /**
      * Get the containing result set
      * 
-     * @return
+     * @return Returns the containing resultset
      */
     public ResultSet getResultSet();
     
     /**
-     * Return the QName of the node in the context in which it was found.
-     * @return
+     * @return Returns the name of the child association leading down to the
+     *      node represented by this row 
      */
-    
     public QName getQName();
 
     /**
      * Get the position of this row in the containing set.
-     * @return
+     * 
+     * @return Returns the position of this row in the containing resultset
      */
     public int getIndex();
     
     /**
-     * Return the child assoc ref for this row
-     * @return
+     * @return Returns the child assoc ref for this row
      */
     public ChildAssociationRef getChildAssocRef();
     

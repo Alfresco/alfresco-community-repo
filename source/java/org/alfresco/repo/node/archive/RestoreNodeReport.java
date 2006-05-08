@@ -34,6 +34,7 @@ public class RestoreNodeReport implements Serializable
      */
     public static enum RestoreStatus
     {
+        /** the operation was a success */
         SUCCESS
         {
             @Override
@@ -43,15 +44,23 @@ public class RestoreNodeReport implements Serializable
             }
             
         },
+        /** the node to restore was missing */
+        FAILURE_INVALID_ARCHIVE_NODE
+        {
+        },
+        /** the destination parent of the restore operation was missing */
         FAILURE_INVALID_PARENT
         {
         },
+        /** the permissions required for either reading or writing were invalid */
         FAILURE_PERMISSION
         {
         },
+        /** there was an integrity failure after the node was restored */
         FAILURE_INTEGRITY
         {
         },
+        /** the problem was not well-recognized */
         FAILURE_OTHER
         {
         };
@@ -72,18 +81,22 @@ public class RestoreNodeReport implements Serializable
     private RestoreStatus status;
     private Throwable cause;
     
-    /* package */ RestoreNodeReport(
-            RestoreStatus status,
-            NodeRef archivedNodeRef,
-            NodeRef targetParentNodeRef,
-            NodeRef restoredNodeRef,
-            Throwable cause)
+    /* package */ RestoreNodeReport(NodeRef archivedNodeRef)
     {
-        this.status = status;
         this.archivedNodeRef = archivedNodeRef;
-        this.targetParentNodeRef = targetParentNodeRef;
-        this.restoredNodeRef = restoredNodeRef;
-        this.cause = cause;
+    }
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(100);
+        sb.append("RestoreNodeReport")
+          .append("[ archived=").append(archivedNodeRef)
+          .append(", restored=").append(restoredNodeRef)
+          .append(", parent=").append(targetParentNodeRef)
+          .append(", status=").append(status)
+          .append(", err=").append((cause == null ? "<none>" : cause.getMessage()));
+        return sb.toString();
     }
 
     public NodeRef getArchivedNodeRef()
@@ -96,9 +109,19 @@ public class RestoreNodeReport implements Serializable
         return targetParentNodeRef;
     }
 
+    /* package */ void setTargetParentNodeRef(NodeRef targetParentNodeRef)
+    {
+        this.targetParentNodeRef = targetParentNodeRef;
+    }
+
     public NodeRef getRestoredNodeRef()
     {
         return restoredNodeRef;
+    }
+
+    /* package */ void setRestoredNodeRef(NodeRef restoredNodeRef)
+    {
+        this.restoredNodeRef = restoredNodeRef;
     }
 
     public RestoreStatus getStatus()
@@ -106,8 +129,18 @@ public class RestoreNodeReport implements Serializable
         return status;
     }
 
+    /* package */ void setStatus(RestoreStatus status)
+    {
+        this.status = status;
+    }
+
     public Throwable getCause()
     {
         return cause;
+    }
+
+    /* package */ void setCause(Throwable cause)
+    {
+        this.cause = cause;
     }
 }

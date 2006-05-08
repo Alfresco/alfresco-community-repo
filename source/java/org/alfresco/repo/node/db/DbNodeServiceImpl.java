@@ -1514,7 +1514,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
     }
 
-    public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef targetParentNodeRef, QName assocTypeQName, QName assocQName)
+    public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef destinationParentNodeRef, QName assocTypeQName, QName assocQName)
     {
         Node archivedNode = getNodeNotNull(archivedNodeRef);
         Set<QName> aspects = archivedNode.getAspects();
@@ -1533,10 +1533,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         properties.remove(ContentModel.PROP_ARCHIVED_BY);
         properties.remove(ContentModel.PROP_ARCHIVED_DATE);
         
-        if (targetParentNodeRef == null)
+        if (destinationParentNodeRef == null)
         {
             // we must restore to the original location
-            targetParentNodeRef = originalPrimaryParentAssocRef.getParentRef();
+            destinationParentNodeRef = originalPrimaryParentAssocRef.getParentRef();
         }
         // check the associations
         if (assocTypeQName == null)
@@ -1551,7 +1551,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // move the node to the target parent, which may or may not be the original parent
         moveNode(
                 archivedNodeRef,
-                targetParentNodeRef,
+                destinationParentNodeRef,
                 assocTypeQName,
                 assocQName);
 
@@ -1572,7 +1572,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             logger.debug("Restored node: \n" +
                     "   original noderef: " + archivedNodeRef + "\n" +
                     "   restored noderef: " + restoredNodeRef + "\n" +
-                    "   new parent: " + targetParentNodeRef);
+                    "   new parent: " + destinationParentNodeRef);
         }
         return restoredNodeRef;
     }

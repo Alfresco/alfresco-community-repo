@@ -494,14 +494,17 @@ public interface NodeService
      * set against it.
      * 
      * @param archivedNodeRef the archived node
-     * @param targetParentNodeRef
-     * @param assocTypeQName
-     * @param assocQName
+     * @param destinationParentNodeRef the parent to move the node into
+     *      or <tt>null</tt> to use the original
+     * @param assocTypeQName the primary association type name to use in the new location
+     *      or <tt>null</tt> to use the original
+     * @param assocQName the primary association name to use in the new location
+     *      or <tt>null</tt> to use the original
      * @return Returns the reference to the newly created node 
      */
     public NodeRef restoreNode(
             NodeRef archivedNodeRef,
-            NodeRef targetParentNodeRef,
+            NodeRef destinationParentNodeRef,
             QName assocTypeQName,
             QName assocQName);
 }

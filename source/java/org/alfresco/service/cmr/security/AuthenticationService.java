@@ -86,8 +86,8 @@ public interface AuthenticationService
      * Carry out an authentication attempt. If successful the user is set to the current user.
      * The current user is a part of the thread context.
      * 
-     * @param userName
-     * @param password
+     * @param userName the username
+     * @param password the passowrd
      * @throws AuthenticationException
      */
     public void authenticate(String userName, char[] password) throws AuthenticationException;
@@ -98,6 +98,14 @@ public interface AuthenticationService
      * @throws AuthenticationException
      */
     public void authenticateAsGuest() throws AuthenticationException;
+    
+    /**
+     * Check if the given authentication exists.
+     * 
+     * @param userName the username
+     * @return Returns <tt>true</tt> if the authentication exists
+     */
+    public boolean authenticationExists(String userName);
     
     /**
      * Get the name of the currently authenticated user.

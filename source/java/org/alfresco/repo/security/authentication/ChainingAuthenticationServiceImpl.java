@@ -180,7 +180,19 @@ public class ChainingAuthenticationServiceImpl implements AuthenticationService
             }
         }
         throw new AuthenticationException("Guest authentication not supported");
+    }
 
+    public boolean authenticationExists(String userName)
+    {
+        for (AuthenticationService authService : getUsableAuthenticationServices())
+        {
+            if (authService.authenticationExists(userName))
+            {
+                return true;
+            }
+        }
+        // it doesn't exist in any of the authentication components
+        return false;
     }
 
     public String getCurrentUserName() throws AuthenticationException

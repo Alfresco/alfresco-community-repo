@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.StoreArchiveMap;
+import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -62,6 +63,7 @@ public class ArchiveAndRestoreTest extends TestCase
     
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
+    private NodeArchiveService nodeArchiveService;
     private NodeService nodeService;
     private PermissionService permissionService;
     private AuthenticationComponent authenticationComponent;
@@ -95,6 +97,7 @@ public class ArchiveAndRestoreTest extends TestCase
     public void setUp() throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
+        nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         nodeService = serviceRegistry.getNodeService();
         permissionService = serviceRegistry.getPermissionService();
         authenticationService = serviceRegistry.getAuthenticationService();
@@ -142,10 +145,7 @@ public class ArchiveAndRestoreTest extends TestCase
     {
         try
         {
-            if (txn.getStatus() == Status.STATUS_ACTIVE)
-            {
-                txn.rollback();
-            }
+            txn.rollback();
         }
         catch (Throwable e)
         {
@@ -461,4 +461,84 @@ public class ArchiveAndRestoreTest extends TestCase
         System.out.println("Average delete time: " + averageDeleteTimeMs + " ms");
         System.out.println("Average create time: " + averageCreateTimeMs + " ms");
     }
+    
+    public void testInTransactionRestore() throws Exception
+    {
+        RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(a);
+        // expect a failure due to missing archive node
+        assertEquals("Expected failure", RestoreStatus.FAILURE_INVALID_ARCHIVE_NODE, report.getStatus());
+        // check that our transaction was not affected
+        assertEquals("Transaction should still be valid", Status.STATUS_ACTIVE, txn.getStatus());
+    }
+    
+    public void testInTransactionPurge() throws Exception
+    {
+        nodeArchiveService.purgeArchivedNode(a);
+        // the node should still be there (it was not available to the purge transaction)
+        assertTrue("Node should not have been touched", nodeService.exists(a));
+        // check that our transaction was not affected
+        assertEquals("Transaction should still be valid", Status.STATUS_ACTIVE, txn.getStatus());
+    }
+    
+    private void commitAndBeginNewTransaction() throws Exception
+    {
+        txn.commit();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+    }
+    
+    public void testMassRestore() throws Exception
+    {
+        nodeService.deleteNode(a);
+        nodeService.deleteNode(b);
+        commitAndBeginNewTransaction();
+
+        List<RestoreNodeReport> reports = nodeArchiveService.restoreAllArchivedNodes(workStoreRef);
+        // check that both a and b were restored
+        assertEquals("Incorrect number of node reports", 2, reports.size());
+        commitAndBeginNewTransaction();
+        // all nodes must be restored, but some of the inter a-b assocs might not be
+        verifyNodeExistence(a, true);
+        verifyNodeExistence(b, true);
+        verifyNodeExistence(aa, true);
+        verifyNodeExistence(bb, true);
+        verifyNodeExistence(a_, false);
+        verifyNodeExistence(b_, false);
+        verifyNodeExistence(aa_, false);
+        verifyNodeExistence(bb_, false);
+    }
+    
+    public void testMassPurge() throws Exception
+    {
+        nodeService.deleteNode(a);
+        nodeService.deleteNode(b);
+        commitAndBeginNewTransaction();
+        
+        nodeArchiveService.purgeAllArchivedNodes(workStoreRef);
+
+        commitAndBeginNewTransaction();
+        // all nodes must be gone
+        verifyNodeExistence(a, false);
+        verifyNodeExistence(b, false);
+        verifyNodeExistence(aa, false);
+        verifyNodeExistence(bb, false);
+        verifyNodeExistence(a_, false);
+        verifyNodeExistence(b_, false);
+        verifyNodeExistence(aa_, false);
+        verifyNodeExistence(bb_, false);
+    }
+//    
+//    public void testPermissionsForRestore() throws Exception
+//    {
+//        // user A deletes 'a'
+//        authenticationService.authenticate(USER_A, USER_A.toCharArray());
+//        nodeService.deleteNode(a);
+//        // user B deletes 'b'
+//        authenticationService.authenticate(USER_B, USER_B.toCharArray());
+//        nodeService.deleteNode(b);
+//        
+//        // user B can't see archived 'a'
+//        List<RestoreNodeReport> restoredByB = nodeArchiveService.restoreAllArchivedNodes(workStoreRef);
+//        assertEquals("User B should not have seen A's delete", 1, restoredByB.size());
+//    }
 }

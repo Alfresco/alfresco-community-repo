@@ -28,6 +28,20 @@
       </property>
    </bean>
    
+   
+   <!-- Wrapper component to handle restore and purge of archived nodes -->
+   <bean id="nodeArchiveService" class="org.alfresco.repo.node.archive.NodeArchiveServiceImpl" >
+      <property name="nodeService">
+         <ref bean="NodeService"/>
+      </property>
+      <property name="searchService">
+         <ref bean="SearchService"/>
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionComponent"/>
+      </property>
+   </bean>
+   
    <!-- NodeService implemented to persist to Database -->
    <bean id="dbNodeService" class="org.alfresco.repo.node.db.DbNodeServiceImpl" init-method="init" >
       <property name="dictionaryService">

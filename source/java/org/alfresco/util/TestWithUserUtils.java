@@ -48,7 +48,13 @@ public abstract class TestWithUserUtils extends BaseSpringTest
             NodeRef rootNodeRef,
             NodeService nodeService,
             AuthenticationService authenticationService)
-    {        
+    {
+        // ignore if the user's authentication already exists
+        if (authenticationService.authenticationExists(userName))
+        {
+            // ignore
+            return;
+        }
         QName children = ContentModel.ASSOC_CHILDREN;
         QName system = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");
         QName container = ContentModel.TYPE_CONTAINER;
@@ -59,7 +65,7 @@ public abstract class TestWithUserUtils extends BaseSpringTest
         
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, userName);
-        NodeRef goodUserPerson = nodeService.createNode(typesNodeRef, children, ContentModel.TYPE_PERSON, container, properties).getChildRef();
+        nodeService.createNode(typesNodeRef, children, ContentModel.TYPE_PERSON, container, properties);
         
         // Create the  users
 

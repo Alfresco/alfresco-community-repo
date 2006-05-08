@@ -27,7 +27,9 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 
 /**
- * Execute Script command implementation
+ * Execute Script command implementation.
+ * <p>
+ * Executes the supplied script against the default data-model.
  * 
  * @author Kevin Roast
  */

@@ -32,6 +32,10 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.User;
 
 /**
+ * Script command processor implementation.
+ * <p>
+ * Responsible for executing 'execute' script commands on a Node.
+ * 
  * @author Kevin Roast
  */
 public final class ScriptCommandProcessor implements CommandProcessor

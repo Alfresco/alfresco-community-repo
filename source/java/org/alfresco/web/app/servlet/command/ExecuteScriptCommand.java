@@ -25,6 +25,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.repo.component.template.DefaultModelHelper;
 
 /**
  * Execute Script command implementation.
@@ -81,7 +82,8 @@ public final class ExecuteScriptCommand implements Command
             new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId()),
             (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER),
             docRef,
-            nodeService.getPrimaryParent(docRef).getParentRef());
+            nodeService.getPrimaryParent(docRef).getParentRef(),
+            DefaultModelHelper.imageResolver);
       
       // execute the script and return the result
       return serviceRegistry.getScriptService().executeScript(scriptRef, null, model);

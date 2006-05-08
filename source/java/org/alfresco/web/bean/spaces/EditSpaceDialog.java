@@ -13,13 +13,11 @@ import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
@@ -34,8 +32,6 @@ import org.alfresco.web.ui.common.component.UIListItem;
 public class EditSpaceDialog extends BaseDialogBean
 {
    protected Node editableNode;
-   protected DictionaryService dictionaryService;
-   protected NamespaceService namespaceService;
    
    @Override
    public void init()
@@ -54,24 +50,6 @@ public class EditSpaceDialog extends BaseDialogBean
    public Node getEditableNode()
    {
       return this.editableNode;
-   }
-
-   /**
-    * Sets the dictionary service
-    * 
-    * @param dictionaryService  the dictionary service
-    */
-   public void setDictionaryService(DictionaryService dictionaryService)
-   {
-      this.dictionaryService = dictionaryService;
-   }
-   
-   /**
-    * @param namespaceService The NamespaceService
-    */
-   public void setNamespaceService(NamespaceService namespaceService)
-   {
-      this.namespaceService = namespaceService;
    }
    
    /**

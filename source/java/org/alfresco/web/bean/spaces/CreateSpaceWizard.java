@@ -14,7 +14,6 @@ import javax.faces.model.SelectItem;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -47,8 +46,6 @@ public class CreateSpaceWizard extends BaseWizardBean
    
    private static Log logger = LogFactory.getLog(CreateSpaceWizard.class);
 
-   protected NamespaceService namespaceService;
-   protected DictionaryService dictionaryService;
    protected String spaceType;
    protected String icon;
    protected String createFrom;
@@ -643,24 +640,6 @@ public class CreateSpaceWizard extends BaseWizardBean
       }
       
       return icons;
-   }
-   
-   /**
-    * @param namespaceService The NamespaceService
-    */
-   public void setNamespaceService(NamespaceService namespaceService)
-   {
-      this.namespaceService = namespaceService;
-   }
-
-   /**
-    * Sets the dictionary service
-    * 
-    * @param dictionaryService  the dictionary service
-    */
-   public void setDictionaryService(DictionaryService dictionaryService)
-   {
-      this.dictionaryService = dictionaryService;
    }
 
    /**

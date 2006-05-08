@@ -41,7 +41,7 @@
                      description-id="create_space_step3_desc" 
                      instruction-id="default_instruction" />
             </step>
-            <step name="summary" title-id="summary" description-id="summary_desc">
+            <step name="summary" title-id="summary" description-id="summary_step_description">
                <page path="/jsp/wizard/summary.jsp"
                      title-id="summary" 
                      description-id="summary_desc" 
@@ -59,7 +59,7 @@
                      description=""
                      instruction-id="default_instruction" />
             </step>
-            <step name="summary" title-id="summary" description-id="summary_desc">
+            <step name="summary" title-id="summary" description-id="summary_step_description">
                <page path="/jsp/wizard/summary.jsp"
                      title-id="summary" 
                      description-id="summary_desc" 
@@ -89,7 +89,7 @@
                      description=""
                      instruction-id="default_instruction" />
             </step>
-            <step name="summary" title-id="summary" description-id="summary_desc">
+            <step name="summary" title-id="summary" description-id="summary_step_description">
                <page path="/jsp/wizard/summary.jsp"
                      title-id="summary" 
                      description-id="summary_desc" 
@@ -119,13 +119,46 @@
                      description=""
                      instruction-id="default_instruction" />
             </step>
-            <step name="summary" title-id="summary" description-id="summary_desc">
+            <step name="summary" title-id="summary" description-id="summary_step_description">
                <page path="/jsp/wizard/summary.jsp"
                      title-id="summary" 
                      description-id="summary_desc" 
                      instruction-id="edit_rule_finish_instruction" />
             </step>
          </wizard>
+         
+         <!-- Definition of the add content wizard -->
+         <wizard name="createContent" managed-bean="CreateContentWizard"
+                 title-id="create_content_title" description-id="create_content_desc"
+                 icon="/images/icons/new_content_large.gif">
+            <step name="details" title-id="details" description-id="create_content_step1_desc">
+               <page path="/jsp/content/create-content-wizard/details.jsp" 
+                     title-id="create_content_step1_title"
+                     description-id="create_content_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="content" title-id="enter_content" description-id="create_content_step2_desc">
+               <condition if="#{CreateContentWizard.mimeType == 'text/html'}">
+                  <page path="/jsp/content/create-content-wizard/create-html.jsp"
+                        title-id="create_content_step2_title"
+                        description-id="create_content_step2_desc"
+                        instruction-id="default_instruction" />
+               </condition>
+               <condition if="#{CreateContentWizard.mimeType == 'text/plain'}">
+                  <page path="/jsp/content/create-content-wizard/create-text.jsp"
+                        title-id="create_content_step2_title"
+                        description-id="create_content_step2_desc"
+                        instruction-id="default_instruction" />
+               </condition>
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="content_finish_instruction" />
+            </step>
+         </wizard>
+         
       </wizards>
    </config>
    

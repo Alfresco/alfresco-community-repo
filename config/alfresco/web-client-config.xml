@@ -172,6 +172,13 @@
       </folder-types>
    </config>
    
+   <config evaluator="string-compare" condition="Content Wizards">
+      <create-mime-types>
+         <mime-type name="text/html" />
+         <mime-type name="text/plain" />
+      </create-mime-types>
+   </config>
+   
    <config evaluator="string-compare" condition="Action Wizards">
       <types>
          <type name="folder" display-label-id="space"/>

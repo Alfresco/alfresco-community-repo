@@ -373,10 +373,10 @@
    
    <managed-bean>
       <description>
-         The bean that backs up the Add Content Wizard
+         The bean that backs up the Add Content Dialog
       </description>
-      <managed-bean-name>AddContentWizard</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.AddContentWizard</managed-bean-class>
+      <managed-bean-name>AddContentDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.content.AddContentDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -413,7 +413,7 @@
          The bean that backs up the Create Content Wizard
       </description>
       <managed-bean-name>CreateContentWizard</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.CreateContentWizard</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.content.CreateContentWizard</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>

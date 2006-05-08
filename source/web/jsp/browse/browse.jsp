@@ -97,7 +97,7 @@
                                  <%-- Quick upload action --%>
                                  <nobr>
                                  <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval2">
-                                    <a:actionLink value="#{msg.add_content}" image="/images/icons/add.gif" padding="2" action="addContent" actionListener="#{AddContentWizard.startWizard}" style="white-space:nowrap" id="link3" />
+                                    <a:actionLink value="#{msg.add_content}" image="/images/icons/add.gif" padding="2" action="addContent" actionListener="#{AddContentDialog.start}" style="white-space:nowrap" id="link3" />
                                  </r:permissionEvaluator>
                                  </nobr>
                               </td>

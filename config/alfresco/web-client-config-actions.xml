@@ -318,8 +318,7 @@
             </permissions>
             <label-id>create_content</label-id>
             <image>/images/icons/new_content.gif</image>
-            <action>createContent</action>
-            <action-listener>#{CreateContentWizard.startWizard}</action-listener>
+            <action>wizard:createContent</action>
          </action>
          
          <!-- Create space -->

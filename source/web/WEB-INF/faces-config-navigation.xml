@@ -99,11 +99,7 @@
       </navigation-case>
       <navigation-case>
          <from-outcome>addContent</from-outcome>
-         <to-view-id>/jsp/wizard/add-content/upload.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>createContent</from-outcome>
-         <to-view-id>/jsp/wizard/create-content/select-type.jsp</to-view-id>
+         <to-view-id>/jsp/content/add-content-dialog.jsp</to-view-id>
       </navigation-case>
       <!-- showDocDetails and showSpaceDetails moved to /jsp/* above -->
       <navigation-case>
@@ -177,6 +173,14 @@
       <navigation-case>
          <from-outcome>manageDeletedItems</from-outcome>
          <to-view-id>/jsp/trashcan/trash-list.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
+      <from-view-id>/jsp/content/add-content-dialog.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>cancel</from-outcome>
+         <to-view-id>/jsp/browse/browse.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -701,48 +705,6 @@
       <navigation-case>
          <from-outcome>finish</from-outcome>
          <to-view-id>/jsp/browse/browse.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <!-- navigation rules for the add in-line content wizard -->
-   <navigation-rule>
-      <from-view-id>/jsp/wizard/create-content/*</from-view-id>
-      <navigation-case>
-         <from-outcome>select</from-outcome>
-         <to-view-id>/jsp/wizard/create-content/select-type.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>create-html</from-outcome>
-         <to-view-id>/jsp/wizard/create-content/create-html.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>create-text</from-outcome>
-         <to-view-id>/jsp/wizard/create-content/create-text.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>properties</from-outcome>
-         <to-view-id>/jsp/wizard/create-content/properties.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>summary</from-outcome>
-         <to-view-id>/jsp/wizard/create-content/summary.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <!-- navigation rules for the add content wizard -->
-   <navigation-rule>
-      <from-view-id>/jsp/wizard/add-content/*</from-view-id>
-      <navigation-case>
-         <from-outcome>upload</from-outcome>
-         <to-view-id>/jsp/wizard/add-content/upload.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>properties</from-outcome>
-         <to-view-id>/jsp/wizard/add-content/properties.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>summary</from-outcome>
-         <to-view-id>/jsp/wizard/add-content/summary.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
 

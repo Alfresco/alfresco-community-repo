@@ -5,9 +5,11 @@ import java.text.MessageFormat;
 import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
@@ -31,6 +33,8 @@ public abstract class BaseDialogBean implements IDialogBean
    protected NodeService nodeService;
    protected FileFolderService fileFolderService;
    protected SearchService searchService;
+   protected DictionaryService dictionaryService;
+   protected NamespaceService namespaceService;
    
    public void init()
    {
@@ -138,6 +142,24 @@ public abstract class BaseDialogBean implements IDialogBean
    public void setSearchService(SearchService searchService)
    {
       this.searchService = searchService;
+   }
+   
+   /**
+    * Sets the dictionary service
+    * 
+    * @param dictionaryService  the dictionary service
+    */
+   public void setDictionaryService(DictionaryService dictionaryService)
+   {
+      this.dictionaryService = dictionaryService;
+   }
+   
+   /**
+    * @param namespaceService The NamespaceService
+    */
+   public void setNamespaceService(NamespaceService namespaceService)
+   {
+      this.namespaceService = namespaceService;
    }
    
    /**

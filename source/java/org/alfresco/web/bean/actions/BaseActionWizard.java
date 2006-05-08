@@ -36,7 +36,6 @@ import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -98,7 +97,6 @@ public abstract class BaseActionWizard extends BaseWizardBean
    public static final String PROP_SCRIPT = "script";
    
    protected ActionService actionService;
-   protected DictionaryService dictionaryService;
    protected MimetypeService mimetypeService;
    protected PersonService personService;
    protected AuthorityService authorityService;
@@ -749,16 +747,6 @@ public abstract class BaseActionWizard extends BaseWizardBean
    public void setActionService(ActionService actionService)
    {
      this.actionService = actionService;
-   }
-   
-   /**
-    * Sets the dictionary service
-    * 
-    * @param dictionaryService  The dictionary service
-    */
-   public void setDictionaryService(DictionaryService dictionaryService)
-   {
-      this.dictionaryService = dictionaryService;
    }
    
    /**

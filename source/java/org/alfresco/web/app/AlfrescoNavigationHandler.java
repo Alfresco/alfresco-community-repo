@@ -528,6 +528,8 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       }
       else
       {
+         logger.warn("Failed to find configuration for dialog '" + name + "'");
+         
          // send the dialog name as the outcome to the original handler
          handleDispatch(context, fromAction, name);
       }
@@ -563,6 +565,8 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       }
       else
       {
+         logger.warn("Failed to find configuration for wizard '" + name + "'");
+         
          // send the dialog name as the outcome to the original handler
          handleDispatch(context, fromAction, name);
       }

@@ -360,6 +360,9 @@
         <property name="dictionaryService">
             <ref bean="DictionaryService" />
         </property>
+        <property name="publicAction">
+            <value>false</value>
+        </property>
     </bean>
     
 </beans>

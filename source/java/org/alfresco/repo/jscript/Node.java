@@ -288,7 +288,7 @@ public final class Node implements Serializable
     
     /**
      * @return Returns the Nodes at the specified XPath walking the children of this Node.
-     *         So a valid call might be <code>mynode.childrenByXPath("/*[@cm:name='Testing']/*");</code>
+     *         So a valid call might be <code>mynode.childrenByXPath("*[@cm:name='Testing']/*");</code>
      */
     public Node[] childrenByXPath(String xpath)
     {
@@ -1134,17 +1134,8 @@ public final class Node implements Serializable
             if (logger.isDebugEnabled())
                 logger.debug("Executing xpath: " + xpath);
             
-            NodeRef contextRef;
-            if (getParent() != null)
-            {
-                contextRef = getParent().getNodeRef();
-            }
-            else
-            {
-                contextRef = this.nodeService.getRootNode(nodeRef.getStoreRef());
-            }
             List<NodeRef> nodes = this.services.getSearchService().selectNodes(
-                    contextRef,
+                    this.nodeRef,
                     xpath,
                     null,
                     this.services.getNamespaceService(),

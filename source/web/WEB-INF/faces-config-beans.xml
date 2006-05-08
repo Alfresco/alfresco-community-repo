@@ -887,6 +887,10 @@
          <property-name>ruleService</property-name>
          <value>#{RuleService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>actionService</property-name>
+         <value>#{ActionService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

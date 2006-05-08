@@ -75,8 +75,14 @@
                            <td align=right>
                               <%-- Current object actions --%>
                               <a:actionLink value="#{msg.create_rule}" image="/images/icons/new_rule.gif" padding="4" action="wizard:createRule" />
+                           </td>                       
+                           <td style="padding-left:4px" width=80>
+                             <%-- More actions menu --%>
+                             <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
+                                <r:actions id="acts_rules" value="rules_actions_menu" context="#{RulesBean.space}" />
+                             </a:menu>
                            </td>
-                           <td class="separator" width=1></td>
+                           <td class="separator" width=1></td>  
                            <td width="125" style="padding-left:2px">
                               <%-- Filters --%>
                               <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight"
@@ -205,7 +211,7 @@
                                  
                                  <a:dataPager styleClass="pager" />
                               </a:richList>
-                              
+                              <h:message for="rulesList" styleClass="statusMessage" />
                               </a:panel>
                            </td>
                            

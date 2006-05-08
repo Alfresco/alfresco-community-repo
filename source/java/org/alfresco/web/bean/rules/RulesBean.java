@@ -16,14 +16,20 @@
  */
 package org.alfresco.web.bean.rules;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.transaction.UserTransaction;
 
+import org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -32,6 +38,7 @@ import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIModeList;
@@ -47,6 +54,7 @@ import org.apache.commons.logging.LogFactory;
 public class RulesBean implements IContextListener
 {
    private static final String MSG_ERROR_DELETE_RULE = "error_delete_rule";
+   private static final String MSG_REAPPLY_RULES_SUCCESS = "reapply_rules_success";
    private static final String LOCAL = "local";
    private static final String INHERITED = "inherited";
    
@@ -58,6 +66,7 @@ public class RulesBean implements IContextListener
    private List<WrappedRule> rules;
    private Rule currentRule;
    private UIRichList richList;
+   private ActionService actionService;
    
    
    /**
@@ -134,6 +143,53 @@ public class RulesBean implements IContextListener
          
          // refresh list
          contextUpdated();
+      }
+   }
+   
+   /**
+    * Reapply the currently defines rules to the
+    * @param event
+    */
+   public void reapplyRules(ActionEvent event)
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      
+      UserTransaction tx = null;
+      
+      try
+      {
+         tx = Repository.getUserTransaction(fc);
+         tx.begin();
+         
+         // Create the the apply rules action
+         Action action = this.actionService.createAction(ExecuteAllRulesActionExecuter.NAME);
+         
+         // Set the include inherited parameter to match the current filter value
+         boolean executeInherited = true;
+         if (LOCAL.equals(this.getViewMode()) == true)
+         {
+             executeInherited = false;
+         }
+         action.setParameterValue(ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, executeInherited);
+         
+         // Execute the action
+         this.actionService.executeAction(action, this.getSpace().getNodeRef());
+         
+         // TODO how do I get the message here ...
+         String msg = Application.getMessage(fc, MSG_REAPPLY_RULES_SUCCESS);
+         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+         String formId = Utils.getParentForm(fc, event.getComponent()).getClientId(fc);
+         fc.addMessage(formId + ":rulesList", facesMsg);
+         
+         // commit the transaction
+         tx.commit();
+      }
+      catch (Throwable e)
+      {
+         // rollback the transaction
+         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               fc, Repository.ERROR_GENERIC), e.getMessage()), e);
       }
    }
    
@@ -239,6 +295,16 @@ public class RulesBean implements IContextListener
    public void setRuleService(RuleService ruleService)
    {
       this.ruleService = ruleService;
+   }
+   
+   /**
+    * Set the action service to use
+    * 
+    * @param actionService      the action service
+    */
+   public void setActionService(ActionService actionService)
+   {
+      this.actionService = actionService;
    }
 
    

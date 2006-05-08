@@ -459,6 +459,13 @@
             </params>
          </action>
          
+         <!-- ReApply Rules -->
+         <action id="reapply-rules">
+         	<label-id>reapply_rules</label-id>
+            <image>/images/icons/export.gif</image>
+            <action-listener>#{RulesBean.reapplyRules}</action-listener>
+         </action>
+         
          
          <!-- the 'action-group' elements define unique blocks of actions that reference the actions
               as defined above and can override or supply display elements for the group of actions -->
@@ -592,6 +599,11 @@
             <action idref="delete_doc" />
             <action idref="take_ownership_space" />
             <action idref="manage_content_users" />
+         </action-group>
+         
+         <!-- Actions Menu for Manage Rules screen -->
+         <action-group id="rules_actions_menu">
+         	<action idref="reapply-rules" />
          </action-group>
          
       </actions>

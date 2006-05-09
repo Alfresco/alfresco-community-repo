@@ -131,6 +131,11 @@
                <type>d:childassocref</type>
                <mandatory>true</mandatory>
             </property>
+            <property name="sys:archivedOriginalPath">
+               <type>d:any</type>
+               <mandatory>true</mandatory>
+               <index enabled="false" />
+            </property>
             <property name="sys:archivedBy">
                <type>d:text</type>
                <mandatory>true</mandatory>

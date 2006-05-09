@@ -77,13 +77,24 @@ public class ChildAssocImpl implements ChildAssoc
     
     public ChildAssociationRef getChildAssocRef()
     {
+        boolean trashReference = false;
         // first check if it is available
         refReadLock.lock();
         try
         {
             if (childAssocRef != null)
             {
-                return childAssocRef;
+                // double check that the parent and child node references match those of our reference
+                if (childAssocRef.getParentRef() != parent.getNodeRef() ||
+                        childAssocRef.getChildRef() != child.getNodeRef())
+                {
+                    trashReference = true;
+                }
+                else
+                {
+                    // we are sure that the reference is correct
+                    return childAssocRef;
+                }
             }
         }
         finally
@@ -95,13 +106,13 @@ public class ChildAssocImpl implements ChildAssoc
         try
         {
             // double check
-            if (childAssocRef == null )
+            if (childAssocRef == null || trashReference)
             {
                 childAssocRef = new ChildAssociationRef(
                         this.typeQName,
-                        getParent().getNodeRef(),
+                        parent.getNodeRef(),
                         this.qName,
-                        getChild().getNodeRef(),
+                        child.getNodeRef(),
                         this.isPrimary,
                         -1);
             }

@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -124,6 +125,13 @@ public class ArchiveAndRestoreTest extends TestCase
             // grant everyone rights to the work store
             permissionService.setPermission(
                     workStoreRootNodeRef,
+                    PermissionService.ALL_AUTHORITIES,
+                    PermissionService.ALL_PERMISSIONS,
+                    true);
+            
+            // grant everyone rights to the archive store
+            permissionService.setPermission(
+                    archiveStoreRootNodeRef,
                     PermissionService.ALL_AUTHORITIES,
                     PermissionService.ALL_PERMISSIONS,
                     true);
@@ -317,6 +325,11 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyChildAssocExistence(childAssocBtoBB, false);
         verifyNodeExistence(b_, false);
         verifyNodeExistence(bb_, true);
+        
+        // check that the required properties are present and correct
+        Map<QName, Serializable> bb_Properties = nodeService.getProperties(bb_);
+        Path bb_originalPath = (Path) bb_Properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH);
+        assertNotNull("Original path not stored", bb_originalPath);
         
         // restore the node
         nodeService.restoreNode(bb_, null, null, null);

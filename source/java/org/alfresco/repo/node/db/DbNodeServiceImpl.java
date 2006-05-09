@@ -1279,6 +1279,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         Node node = getNodeNotNull(nodeRef);
         ChildAssoc primaryParentAssoc = nodeDaoService.getPrimaryParentAssoc(node);
+        Path primaryPath = getPath(nodeRef);
         
         // add the aspect
         node.getAspects().add(ContentModel.ASPECT_ARCHIVED);
@@ -1295,6 +1296,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC),
                 primaryParentAssoc.getChildAssocRef());
         properties.put(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC, archivedPrimaryParentNodeRefProperty);
+        PropertyValue archivedPrimaryPathProperty = makePropertyValue(
+                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH),
+                primaryPath);
+        properties.put(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH, archivedPrimaryPathProperty);
         
         // move the node
         NodeRef archiveStoreRootNodeRef = getRootNode(archiveStoreRef);

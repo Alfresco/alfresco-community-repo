@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" 
+"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd" >
+<hibernate-configuration>
+  <session-factory>
+  	<property name="connection.username">root</property>
+  	<property name="connection.password"></property>
+  	<property name="connection.url">jdbc:mysql://127.0.0.1/avm</property>
+  	<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+  	<property name="current_session_context_class">thread</property>
+  	<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
+  	<property name="show_sql">true</property>
+  	<property name="connection.isolation">2</property>
+  	<property name="c3po.min_size">5</property>
+  	<property name="c3po.max_size">20</property>
+  	<property name="c3po.timeout">900</property>
+  	<property name="c3po.max_statements">50</property>
+  	<mapping resource="org/alfresco/repo/avm/hibernate/Repository.hbm.xml"/>
+  	<mapping resource="org/alfresco/repo/avm/hibernate/AVMNode.hbm.xml"/>
+  	<mapping resource="org/alfresco/repo/avm/hibernate/Content.hbm.xml"/>
+  	<mapping resource="org/alfresco/repo/avm/hibernate/Issuer.hbm.xml"/>
+  </session-factory>
+</hibernate-configuration>

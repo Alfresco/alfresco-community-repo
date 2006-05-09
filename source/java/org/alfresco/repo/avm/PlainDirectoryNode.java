@@ -1,0 +1,228 @@
+/*
+ * Copyright (C) 2006 Alfresco, Inc.
+ *
+ * Licensed under the Mozilla Public License version 1.1 
+ * with a permitted attribution clause. You may obtain a
+ * copy of the License at
+ *
+ *   http://www.alfresco.org/legal/license.txt
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License.
+ */
+
+package org.alfresco.repo.avm;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.alfresco.repo.avm.hibernate.DirectoryEntry;
+import org.alfresco.repo.avm.hibernate.PlainDirectoryNodeBean;
+import org.alfresco.repo.avm.hibernate.PlainDirectoryNodeBeanImpl;
+
+/**
+ * @author britt
+ *
+ */
+public class PlainDirectoryNode extends DirectoryNode
+{
+    /**
+     * The Bean data.
+     */
+    private PlainDirectoryNodeBean fData;
+    
+    /**
+     * Make up a new directory with nothing in it.
+     * @param repo
+     */
+    public PlainDirectoryNode(Repository repo)
+    {
+        fData = new PlainDirectoryNodeBeanImpl(repo.getSuperRepository().issueID(),
+                                               repo.getLatestVersion(),
+                                               0L,
+                                               null,
+                                               null,
+                                               null,
+                                               repo.getDataBean(),
+                                               false);
+        repo.getSuperRepository().getSession().save(fData);
+    }
+    
+    /**
+     * Make one up from its bean data.
+     * @param data The bean data.
+     */
+    public PlainDirectoryNode(PlainDirectoryNodeBean data)
+    {
+        fData = data;
+        setDataBean(data);
+    }
+    
+    /**
+     * Copy like constructor.
+     * @param other The other directory.
+     * @param repos The Repository Object that will own us.
+     */
+    public PlainDirectoryNode(PlainDirectoryNode other,
+                              Repository repos)
+    {
+        fData = new PlainDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
+                                               -1,
+                                               -1,
+                                               null,
+                                               null,
+                                               null,
+                                               repos.getDataBean(),
+                                               false);
+        setDataBean(fData);
+        fData.setChildren(new HashMap<String, DirectoryEntry>(((PlainDirectoryNodeBean)other.getDataBean()).getChildren()));
+    }
+
+    /**
+     * Add a child to this directory, possibly doing a copy. 
+     * @param name The name of the child.
+     * @param child The child node.
+     * @param lPath The lookup path to this directory.
+     * @return Success or failure.
+     */   
+    public boolean addChild(String name, AVMNode child, Lookup lPath)
+    {
+        if (fData.getChildren().containsKey(name))
+        {
+            return false;
+        }
+        DirectoryNode toModify = (DirectoryNode)copyOnWrite(lPath);
+        toModify.putChild(name, child);
+        child.setParent(toModify);
+        child.setRepository(toModify.getRepository());
+        return true;
+    }
+
+    /**
+     * Does this directory directly contain the given node. 
+     * @param node The node to check.
+     * @return Whether it was found.
+     */
+    public boolean directlyContains(AVMNode node)
+    {
+        return fData.getChildren().containsValue(node.getDataBean());
+    }
+
+    
+    /**
+     * Get a directory listing.
+     * @param lPath The lookup path.
+     * @param version Which version.
+     * @return The listing.
+     */
+    public Map<String, DirectoryEntry> getListing(Lookup lPath, int version)
+    {
+        return new TreeMap<String, DirectoryEntry>(fData.getChildren());
+    }
+
+    /**
+     * Lookup a child by name.
+     * @param lPath The lookup path so far.
+     * @param name The name to lookup.
+     * @param version The version to look under.
+     * @return The child or null.
+     */
+    public AVMNode lookupChild(Lookup lPath, String name, int version)
+    {
+        DirectoryEntry child = fData.getChildren().get(name);
+        if (child == null)
+        {
+            return null;
+        }
+        return AVMNodeFactory.CreateFromBean(child.getChild());
+    }
+
+    /**
+     * Remove a child, no copying.
+     * @param name The name of the child to remove.
+     */
+    public void rawRemoveChild(String name)
+    {
+        fData.getChildren().remove(name);
+    }
+
+    /**
+     * Remove a child. Possibly copy.
+     * @param name The name of the child to remove.
+     * @param lPath The lookup path.
+     * @return Success or failure.
+     */
+    public boolean removeChild(String name, Lookup lPath)
+    {
+        if (!fData.getChildren().containsKey(name))
+        {
+            return false;
+        }
+        DirectoryNode toModify = (DirectoryNode)copyOnWrite(lPath);
+        toModify.rawRemoveChild(name);
+        return true;
+    }
+
+    /**
+     * Put a new child node into this directory.  No copy.
+     * @param name The namke of the child.
+     * @param node The node to add.
+     */
+    public void putChild(String name, AVMNode node)
+    {
+        fData.getChildren().put(name, new DirectoryEntry(node.getType(), node.getDataBean()));
+    }
+
+    /**
+     * Set repository after copy on write. 
+     * @param parent The parent after copy on write.
+     */
+    public void handlePostCopy(DirectoryNode parent)
+    {
+        if (parent != null)
+        {
+            setRepository(parent.getRepository());
+        }
+    }
+
+    /**
+     * Copy on write logic.
+     * @param lPath The lookup path.
+     * @return
+     */
+    public AVMNode possiblyCopy(Lookup lPath)
+    {
+        if (!shouldBeCopied())
+        {
+            return null;
+        }
+        // Otherwise do an actual copy.
+        DirectoryNode newMe = null;
+        long newBranchID = lPath.getHighestBranch();
+        if (lPath.isLayered())
+        {
+            newMe = new LayeredDirectoryNode(this, getRepository(), lPath);
+        }
+        else
+        {
+            newMe = new PlainDirectoryNode(this, getRepository());
+        }
+        newMe.setAncestor(this);
+        newMe.setBranchID(newBranchID);
+        return newMe;
+    }
+
+    /**
+     * Get the type of this node. 
+     * @return The type of this node.
+     */
+    public AVMNodeType getType()
+    {
+        return AVMNodeType.PLAIN_DIRECTORY;
+    }    
+}

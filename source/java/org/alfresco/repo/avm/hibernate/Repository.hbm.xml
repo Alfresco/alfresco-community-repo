@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+<hibernate-mapping package="org.alfresco.repo.avm.hibernate">
+	<class table="repositories" name="RepositoryBeanImpl"
+		proxy="RepositoryBean" optimistic-lock="version">
+		<cache usage="read-write" />
+		<id name="name" column="name" type="string"></id>
+		<version name="vers" column="vers" type="long"></version>
+		<property type="long" name="nextVersionID"
+			column="next_version_id" not-null="true">
+		</property>
+		<!-- This should be not-null but hibernate makes that difficult. -->
+		<many-to-one name="root" class="DirectoryNodeBeanImpl"
+			column="current_root_id" unique="true" cascade="save-update">
+		</many-to-one>
+		<map name="roots" table="repository_roots">
+			<key column="repository_id"></key>
+			<map-key type="long" column="version_id"></map-key>
+			<many-to-many class="DirectoryNodeBeanImpl"
+				column="directory_id">
+			</many-to-many>
+		</map>
+		<set table="new_nodes" name="newNodes" cascade="all">
+			<key column="repository_id"></key>
+			<many-to-many class="AVMNodeBeanImpl"
+				column="new_node_id">
+			</many-to-many>
+		</set>
+	</class>
+</hibernate-mapping>

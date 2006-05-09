@@ -17,6 +17,10 @@
 package org.alfresco.repo.importer;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -42,6 +46,7 @@ import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.impl.Log4JLogger;
@@ -51,6 +56,7 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.FileCopyUtils;
 
 /**
  * Bootstrap Repository store.
@@ -357,8 +363,8 @@ public class ImporterBootstrap implements ApplicationListener
                         ACPImportPackageHandler acpHandler = null; 
                         if (view.endsWith(".acp"))
                         {
-                            ClassPathResource acpResource = new ClassPathResource(view);
-                            acpHandler = new ACPImportPackageHandler(acpResource.getFile(), encoding);
+                            File viewFile = getFile(view);
+                            acpHandler = new ACPImportPackageHandler(viewFile, encoding);
                         }
                         else
                         {
@@ -455,6 +461,40 @@ public class ImporterBootstrap implements ApplicationListener
             throw new ImporterException("Could not create reader for view " + view + " as encoding " + encoding + " is not supported");
         }
     }
+    
+    /**
+     * Get a File representation of an XML view
+     * 
+     * @param view  the view location
+     * @return  the file
+     */
+    private File getFile(String view)
+    {
+        // Get input stream
+        InputStream viewStream = getClass().getClassLoader().getResourceAsStream(view);
+        if (viewStream == null)
+        {
+            throw new ImporterException("Could not find view file " + view);
+        }
+        
+        // Create output stream
+        File tempFile = TempFileProvider.createTempFile("acpImport", ".tmp");
+        try
+        {
+            FileOutputStream os = new FileOutputStream(tempFile);
+            FileCopyUtils.copy(viewStream, os);
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new ImporterException("Could not import view " + view, e);
+        }
+        catch (IOException e)
+        {
+            throw new ImporterException("Could not import view " + view, e);
+        }
+        return tempFile;
+    }
+    
     
     /**
      * Bootstrap Binding

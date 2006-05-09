@@ -14,16 +14,6 @@
       </bind>
    </target>
 
-   <target name="compile-javadocs" depends="common.compile-javadocs" description="Creates the JavaDocs for the project">
-      <mkdir dir="${dir.javadoc.api.service}" />
-      <javadoc sourcepath="${dir.src.java}" destdir="${dir.javadoc.api.service}" 
-               packagenames="org.alfresco.service.*" excludepackagenames=""
-               author="true" version="true" doctitle="Alfresco Content Management Service API Specification" 
-               windowtitle="Alfresco Content Management Service API" classpathref="classpath.compile">
-         <bottom>${javadoc.copyright}</bottom>
-      </javadoc>
-   </target>
-
    <target name="build-single-jar" depends="common.compile-java" description="Build an self-contained executable jar" >
       <property name="dir.one-jar" value="${dir.build}/one-jar" />
       <!-- extract the one-jar file -->

@@ -45,10 +45,12 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.TestWithUserUtils;
 import org.springframework.context.ApplicationContext;
 
 public class FileImporterTest extends TestCase
@@ -60,6 +62,7 @@ public class FileImporterTest extends TestCase
     private ContentService contentService;
     private AuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
+    private PermissionService permissionService;
     private MimetypeService mimetypeService;
     private NamespaceService namespaceService;
 
@@ -86,6 +89,7 @@ public class FileImporterTest extends TestCase
         contentService = serviceRegistry.getContentService();
         authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        permissionService = serviceRegistry.getPermissionService();
         mimetypeService = serviceRegistry.getMimetypeService();
         namespaceService = serviceRegistry.getNamespaceService();
 
@@ -170,6 +174,8 @@ public class FileImporterTest extends TestCase
      *            <li>String: Directory to use as source (e.g. c:/temp)
      *            <li>String: New name to give the source.  It may have a suffix added (e.g. upload_xxx)
      *            <li>Integer: Number of times to repeat the load.
+     *            <li>String: (optional) user to authenticate as
+     *            <li>String: (optional) password for authentication
      *            </ol>
      * @throws SystemException
      * @throws NotSupportedException
@@ -186,6 +192,8 @@ public class FileImporterTest extends TestCase
         File sourceFile = new File(args[2]);
         String baseName = args[3];
         int target = Integer.parseInt(args[4]);
+        String userName = args.length > 5 ? args[5] : null;
+        String userPwd = args.length > 6 ? args[6] : "";
         while (count < target)
         {
             File directory = TempFileProvider.getTempDir();
@@ -210,13 +218,13 @@ public class FileImporterTest extends TestCase
                 }
 
                 NodeRef storeRoot = test.nodeService.getRootNode(spacesStore);
-                List<NodeRef> location = test.searchService.selectNodes(
+                List<NodeRef> importLocations = test.searchService.selectNodes(
                         storeRoot,
                         args[1],
                         null,
                         test.namespaceService,
                         false);
-                if (location.size() == 0)
+                if (importLocations.size() == 0)
                 {
                     throw new AlfrescoRuntimeException(
                             "Root node not found, " +
@@ -224,13 +232,30 @@ public class FileImporterTest extends TestCase
                             " not found in store, " +
                             storeRoot);
                 }
+                NodeRef importLocation = importLocations.get(0);
+                
+                // optionally authenticate as a specific user
+                if (userName != null)
+                {
+                    // give the user all necessary permissions on the root
+                    test.permissionService.setPermission(importLocation, userName, PermissionService.ALL_PERMISSIONS, true);
+                    // authenticate as the designated user
+                    TestWithUserUtils.authenticateUser(
+                            userName,
+                            userPwd,
+                            test.authenticationService,
+                            test.authenticationComponent);
+                    tx.commit();
+                    tx = transactionService.getUserTransaction();
+                    tx.begin();
+                }
 
                 long start = System.nanoTime();
                 int importCount = test.createFileImporter().loadNamedFile(
-                        location.get(0),
+                        importLocation,
                         sourceFile,
                         true,
-                        String.format("%s-%05d", baseName, count));
+                        String.format("%s-%05d-%s", baseName, count, System.currentTimeMillis()));
                 grandTotal += importCount;
                 long end = System.nanoTime();
                 long first = end-start;

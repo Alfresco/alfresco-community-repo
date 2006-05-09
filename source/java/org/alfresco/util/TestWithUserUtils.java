@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -86,6 +87,32 @@ public abstract class TestWithUserUtils extends BaseSpringTest
             NodeRef rootNodeRef,
             AuthenticationService authenticationService)
     {
+        authenticationService.authenticate(userName, password.toCharArray());
+    }
+    
+    /**
+     * Authenticate as the given user.  If the user does not exist, then authenticate as the system user
+     * and create the authentication first.
+     */
+    public static void authenticateUser(
+            String userName,
+            String password,
+            AuthenticationService authenticationService,
+            AuthenticationComponent authenticationComponent)
+    {
+        // go system
+        try
+        {
+            authenticationComponent.setSystemUserAsCurrentUser();
+            if (!authenticationService.authenticationExists(userName))
+            {
+                authenticationService.createAuthentication(userName, password.toCharArray());
+            }
+        }
+        finally
+        {
+            authenticationComponent.clearCurrentSecurityContext();
+        }
         authenticationService.authenticate(userName, password.toCharArray());
     }
     

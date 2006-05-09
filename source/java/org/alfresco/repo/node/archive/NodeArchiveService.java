@@ -33,11 +33,12 @@ public interface NodeArchiveService
     /**
      * Get the parent node that holds all nodes archived from the given store.
      * 
-     * @param storeRef the original store of the archived nodes
+     * @param storeRef the original store of the archived nodes.  This is the
+     *      store where the currently archived nodes could originally be found.
      * @return Returns the parent of the archived nodes, or null if archiving
      *      is not configured for the store
      */
-    public NodeRef getStoreArchiveNode(StoreRef storeRef);
+    public NodeRef getStoreArchiveNode(StoreRef originalStoreRef);
     
     /**
      * Attempt to restore the given archived node into its original location.

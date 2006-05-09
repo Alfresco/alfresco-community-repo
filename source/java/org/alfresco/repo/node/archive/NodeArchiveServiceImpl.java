@@ -65,9 +65,9 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         this.searchService = searchService;
     }
 
-    public NodeRef getStoreArchiveNode(StoreRef storeRef)
+    public NodeRef getStoreArchiveNode(StoreRef originalStoreRef)
     {
-        return nodeService.getStoreArchiveNode(storeRef);
+        return nodeService.getStoreArchiveNode(originalStoreRef);
     }
 
     /**

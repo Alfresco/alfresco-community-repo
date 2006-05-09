@@ -4,19 +4,19 @@
    <version>1.0</version>
 
    <imports>
-      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
    </imports>
-   
+
    <namespaces>
-      <namespace uri="http://www.jcp.org/jcr/1.0" prefix="jcr"/>
-      <namespace uri="http://www.jcp.org/jcr/nt/1.0" prefix="nt"/>
-      <namespace uri="http://www.jcp.org/jcr/mix/1.0" prefix="mix"/>
-      <namespace uri="http://www.jcp.org/jcr/sv/1.0" prefix="sv"/>
-      <namespace uri="http://www.w3.org/XML/1998/namespace" prefix="xml"/>
+      <namespace uri="http://www.jcp.org/jcr/1.0" prefix="jcr" />
+      <namespace uri="http://www.jcp.org/jcr/nt/1.0" prefix="nt" />
+      <namespace uri="http://www.jcp.org/jcr/mix/1.0" prefix="mix" />
+      <namespace uri="http://www.jcp.org/jcr/sv/1.0" prefix="sv" />
+      <namespace uri="http://www.w3.org/XML/1998/namespace" prefix="xml" />
    </namespaces>
-   
+
    <types>
-      
+
       <type name="nt:base">
          <properties>
             <property name="jcr:primaryType">
@@ -31,11 +31,98 @@
             </property>
          </properties>
       </type>
-   
+
+      <type name="nt:hierarchyNode">
+         <parent>nt:base</parent>
+         <properties>
+            <property name="jcr:created">
+               <type>d:date</type>
+               <protected>true</protected>
+               <mandatory>false</mandatory>
+               <multiple>false</multiple>
+            </property>
+         </properties>
+      </type>
+
+      <type name="nt:file">
+         <parent>nt:hierarchyNode</parent>
+         <associations>
+            <child-association name="jcr:content">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>nt:base</class>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </target>
+               <child-name>jcr:content</child-name>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>         
+      </type>         
+
+      <type name="nt:folder">
+         <parent>nt:hierarchyNode</parent>
+         <associations>
+            <child-association name="jcr:contains">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>nt:hierarchyNode</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>         
+      </type>         
+
+      <type name="nt:resource">
+         <parent>nt:base</parent>
+         <properties>
+            <property name="jcr:encoding">
+               <type>d:text</type>
+               <protected>false</protected>
+               <mandatory>false</mandatory>
+               <multiple>false</multiple>
+            </property>
+            <property name="jcr:mimeType">
+               <type>d:text</type>
+               <protected>false</protected>
+               <mandatory>true</mandatory>
+               <multiple>false</multiple>
+            </property>
+            <property name="jcr:data">
+               <type>d:content</type>
+               <protected>false</protected>
+               <mandatory>true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="jcr:lastModified">
+               <type>d:date</type>
+               <protected>false</protected>
+               <mandatory>true</mandatory>
+               <multiple>false</multiple>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>mix:referenceable</aspect>
+         </mandatory-aspects>
+      </type>
+
    </types>
 
    <aspects>
-      
+
       <aspect name="mix:referenceable">
          <properties>
             <property name="jcr:uuid">
@@ -45,7 +132,7 @@
             </property>
          </properties>
       </aspect>
-      
+
       <aspect name="mix:lockable">
          <properties>
             <property name="jcr:lockOwner">
@@ -54,9 +141,9 @@
             <property name="jcr:lockIsDeep">
                <type>d:boolean</type>
             </property>
-         </properties>            
+         </properties>
       </aspect>
-      
+
    </aspects>
-   
+
 </model>

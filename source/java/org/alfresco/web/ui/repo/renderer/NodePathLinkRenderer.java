@@ -244,7 +244,7 @@ public class NodePathLinkRenderer extends BaseRenderer
          }
       }
       
-      if (disabled == false)
+      if (disabled == false && lastElementRef != null)
       {
          return renderPathElement(context, component, lastElementRef, buf.toString());
       }

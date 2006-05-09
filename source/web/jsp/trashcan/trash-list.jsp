@@ -140,6 +140,7 @@
                               <div style="padding: 4px;"></div>
                               <h:inputText id="search-text" value="#{TrashcanBean.searchText}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;
                               <h:commandButton id="search-btn" value="#{msg.search_deleted_items}" actionListener="#{TrashcanBean.search}" disabled="true" />&nbsp;
+                              <h:commandButton id="clear-btn" value="#{msg.show_all}" actionListener="#{TrashcanBean.clearSearch}" />
                               <div style="padding: 4px;"></div>
                               
                               <%-- Filter controls --%>
@@ -172,7 +173,7 @@
                                        <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
                                     </f:facet>
                                     <f:facet name="small-icon">
-                                       <a:actionLink value="#{r.name}" href="#{r.url}" target="new" image="#{r.fileType16}" showLink="false" styleClass="inlineAction" />
+                                       <a:actionLink value="#{r.name}" href="#{r.url}" target="new" image="#{r.typeIcon}" showLink="false" styleClass="inlineAction" />
                                     </f:facet>
                                     <a:actionLink value="#{r.name}" href="#{r.url}" target="new" />
                                  </a:column>
@@ -195,12 +196,12 @@
                                     </h:outputText>
                                  </a:column>
                                  
-                                 <%-- Username column --%>
+                                 <%-- Deleted by user column --%>
                                  <a:column width="120" style="text-align:left" rendered="#{NavigationBean.currentUser.admin == true}">
                                     <f:facet name="header">
-                                       <a:sortLink label="#{msg.deleted_user}" value="deletedUsername" styleClass="header"/>
+                                       <a:sortLink label="#{msg.deleted_user}" value="deletedBy" styleClass="header"/>
                                     </f:facet>
-                                    <h:outputText value="#{r.deletedUsername}" />
+                                    <h:outputText value="#{r.deletedBy}" />
                                  </a:column>
                                  
                                  <%-- Actions column --%>
@@ -208,16 +209,18 @@
                                     <f:facet name="header">
                                        <h:outputText value="#{msg.actions}"/>
                                     </f:facet>
-                                    <a:actionLink value="#{msg.recover}" image="/images/icons/recover.gif" showLink="false" action="recoverItem" actionListener="#{TrashcanBean.setupItemAction}">
+                                    <a:actionLink value="#{msg.recover}" image="/images/icons/recover.gif" showLink="false" action="dialog:recoverItem" actionListener="#{TrashcanBean.setupItemAction}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
-                                    <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" showLink="false" action="deleteItem" actionListener="#{TrashcanBean.setupItemAction}">
+                                    <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" showLink="false" action="dialog:deleteItem" actionListener="#{TrashcanBean.setupItemAction}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
                                  </a:column>
                                  
                                  <a:dataPager styleClass="pager" />
                               </a:richList>
+                              
+                              <h:message for="trashcan-list" styleClass="statusMessage" />
                               
                               </a:panel>
                               

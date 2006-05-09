@@ -378,6 +378,7 @@
             </permissions>
             <label-id>manage_deleted_items</label-id>
             <image>/images/icons/trashcan.gif</image>
+            <action-listener>#{TrashcanBean.setupTrashcan}</action-listener>
             <action>dialog:manageDeletedItems</action>
          </action>
          

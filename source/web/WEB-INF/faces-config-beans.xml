@@ -1484,8 +1484,16 @@
          <value>#{NodeService}</value>
       </managed-property>
       <managed-property>
+         <property-name>nodeArchiveService</property-name>
+         <value>#{nodeArchiveService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>searchService</property-name>
          <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
       </managed-property>
    </managed-bean>
    

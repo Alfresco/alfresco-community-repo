@@ -66,8 +66,6 @@ public class FileImporterTest extends TestCase
     private ServiceRegistry serviceRegistry;
     private NodeRef rootNodeRef;
 
-    private SearchService searcher;
-
     public FileImporterTest()
     {
         super();
@@ -82,7 +80,6 @@ public class FileImporterTest extends TestCase
     {
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
-        searcher = serviceRegistry.getSearchService();
         nodeService = serviceRegistry.getNodeService();
         searchService = serviceRegistry.getSearchService();
         dictionaryService = serviceRegistry.getDictionaryService();
@@ -119,8 +116,8 @@ public class FileImporterTest extends TestCase
     {
         FileImporter fileImporter = createFileImporter();
         URL url = this.getClass().getClassLoader().getResource("");
-        File root = new File(url.getFile());
-        int count = fileImporter.loadFile(rootNodeRef, new File(url.getFile()));
+        File rootFile = new File(url.getFile());
+        int count = fileImporter.loadFile(rootNodeRef, rootFile);
         assertEquals("Expected to load a single file", 1, count);
     }
 
@@ -168,10 +165,11 @@ public class FileImporterTest extends TestCase
     /**
      * @param args
      *            <ol>
-     *            <li>StoreRef
-     *            <li>Store Path
-     *            <li>Directory
-     *            <li>Optional maximum time in seconds for node loading
+     *            <li>StoreRef: The store to load the files into
+     *            <li>String: The path within the store into which to load the files (e.g. /app:company_home)
+     *            <li>String: Directory to use as source (e.g. c:/temp)
+     *            <li>String: New name to give the source.  It may have a suffix added (e.g. upload_xxx)
+     *            <li>Integer: Number of times to repeat the load.
      *            </ol>
      * @throws SystemException
      * @throws NotSupportedException
@@ -183,11 +181,10 @@ public class FileImporterTest extends TestCase
      */
     public static final void main(String[] args) throws Exception
     {
-
-        int exitCode = 0;
-
         int grandTotal = 0;
         int count = 0;
+        File sourceFile = new File(args[2]);
+        String baseName = args[3];
         int target = Integer.parseInt(args[4]);
         while (count < target)
         {
@@ -229,7 +226,11 @@ public class FileImporterTest extends TestCase
                 }
 
                 long start = System.nanoTime();
-                int importCount = test.createFileImporter().loadNamedFile(location.get(0), new File(args[2]), true, args[3]+count);
+                int importCount = test.createFileImporter().loadNamedFile(
+                        location.get(0),
+                        sourceFile,
+                        true,
+                        String.format("%s-%05d", baseName, count));
                 grandTotal += importCount;
                 long end = System.nanoTime();
                 long first = end-start;
@@ -304,9 +305,7 @@ public class FileImporterTest extends TestCase
             {
                 tx.rollback();
                 e.printStackTrace();
-                exitCode = 1;
             }
-            //System.exit(exitCode);
         }
         System.exit(0);
     }

@@ -63,5 +63,15 @@ public interface FileImporter
      */
     public int loadFile(NodeRef container, File file) throws FileImporterException;
 
+    /**
+     * Load a file into a given location, giving it a new name.
+     * 
+     * @param container the target parent to load into
+     * @param file the source file to upload
+     * @param recurse true to recurse into subfolders
+     * @param name the new name of the file or folder when it gets uploaded
+     * @return Returns the number of files loaded
+     * @throws FileImporterException
+     */
     public int loadNamedFile(NodeRef container, File file, boolean recurse, String name) throws FileImporterException;
 }

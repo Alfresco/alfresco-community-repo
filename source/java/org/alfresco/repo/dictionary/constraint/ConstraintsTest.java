@@ -229,12 +229,12 @@ public class ConstraintsTest extends TestCase
     public void testRegexConstraintFilename() throws Exception
     {
         // we assume UTF-8
-        String expression = "[^\\\"\\*\\\\\\>\\<\\?\\/\\:\\|\\¬\\£\\%\\&\\+\\;]+";
+        String expression = ".*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|\\xA3\\xAC\\%\\&\\+\\;]+.*";
         String invalidChars = "\"*\\><?/:|¬£%&+;";
         
         RegexConstraint constraint = new RegexConstraint();
         constraint.setExpression(expression);
-        constraint.setRequiresMatch(true);
+        constraint.setRequiresMatch(false);
         constraint.initialize();
         
         // check that all the invalid chars cause failures
@@ -248,6 +248,7 @@ public class ConstraintsTest extends TestCase
         // ... and a valid one
         evaluate(constraint, "Company Home", false);
     }
+    
     
     private enum DummyEnum
     {

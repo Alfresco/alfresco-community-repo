@@ -16,8 +16,8 @@
 
    <constraints>
       <constraint name="cm:filename" type="REGEX">
-         <parameter name="expression"><value><![CDATA[[^\"\*\\\>\<\?\/\:\|\¬\£\%\&\+\;]+]]></value></parameter>
-         <parameter name="requiresMatch"><value>true</value></parameter>
+         <parameter name="expression"><value><![CDATA[.*[\"\*\\\>\<\?\/\:\|\xA3\xAC\%\&\+\;]+.*]]></value></parameter>
+         <parameter name="requiresMatch"><value>false</value></parameter>
       </constraint>
    </constraints>
    

@@ -1,6 +1,8 @@
 package org.alfresco.web.bean.dialog;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
@@ -25,6 +27,7 @@ import org.alfresco.web.ui.common.Utils;
  */
 public abstract class BaseDialogBean implements IDialogBean
 {
+   protected Map<String, String> parameters;
    protected boolean isFinished = false;
    
    // services common to most dialogs
@@ -36,10 +39,18 @@ public abstract class BaseDialogBean implements IDialogBean
    protected DictionaryService dictionaryService;
    protected NamespaceService namespaceService;
    
-   public void init()
+   public void init(Map<String, String> parameters)
    {
       // tell any beans to update themselves so the UI gets refreshed
       UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
+      
+      // store the parameters, create empty map if necessary
+      this.parameters = parameters;
+      
+      if (this.parameters == null)
+      {
+         this.parameters = new HashMap<String, String>();
+      }
       
       // reset the isFinished flag
       this.isFinished = false;
@@ -82,7 +93,7 @@ public abstract class BaseDialogBean implements IDialogBean
             // rollback the transaction
             try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
             Utils.addErrorMessage(formatErrorMessage(e));
-            outcome = null;
+            outcome = getErrorOutcome(e);
          }
       }
       
@@ -209,11 +220,24 @@ public abstract class BaseDialogBean implements IDialogBean
    }
    
    /**
+    * The default message id to use in error messages
+    * 
     * @return The error message lookup id
     */
    protected String getErrorMessageId()
    {
-      return "error_generic";
+      return Repository.ERROR_GENERIC;
+   }
+   
+   /**
+    * The outcome to return if the given exception occurs
+    * 
+    * @param exception The exception that got thrown
+    * @return The error outcome, null by default
+    */
+   protected String getErrorOutcome(Throwable exception)
+   {
+      return null;
    }
    
    /**

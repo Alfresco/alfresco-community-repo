@@ -173,6 +173,7 @@
    </config>
    
    <config evaluator="string-compare" condition="Content Wizards">
+      <other-properties user-choice-visible="true" user-choice-default="true" /> 
       <create-mime-types>
          <mime-type name="text/html" />
          <mime-type name="text/plain" />

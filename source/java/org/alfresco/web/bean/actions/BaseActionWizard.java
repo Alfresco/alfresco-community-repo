@@ -131,9 +131,9 @@ public abstract class BaseActionWizard extends BaseWizardBean
    // Wizard implementation
    
    @Override
-   public void init()
+   public void init(Map<String, String> parameters)
    {
-      super.init();
+      super.init(parameters);
       
       this.action = null;
       this.users = null;

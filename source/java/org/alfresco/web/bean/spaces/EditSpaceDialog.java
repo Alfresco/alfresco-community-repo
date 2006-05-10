@@ -22,6 +22,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.component.UIListItem;
 
 /**
@@ -34,9 +35,9 @@ public class EditSpaceDialog extends BaseDialogBean
    protected Node editableNode;
    
    @Override
-   public void init()
+   public void init(Map<String, String> parameters)
    {
-      super.init();
+      super.init(parameters);
       
       // setup the space being edited
       this.editableNode = this.browseBean.getActionSpace();
@@ -225,14 +226,14 @@ public class EditSpaceDialog extends BaseDialogBean
       if (exception instanceof FileExistsException)
       {
          return MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), "error_exists"), 
+               FacesContext.getCurrentInstance(), Repository.ERROR_EXISTS), 
                ((FileExistsException)exception).getExisting().getName());
       }
       else
       {
          return MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), "error_space"), 
-               ((FileExistsException)exception).getExisting().getName());
+               exception.getMessage());
       }
    }
 }

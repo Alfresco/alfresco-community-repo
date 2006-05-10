@@ -1,5 +1,7 @@
 package org.alfresco.web.bean.dialog;
 
+import java.util.Map;
+
 /**
  * Interface that defines the contract for a dialog backing bean
  * 
@@ -9,8 +11,10 @@ public interface IDialogBean
 {
    /**
     * Initialises the dialog bean
+    * 
+    * @param parameters Map of parameters for the dialog
     */
-   public void init();
+   public void init(Map<String, String> parameters);
    
    /**
     * Method handler called when the cancel button of the dialog is pressed

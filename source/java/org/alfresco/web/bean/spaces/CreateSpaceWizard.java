@@ -66,9 +66,9 @@ public class CreateSpaceWizard extends BaseWizardBean
    /**
     * Initialises the wizard
     */
-   public void init()
+   public void init(Map<String, String> parameters)
    {
-      super.init();
+      super.init(parameters);
       
       // clear the cached query results
       if (this.templates != null)
@@ -654,7 +654,7 @@ public class CreateSpaceWizard extends BaseWizardBean
       if (exception instanceof FileExistsException)
       {
          return MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), "error_exists"), 
+               FacesContext.getCurrentInstance(), Repository.ERROR_EXISTS), 
                ((FileExistsException)exception).getExisting().getName());
       }
       else

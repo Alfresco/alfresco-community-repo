@@ -2,6 +2,7 @@ package org.alfresco.web.bean.content;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
@@ -12,7 +13,9 @@ import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.apache.commons.logging.Log;
@@ -40,13 +43,14 @@ public class CreateContentWizard extends BaseContentWizard
    {
       saveContent(null, this.content);
       
+      // return the default outcome
       return outcome;
    }
    
    @Override
-   public void init()
+   public void init(Map<String, String> parameters)
    {
-      super.init();
+      super.init(parameters);
       
       this.content = null;
       this.inlineEdit = true;
@@ -72,6 +76,26 @@ public class CreateContentWizard extends BaseContentWizard
       }
       
       return disabled;
+   }
+   
+   @Override
+   protected String doPostCommitProcessing(FacesContext context, String outcome)
+   {
+      // as we were successful, go to the set properties dialog if asked
+      // to otherwise just return
+      if (this.showOtherProperties)
+      {
+         // we are going to immediately edit the properties so we need
+         // to setup the BrowseBean context appropriately
+         this.browseBean.setDocument(new Node(this.createdNode));
+      
+         return getDefaultFinishOutcome() + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + 
+                "dialog:setContentProperties";
+      }
+      else
+      {
+         return outcome;
+      }
    }
    
    // ------------------------------------------------------------------------------

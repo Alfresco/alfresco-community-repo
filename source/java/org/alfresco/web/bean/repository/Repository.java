@@ -68,6 +68,7 @@ public final class Repository
    public static final String ERROR_GENERIC = "error_generic";
    public static final String ERROR_NOHOME  = "error_homespace";
    public static final String ERROR_SEARCH  = "error_search";
+   public static final String ERROR_EXISTS  = "error_exists";
    
    private static final String METADATA_EXTACTER_REGISTRY = "metadataExtracterRegistry";  
 
@@ -75,12 +76,6 @@ public final class Repository
    
    /** cache of client StoreRef */
    private static StoreRef storeRef = null;
-   
-   /** reference to Person folder */
-   private static NodeRef peopleRef = null;
-   
-   /** reference to System folder */
-   private static NodeRef systemRef = null;
    
    /** reference to the NamespaceService */
    private static NamespaceService namespaceService = null;

@@ -71,18 +71,23 @@ public final class ExecuteScriptCommand implements Command
                "Unable to execute ExecuteScriptCommand - mandatory parameter not supplied: " + PROP_USERPERSON);
       }
       
-      // get the optional document context ref
+      // get the optional document and space context ref
+      NodeService nodeService = serviceRegistry.getNodeService();
       NodeRef docRef = (NodeRef)properties.get(PROP_DOCUMENT);
+      NodeRef spaceRef = null;
+      if (docRef != null)
+      {
+         spaceRef = nodeService.getPrimaryParent(docRef).getParentRef();
+      }
       
       // build the model needed to execute the script
-      NodeService nodeService = serviceRegistry.getNodeService();
       Map<String, Object> model = RhinoScriptService.buildDefaultModel(
             serviceRegistry,
             personRef,
             new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId()),
             (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER),
             docRef,
-            nodeService.getPrimaryParent(docRef).getParentRef(),
+            spaceRef,
             DefaultModelHelper.imageResolver);
       
       // execute the script and return the result

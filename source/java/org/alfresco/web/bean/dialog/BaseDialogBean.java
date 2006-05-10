@@ -82,7 +82,7 @@ public abstract class BaseDialogBean implements IDialogBean
             // rollback the transaction
             try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
             Utils.addErrorMessage(formatErrorMessage(e));
-            outcome = null;
+            outcome = getErrorOutcome(e);
          }
       }
       
@@ -209,11 +209,24 @@ public abstract class BaseDialogBean implements IDialogBean
    }
    
    /**
+    * The default message id to use in error messages
+    * 
     * @return The error message lookup id
     */
    protected String getErrorMessageId()
    {
-      return "error_generic";
+      return Repository.ERROR_GENERIC;
+   }
+   
+   /**
+    * The outcome to return if the given exception occurs
+    * 
+    * @param exception The exception that got thrown
+    * @return The error outcome, null by default
+    */
+   protected String getErrorOutcome(Throwable exception)
+   {
+      return null;
    }
    
    /**

@@ -136,30 +136,30 @@ if (dialog != null && dialog.getFileName() != null)
                               <table cellpadding="2" cellspacing="2" border="0" width="100%">
                                  <% if (fileUploaded == false) { %>
                                  <tr>
-                                    <td colspan="2" class="wizardSectionHeading"><h:outputText value="#{msg.upload_document}"/></td>
+                                    <td colspan="3" class="wizardSectionHeading"><h:outputText value="#{msg.upload_content}"/></td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td class="mainSubText" colspan="2">
-                                       <h:outputText id="text1" value="1. #{msg.locate_document}"/>
+                                    <td class="mainSubText" colspan="3">
+                                       <h:outputText id="text1" value="1. #{msg.locate_content}"/>
                                     </td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
                                  
                                  <r:uploadForm>
                                  <tr>
-                                    <td colspan="2">
-                                       <input style="margin-left:12px;" type="file" size="50" name="alfFileInput"/>
+                                    <td colspan="3">
+                                       <input style="margin-left:12px;" type="file" size="75" name="alfFileInput"/>
                                     </td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td class="mainSubText" colspan="2">
-                                       <%=Application.getMessage(FacesContext.getCurrentInstance(), "click_upload")%>
+                                    <td class="mainSubText" colspan="3">
+                                       2. <%=Application.getMessage(FacesContext.getCurrentInstance(), "click_upload")%>
                                     </td>
                                  </tr>
                                  <tr>
-                                    <td colspan="2">
+                                    <td colspan="3">
                                        <input style="margin-left:12px;" type="submit" value="<%=Application.getMessage(FacesContext.getCurrentInstance(), "upload")%>" />
                                     </td>
                                  </tr>
@@ -169,11 +169,11 @@ if (dialog != null && dialog.getFileName() != null)
                                  <h:form acceptCharset="UTF-8" id="add-content-upload-end" onsubmit="return validate();">
                                  <% if (fileUploaded) { %>
                                  <tr>
-                                    <td colspan="2">
+                                    <td colspan="3">
                                        <table border="0" cellspacing="2" cellpadding="2" class="selectedItems">
                                           <tr>
                                              <td colspan="2" class="selectedItemsHeader">
-                                                <h:outputText id="text2" value="#{msg.uploaded_filename}" />
+                                                <h:outputText id="text2" value="#{msg.uploaded_content}" />
                                              </th>
                                           </tr>
                                           <tr>
@@ -191,23 +191,27 @@ if (dialog != null && dialog.getFileName() != null)
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td colspan="2" class="wizardSectionHeading">
-                                       &nbsp;<h:outputText id="text4" value="#{msg.properties}" />
+                                    <td colspan="3" class="wizardSectionHeading">
+                                       &nbsp;<h:outputText id="text4" value="#{msg.general_properties}" />
                                     </td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td>
-                                       <h:outputText id="text5" value="#{msg.file_name}:" />
+                                    <td align="middle">
+                                       <h:graphicImage value="/images/icons/required_field.gif" alt="Required Field" />
                                     </td>
-                                    <td width="90%">
+                                    <td>
+                                       <h:outputText id="text5" value="#{msg.name}:" />
+                                    </td>
+                                    <td width="85%">
                                        <h:inputText id="file-name" value="#{AddContentDialog.fileName}"  
                                                     maxlength="1024" size="35"
                                                     onkeyup="checkButtonState();"
-                                                    onchange="checkButtonState();" />&nbsp;*
+                                                    onchange="checkButtonState();" />
                                     </td>
                                  </tr>
                                  <tr>
+                                    <td></td>
                                     <td>
                                        <h:outputText id="text6" value="#{msg.type}:" />
                                     </td>
@@ -218,6 +222,7 @@ if (dialog != null && dialog.getFileName() != null)
                                     </td>
                                  </tr>
                                  <tr>
+                                    <td></td>
                                     <td>
                                        <h:outputText id="text7" value="#{msg.content_type}:" />
                                     </td>
@@ -225,7 +230,35 @@ if (dialog != null && dialog.getFileName() != null)
                                        <r:mimeTypeSelector id="mime-type" value="#{AddContentDialog.mimeType}" />
                                     </td>
                                  </tr>
-                                 <% } %>
+                                 <% if (dialog.getOtherPropertiesChoiceVisible()) { %>
+                                 <tr><td class="paddingRow"></td></tr>
+                                 <tr>
+                                    <td colspan="3" class="wizardSectionHeading">
+                                       &nbsp;<h:outputText id="text8" value="#{msg.other_properties}" />
+                                    </td>
+                                 </tr>
+                                 <tr>
+                                    <td colspan="3">
+                                       <table style="padding-top: 2px;">
+                                          <tr>
+                                             <td colspan="3">
+                                                <h:outputText id="text9" value="#{msg.modify_props_help_text}" />
+                                             </td>
+                                          </tr>
+                                          <tr><td class="paddingRow"></td></tr>
+                                          <tr>
+                                             <td>
+                                                <h:selectBooleanCheckbox value="#{AddContentDialog.showOtherProperties}" />
+                                             </td>
+                                             <td width="100%">
+                                                <h:outputText id="text10" value="#{msg.modify_props_when_page_closes}" />
+                                             </td>
+                                          </tr>
+                                          
+                                       </table>
+                                    </td>
+                                 </tr>
+                                 <% } } %>
                                  
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
@@ -297,7 +330,7 @@ if (dialog != null && dialog.getFileName() != null)
          {
             finishButtonPressed = false;
             return validateName(document.getElementById("add-content-upload-end:file-name"), 
-                                '<a:outputText id="text8" value="#{msg.validation_invalid_character}" />', true);
+                                '<a:outputText id="text11" value="#{msg.validation_invalid_character}" />', true);
          }
          else
          {

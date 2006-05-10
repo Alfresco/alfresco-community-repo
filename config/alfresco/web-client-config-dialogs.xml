@@ -15,6 +15,16 @@
                  icon="/images/icons/create_space_large.gif" title-id="modify_space_properties" 
                  description-id="editspace_description" />
          
+         <!-- Definition of the set content properties dialog -->
+         <dialog name="setContentProperties" page="/jsp/content/edit-content-properties.jsp" 
+                 managed-bean="SetContentPropertiesDialog" icon="/images/icons/details_large.gif"
+                 title-id="modify_content_properties" description-id="edit_content_description" />
+                 
+         <!-- Definition of the edit content properties dialog -->
+         <dialog name="editContentProperties" page="/jsp/content/edit-content-properties.jsp" 
+                 managed-bean="EditContentPropertiesDialog" icon="/images/icons/details_large.gif"
+                 title-id="modify_content_properties" description-id="edit_content_description" />
+         
       </dialogs>
    </config>
    

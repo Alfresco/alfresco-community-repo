@@ -68,18 +68,26 @@
 
 <a:errors message="#{msg.error_wizard}" styleClass="errorMessage" />
 
-<h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0">
-   <h:outputText value="#{msg.file_name}:"/>
+<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
+             width="100%" rowClasses="wizardSectionHeading">
+   <h:outputText value="&nbsp;#{msg.general_properties}" escape="false" />
+</h:panelGrid>
+
+<h:panelGrid columns="3" cellpadding="3" cellspacing="3" border="0">
+   <h:graphicImage value="/images/icons/required_field.gif" alt="Required Field" />
+   <h:outputText value="#{msg.name}:"/>
    <h:inputText id="file-name" value="#{WizardManager.bean.fileName}" 
                 maxlength="1024" size="35" 
                 onkeyup="checkButtonState();" 
                 onchange="checkButtonState();" />
                 
+   <h:outputText value=""/>
    <h:outputText value="#{msg.type}:"/>
    <h:selectOneMenu value="#{WizardManager.bean.objectType}">
       <f:selectItems value="#{WizardManager.bean.objectTypes}" />
    </h:selectOneMenu>
    
+   <h:outputText value=""/>
    <h:outputText value="#{msg.content_type}:"/>
    <h:selectOneMenu value="#{WizardManager.bean.mimeType}" 
                     valueChangeListener="#{WizardManager.bean.createContentChanged}">
@@ -87,4 +95,15 @@
    </h:selectOneMenu>
 </h:panelGrid>
 
-                              
+<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" style="padding-top: 4px;"
+             width="100%" rowClasses="wizardSectionHeading, paddingRow"
+             rendered="#{WizardManager.bean.otherPropertiesChoiceVisible}">
+   <h:outputText value="&nbsp;#{msg.other_properties}" escape="false" />
+   <h:outputText value="#{msg.modify_props_help_text}" />
+</h:panelGrid>
+
+<h:panelGrid style="padding-top: 2px;" columns="2"
+             rendered="#{WizardManager.bean.otherPropertiesChoiceVisible}">
+   <h:selectBooleanCheckbox value="#{WizardManager.bean.showOtherProperties}" />
+   <h:outputText value="#{msg.modify_props_when_wizard_closes}" />
+</h:panelGrid>

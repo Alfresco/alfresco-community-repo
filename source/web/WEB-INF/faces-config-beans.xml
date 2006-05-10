@@ -447,10 +447,35 @@
    
    <managed-bean>
       <description>
-         The bean that backs up the Edit Document Properties Dialog
+         The bean that backs up the Set Content Properties Dialog
       </description>
-      <managed-bean-name>EditDocPropsDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.DocumentPropertiesBean</managed-bean-class>
+      <managed-bean-name>SetContentPropertiesDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.content.SetContentPropertiesDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Edit Content Properties Dialog
+      </description>
+      <managed-bean-name>EditContentPropertiesDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.content.EditContentPropertiesDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>

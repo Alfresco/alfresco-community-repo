@@ -288,10 +288,6 @@
    <navigation-rule>
       <from-view-id>/jsp/dialog/document-details.jsp</from-view-id>
       <navigation-case>
-         <from-outcome>editDocProperties</from-outcome>
-         <to-view-id>/jsp/dialog/edit-document-properties.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>checkoutFile</from-outcome>
          <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
       </navigation-case>
@@ -350,18 +346,6 @@
       <navigation-case>
          <from-outcome>applyTemplate</from-outcome>
          <to-view-id>/jsp/dialog/apply-doc-template.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/edit-document-properties.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

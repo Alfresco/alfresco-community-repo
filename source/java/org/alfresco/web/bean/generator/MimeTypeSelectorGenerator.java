@@ -31,17 +31,20 @@ public class MimeTypeSelectorGenerator extends BaseComponentGenerator
          UIPropertySheet propertySheet, PropertySheetItem property, 
          PropertyDefinition propertyDef, UIComponent component)
    {
-      if (property.getConverter() != null)
+      if (propertySheet.inEditMode() == false)
       {
-         // create and add the custom converter
-         createAndSetConverter(context, property.getConverter(), component);
-      }
-      else
-      {
-         // if there isn't a custom converter add the mime type 
-         // converter as a default
-         createAndSetConverter(context, MimeTypeConverter.CONVERTER_ID, 
-               component);
+         if (property.getConverter() != null)
+         {
+            // create and add the custom converter
+            createAndSetConverter(context, property.getConverter(), component);
+         }
+         else
+         {
+            // if there isn't a custom converter add the mime type 
+            // converter as a default
+            createAndSetConverter(context, MimeTypeConverter.CONVERTER_ID, 
+                  component);
+         }
       }
    }
    

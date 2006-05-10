@@ -654,7 +654,7 @@ public class CreateSpaceWizard extends BaseWizardBean
       if (exception instanceof FileExistsException)
       {
          return MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), "error_exists"), 
+               FacesContext.getCurrentInstance(), Repository.ERROR_EXISTS), 
                ((FileExistsException)exception).getExisting().getName());
       }
       else

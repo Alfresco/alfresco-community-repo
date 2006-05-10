@@ -45,6 +45,8 @@ public abstract class BaseContentWizard extends BaseWizardBean
    protected String mimeType;
    protected String objectType;
    protected boolean inlineEdit;
+   protected boolean otherPropertiesChoiceVisible = true;
+   protected boolean showOtherProperties = true;
    
    // the NodeRef of the node created during finish
    protected NodeRef createdNode;
@@ -68,6 +70,8 @@ public abstract class BaseContentWizard extends BaseWizardBean
       this.mimeType = null;
       this.inlineEdit = false;
       this.objectType = ContentModel.TYPE_CONTENT.toString();
+      
+      initOtherProperties();
    }
    
    @Override
@@ -198,6 +202,32 @@ public abstract class BaseContentWizard extends BaseWizardBean
    public void setInlineEdit(boolean inlineEdit)
    {
       this.inlineEdit = inlineEdit;
+   }
+   
+   /**
+    * @return Determines whether the choice to modify all properties
+    *         is shown
+    */
+   public boolean getOtherPropertiesChoiceVisible()
+   {
+      return this.otherPropertiesChoiceVisible;
+   }
+   
+   /**
+    * @return Determines whether the edit properties dialog should be
+    *         shown when this one ends
+    */
+   public boolean getShowOtherProperties()
+   {
+      return this.showOtherProperties;
+   }
+   
+   /**
+    * @param showOthers Sets whether the edit properties dialog is shown
+    */
+   public void setShowOtherProperties(boolean showOthers)
+   {
+      this.showOtherProperties = showOthers;
    }
    
    /**
@@ -416,5 +446,39 @@ public abstract class BaseContentWizard extends BaseWizardBean
       }
       
       return objType;
+   }
+   
+   /**
+    * Initialises the other properties flags from config
+    */
+   protected void initOtherProperties()
+   {
+      ConfigService configSvc = Application.getConfigService(FacesContext.getCurrentInstance());
+      
+      if (configSvc != null)
+      {
+         Config config = configSvc.getConfig("Content Wizards");
+         if (config != null)
+         {
+            ConfigElement otherPropsCfg = config.getConfigElement("other-properties");
+            if (otherPropsCfg != null)
+            {
+               // get the attributes
+               String userChoiceVisible = otherPropsCfg.getAttribute("user-choice-visible");
+               String userChoiceDefault = otherPropsCfg.getAttribute("user-choice-default");
+               
+               // set the defaults
+               if (userChoiceVisible != null)
+               {
+                  this.otherPropertiesChoiceVisible = Boolean.parseBoolean(userChoiceVisible);
+               }
+               
+               if (userChoiceDefault != null)
+               {
+                  this.showOtherProperties = Boolean.parseBoolean(userChoiceDefault);
+               }
+            }
+         }
+      }
    }
 }

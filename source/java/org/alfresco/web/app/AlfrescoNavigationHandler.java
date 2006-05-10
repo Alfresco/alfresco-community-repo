@@ -528,7 +528,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       }
       else
       {
-         logger.warn("Failed to find configuration for dialog '" + name + "'");
+         //logger.warn("Failed to find configuration for dialog '" + name + "'");
          
          // send the dialog name as the outcome to the original handler
          handleDispatch(context, fromAction, name);
@@ -565,7 +565,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       }
       else
       {
-         logger.warn("Failed to find configuration for wizard '" + name + "'");
+         //logger.warn("Failed to find configuration for wizard '" + name + "'");
          
          // send the dialog name as the outcome to the original handler
          handleDispatch(context, fromAction, name);
@@ -610,7 +610,16 @@ public class AlfrescoNavigationHandler extends NavigationHandler
             if (logger.isDebugEnabled())
                logger.debug("Closing " + closingItem + " with an overridden outcome of '" + overriddenOutcome + "'");
             
-            navigate(context, fromAction, overriddenOutcome);
+            // if the override is calling another dialog or wizard come back through
+            // the navigation handler from the beginning
+            if (isDialog(overriddenOutcome) || isWizard(overriddenOutcome))
+            {               
+               this.handleNavigation(context, fromAction, overriddenOutcome);
+            }
+            else
+            {
+               navigate(context, fromAction, overriddenOutcome);
+            }
          }
       }
       else

@@ -37,6 +37,7 @@ public class UIMimeTypeSelector extends UISelectOne
       {
          UISelectItems items = (UISelectItems)context.getApplication().
                createComponent("javax.faces.SelectItems");
+         items.setId(this.getId() + "_items");
          items.setValue(createList());
          
          // add the child component

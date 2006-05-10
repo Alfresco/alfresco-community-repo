@@ -76,8 +76,7 @@ public class CreateRuleWizard extends BaseActionWizard
    protected static final String CONDITION_PAGES_LOCATION = "/jsp/rules/";
    
    private static final Log logger = LogFactory.getLog(CreateRuleWizard.class);
-   
-   
+
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
@@ -209,63 +208,7 @@ public class CreateRuleWizard extends BaseActionWizard
    {
       return "error_rule";
    }
-   
-   /**
-    * Sets up the given rule using the current state of the wizard
-    * 
-    * @param context FacesContext
-    * @param rule The rule to setup
-    * @param outcome The default outcome
-    * @return The outcome
-    */
-   protected String setupRule(FacesContext context, Rule rule, String outcome)
-   {
-      // setup the rule and add it to the space
-      rule.setTitle(this.title);
-      rule.setDescription(this.description);
-      rule.applyToChildren(this.applyToSubSpaces);
-      rule.setExecuteAsynchronously(this.runInBackground);
-      
-      // add all the conditions to the rule
-      for (Map<String, Serializable> condParams : this.allConditionsProperties)
-      {
-         String conditionName = (String)condParams.get(PROP_CONDITION_NAME);
-         this.condition = conditionName;
-         this.currentConditionProperties = condParams;
-         Map<String, Serializable> repoCondParams = buildConditionParams();
-         
-         // add the condition to the rule
-         ActionCondition condition = this.actionService.
-               createActionCondition(conditionName);
-         condition.setParameterValues(repoCondParams);
-         
-         // specify whether the condition result should be inverted
-         Boolean not = (Boolean)condParams.get(PROP_CONDITION_NOT);
-         condition.setInvertCondition(((Boolean)not).booleanValue());
-         
-         rule.addActionCondition(condition);
-      }
-      
-      // add all the actions to the rule
-      for (Map<String, Serializable> actionParams : this.allActionsProperties)
-      {
-         // use the base class version of buildActionParams(), but for this we need 
-         // to setup the currentActionProperties and action variables
-         String actionName = (String)actionParams.get(PROP_ACTION_NAME);
-         this.action = actionName;
-         this.currentActionProperties = actionParams;
-         Map<String, Serializable> repoActionParams = buildActionParams();
-         
-         // add the action to the rule
-         Action action = this.actionService.createAction(actionName);
-         action.setParameterValues(repoActionParams);
-         rule.addAction(action);
-      }
-      
-      return outcome;
-   }
-   
-   
+
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
    
@@ -679,6 +622,61 @@ public class CreateRuleWizard extends BaseActionWizard
    
    // ------------------------------------------------------------------------------
    // Helper methods
+   
+   /**
+    * Sets up the given rule using the current state of the wizard
+    * 
+    * @param context FacesContext
+    * @param rule The rule to setup
+    * @param outcome The default outcome
+    * @return The outcome
+    */
+   protected String setupRule(FacesContext context, Rule rule, String outcome)
+   {
+      // setup the rule and add it to the space
+      rule.setTitle(this.title);
+      rule.setDescription(this.description);
+      rule.applyToChildren(this.applyToSubSpaces);
+      rule.setExecuteAsynchronously(this.runInBackground);
+      
+      // add all the conditions to the rule
+      for (Map<String, Serializable> condParams : this.allConditionsProperties)
+      {
+         String conditionName = (String)condParams.get(PROP_CONDITION_NAME);
+         this.condition = conditionName;
+         this.currentConditionProperties = condParams;
+         Map<String, Serializable> repoCondParams = buildConditionParams();
+         
+         // add the condition to the rule
+         ActionCondition condition = this.actionService.
+               createActionCondition(conditionName);
+         condition.setParameterValues(repoCondParams);
+         
+         // specify whether the condition result should be inverted
+         Boolean not = (Boolean)condParams.get(PROP_CONDITION_NOT);
+         condition.setInvertCondition(((Boolean)not).booleanValue());
+         
+         rule.addActionCondition(condition);
+      }
+      
+      // add all the actions to the rule
+      for (Map<String, Serializable> actionParams : this.allActionsProperties)
+      {
+         // use the base class version of buildActionParams(), but for this we need 
+         // to setup the currentActionProperties and action variables
+         String actionName = (String)actionParams.get(PROP_ACTION_NAME);
+         this.action = actionName;
+         this.currentActionProperties = actionParams;
+         Map<String, Serializable> repoActionParams = buildActionParams();
+         
+         // add the action to the rule
+         Action action = this.actionService.createAction(actionName);
+         action.setParameterValues(repoActionParams);
+         rule.addAction(action);
+      }
+      
+      return outcome;
+   }
    
    /**
     * Sets up any default state required by the UI for collecting the 

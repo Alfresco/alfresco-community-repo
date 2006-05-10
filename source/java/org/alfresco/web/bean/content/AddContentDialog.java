@@ -9,6 +9,7 @@ import javax.faces.event.ActionEvent;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 
 /**
@@ -21,7 +22,7 @@ public class AddContentDialog extends BaseContentWizard
    protected File file;
    
    // ------------------------------------------------------------------------------
-   // Wizard implementation
+   // Dialog implementation
    
    @Override
    protected String finishImpl(FacesContext context, String outcome)
@@ -29,7 +30,8 @@ public class AddContentDialog extends BaseContentWizard
    {
       saveContent(this.file, null);
       
-      return "cancel";
+      // return default outcome
+      return outcome;
    }
    
    @Override
@@ -39,10 +41,38 @@ public class AddContentDialog extends BaseContentWizard
       
       clearUpload();
    }
+   
+   @Override
+   protected String doPostCommitProcessing(FacesContext context, String outcome)
+   {
+      // as we were successful, go to the set properties dialog if asked
+      // to otherwise just return
+      if (this.showOtherProperties)
+      {
+         // we are going to immediately edit the properties so we need
+         // to setup the BrowseBean context appropriately
+         this.browseBean.setDocument(new Node(this.createdNode));
+      
+         return "dialog:setContentProperties";
+      }
+      else
+      {
+         return outcome;
+      }
+   }
+   
+   @Override
+   protected String getDefaultFinishOutcome()
+   {
+      // as we are using this dialog outside the dialog framework 
+      // just go back to the main page
+      
+      return "browse";
+   }
 
    // ------------------------------------------------------------------------------
    // Bean getters and setters
-   
+
    /**
     * @return Returns the message to display when a file has been uploaded
     */

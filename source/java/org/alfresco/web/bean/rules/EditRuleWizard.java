@@ -46,31 +46,8 @@ public class EditRuleWizard extends CreateRuleWizard
 {
    private static final Log logger = LogFactory.getLog(EditRuleWizard.class);
    
-   @Override
-   protected String finishImpl(FacesContext context, String outcome) throws Exception
-   {
-      // get hold of the space the rule will apply to and make sure
-      // it is actionable
-      Node currentSpace = browseBean.getActionSpace();
-      
-      // get the existing rule
-      Rule rule = this.rulesBean.getCurrentRule();
-                  
-      // remove all the conditions and actions from the current rule
-      rule.removeAllActionConditions();
-      rule.removeAllActions();
-      
-      // re-setup the rule
-      outcome = setupRule(context, rule, outcome);
-      
-      // Save the rule
-      this.ruleService.saveRule(currentSpace.getNodeRef(), rule);
-      
-      if (logger.isDebugEnabled())
-         logger.debug("Updated rule '" + this.title + "'");
-      
-      return outcome;
-   }
+   // ------------------------------------------------------------------------------
+   // Wizard implementation
 
    @Override
    public void init()
@@ -132,6 +109,35 @@ public class EditRuleWizard extends CreateRuleWizard
       // reset the current action
       this.action = null;
    }
+   
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      // get hold of the space the rule will apply to and make sure
+      // it is actionable
+      Node currentSpace = browseBean.getActionSpace();
+      
+      // get the existing rule
+      Rule rule = this.rulesBean.getCurrentRule();
+                  
+      // remove all the conditions and actions from the current rule
+      rule.removeAllActionConditions();
+      rule.removeAllActions();
+      
+      // re-setup the rule
+      outcome = setupRule(context, rule, outcome);
+      
+      // Save the rule
+      this.ruleService.saveRule(currentSpace.getNodeRef(), rule);
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Updated rule '" + this.title + "'");
+      
+      return outcome;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Helper methods
    
    /**
     * Populates a Map of properties the wizard is expecting for the given condition

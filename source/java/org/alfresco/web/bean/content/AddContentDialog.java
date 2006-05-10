@@ -2,6 +2,7 @@ package org.alfresco.web.bean.content;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -35,9 +36,9 @@ public class AddContentDialog extends BaseContentWizard
    }
    
    @Override
-   public void init()
+   public void init(Map<String, String> parameters)
    {
-      super.init();
+      super.init(parameters);
       
       clearUpload();
    }
@@ -141,7 +142,7 @@ public class AddContentDialog extends BaseContentWizard
       //       approach can not be used in the current dialog framework. Until
       //       we have a pure JSF upload solution we need this initialisation
 
-      init();
+      init(null);
    }
    
    /**

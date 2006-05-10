@@ -35,9 +35,9 @@ public class EditSpaceDialog extends BaseDialogBean
    protected Node editableNode;
    
    @Override
-   public void init()
+   public void init(Map<String, String> parameters)
    {
-      super.init();
+      super.init(parameters);
       
       // setup the space being edited
       this.editableNode = this.browseBean.getActionSpace();

@@ -81,9 +81,9 @@ public class CreateRuleWizard extends BaseActionWizard
    // Wizard implementation
    
    @Override
-   public void init()
+   public void init(Map<String, String> parameters)
    {
-      super.init();
+      super.init(parameters);
       
       this.title = null;
       this.description = null;

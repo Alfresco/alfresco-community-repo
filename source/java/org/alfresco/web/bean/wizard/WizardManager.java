@@ -2,9 +2,12 @@ package org.alfresco.web.bean.wizard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
+import javax.faces.event.ActionEvent;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.app.Application;
@@ -13,6 +16,7 @@ import org.alfresco.web.config.WizardsConfigElement.ConditionalPageConfig;
 import org.alfresco.web.config.WizardsConfigElement.PageConfig;
 import org.alfresco.web.config.WizardsConfigElement.StepConfig;
 import org.alfresco.web.config.WizardsConfigElement.WizardConfig;
+import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,6 +35,23 @@ public class WizardManager
    protected WizardConfig currentWizardConfig;
    protected IWizardBean currentWizard;
    protected List<StepConfig> steps;
+   protected Map<String, String> currentWizardParams;
+   
+   /**
+    * Action handler used to setup parameters for the wizard being launched
+    * 
+    * @param event The event containing the parameters
+    */
+   public void setupParameters(ActionEvent event)
+   {
+      // check the component the event come from was an action link
+      UIComponent component = event.getComponent();
+      if (component instanceof UIActionLink)
+      {
+         // store the parameters
+         this.currentWizardParams = ((UIActionLink)component).getParameterMap();
+      }
+   }
    
    /**
     * Sets the current wizard
@@ -52,7 +73,10 @@ public class WizardManager
       }
       
       // initialise the managed bean
-      this.currentWizard.init();
+      this.currentWizard.init(this.currentWizardParams);
+      
+      // reset the current parameters so subsequent wizards don't get them
+      this.currentWizardParams = null;
       
       // get the steps for the wizard
       this.steps = this.currentWizardConfig.getStepsAsList();

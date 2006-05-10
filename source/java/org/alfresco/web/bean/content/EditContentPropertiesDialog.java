@@ -38,9 +38,9 @@ public class EditContentPropertiesDialog extends BaseDialogBean
    // Dialog implementation
    
    @Override
-   public void init()
+   public void init(Map<String, String> parameters)
    {
-      super.init();
+      super.init(parameters);
       
       // setup the editable node
       this.editableNode = new Node(this.browseBean.getDocument().getNodeRef());

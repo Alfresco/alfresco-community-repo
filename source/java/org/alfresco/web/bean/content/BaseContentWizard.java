@@ -59,9 +59,9 @@ public abstract class BaseContentWizard extends BaseWizardBean
    // Wizard implementation
    
    @Override
-   public void init()
+   public void init(Map<String, String> parameters)
    {
-      super.init();
+      super.init(parameters);
       
       this.fileName = null;
       this.author = null;

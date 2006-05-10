@@ -1,11 +1,16 @@
 package org.alfresco.web.bean.dialog;
 
+import java.util.Map;
+
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.config.DialogsConfigElement.DialogConfig;
+import org.alfresco.web.ui.common.component.UIActionLink;
 
 /**
  * Bean that manages the dialog framework
@@ -14,8 +19,25 @@ import org.alfresco.web.config.DialogsConfigElement.DialogConfig;
  */
 public class DialogManager
 {
-   protected DialogConfig currentDialogConfig;
    protected IDialogBean currentDialog;
+   protected DialogConfig currentDialogConfig;
+   protected Map<String, String> currentDialogParams;
+   
+   /**
+    * Action handler used to setup parameters for the dialog being launched
+    * 
+    * @param event The event containing the parameters
+    */
+   public void setupParameters(ActionEvent event)
+   {
+      // check the component the event come from was an action link
+      UIComponent component = event.getComponent();
+      if (component instanceof UIActionLink)
+      {
+         // store the parameters
+         this.currentDialogParams = ((UIActionLink)component).getParameterMap();
+      }
+   }
    
    /**
     * Sets the current dialog
@@ -36,7 +58,10 @@ public class DialogManager
       }
       
       // initialise the managed bean
-      this.currentDialog.init();
+      this.currentDialog.init(this.currentDialogParams);
+      
+      // reset the current parameters so subsequent dialogs don't get them
+      this.currentDialogParams = null;
    }
    
    /**

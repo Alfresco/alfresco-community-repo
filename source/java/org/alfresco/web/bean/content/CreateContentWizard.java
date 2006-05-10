@@ -2,6 +2,7 @@ package org.alfresco.web.bean.content;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
@@ -47,9 +48,9 @@ public class CreateContentWizard extends BaseContentWizard
    }
    
    @Override
-   public void init()
+   public void init(Map<String, String> parameters)
    {
-      super.init();
+      super.init(parameters);
       
       this.content = null;
       this.inlineEdit = true;

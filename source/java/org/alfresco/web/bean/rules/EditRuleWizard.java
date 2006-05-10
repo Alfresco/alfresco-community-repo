@@ -50,9 +50,9 @@ public class EditRuleWizard extends CreateRuleWizard
    // Wizard implementation
 
    @Override
-   public void init()
+   public void init(Map<String, String> parameters)
    {
-      super.init();
+      super.init(parameters);
       
       // get hold of the current rule details
       Rule rule = this.rulesBean.getCurrentRule();

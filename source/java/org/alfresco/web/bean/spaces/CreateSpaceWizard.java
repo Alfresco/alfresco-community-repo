@@ -66,9 +66,9 @@ public class CreateSpaceWizard extends BaseWizardBean
    /**
     * Initialises the wizard
     */
-   public void init()
+   public void init(Map<String, String> parameters)
    {
-      super.init();
+      super.init(parameters);
       
       // clear the cached query results
       if (this.templates != null)

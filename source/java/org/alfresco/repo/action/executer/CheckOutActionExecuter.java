@@ -74,7 +74,7 @@ public class CheckOutActionExecuter extends ActionExecuterAbstractBase
 	 * Add the parameter defintions
 	 */
 	@Override
-	protected void addParameterDefintions(List<ParameterDefinition> paramList) 
+	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
 		paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
 		paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_TYPE_QNAME, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_ASSOC_TYPE_QNAME)));

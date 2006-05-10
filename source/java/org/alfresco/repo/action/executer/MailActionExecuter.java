@@ -300,7 +300,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      * Add the parameter definitions
      */
     @Override
-    protected void addParameterDefintions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_TO, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_TO)));
         paramList.add(new ParameterDefinitionImpl(PARAM_TO_MANY, DataTypeDefinition.ANY, false, getParamDisplayLabel(PARAM_TO_MANY)));

@@ -73,7 +73,7 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
 	protected List<ParameterDefinition> getParameterDefintions() 
 	{
 		List<ParameterDefinition> result = new ArrayList<ParameterDefinition>();		
-		addParameterDefintions(result);
+		addParameterDefinitions(result);
 		return result;
 	}
 	
@@ -82,7 +82,7 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
 	 * 
 	 * @param paramList		the parameter definitions list
 	 */
-	protected abstract void addParameterDefintions(List<ParameterDefinition> paramList);
+	protected abstract void addParameterDefinitions(List<ParameterDefinition> paramList);
 
 	/**
 	 * Sets the action service 

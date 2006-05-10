@@ -107,7 +107,7 @@ public class CheckInActionExecuter extends ActionExecuterAbstractBase
     }
 
 	@Override
-	protected void addParameterDefintions(List<ParameterDefinition> paramList) 
+	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
 		paramList.add(new ParameterDefinitionImpl(PARAM_DESCRIPTION, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_DESCRIPTION)));
 	}

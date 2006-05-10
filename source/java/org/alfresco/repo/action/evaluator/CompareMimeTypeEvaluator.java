@@ -83,11 +83,11 @@ public class CompareMimeTypeEvaluator extends ComparePropertyValueEvaluator
     }
 
     /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefintions(java.util.List)
+     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
 	@Override
-	protected void addParameterDefintions(List<ParameterDefinition> paramList) 
+	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
-        super.addParameterDefintions(paramList);
+        super.addParameterDefinitions(paramList);
 	}
 }

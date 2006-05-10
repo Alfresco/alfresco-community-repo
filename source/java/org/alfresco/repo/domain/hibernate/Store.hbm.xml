@@ -23,9 +23,9 @@
       <many-to-one
             name="rootNode"
             not-null="true"
-            lazy="false"
+            lazy="proxy"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
-            fetch="join" >
+            fetch="select" >
          <column name="root_node_id" />
       </many-to-one>
    </class>

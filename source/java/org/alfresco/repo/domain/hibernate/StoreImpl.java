@@ -123,7 +123,7 @@ public class StoreImpl implements Store
         return key;
     }
     
-    public synchronized void setKey(StoreKey key)
+    public void setKey(StoreKey key)
     {
         refWriteLock.lock();
         try

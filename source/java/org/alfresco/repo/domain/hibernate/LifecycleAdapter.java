@@ -18,6 +18,7 @@ package org.alfresco.repo.domain.hibernate;
 
 import java.io.Serializable;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.hibernate.CallbackException;
 import org.hibernate.Session;
 import org.hibernate.classic.Lifecycle;
@@ -37,6 +38,10 @@ public abstract class LifecycleAdapter implements Lifecycle
      */
     protected Session getSession()
     {
+        if (session == null)
+        {
+            throw new AlfrescoRuntimeException("Hibernate entity is not part of a session: " + this);
+        }
         return session;
     }
 

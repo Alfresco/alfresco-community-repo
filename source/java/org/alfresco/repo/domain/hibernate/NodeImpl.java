@@ -34,6 +34,7 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 
 /**
  * Bean containing all the persistence data representing a <b>node</b>.
@@ -134,12 +135,13 @@ public class NodeImpl extends LifecycleAdapter implements Node
             return false;
         }
         Node that = (Node) obj;
-        return (this.getNodeRef().equals(that.getNodeRef()));
+        return (EqualsHelper.nullSafeEquals(getStore(), that.getStore())
+                && EqualsHelper.nullSafeEquals(getUuid(), that.getUuid()));
     }
     
     public int hashCode()
     {
-        return getNodeRef().hashCode();
+        return getUuid().hashCode();
     }
 
 //    @Override
@@ -316,11 +318,7 @@ public class NodeImpl extends LifecycleAdapter implements Node
         return accessControlList;
     }
 
-    /**
-     * For Hibernate use
-     */
-    @SuppressWarnings("unused")
-    private void setAccessControlList(DbAccessControlList accessControlList)
+    public void setAccessControlList(DbAccessControlList accessControlList)
     {
         this.accessControlList = accessControlList;
     }

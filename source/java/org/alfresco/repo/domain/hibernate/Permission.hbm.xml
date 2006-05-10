@@ -26,6 +26,16 @@
                not-null="true">
             <column name="node_id" />
         </many-to-one>
+         
+        <set name="entries"
+               inverse="true"
+               lazy="false" 
+               cascade="delete"
+               optimistic-lock="true"
+               fetch="join" >
+            <key column="acl_id" />
+            <one-to-many class="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl"  />
+        </set>
 
         <property name="inherits" column="inherits" type="boolean" not-null="true" />
         
@@ -47,29 +57,29 @@
 
         <natural-id mutable="true" >
            <many-to-one 
-               name="accessControlList" 
-               class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"
-               column="acl_id"
-               lazy="no-proxy"
-               fetch="select"
-               optimistic-lock="true"
-               not-null="true" /> 
+                   name="accessControlList" 
+                   class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"
+                   column="acl_id"
+                   lazy="no-proxy"
+                   fetch="select"
+                   optimistic-lock="true"
+                   not-null="true" /> 
            <many-to-one 
-               name="permission" 
-               class="org.alfresco.repo.domain.hibernate.DbPermissionImpl"
-               column="permission_id"
-               lazy="no-proxy"
-               fetch="select"
-               optimistic-lock="true"
-               not-null="true" /> 
+                   name="permission" 
+                   class="org.alfresco.repo.domain.hibernate.DbPermissionImpl"
+                   column="permission_id"
+                   lazy="no-proxy"
+                   fetch="select"
+                   optimistic-lock="true"
+                   not-null="true" /> 
            <many-to-one 
-               name="authority" 
-               class="org.alfresco.repo.domain.hibernate.DbAuthorityImpl"
-               column="authority_id"
-               lazy="no-proxy"
-               fetch="select"
-               optimistic-lock="true"
-               not-null="true" /> 
+                   name="authority" 
+                   class="org.alfresco.repo.domain.hibernate.DbAuthorityImpl"
+                   column="authority_id"
+                   lazy="no-proxy"
+                   fetch="select"
+                   optimistic-lock="true"
+                   not-null="true" /> 
         </natural-id>
         
         <property name="allowed" column="allowed" type="boolean" not-null="true" />
@@ -83,7 +93,7 @@
         dynamic-insert="false"
         dynamic-update="false"
         select-before-update="false"
-        lazy="true"
+        lazy="false"
         optimistic-lock="version" >
         
         <id name="id" column="id" type="long" >
@@ -104,7 +114,7 @@
         dynamic-insert="false"
         dynamic-update="false"
         select-before-update="false"
-        lazy="true"
+        lazy="false"
         optimistic-lock="version" >
         
         <id name="recipient" column="recipient" type="string" length="100" />
@@ -133,24 +143,6 @@
          permission.name = :permissionName
    </query>
    
-   <query name="permission.GetAccessControlEntriesForAccessControlList" cacheable="true" >
-      select
-         ace
-      from
-         org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl as ace
-      where
-         ace.accessControlList.id = :accessControlListId
-   </query>
-   
-   <query name="permission.GetAccessControlEntriesForPermission">
-      select
-         ace
-      from
-         org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl as ace
-      where
-         ace.permission.id = :permissionId
-   </query>
-   
    <query name="permission.GetAccessControlEntriesForAuthority">
       select
          ace
@@ -160,41 +152,4 @@
          ace.authority.recipient = :authorityRecipient
    </query>
    
-   <query name="permission.GetAccessControlEntriesForAuthorityAndNode">
-      select
-         ace
-      from
-         org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl as ace
-      where
-         ace.authority.recipient = :authorityRecipient and
-         ace.accessControlList.node.store.key.protocol = :storeProtocol and
-         ace.accessControlList.node.store.key.identifier = :storeIdentifier and
-         ace.accessControlList.node.uuid = :nodeUuid 
-   </query>
-   
-   <query name="permission.GetAccessControlEntryForAll">
-      select
-         ace
-      from
-         org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl as ace
-      where
-         ace.permission.typeQname = :permissionTypeQName and
-         ace.permission.name = :permissionName and
-         ace.authority.recipient = :authorityRecipient and
-         ace.accessControlList.node.store.key.protocol = :storeProtocol and
-         ace.accessControlList.node.store.key.identifier = :storeIdentifier and
-         ace.accessControlList.node.uuid = :nodeUuid 
-   </query>
-   
-   <query name="permission.GetAccessControlListForNode" cacheable="true" >
-      select
-         acl
-      from
-         org.alfresco.repo.domain.hibernate.DbAccessControlListImpl as acl
-      where
-         acl.node.store.key.protocol = :storeProtocol and
-         acl.node.store.key.identifier = :storeIdentifier and
-         acl.node.uuid = :nodeUuid 
-   </query>
-    
 </hibernate-mapping>

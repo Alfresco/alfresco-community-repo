@@ -80,5 +80,5 @@ public interface Node
 
     public DbAccessControlList getAccessControlList();
 
-//    public void setAccessControlList(DbAccessControlList accessControlList);
+    public void setAccessControlList(DbAccessControlList accessControlList);
 }

@@ -51,4 +51,10 @@ public interface DbPermission extends Serializable
      * @param name the name of the permission
      */
     public void setName(String name);
+    
+    /**
+     * @return Returns a key combining the {@link #getTypeQname() type}
+     *      and {@link #getName() name}
+     */
+    public DbPermissionKey getKey();
 }

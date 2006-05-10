@@ -17,6 +17,7 @@
 package org.alfresco.repo.domain.hibernate;
 
 import org.alfresco.repo.domain.DbPermission;
+import org.alfresco.repo.domain.DbPermissionKey;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
@@ -90,7 +91,7 @@ public class DbPermissionImpl extends LifecycleAdapter implements DbPermission
         Query query = getSession()
                 .getNamedQuery(PermissionsDaoComponentImpl.QUERY_GET_AC_ENTRIES_FOR_PERMISSION)
                 .setSerializable("permissionId", this.id);
-        int count = HibernateHelper.deleteQueryResults(getSession(), query);
+        int count = HibernateHelper.deleteDbAccessControlEntries(getSession(), query);
         // done
         if (logger.isDebugEnabled())
         {
@@ -142,6 +143,11 @@ public class DbPermissionImpl extends LifecycleAdapter implements DbPermission
         this.name = name;
     }
     
+    public DbPermissionKey getKey()
+    {
+        return new DbPermissionKey(typeQname, name);
+    }
+
     /**
      * Helper method to find a permission based on its natural key
      * 

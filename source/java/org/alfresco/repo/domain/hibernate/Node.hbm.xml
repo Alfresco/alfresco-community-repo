@@ -28,9 +28,9 @@
                name="store"
                class="org.alfresco.repo.domain.hibernate.StoreImpl"
                not-null="true"
-               lazy="no-proxy"
+               lazy="proxy"
                optimistic-lock="true"
-               fetch="select">
+               fetch="join">
             <column name="protocol" not-null="true" />
             <column name="identifier" not-null="true" />
          </many-to-one>
@@ -43,8 +43,8 @@
             name="accessControlList"
             class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"
             property-ref="node"
-            lazy="no-proxy"
-            fetch="select"
+            lazy="false"
+            fetch="join"
             cascade="delete" /> 
       <!-- forward assoc to properties -->
       <map
@@ -74,10 +74,10 @@
       <set
             name="aspects"
             table="node_aspects"
-            lazy="true"
-            sort="unsorted"
+            lazy="false"
             inverse="false" 
-            fetch="select"
+            sort="unsorted"
+            fetch="join"
             optimistic-lock="true"
             cascade="delete" >
          <key column="node_id" not-null="true" />

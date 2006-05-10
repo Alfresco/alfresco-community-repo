@@ -358,13 +358,10 @@ public abstract class BaseContentWizard extends BaseWizardBean
             Repository.resolveToQName(this.objectType));
       NodeRef fileNodeRef = fileInfo.getNodeRef();
       
-      // set the author aspect (if we have one)
-      if (this.author != null && this.author.length() > 0)
-      {
-         Map<QName, Serializable> authorProps = new HashMap<QName, Serializable>(1, 1.0f);
-         authorProps.put(ContentModel.PROP_AUTHOR, this.author);
-         this.nodeService.addAspect(fileNodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
-      }
+      // set the author aspect
+      Map<QName, Serializable> authorProps = new HashMap<QName, Serializable>(1, 1.0f);
+      authorProps.put(ContentModel.PROP_AUTHOR, this.author);
+      this.nodeService.addAspect(fileNodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
       
       if (logger.isDebugEnabled())
          logger.debug("Created file node for file: " + this.fileName);

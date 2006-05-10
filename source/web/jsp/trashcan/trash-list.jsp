@@ -40,11 +40,13 @@
    {
       if (document.getElementById("trashcan:search-text").value.length == 0)
       {
-         document.getElementById("trashcan:search-btn").disabled = true;
+         document.getElementById("trashcan:search-btn1").disabled = true;
+         document.getElementById("trashcan:search-btn2").disabled = true;
       }
       else
       {
-         document.getElementById("trashcan:search-btn").disabled = false;
+         document.getElementById("trashcan:search-btn1").disabled = false;
+         document.getElementById("trashcan:search-btn2").disabled = false;
       }
    }
 </script>
@@ -123,7 +125,7 @@
                            <td width="100%" valign="top">
                               
                               <%-- Deleted Items List --%>
-                              <a:panel id="trashcan-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.deleted_items}">
+                              <a:panel id="trashcan-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{TrashcanBean.panelMessage}">
                               
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
                               <table cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -139,18 +141,35 @@
                               <%-- Search controls --%>
                               <div style="padding: 4px;"></div>
                               <h:inputText id="search-text" value="#{TrashcanBean.searchText}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;
-                              <h:commandButton id="search-btn" value="#{msg.search_deleted_items}" actionListener="#{TrashcanBean.search}" disabled="true" />&nbsp;
+                              <h:commandButton id="search-btn1" value="#{msg.search_deleted_items_name}" actionListener="#{TrashcanBean.searchName}" disabled="true" />&nbsp;
+                              <h:commandButton id="search-btn2" value="#{msg.search_deleted_items_text}" actionListener="#{TrashcanBean.searchContent}" disabled="true" />&nbsp;
                               <h:commandButton id="clear-btn" value="#{msg.show_all}" actionListener="#{TrashcanBean.clearSearch}" />
                               <div style="padding: 4px;"></div>
                               
                               <%-- Filter controls --%>
                               <table cellspacing=2 cellpadding=0 width=100%>
                                  <tr>
-                                    <td>...TODO: Date filter here...</td>
+                                    <td class="filterBorders" width=100%>
+                                       <table cellspacing=2 cellpadding=0 width=100%>
+                                          <tr>
+                                             <td><img src="<%=request.getContextPath()%>/images/icons/filter.gif" width=16 height=16></td>
+                                             <td style="padding-left:8px"><nobr><h:outputText value="#{msg.deleted_when}" />:</nobr></td>
+                                             <td style="padding-left:12px" width=100%><b>All</b>&nbsp;&nbsp;Today&nbsp;&nbsp;This&nbsp;&nbsp;Week&nbsp;&nbsp;This Month</td>
+                                          </tr>
+                                       </table>
+                                    </td>
                                     <td align=right><h:commandButton id="reset-btn" value="#{msg.resetall}" actionListener="#{TrashcanBean.resetAll}" /></td>
                                  </tr>
                                  <tr>
-                                    <td>...TODO: Username filter here - admin only...</td>
+                                    <td class="filterBorders" width=100%>
+                                       <table cellspacing=2 cellpadding=0 width=100%>
+                                          <tr>
+                                             <td><img src="<%=request.getContextPath()%>/images/icons/filter.gif" width=16 height=16></td>
+                                             <td style="padding-left:8px"><nobr><h:outputText value="#{msg.deleted_user}" />:</nobr></td>
+                                             <td style="padding-left:12px" width=100%><b>All</b>&nbsp;&nbsp;User&nbsp;<h:inputText id="user-search" size="12" maxlength="100" style="font-size:10px" onkeyup="" /></td>
+                                          </tr>
+                                       </table>
+                                    </td>
                                     <td></td>
                                  </tr>
                               </table>
@@ -158,9 +177,9 @@
                               <%-- TODO: only show user filter for admin user --%>
                               <div style="padding: 4px;"></div>
                               
-                              <%-- Recover Listed Items button --%>
-                              <h:commandButton value="#{msg.recover_listed_items}" action="dialog:recoverListedItems" />&nbsp;
-                              <h:commandButton value="#{msg.delete_listed_items}" action="dialog:deleteListedItems" />
+                              <%-- Recover Listed Items actions --%>
+                              <a:actionLink value="#{msg.recover_listed_items}" image="/images/icons/recover_all.gif" action="dialog:recoverListedItems" />&nbsp;
+                              <a:actionLink value="#{msg.delete_listed_items}" image="/images/icons/delete_all.gif" action="dialog:deleteListedItems"/>
                               <div style="padding: 4px;"></div>
                               
                               <a:richList id="trashcan-list" binding="#{TrashcanBean.itemsRichList}" viewMode="details" pageSize="10"
@@ -168,14 +187,18 @@
                                     value="#{TrashcanBean.items}" var="r" initialSortColumn="deletedDate" initialSortDescending="true">
                                  
                                  <%-- Primary column showing item name --%>
-                                 <a:column primary="true" width="200" style="padding:2px;text-align:left">
+                                 <a:column primary="true" width="150" style="padding:2px;text-align:left">
                                     <f:facet name="header">
                                        <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
                                     </f:facet>
                                     <f:facet name="small-icon">
-                                       <a:actionLink value="#{r.name}" href="#{r.url}" target="new" image="#{r.typeIcon}" showLink="false" styleClass="inlineAction" />
+                                       <a:actionLink value="#{r.name}" action="dialog:itemDetails" actionListener="#{TrashcanBean.setupItemAction}" image="#{r.typeIcon}" showLink="false" styleClass="inlineAction">
+                                         <f:param name="id" value="#{r.id}" />
+                                       </a:actionLink>
                                     </f:facet>
-                                    <a:actionLink value="#{r.name}" href="#{r.url}" target="new" />
+                                    <a:actionLink value="#{r.name}" action="dialog:itemDetails" actionListener="#{TrashcanBean.setupItemAction}">
+                                       <f:param name="id" value="#{r.id}" />
+                                    </a:actionLink>
                                  </a:column>
                                  
                                  <%-- Original Location Path column --%>
@@ -183,11 +206,11 @@
                                     <f:facet name="header">
                                        <a:sortLink label="#{msg.original_location}" value="displayPath" styleClass="header"/>
                                     </f:facet>
-                                    <r:nodePath value="#{r.locationPath}" actionListener="#{BrowseBean.clickSpacePath}" />
+                                    <r:nodePath value="#{r.locationPath}" actionListener="#{BrowseBean.clickSpacePath}" showLeaf="#{r.isFolder == false}" />
                                  </a:column>
                                  
                                  <%-- Deleted Date column --%>
-                                 <a:column style="text-align:left">
+                                 <a:column style="text-align:left;white-space:nowrap">
                                     <f:facet name="header">
                                        <a:sortLink label="#{msg.deleted_date}" value="deletedDate" styleClass="header"/>
                                     </f:facet>

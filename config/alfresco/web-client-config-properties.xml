@@ -132,5 +132,12 @@
          <show-property name="app:editInline" converter="org.alfresco.faces.BooleanLabelConverter" />
       </property-sheet>
    </config>
-      
+   
+   <config evaluator="aspect-name" condition="sys:archived">
+      <property-sheet>
+         <show-property name="sys:archivedBy" />
+         <show-property name="sys:archivedDate" />
+      </property-sheet>
+   </config>
+   
 </alfresco-config>

@@ -98,14 +98,41 @@
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <table cellpadding="2" cellspacing="2" border="0">
                                  <tr>
-                                    <td class="mainSubTitle">
+                                    <td colspan=2 class="mainSubTitle">
                                        <h:outputFormat value="#{msg.recover_item_confirm}">
                                           <f:param value="#{TrashcanBean.item.name}"/>
                                        </h:outputFormat>
                                     </td>
                                  </tr>
+                                 <tr><td colspan=2 class="paddingRow"></td></tr>
                                  <tr>
+                                    <td colspan=2>
+                                       <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
+                                       <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                          <tr>
+                                             <td valign=top style="padding-top:2px" width=20><h:graphicImage url="/images/icons/info_icon.gif" width="16" height="16"/></td>
+                                             <td class="mainSubText">
+                                                <h:outputText value="#{msg.alternative_destination}" />
+                                             </td>
+                                          </tr>
+                                       </table>
+                                       <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
+                                    </td>
+                                 </tr>
+                                 <tr><td colspan=2 class="paddingRow"></td></tr>
+                                 <tr>
+
                                     <td>
+                                       <h:outputText value="#{msg.destination}" />:&nbsp;
+                                    </td>
+                                    <td width=100%>
+                                       <r:spaceSelector id="space-selector" label="#{msg.select_destination_prompt}" 
+                                            value="#{TrashcanBean.destination}"  styleClass="selector" />
+                                    </td>
+                                 </tr>
+                                 <tr><td colspan=2 class="paddingRow"></td></tr>
+                                 <tr>
+                                    <td colspan=2>
                                        <%-- Error Messages --%>
                                        <%-- messages tag to show messages not handled by other specific message tags --%>
                                        <h:messages globalOnly="true" styleClass="errorMessage" layout="table" />

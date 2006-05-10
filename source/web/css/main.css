@@ -393,6 +393,15 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    padding-top: 3px;
 }
 
+.filterBorders
+{
+   padding: 2px;
+   background-color: #cddbe8;
+   border-width: 1px;
+   border-style: solid;
+   border-color: #003366;
+}
+
 .wizardSectionHeading
 {
    padding: 2px;

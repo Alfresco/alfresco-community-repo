@@ -92,70 +92,73 @@ public class NodePathLinkRenderer extends BaseRenderer
       {
          path = (Path)val;
       }
-      else
+      else if (val != null)
       {
          throw new IllegalArgumentException("UINodePath component 'value' property must resolve to a NodeRef or Path!");
       }
       
-      boolean isBreadcrumb = false;
-      Boolean breadcrumb = (Boolean)component.getAttributes().get("breadcrumb");
-      if (breadcrumb != null)
+      if (val != null)
       {
-         isBreadcrumb = breadcrumb.booleanValue();
-      }
-      
-      boolean isDisabled = false;
-      Boolean disabled = (Boolean)component.getAttributes().get("disabled");
-      if (disabled != null)
-      {
-         isDisabled = disabled.booleanValue();
-      }
-      
-      boolean showLeaf = false;
-      Boolean showLeafBool = (Boolean)component.getAttributes().get("showLeaf");
-      if (showLeafBool != null)
-      {
-         showLeaf = showLeafBool.booleanValue();
-      }
-      
-      // use Spring JSF integration to get the node service bean
-      NodeService service = getNodeService(context);
-      UserTransaction tx = null;
-      try
-      {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
-         tx.begin();
-         
-         if (path == null)
+         boolean isBreadcrumb = false;
+         Boolean breadcrumb = (Boolean)component.getAttributes().get("breadcrumb");
+         if (breadcrumb != null)
          {
-            path = service.getPath(nodeRef);
+            isBreadcrumb = breadcrumb.booleanValue();
          }
          
-         if (isBreadcrumb == false || isDisabled == true)
+         boolean isDisabled = false;
+         Boolean disabled = (Boolean)component.getAttributes().get("disabled");
+         if (disabled != null)
          {
-            out.write(buildPathAsSingular(context, component, path, showLeaf, isDisabled));
-         }
-         else
-         {
-            out.write(buildPathAsBreadcrumb(context, component, path, showLeaf));
+            isDisabled = disabled.booleanValue();
          }
          
-         tx.commit();
-      }
-      catch (InvalidNodeRefException refErr)
-      {
-         // this error simple means we cannot output the path
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-      }
-      catch (AccessDeniedException accessErr)
-      {
-         // this error simple means we cannot output the path
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-      }
-      catch (Throwable err)
-      {
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-         throw new RuntimeException(err);
+         boolean showLeaf = false;
+         Boolean showLeafBool = (Boolean)component.getAttributes().get("showLeaf");
+         if (showLeafBool != null)
+         {
+            showLeaf = showLeafBool.booleanValue();
+         }
+         
+         // use Spring JSF integration to get the node service bean
+         NodeService service = getNodeService(context);
+         UserTransaction tx = null;
+         try
+         {
+            tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
+            tx.begin();
+            
+            if (path == null)
+            {
+               path = service.getPath(nodeRef);
+            }
+            
+            if (isBreadcrumb == false || isDisabled == true)
+            {
+               out.write(buildPathAsSingular(context, component, path, showLeaf, isDisabled));
+            }
+            else
+            {
+               out.write(buildPathAsBreadcrumb(context, component, path, showLeaf));
+            }
+            
+            tx.commit();
+         }
+         catch (InvalidNodeRefException refErr)
+         {
+            // this error simple means we cannot output the path
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
+         catch (AccessDeniedException accessErr)
+         {
+            // this error simple means we cannot output the path
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
+         catch (Throwable err)
+         {
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+            throw new RuntimeException(err);
+         }
       }
    }
    

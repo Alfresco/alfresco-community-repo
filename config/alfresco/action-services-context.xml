@@ -14,6 +14,9 @@
         </property>  	   
         <property name="authenticationComponent">
             <ref bean="authenticationComponent" />
+        </property> 	   
+        <property name="dictionaryService">
+            <ref bean="DictionaryService" />
         </property> 
 		<property name="asynchronousActionExecutionQueue">
 	       <ref bean="asynchronousActionExecutionQueue"/>
@@ -203,6 +206,11 @@
         <property name="mimetypeService">
             <ref bean="mimetypeService" />
         </property>
+        <property name="applicableTypes">
+        	<list>
+        		<value>{http://www.alfresco.org/model/content/1.0}content</value>
+        	</list>
+        </property>
     </bean>
 
     <bean id="transform-image" class="org.alfresco.repo.action.executer.ImageTransformActionExecuter"
@@ -234,6 +242,11 @@
         <property name="cociService">
             <ref bean="checkOutCheckInService"></ref>
         </property>
+        <property name="applicableTypes">
+        	<list>
+        		<value>{http://www.alfresco.org/model/content/1.0}content</value>
+        	</list>
+        </property>
     </bean>
 
     <bean id="check-out" class="org.alfresco.repo.action.executer.CheckOutActionExecuter" parent="action-executer">
@@ -242,6 +255,11 @@
         </property>
         <property name="cociService">
             <ref bean="checkOutCheckInService"></ref>
+        </property>
+        <property name="applicableTypes">
+        	<list>
+        		<value>{http://www.alfresco.org/model/content/1.0}content</value>
+        	</list>
         </property>
     </bean>
 
@@ -290,6 +308,11 @@
         </property>
         <property name="metadataExtracterRegistry">
             <ref bean="metadataExtracterRegistry" />
+        </property>
+        <property name="applicableTypes">
+        	<list>
+        		<value>{http://www.alfresco.org/model/content/1.0}content</value>
+        	</list>
         </property>
     </bean>
 

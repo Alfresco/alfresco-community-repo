@@ -55,6 +55,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 	private static final String BAD_NAME = "badName";
     
 	private NodeRef nodeRef;
+    private NodeRef folder;
     
 	@Override
 	protected void onSetUpInTransaction() throws Exception
@@ -71,6 +72,12 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                 this.nodeRef,
                 ContentModel.PROP_CONTENT,
                 new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, null));
+        this.folder = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}testFolder"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        
 	}
 	
 	/**
@@ -94,11 +101,17 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 		List<ActionDefinition> defintions = this.actionService.getActionDefinitions();
 		assertNotNull(defintions);
 		assertFalse(defintions.isEmpty());
+        int totalCount = defintions.size();
         
         for (ActionDefinition definition : defintions)
         {
             System.out.println(definition.getTitle());
         }
+        
+        // Get the action defintions for a folder type (there should be less than the total available)
+        List<ActionDefinition> definitions = this.actionService.getActionDefinitions(this.folder);
+        assertNotNull(definitions);
+        assertTrue(totalCount > definitions.size());        
 	}	
 
 	/**

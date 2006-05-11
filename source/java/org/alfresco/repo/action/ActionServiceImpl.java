@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.action.ParameterizedItem;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -97,6 +98,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 	 * The search service
 	 */
 	private SearchService searchService;
+    
+    /** The dictionary service */
+    private DictionaryService dictionaryService;
     
     /** The authentication component */
     private AuthenticationComponent authenticationComponent;
@@ -161,6 +165,16 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         this.authenticationComponent = authenticationComponent;
     }
     
+    /**
+     * Set the dictionary service
+     * 
+     * @param dictionaryService     the dictionary service
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+    
 	/**
 	 * Set the asynchronous action execution queue
 	 * 
@@ -217,6 +231,44 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 	{
 		return new ArrayList<ActionDefinition>(this.actionDefinitions.values());
 	}	
+    
+    /**
+     * @see org.alfresco.service.cmr.action.ActionService#getActionDefinitions(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public List<ActionDefinition> getActionDefinitions(NodeRef nodeRef)
+    {
+        if (nodeRef == null)
+        {
+            return getActionDefinitions();
+        }
+        else
+        {
+            // TODO for now we will only filter by type, we will introduce filtering by aspect later
+            QName nodeType = this.nodeService.getType(nodeRef);
+            List<ActionDefinition> result = new ArrayList<ActionDefinition>();
+            for (ActionDefinition actionDefinition : getActionDefinitions())
+            {
+                List<QName> appliciableTypes = actionDefinition.getApplicableTypes();
+                if (appliciableTypes != null && appliciableTypes.isEmpty() == false)
+                {
+                    for (QName applicableType : actionDefinition.getApplicableTypes())
+                    {
+                        if (this.dictionaryService.isSubClass(nodeType, applicableType))
+                        {
+                            result.add(actionDefinition);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    result.add(actionDefinition);
+                }
+            }
+            
+            return result;
+        }        
+    }
 
 	/**
 	 * @see org.alfresco.service.cmr.action.ActionService#getActionConditionDefinition(java.lang.String)

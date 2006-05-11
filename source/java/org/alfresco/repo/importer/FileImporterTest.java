@@ -49,7 +49,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.TestWithUserUtils;
 import org.springframework.context.ApplicationContext;
 

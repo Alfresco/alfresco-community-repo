@@ -95,9 +95,6 @@
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
       </property>
-      <property name="nullPermissionCache">
-         <ref bean="nullPermissionCache" />
-      </property>
       <property name="nodeDaoService">
          <ref bean="nodeDaoService" />
       </property>

@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.DbAccessControlEntry;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.DbAuthority;
@@ -62,7 +61,6 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     public static final String QUERY_GET_AC_ENTRIES_FOR_PERMISSION = "permission.GetAccessControlEntriesForPermission";
     
     private NodeDaoService nodeDaoService;
-    private SimpleCache<NodeRef, SimpleNodePermissionEntry> nullPermissionCache;
 
     public PermissionsDaoComponentImpl()
     {
@@ -74,11 +72,6 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         this.nodeDaoService = nodeDaoService;
     }
 
-    public void setNullPermissionCache(SimpleCache<NodeRef, SimpleNodePermissionEntry> nullPermissionCache)
-    {
-        this.nullPermissionCache = nullPermissionCache;
-    }
-
     public NodePermissionEntry getPermissions(NodeRef nodeRef)
     {
         // Create the object if it is not found.
@@ -86,11 +79,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         // If the object does not exist it will repeatedly query to check its
         // non existence.
 
-        NodePermissionEntry npe = nullPermissionCache.get(nodeRef);
-        if (npe != null)
-        {
-            return npe;
-        }
+        NodePermissionEntry npe = null;
         DbAccessControlList acl = null;
         Node node = getNode(nodeRef, false);
         if (node != null)
@@ -106,7 +95,6 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
                     true,
                     Collections.<SimplePermissionEntry> emptySet());
             npe = snpe;
-            nullPermissionCache.put(nodeRef, snpe);
         }
         else
         {
@@ -159,7 +147,6 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         node.setAccessControlList(acl);
         
         NodeRef nodeRef = node.getNodeRef();
-        nullPermissionCache.remove(nodeRef);
         
         // done
         if (logger.isDebugEnabled())
@@ -290,8 +277,6 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
             DbAuthority dbAuthority = getAuthority(authority, true);
             // set persistent objects
             entry = dbAccessControlList.newEntry(dbPermission, dbAuthority, allow);
-            // drop the entry from the null cache
-            nullPermissionCache.remove(nodeRef);
             // done
             if (logger.isDebugEnabled())
             {

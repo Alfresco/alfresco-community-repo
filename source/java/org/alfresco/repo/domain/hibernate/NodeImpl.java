@@ -16,7 +16,6 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,10 +65,10 @@ public class NodeImpl extends LifecycleAdapter implements Node
     public NodeImpl()
     {
         aspects = new HashSet<QName>(5);
-        sourceNodeAssocs = new ArrayList<NodeAssoc>(3);
-        targetNodeAssocs = new ArrayList<NodeAssoc>(3);
-        parentAssocs = new ArrayList<ChildAssoc>(3);
-        childAssocs = new ArrayList<ChildAssoc>(3);
+        sourceNodeAssocs = new HashSet<NodeAssoc>(5);
+        targetNodeAssocs = new HashSet<NodeAssoc>(5);
+        parentAssocs = new HashSet<ChildAssoc>(5);
+        childAssocs = new HashSet<ChildAssoc>(11);
         properties = new HashMap<QName, PropertyValue>(5);
         
         ReentrantReadWriteLock lock = new ReentrantReadWriteLock();

@@ -151,11 +151,12 @@ public class ChildAssocImpl implements ChildAssoc
             return false;
         }
         ChildAssoc that = (ChildAssoc) obj;
-        return (this.getIsPrimary() == that.getIsPrimary()
-                && EqualsHelper.nullSafeEquals(this.getTypeQName(), that.getTypeQName())
+        return (
+                   EqualsHelper.nullSafeEquals(this.getTypeQName(), that.getTypeQName())
                 && EqualsHelper.nullSafeEquals(this.getQname(), that.getQname())
                 && EqualsHelper.nullSafeEquals(this.getParent(), that.getParent())
-                && EqualsHelper.nullSafeEquals(this.getChild(), that.getChild()));
+                && EqualsHelper.nullSafeEquals(this.getChild(), that.getChild())
+               );
     }
     
     public int hashCode()

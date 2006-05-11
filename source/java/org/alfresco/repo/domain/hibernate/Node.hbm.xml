@@ -75,54 +75,58 @@
             name="aspects"
             table="node_aspects"
             lazy="false"
+            fetch="join"
             inverse="false" 
             sort="unsorted"
-            fetch="join"
             optimistic-lock="true"
             cascade="delete" >
          <key column="node_id" not-null="true" />
          <element column="qname" type="QName" length="200"/>
       </set>
       <!-- inverse assoc to parent childassocs -->
-      <bag
+      <set
             name="parentAssocs"
-            lazy="true"
             inverse="true" 
+            lazy="true" 
+            fetch="select"
             cascade="none"
-            optimistic-lock="true"
-            fetch="select" >
+            optimistic-lock="true" >
          <key column="child_node_id" />
          <one-to-many class="org.alfresco.repo.domain.hibernate.ChildAssocImpl" />
-      </bag>
+      </set>
       <!-- inverse assoc to child childassocs -->
-      <bag
+      <set
             name="childAssocs"
             inverse="true"
             lazy="true" 
+            fetch="select"
             cascade="none"
-            optimistic-lock="true"
-            fetch="select" >
+            optimistic-lock="true" >
          <key column="parent_node_id" />
          <one-to-many class="org.alfresco.repo.domain.hibernate.ChildAssocImpl"  />
-      </bag>
+      </set>
       <!-- inverse assoc to source nodeassocs -->
-      <bag
+      <set
             name="sourceNodeAssocs"
             inverse="true" 
+            lazy="true" 
+            fetch="select"
             cascade="none"
             optimistic-lock="true" >
          <key column="target_node_id" />
          <one-to-many class="org.alfresco.repo.domain.hibernate.NodeAssocImpl" />
-      </bag>
+      </set>
       <!-- inverse assoc to target nodeassocs -->
-      <bag
+      <set
             name="targetNodeAssocs"
             inverse="true" 
+            lazy="true" 
+            fetch="select"
             cascade="none"
             optimistic-lock="true" >
          <key column="source_node_id" />
          <one-to-many class="org.alfresco.repo.domain.hibernate.NodeAssocImpl" />
-      </bag>
+      </set>
    </class>
 
    <class
@@ -145,10 +149,10 @@
             name="node"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             column="node_id"
-            unique="false"
-            not-null="false"
+            lazy="false"
             fetch="join"
-            lazy="false" />
+            unique="false"
+            not-null="false" />
       <property name="changeTxnId" column="change_txn_id" type="string" length="56" not-null="true" />
       <property name="deleted" column="deleted" type="boolean" not-null="true" />
    </class>
@@ -165,10 +169,6 @@
       <id name="id" column="id" type="long" >
          <generator class="native" />
       </id>
-      <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
-      <property name="qname" column="qname" type="QName" length="255" not-null="true" />
-      <property name="isPrimary" column="is_primary" />
-      <property name="index" column="assoc_index" />
       <!-- forward assoc to parent node -->
       <many-to-one 
             name="parent"
@@ -189,6 +189,10 @@
             not-null="true" >
          <column name="child_node_id" />
       </many-to-one>
+      <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
+      <property name="qname" column="qname" type="QName" length="255" not-null="true" />
+      <property name="isPrimary" column="is_primary" />
+      <property name="index" column="assoc_index" />
    </class>
 
    <class
@@ -199,21 +203,27 @@
       <id name="id" column="id" type="long" >
          <generator class="native" />
       </id>
-      <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
-      <!-- forward assoc to source node -->
-      <many-to-one
-            name="source"
-            class="org.alfresco.repo.domain.hibernate.NodeImpl"
-            not-null="true" >
-         <column name="source_node_id" />
-      </many-to-one>
-      <!-- forward assoc to target node -->
-      <many-to-one
-            name="target"
-            class="org.alfresco.repo.domain.hibernate.NodeImpl"
-            not-null="true" >
-         <column name="target_node_id" />
-      </many-to-one>
+      <natural-id mutable="true">
+         <!-- forward assoc to source node -->
+         <many-to-one
+               name="source"
+               class="org.alfresco.repo.domain.hibernate.NodeImpl"
+               lazy="false"
+               fetch="join"
+               not-null="true" >
+            <column name="source_node_id" />
+         </many-to-one>
+         <!-- forward assoc to target node -->
+         <many-to-one
+               name="target"
+               class="org.alfresco.repo.domain.hibernate.NodeImpl"
+               lazy="false"
+               fetch="join"
+               not-null="true" >
+            <column name="target_node_id" />
+         </many-to-one>
+         <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
+      </natural-id>
    </class>
    
    <query name="store.GetAllStores">

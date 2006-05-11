@@ -48,6 +48,7 @@ public class PageTag extends TagSupport
 
    private final static String ALF_URL   = "http://www.alfresco.com";
    private final static String ALF_LOGO  = "http://www.alfresco.com/images/alfresco_community_horizont.gif";
+   private final static String SF_LOGO  = "/images/logo/sflogo.php.png";
    private final static String ALF_TEXT  = "Alfresco Community";
    private final static String ALF_COPY  = "Supplied free of charge with " +
         "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#support'>no support</a>, " +
@@ -213,7 +214,8 @@ public class PageTag extends TagSupport
                     "<img border=0 alt='' title='" + ALF_TEXT + "' align=absmiddle src='" + ALF_LOGO + "'>" +
                     "</a></td><td align=center>" +
                     "<span class=footer>" + ALF_COPY +
-                    "</span></td><td><a href='http://sourceforge.net/projects/alfresco'><img border=0 alt='' title='SourceForge' align=absmiddle src='http://sflogo.sourceforge.net/sflogo.php?group_id=143373&type=1'></a>" +
+                    "</span></td><td><a href='http://sourceforge.net/projects/alfresco'><img border=0 alt='' title='SourceForge' align=absmiddle src='" +
+                    reqPath + SF_LOGO + "'></a>" +
                     "</td></tr></table></center>";
       }
       

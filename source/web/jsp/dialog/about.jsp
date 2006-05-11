@@ -102,7 +102,7 @@
                         <div style="padding:4px">
                            <a href="http://www.alfresco.org/" class="title" target="new">http://www.alfresco.org</a>
                            <p>
-                           Alfresco Software Inc. &#169; 2005 All rights reserved. <a href="http://www.alfresco.org/legalandlicense.html" target="new">Legal and License</a>
+                           Alfresco Software Inc. &#169; 2005-2006 All rights reserved. <a href="http://www.alfresco.org/legalandlicense.html" target="new">Legal and License</a>
                         </div>
                         
                         <div style="padding:4px" class="mainSubTitle">
@@ -183,13 +183,13 @@
                         <p>
                         
                         <div style="padding:4px" class="mainSubTitle">
-                           Alfresco Software contributors:
+                           Alfresco Software contributors
                         </div>
                         
                         <table border=0 cellspacing=2 cellpadding=2>
                            <tr>
                               <td width=50% align=right>
-                                 Meta Data Extraction Framework and PDF/Open Office Format meta data extraction.
+                                 Meta Data Extraction Framework and PDF/Open Office Format meta data extraction:
                               </td>
                               <td>&nbsp;&#8226;&nbsp;</td>
                               <td width=50%>
@@ -198,7 +198,7 @@
                            </tr>
                            <tr>
                               <td width=50% align=right>
-                                 Open Document Format meta data extraction.
+                                 Open Document Format meta data extraction:
                               </td>
                               <td>&nbsp;&#8226;&nbsp;</td>
                               <td width=50%>
@@ -207,7 +207,7 @@
                            </tr>
                            <tr>
                               <td align=right width=50%>
-                                 Language and translation packs.
+                                 Language and translation packs:
                               </td>
                               <td>&nbsp;&#8226;&nbsp;</td>
                               <td width=50%>

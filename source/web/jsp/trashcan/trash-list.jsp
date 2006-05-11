@@ -113,9 +113,9 @@
                            </td>
                            
                            <td align=right style="white-space:nowrap">
-                              <%-- Current object actions --%>
-                              <a:actionLink value="#{msg.recover_all_items}" image="/images/icons/recover_all.gif" action="dialog:recoverAllItems"/>&nbsp;
-                              <a:actionLink value="#{msg.delete_all_items}" image="/images/icons/delete_all.gif" action="dialog:deleteAllItems"/>
+                              <%-- Admin only global actions --%>
+                              <a:actionLink value="#{msg.recover_all_items}" image="/images/icons/recover_all.gif" action="dialog:recoverAllItems" rendered="#{NavigationBean.currentUser.admin == true}" />&nbsp;
+                              <a:actionLink value="#{msg.delete_all_items}" image="/images/icons/delete_all.gif" action="dialog:deleteAllItems" rendered="#{NavigationBean.currentUser.admin == true}" />
                            </td>
                         </tr>
                      </table>

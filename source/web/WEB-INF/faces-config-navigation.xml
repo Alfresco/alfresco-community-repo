@@ -927,6 +927,10 @@
          <from-outcome>itemDetails</from-outcome>
          <to-view-id>/jsp/trashcan/item-details.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>recoveryReport</from-outcome>
+         <to-view-id>/jsp/trashcan/recovery-report.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
 
 </faces-config>

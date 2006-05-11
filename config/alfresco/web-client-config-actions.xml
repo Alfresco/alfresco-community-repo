@@ -374,9 +374,6 @@
          
          <!-- Manage Deleted Items -->
          <action id="manage_deleted_items">
-            <permissions>
-               <permission allow="true">Write</permission>
-            </permissions>
             <label-id>manage_deleted_items</label-id>
             <image>/images/icons/trashcan.gif</image>
             <action>dialog:manageDeletedItems</action>

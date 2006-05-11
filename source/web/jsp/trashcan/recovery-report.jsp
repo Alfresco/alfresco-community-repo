@@ -24,7 +24,7 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
-<r:page titleId="title_recover_listed">
+<r:page titleId="title_recovery_report">
 
 <f:view>
    
@@ -32,7 +32,7 @@
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
    <%-- set the form name here --%>
-   <h:form acceptCharset="UTF-8" id="recover-listed">
+   <h:form acceptCharset="UTF-8" id="recovery-report">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
@@ -70,8 +70,8 @@
                               <h:graphicImage url="/images/icons/recover_all_large.gif"/>
                            </td>
                            <td>
-                              <div class="mainTitle"><h:outputText value="#{msg.recover_listed_items}" /></div>
-                              <div class="mainSubText"><h:outputText value="#{msg.recover_listed_items_info}" /></div>
+                              <div class="mainTitle"><h:outputText value="#{msg.recovery_report}" /></div>
+                              <div class="mainSubText"><h:outputText value="#{msg.recovery_report_info}" /></div>
                            </td>
                         </tr>
                      </table>
@@ -98,41 +98,30 @@
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <table cellpadding="2" cellspacing="2" border="0" width="100%">
                                  <tr>
-                                    <td colspan=2 class="mainSubTitle">
-                                       <h:outputText value="#{msg.recover_listed_items_confirm}" />
+                                    <td class="mainSubTitle">
+                                       <h:outputText value="#{msg.recovery_report_success}" />
                                     </td>
                                  </tr>
-                                 <tr>
-                                    <td colspan=2>
-                                       <h:outputText value="#{TrashcanBean.listedItemsTable}" escape="false" />
-                                    </td>
-                                 </tr>
-                                 <tr><td colspan=2 class="paddingRow"></td></tr>
-                                 <tr>
-                                    <td colspan=2>
-                                       <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
-                                       <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                                          <tr>
-                                             <td valign=top style="padding-top:2px" width=20><h:graphicImage url="/images/icons/info_icon.gif" width="16" height="16"/></td>
-                                             <td class="mainSubText">
-                                                <h:outputText value="#{msg.alternative_destination}" />
-                                             </td>
-                                          </tr>
-                                       </table>
-                                       <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
-                                    </td>
-                                 </tr>
-                                 <tr><td colspan=2 class="paddingRow"></td></tr>
                                  <tr>
                                     <td>
-                                       <h:outputText value="#{msg.destination}" />:&nbsp;
-                                    </td>
-                                    <td width=100%>
-                                       <r:spaceSelector id="space-selector" label="#{msg.select_destination_prompt}" 
-                                            value="#{TrashcanBean.destination}" styleClass="selector" />
+                                       <h:outputText value="#{TrashcanBean.successItemsTable}" escape="false" />
                                     </td>
                                  </tr>
-                                 <tr><td colspan=2 class="paddingRow"></td></tr>
+                                 <%-- show this panel if some items failed to recover --%>
+                                 <a:panel id="failure-panel" rendered="#{TrashcanBean.failureItemsCount != 0}">
+                                 <tr><td class="paddingRow"></td></tr>
+                                 <tr>
+                                    <td class="mainSubTitle">
+                                       <h:outputText value="#{msg.recovery_report_failed}" />
+                                    </td>
+                                 </tr>
+                                 <tr>
+                                    <td>
+                                       <h:outputText value="#{TrashcanBean.failureItemsTable}" escape="false" />
+                                    </td>
+                                 </tr>
+                                 </a:panel>
+                                 <tr><td class="paddingRow"></td></tr>
                                  <tr>
                                     <td>
                                        <%-- Error Messages --%>
@@ -149,13 +138,7 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.yes}" action="#{TrashcanBean.recoverListedItemsOK}" styleClass="dialogControls" />
-                                    </td>
-                                 </tr>
-                                 <tr><td class="dialogButtonSpacing"></td></tr>
-                                 <tr>
-                                    <td align="center">
-                                       <h:commandButton value="#{msg.no}" action="dialog:close" styleClass="dialogControls" />
+                                       <h:commandButton value="#{msg.close}" action="dialog:close" styleClass="dialogControls" />
                                     </td>
                                  </tr>
                               </table>

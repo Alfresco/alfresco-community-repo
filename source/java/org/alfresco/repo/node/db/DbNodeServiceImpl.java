@@ -409,19 +409,24 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // get the old parent
         Node oldParentNode = oldAssoc.getParent();
         
-        // Invoke policy behaviour
-        invokeBeforeDeleteChildAssociation(oldAssocRef);
-        invokeBeforeCreateChildAssociation(newParentRef, nodeToMoveRef, assocTypeQName, assocQName);
-        invokeBeforeUpdateNode(oldParentNode.getNodeRef());    // old parent will be updated
-        invokeBeforeUpdateNode(newParentRef);                  // new parent ditto
+        boolean movingStore = !nodeToMoveRef.getStoreRef().equals(newParentRef.getStoreRef());
         
-        // If the node is moving stores, then drag the node hierarchy with it
-        if (!nodeToMoveRef.getStoreRef().equals(newParentRef.getStoreRef()))
+        // data needed for policy invocation
+        QName nodeToMoveTypeQName = nodeToMove.getTypeQName();
+        Set<QName> nodeToMoveAspects = nodeToMove.getAspects();
+
+        // Invoke policy behaviour
+        if (movingStore)
         {
-            Store newStore = newParentNode.getStore();
-            moveNodeToStore(nodeToMove, newStore);
-            // the node reference will have changed too
-            nodeToMoveRef = nodeToMove.getNodeRef();
+            invokeBeforeDeleteNode(nodeToMoveRef);
+            invokeBeforeCreateNode(newParentRef, assocTypeQName, assocQName, nodeToMoveTypeQName);
+        }
+        else
+        {
+            invokeBeforeDeleteChildAssociation(oldAssocRef);
+            invokeBeforeCreateChildAssociation(newParentRef, nodeToMoveRef, assocTypeQName, assocQName);
+            invokeBeforeUpdateNode(oldParentNode.getNodeRef());    // old parent will be updated
+            invokeBeforeUpdateNode(newParentRef);                  // new parent ditto
         }
         
         // remove the child assoc from the old parent
@@ -430,14 +435,32 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // create a new assoc
         ChildAssoc newAssoc = nodeDaoService.newChildAssoc(newParentNode, nodeToMove, true, assocTypeQName, assocQName);
         
+        // If the node is moving stores, then drag the node hierarchy with it
+        if (movingStore)
+        {
+            // do the move
+            Store newStore = newParentNode.getStore();
+            moveNodeToStore(nodeToMove, newStore);
+            // the node reference will have changed too
+            nodeToMoveRef = nodeToMove.getNodeRef();
+        }
+        
         // check that no cyclic relationships have been created
         getPaths(nodeToMoveRef, false);
-        
+
         // invoke policy behaviour
-        invokeOnCreateChildAssociation(newAssoc.getChildAssocRef());
-        invokeOnDeleteChildAssociation(oldAssoc.getChildAssocRef());
-        invokeOnUpdateNode(oldParentNode.getNodeRef());
-        invokeOnUpdateNode(newParentRef);
+        if (movingStore)
+        {
+            invokeOnDeleteNode(oldAssocRef, nodeToMoveTypeQName, nodeToMoveAspects);
+            invokeOnCreateNode(newAssoc.getChildAssocRef());
+        }
+        else
+        {
+            invokeOnCreateChildAssociation(newAssoc.getChildAssocRef());
+            invokeOnDeleteChildAssociation(oldAssoc.getChildAssocRef());
+            invokeOnUpdateNode(oldParentNode.getNodeRef());
+            invokeOnUpdateNode(newParentRef);
+        }
         
         // update the node status
         nodeDaoService.recordChangeId(nodeToMoveRef);
@@ -1342,11 +1365,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             nodeToMove.setStore(store);
             NodeRef newNodeRef = nodeToMove.getNodeRef();
             
-            // update change statuses
             String txnId = AlfrescoTransactionSupport.getTransactionId();
+            // update old status
             NodeStatus oldNodeStatus = nodeDaoService.getNodeStatus(oldNodeRef, true);
             oldNodeStatus.setNode(null);
             oldNodeStatus.setChangeTxnId(txnId);
+            // create the new status
             NodeStatus newNodeStatus = nodeDaoService.getNodeStatus(newNodeRef, true);
             newNodeStatus.setNode(nodeToMove);
             newNodeStatus.setChangeTxnId(txnId);

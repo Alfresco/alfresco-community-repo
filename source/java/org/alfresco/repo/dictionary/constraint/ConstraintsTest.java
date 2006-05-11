@@ -16,7 +16,6 @@
  */
 package org.alfresco.repo.dictionary.constraint;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,7 +23,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.dictionary.DictionaryDAOTest;
 import org.alfresco.service.cmr.dictionary.Constraint;

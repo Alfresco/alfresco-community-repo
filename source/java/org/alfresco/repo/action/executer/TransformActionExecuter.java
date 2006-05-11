@@ -123,7 +123,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
 	 * Add parameter definitions
 	 */
 	@Override
-	protected void addParameterDefintions(List<ParameterDefinition> paramList) 
+	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
 		paramList.add(new ParameterDefinitionImpl(PARAM_MIME_TYPE, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_MIME_TYPE)));
 		paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));

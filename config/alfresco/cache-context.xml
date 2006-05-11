@@ -25,47 +25,6 @@
    
    <bean name="internalEHCacheManager" class="org.alfresco.repo.cache.InternalEhCacheManagerFactoryBean" />
    
-   <!-- ================ -->
-   <!-- Null permissions -->
-   <!-- ================ -->
-   
-   <!-- The cross-transaction shared cache for Null Node Permissions -->
-   
-   <bean name="nullPermissionSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
-      <property name="cache">
-         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
-            <property name="cacheManager">
-               <ref bean="internalEHCacheManager" />
-            </property>
-            <property name="cacheName">
-               <value>nullPermissionCache</value>
-            </property>
-            <property name="maxElementsInMemory">
-               <value>10000</value> <!-- approx 8MB memory required -->
-            </property>
-            <property name="overflowToDisk">
-               <value>false</value>
-            </property>
-         </bean>
-      </property>
-   </bean>
-   
-   <!-- The transactional cache for Null Node Permissions -->
-   
-   <bean name="nullPermissionCache" class="org.alfresco.repo.cache.TransactionalCache">
-      <property name="sharedCache">
-         <ref bean="nullPermissionSharedCache" />
-      </property>
-      <property name="cacheManager" >
-         <ref bean="transactionalEHCacheManager" />
-      </property>
-      <property name="name">
-         <value>nullPermissionTransactionalCache</value>
-      </property>
-      <property name="maxCacheSize">
-         <value>5000</value>
-      </property>
-   </bean>
    
    <!-- ===================================== -->
    <!-- Authority container look up for users -->

@@ -16,7 +16,6 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +33,7 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 
 /**
  * Bean containing all the persistence data representing a <b>node</b>.
@@ -65,10 +65,10 @@ public class NodeImpl extends LifecycleAdapter implements Node
     public NodeImpl()
     {
         aspects = new HashSet<QName>(5);
-        sourceNodeAssocs = new ArrayList<NodeAssoc>(3);
-        targetNodeAssocs = new ArrayList<NodeAssoc>(3);
-        parentAssocs = new ArrayList<ChildAssoc>(3);
-        childAssocs = new ArrayList<ChildAssoc>(3);
+        sourceNodeAssocs = new HashSet<NodeAssoc>(5);
+        targetNodeAssocs = new HashSet<NodeAssoc>(5);
+        parentAssocs = new HashSet<ChildAssoc>(5);
+        childAssocs = new HashSet<ChildAssoc>(11);
         properties = new HashMap<QName, PropertyValue>(5);
         
         ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
@@ -134,12 +134,13 @@ public class NodeImpl extends LifecycleAdapter implements Node
             return false;
         }
         Node that = (Node) obj;
-        return (this.getNodeRef().equals(that.getNodeRef()));
+        return (EqualsHelper.nullSafeEquals(getStore(), that.getStore())
+                && EqualsHelper.nullSafeEquals(getUuid(), that.getUuid()));
     }
     
     public int hashCode()
     {
-        return getNodeRef().hashCode();
+        return getUuid().hashCode();
     }
 
 //    @Override
@@ -316,11 +317,7 @@ public class NodeImpl extends LifecycleAdapter implements Node
         return accessControlList;
     }
 
-    /**
-     * For Hibernate use
-     */
-    @SuppressWarnings("unused")
-    private void setAccessControlList(DbAccessControlList accessControlList)
+    public void setAccessControlList(DbAccessControlList accessControlList)
     {
         this.accessControlList = accessControlList;
     }

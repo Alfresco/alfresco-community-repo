@@ -62,7 +62,6 @@ import org.alfresco.jcr.util.JCRProxyFactory;
 import org.alfresco.jcr.version.VersionHistoryImpl;
 import org.alfresco.jcr.version.VersionImpl;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -74,7 +73,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.version.VersionService;
@@ -230,7 +228,8 @@ public class NodeImpl extends ItemImpl implements Node
         Map<QName, ChildAssociationDefinition> childAssocs = classDef.getChildAssociations();
         for (ChildAssociationDefinition childAssocDef : childAssocs.values())
         {
-            if (dictionaryService.isSubClass(nodeType, childAssocDef.getTargetClass().getName()))
+            QName targetClass = childAssocDef.getTargetClass().getName();
+            if (dictionaryService.isSubClass(nodeType, targetClass))
             {
                 if (nodeTypeChildAssocDef != null)
                 {

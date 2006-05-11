@@ -81,7 +81,7 @@ public class InCategoryEvaluator extends ActionConditionEvaluatorAbstractBase
      * Add the parameter definitions
      */
 	@Override
-	protected void addParameterDefintions(List<ParameterDefinition> paramList) 
+	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
         paramList.add(new ParameterDefinitionImpl(PARAM_CATEGORY_ASPECT, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_CATEGORY_ASPECT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_CATEGORY_VALUE, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_CATEGORY_VALUE)));

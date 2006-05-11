@@ -16,6 +16,10 @@
  */
 package org.alfresco.service.cmr.action;
 
+import java.util.List;
+
+import org.alfresco.service.namespace.QName;
+
 
 
 /**
@@ -25,5 +29,10 @@ package org.alfresco.service.cmr.action;
  */
 public interface ActionDefinition extends ParameterizedItemDefinition
 {
-	
+    /**
+     * Gets a list of the types that this action item is applicable for
+     * 
+     * @return  list of types
+     */
+    public List<QName> getApplicableTypes();
 }

@@ -72,4 +72,10 @@ public interface DbAccessControlEntry
      * @param allowed
      */
     public void setAllowed(boolean allowed);
+    
+    /**
+     * Helper method to delete the instance and make sure that all
+     * inverse associations are properly maintained.
+     */
+    public void delete();
 }

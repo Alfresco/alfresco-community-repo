@@ -119,13 +119,6 @@ public class HibernatePermissionTest extends BaseSpringTest
         // throw the reference away and get the a new one for the id
         permission = (DbPermission) getSession().load(DbPermissionImpl.class, id);
         assertNotNull("Permission not found", permission);
-        assertEquals("Test", permission.getName());
-        assertEquals(qname, permission.getTypeQname());
-        
-        // Test key
-        permission = (DbPermission) getSession().load(DbPermissionImpl.class, id);
-        assertNotNull("Permission not found", permission);
-        assertEquals("Test", permission.getName());
         assertEquals(qname, permission.getTypeQname());
     }
     
@@ -175,29 +168,29 @@ public class HibernatePermissionTest extends BaseSpringTest
         DbAccessControlList accessControlList = new DbAccessControlListImpl();
         accessControlList.setNode(node);
         accessControlList.setInherits(true);
+        Serializable nodeAclId = getSession().save(accessControlList);
         
         DbAuthority recipient = new DbAuthorityImpl();
         recipient.setRecipient("Test");
         recipient.getExternalKeys().add("One");
+        getSession().save(recipient);
         
         DbPermission permission = new DbPermissionImpl();
         permission.setTypeQname(qname);
         permission.setName("Test");
-        
-        DbAccessControlEntry accessControlEntry = DbAccessControlEntryImpl.create(accessControlList, permission, recipient, true);
-        
-        Serializable nodeAclId = getSession().save(accessControlList);
-        getSession().save(recipient);
         getSession().save(permission);
-        Serializable aceEntryId = getSession().save(accessControlEntry);
         
-        accessControlEntry =  (DbAccessControlEntry) getSession().load(DbAccessControlEntryImpl.class, aceEntryId);
+        DbAccessControlEntry accessControlEntry = accessControlList.newEntry(permission, recipient, true);
+        Long aceEntryId = accessControlEntry.getId();
+        assertNotNull("Entry is still transient", aceEntryId);
+        
+        accessControlEntry = (DbAccessControlEntry) getSession().load(DbAccessControlEntryImpl.class, aceEntryId);
         assertNotNull("Permission entry not found", accessControlEntry);
         assertTrue(accessControlEntry.isAllowed());
         assertNotNull(accessControlEntry.getAccessControlList());
         assertTrue(accessControlEntry.getAccessControlList().getInherits());
         assertNotNull(accessControlEntry.getPermission());
-        assertEquals("Test", accessControlEntry.getPermission().getName());
+        assertEquals("Test", accessControlEntry.getPermission().getKey().getName());
         assertNotNull(accessControlEntry.getAuthority());
         assertEquals("Test", accessControlEntry.getAuthority().getRecipient());
         assertEquals(1, accessControlEntry.getAuthority().getExternalKeys().size());

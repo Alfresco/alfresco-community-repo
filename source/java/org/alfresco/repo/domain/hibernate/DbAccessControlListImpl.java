@@ -16,13 +16,20 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.alfresco.repo.domain.DbAccessControlEntry;
 import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.DbAuthority;
+import org.alfresco.repo.domain.DbPermission;
+import org.alfresco.repo.domain.DbPermissionKey;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.CallbackException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 
 /**
@@ -36,7 +43,13 @@ public class DbAccessControlListImpl extends LifecycleAdapter implements DbAcces
 
     private long id;
     private Node node;
+    private Set<DbAccessControlEntry> entries;
     private boolean inherits;
+    
+    public DbAccessControlListImpl()
+    {
+        entries = new HashSet<DbAccessControlEntry>(5);
+    }
     
     @Override
     public String toString()
@@ -45,6 +58,7 @@ public class DbAccessControlListImpl extends LifecycleAdapter implements DbAcces
         sb.append("DbAccessControlListImpl")
           .append("[ id=").append(id)
           .append(", node=").append(node)
+          .append(", entries=").append(entries.size())
           .append(", inherits=").append(inherits)
           .append("]");
         return sb.toString();
@@ -73,35 +87,6 @@ public class DbAccessControlListImpl extends LifecycleAdapter implements DbAcces
         return (node == null ? 0 : node.hashCode());
     }
 
-    public int deleteEntries()
-    {
-        /*
-         * This can use a delete direct to the database as well, but then care must be taken
-         * to evict the instances from the session.
-         */
-        
-        // bypass L2 cache and get all entries for this list
-        Query query = getSession()
-                .getNamedQuery(PermissionsDaoComponentImpl.QUERY_GET_AC_ENTRIES_FOR_AC_LIST)
-                .setLong("accessControlListId", this.id);
-        int count = HibernateHelper.deleteQueryResults(getSession(), query);
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Deleted " + count + " access entries for access control list " + this.id);
-        }
-        return count;
-    }
-
-    /**
-     * Ensures that all this access control list's entries have been deleted.
-     */
-    public boolean onDelete(Session session) throws CallbackException
-    {
-        deleteEntries();
-        return super.onDelete(session);
-    }
-
     public long getId()
     {
         return id;
@@ -126,9 +111,18 @@ public class DbAccessControlListImpl extends LifecycleAdapter implements DbAcces
         this.node = node;
     }
     
-    public DbAccessControlListImpl()
+    public Set<DbAccessControlEntry> getEntries()
     {
-        super();
+        return entries;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setEntries(Set<DbAccessControlEntry> entries)
+    {
+        this.entries = entries;
     }
 
     public boolean getInherits()
@@ -139,5 +133,113 @@ public class DbAccessControlListImpl extends LifecycleAdapter implements DbAcces
     public void setInherits(boolean inherits)
     {
         this.inherits = inherits;
+    }
+
+    /**
+     * @see #deleteEntry(String, DbPermissionKey)
+     */
+    public int deleteEntriesForAuthority(String authority)
+    {
+        return deleteEntry(authority, null);
+    }
+
+    /**
+     * @see #deleteEntry(String, DbPermissionKey)
+     */
+    public int deleteEntriesForPermission(DbPermissionKey permissionKey)
+    {
+        return deleteEntry(null, permissionKey);
+    }
+
+    public int deleteEntry(String authority, DbPermissionKey permissionKey)
+    {
+        List<DbAccessControlEntry> toDelete = new ArrayList<DbAccessControlEntry>(2);
+        for (DbAccessControlEntry entry : entries)
+        {
+            if (authority != null && !authority.equals(entry.getAuthority().getRecipient()))
+            {
+                // authority is not a match
+                continue;
+            }
+            else if (permissionKey != null && !permissionKey.equals(entry.getPermission().getKey()))
+            {
+                // permission is not a match
+                continue;
+            }
+            toDelete.add(entry);
+        }
+        // delete them
+        for (DbAccessControlEntry entry : toDelete)
+        {
+            // remove from the entry list
+            entry.delete();
+        }
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Deleted " + toDelete.size() + " access entries: \n" +
+                    "   access control list: " + id + "\n" +
+                    "   authority: " + authority + "\n" +
+                    "   permission: " + permissionKey);
+        }
+        return toDelete.size();
+    }
+
+    public int deleteEntries()
+    {
+        /*
+         * We don't do the full delete-remove-from-set thing here.  Just delete each child entity
+         * and then clear the entry set.
+         */
+        
+        Session session = getSession();
+        List<DbAccessControlEntry> toDelete = new ArrayList<DbAccessControlEntry>(entries);
+        // delete each entry
+        for (DbAccessControlEntry entry : toDelete)
+        {
+            session.delete(entry);
+        }
+        // clear the list
+        int count = entries.size();
+        entries.clear();
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Deleted " + count + " access entries for access control list " + this.id);
+        }
+        return count;
+    }
+
+    public DbAccessControlEntry getEntry(String authority, DbPermissionKey permissionKey)
+    {
+        for (DbAccessControlEntry entry : entries)
+        {
+            DbAuthority authorityEntity = entry.getAuthority();
+            DbPermission permissionEntity = entry.getPermission();
+            // check for a match
+            if (authorityEntity.getRecipient().equals(authority)
+                    && permissionEntity.getKey().equals(permissionKey))
+            {
+                // found it
+                return entry;
+            }
+        }
+        return null;
+    }
+
+    public DbAccessControlEntryImpl newEntry(DbPermission permission, DbAuthority authority, boolean allowed)
+    {
+        DbAccessControlEntryImpl accessControlEntry = new DbAccessControlEntryImpl();
+        // fill
+        accessControlEntry.setAccessControlList(this);
+        accessControlEntry.setPermission(permission);
+        accessControlEntry.setAuthority(authority);
+        accessControlEntry.setAllowed(allowed);
+        // save it
+        getSession().save(accessControlEntry);
+        // maintain inverse set on the acl
+        getEntries().add(accessControlEntry);
+        // done
+        return accessControlEntry;
     }
 }

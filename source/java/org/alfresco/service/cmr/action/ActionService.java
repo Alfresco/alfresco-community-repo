@@ -43,6 +43,15 @@ public interface ActionService
 	 * @return	the list action definitions
 	 */
 	List<ActionDefinition> getActionDefinitions();
+    
+    /**
+     * Get all the action definitions that are applicable for the given node, based on
+     * its type and aspects.
+     * 
+     * @param nodeRef   the node reference
+     * @return          a list of applicable action definitions
+     */
+    List<ActionDefinition> getActionDefinitions(NodeRef nodeRef);
 	
 	/**
 	 * Get a named action condition definition

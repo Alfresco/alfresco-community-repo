@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryException;
  * 
  * @author Derek Hulley
  */
+@SuppressWarnings("unused")
 public class ConstraintsTest extends TestCase
 {
     @Override
@@ -229,8 +230,8 @@ public class ConstraintsTest extends TestCase
     public void testRegexConstraintFilename() throws Exception
     {
         // we assume UTF-8
-        String expression = ".*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|\\xA3\\xAC\\%\\&\\+\\;]+.*";
-        String invalidChars = "\"*\\><?/:|¬£%&+;";
+        String expression = new String(".*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|\\¬\\£\\%\\&\\+\\;]+.*".getBytes("UTF-8"));
+        String invalidChars = new String("\"*\\><?/:|%&+;¬£".getBytes("UTF-8"));
         
         RegexConstraint constraint = new RegexConstraint();
         constraint.setExpression(expression);

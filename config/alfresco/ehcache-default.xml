@@ -151,14 +151,14 @@
     <!-- Permission related caches -->
     <!-- approx 40MB memory required -->
     <cache 
-        name="org.alfresco.repo.domain.hibernate.DbAuthorityImpl" 
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl" 
         maxElementsInMemory="10000"        
         eternal="true" 
         overflowToDisk="false"/>
-    <!-- approx 2MB memory required -->
+    <!-- approx ??MB memory required -->
     <cache 
-        name="org.alfresco.repo.domain.hibernate.DbPermissionImpl" 
-        maxElementsInMemory="500"          
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl.entries" 
+        maxElementsInMemory="10000"        
         eternal="true" 
         overflowToDisk="false"/>
     <!-- approx 35MB memory required -->
@@ -167,9 +167,15 @@
         maxElementsInMemory="25000"        
         eternal="true" 
         overflowToDisk="false"/>
+    <!-- approx 2MB memory required -->
+    <cache 
+        name="org.alfresco.repo.domain.hibernate.DbPermissionImpl" 
+        maxElementsInMemory="500"          
+        eternal="true" 
+        overflowToDisk="false"/>
     <!-- approx 40MB memory required -->
     <cache 
-        name="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl" 
+        name="org.alfresco.repo.domain.hibernate.DbAuthorityImpl" 
         maxElementsInMemory="10000"        
         eternal="true" 
         overflowToDisk="false"/>

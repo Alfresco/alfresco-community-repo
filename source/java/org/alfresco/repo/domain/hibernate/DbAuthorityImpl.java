@@ -38,11 +38,11 @@ public class DbAuthorityImpl extends LifecycleAdapter implements DbAuthority
     private static Log logger = LogFactory.getLog(DbAuthorityImpl.class);
 
     private String recipient;
-    private Set<String> externalKeys = new HashSet<String>();
+    private Set<String> externalKeys;
 
     public DbAuthorityImpl()
     {
-        super();
+        externalKeys = new HashSet<String>();
     }
     
     @Override
@@ -76,8 +76,8 @@ public class DbAuthorityImpl extends LifecycleAdapter implements DbAuthority
         // bypass L2 cache and get all entries for this list
         Query query = getSession()
                 .getNamedQuery(PermissionsDaoComponentImpl.QUERY_GET_AC_ENTRIES_FOR_AUTHORITY)
-                .setString("recipient", this.recipient);
-        int count = HibernateHelper.deleteQueryResults(getSession(), query);
+                .setString("authorityRecipient", this.recipient);
+        int count = HibernateHelper.deleteDbAccessControlEntries(getSession(), query);
         // done
         if (logger.isDebugEnabled())
         {
@@ -114,5 +114,17 @@ public class DbAuthorityImpl extends LifecycleAdapter implements DbAuthority
     /* package */ void setExternalKeys(Set<String> externalKeys)
     {
         this.externalKeys = externalKeys;
+    }
+    
+    /**
+     * Helper method to find an authority based on its natural key
+     * 
+     * @param session the Hibernate session to use
+     * @param authority the authority name
+     * @return Returns an existing instance or null if not found
+     */
+    public static DbAuthority find(Session session, String authority)
+    {
+        return (DbAuthority) session.get(DbAuthorityImpl.class, authority);
     }
 }

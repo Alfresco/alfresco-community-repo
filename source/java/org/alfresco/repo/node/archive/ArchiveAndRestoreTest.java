@@ -165,11 +165,11 @@ public class ArchiveAndRestoreTest extends TestCase
      * Create the following: 
      * <pre>
      *        root
-     *       /  |  \
-     *      /   |   \
-     *     /    |    \
-     *    /     |     \
-     *   A  <-> B      X
+     *       /  |
+     *      /   |
+     *     /    |
+     *    /     |
+     *   A  <-> B
      *   |\    /|
      *   | \  / |
      *   |  \/  |
@@ -498,6 +498,17 @@ public class ArchiveAndRestoreTest extends TestCase
         txn.commit();
         txn = transactionService.getUserTransaction();
         txn.begin();
+    }
+    
+    public void testRestoreToMissingParent() throws Exception
+    {
+        nodeService.deleteNode(a);
+        nodeService.deleteNode(b);
+        commitAndBeginNewTransaction();
+        
+        // attempt to restore b_ to a
+        RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(b_, a, null, null);
+        assertEquals("Incorrect report status", RestoreStatus.FAILURE_INVALID_PARENT, report.getStatus());
     }
     
     public void testMassRestore() throws Exception

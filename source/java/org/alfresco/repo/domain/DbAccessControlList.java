@@ -16,6 +16,10 @@
  */
 package org.alfresco.repo.domain;
 
+import java.util.Set;
+
+import org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl;
+
 
 /**
  * The interface to support persistence of node access control entries in hibernate
@@ -31,16 +35,28 @@ public interface DbAccessControlList
     public void setNode(Node node);
     
     /**
+     * 
+     * @return Returns the access control entries for this access control list 
+     */
+    public Set<DbAccessControlEntry> getEntries();
+    
+    /**
      * Get inheritance behaviour
-     * @return
+     * @return Returns the inheritance status of this list
      */
     public boolean getInherits();
     
     /**
      * Set inheritance behaviour
-     * @param inherits
+     * @param inherits true to set the permissions to inherit
      */
     public void setInherits(boolean inherits);
+
+    public int deleteEntriesForAuthority(String authorityKey);
+    
+    public int deleteEntriesForPermission(DbPermissionKey permissionKey);
+
+    public int deleteEntry(String authorityKey, DbPermissionKey permissionKey);
     
     /**
      * Delete the entries related to this access control list
@@ -48,4 +64,18 @@ public interface DbAccessControlList
      * @return Returns the number of entries deleted
      */
     public int deleteEntries();
+    
+    public DbAccessControlEntry getEntry(String authorityKey, DbPermissionKey permissionKey);
+    
+    /**
+     * Factory method to create an entry and wire it up.
+     * Note that the returned value may still be transient.  Saving it should  be fine, but
+     * is not required.
+     * 
+     * @param permission the mandatory permission association with this entry
+     * @param authority the mandatory authority.  Must not be transient.
+     * @param allowed allowed or disallowed.  Must not be transient.
+     * @return Returns the new entry
+     */
+    public DbAccessControlEntryImpl newEntry(DbPermission permission, DbAuthority authority, boolean allowed);
 }

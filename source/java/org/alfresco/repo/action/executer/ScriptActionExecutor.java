@@ -114,9 +114,9 @@ public class ScriptActionExecutor extends ActionExecuterAbstractBase
     }
     
     /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefintions(java.util.List)
+     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
-    protected void addParameterDefintions(List<ParameterDefinition> paramList)
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_SCRIPTREF, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_SCRIPTREF)));
         paramList.add(new ParameterDefinitionImpl(PARAM_SPACEREF, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_SPACEREF)));

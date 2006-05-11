@@ -21,8 +21,10 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -133,13 +135,34 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
             {
                 report.setStatus(RestoreStatus.FAILURE_INVALID_PARENT);
             }
+            else if (destinationNodeRef == null)
+            {
+                // get the original parent of the archived node
+                ChildAssociationRef originalParentAssocRef = (ChildAssociationRef) nodeService.getProperty(
+                        archivedNodeRef,
+                        ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+                NodeRef originalParentNodeRef = originalParentAssocRef.getParentRef();
+                if (EqualsHelper.nullSafeEquals(originalParentNodeRef, invalidNodeRef))
+                {
+                    report.setStatus(RestoreStatus.FAILURE_INVALID_PARENT);
+                }
+                else
+                {
+                    // some other invalid node was detected
+                    report.setStatus(RestoreStatus.FAILURE_OTHER);
+                }
+            }
             else
             {
                 // some other invalid node was detected
                 report.setStatus(RestoreStatus.FAILURE_OTHER);
             }
         }
-        // TODO: Catch permission exceptions
+        catch (AccessDeniedException e)
+        {
+            report.setCause(e);
+            report.setStatus(RestoreStatus.FAILURE_PERMISSION);
+        }
         catch (Throwable e)
         {
             report.setCause(e);

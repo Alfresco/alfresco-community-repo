@@ -74,7 +74,7 @@ public class SetPropertyValueActionExecuter extends ActionExecuterAbstractBase
      * Add parameter definitions
      */
 	@Override
-	protected void addParameterDefintions(List<ParameterDefinition> paramList) 
+	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
         paramList.add(new ParameterDefinitionImpl(PARAM_PROPERTY, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_PROPERTY)));
 		paramList.add(new ParameterDefinitionImpl(PARAM_VALUE, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_VALUE)));

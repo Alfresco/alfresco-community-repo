@@ -27,7 +27,7 @@ import org.alfresco.util.EqualsHelper;
  * 
  * @author andyh
  */
-public class DbAccessControlEntryImpl implements DbAccessControlEntry
+public class DbAccessControlEntryImpl extends LifecycleAdapter implements DbAccessControlEntry
 {
     /** The object id */
     private long id;
@@ -56,7 +56,7 @@ public class DbAccessControlEntryImpl implements DbAccessControlEntry
         sb.append("DbAccessControlEntryImpl")
           .append("[ id=").append(id)
           .append(", acl=").append(accessControlList.getId())
-          .append(", permission=").append(permission.getId())
+          .append(", permission=").append(permission.getKey())
           .append(", authority=").append(authority.getRecipient())
           .append("]");
         return sb.toString();
@@ -74,16 +74,14 @@ public class DbAccessControlEntryImpl implements DbAccessControlEntry
             return false;
         }
         DbAccessControlEntry other = (DbAccessControlEntry) o;
-        return (this.allowed == other.isAllowed())
-                && EqualsHelper.nullSafeEquals(this.accessControlList, other.getAccessControlList())
-                && EqualsHelper.nullSafeEquals(this.permission, other.getPermission())
-                && EqualsHelper.nullSafeEquals(this.authority, other.getAuthority());
+        return (EqualsHelper.nullSafeEquals(this.permission, other.getPermission())
+                && EqualsHelper.nullSafeEquals(this.authority, other.getAuthority()));
     }
 
     @Override
     public int hashCode()
     {
-        int hashCode = accessControlList.hashCode();
+        int hashCode = 0;
         if (permission != null)
         {
             hashCode = hashCode * 37 + permission.hashCode();
@@ -92,33 +90,9 @@ public class DbAccessControlEntryImpl implements DbAccessControlEntry
         {
             hashCode = hashCode * 37 + authority.hashCode();
         }
-        hashCode = hashCode * 37 + (allowed ? 1 : 0);
         return hashCode;
     }
-
-    /**
-     * Factory method to create an entry and wire it in to the contained nodePermissionEntry
-     * 
-     * @param accessControlList the list of entries that this one belongs to
-     * @param permission the mandatory permission association with this entry
-     * @param authority the mandatory authority
-     * @param allowed allowed or disallowed
-     * @return Returns an unpersisted entity
-     */
-    public static DbAccessControlEntryImpl create(
-            DbAccessControlList accessControlList,
-            DbPermission permission,
-            DbAuthority authority,
-            boolean allowed)
-    {
-        DbAccessControlEntryImpl accessControlEntry = new DbAccessControlEntryImpl();
-        accessControlEntry.setAccessControlList(accessControlList);
-        accessControlEntry.setPermission(permission);
-        accessControlEntry.setAuthority(authority);
-        accessControlEntry.setAllowed(allowed);
-        return accessControlEntry;
-    }
-
+    
     public long getId()
     {
         return id;
@@ -170,5 +144,14 @@ public class DbAccessControlEntryImpl implements DbAccessControlEntry
     public void setAllowed(boolean allowed)
     {
         this.allowed = allowed;
+    }
+
+    public void delete()
+    {
+        // remove the instance from the access control list
+        @SuppressWarnings("unused")
+        boolean removed = getAccessControlList().getEntries().remove(this);
+        // delete the instance
+        getSession().delete(this);
     }
 }

@@ -49,7 +49,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.TestWithUserUtils;
 import org.springframework.context.ApplicationContext;
 
@@ -196,10 +195,6 @@ public class FileImporterTest extends TestCase
         String userPwd = args.length > 6 ? args[6] : "";
         while (count < target)
         {
-            File directory = TempFileProvider.getTempDir();
-            File[] files = directory.listFiles();
-            System.out.println("Start temp file count = " + files.length);
-            
             count++;
             FileImporterTest test = new FileImporterTest();
             test.setUp();
@@ -268,14 +263,8 @@ public class FileImporterTest extends TestCase
                 System.out.println("Committed in: " + ((end - start) / 1000000.0) + "ms");
                 double total = ((first+second)/1000000.0);
                 System.out.println("Grand Total: "+ grandTotal);
-                System.out.println("Count: "+ count + "ms");
                 System.out.println("Imported: " + importCount + " files or directories");
                 System.out.println("Average: " + (importCount / (total / 1000.0)) + " files per second");
-                
-                directory = TempFileProvider.getTempDir();
-                files = directory.listFiles();
-                System.out.println("End temp file count = " + files.length);
-                
                 
                 tx = transactionService.getUserTransaction(); 
                 tx.begin();

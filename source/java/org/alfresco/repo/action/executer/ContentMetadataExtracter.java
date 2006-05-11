@@ -198,7 +198,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
     }
 
     @Override
-    protected void addParameterDefintions(List<ParameterDefinition> arg0)
+    protected void addParameterDefinitions(List<ParameterDefinition> arg0)
     {
         // None!
     }

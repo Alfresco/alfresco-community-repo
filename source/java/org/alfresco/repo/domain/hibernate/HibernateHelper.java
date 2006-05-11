@@ -16,8 +16,7 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
-import org.hibernate.CacheMode;
-import org.hibernate.ObjectDeletedException;
+import org.alfresco.repo.domain.DbAccessControlEntry;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
@@ -32,36 +31,25 @@ public class HibernateHelper
 {
     /**
      * Helper method to scroll through the results of a query and delete all the
-     * results, performing batch flushes.  This will handle large resultsets by
-     * pulling the results directly in from the query.  For certain circumstances, it
-     * may be better to perform a bulk delete directly instead.
+     * resulting access control entries, performing batch flushes.
      * 
      * @param session the session to use for the deletions
-     * @param query the query with all parameters set
-     * @return Returns the number of entities deleted, regardless of type
+     * @param query the query with all parameters set and that will return
+     *      {@link org.alfresco.repo.domain.DbAccessControlEntry access control entry} instances
+     * @return Returns the number of entries deleted
      */
-    public static int deleteQueryResults(Session session, Query query)
+    public static int deleteDbAccessControlEntries(Session session, Query query)
     {
-        ScrollableResults entities = query.setCacheMode(CacheMode.IGNORE).scroll(ScrollMode.FORWARD_ONLY);
+        ScrollableResults entities = query.scroll(ScrollMode.FORWARD_ONLY);
         int count = 0;
         while (entities.next())
         {
-            Object[] entityResults = entities.get();
-            for (Object object : entityResults)
+            DbAccessControlEntry entry = (DbAccessControlEntry) entities.get(0);
+            entry.delete();
+            if (++count % 50 == 0)
             {
-                try
-                {
-                    session.delete(object);
-                }
-                catch (ObjectDeletedException e)
-                {
-                    // ignore - it's what we wanted
-                }
-                if (++count % 50 == 0)
-                {
-                    session.flush();
-                    session.clear();
-                }
+                session.flush();
+                session.clear();
             }
         }
         return count;

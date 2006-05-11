@@ -181,6 +181,23 @@ public class PermissionServiceTest extends AbstractPermissionTest
         testSetNodePermissionEntry();
         testSetNodePermissionEntry2();
     }
+    
+    public void testDoubleSetAllowDeny()
+    {
+        Set<? extends PermissionEntry> permissionEntries = null;
+        // add-remove andy-all
+        permissionService.setPermission(rootNodeRef, "andy", permissionService.getAllPermission(), true);
+        permissionService.setPermission(rootNodeRef, "andy", permissionService.getAllPermission(), false);
+        permissionService.deletePermission(rootNodeRef, "andy", permissionService.getAllPermission());
+        permissionEntries = permissionService.getSetPermissions(rootNodeRef).getPermissionEntries();
+        assertEquals(0, permissionEntries.size());
+        // add-remove andy-read
+        permissionService.setPermission(rootNodeRef, "andy", PermissionService.READ, true);
+        permissionService.setPermission(rootNodeRef, "andy", PermissionService.READ, false);
+        permissionService.deletePermission(rootNodeRef, "andy", PermissionService.READ);
+        permissionEntries = permissionService.getSetPermissions(rootNodeRef).getPermissionEntries();
+        assertEquals(0, permissionEntries.size());
+    }
 
     public void testSetPermissionEntryElements()
     {

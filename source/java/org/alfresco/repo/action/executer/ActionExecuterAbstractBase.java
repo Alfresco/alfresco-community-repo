@@ -16,11 +16,15 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.repo.action.ActionDefinitionImpl;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Rule action executor abstract base.
@@ -38,6 +42,9 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
 	 * Indicated whether the action is public or internal
 	 */
 	protected boolean publicAction = true;
+    
+    /** List of types and aspects for which this action is applicable */
+    protected List<QName> applicableTypes = new ArrayList<QName>();
 	
 	/**
 	 * Init method	 
@@ -59,6 +66,19 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
 	{
 		this.publicAction = publicAction;
 	}
+    
+    /**
+     * Set the list of types for which this action is applicable
+     * 
+     * @param applicableTypes   arry of applicable types
+     */
+    public void setApplicableTypes(String[] applicableTypes)
+    {
+        for (String type : applicableTypes)
+        {
+            this.applicableTypes.add(QName.createQName(type));
+        }
+    }
 	
 	/**
 	 * Get rule action definition
@@ -75,6 +95,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
 			((ActionDefinitionImpl)this.actionDefinition).setAdhocPropertiesAllowed(getAdhocPropertiesAllowed());
 			((ActionDefinitionImpl)this.actionDefinition).setRuleActionExecutor(this.name);
 			((ActionDefinitionImpl)this.actionDefinition).setParameterDefinitions(getParameterDefintions());
+            ((ActionDefinitionImpl)this.actionDefinition).setApplicableTypes(this.applicableTypes);
 		}
 		return this.actionDefinition;
 	}

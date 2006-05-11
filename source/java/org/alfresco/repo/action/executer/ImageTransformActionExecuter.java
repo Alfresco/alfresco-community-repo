@@ -58,9 +58,9 @@ public class ImageTransformActionExecuter extends TransformActionExecuter
 	 * Add parameter definitions
 	 */
 	@Override
-	protected void addParameterDefintions(List<ParameterDefinition> paramList) 
+	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
-		super.addParameterDefintions(paramList);
+		super.addParameterDefinitions(paramList);
 		paramList.add(new ParameterDefinitionImpl(PARAM_CONVERT_COMMAND, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_CONVERT_COMMAND)));
 	}
 	

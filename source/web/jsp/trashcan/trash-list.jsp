@@ -49,6 +49,20 @@
          document.getElementById("trashcan:search-btn2").disabled = false;
       }
    }
+   
+   function userSearch(e)
+   {
+      var keycode;
+      if (window.event) keycode = window.event.keyCode;
+      else if (e) keycode = e.which;
+      if (keycode == 13)
+      {	
+      	document.forms['trashcan']['trashcan:modelist'].value='trashcan:user-filter:user';
+         document.forms['trashcan'].submit();
+         return false;
+      }
+      return true;
+   }
 </script>
 
 <f:view>
@@ -153,28 +167,46 @@
                                        <table cellspacing=2 cellpadding=0 width=100%>
                                           <tr>
                                              <td><img src="<%=request.getContextPath()%>/images/icons/filter.gif" width=16 height=16></td>
-                                             <td style="padding-left:8px"><nobr><h:outputText value="#{msg.deleted_when}" />:</nobr></td>
-                                             <td style="padding-left:12px" width=100%><b>All</b>&nbsp;&nbsp;Today&nbsp;&nbsp;This&nbsp;&nbsp;Week&nbsp;&nbsp;This Month</td>
+                                             <td style="padding-left:8px;width:120px"><nobr><h:outputText value="#{msg.date_filter_when}" />:</nobr></td>
+                                             <td width=100%>
+                                                <a:modeList itemSpacing="2" iconColumnWidth="0" horizontal="true" selectedLinkStyle="font-weight:bold"
+                                                      value="#{TrashcanBean.dateFilter}" actionListener="#{TrashcanBean.dateFilterChanged}">
+                                                   <a:listItem value="all" label="#{msg.date_filter_all}" />
+                                                   <a:listItem value="today" label="#{msg.date_filter_today}" />
+                                                   <a:listItem value="week" label="#{msg.date_filter_week}" />
+                                                   <a:listItem value="month" label="#{msg.date_filter_month}" />
+                                                </a:modeList>
+                                             </td>
                                           </tr>
                                        </table>
                                     </td>
-                                    <td align=right><h:commandButton id="reset-btn" value="#{msg.resetall}" actionListener="#{TrashcanBean.resetAll}" /></td>
                                  </tr>
+                                 <%-- Only the admin user needs the username filter --%>
+                                 <a:panel id="userfilter-panel" rendered="#{NavigationBean.currentUser.admin == true}">
                                  <tr>
                                     <td class="filterBorders" width=100%>
                                        <table cellspacing=2 cellpadding=0 width=100%>
                                           <tr>
                                              <td><img src="<%=request.getContextPath()%>/images/icons/filter.gif" width=16 height=16></td>
-                                             <td style="padding-left:8px"><nobr><h:outputText value="#{msg.deleted_user}" />:</nobr></td>
-                                             <td style="padding-left:12px" width=100%><b>All</b>&nbsp;&nbsp;User&nbsp;<h:inputText id="user-search" size="12" maxlength="100" style="font-size:10px" onkeyup="" /></td>
+                                             <td style="padding-left:8px;width:120px"><nobr><h:outputText value="#{msg.user_filter_who}" />:</nobr></td>
+                                             <td width=100%>
+                                                <table cellspacing=0 cellpadding=0 border=0><tr><td>
+                                                <a:modeList id="user-filter" itemSpacing="2" iconColumnWidth="0" horizontal="true" selectedLinkStyle="font-weight:bold"
+                                                      value="#{TrashcanBean.userFilter}" actionListener="#{TrashcanBean.userFilterChanged}">
+                                                   <a:listItem value="all" label="#{msg.user_filter_all}" />
+                                                   <a:listItem value="user" label="#{msg.user_filter_user}" />
+                                                </a:modeList>
+                                                </td><td>
+                                                <h:inputText id="user-search" value="#{TrashcanBean.userSearchText}" size="12" maxlength="100" style="font-size:10px" onkeyup="return userSearch(event);" />
+                                                </td></tr></table>
+                                             </td>
                                           </tr>
                                        </table>
                                     </td>
-                                    <td></td>
                                  </tr>
+                                 </a:panel>
                               </table>
                               
-                              <%-- TODO: only show user filter for admin user --%>
                               <div style="padding: 4px;"></div>
                               
                               <%-- Recover Listed Items actions --%>

@@ -17,8 +17,10 @@
 package org.alfresco.web.bean;
 
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +44,7 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.CachingDateFormat;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.bean.repository.MapNode;
@@ -53,6 +56,7 @@ import org.alfresco.web.bean.wizard.NewSpaceWizard;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 
 /**
@@ -60,6 +64,13 @@ import org.alfresco.web.ui.common.component.data.UIRichList;
  */
 public class TrashcanBean implements IContextListener
 {
+   private static final String FILTER_DATE_ALL    = "all";
+   private static final String FILTER_DATE_TODAY  = "today";
+   private static final String FILTER_DATE_WEEK   = "week";
+   private static final String FILTER_DATE_MONTH  = "month";
+   private static final String FILTER_USER_ALL    = "all";
+   private static final String FILTER_USER_USER   = "user";
+   
    private static final String MSG_DELETED_ITEMS_FOR = "deleted_items_for";
    private static final String MSG_DELETED_ITEMS = "deleted_items";
    private static final String MSG_RECOVERED_ITEM_INTEGRITY = "recovered_item_integrity";
@@ -75,6 +86,7 @@ public class TrashcanBean implements IContextListener
    
    private final static String NAME_ATTR = Repository.escapeQName(ContentModel.PROP_NAME);
    private final static String USER_ATTR = Repository.escapeQName(ContentModel.PROP_ARCHIVED_BY);
+   private final static String DATE_ATTR = Repository.escapeQName(ContentModel.PROP_ARCHIVED_DATE);
    
    private final static String SEARCH_ALL  = "PARENT:\"%s\" AND ASPECT:\"%s\"";
    private final static String SEARCH_NAME = "PARENT:\"%s\" AND ASPECT:\"%s\" AND @" + NAME_ATTR + ":*%s*";
@@ -117,6 +129,15 @@ public class TrashcanBean implements IContextListener
    
    /** Alternative destination for recovered items */
    private NodeRef destination = null;
+   
+   /** Date filter selection */
+   private String dateFilter = FILTER_DATE_ALL;
+   
+   /** User filter selection */
+   private String userFilter = FILTER_USER_ALL;
+   
+   /** User filter search box text */
+   private String userSearchText = null;
    
    
    // ------------------------------------------------------------------------------
@@ -202,6 +223,54 @@ public class TrashcanBean implements IContextListener
       this.destination = destination;
    }
    
+   /**
+    * @return Returns the dateFilter.
+    */
+   public String getDateFilter()
+   {
+      return this.dateFilter;
+   }
+
+   /**
+    * @param dateFilter The dateFilter to set.
+    */
+   public void setDateFilter(String dateFilter)
+   {
+      this.dateFilter = dateFilter;
+   }
+
+   /**
+    * @return Returns the userFilter.
+    */
+   public String getUserFilter()
+   {
+      return this.userFilter;
+   }
+
+   /**
+    * @param userFilter The userFilter to set.
+    */
+   public void setUserFilter(String userFilter)
+   {
+      this.userFilter = userFilter;
+   }
+
+   /**
+    * @return Returns the userSearchText.
+    */
+   public String getUserSearchText()
+   {
+      return this.userSearchText;
+   }
+
+   /**
+    * @param userSearchText The userSearchText to set.
+    */
+   public void setUserSearchText(String userSearchText)
+   {
+      this.userSearchText = userSearchText;
+   }
+
    /**
     * @return Message to display in the title of the panel area
     */
@@ -298,7 +367,7 @@ public class TrashcanBean implements IContextListener
          // get the root node to the deleted items store
          if (getArchiveRootRef() != null && this.showItems == true)
          {
-            String query = getSearchQuery();
+            String query = buildSearchQuery();
             SearchParameters sp = new SearchParameters();
             sp.setLanguage(SearchService.LANGUAGE_LUCENE);
             sp.setQuery(query);
@@ -621,19 +690,33 @@ public class TrashcanBean implements IContextListener
    }
    
    /**
-    * Action handler to reset all filters and search
-    */
-   public void resetAll(ActionEvent event)
-   {
-      // TODO: reset all filters
-   }
-   
-   /**
     * Action handler to initially setup the trashcan screen
     */
    public void setupTrashcan(ActionEvent event)
    {
       contextUpdated();
+   }
+   
+   /**
+    * Action handler called when the Date filter is changed by the user
+    */
+   public void dateFilterChanged(ActionEvent event)
+   {
+      UIModeList filterComponent = (UIModeList)event.getComponent();
+      setDateFilter(filterComponent.getValue().toString());
+      contextUpdated();
+      this.showItems = true;
+   }
+   
+   /**
+    * Action handler called when the User filter is changed by the user
+    */
+   public void userFilterChanged(ActionEvent event)
+   {
+      UIModeList filterComponent = (UIModeList)event.getComponent();
+      setUserFilter(filterComponent.getValue().toString());
+      contextUpdated();
+      this.showItems = true;
    }
    
    
@@ -655,7 +738,7 @@ public class TrashcanBean implements IContextListener
    /**
     * @return the search query to use when displaying the list of deleted items
     */
-   private String getSearchQuery()
+   private String buildSearchQuery()
    {
       String query;
       if (this.searchText == null || this.searchText.length() == 0)
@@ -691,11 +774,52 @@ public class TrashcanBean implements IContextListener
          }
       }
       
+      // append user search clause
+      String username = null;
       if (isAdminUser() == false)
       {
-         // prefix username clause
-         String username = Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName();
+         // prefix the current username
+         username = Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName();
+      }
+      else if (FILTER_USER_USER.equals(getUserFilter()))
+      {
+         // append the entered user if admin has requested a search
+         username = getUserSearchText();
+      }
+      if (username != null && username.length() != 0)
+      {
          query = String.format(SEARCH_USERPREFIX, username) + query;
+      }
+      
+      // append date search clause
+      if (FILTER_DATE_ALL.equals(getDateFilter()) == false)
+      {
+         Date toDate = new Date();
+         Date fromDate = null;
+         if (FILTER_DATE_TODAY.equals(getDateFilter()))
+         {
+            fromDate = new Date(toDate.getYear(), toDate.getMonth(), toDate.getDate(), 0, 0, 0);
+         }
+         else if (FILTER_DATE_WEEK.equals(getDateFilter()))
+         {
+            fromDate = new Date(toDate.getTime() - (1000L*60L*60L*24L*7L));
+         }
+         else if (FILTER_DATE_MONTH.equals(getDateFilter()))
+         {
+            fromDate = new Date(toDate.getTime() - (1000L*60L*60L*24L*30L));
+         }
+         if (fromDate != null)
+         {
+            SimpleDateFormat df = CachingDateFormat.getDateFormat();
+            String strFromDate = QueryParser.escape(df.format(fromDate));
+            String strToDate = QueryParser.escape(df.format(toDate));
+            StringBuilder buf = new StringBuilder(128);
+            buf.append("@").append(DATE_ATTR)
+               .append(":").append("[").append(strFromDate)
+               .append(" TO ").append(strToDate).append("] AND ");
+            
+            query = buf.toString() + query;
+         }
       }
       
       return query;

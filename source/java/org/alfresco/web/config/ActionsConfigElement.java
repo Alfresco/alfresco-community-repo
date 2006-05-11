@@ -19,7 +19,6 @@ package org.alfresco.web.config;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -71,14 +70,51 @@ public class ActionsConfigElement extends ConfigElementAdapter
     */
    public ConfigElement combine(ConfigElement configElement)
    {
-      ActionsConfigElement existingElement = (ActionsConfigElement)configElement;
+      ActionsConfigElement newElement = (ActionsConfigElement)configElement;
       ActionsConfigElement combinedElement = new ActionsConfigElement();
       
+      // add the existing action definitions
       combinedElement.actionDefs.putAll(this.actionDefs);
-      combinedElement.actionDefs.putAll(existingElement.actionDefs);
       
+      // overwrite any existing action definitions i.e. don't combine
+      combinedElement.actionDefs.putAll(newElement.actionDefs);
+      
+      // add the existing action groups
       combinedElement.actionGroups.putAll(this.actionGroups);
-      combinedElement.actionGroups.putAll(existingElement.actionGroups);
+      
+      // any new action groups with the same name must be combined
+      for (ActionGroup newGroup : newElement.actionGroups.values())
+      {
+         if (combinedElement.actionGroups.containsKey(newGroup.getId()))
+         {
+            // there is already a group with this id, combine it 
+            // with the new one
+            ActionGroup existingGroup = combinedElement.actionGroups.get(newGroup.getId());
+            if (newGroup.ShowLink != existingGroup.ShowLink)
+            {
+               existingGroup.ShowLink = newGroup.ShowLink;
+            }
+            if (newGroup.Style != null)
+            {
+               existingGroup.Style = newGroup.Style;
+            }
+            if (newGroup.StyleClass != null)
+            {
+               existingGroup.StyleClass = newGroup.StyleClass;
+            }
+            
+            // add the new groups to the existing set
+            for (String actionRef : newGroup.actions)
+            {
+               existingGroup.actions.add(actionRef);
+            }
+         }
+         else
+         {
+            // it's a new group so just add it
+            combinedElement.actionGroups.put(newGroup.getId(), newGroup);
+         }
+      }
       
       return combinedElement;
    }

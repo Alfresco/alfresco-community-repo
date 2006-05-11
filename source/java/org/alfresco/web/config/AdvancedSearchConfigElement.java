@@ -67,15 +67,15 @@ public class AdvancedSearchConfigElement extends ConfigElementAdapter
     */
    public ConfigElement combine(ConfigElement configElement)
    {
-      AdvancedSearchConfigElement existingElement = (AdvancedSearchConfigElement)configElement;
-      AdvancedSearchConfigElement newElement = new AdvancedSearchConfigElement();
+      AdvancedSearchConfigElement newElement = (AdvancedSearchConfigElement)configElement;
+      AdvancedSearchConfigElement combinedElement = new AdvancedSearchConfigElement();
       
       // just copy the list of types and properties from this instance to the new one
       if (this.contentTypes != null)
       {
          for (String type : this.contentTypes)
          {
-            newElement.addContentType(type);
+            combinedElement.addContentType(type);
          }
       }
       
@@ -83,28 +83,28 @@ public class AdvancedSearchConfigElement extends ConfigElementAdapter
       {
          for (CustomProperty property : this.customProps)
          {
-            newElement.addCustomProperty(property);
+            combinedElement.addCustomProperty(property);
          }
       }
       
       // now add those types and custom properties from the element to be combined
-      if (existingElement.getContentTypes() != null)
+      if (newElement.getContentTypes() != null)
       {
-         for (String type : existingElement.getContentTypes())
+         for (String type : newElement.getContentTypes())
          {
-            newElement.addContentType(type);
+            combinedElement.addContentType(type);
          }
       }
       
-      if (existingElement.getCustomProperties() != null)
+      if (newElement.getCustomProperties() != null)
       {
-         for (CustomProperty property : existingElement.getCustomProperties())
+         for (CustomProperty property : newElement.getCustomProperties())
          {
-            newElement.addCustomProperty(property);
+            combinedElement.addCustomProperty(property);
          }
       }
       
-      return newElement;
+      return combinedElement;
    }
 
    /** 

@@ -64,19 +64,19 @@ public class CommandServletConfigElement extends ConfigElementAdapter
     */
    public ConfigElement combine(ConfigElement configElement)
    {
-      CommandServletConfigElement existingElement = (CommandServletConfigElement)configElement;
-      CommandServletConfigElement newElement = new CommandServletConfigElement();
+      CommandServletConfigElement newElement = (CommandServletConfigElement)configElement;
+      CommandServletConfigElement combinedElement = new CommandServletConfigElement();
       
       for (String name : commandProcessors.keySet())
       {
-         newElement.addCommandProcessor(name, commandProcessors.get(name));
+         combinedElement.addCommandProcessor(name, commandProcessors.get(name));
       }
-      for (String name : existingElement.commandProcessors.keySet())
+      for (String name : newElement.commandProcessors.keySet())
       {
-         newElement.addCommandProcessor(name, existingElement.commandProcessors.get(name));
+         combinedElement.addCommandProcessor(name, newElement.commandProcessors.get(name));
       }
       
-      return newElement;
+      return combinedElement;
    }
    
    /*package*/ void addCommandProcessor(String name, String className)

@@ -18,6 +18,7 @@ package org.alfresco.web.config;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,8 @@ import org.alfresco.config.ConfigException;
 import org.alfresco.config.source.FileConfigSource;
 import org.alfresco.config.xml.XMLConfigService;
 import org.alfresco.util.BaseTest;
+import org.alfresco.web.config.ActionsConfigElement.ActionDefinition;
+import org.alfresco.web.config.ActionsConfigElement.ActionGroup;
 import org.alfresco.web.config.AdvancedSearchConfigElement.CustomProperty;
 import org.alfresco.web.config.DialogsConfigElement.DialogConfig;
 import org.alfresco.web.config.PropertySheetConfigElement.ItemConfig;
@@ -814,5 +817,111 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("step 3 instruction-id", "create_space_summary_instruction", step3Page.getInstructionId());
       assertNull("step 3 title should be null", step3Page.getTitle());
       assertNull("step 3 description should be null", step3Page.getDescription());
+   }
+   
+   public void testActions()
+   {
+      // setup the config service
+      String configFile = getResourcesDir() + "test-config.xml";
+      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFile));
+      svc.init();
+      
+      // get the "Actions" config
+      Config cfg = svc.getGlobalConfig();
+      assertNotNull("cfg should not be null", cfg);   
+      
+      // get the <actions> config element
+      ActionsConfigElement actionsConfig = (ActionsConfigElement)cfg.
+            getConfigElement(ActionsConfigElement.CONFIG_ELEMENT_ID);
+      assertNotNull("actions config element should not be null", actionsConfig);
+      
+      // get the individual actions
+      ActionDefinition docDetails = actionsConfig.getActionDefinition("details_doc");
+      assertNotNull("details_doc action definition should not be null", docDetails);
+      assertEquals("details_doc action", "dialog:showDocDetails", docDetails.Action);
+      
+      ActionDefinition spaceDetails = actionsConfig.getActionDefinition("details_space");
+      assertNotNull("details_space action definition should not be null", spaceDetails);
+      assertEquals("details_space action", "dialog:showSpaceDetails", spaceDetails.Action);
+      
+      // get the action group
+      ActionGroup group = actionsConfig.getActionGroup("document_browse");
+      assertNotNull("group definition should not be null", group);
+      assertFalse("showLink for document_browse group should be false", group.ShowLink);
+      for (String actionId : group)
+      {
+         if (actionId.equals("details_doc") == false &&
+             actionId.equals("details_space") == false)
+         {
+            fail("Unrecognised action-id '" + actionId + "' in action group '" + group.getId() + "'");
+         }
+      }
+   }
+   
+   public void testActionsOverriding()
+   {
+      // setup the config service
+      List<String> configFiles = new ArrayList<String>(2);
+      configFiles.add(getResourcesDir() + "test-config.xml");
+      configFiles.add(getResourcesDir() + "test-config-override.xml");
+      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
+      svc.init();
+      
+      // get the "Actions" config
+      Config cfg = svc.getConfig("Actions Override");
+      assertNotNull("cfg should not be null", cfg);
+      
+      // get the <actions> config element
+      ActionsConfigElement actionsConfig = (ActionsConfigElement)cfg.
+            getConfigElement(ActionsConfigElement.CONFIG_ELEMENT_ID);
+      assertNotNull("actions config element should not be null", actionsConfig);
+      
+      // get the individual actions
+      ActionDefinition docDetails = actionsConfig.getActionDefinition("details_doc");
+      assertNotNull("details_doc action definition should not be null", docDetails);
+      assertEquals("details_doc action", "dialog:showCustomDocDetails", docDetails.Action);
+      
+      ActionDefinition spaceDetails = actionsConfig.getActionDefinition("details_space");
+      assertNotNull("details_space action definition should not be null", spaceDetails);
+      assertEquals("details_space action", "dialog:showSpaceDetails", spaceDetails.Action);
+      
+      ActionDefinition customAction = actionsConfig.getActionDefinition("custom_action");
+      assertNotNull("custom_action action definition should not be null", customAction);
+      assertEquals("custom_action action", "customAction", customAction.Action);
+      
+      // get the document_browse action group
+      ActionGroup group = actionsConfig.getActionGroup("document_browse");
+      assertNotNull("group definition should not be null", group);
+      assertTrue("showLink for document_browse group should be true", group.ShowLink);
+      assertEquals("document_browse group style class", "inlineAction", group.StyleClass);
+      assertNull("Style for document_browse group should be null", group.Style);
+      
+      // make sure there are 3 items
+      ArrayList<String> actions = new ArrayList<String>(3);
+      for (String actionId : group)
+      {
+         actions.add(actionId);
+      }
+      
+      assertEquals("number of items in document_browse group", 3, actions.size());
+      
+      // make sure they are in the correct order
+      assertEquals("first action", "details_doc", actions.get(0));
+      assertEquals("second action", "details_space", actions.get(1));
+      assertEquals("third action", "custom_action", actions.get(2));
+      
+      // get the new_group action group
+      ActionGroup newGroup = actionsConfig.getActionGroup("new_group");
+      assertNotNull("new_group definition should not be null", newGroup);
+      
+      // make sure there is only 1 item and it's id is correct
+      actions = new ArrayList<String>(1);
+      for (String actionId : newGroup)
+      {
+         actions.add(actionId);
+      }
+      
+      assertEquals("number of items in new_group group", 1, actions.size());
+      assertEquals("action", "custom_action", actions.get(0));
    }
 }

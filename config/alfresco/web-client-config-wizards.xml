@@ -1,6 +1,6 @@
 <alfresco-config>
 
-	<config evalutor="string-compare" condition="Wizards">
+	<config evaluator="string-compare" condition="Wizards">
       <wizard-container>/jsp/wizard/container.jsp</wizard-container>
       
       <wizards>

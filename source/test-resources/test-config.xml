@@ -8,6 +8,7 @@
          <element-reader element-name="languages" class="org.alfresco.web.config.LanguagesElementReader" />
          <element-reader element-name="advanced-search" class="org.alfresco.web.config.AdvancedSearchElementReader" />
          <element-reader element-name="views" class="org.alfresco.web.config.ViewsElementReader" />
+         <element-reader element-name="actions" class="org.alfresco.web.config.ActionsElementReader" />
       </element-readers>
    </plug-ins>
 
@@ -47,6 +48,27 @@
          <!-- the from address to use when sending emails from the client -->
          <from-email-address>alfresco@alfresco.org</from-email-address>
       </client>
+      
+      <actions>
+         <action id="details_doc">
+            <label-id>view_details</label-id>
+            <image>/images/icons/View_details.gif</image>
+            <action>dialog:showDocDetails</action>
+         </action>
+         
+         <action id="details_space">
+            <label-id>view_details</label-id>
+            <image>/images/icons/View_details.gif</image>
+            <action>dialog:showSpaceDetails</action>
+         </action>
+         
+         <action-group id="document_browse">
+            <show-link>false</show-link>
+            <style-class>inlineAction</style-class>
+            <action idref="details_doc" />
+            <action idref="details_space" />
+         </action-group>
+      </actions>
    </config>
    
    <config evaluator="string-compare" condition="Languages">

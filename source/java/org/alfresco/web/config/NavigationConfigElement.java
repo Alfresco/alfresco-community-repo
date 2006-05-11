@@ -123,36 +123,36 @@ public class NavigationConfigElement extends ConfigElementAdapter
     */
    public ConfigElement combine(ConfigElement configElement)
    {
-      NavigationConfigElement combined = new NavigationConfigElement();
+      NavigationConfigElement newElement = (NavigationConfigElement)configElement;
+      NavigationConfigElement combinedElement = new NavigationConfigElement();
 
       // add all the existing from view id overrides
       for (String fromViewId : this.viewIds.keySet())
       {
-         combined.addOverride(fromViewId, null, this.viewIds.get(fromViewId));
+         combinedElement.addOverride(fromViewId, null, this.viewIds.get(fromViewId));
       }
       
       // add all the existing from outcome overrides
       for (String fromOutcome : this.outcomes.keySet())
       {
-         combined.addOverride(null, fromOutcome, this.outcomes.get(fromOutcome));
+         combinedElement.addOverride(null, fromOutcome, this.outcomes.get(fromOutcome));
       }
       
       // add all the from view id overrides from the given element
-      NavigationConfigElement navCfg = (NavigationConfigElement)configElement;
-      HashMap<String, NavigationResult> viewIds = navCfg.getViewIds(); 
+      HashMap<String, NavigationResult> viewIds = newElement.getViewIds(); 
       for (String fromViewId : viewIds.keySet())
       {
-         combined.addOverride(fromViewId, null, viewIds.get(fromViewId));
+         combinedElement.addOverride(fromViewId, null, viewIds.get(fromViewId));
       }
       
       // add all the from outcome overrides from the given element
-      HashMap<String, NavigationResult> outcomes = navCfg.getOutcomes();
+      HashMap<String, NavigationResult> outcomes = newElement.getOutcomes();
       for (String fromOutcome : outcomes.keySet())
       {
-         combined.addOverride(null, fromOutcome, outcomes.get(fromOutcome));
+         combinedElement.addOverride(null, fromOutcome, outcomes.get(fromOutcome));
       }
       
-      return combined;
+      return combinedElement;
    }
    
    /**

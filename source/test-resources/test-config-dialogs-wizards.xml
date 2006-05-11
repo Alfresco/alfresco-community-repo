@@ -7,7 +7,7 @@
       </element-readers>
    </plug-ins>
    
-   <config evalutor="string-compare" condition="Dialogs">
+   <config evaluator="string-compare" condition="Dialogs">
       <dialog-container>/jsp/dialog/container.jsp</dialog-container>
 
       <dialogs>
@@ -22,7 +22,7 @@
       </dialogs>
    </config>
    
-   <config evalutor="string-compare" condition="Wizards">
+   <config evaluator="string-compare" condition="Wizards">
       <wizard-container>/jsp/wizard/container.jsp</wizard-container>
    
       <wizards>

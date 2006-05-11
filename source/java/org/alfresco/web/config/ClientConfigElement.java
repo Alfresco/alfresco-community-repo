@@ -63,88 +63,88 @@ public class ClientConfigElement extends ConfigElementAdapter
     */
    public ConfigElement combine(ConfigElement configElement)
    {
-      ClientConfigElement existingElement = (ClientConfigElement)configElement;
-      ClientConfigElement newElement = new ClientConfigElement();
+      ClientConfigElement newElement = (ClientConfigElement)configElement;
+      ClientConfigElement combinedElement = new ClientConfigElement();
       
       // set those values that have changed
-      if (existingElement.getEditLinkType() == null)
+      if (newElement.getEditLinkType() == null)
       {
-         newElement.setEditLinkType(this.editLinkType);
+         combinedElement.setEditLinkType(this.editLinkType);
       }
       else
       {
-         newElement.setEditLinkType(existingElement.getEditLinkType());
+         combinedElement.setEditLinkType(newElement.getEditLinkType());
       }
       
-      if (existingElement.getErrorPage() == null)
+      if (newElement.getErrorPage() == null)
       {
-         newElement.setErrorPage(this.errorPage);
+         combinedElement.setErrorPage(this.errorPage);
       }
       else
       {     
-         newElement.setErrorPage(existingElement.getErrorPage());
+         combinedElement.setErrorPage(newElement.getErrorPage());
       }
       
-      if (existingElement.getLoginPage() == null)
+      if (newElement.getLoginPage() == null)
       {
-         newElement.setLoginPage(this.loginPage);
+         combinedElement.setLoginPage(this.loginPage);
       }
       else
       {
-         newElement.setLoginPage(existingElement.getLoginPage());
+         combinedElement.setLoginPage(newElement.getLoginPage());
       }
       
-      if (existingElement.getHelpUrl() == null )
+      if (newElement.getHelpUrl() == null )
       {
-         newElement.setHelpUrl(this.helpUrl);
+         combinedElement.setHelpUrl(this.helpUrl);
       }
       else
       {
-         newElement.setHelpUrl(existingElement.getHelpUrl());
+         combinedElement.setHelpUrl(newElement.getHelpUrl());
       }
       
-      if (existingElement.getHomeSpacePermission() == null)
+      if (newElement.getHomeSpacePermission() == null)
       {
-         newElement.setHomeSpacePermission(this.homeSpacePermission);
+         combinedElement.setHomeSpacePermission(this.homeSpacePermission);
       }
       else
       {
-         newElement.setHomeSpacePermission(existingElement.getHomeSpacePermission());
+         combinedElement.setHomeSpacePermission(newElement.getHomeSpacePermission());
       }
       
       // override default values if they have changed
-      if (existingElement.getRecentSpacesItems() != newElement.getRecentSpacesItems())
+      if (newElement.getRecentSpacesItems() != combinedElement.getRecentSpacesItems())
       {
-         newElement.setRecentSpacesItems(existingElement.getRecentSpacesItems());
+         combinedElement.setRecentSpacesItems(newElement.getRecentSpacesItems());
       }
       
-      if (existingElement.getSearchMinimum() != newElement.getSearchMinimum())
+      if (newElement.getSearchMinimum() != combinedElement.getSearchMinimum())
       {
-         newElement.setSearchMinimum(existingElement.getSearchMinimum());
+         combinedElement.setSearchMinimum(newElement.getSearchMinimum());
       }
       
-      if (existingElement.getForceAndTerms() != newElement.getForceAndTerms())
+      if (newElement.getForceAndTerms() != combinedElement.getForceAndTerms())
       {
-         newElement.setForceAndTerms(existingElement.getForceAndTerms());
+         combinedElement.setForceAndTerms(newElement.getForceAndTerms());
       }
       
-      if (existingElement.getSearchMaxResults() != newElement.getSearchMaxResults())
+      if (newElement.getSearchMaxResults() != combinedElement.getSearchMaxResults())
       {
-         newElement.setSearchMaxResults(existingElement.getSearchMaxResults());
+         combinedElement.setSearchMaxResults(newElement.getSearchMaxResults());
       }
       
-      if (existingElement.isShelfVisible() != newElement.isShelfVisible())
+      if (newElement.isShelfVisible() != combinedElement.isShelfVisible())
       {
-         newElement.setShelfVisible(existingElement.isShelfVisible());
+         combinedElement.setShelfVisible(newElement.isShelfVisible());
       }
       
-      if (existingElement.getFromEmailAddress() != null && 
-          (existingElement.getFromEmailAddress().equals(newElement.getFromEmailAddress()) == false))
+      if (newElement.getFromEmailAddress() != null && 
+          (newElement.getFromEmailAddress().equals(combinedElement.getFromEmailAddress()) == false))
       {
-         newElement.setFromEmailAddress(existingElement.getFromEmailAddress());
+         combinedElement.setFromEmailAddress(newElement.getFromEmailAddress());
       }
       
-      return newElement;
+      return combinedElement;
    }
    
    /**

@@ -1,6 +1,6 @@
 <alfresco-config>
 
-	<config evalutor="string-compare" condition="Dialogs">
+	<config evaluator="string-compare" condition="Dialogs">
       <dialog-container>/jsp/dialog/container.jsp</dialog-container>
 
       <dialogs>

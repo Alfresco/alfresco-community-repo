@@ -1,6 +1,6 @@
 <alfresco-config>
 
-   <config evaluator="string-compare" condition="Actions">
+   <config>
       <actions>
          <!-- each action is defined individually and then referenced in an 'action-group' block
               via an 'idref' attribute specifing the action definition to use -->
@@ -430,9 +430,9 @@
             <image>/images/icons/action.gif</image>
             <action>wizard:runAction</action>   
             <action-listener>#{WizardManager.setupParameters}</action-listener>
-		    <params>
-		       <param name="id">#{actionContext.id}</param>
-		    </params>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
          </action>
          
          <!-- Import into Space -->

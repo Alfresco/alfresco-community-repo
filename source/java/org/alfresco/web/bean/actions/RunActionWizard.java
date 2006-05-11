@@ -1,13 +1,21 @@
 package org.alfresco.web.bean.actions;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.data.IDataContainer;
+import org.alfresco.web.data.QuickSort;
 
 /**
  * Bean implementation for the "Run Action" wizard.
@@ -37,10 +45,36 @@ public class RunActionWizard extends BaseActionWizard
          action.setParameterValues(repoActionParams);
          
          // execute the action on the current document node
-         this.actionService.executeAction(action, this.browseBean.getDocument().getNodeRef());
+         NodeRef nodeRef = new NodeRef(Repository.getStoreRef(), this.parameters.get("id"));
+         this.actionService.executeAction(action, nodeRef);
       }
 
       return outcome;
+   }
+   
+   @Override
+   public List<SelectItem> getActions()
+   {
+      if (this.actions == null)
+      {
+         NodeRef nodeRef = new NodeRef(Repository.getStoreRef(), this.parameters.get("id"));
+         List<ActionDefinition> ruleActions = this.actionService.getActionDefinitions(nodeRef);
+         this.actions = new ArrayList<SelectItem>();
+         for (ActionDefinition ruleActionDef : ruleActions)
+         {
+            this.actions.add(new SelectItem(ruleActionDef.getName(), ruleActionDef.getTitle()));
+         }
+         
+         // make sure the list is sorted by the label
+         QuickSort sorter = new QuickSort(this.actions, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+         sorter.sort();
+         
+         // add the select an action item at the start of the list
+         this.actions.add(0, new SelectItem("null", 
+               Application.getMessage(FacesContext.getCurrentInstance(), "select_an_action")));
+      }
+      
+      return this.actions;
    }
    
    @Override

@@ -263,6 +263,7 @@
             <action idref="discuss_node" />
             <action idref="create_forum_node" />
             <action idref="preview_space" />
+            <action idref="run_action" />
          </action-group>
          
          <!-- Actions Menu for Forums Details page -->

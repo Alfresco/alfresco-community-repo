@@ -56,6 +56,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  */
 public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements PermissionsDaoComponent
 {
+    private static final boolean INHERIT_PERMISSIONS_DEFAULT = true;
     public static final String QUERY_GET_PERMISSION = "permission.GetPermission";
     public static final String QUERY_GET_AC_ENTRIES_FOR_AUTHORITY = "permission.GetAccessControlEntriesForAuthority";
     public static final String QUERY_GET_AC_ENTRIES_FOR_PERMISSION = "permission.GetAccessControlEntriesForPermission";
@@ -90,9 +91,13 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         {
             return npe;
         }
-        Node node = getNode(nodeRef);
-        // get the persisted version
-        DbAccessControlList acl = getAccessControlList(node, false);
+        DbAccessControlList acl = null;
+        Node node = getNode(nodeRef, false);
+        if (node != null)
+        {
+            // get the persisted version
+            acl = getAccessControlList(node, false);
+        }
         if (acl == null)
         {
             // there isn't an access control list for the node - spoof a null one
@@ -147,7 +152,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     {
         DbAccessControlList acl = new DbAccessControlListImpl();
         acl.setNode(node);
-        acl.setInherits(true);
+        acl.setInherits(INHERIT_PERMISSIONS_DEFAULT);
         getHibernateTemplate().save(acl);
         
         // maintain inverse
@@ -168,12 +173,14 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
 
     /**
      * @param nodeRef the node reference
-     * @return Returns the node for the given reference, or null
+     * @param mustExist true if an exception must be thrown if the node does not exist
+     * @return Returns the node for the given reference, or null if <code>mustExist == false</code>
+     * @throws InvalidNodeRefException if the node must exist but doesn't
      */
-    private Node getNode(NodeRef nodeRef)
+    private Node getNode(NodeRef nodeRef, boolean mustExist)
     {
         Node node = nodeDaoService.getNode(nodeRef);
-        if (node == null)
+        if (node == null && mustExist)
         {
             throw new InvalidNodeRefException(nodeRef);
         }
@@ -182,7 +189,11 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
 
     public void deletePermissions(NodeRef nodeRef)
     {
-        Node node = getNode(nodeRef);
+        Node node = getNode(nodeRef, false);
+        if (node == null)
+        {
+            return;
+        }
         DbAccessControlList acl = getAccessControlList(node, false);
         if (acl != null)
         {
@@ -217,7 +228,11 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
 
     public void deletePermissions(final NodeRef nodeRef, final String authority)
     {
-        Node node = getNode(nodeRef);
+        Node node = getNode(nodeRef, false);
+        if (node == null)
+        {
+            return;
+        }
         DbAccessControlList acl = node.getAccessControlList();
         int deletedCount = 0;
         if (acl != null)
@@ -240,7 +255,11 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
      */
     public void deletePermission(NodeRef nodeRef, String authority, PermissionReference permission)
     {
-        Node node = getNode(nodeRef);
+        Node node = getNode(nodeRef, false);
+        if (node == null)
+        {
+            return;
+        }
         DbAccessControlList acl = node.getAccessControlList();
         int deletedCount = 0;
         if (acl != null)
@@ -260,7 +279,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
 
     public void setPermission(NodeRef nodeRef, String authority, PermissionReference permission, boolean allow)
     {
-        Node node = getNode(nodeRef);
+        Node node = getNode(nodeRef, true);
         // get the entry
         DbAccessControlEntry entry = getAccessControlEntry(node, authority, permission);
         if (entry == null)
@@ -372,7 +391,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     public void setPermission(NodePermissionEntry nodePermissionEntry)
     {
         NodeRef nodeRef = nodePermissionEntry.getNodeRef();
-        Node node = getNode(nodeRef);
+        Node node = getNode(nodeRef, true);
 
         // Get the access control list
         //   Note the logic here requires to know whether it was created or not
@@ -407,7 +426,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
 
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions)
     {
-        Node node = getNode(nodeRef);
+        Node node = getNode(nodeRef, true);
 
         DbAccessControlList acl = null;
         if (!inheritParentPermissions)
@@ -428,7 +447,11 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     
     public boolean getInheritParentPermissions(NodeRef nodeRef)
     {
-        Node node = getNode(nodeRef);
+        Node node = getNode(nodeRef, false);
+        if (node == null)
+        {
+            return INHERIT_PERMISSIONS_DEFAULT;
+        }
 
         DbAccessControlList acl = getAccessControlList(node, false);
         if (acl == null)

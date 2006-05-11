@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.dictionary.constraint;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,6 +24,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.dictionary.DictionaryDAOTest;
 import org.alfresco.service.cmr.dictionary.Constraint;
@@ -38,6 +40,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryException;
  * 
  * @author Derek Hulley
  */
+@SuppressWarnings("unused")
 public class ConstraintsTest extends TestCase
 {
     @Override
@@ -229,10 +232,8 @@ public class ConstraintsTest extends TestCase
     public void testRegexConstraintFilename() throws Exception
     {
         // we assume UTF-8
-        String expression = ".*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|\\xA3\\xAC\\%\\&\\+\\;]+.*";
-        String invalidChars = "\"*\\><?/:|%&+;";
-        // TODO: re-instate these after talking to Derek
-        String temp = "¬£";
+        String expression = new String(".*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|\\¬\\£\\%\\&\\+\\;]+.*".getBytes("UTF-8"));
+        String invalidChars = new String("\"*\\><?/:|%&+;¬£".getBytes("UTF-8"));
         
         RegexConstraint constraint = new RegexConstraint();
         constraint.setExpression(expression);

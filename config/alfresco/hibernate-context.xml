@@ -65,6 +65,7 @@
                 <prop key="org.alfresco.repo.domain.hibernate.NodeImpl.sourceNodeAssocs">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.NodeImpl.targetNodeAssocs">${cache.strategy}</prop>
 
+                <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl.entries">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.DbAuthorityImpl.externalKeys">${cache.strategy}</prop>
             </props>
         </property>

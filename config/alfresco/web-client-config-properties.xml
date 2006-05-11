@@ -44,19 +44,32 @@
    </config>
 
    <config evaluator="node-type" condition="dictionaryModel">
-      <property-sheet>      
+      <property-sheet>  
+         <show-property name="name" />
+         <show-property name="mimetype" display-label-id="content_type" 
+                        component-generator="MimeTypeSelectorGenerator" />
+         <show-property name="title" />
+         <show-property name="description" />
+         <show-property name="size" display-label-id="size" 
+                        converter="org.alfresco.faces.ByteSizeConverter" 
+                        show-in-edit-mode="false" />    
 	     <show-property name="modelActive"/>
       </property-sheet>
    </config>
    
    <config evaluator="node-type" condition="app:filelink">
       <property-sheet>
+         <show-property name="name" />
+         <show-property name="title" />
+         <show-property name="description" />
          <show-property name="destination" converter="org.alfresco.faces.DisplayPathConverter"/>
       </property-sheet>
    </config>
    
    <config evaluator="node-type" condition="app:folderlink">
       <property-sheet>
+         <show-property name="name" />
+         <show-property name="description" />
          <show-property name="destination" converter="org.alfresco.faces.DisplayPathConverter"/>
       </property-sheet>
    </config>

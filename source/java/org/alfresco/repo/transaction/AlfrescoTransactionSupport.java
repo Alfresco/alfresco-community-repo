@@ -523,6 +523,11 @@ public abstract class AlfrescoTransactionSupport
             {
                 listener.flush();
             }
+            // flush changes
+            for (NodeDaoService nodeDaoServices : getNodeDaoServices())
+            {
+                nodeDaoServices.flush();
+            }
         }
         
         /**

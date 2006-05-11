@@ -118,6 +118,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     }
 
     /**
+     * Just flushes the session
+     */
+    public void flush()
+    {
+        getSession().flush();
+    }
+
+    /**
      * @see #QUERY_GET_ALL_STORES
      */
     @SuppressWarnings("unchecked")
@@ -337,7 +345,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         assoc.setTypeQName(assocTypeQName);
         assoc.setIsPrimary(isPrimary);
         assoc.setQname(qname);
-//        assoc.setIsArchived(false);
         assoc.buildAssociation(parentNode, childNode);
         // persist
         getHibernateTemplate().save(assoc);
@@ -450,7 +457,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     {
         NodeAssoc assoc = new NodeAssocImpl();
         assoc.setTypeQName(assocTypeQName);
-//        assoc.setIsArchived(false);
         assoc.buildAssociation(sourceNode, targetNode);
         // persist
         getHibernateTemplate().save(assoc);

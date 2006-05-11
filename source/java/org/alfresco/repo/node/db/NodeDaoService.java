@@ -43,6 +43,11 @@ public interface NodeDaoService
     public boolean isDirty();
     
     /**
+     * Flush the data changes to the persistence layer.
+     */
+    public void flush();
+    
+    /**
      * Fetch a list of all stores in the repository
      * 
      * @return Returns a list of stores

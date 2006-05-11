@@ -1,13 +1,19 @@
 package org.alfresco.web.bean.content;
 
 import java.io.File;
+import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Node;
@@ -29,6 +35,25 @@ public class AddContentDialog extends BaseContentWizard
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception
    {
+      // Try and extract metadata from the file
+      ContentReader cr = new FileContentReader(this.file);
+      cr.setMimetype(this.mimeType);
+      // create properties for content type
+      Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>(5, 1.0f);
+      
+      if (Repository.extractMetadata(FacesContext.getCurrentInstance(), cr, contentProps))
+      {
+         this.author = (String)(contentProps.get(ContentModel.PROP_AUTHOR));
+         this.title = (String)(contentProps.get(ContentModel.PROP_TITLE));
+         this.description = (String)(contentProps.get(ContentModel.PROP_DESCRIPTION));
+      }
+      
+      // default the title to the file name if not set
+      if (this.title == null)
+      {
+         this.title = this.fileName;
+      }
+         
       saveContent(this.file, null);
       
       // return default outcome

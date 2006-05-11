@@ -923,6 +923,10 @@
          <from-outcome>deleteListedItems</from-outcome>
          <to-view-id>/jsp/trashcan/delete-listed.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>itemDetails</from-outcome>
+         <to-view-id>/jsp/trashcan/item-details.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
 
 </faces-config>

@@ -106,7 +106,7 @@
                               <table cellpadding="2" cellspacing="2" border="0">
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td class="mainSubText">1. <h:outputText value="#{msg.locate_document}"/></td>
+                                    <td class="mainSubText">1. <h:outputText value="#{msg.locate_doc_upload}"/></td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
                                  <r:uploadForm>

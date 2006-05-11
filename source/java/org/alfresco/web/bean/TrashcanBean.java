@@ -17,8 +17,10 @@
 package org.alfresco.web.bean;
 
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +44,7 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.CachingDateFormat;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.bean.repository.MapNode;
@@ -49,8 +52,11 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.QNameNodeMap;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wizard.NewSpaceWizard;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 
 /**
@@ -58,6 +64,15 @@ import org.alfresco.web.ui.common.component.data.UIRichList;
  */
 public class TrashcanBean implements IContextListener
 {
+   private static final String FILTER_DATE_ALL    = "all";
+   private static final String FILTER_DATE_TODAY  = "today";
+   private static final String FILTER_DATE_WEEK   = "week";
+   private static final String FILTER_DATE_MONTH  = "month";
+   private static final String FILTER_USER_ALL    = "all";
+   private static final String FILTER_USER_USER   = "user";
+   
+   private static final String MSG_DELETED_ITEMS_FOR = "deleted_items_for";
+   private static final String MSG_DELETED_ITEMS = "deleted_items";
    private static final String MSG_RECOVERED_ITEM_INTEGRITY = "recovered_item_integrity";
    private static final String MSG_RECOVERED_ITEM_PERMISSION = "recovered_item_permission";
    private static final String MSG_RECOVERED_ITEM_PARENT = "recovered_item_parent";
@@ -69,11 +84,16 @@ public class TrashcanBean implements IContextListener
    private static final String RICHLIST_ID = "trashcan-list";
    private static final String RICHLIST_MSG_ID = "trashcan" + ':' + RICHLIST_ID;
    
-   private final static String NAME_ATTR   = Repository.escapeQName(ContentModel.PROP_NAME);
+   private final static String NAME_ATTR = Repository.escapeQName(ContentModel.PROP_NAME);
+   private final static String USER_ATTR = Repository.escapeQName(ContentModel.PROP_ARCHIVED_BY);
+   private final static String DATE_ATTR = Repository.escapeQName(ContentModel.PROP_ARCHIVED_DATE);
    
    private final static String SEARCH_ALL  = "PARENT:\"%s\" AND ASPECT:\"%s\"";
-   private final static String SEARCH_NAME = "PARENT:\"%s\" AND ASPECT:\"%s\" AND (@" + NAME_ATTR + ":*%s* TEXT:%s)";
-   private final static String SEARCH_NAME_QUOTED = "PARENT:\"%s\" AND ASPECT:\"%s\" AND (@" + NAME_ATTR + ":\"%s\" TEXT:\"%s\")";
+   private final static String SEARCH_NAME = "PARENT:\"%s\" AND ASPECT:\"%s\" AND @" + NAME_ATTR + ":*%s*";
+   private final static String SEARCH_TEXT = "PARENT:\"%s\" AND ASPECT:\"%s\" AND TEXT:%s";
+   private final static String SEARCH_NAME_QUOTED = "PARENT:\"%s\" AND ASPECT:\"%s\" AND @" + NAME_ATTR + ":\"%s\"";
+   private final static String SEARCH_TEXT_QUOTED = "PARENT:\"%s\" AND ASPECT:\"%s\" AND TEXT:\"%s\"";
+   private final static String SEARCH_USERPREFIX  = "@" + USER_ATTR + ":%s AND ";
    
    /** NodeService bean reference */
    protected NodeService nodeService;
@@ -96,6 +116,8 @@ public class TrashcanBean implements IContextListener
    /** We show an empty list until a Search or Show All is executed */
    private boolean showItems = false;
    
+   private boolean fullTextSearch = false;
+   
    /** Currently listed items */
    private List<Node> listedItems = Collections.<Node>emptyList();
    
@@ -104,6 +126,18 @@ public class TrashcanBean implements IContextListener
    
    /** Root node to the spaces store archive store*/
    private NodeRef archiveRootRef = null;
+   
+   /** Alternative destination for recovered items */
+   private NodeRef destination = null;
+   
+   /** Date filter selection */
+   private String dateFilter = FILTER_DATE_ALL;
+   
+   /** User filter selection */
+   private String userFilter = FILTER_USER_ALL;
+   
+   /** User filter search box text */
+   private String userSearchText = null;
    
    
    // ------------------------------------------------------------------------------
@@ -174,6 +208,115 @@ public class TrashcanBean implements IContextListener
    }
    
    /**
+    * @return Returns the alternative destination to use if recovery fails. 
+    */
+   public NodeRef getDestination()
+   {
+      return this.destination;
+   }
+   
+   /**
+    * @param destination    The alternative destination to use if recovery fails.
+    */
+   public void setDestination(NodeRef destination)
+   {
+      this.destination = destination;
+   }
+   
+   /**
+    * @return Returns the dateFilter.
+    */
+   public String getDateFilter()
+   {
+      return this.dateFilter;
+   }
+
+   /**
+    * @param dateFilter The dateFilter to set.
+    */
+   public void setDateFilter(String dateFilter)
+   {
+      this.dateFilter = dateFilter;
+   }
+
+   /**
+    * @return Returns the userFilter.
+    */
+   public String getUserFilter()
+   {
+      return this.userFilter;
+   }
+
+   /**
+    * @param userFilter The userFilter to set.
+    */
+   public void setUserFilter(String userFilter)
+   {
+      this.userFilter = userFilter;
+   }
+
+   /**
+    * @return Returns the userSearchText.
+    */
+   public String getUserSearchText()
+   {
+      return this.userSearchText;
+   }
+
+   /**
+    * @param userSearchText The userSearchText to set.
+    */
+   public void setUserSearchText(String userSearchText)
+   {
+      this.userSearchText = userSearchText;
+   }
+
+   /**
+    * @return Message to display in the title of the panel area
+    */
+   public String getPanelMessage()
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      String msg = Application.getMessage(fc, MSG_DELETED_ITEMS);
+      if (isAdminUser() == false)
+      {
+         msg = msg + ' ' + MessageFormat.format(
+               Application.getMessage(fc, MSG_DELETED_ITEMS_FOR), Application.getCurrentUser(fc).getUserName());
+      }
+      return msg;
+   }
+   
+   /**
+    * Returns the URL to the content for the current document item
+    *  
+    * @return Content url to the current document item
+    */
+   public String getItemBrowserUrl()
+   {
+      return Utils.generateURL(FacesContext.getCurrentInstance(), getItem(), URLMode.HTTP_INLINE);
+   }
+
+   /**
+    * Returns the download URL to the content for the current document item
+    *  
+    * @return Download url to the current document item
+    */
+   public String getItemDownloadUrl()
+   {
+      return Utils.generateURL(FacesContext.getCurrentInstance(), getItem(), URLMode.HTTP_DOWNLOAD);
+   }
+   
+   /**
+    * Return the Alfresco NodeRef URL for the current item node
+    * 
+    * @return the Alfresco NodeRef URL
+    */
+   public String getItemNodeRefUrl()
+   {
+      return getItem().getNodeRef().toString();
+   }
+   
+   /**
     * @return Returns the listed items.
     */
    public List<Node> getListedItems()
@@ -224,7 +367,7 @@ public class TrashcanBean implements IContextListener
          // get the root node to the deleted items store
          if (getArchiveRootRef() != null && this.showItems == true)
          {
-            String query = getSearchQuery();
+            String query = buildSearchQuery();
             SearchParameters sp = new SearchParameters();
             sp.setLanguage(SearchService.LANGUAGE_LUCENE);
             sp.setQuery(query);
@@ -244,27 +387,24 @@ public class TrashcanBean implements IContextListener
                {
                   QName type = this.nodeService.getType(nodeRef);
                   
+                  MapNode node = new MapNode(nodeRef, this.nodeService, false);
+                  
+                  node.addPropertyResolver("locationPath", resolverLocationPath);
+                  node.addPropertyResolver("displayPath", resolverDisplayPath);
+                  node.addPropertyResolver("deletedDate", resolverDeletedDate);
+                  node.addPropertyResolver("deletedBy", resolverDeletedBy);
+                  node.addPropertyResolver("isFolder", resolverIsFolder);
+                  
                   if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true && 
                       this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                   {
-                     MapNode node = new MapNode(nodeRef, this.nodeService, false);
-                     node.addPropertyResolver("locationPath", resolverLocationPath);
-                     node.addPropertyResolver("displayPath", resolverDisplayPath);
-                     node.addPropertyResolver("deletedDate", resolverDeletedDate);
-                     node.addPropertyResolver("deletedBy", resolverDeletedBy);
                      node.addPropertyResolver("typeIcon", this.resolverSmallIcon);
-                     itemNodes.add(node);
                   }
                   else
                   {
-                     MapNode node = new MapNode(nodeRef, this.nodeService, false);
-                     node.addPropertyResolver("locationPath", resolverLocationPath);
-                     node.addPropertyResolver("displayPath", resolverDisplayPath);
-                     node.addPropertyResolver("deletedDate", resolverDeletedDate);
-                     node.addPropertyResolver("deletedBy", resolverDeletedBy);
                      node.addPropertyResolver("typeIcon", this.resolverFileType16);
-                     itemNodes.add(node);
                   }
+                  itemNodes.add(node);
                }
             }
          }
@@ -292,15 +432,12 @@ public class TrashcanBean implements IContextListener
    
    private NodePropertyResolver resolverLocationPath = new NodePropertyResolver() {
       public Object get(Node node) {
-         //ChildAssociationRef childRef = (ChildAssociationRef)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
-         //return nodeService.getPath(childRef.getChildRef());
          return (Path)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH);
       }
    };
    
    private NodePropertyResolver resolverDisplayPath = new NodePropertyResolver() {
       public Object get(Node node) {
-         //ChildAssociationRef childRef = (ChildAssociationRef)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
          return Repository.getDisplayPath((Path)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH));
       }
    };
@@ -319,6 +456,20 @@ public class TrashcanBean implements IContextListener
       }
    };
    
+   private NodePropertyResolver resolverFileType32 = new NodePropertyResolver() {
+      public Object get(Node node) {
+         return Utils.getFileTypeImage(node.getName(), false);
+      }
+   };
+   
+   private NodePropertyResolver resolverLargeIcon = new NodePropertyResolver() {
+      public Object get(Node node) {
+         QNameNodeMap props = (QNameNodeMap)node.getProperties();
+         String icon = (String)props.getRaw("app:icon");
+         return "/images/icons/" + (icon != null ? icon : NewSpaceWizard.SPACE_ICON_DEFAULT) + ".gif";
+      }
+   };
+   
    private NodePropertyResolver resolverDeletedDate = new NodePropertyResolver() {
       public Object get(Node node) {
          return node.getProperties().get(ContentModel.PROP_ARCHIVED_DATE);
@@ -331,23 +482,42 @@ public class TrashcanBean implements IContextListener
       }
    };
    
+   private NodePropertyResolver resolverIsFolder = new NodePropertyResolver() {
+      public Object get(Node node) {
+         return dictionaryService.isSubClass(node.getType(), ContentModel.TYPE_FOLDER);
+      }
+   };
+   
    
    // ------------------------------------------------------------------------------
    // Action handlers
    
    // TODO:
    //       need the following Action Handlers:
-   //          deleteItemOK, recoverItemOK, deleteAllItemsOK, recoverAllItemsOK, recoverListedItemsOK, deleteListedItemsOK
+   //          deleteAllItemsOK, recoverAllItemsOK, recoverListedItemsOK, deleteListedItemsOK
    
    /**
     * Search the deleted item store by name
     */
-   public void search(ActionEvent event)
+   public void searchName(ActionEvent event)
    {
       // simply clear the current list and refresh the screen
       // the search query text will be found and processed by the getItems() method
       contextUpdated();
       this.showItems = true;
+      this.fullTextSearch = false;
+   }
+   
+   /**
+    * Search the deleted item store by text
+    */
+   public void searchContent(ActionEvent event)
+   {
+      // simply clear the current list and refresh the screen
+      // the search query text will be found and processed by the getItems() method
+      contextUpdated();
+      this.showItems = true;
+      this.fullTextSearch = true;
    }
    
    /**
@@ -376,11 +546,24 @@ public class TrashcanBean implements IContextListener
             NodeRef ref = new NodeRef(getArchiveRootRef().getStoreRef(), id);
             Node node = new Node(ref);
             
-            // resolve icon in-case one has not been set
-            //node.addPropertyResolver("icon", this.resolverSpaceIcon);
+            node.addPropertyResolver("locationPath", resolverLocationPath);
+            node.addPropertyResolver("deletedDate", resolverDeletedDate);
+            node.addPropertyResolver("deletedBy", resolverDeletedBy);
+            node.addPropertyResolver("isFolder", resolverIsFolder);
+            
+            if (this.dictionaryService.isSubClass(node.getType(), ContentModel.TYPE_FOLDER) == true && 
+                this.dictionaryService.isSubClass(node.getType(), ContentModel.TYPE_SYSTEM_FOLDER) == false)
+            {
+               node.addPropertyResolver("icon", this.resolverLargeIcon);
+            }
+            else
+            {
+               node.addPropertyResolver("icon", this.resolverFileType32);
+            }
             
             // prepare a node for the action context
             setItem(node);
+            setDestination(null);
          }
          catch (InvalidNodeRefException refErr)
          {
@@ -397,6 +580,9 @@ public class TrashcanBean implements IContextListener
       contextUpdated();
    }
    
+   /**
+    * Delete single item OK button handler 
+    */
    public String deleteItemOK()
    {
       Node item = getItem();
@@ -421,6 +607,9 @@ public class TrashcanBean implements IContextListener
       return OUTCOME_DIALOGCLOSE;
    }
    
+   /**
+    * Recover single item OK button handler 
+    */
    public String recoverItemOK()
    {
       String outcome = null;
@@ -434,7 +623,16 @@ public class TrashcanBean implements IContextListener
             String msg;
             FacesMessage errorfacesMsg = null;
             
-            RestoreNodeReport report = this.nodeArchiveService.restoreArchivedNode(item.getNodeRef());
+            // restore the node - the user may have requested a restore to a different parent
+            RestoreNodeReport report;
+            if (this.destination == null)
+            {
+               report = this.nodeArchiveService.restoreArchivedNode(item.getNodeRef());
+            }
+            else
+            {
+               report = this.nodeArchiveService.restoreArchivedNode(item.getNodeRef(), this.destination, null, null);
+            }
             switch (report.getStatus())
             {
                case SUCCESS:
@@ -492,19 +690,33 @@ public class TrashcanBean implements IContextListener
    }
    
    /**
-    * Action handler to reset all filters and search
-    */
-   public void resetAll(ActionEvent event)
-   {
-      // TODO: reset all filter and search
-   }
-   
-   /**
     * Action handler to initially setup the trashcan screen
     */
    public void setupTrashcan(ActionEvent event)
    {
       contextUpdated();
+   }
+   
+   /**
+    * Action handler called when the Date filter is changed by the user
+    */
+   public void dateFilterChanged(ActionEvent event)
+   {
+      UIModeList filterComponent = (UIModeList)event.getComponent();
+      setDateFilter(filterComponent.getValue().toString());
+      contextUpdated();
+      this.showItems = true;
+   }
+   
+   /**
+    * Action handler called when the User filter is changed by the user
+    */
+   public void userFilterChanged(ActionEvent event)
+   {
+      UIModeList filterComponent = (UIModeList)event.getComponent();
+      setUserFilter(filterComponent.getValue().toString());
+      contextUpdated();
+      this.showItems = true;
    }
    
    
@@ -526,7 +738,7 @@ public class TrashcanBean implements IContextListener
    /**
     * @return the search query to use when displaying the list of deleted items
     */
-   private String getSearchQuery()
+   private String buildSearchQuery()
    {
       String query;
       if (this.searchText == null || this.searchText.length() == 0)
@@ -540,14 +752,82 @@ public class TrashcanBean implements IContextListener
          String safeText = QueryParser.escape(this.searchText);
          if (safeText.indexOf(' ') == -1)
          {
-            query = String.format(SEARCH_NAME, archiveRootRef, ContentModel.ASPECT_ARCHIVED, safeText, safeText);
+            if (this.fullTextSearch)
+            {
+               query = String.format(SEARCH_TEXT, archiveRootRef, ContentModel.ASPECT_ARCHIVED, safeText);
+            }
+            else
+            {
+               query = String.format(SEARCH_NAME, archiveRootRef, ContentModel.ASPECT_ARCHIVED, safeText);
+            }
          }
          else
          {
-            query = String.format(SEARCH_NAME_QUOTED, archiveRootRef, ContentModel.ASPECT_ARCHIVED, safeText, safeText);
+            if (this.fullTextSearch)
+            {
+               query = String.format(SEARCH_TEXT_QUOTED, archiveRootRef, ContentModel.ASPECT_ARCHIVED, safeText);
+            }
+            else
+            {
+               query = String.format(SEARCH_NAME_QUOTED, archiveRootRef, ContentModel.ASPECT_ARCHIVED, safeText);
+            }
          }
       }
+      
+      // append user search clause
+      String username = null;
+      if (isAdminUser() == false)
+      {
+         // prefix the current username
+         username = Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName();
+      }
+      else if (FILTER_USER_USER.equals(getUserFilter()))
+      {
+         // append the entered user if admin has requested a search
+         username = getUserSearchText();
+      }
+      if (username != null && username.length() != 0)
+      {
+         query = String.format(SEARCH_USERPREFIX, username) + query;
+      }
+      
+      // append date search clause
+      if (FILTER_DATE_ALL.equals(getDateFilter()) == false)
+      {
+         Date toDate = new Date();
+         Date fromDate = null;
+         if (FILTER_DATE_TODAY.equals(getDateFilter()))
+         {
+            fromDate = new Date(toDate.getYear(), toDate.getMonth(), toDate.getDate(), 0, 0, 0);
+         }
+         else if (FILTER_DATE_WEEK.equals(getDateFilter()))
+         {
+            fromDate = new Date(toDate.getTime() - (1000L*60L*60L*24L*7L));
+         }
+         else if (FILTER_DATE_MONTH.equals(getDateFilter()))
+         {
+            fromDate = new Date(toDate.getTime() - (1000L*60L*60L*24L*30L));
+         }
+         if (fromDate != null)
+         {
+            SimpleDateFormat df = CachingDateFormat.getDateFormat();
+            String strFromDate = QueryParser.escape(df.format(fromDate));
+            String strToDate = QueryParser.escape(df.format(toDate));
+            StringBuilder buf = new StringBuilder(128);
+            buf.append("@").append(DATE_ATTR)
+               .append(":").append("[").append(strFromDate)
+               .append(" TO ").append(strToDate).append("] AND ");
+            
+            query = buf.toString() + query;
+         }
+      }
+      
       return query;
+   }
+   
+   private boolean isAdminUser()
+   {
+      return Application.getCurrentUser(FacesContext.getCurrentInstance()).isAdmin();
    }
    
    

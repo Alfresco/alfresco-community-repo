@@ -10,7 +10,7 @@
             <!-- a list of permissions to evaluate action against before checking other preconditions -->
             <permissions>
                <!-- each permission can be an Allow or Deny check -->
-               <permission allow="true">Write</permission>
+               <permission allow="te">Write</permission>
                <permission allow="false">AddChildren</permission>
             </permissions>
             <!-- the evaluator is a class implementing the org.alfresco.web.action.ActionEvaluator contract,
@@ -318,7 +318,8 @@
             </permissions>
             <label-id>create_content</label-id>
             <image>/images/icons/new_content.gif</image>
-            <action>wizard:createContent</action>
+            <action>createContent</action>
+            <action-listener>#{CreateContentWizard.startWizard}</action-listener>
          </action>
          
          <!-- Create space -->
@@ -378,7 +379,6 @@
             </permissions>
             <label-id>manage_deleted_items</label-id>
             <image>/images/icons/trashcan.gif</image>
-            <action-listener>#{TrashcanBean.setupTrashcan}</action-listener>
             <action>dialog:manageDeletedItems</action>
          </action>
          
@@ -431,7 +431,11 @@
          <action id="run_action">
             <label-id>other_action</label-id>
             <image>/images/icons/action.gif</image>
-            <action>wizard:runAction</action>
+            <action>wizard:runAction</action>   
+            <action-listener>#{WizardManager.setupParameters}</action-listener>
+		    <params>
+		       <param name="id">#{actionContext.id}</param>
+		    </params>
          </action>
          
          <!-- Import into Space -->
@@ -581,6 +585,7 @@
             <action idref="manage_space_users" />
             <action idref="manage_space_rules" />
             <action idref="preview_space" />
+            <action idref="run_action" />
          </action-group>
          
          <!-- Actions Menu for File Link Details screen -->

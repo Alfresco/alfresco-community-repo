@@ -203,27 +203,25 @@
       <id name="id" column="id" type="long" >
          <generator class="native" />
       </id>
-      <natural-id mutable="true">
-         <!-- forward assoc to source node -->
-         <many-to-one
-               name="source"
-               class="org.alfresco.repo.domain.hibernate.NodeImpl"
-               lazy="false"
-               fetch="join"
-               not-null="true" >
-            <column name="source_node_id" />
-         </many-to-one>
-         <!-- forward assoc to target node -->
-         <many-to-one
-               name="target"
-               class="org.alfresco.repo.domain.hibernate.NodeImpl"
-               lazy="false"
-               fetch="join"
-               not-null="true" >
-            <column name="target_node_id" />
-         </many-to-one>
-         <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
-      </natural-id>
+      <!-- forward assoc to source node -->
+      <many-to-one
+            name="source"
+            class="org.alfresco.repo.domain.hibernate.NodeImpl"
+            lazy="false"
+            fetch="join"
+            not-null="true" >
+         <column name="source_node_id" />
+      </many-to-one>
+      <!-- forward assoc to target node -->
+      <many-to-one
+            name="target"
+            class="org.alfresco.repo.domain.hibernate.NodeImpl"
+            lazy="false"
+            fetch="join"
+            not-null="true" >
+         <column name="target_node_id" />
+      </many-to-one>
+      <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
    </class>
    
    <query name="store.GetAllStores">

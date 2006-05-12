@@ -23,6 +23,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.Provider;
 import java.security.Security;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.List;
@@ -1430,7 +1431,15 @@ public class ServerConfiguration implements ApplicationListener
         {
             // Check for the old style configuration
             
-            filesysElems = config.getConfigElementList( "filesystem");
+            ConfigElement filesysElem = config.getConfigElement( "filesystem");
+            
+            if (filesysElem != null)
+            {
+               // create a list with the single filesys element in
+               
+               filesysElems = new ArrayList<ConfigElement>(1);
+               filesysElems.add(filesysElem);
+            }
             
             // Warn that the configuration is using the old format
             

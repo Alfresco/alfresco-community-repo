@@ -30,6 +30,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -56,6 +57,7 @@ public class ArchiveAndRestoreTest extends TestCase
 {
     private static final String USER_A = "AAAAA";
     private static final String USER_B = "BBBBB";
+    private static final QName ASPECT_ATTACHABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "attachable");
     private static final QName ASSOC_ATTACHMENTS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "attachments");
     private static final QName QNAME_A = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "a");
     private static final QName QNAME_B = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "b");
@@ -194,6 +196,7 @@ public class ArchiveAndRestoreTest extends TestCase
                 QNAME_A,
                 ContentModel.TYPE_FOLDER,
                 properties).getChildRef();
+        nodeService.addAspect(a, ASPECT_ATTACHABLE, null);
         properties.put(ContentModel.PROP_NODE_UUID, "aa");
         childAssocAtoAA = nodeService.createNode(
                 a,
@@ -202,6 +205,7 @@ public class ArchiveAndRestoreTest extends TestCase
                 ContentModel.TYPE_CONTENT,
                 properties);
         aa = childAssocAtoAA.getChildRef();
+        nodeService.addAspect(aa, ASPECT_ATTACHABLE, null);
         properties.put(ContentModel.PROP_NODE_UUID, "b");
         b = nodeService.createNode(
                 workStoreRootNodeRef,
@@ -326,6 +330,9 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyNodeExistence(b_, false);
         verifyNodeExistence(bb_, true);
         
+        // flush
+        AlfrescoTransactionSupport.flush();
+        
         // check that the required properties are present and correct
         Map<QName, Serializable> bb_Properties = nodeService.getProperties(bb_);
         Path bb_originalPath = (Path) bb_Properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH);
@@ -351,6 +358,9 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyNodeExistence(bb_, true);
         verifyChildAssocExistence(childAssocBtoBB_, true);
         
+        // flush
+        AlfrescoTransactionSupport.flush();
+        
         // restore the node
         nodeService.restoreNode(b_, null, null, null);
         // check
@@ -362,6 +372,10 @@ public class ArchiveAndRestoreTest extends TestCase
         // delete both trees in order 'b', 'a'
         nodeService.deleteNode(b);
         nodeService.deleteNode(a);
+
+        // flush
+        AlfrescoTransactionSupport.flush();
+        
         // restore in reverse order
         nodeService.restoreNode(a_, null, null, null);
         nodeService.restoreNode(b_, null, null, null);
@@ -374,6 +388,10 @@ public class ArchiveAndRestoreTest extends TestCase
         // delete both trees in order 'b', 'a'
         nodeService.deleteNode(a);
         nodeService.deleteNode(b);
+
+        // flush
+        AlfrescoTransactionSupport.flush();
+        
         // restore in reverse order
         nodeService.restoreNode(b_, null, null, null);
         nodeService.restoreNode(a_, null, null, null);
@@ -386,6 +404,10 @@ public class ArchiveAndRestoreTest extends TestCase
         // delete a then b
         nodeService.deleteNode(a);
         nodeService.deleteNode(b);
+
+        // flush
+        AlfrescoTransactionSupport.flush();
+        
         // in restoring 'a' first, there will be some associations that won't be recreated
         nodeService.restoreNode(a_, null, null, null);
         nodeService.restoreNode(b_, null, null, null);
@@ -438,6 +460,10 @@ public class ArchiveAndRestoreTest extends TestCase
             nodeService.deleteNode(b);
             long end = System.nanoTime();
             cumulatedArchiveTimeNs += (end - start);
+
+            // flush
+            AlfrescoTransactionSupport.flush();
+            
             // now restore
             start = System.nanoTime();
             nodeService.restoreNode(b_, null, null, null);
@@ -564,5 +590,22 @@ public class ArchiveAndRestoreTest extends TestCase
 //        // user B can't see archived 'a'
 //        List<RestoreNodeReport> restoredByB = nodeArchiveService.restoreAllArchivedNodes(workStoreRef);
 //        assertEquals("User B should not have seen A's delete", 1, restoredByB.size());
+//    }
+//    
+//    /**
+//     * Deny the current user the rights to write to the destination location
+//     * and ensure that the use-case is handled properly.
+//     */
+//    public void testPermissionsLackingOnDestination() throws Exception
+//    {
+//        // remove 'b', deny permissions to workspace root and attempt a restore
+//        nodeService.deleteNode(b);
+//        permissionService.setPermission(workStoreRootNodeRef, USER_B, PermissionService.ADD_CHILDREN, false);
+//        commitAndBeginNewTransaction();
+//        
+//        // the restore of b should fail for user B
+//        authenticationService.authenticate(USER_B, USER_B.toCharArray());
+//        RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(b_);
+//        assertEquals("Expected permission denied status", RestoreStatus.FAILURE_PERMISSION, report.getStatus());
 //    }
 }

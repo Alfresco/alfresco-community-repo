@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -38,6 +40,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -55,6 +58,8 @@ public class FileImporterImpl implements FileImporter
     private DictionaryService dictionaryService;
     private ContentService contentService;
     private MimetypeService mimetypeService;
+    private TransactionService transactionService;
+    private boolean txnPerFile = false;
 
     public FileImporterImpl()
     {
@@ -63,30 +68,75 @@ public class FileImporterImpl implements FileImporter
 
     public int loadFile(NodeRef container, File file, boolean recurse) throws FileImporterException
     {
-        Counter counter = new Counter();
-        create(counter, container, file, null, recurse, null);
-        return counter.getCount();
+        try
+        {
+            Counter counter = new Counter();
+            create(counter, container, file, null, recurse, null);
+            return counter.getCount();
+        }
+        catch (Throwable e)
+        {
+            throw new FileImporterException("Failed to load file: \n" +
+                    "   container: " + container + "\n" +
+                    "   file: " + file + "\n" +
+                    "   recurse: " + recurse,
+                    e);
+        }
     }
     
     public int loadNamedFile(NodeRef container, File file, boolean recurse, String name) throws FileImporterException
     {
-        Counter counter = new Counter();
-        create(counter, container, file, null, recurse, name);
-        return counter.getCount();
+        try
+        {
+            Counter counter = new Counter();
+            create(counter, container, file, null, recurse, name);
+            return counter.getCount();
+        }
+        catch (Throwable e)
+        {
+            throw new FileImporterException("Failed to load file: \n" +
+                    "   container: " + container + "\n" +
+                    "   file: " + file + "\n" +
+                    "   name: " + name + "\n" +
+                    "   recurse: " + recurse,
+                    e);
+        }
     }
 
     public int loadFile(NodeRef container, File file, FileFilter filter, boolean recurse) throws FileImporterException
     {
-        Counter counter = new Counter();
-        create(counter, container, file, filter, recurse, null);
-        return counter.getCount();
+        try
+        {
+            Counter counter = new Counter();
+            create(counter, container, file, filter, recurse, null);
+            return counter.getCount();
+        }
+        catch (Throwable e)
+        {
+            throw new FileImporterException("Failed to load file: \n" +
+                    "   container: " + container + "\n" +
+                    "   file: " + file + "\n" +
+                    "   filter: " + filter + "\n" +
+                    "   recurse: " + recurse,
+                    e);
+        }
     }
 
     public int loadFile(NodeRef container, File file) throws FileImporterException
     {
-        Counter counter = new Counter();
-        create(counter, container, file, null, false, null);
-        return counter.getCount();
+        try
+        {
+            Counter counter = new Counter();
+            create(counter, container, file, null, false, null);
+            return counter.getCount();
+        }
+        catch (Throwable e)
+        {
+            throw new FileImporterException("Failed to load file: \n" +
+                    "   container: " + container + "\n" +
+                    "   file: " + file,
+                    e);
+        }
     }
     
     /** Helper class for mutable int */
@@ -103,9 +153,15 @@ public class FileImporterImpl implements FileImporter
         }
     }
 
-    private NodeRef create(Counter counter, NodeRef container, File file, FileFilter filter, boolean recurse, String containerName)
+    private NodeRef create(
+            Counter counter,
+            final NodeRef container,
+            final File file,
+            FileFilter filter,
+            boolean recurse,
+            String containerName) throws Exception
     {
-        if(containerName != null)
+        if (containerName != null)
         {
             NodeRef newContainer = createDirectory(container, containerName, containerName);
             return create(counter, newContainer, file, filter, recurse, null);
@@ -113,10 +169,27 @@ public class FileImporterImpl implements FileImporter
         }
         if (file.isDirectory())
         {
-            NodeRef directoryNodeRef = createDirectory(container, file);
             counter.increment();
+            TransactionWork<NodeRef> createDirectoryWork = new TransactionWork<NodeRef>()
+            {
+                public NodeRef doWork() throws Exception
+                {
+                    return createDirectory(container, file);
+                }
+            };
+            NodeRef directoryNodeRef = null;
+            if (txnPerFile)
+            {
+                directoryNodeRef = TransactionUtil.executeInUserTransaction(
+                        transactionService,
+                        createDirectoryWork);
+            }
+            else
+            {
+                directoryNodeRef = createDirectoryWork.doWork();
+            }
             
-            if(recurse)
+            if (recurse)
             {
                 File[] files = ((filter == null) ? file.listFiles() : file.listFiles(filter));
                 for(int i = 0; i < files.length; i++)
@@ -130,7 +203,25 @@ public class FileImporterImpl implements FileImporter
         else
         {
             counter.increment();
-            return createFile(container, file);
+            TransactionWork<NodeRef> createFileWork = new TransactionWork<NodeRef>()
+            {
+                public NodeRef doWork() throws Exception
+                {
+                    return createFile(container, file);
+                }
+            };
+            NodeRef fileNodeRef = null;
+            if (txnPerFile)
+            {
+                fileNodeRef = TransactionUtil.executeInUserTransaction(
+                        transactionService,
+                        createFileWork);
+            }
+            else
+            {
+                fileNodeRef = createFileWork.doWork();
+            }
+            return fileNodeRef;
         }
     }
 
@@ -290,5 +381,19 @@ public class FileImporterImpl implements FileImporter
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
+    /**
+     * @param txnPerFile true to force each file or directory creation to be in its
+     *      own file
+     */
+    public void setTxnPerFile(boolean txnPerFile)
+    {
+        this.txnPerFile = txnPerFile;
     }
 }

@@ -116,7 +116,6 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
      * 
      * TODO: Consider if this information needs to be persisted for recovery
      */
-
     private Set<NodeRef> deletions = new LinkedHashSet<NodeRef>();
 
     /**
@@ -1738,6 +1737,11 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                     {
                         // Document document = helper.document;
                         NodeRef ref = helper.nodeRef;
+                        // bypass nodes that have disappeared
+                        if (!nodeService.exists(ref))
+                        {
+                            continue;
+                        }
 
                         List<Document> docs = createDocuments(ref, false, true, false);
                         for (Document doc : docs)

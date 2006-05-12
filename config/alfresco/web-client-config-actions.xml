@@ -318,8 +318,7 @@
             </permissions>
             <label-id>create_content</label-id>
             <image>/images/icons/new_content.gif</image>
-            <action>createContent</action>
-            <action-listener>#{CreateContentWizard.startWizard}</action-listener>
+            <action>wizard:createContent</action>
          </action>
          
          <!-- Create space -->
@@ -330,7 +329,6 @@
             <label-id>create_space</label-id>
             <image>/images/icons/create_space.gif</image>
             <action>dialog:createSpace</action>
-            <!-- <action-listener>#{NewSpaceDialog.startWizard}</action-listener> -->
          </action>
          
          <!-- Create Advanced Space Wizard -->
@@ -341,7 +339,6 @@
             <label-id>advanced_space_wizard</label-id>
             <image>/images/icons/create_space.gif</image>
             <action>wizard:createSpace</action>
-            <!-- <action-listener>#{NewSpaceWizard.startWizard}</action-listener> -->
          </action>
          
          <!-- Manage Space Users -->

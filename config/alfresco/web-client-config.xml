@@ -160,31 +160,41 @@
       </advanced-search>
    </config>
 
-   <config evaluator="string-compare" condition="Custom Content Types">
-      <content-types>
-         <type name="cm:dictionaryModel"/>
-      </content-types>
-   </config>
-   
-   <config evaluator="string-compare" condition="Custom Folder Types">
+   <config evaluator="string-compare" condition="Space Wizards">
+      <!-- The list of custom folder types to show in the advanced space wizard -->
       <folder-types>
          <type name="fm:forums" icon="/images/icons/forums.gif" description-id="forums_desc" />
       </folder-types>
    </config>
    
    <config evaluator="string-compare" condition="Content Wizards">
-      <other-properties user-choice-visible="true" user-choice-default="true" /> 
+      <!-- The list of custom content types to show in the content wizards -->
+      <content-types>
+         <type name="cm:dictionaryModel"/>
+      </content-types>
+      
+      <!-- The list of mime types that can be created inline -->
       <create-mime-types>
          <mime-type name="text/html" />
          <mime-type name="text/plain" />
       </create-mime-types>
+      
+      <!-- Controls the message regarding property editing after the content is created -->
+      <other-properties user-choice-visible="true" user-choice-default="true" /> 
    </config>
    
    <config evaluator="string-compare" condition="Action Wizards">
-      <types>
+      <!-- The list of types shown in the is-subtype condition -->
+      <subtypes>
          <type name="folder" display-label-id="space"/>
          <type name="content"/>
-      </types>
+      </subtypes>
+      <!-- The list of content types shown in the specialise-type action -->
+      <specialise-types>
+         <type name="cm:dictionaryModel"/>
+      </specialise-types>
+      <!-- The list of aspects to show in the add/remove features action -->
+      <!-- and the has-aspect condition -->
       <aspects>
          <aspect name="generalclassifiable"/>
          <aspect name="complianceable"/>
@@ -196,6 +206,7 @@
          <aspect name="translatable"/>
          <aspect name="localizable"/>
       </aspects>
+      <!-- The list of transformers to show in the transform actions -->
       <transformers>
          <transformer name="text/html"/>
          <transformer name="application/pdf"/>

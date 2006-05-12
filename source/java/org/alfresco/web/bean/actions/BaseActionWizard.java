@@ -306,12 +306,12 @@ public abstract class BaseActionWizard extends BaseWizardBean
             }
             else
             {
-               logger.warn("Could not find aspects configuration element");
+               logger.warn("Could not find 'aspects' configuration element");
             }
          }
          else
          {
-            logger.warn("Could not find Action Wizards configuration section");
+            logger.warn("Could not find 'Action Wizards' configuration section");
          }
       }
       
@@ -334,10 +334,10 @@ public abstract class BaseActionWizard extends BaseWizardBean
          
          // add any configured content sub-types to the list
          ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
-         Config wizardCfg = svc.getConfig("Custom Content Types");
+         Config wizardCfg = svc.getConfig("Action Wizards");
          if (wizardCfg != null)
          {
-            ConfigElement typesCfg = wizardCfg.getConfigElement("content-types");
+            ConfigElement typesCfg = wizardCfg.getConfigElement("specialise-types");
             if (typesCfg != null)
             {               
                for (ConfigElement child : typesCfg.getChildren())
@@ -373,12 +373,12 @@ public abstract class BaseActionWizard extends BaseWizardBean
             }
             else
             {
-               logger.warn("Could not find 'content-types' configuration element");
+               logger.warn("Could not find 'specialise-types' configuration element");
             }
          }
          else
          {
-            logger.warn("Could not find 'Custom Content Types' configuration section");
+            logger.warn("Could not find 'Action Wizards' configuration section");
          }
          
       }
@@ -456,12 +456,12 @@ public abstract class BaseActionWizard extends BaseWizardBean
             }
             else
             {
-               logger.warn("Could not find transformers configuration element");
+               logger.warn("Could not find 'transformers' configuration element");
             }
          }
          else
          {
-            logger.warn("Could not find Action Wizards configuration section");
+            logger.warn("Could not find 'Action Wizards' configuration section");
          }
       }
       
@@ -509,12 +509,12 @@ public abstract class BaseActionWizard extends BaseWizardBean
             }
             else
             {
-               logger.warn("Could not find image-transformers configuration element");
+               logger.warn("Could not find 'image-transformers' configuration element");
             }
          }
          else
          {
-            logger.warn("Could not find Action Wizards configuration section");
+            logger.warn("Could not find 'Action Wizards' configuration section");
          }
       }
       

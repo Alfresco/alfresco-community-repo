@@ -60,7 +60,7 @@
    <!-- into the web client, for this to work you will need to -->
    <!-- rename example-model-context.xml.sample to example-model-context.xml -->
    <!--
-   <config evaluator="string-compare" condition="Custom Content Types">
+   <config evaluator="string-compare" condition="Content Wizards">
       <content-types>
          <type name="my:sop" />
       </content-types>

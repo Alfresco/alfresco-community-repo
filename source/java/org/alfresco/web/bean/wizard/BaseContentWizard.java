@@ -499,7 +499,7 @@ public abstract class BaseContentWizard extends AbstractWizardBean
          
          // add any configured content sub-types to the list
          ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
-         Config wizardCfg = svc.getConfig("Custom Content Types");
+         Config wizardCfg = svc.getConfig("Content Wizards");
          if (wizardCfg != null)
          {
             ConfigElement typesCfg = wizardCfg.getConfigElement("content-types");
@@ -558,7 +558,7 @@ public abstract class BaseContentWizard extends AbstractWizardBean
          }
          else
          {
-            logger.warn("Could not find 'Custom Content Types' configuration section");
+            logger.warn("Could not find 'Content Wizards' configuration section");
          }
          
       }

@@ -1,6 +1,6 @@
 <alfresco-config>
 
-	<config evaluator="string-compare" condition="Wizards">
+	<config>
       <wizard-container>/jsp/wizard/container.jsp</wizard-container>
       
       <wizards>
@@ -144,12 +144,11 @@
                         description-id="create_content_step2_desc"
                         instruction-id="default_instruction" />
                </condition>
-               <condition if="#{CreateContentWizard.mimeType == 'text/plain'}">
-                  <page path="/jsp/content/create-content-wizard/create-text.jsp"
-                        title-id="create_content_step2_title"
-                        description-id="create_content_step2_desc"
-                        instruction-id="default_instruction" />
-               </condition>
+               <!-- Default to the inline text editor -->
+               <page path="/jsp/content/create-content-wizard/create-text.jsp"
+                     title-id="create_content_step2_title"
+                     description-id="create_content_step2_desc"
+                     instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
                <page path="/jsp/wizard/summary.jsp"

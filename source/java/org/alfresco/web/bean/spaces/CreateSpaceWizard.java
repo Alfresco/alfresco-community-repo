@@ -470,7 +470,7 @@ public class CreateSpaceWizard extends BaseWizardBean
          
          // add any configured content sub-types to the list
          Config wizardCfg = Application.getConfigService(FacesContext.getCurrentInstance()).
-               getConfig("Custom Folder Types");
+               getConfig("Space Wizards");
          if (wizardCfg != null)
          {
             ConfigElement typesCfg = wizardCfg.getConfigElement("folder-types");
@@ -548,7 +548,7 @@ public class CreateSpaceWizard extends BaseWizardBean
          }
          else
          {
-            logger.warn("Could not find 'Custom Folder Types' configuration section");
+            logger.warn("Could not find 'Space Wizards' configuration section");
          }
          
       }

@@ -397,6 +397,14 @@ public class SuperRepositoryImpl implements SuperRepository
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.SuperRepository#issueLayerID()
+     */
+    public long issueLayerID()
+    {
+        return fLayerIssuer.issue();
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.repo.avm.SuperRepository#getSession()
      */
     public Session getSession()

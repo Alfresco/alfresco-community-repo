@@ -365,6 +365,15 @@ public class LayeredDirectoryNode extends DirectoryNode
         fData.getAdded().remove(name);
         fData.getDeleted().add(name);
     }
+    
+    /**
+     * Needed for the slide operation.
+     * @param name The name of the child to remove.
+     */
+    public void rawRemoveChildNoGhost(String name)
+    {
+        fData.getAdded().remove(name);
+    }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.DirectoryNode#removeChild(java.lang.String, org.alfresco.repo.avm.Lookup)

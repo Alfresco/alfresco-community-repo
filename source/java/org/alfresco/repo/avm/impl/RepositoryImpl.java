@@ -19,19 +19,26 @@ package org.alfresco.repo.avm.impl;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMNode;
 import org.alfresco.repo.avm.DirectoryNode;
+import org.alfresco.repo.avm.FileContent;
+import org.alfresco.repo.avm.FileNode;
 import org.alfresco.repo.avm.FolderEntry;
 import org.alfresco.repo.avm.LayeredDirectoryNode;
+import org.alfresco.repo.avm.LayeredFileNode;
 import org.alfresco.repo.avm.Lookup;
 import org.alfresco.repo.avm.PlainDirectoryNode;
+import org.alfresco.repo.avm.PlainFileNode;
 import org.alfresco.repo.avm.Repository;
 import org.alfresco.repo.avm.SuperRepository;
 import org.alfresco.repo.avm.hibernate.AVMNodeBean;
+import org.alfresco.repo.avm.hibernate.DirectoryEntry;
 import org.alfresco.repo.avm.hibernate.DirectoryNodeBean;
 import org.alfresco.repo.avm.hibernate.PlainDirectoryNodeBean;
 import org.alfresco.repo.avm.hibernate.PlainDirectoryNodeBeanImpl;
@@ -156,7 +163,7 @@ public class RepositoryImpl implements Repository
             newDir = new PlainDirectoryNode(this);
         }
         // TODO Untangle when you are going to set a new version id.
-        newDir.setVersion(fData.getNextVersionID());
+        newDir.setVersion(getLatestVersion() + 1);
         this.setNew(newDir);
         dir.addChild(name, newDir, lPath);
     }
@@ -167,8 +174,26 @@ public class RepositoryImpl implements Repository
     public void createLayeredDirectory(String srcPath, String dstPath,
             String name)
     {
-        // TODO Auto-generated method stub
-
+        Lookup lPath = lookupDirectory(-1, dstPath);
+        DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
+        if (dir.lookupChild(lPath, name, -1) != null)
+        {
+            throw new AlfrescoRuntimeException("Child exists: " +  name);
+        }
+        LayeredDirectoryNode newDir =
+            new LayeredDirectoryNode(srcPath, this);
+        if (lPath.isLayered())
+        {
+            LayeredDirectoryNode top = lPath.getTopLayer();
+            newDir.setLayerID(top.getLayerID());
+        }
+        else
+        {
+            newDir.setLayerID(fSuper.issueLayerID());
+        }
+        dir.addChild(name, newDir, lPath);
+        newDir.setVersion(getLatestVersion() + 1);
+        setNew(newDir);
     }
 
     /* (non-Javadoc)
@@ -176,8 +201,16 @@ public class RepositoryImpl implements Repository
      */
     public void createFile(String path, String name)
     {
-        // TODO Auto-generated method stub
-
+        Lookup lPath = lookupDirectory(-1, path);
+        DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
+        if (dir.lookupChild(lPath, name, -1) != null)
+        {
+            throw new AlfrescoRuntimeException("Child exists: " + name);
+        }
+        PlainFileNode file = new PlainFileNode(this);
+        file.setVersion(getLatestVersion() + 1);
+        setNew(file);
+        dir.addChild(name, file, lPath);
     }
 
     /* (non-Javadoc)
@@ -185,8 +218,17 @@ public class RepositoryImpl implements Repository
      */
     public void createLayeredFile(String srcPath, String dstPath, String name)
     {
-        // TODO Auto-generated method stub
-
+        Lookup lPath = lookupDirectory(-1, dstPath);
+        DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
+        if (dir.lookupChild(lPath, name, -1) != null)
+        {
+            throw new AlfrescoRuntimeException("Child exists: " + name);
+        }
+        LayeredFileNode newFile =
+            new LayeredFileNode(srcPath, this);
+        dir.addChild(dstPath, newFile, lPath);
+        newFile.setVersion(getLatestVersion() + 1);
+        setNew(newFile);
     }
 
     /* (non-Javadoc)
@@ -194,8 +236,15 @@ public class RepositoryImpl implements Repository
      */
     public InputStream getInputStream(int version, String path)
     {
-        // TODO Auto-generated method stub
-        return null;
+        Lookup lPath = lookup(version, path);
+        AVMNode node = lPath.getCurrentNode();
+        if (!(node instanceof FileNode))
+        {
+            throw new AlfrescoRuntimeException("Not a file: " + path + " r " + version);
+        }
+        FileNode file = (FileNode)node;
+        FileContent content = file.getContentForRead(version);
+        return content.getInputStream(fSuper);
     }
 
     /* (non-Javadoc)
@@ -203,8 +252,18 @@ public class RepositoryImpl implements Repository
      */
     public List<FolderEntry> getListing(int version, String path)
     {
-        // TODO Auto-generated method stub
-        return null;
+        Lookup lPath = lookupDirectory(version, path);
+        DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
+        Map<String, DirectoryEntry> listing = dir.getListing(lPath, version);
+        ArrayList<FolderEntry> results = new ArrayList<FolderEntry>();
+        for (String name : listing.keySet())
+        {
+            FolderEntry item = new FolderEntry();
+            item.setName(name);
+            item.setType(listing.get(name).getEntryType());
+            results.add(item);
+        }
+        return results;
     }
 
     /* (non-Javadoc)
@@ -212,8 +271,15 @@ public class RepositoryImpl implements Repository
      */
     public OutputStream getOutputStream(String path)
     {
-        // TODO Auto-generated method stub
-        return null;
+        Lookup lPath = lookup(-1, path);
+        AVMNode node = lPath.getCurrentNode();
+        if (!(node instanceof FileNode))
+        {
+            throw new AlfrescoRuntimeException("Not a file: " + path);
+        }
+        FileNode file = (FileNode)node;
+        FileContent content = file.getContentForWrite(this);
+        return content.getOutputStream(fSuper);
     }
 
     /* (non-Javadoc)
@@ -221,8 +287,13 @@ public class RepositoryImpl implements Repository
      */
     public void removeNode(String path, String name)
     {
-        // TODO Auto-generated method stub
-
+        Lookup lPath = lookupDirectory(-1, path);
+        DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
+        if (dir.lookupChild(lPath, name, -1) == null)
+        {
+            throw new AlfrescoRuntimeException("Does not exist: " + name);
+        }
+        dir.removeChild(name, lPath);
     }
 
     /* (non-Javadoc)
@@ -231,8 +302,51 @@ public class RepositoryImpl implements Repository
     public void slide(String srcPath, String srcName, String dstPath,
             String dstName)
     {
-        // TODO Auto-generated method stub
-
+        Lookup sPath = lookup(-1, srcPath);
+        if (!sPath.isLayered())
+        {
+            throw new AlfrescoRuntimeException("Slide not allowed from non-layered directory.");
+        }
+        AVMNode node = sPath.getCurrentNode();
+        if (!(node instanceof LayeredDirectoryNode))
+        {
+            throw new AlfrescoRuntimeException("Not a layered directory: " + srcPath);
+        }
+        LayeredDirectoryNode srcDir = (LayeredDirectoryNode)node;
+        AVMNode srcNode = srcDir.lookupChild(sPath, srcName, -1);
+        if (srcNode == null)
+        {
+            throw new AlfrescoRuntimeException("Not found: " + srcName);
+        }
+        if (!(srcNode instanceof LayeredDirectoryNode))
+        {
+            throw new AlfrescoRuntimeException("Not a layered directory:" + srcName);
+        }
+        if (!sPath.isInThisLayer() || !srcDir.directlyContains(srcNode))
+        {
+            throw new AlfrescoRuntimeException("Not in this layer: " + srcName);
+        }
+        Lookup dPath = lookupDirectory(-1, dstPath);
+        if (!dPath.isLayered() || dPath.getTopLayer() != sPath.getTopLayer())
+        {
+            throw new AlfrescoRuntimeException("Destination must be in same layer: " + dstPath);
+        }
+        DirectoryNode dstDir = (DirectoryNode)dPath.getCurrentNode();
+        if (dstDir.lookupChild(dPath, dstName, -1) != null)
+        {
+            throw new AlfrescoRuntimeException("Destination exists: " + dstName);
+        }
+        // Remove child from src without leaving a ghost.
+        LayeredDirectoryNode srcDirCopy =
+            (LayeredDirectoryNode)srcDir.copyOnWrite(sPath);
+        srcDirCopy.rawRemoveChildNoGhost(srcName);
+        // Make a new version of source directly to be slid.
+        LayeredDirectoryNode dstNode =
+            new LayeredDirectoryNode((LayeredDirectoryNode)srcNode, this);
+        // Relookup the destination.
+        dPath = lookup(-1, dstPath);
+        dstDir = (DirectoryNode)dPath.getCurrentNode();
+        dstDir.addChild(dstName, dstNode, dPath);
     }
 
     /* (non-Javadoc)

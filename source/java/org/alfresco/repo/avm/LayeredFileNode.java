@@ -19,6 +19,7 @@ package org.alfresco.repo.avm;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.hibernate.LayeredFileNodeBean;
+import org.alfresco.repo.avm.hibernate.LayeredFileNodeBeanImpl;
 
 /**
  * A LayeredFileNode behaves like a copy on write symlink.
@@ -57,7 +58,25 @@ public class LayeredFileNode extends FileNode
     {
         // TODO Something.
     }
-
+    
+    /**
+     * Make a brand new layered file node.
+     * @param indirection The thing we point to.
+     * @param repo The repository we belong to.
+     */
+    public LayeredFileNode(String indirection, Repository repo)
+    {
+        fData = new LayeredFileNodeBeanImpl(repo.getSuperRepository().issueID(),
+                                            -1L,
+                                            -1L,
+                                            null,
+                                            null,
+                                            null,
+                                            repo.getDataBean(),
+                                            indirection);
+        repo.getSuperRepository().getSession().save(fData);
+        setDataBean(fData);
+    }
     
     /**
      * Set the repository after a copy.

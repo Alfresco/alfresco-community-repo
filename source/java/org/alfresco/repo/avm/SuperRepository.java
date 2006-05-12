@@ -180,6 +180,12 @@ public interface SuperRepository
     public long issueContentID();
     
     /**
+     * Issue an ID for the next layer.
+     * @return The layer id.
+     */
+    public long issueLayerID();
+    
+    /**
      * Get the current Hibernate Session.
      * @return The Hibernate Session object.
      */

@@ -45,7 +45,7 @@ public class FolderEntry
     /**
      * @param name the name to set
      */
-    public void getName(String name)
+    public void setName(String name)
     {
         fName = name;
     }

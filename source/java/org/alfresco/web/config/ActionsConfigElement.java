@@ -18,6 +18,7 @@ package org.alfresco.web.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigException;
 import org.alfresco.config.element.ConfigElementAdapter;
 import org.alfresco.web.action.ActionEvaluator;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
  * Action config element.
@@ -89,24 +91,30 @@ public class ActionsConfigElement extends ConfigElementAdapter
          {
             // there is already a group with this id, combine it 
             // with the new one
-            ActionGroup existingGroup = combinedElement.actionGroups.get(newGroup.getId());
-            if (newGroup.ShowLink != existingGroup.ShowLink)
+            ActionGroup combinedGroup = combinedElement.actionGroups.get(newGroup.getId());
+            if (newGroup.ShowLink != combinedGroup.ShowLink)
             {
-               existingGroup.ShowLink = newGroup.ShowLink;
+               combinedGroup.ShowLink = newGroup.ShowLink;
             }
             if (newGroup.Style != null)
             {
-               existingGroup.Style = newGroup.Style;
+               combinedGroup.Style = newGroup.Style;
             }
             if (newGroup.StyleClass != null)
             {
-               existingGroup.StyleClass = newGroup.StyleClass;
+               combinedGroup.StyleClass = newGroup.StyleClass;
             }
             
-            // add the new groups to the existing set
-            for (String actionRef : newGroup.actions)
+            // add all the actions from the new group to the combined one
+            for (String actionRef : newGroup.getAllActions())
             {
-               existingGroup.actions.add(actionRef);
+               combinedGroup.addAction(actionRef);
+            }
+            
+            // add all the hidden actions from the new group to the combined one
+            for (String actionRef : newGroup.getHiddenActions())
+            {
+               combinedGroup.hideAction(actionRef);
             }
          }
          else
@@ -115,7 +123,7 @@ public class ActionsConfigElement extends ConfigElementAdapter
             combinedElement.actionGroups.put(newGroup.getId(), newGroup);
          }
       }
-      
+
       return combinedElement;
    }
    
@@ -246,17 +254,43 @@ public class ActionsConfigElement extends ConfigElementAdapter
          return id;
       }
       
-      public void addAction(String actionId)
+      /**
+       * @return Iterator over the visible ActionDefinition IDs referenced by this group
+       */
+      public Iterator<String> iterator()
+      {
+         // create a list of the visible actions and return it's iterator
+         ArrayList<String> visibleActions = new ArrayList<String>(
+               this.actions.size() - this.hiddenActions.size());
+         for (String actionId : this.actions)
+         {
+            if (this.hiddenActions.contains(actionId) == false)
+            {
+               visibleActions.add(actionId);
+            }
+         }
+         
+         return visibleActions.iterator();
+      }
+      
+      /*package*/ void addAction(String actionId)
       {
          actions.add(actionId);
       }
       
-      /**
-       * @return Iterator over the ActionDefinition IDs referenced by this group 
-       */
-      public Iterator<String> iterator()
+      /*package*/ void hideAction(String actionId)
       {
-         return actions.iterator();
+         this.hiddenActions.add(actionId);
+      }
+      
+      /*package*/ Set<String> getAllActions()
+      {
+         return this.actions;
+      }
+      
+      /*pacakge*/ Set<String> getHiddenActions()
+      {
+         return this.hiddenActions;
       }
       
       private String id;
@@ -264,6 +298,9 @@ public class ActionsConfigElement extends ConfigElementAdapter
       /** the action definitions, we use a Linked HashSet to ensure we do not have more 
           than one action with the same Id and that the insertion order is preserved */
       private Set<String> actions = new LinkedHashSet<String>(16, 1.0f);
+      
+      /** the actions that have been hidden */
+      private Set<String> hiddenActions = new HashSet<String>(4, 1.0f);
       
       public boolean ShowLink;
       public String Style;

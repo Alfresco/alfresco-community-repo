@@ -56,7 +56,7 @@ public class ActionsElementReader implements ConfigElementReader
    public static final String ATTRIBUTE_IDREF = "idref";
    public static final String ATTRIBUTE_NAME = "name";
    public static final String ATTRIBUTE_ALLOW = "allow";
-   
+   public static final String ATTRIBUTE_HIDE = "hide";
 
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
@@ -123,8 +123,17 @@ public class ActionsElementReader implements ConfigElementReader
                }
                else
                {
-                  // add the action definition ID to the group
-                  actionGroup.addAction(idRef);
+                  // look for the hide attribute
+                  String hide = actionRefElement.attributeValue(ATTRIBUTE_HIDE);
+                  if (hide != null && Boolean.parseBoolean(hide))
+                  {
+                     actionGroup.hideAction(idRef);
+                  }
+                  else
+                  {
+                     // add the action definition ID to the group
+                     actionGroup.addAction(idRef);
+                  }
                }
             }
             

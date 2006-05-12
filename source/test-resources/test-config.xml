@@ -62,11 +62,18 @@
             <action>dialog:showSpaceDetails</action>
          </action>
          
+         <action id="always_hidden">
+            <label-id>view_details</label-id>
+            <image>/images/icons/View_details.gif</image>
+            <action>dialog:showSpaceDetails</action>
+         </action>
+         
          <action-group id="document_browse">
             <show-link>false</show-link>
             <style-class>inlineAction</style-class>
             <action idref="details_doc" />
             <action idref="details_space" />
+            <action idref="always_hidden" hide="true" />
          </action-group>
       </actions>
    </config>

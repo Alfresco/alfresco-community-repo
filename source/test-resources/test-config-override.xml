@@ -117,7 +117,8 @@
          <!-- Add the custom action to the existing document_browse group -->
          <action-group id="document_browse">
             <show-link>true</show-link>
-            <action idref="custom_action" />
+            <action idref="custom_action" hide="false" />
+            <action idref="details_space" hide="true" />
          </action-group>
          
          <action-group id="new_group">

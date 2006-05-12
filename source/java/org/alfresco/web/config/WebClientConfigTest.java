@@ -896,19 +896,18 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("document_browse group style class", "inlineAction", group.StyleClass);
       assertNull("Style for document_browse group should be null", group.Style);
       
-      // make sure there are 3 items
+      // make sure there are 2 items (as one was hidden in the override)
       ArrayList<String> actions = new ArrayList<String>(3);
       for (String actionId : group)
       {
          actions.add(actionId);
       }
       
-      assertEquals("number of items in document_browse group", 3, actions.size());
+      assertEquals("number of items in document_browse group", 2, actions.size());
       
       // make sure they are in the correct order
       assertEquals("first action", "details_doc", actions.get(0));
-      assertEquals("second action", "details_space", actions.get(1));
-      assertEquals("third action", "custom_action", actions.get(2));
+      assertEquals("second action", "custom_action", actions.get(1));
       
       // get the new_group action group
       ActionGroup newGroup = actionsConfig.getActionGroup("new_group");

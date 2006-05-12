@@ -801,7 +801,7 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
         if (commandList.size() > 0)
         {
             Command last = commandList.get(commandList.size() - 1);
-            if ((last.action == command.action) && (last.nodeRef.equals(command.nodeRef)))
+            if (last.action == command.action)
             {
                 return;
             }
@@ -842,7 +842,7 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
             Command current = it.previous();
             if (matchExact)
             {
-                if ((current.action == command.action) && (current.nodeRef.equals(command.nodeRef)))
+                if (current.action == command.action)
                 {
                     it.remove();
                     return;
@@ -1738,6 +1738,11 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                     {
                         // Document document = helper.document;
                         NodeRef ref = helper.nodeRef;
+                        // bypass nodes that have disappeared
+                        if (!nodeService.exists(ref))
+                        {
+                            continue;
+                        }
 
                         List<Document> docs = createDocuments(ref, false, true, false);
                         for (Document doc : docs)

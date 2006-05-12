@@ -1559,6 +1559,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // remove the aspect archived aspect
         aspects.remove(ContentModel.ASPECT_ARCHIVED);
         properties.remove(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+        properties.remove(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH);
         properties.remove(ContentModel.PROP_ARCHIVED_BY);
         properties.remove(ContentModel.PROP_ARCHIVED_DATE);
         

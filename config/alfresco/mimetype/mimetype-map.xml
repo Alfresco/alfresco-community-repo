@@ -124,6 +124,9 @@
          <mimetype mimetype="application/mac-binhex40" display="">
             <extension>hqx</extension>
          </mimetype>
+         <mimetype mimetype="text/calendar" display="iCalendar File">
+            <extension>ics</extension>
+         </mimetype>
          <mimetype mimetype="image/ief" display="IEF Image">
             <extension>ief</extension>
          </mimetype>

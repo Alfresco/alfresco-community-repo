@@ -33,6 +33,7 @@ public class AdvancedSearchConfigElement extends ConfigElementAdapter
    public static final String CONFIG_ELEMENT_ID = "advanced-search";
    
    private List<String> contentTypes = null;
+   private List<String> folderTypes = null;
    private List<CustomProperty> customProps = null;
    
    /**
@@ -76,6 +77,13 @@ public class AdvancedSearchConfigElement extends ConfigElementAdapter
          for (String type : this.contentTypes)
          {
             combinedElement.addContentType(type);
+         }
+      }
+      if (this.folderTypes != null)
+      {
+         for (String type : this.folderTypes)
+         {
+            combinedElement.addFolderType(type);
          }
       }
       
@@ -136,6 +144,38 @@ public class AdvancedSearchConfigElement extends ConfigElementAdapter
       if (this.contentTypes.contains(contentType) == false)
       {
          this.contentTypes.add(contentType);
+      }
+   }
+   
+   /** 
+    * @return Returns the folderTypes.
+    */
+   public List<String> getFolderTypes()
+   {
+      return this.folderTypes;
+   }
+
+   /**
+    * @param folderTypes The folderTypes to set.
+    */
+   /*package*/ void setFolderTypes(List<String> folderTypes)
+   {
+      this.folderTypes = folderTypes;
+   }
+   
+   /**
+    * @param folderType Adds the given folder type to the list
+    */
+   /*package*/ void addFolderType(String folderType)
+   {
+      if (this.folderTypes == null)
+      {
+         this.folderTypes = new ArrayList<String>(3);
+      }
+      
+      if (this.folderTypes.contains(folderType) == false)
+      {
+         this.folderTypes.add(folderType);
       }
    }
    

@@ -158,7 +158,7 @@
                               <table cellpadding="1" cellspacing="1" border="0" width="100%">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.close}" action="#{TrashcanBean.close}" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.close}" action="dialog:close" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

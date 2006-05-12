@@ -73,6 +73,7 @@ public final class SearchContext implements Serializable
    private static final String ELEMENT_ATTRIBUTES = "attributes";
    private static final String ELEMENT_MIMETYPE = "mimetype";
    private static final String ELEMENT_CONTENT_TYPE = "content-type";
+   private static final String ELEMENT_FOLDER_TYPE = "folder-type";
    private static final String ELEMENT_CATEGORY = "category";
    private static final String ELEMENT_CATEGORIES = "categories";
    private static final String ELEMENT_LOCATION = "location";
@@ -103,6 +104,9 @@ public final class SearchContext implements Serializable
    
    /** categories to add to the search */
    private String[] categories = new String[0];
+   
+   /** folder type to restrict search against */
+   private String folderType = null;
    
    /** content type to restrict search against */
    private String contentType = null;
@@ -384,8 +388,16 @@ public final class SearchContext implements Serializable
          fileTypeQuery = " TYPE:\"{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}content\" ";
       }
       
-      // match against FOLDER type
-      String folderTypeQuery = " TYPE:\"{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}folder\" ";
+      // match against appropriate folder type
+      String folderTypeQuery;
+      if (folderType != null)
+      {
+         folderTypeQuery = " TYPE:\"" + folderType + "\" ";
+      }
+      else
+      {
+         folderTypeQuery = " TYPE:\"{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}folder\" ";
+      }
       
       String fullTextQuery = fullTextBuf.toString();
       String nameAttrQuery = nameAttrBuf.toString();
@@ -596,6 +608,22 @@ public final class SearchContext implements Serializable
    }
    
    /**
+    * @return Returns the folderType.
+    */
+   public String getFolderType()
+   {
+      return this.folderType;
+   }
+
+   /**
+    * @param folderType The folder type to restrict attribute search against.
+    */
+   public void setFolderType(String folderType)
+   {
+      this.folderType = folderType;
+   }
+   
+   /**
     * @return Returns the mimeType.
     */
    public String getMimeType()
@@ -690,6 +718,7 @@ public final class SearchContext implements Serializable
     *       <category>XPath</category>
     *    </categories>
     *    <content-type>String</content-type>
+    *    <folder-type>String</folder-type>
     *    <mimetype>String</mimetype>
     *    <attributes>
     *       <attribute name="String">String</attribute>
@@ -734,6 +763,10 @@ public final class SearchContext implements Serializable
          if (this.contentType != null)
          {
             root.addElement(ELEMENT_CONTENT_TYPE).addText(this.contentType);
+         }
+         if (this.folderType != null)
+         {
+            root.addElement(ELEMENT_FOLDER_TYPE).addText(this.folderType);
          }
          if (this.mimeType != null && this.mimeType.length() != 0)
          {
@@ -833,6 +866,11 @@ public final class SearchContext implements Serializable
          if (contentTypeElement != null)
          {
             this.contentType = contentTypeElement.getText();
+         }
+         Element folderTypeElement = rootElement.element(ELEMENT_FOLDER_TYPE);
+         if (folderTypeElement != null)
+         {
+            this.folderType = folderTypeElement.getText();
          }
          Element mimetypeElement = rootElement.element(ELEMENT_MIMETYPE);
          if (mimetypeElement != null)

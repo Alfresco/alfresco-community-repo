@@ -151,9 +151,14 @@
          <!-- type constraint drop-down -->
          <content-types>
             <!-- cm:content type is implicit in this list -->
-            <!-- types must extend cm:content for the Alfresco web-client -->
+            <!-- types must extend cm:content for display in the Alfresco web-client -->
             <type name="fm:post" />
          </content-types>
+         <folder-types>
+            <!-- cm:folder type is implicit in this list -->
+            <!-- types must extend cm:folder for display in the Alfresco web-client -->
+            <type name="fm:forums" />
+         </folder-types>
          <!-- custom properties to be shown in the More Options panel -->
          <custom-properties>
          </custom-properties>

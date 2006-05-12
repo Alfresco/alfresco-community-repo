@@ -262,6 +262,14 @@
                                                 <td>
                                                    <table cellpadding="2" cellspacing="2" border="0">
                                                       <tr>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.folder_type}" id="folderType" />:</td>
+                                                         <td>
+                                                            <h:selectOneMenu value="#{AdvancedSearchBean.folderType}" id="selectFolderType">
+                                                               <f:selectItems value="#{AdvancedSearchBean.folderTypes}" id="folderTypes" />
+                                                            </h:selectOneMenu>
+                                                         </td>
+                                                      </tr>
+                                                      <tr>
                                                          <td style="padding-left:8px"><h:outputText value="#{msg.content_type}" id="contentType" />:</td>
                                                          <td>
                                                             <h:selectOneMenu value="#{AdvancedSearchBean.contentType}" id="selectContentType">

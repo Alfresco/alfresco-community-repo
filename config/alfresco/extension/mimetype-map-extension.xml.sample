@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   
+    <bean id="mimetypeConfigService" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
+        <constructor-arg>
+            <bean class="org.alfresco.config.source.UrlConfigSource">
+                <constructor-arg>
+                    <list>
+                        <value>classpath:alfresco/mimetype/mimetype-map.xml</value>
+                        <value>classpath:alfresco/mimetype/mimetype-map-openoffice.xml</value>
+                        <value>classpath:alfresco/extension/mimetypes-extension.xml</value>
+                    </list>
+                </constructor-arg>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+
+</beans>

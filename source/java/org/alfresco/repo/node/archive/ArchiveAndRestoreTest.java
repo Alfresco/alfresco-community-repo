@@ -36,7 +36,6 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -55,8 +54,8 @@ import org.springframework.context.ApplicationContext;
  */
 public class ArchiveAndRestoreTest extends TestCase
 {
-    private static final String USER_A = "AAAAA";
-    private static final String USER_B = "BBBBB";
+    private static final String USER_A = "aaaaa";
+    private static final String USER_B = "bbbbb";
     private static final QName ASPECT_ATTACHABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "attachable");
     private static final QName ASSOC_ATTACHMENTS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "attachments");
     private static final QName QNAME_A = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "a");
@@ -123,11 +122,19 @@ public class ArchiveAndRestoreTest extends TestCase
             // Map the work store to the archive store.  This will already be wired into the NodeService.
             StoreArchiveMap archiveMap = (StoreArchiveMap) ctx.getBean("storeArchiveMap");
             archiveMap.getArchiveMap().put(workStoreRef, archiveStoreRef);
+            
+            TestWithUserUtils.createUser(USER_A, USER_A, workStoreRootNodeRef, nodeService, authenticationService);
+            TestWithUserUtils.createUser(USER_B, USER_B, workStoreRootNodeRef, nodeService, authenticationService);
 
-            // grant everyone rights to the work store
+            // grant A and B rights to the work store
             permissionService.setPermission(
                     workStoreRootNodeRef,
-                    PermissionService.ALL_AUTHORITIES,
+                    USER_A,
+                    PermissionService.ALL_PERMISSIONS,
+                    true);
+            permissionService.setPermission(
+                    workStoreRootNodeRef,
+                    USER_B,
                     PermissionService.ALL_PERMISSIONS,
                     true);
             
@@ -137,9 +144,6 @@ public class ArchiveAndRestoreTest extends TestCase
                     PermissionService.ALL_AUTHORITIES,
                     PermissionService.ALL_PERMISSIONS,
                     true);
-            
-            TestWithUserUtils.createUser(USER_A, USER_A, workStoreRootNodeRef, nodeService, authenticationService);
-            TestWithUserUtils.createUser(USER_B, USER_B, workStoreRootNodeRef, nodeService, authenticationService);
         }
         finally
         {
@@ -335,8 +339,8 @@ public class ArchiveAndRestoreTest extends TestCase
         
         // check that the required properties are present and correct
         Map<QName, Serializable> bb_Properties = nodeService.getProperties(bb_);
-        Path bb_originalPath = (Path) bb_Properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH);
-        assertNotNull("Original path not stored", bb_originalPath);
+        ChildAssociationRef bb_originalParent = (ChildAssociationRef) bb_Properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+        assertNotNull("Original parent not stored", bb_originalParent);
         
         // restore the node
         nodeService.restoreNode(bb_, null, null, null);

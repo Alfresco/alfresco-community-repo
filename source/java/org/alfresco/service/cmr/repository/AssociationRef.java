@@ -115,7 +115,7 @@ public class AssociationRef implements EntityRef, Serializable
         {
             return true;
         }
-        if (!(o instanceof ChildAssociationRef))
+        if (!(o instanceof AssociationRef))
         {
             return false;
         }

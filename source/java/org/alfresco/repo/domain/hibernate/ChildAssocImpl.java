@@ -114,7 +114,7 @@ public class ChildAssocImpl implements ChildAssoc
                         this.qName,
                         child.getNodeRef(),
                         this.isPrimary,
-                        -1);
+                        index);
             }
             return childAssocRef;
         }

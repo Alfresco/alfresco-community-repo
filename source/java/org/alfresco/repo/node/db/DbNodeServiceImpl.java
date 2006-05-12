@@ -1071,14 +1071,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException
     {
-		// Invoke policy behaviours
-		invokeBeforeUpdateNode(sourceRef);
-		
         Node sourceNode = getNodeNotNull(sourceRef);
         Node targetNode = getNodeNotNull(targetRef);
         // get the association
         NodeAssoc assoc = nodeDaoService.getNodeAssoc(sourceNode, targetNode, assocTypeQName);
+        if (assoc == null)
+        {
+            // nothing to remove
+            return;
+        }
         AssociationRef assocRef = assoc.getNodeAssocRef();
+        
+        // Invoke policy behaviours
+		invokeBeforeUpdateNode(sourceRef);
+		
         // delete it
         nodeDaoService.deleteNodeAssoc(assoc);
 		
@@ -1302,7 +1308,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         Node node = getNodeNotNull(nodeRef);
         ChildAssoc primaryParentAssoc = nodeDaoService.getPrimaryParentAssoc(node);
-        Path primaryPath = getPath(nodeRef);
         
         // add the aspect
         node.getAspects().add(ContentModel.ASPECT_ARCHIVED);
@@ -1319,10 +1324,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC),
                 primaryParentAssoc.getChildAssocRef());
         properties.put(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC, archivedPrimaryParentNodeRefProperty);
-        PropertyValue archivedPrimaryPathProperty = makePropertyValue(
-                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH),
-                primaryPath);
-        properties.put(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH, archivedPrimaryPathProperty);
         
         // move the node
         NodeRef archiveStoreRootNodeRef = getRootNode(archiveStoreRef);
@@ -1559,7 +1560,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // remove the aspect archived aspect
         aspects.remove(ContentModel.ASPECT_ARCHIVED);
         properties.remove(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
-        properties.remove(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH);
         properties.remove(ContentModel.PROP_ARCHIVED_BY);
         properties.remove(ContentModel.PROP_ARCHIVED_DATE);
         

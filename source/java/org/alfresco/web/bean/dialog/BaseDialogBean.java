@@ -90,6 +90,9 @@ public abstract class BaseDialogBean implements IDialogBean
          }
          catch (Throwable e)
          {
+            // reset the flag so we can re-attempt the operation
+            isFinished = false;
+            
             // rollback the transaction
             try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
             Utils.addErrorMessage(formatErrorMessage(e));

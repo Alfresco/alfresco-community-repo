@@ -35,13 +35,7 @@
       }
    }
 </script>
-</f:verbatim>
 
-<%-- TODO: Move this to the container page and add error-message-id attribute to dialog config --%>
-                              
-<a:errors message="#{msg.error_wizard}" styleClass="errorMessage" />
-
-<f:verbatim>
 <table cellpadding="2" cellspacing="2" border="0" width="100%">
    <tr>
       <td>

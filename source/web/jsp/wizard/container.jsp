@@ -98,12 +98,6 @@
                               <h:outputText styleClass="mainSubTitle" value="#{msg.steps}"/><br>
                               <a:modeList itemSpacing="3" iconColumnWidth="2" selectedStyleClass="statusListHighlight"
                                     value="#{WizardManager.currentStepAsString}" disabled="true">
-                                 <%--
-                                 <a:listItem value="1" label="1. #{msg.starting_space}" />
-                                 <a:listItem value="2" label="2. #{msg.space_options}" />
-                                 <a:listItem value="3" label="3. #{msg.space_details}" />
-                                 <a:listItem value="4" label="4. #{msg.summary}" />
-                                 --%>
                                  <a:listItems value="#{WizardManager.stepItems}" />
                               </a:modeList>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
@@ -111,10 +105,7 @@
                            
                            <td width="100%" valign="top">
                            
-                              <%-- Externalise the error message into an error-message-id attribute on the wizard config --%>
-                              <%--
-                              <a:errors message="#{msg.error_wizard}" styleClass="errorMessage" />
-                              --%>
+                              <a:errors message="#{WizardManager.errorMessage}" styleClass="errorMessage" />
                               
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <table cellpadding="2" cellspacing="2" border="0" width="100%">

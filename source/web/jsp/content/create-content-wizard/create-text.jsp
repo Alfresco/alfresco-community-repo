@@ -19,8 +19,6 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
                               
-<a:errors message="#{msg.error_wizard}" styleClass="errorMessage" />
-
 <h:inputTextarea id="textArea" rows="24" cols="112" value="#{WizardManager.bean.content}" />
                               
                            

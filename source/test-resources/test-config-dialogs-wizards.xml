@@ -13,7 +13,8 @@
       <dialogs>
          <dialog name="createSpace" page="/jsp/dialog/create-space.jsp" managed-bean="NewSpaceDialog"
                  actions-config-id="space-actions" icon="/images/icons/create_space_large.gif"
-                 title-id="create_space_title" description-id="create_space_description" />
+                 title-id="create_space_title" description-id="create_space_description" 
+                 error-message-id="error_create_space_dialog" />
                  
          <dialog name="spaceDetails" page="/jsp/dialog/space-details.jsp" managed-bean="SpaceDetailsDialog"
                  title="Space Details Dialog" description="Space Details Dialog Decsription" 
@@ -49,7 +50,8 @@
                  icon="/images/icons/create_space_large.gif"
                  actions-config-id="create-space-actions"
                  title-id="advanced_space_details_title" 
-                 description-id="advanced_space_details_description">
+                 description-id="advanced_space_details_description"
+                 error-message-id="error_create_space_wizard">
             <step name="details" title-id="starting_space">
                <page path="/jsp/wizard/new-space/create-from.jsp"
                      title-id="create_space_details_title" 

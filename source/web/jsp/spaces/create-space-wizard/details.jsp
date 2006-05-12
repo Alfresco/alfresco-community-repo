@@ -85,11 +85,7 @@
       }
    }
 </script>
-</f:verbatim>
 
-<a:errors message="#{msg.error_wizard}" styleClass="errorMessage" />
-
-<f:verbatim>
 <table cellpadding="3" cellspacing="2" border="0" width="100%">
    <tr>
       <td colspan="2" class="wizardSectionHeading">

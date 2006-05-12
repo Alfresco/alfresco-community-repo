@@ -160,12 +160,15 @@ public class WizardsConfigElement extends ConfigElementAdapter
       protected String managedBean;
       protected String icon;
       protected String actionsConfigId;
+      protected String errorMsgId = "error_wizard";
+      
       protected Map<String, StepConfig> steps = new LinkedHashMap<String, StepConfig>(4);
       
       public WizardConfig(String name, String bean, 
                           String actionsConfigId, String icon,
                           String title, String titleId,
-                          String description, String descriptionId)
+                          String description, String descriptionId,
+                          String errorMsgId)
       {
          super(title, titleId, description, descriptionId);
 
@@ -176,6 +179,11 @@ public class WizardsConfigElement extends ConfigElementAdapter
          this.managedBean = bean;
          this.icon = icon;
          this.actionsConfigId = actionsConfigId;
+         
+         if (errorMsgId != null && errorMsgId.length() > 0)
+         {
+            this.errorMsgId = errorMsgId;
+         }
       }
       
       public String getName()
@@ -196,6 +204,11 @@ public class WizardsConfigElement extends ConfigElementAdapter
       public String getActionsConfigId()
       {
          return this.actionsConfigId;
+      }
+      
+      public String getErrorMessageId()
+      {
+         return this.errorMsgId;
       }
       
       public int getNumberSteps()
@@ -244,7 +257,8 @@ public class WizardsConfigElement extends ConfigElementAdapter
          buffer.append(" title=").append(this.title);
          buffer.append(" titleId=").append(this.titleId);
          buffer.append(" description=").append(this.description);
-         buffer.append(" descriptionId=").append(this.descriptionId).append(")");
+         buffer.append(" descriptionId=").append(this.descriptionId);
+         buffer.append(" errorMsgId=").append(this.errorMsgId).append(")");
          return buffer.toString();
       }
    }

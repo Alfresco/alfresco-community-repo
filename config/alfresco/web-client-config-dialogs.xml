@@ -8,7 +8,7 @@
          <!-- Definition of the create space dialog -->
          <dialog name="createSpace" page="/jsp/spaces/create-space-dialog.jsp" managed-bean="CreateSpaceDialog"
                  icon="/images/icons/create_space_large.gif" title-id="create_space" 
-                 description-id="create_space_description" />
+                 description-id="create_space_description" error-message-id="error_create_space_dialog" />
          
          <!-- Definition of the edit space dialog -->      
          <dialog name="editSpace" page="/jsp/spaces/edit-space-dialog.jsp" managed-bean="EditSpaceDialog"

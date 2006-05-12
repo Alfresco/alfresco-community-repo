@@ -19,8 +19,6 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<a:errors message="#{msg.error_dialog}" styleClass="errorMessage" />
-
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
              width="100%" rowClasses="wizardSectionHeading">
    <h:outputText value="&nbsp;#{msg.properties}" escape="false" />

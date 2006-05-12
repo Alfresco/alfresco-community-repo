@@ -656,6 +656,7 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("icon", "/images/icons/create_space_large.gif", dialog.getIcon());
       assertEquals("title-id", "create_space_title", dialog.getTitleId());
       assertEquals("description-id", "create_space_description", dialog.getDescriptionId());
+      assertEquals("error-message-id", "error_create_space_dialog", dialog.getErrorMessageId());
       assertNull("title should be null", dialog.getTitle());
       assertNull("description should be null", dialog.getDescription());
       
@@ -671,6 +672,7 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("icon", "/images/icons/create_space_large.gif", dialog.getIcon());
       assertEquals("title", "Space Details Dialog", dialog.getTitle());
       assertEquals("description", "Space Details Dialog Decsription", dialog.getDescription());
+      assertEquals("error-message-id", "error_dialog", dialog.getErrorMessageId());
       assertNull("title-id should be null", dialog.getTitleId());
       assertNull("description-id should be null", dialog.getDescriptionId());
    }
@@ -741,6 +743,7 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("icon", "/images/icons/example-logo.gif", wizard.getIcon());
       assertEquals("title", "Example Wizard Title", wizard.getTitle());
       assertEquals("description", "Example Wizard Description", wizard.getDescription());
+      assertEquals("error-message-id", "error_wizard", wizard.getErrorMessageId());
       assertNull("title-id should be null", wizard.getTitleId());
       assertNull("description-id should be null", wizard.getDescriptionId());
       
@@ -760,6 +763,7 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("icon", "/images/icons/create_space_large.gif", wizard.getIcon());
       assertEquals("title-id", "advanced_space_details_title", wizard.getTitleId());
       assertEquals("description-id", "advanced_space_details_description", wizard.getDescriptionId());
+      assertEquals("error-message-id", "error_create_space_wizard", wizard.getErrorMessageId());
       assertNull("title should be null", wizard.getTitle());
       assertNull("description should be null", wizard.getDescription());
       List<StepConfig> steps = wizard.getStepsAsList();

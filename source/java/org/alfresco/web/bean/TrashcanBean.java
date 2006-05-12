@@ -35,10 +35,10 @@ import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -479,13 +479,31 @@ public class TrashcanBean implements IContextListener
    
    private NodePropertyResolver resolverLocationPath = new NodePropertyResolver() {
       public Object get(Node node) {
-         return (Path)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH);
+         ChildAssociationRef childRef =
+            (ChildAssociationRef)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+         if (nodeService.exists(childRef.getParentRef()))
+         {
+            return nodeService.getPath(childRef.getParentRef());
+         }
+         else
+         {
+            return null;
+         }
       }
    };
    
    private NodePropertyResolver resolverDisplayPath = new NodePropertyResolver() {
       public Object get(Node node) {
-         return Repository.getDisplayPath((Path)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH));
+         ChildAssociationRef childRef =
+            (ChildAssociationRef)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+         if (nodeService.exists(childRef.getParentRef()))
+         {
+            return Repository.getDisplayPath(nodeService.getPath(childRef.getParentRef()), true);
+         }
+         else
+         {
+            return "";
+         }
       }
    };
    
@@ -624,6 +642,16 @@ public class TrashcanBean implements IContextListener
    }
    
    /**
+    * Action handler to setup actions that act on lists 
+    */
+   public void setupListAction(ActionEvent event)
+   {
+      // clear the UI state in preparation for finishing the next action
+      setDestination(null);
+      contextUpdated();
+   }
+   
+   /**
     * Delete single item OK button handler 
     */
    public String deleteItemOK()
@@ -739,27 +767,27 @@ public class TrashcanBean implements IContextListener
    {
       FacesContext fc = FacesContext.getCurrentInstance();
       
+      // restore the nodes - the user may have requested a restore to a different parent
+      List<NodeRef> nodeRefs = new ArrayList<NodeRef>(this.listedItems.size());
+      for (Node node : this.listedItems)
+      {
+         nodeRefs.add(node.getNodeRef());
+      }
+      List<RestoreNodeReport> reports;
+      if (this.destination == null)
+      {
+         reports = this.nodeArchiveService.restoreArchivedNodes(nodeRefs);
+      }
+      else
+      {
+         reports = this.nodeArchiveService.restoreArchivedNodes(nodeRefs, this.destination, null, null);
+      }
+      
       UserTransaction tx = null;
       try
       {
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
          tx.begin();
-         
-         // restore the nodes - the user may have requested a restore to a different parent
-         List<NodeRef> nodeRefs = new ArrayList<NodeRef>(this.listedItems.size());
-         for (Node node : this.listedItems)
-         {
-            nodeRefs.add(node.getNodeRef());
-         }
-         List<RestoreNodeReport> reports;
-         if (this.destination == null)
-         {
-            reports = this.nodeArchiveService.restoreArchivedNodes(nodeRefs);
-         }
-         else
-         {
-            reports = this.nodeArchiveService.restoreArchivedNodes(nodeRefs, this.destination, null, null);
-         }
          
          saveReportDetail(reports);
          
@@ -775,9 +803,6 @@ public class TrashcanBean implements IContextListener
          FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);
          fc.addMessage(null, facesMsg);
       }
-      
-      // clear the UI state in preparation for finishing the action
-      contextUpdated();
       
       return OUTCOME_RECOVERY_REPORT;
    }
@@ -789,24 +814,23 @@ public class TrashcanBean implements IContextListener
    {
       FacesContext fc = FacesContext.getCurrentInstance();
       
+      // restore all nodes - the user may have requested a restore to a different parent
+      List<RestoreNodeReport> reports;
+      if (this.destination == null)
+      {
+         reports = this.nodeArchiveService.restoreAllArchivedNodes(Repository.getStoreRef());
+      }
+      else
+      {
+         reports = this.nodeArchiveService.restoreAllArchivedNodes(Repository.getStoreRef(), this.destination, null, null);
+      }
+      
       UserTransaction tx = null;
       try
       {
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
          tx.begin();
          
-         // restore all nodes - the user may have requested a restore to a different parent
-         List<RestoreNodeReport> reports;
-         if (this.destination == null)
-         {
-            reports = this.nodeArchiveService.restoreAllArchivedNodes(Repository.getStoreRef());
-         }
-         else
-         {
-            reports = this.nodeArchiveService.restoreAllArchivedNodes(Repository.getStoreRef(), this.destination, null, null);
-         }
-         
-         // TODO: wrap all this in a UserTransaction - it performs a lot of getProperties()!
          saveReportDetail(reports);
          
          tx.commit();
@@ -821,9 +845,6 @@ public class TrashcanBean implements IContextListener
          FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);
          fc.addMessage(null, facesMsg);
       }
-      
-      // clear the UI state in preparation for finishing the action
-      contextUpdated();
       
       return OUTCOME_RECOVERY_REPORT;
    }
@@ -858,9 +879,6 @@ public class TrashcanBean implements IContextListener
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
       }
       
-      // clear the UI state in preparation for finishing the action
-      contextUpdated();
-      
       return OUTCOME_DIALOGCLOSE;
    }
    
@@ -878,9 +896,6 @@ public class TrashcanBean implements IContextListener
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
       }
-      
-      // clear the UI state in preparation for finishing the action
-      contextUpdated();
       
       return OUTCOME_DIALOGCLOSE;
    }
@@ -1100,10 +1115,11 @@ public class TrashcanBean implements IContextListener
          buf.append("</td><td>");
          buf.append(node.getName());
          buf.append("</td><td>");
-         Path path = (Path)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PATH);
-         if (path != null)
+         ChildAssociationRef childRef =
+            (ChildAssociationRef)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+         if (nodeService.exists(childRef.getParentRef()))
          {
-            buf.append(Repository.getDisplayPath(path));
+            buf.append(Repository.getNamePath(nodeService, nodeService.getPath(childRef.getParentRef()), null, "/", null));
          }
          buf.append("</td>");
          if (report)

@@ -55,7 +55,7 @@ public class NodePathTag extends HtmlComponentTag
       setActionListenerProperty((UICommand)component, this.actionListener);
       setBooleanProperty(component, "breadcrumb", this.breadcrumb);
       setBooleanProperty(component, "disabled", this.disabled);
-      setBooleanProperty(component, "showLeaf", this.disabled);
+      setBooleanProperty(component, "showLeaf", this.showLeaf);
       setStringBindingProperty(component, "value", this.value);
    }
    

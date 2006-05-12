@@ -224,9 +224,24 @@ public final class Repository
     */
    public static String getDisplayPath(Path path)
    {
+      return getDisplayPath(path, false);
+   }
+   
+   /**
+    * Return the human readable form of the specified node Path. Fast version of the method that
+    * simply converts QName localname components to Strings.
+    * 
+    * @param path       Path to extract readable form from
+    * @param showLeaf   Whether to process the final leaf element of the path
+    * 
+    * @return human readable form of the Path excluding the final element
+    */
+   public static String getDisplayPath(Path path, boolean showLeaf)
+   {
       StringBuilder buf = new StringBuilder(64);
       
-      for (int i=0; i<path.size()-1; i++)
+      int count = path.size() - (showLeaf ? 0 : 1);
+      for (int i=0; i<count; i++)
       {
          String elementString = null;
          Path.Element element = path.get(i);

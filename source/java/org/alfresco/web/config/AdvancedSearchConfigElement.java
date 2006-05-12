@@ -33,6 +33,7 @@ public class AdvancedSearchConfigElement extends ConfigElementAdapter
    public static final String CONFIG_ELEMENT_ID = "advanced-search";
    
    private List<String> contentTypes = null;
+   private List<String> folderTypes = null;
    private List<CustomProperty> customProps = null;
    
    /**
@@ -67,15 +68,22 @@ public class AdvancedSearchConfigElement extends ConfigElementAdapter
     */
    public ConfigElement combine(ConfigElement configElement)
    {
-      AdvancedSearchConfigElement existingElement = (AdvancedSearchConfigElement)configElement;
-      AdvancedSearchConfigElement newElement = new AdvancedSearchConfigElement();
+      AdvancedSearchConfigElement newElement = (AdvancedSearchConfigElement)configElement;
+      AdvancedSearchConfigElement combinedElement = new AdvancedSearchConfigElement();
       
       // just copy the list of types and properties from this instance to the new one
       if (this.contentTypes != null)
       {
          for (String type : this.contentTypes)
          {
-            newElement.addContentType(type);
+            combinedElement.addContentType(type);
+         }
+      }
+      if (this.folderTypes != null)
+      {
+         for (String type : this.folderTypes)
+         {
+            combinedElement.addFolderType(type);
          }
       }
       
@@ -83,28 +91,28 @@ public class AdvancedSearchConfigElement extends ConfigElementAdapter
       {
          for (CustomProperty property : this.customProps)
          {
-            newElement.addCustomProperty(property);
+            combinedElement.addCustomProperty(property);
          }
       }
       
       // now add those types and custom properties from the element to be combined
-      if (existingElement.getContentTypes() != null)
+      if (newElement.getContentTypes() != null)
       {
-         for (String type : existingElement.getContentTypes())
+         for (String type : newElement.getContentTypes())
          {
-            newElement.addContentType(type);
+            combinedElement.addContentType(type);
          }
       }
       
-      if (existingElement.getCustomProperties() != null)
+      if (newElement.getCustomProperties() != null)
       {
-         for (CustomProperty property : existingElement.getCustomProperties())
+         for (CustomProperty property : newElement.getCustomProperties())
          {
-            newElement.addCustomProperty(property);
+            combinedElement.addCustomProperty(property);
          }
       }
       
-      return newElement;
+      return combinedElement;
    }
 
    /** 
@@ -136,6 +144,38 @@ public class AdvancedSearchConfigElement extends ConfigElementAdapter
       if (this.contentTypes.contains(contentType) == false)
       {
          this.contentTypes.add(contentType);
+      }
+   }
+   
+   /** 
+    * @return Returns the folderTypes.
+    */
+   public List<String> getFolderTypes()
+   {
+      return this.folderTypes;
+   }
+
+   /**
+    * @param folderTypes The folderTypes to set.
+    */
+   /*package*/ void setFolderTypes(List<String> folderTypes)
+   {
+      this.folderTypes = folderTypes;
+   }
+   
+   /**
+    * @param folderType Adds the given folder type to the list
+    */
+   /*package*/ void addFolderType(String folderType)
+   {
+      if (this.folderTypes == null)
+      {
+         this.folderTypes = new ArrayList<String>(3);
+      }
+      
+      if (this.folderTypes.contains(folderType) == false)
+      {
+         this.folderTypes.add(folderType);
       }
    }
    

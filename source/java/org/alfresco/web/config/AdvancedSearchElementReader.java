@@ -34,6 +34,7 @@ import org.dom4j.Element;
 public class AdvancedSearchElementReader implements ConfigElementReader
 {
    public static final String ELEMENT_CONTENTTYPES = "content-types";
+   public static final String ELEMENT_FOLDERTYPES = "folder-types";
    public static final String ELEMENT_TYPE = "type";
    public static final String ELEMENT_CUSTOMPROPS = "custom-properties";
    public static final String ELEMENT_METADATA = "meta-data";
@@ -79,6 +80,24 @@ public class AdvancedSearchElementReader implements ConfigElementReader
                }
             }
             configElement.setContentTypes(types);
+         }
+         
+         // get the list of folder types
+         Element folderTypes = element.element(ELEMENT_FOLDERTYPES);
+         if (folderTypes != null)
+         {
+            Iterator<Element> typesItr = folderTypes.elementIterator(ELEMENT_TYPE);
+            List<String> types = new ArrayList<String>(5);
+            while (typesItr.hasNext())
+            {
+               Element folderType = typesItr.next();
+               String type = folderType.attributeValue(ATTRIBUTE_NAME);
+               if (type != null)
+               {
+                  types.add(type);
+               }
+            }
+            configElement.setFolderTypes(types);
          }
          
          // get the list of custom properties to display

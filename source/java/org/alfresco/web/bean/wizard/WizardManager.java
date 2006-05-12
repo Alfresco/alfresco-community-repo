@@ -116,6 +116,17 @@ public class WizardManager
    }
    
    /**
+    * Returns the error message to use in error conditions
+    * 
+    * @return The error message
+    */
+   public String getErrorMessage()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), 
+            this.currentWizardConfig.getErrorMessageId());
+   }
+   
+   /**
     * Returns the resolved title to use for the wizard
     * 
     * @return The title

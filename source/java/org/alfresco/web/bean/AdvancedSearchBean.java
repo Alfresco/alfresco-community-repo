@@ -523,6 +523,22 @@ public class AdvancedSearchBean
    }
    
    /**
+    * @return Returns the folder type currenty selected
+    */
+   public String getFolderType()
+   {
+      return this.folderType;
+   }
+
+   /**
+    * @param folderType Sets the currently selected folder type
+    */
+   public void setFolderType(String folderType)
+   {
+      this.folderType = folderType;
+   }
+   
+   /**
     * @return Returns the contentFormat.
     */
    public String getContentFormat()
@@ -571,16 +587,17 @@ public class AdvancedSearchBean
       {
          FacesContext context = FacesContext.getCurrentInstance();
          
+         DictionaryService dictionaryService = Repository.getServiceRegistry(context).getDictionaryService();
+         
          // add the well known cm:content object type by default
          this.contentTypes = new ArrayList<SelectItem>(5);
          this.contentTypes.add(new SelectItem(ContentModel.TYPE_CONTENT.toString(), 
-               Application.getMessage(context, MSG_CONTENT)));
+               dictionaryService.getType(ContentModel.TYPE_CONTENT).getTitle()));
          
          // add any configured content sub-types to the list
          List<String> types = getSearchConfig().getContentTypes();
          if (types != null)
          {
-            DictionaryService dictionaryService = Repository.getServiceRegistry(context).getDictionaryService();
             for (String type : types)
             {
                QName idQName = Repository.resolveToQName(type);
@@ -611,6 +628,58 @@ public class AdvancedSearchBean
       }
       
       return this.contentTypes;
+   }
+   
+   /**
+    * @return Returns a list of folder object types to allow the user to select from
+    */
+   public List<SelectItem> getFolderTypes()
+   {
+      if (this.folderTypes == null)
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         
+         DictionaryService dictionaryService = Repository.getServiceRegistry(context).getDictionaryService();
+         
+         // add the well known cm:folder object type by default
+         this.folderTypes = new ArrayList<SelectItem>(5);
+         this.folderTypes.add(new SelectItem(ContentModel.TYPE_FOLDER.toString(), 
+               dictionaryService.getType(ContentModel.TYPE_FOLDER).getTitle()));
+         
+         // add any configured folder sub-types to the list
+         List<String> types = getSearchConfig().getFolderTypes();
+         if (types != null)
+         {
+            for (String type : types)
+            {
+               QName idQName = Repository.resolveToQName(type);
+               if (idQName != null)
+               {
+                  TypeDefinition typeDef = dictionaryService.getType(idQName);
+                  
+                  if (typeDef != null && dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_FOLDER))
+                  {
+                     // try and get label from the dictionary
+                     String label = typeDef.getTitle();
+                     
+                     // else just use the localname
+                     if (label == null)
+                     {
+                        label = idQName.getLocalName();
+                     }
+                     
+                     this.folderTypes.add(new SelectItem(idQName.toString(), label));
+                  }
+               }
+            }
+            
+            // make sure the list is sorted by the label
+            QuickSort sorter = new QuickSort(this.folderTypes, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+            sorter.sort();
+         }
+      }
+      
+      return this.folderTypes;
    }
    
    /**
@@ -662,6 +731,7 @@ public class AdvancedSearchBean
       this.lookin = LOOKIN_ALL;
       this.contentType = null;
       this.contentFormat = null;
+      this.folderType = null;
       this.location = null;
       this.locationChildren = true;
       this.categories = new ArrayList<Node>(2);
@@ -820,6 +890,12 @@ public class AdvancedSearchBean
       if (this.contentType != null)
       {
          search.setContentType(this.contentType);
+      }
+      
+      // folder type restriction
+      if (this.folderType != null)
+      {
+         search.setFolderType(this.folderType);
       }
       
       // set the Search Context onto the top-level navigator bean
@@ -1168,6 +1244,7 @@ public class AdvancedSearchBean
       
       this.contentType = search.getContentType();
       this.contentFormat = search.getMimeType();
+      this.folderType = search.getFolderType();
       
       this.description = search.getAttributeQuery(ContentModel.PROP_DESCRIPTION);
       this.title = search.getAttributeQuery(ContentModel.PROP_TITLE);
@@ -1476,7 +1553,6 @@ public class AdvancedSearchBean
    // ------------------------------------------------------------------------------
    // Private data 
    
-   private static final String MSG_CONTENT = "content";
    private static final String MSG_ALL_FORMATS = "all_formats";
    private static final String MSG_ERROR_SAVE_SEARCH = "error_save_search";
    private static final String MSG_ERROR_RESTORE_SEARCH = "error_restore_search";
@@ -1536,17 +1612,23 @@ public class AdvancedSearchBean
    /** lookup of custom property QName string to DataTypeDefinition for the property */
    private Map<String, DataTypeDefinition> customPropertyLookup = null;
    
-   /** content types to for restricting searches */
-   private List<SelectItem> contentTypes;
-   
    /** content format list restricting searches */
    private List<SelectItem> contentFormats;
+   
+   /** content format selection */
+   private String contentFormat;
    
    /** content type selection */
    private String contentType;
    
-   /** content format selection */
-   private String contentFormat;
+   /** content types for restricting searches */
+   private List<SelectItem> contentTypes;
+   
+   /** folder type selection */
+   private String folderType;
+   
+   /** folder types for restricting searches */
+   private List<SelectItem> folderTypes;
    
    /** the text to search for */
    private String text = "";

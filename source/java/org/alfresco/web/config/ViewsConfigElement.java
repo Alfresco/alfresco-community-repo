@@ -101,18 +101,18 @@ public class ViewsConfigElement extends ConfigElementAdapter
     */
    public ConfigElement combine(ConfigElement configElement)
    {
-      ViewsConfigElement existingElement = (ViewsConfigElement)configElement;
-      ViewsConfigElement newElement = new ViewsConfigElement();
+      ViewsConfigElement newElement = (ViewsConfigElement)configElement;
+      ViewsConfigElement combinedElement = new ViewsConfigElement();
       
       // copy all the config from this element into the new one
       for (String viewImpl : this.views)
       {
-         newElement.addView(viewImpl);
+         combinedElement.addView(viewImpl);
       }
       
       for (String page : this.defaultViews.keySet())
       {
-         newElement.addDefaultView(page, this.defaultViews.get(page));
+         combinedElement.addDefaultView(page, this.defaultViews.get(page));
       }
       
       for (String pageView : this.pageSizes.keySet())
@@ -121,56 +121,56 @@ public class ViewsConfigElement extends ConfigElementAdapter
          {
             String page = pageView.substring(0, pageView.indexOf(SEPARATOR));
             String view = pageView.substring(pageView.indexOf(SEPARATOR)+1);
-            newElement.addDefaultPageSize(page, view, this.pageSizes.get(pageView).intValue());
+            combinedElement.addDefaultPageSize(page, view, this.pageSizes.get(pageView).intValue());
          }
       }
       
       for (String page : this.sortColumns.keySet())
       {
-         newElement.addDefaultSortColumn(page, this.sortColumns.get(page));
+         combinedElement.addDefaultSortColumn(page, this.sortColumns.get(page));
       }
       
       for (String page : this.sortDirections.keySet())
       {
-         newElement.addSortDirection(page, this.sortDirections.get(page));
+         combinedElement.addSortDirection(page, this.sortDirections.get(page));
       }
       
       // copy all the config from the element to be combined into the new one
-      for (String viewImpl : existingElement.getViews())
+      for (String viewImpl : newElement.getViews())
       {
-         newElement.addView(viewImpl);
+         combinedElement.addView(viewImpl);
       }
       
-      Map<String, String> existingDefaultViews = existingElement.getDefaultViews();
-      for (String page : existingDefaultViews.keySet())
+      Map<String, String> newDefaultViews = newElement.getDefaultViews();
+      for (String page : newDefaultViews.keySet())
       {
-         newElement.addDefaultView(page, existingDefaultViews.get(page));
+         combinedElement.addDefaultView(page, newDefaultViews.get(page));
       }
       
-      Map<String, Integer> existingPageSizes = existingElement.getDefaultPageSizes();
-      for (String pageView : existingPageSizes.keySet())
+      Map<String, Integer> newPageSizes = newElement.getDefaultPageSizes();
+      for (String pageView : newPageSizes.keySet())
       {
          if (pageView.indexOf(SEPARATOR) != -1)
          {
             String page = pageView.substring(0, pageView.indexOf(SEPARATOR));
             String view = pageView.substring(pageView.indexOf(SEPARATOR)+1);
-            newElement.addDefaultPageSize(page, view, existingPageSizes.get(pageView).intValue());
+            combinedElement.addDefaultPageSize(page, view, newPageSizes.get(pageView).intValue());
          }
       }
       
-      Map<String, String> existingSortColumns = existingElement.getDefaultSortColumns();
-      for (String page : existingSortColumns.keySet())
+      Map<String, String> newSortColumns = newElement.getDefaultSortColumns();
+      for (String page : newSortColumns.keySet())
       {
-         newElement.addDefaultSortColumn(page, existingSortColumns.get(page));
+         combinedElement.addDefaultSortColumn(page, newSortColumns.get(page));
       }
       
-      Map<String, String> existingSortDirs = existingElement.getSortDirections();
+      Map<String, String> existingSortDirs = newElement.getSortDirections();
       for (String page : existingSortDirs.keySet())
       {
-         newElement.addSortDirection(page, existingSortDirs.get(page));
+         combinedElement.addSortDirection(page, existingSortDirs.get(page));
       }
       
-      return newElement;
+      return combinedElement;
    }
 
    /**

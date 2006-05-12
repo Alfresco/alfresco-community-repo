@@ -69,28 +69,28 @@ public class LanguagesConfigElement extends ConfigElementAdapter
     */
    public ConfigElement combine(ConfigElement configElement)
    {
-      LanguagesConfigElement existingElement = (LanguagesConfigElement)configElement;
-      LanguagesConfigElement newElement = new LanguagesConfigElement();
+      LanguagesConfigElement newElement = (LanguagesConfigElement)configElement;
+      LanguagesConfigElement combinedElement = new LanguagesConfigElement();
 
       // add the languages from this config element
       for (String locale : this.languages)
       {
-         newElement.addLanguage(locale, this.localeMap.get(locale));
+         combinedElement.addLanguage(locale, this.localeMap.get(locale));
       }
       
       // now add the languages from the one to be combined (but 
       // only if they are not already in the list)
-      List<String> languages = existingElement.getLanguages();
+      List<String> languages = newElement.getLanguages();
       for (String locale : languages)
       {
-         if (newElement.getLabelForLanguage(locale) == null)
+         if (combinedElement.getLabelForLanguage(locale) == null)
          {
-            String label = existingElement.getLabelForLanguage(locale);
-            newElement.addLanguage(locale, label);
+            String label = newElement.getLabelForLanguage(locale);
+            combinedElement.addLanguage(locale, label);
          }
       }
       
-      return newElement;
+      return combinedElement;
    }
 
    /**

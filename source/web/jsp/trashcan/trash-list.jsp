@@ -113,9 +113,9 @@
                            </td>
                            
                            <td align=right style="white-space:nowrap">
-                              <%-- Current object actions --%>
-                              <a:actionLink value="#{msg.recover_all_items}" image="/images/icons/recover_all.gif" action="dialog:recoverAllItems"/>&nbsp;
-                              <a:actionLink value="#{msg.delete_all_items}" image="/images/icons/delete_all.gif" action="dialog:deleteAllItems"/>
+                              <%-- Admin only global actions --%>
+                              <a:actionLink value="#{msg.recover_all_items}" image="/images/icons/recover_all.gif" action="dialog:recoverAllItems" actionListener="#{TrashcanBean.setupListAction}" rendered="#{NavigationBean.currentUser.admin == true}" />&nbsp;
+                              <a:actionLink value="#{msg.delete_all_items}" image="/images/icons/delete_all.gif" action="dialog:deleteAllItems" actionListener="#{TrashcanBean.setupListAction}" rendered="#{NavigationBean.currentUser.admin == true}" />
                            </td>
                         </tr>
                      </table>
@@ -210,8 +210,8 @@
                               <div style="padding: 4px;"></div>
                               
                               <%-- Recover Listed Items actions --%>
-                              <a:actionLink value="#{msg.recover_listed_items}" image="/images/icons/recover_all.gif" action="dialog:recoverListedItems" />&nbsp;
-                              <a:actionLink value="#{msg.delete_listed_items}" image="/images/icons/delete_all.gif" action="dialog:deleteListedItems"/>
+                              <a:actionLink value="#{msg.recover_listed_items}" image="/images/icons/recover_all.gif" action="dialog:recoverListedItems" actionListener="#{TrashcanBean.setupListAction}" />&nbsp;
+                              <a:actionLink value="#{msg.delete_listed_items}" image="/images/icons/delete_all.gif" action="dialog:deleteListedItems" actionListener="#{TrashcanBean.setupListAction}" />
                               <div style="padding: 4px;"></div>
                               
                               <a:richList id="trashcan-list" binding="#{TrashcanBean.itemsRichList}" viewMode="details" pageSize="10"
@@ -238,7 +238,7 @@
                                     <f:facet name="header">
                                        <a:sortLink label="#{msg.original_location}" value="displayPath" styleClass="header"/>
                                     </f:facet>
-                                    <r:nodePath value="#{r.locationPath}" actionListener="#{BrowseBean.clickSpacePath}" showLeaf="#{r.isFolder == false}" />
+                                    <r:nodePath value="#{r.locationPath}" actionListener="#{BrowseBean.clickSpacePath}" showLeaf="true" />
                                  </a:column>
                                  
                                  <%-- Deleted Date column --%>
@@ -286,7 +286,7 @@
                               <table cellpadding="0" cellspacing="0" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.close}" action="dialog:close" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.close}" action="#{TrashcanBean.close}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

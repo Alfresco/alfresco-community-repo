@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import javax.faces.component.NamingContainer;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIParameter;
 import javax.faces.context.FacesContext;
@@ -108,6 +107,7 @@ public class UIActions extends SelfRenderingComponent
    /**
     * @see javax.faces.component.UIComponentBase#encodeBegin(javax.faces.context.FacesContext)
     */
+   @SuppressWarnings("unchecked")
    public void encodeBegin(FacesContext context) throws IOException
    {
       if (isRendered() == false)
@@ -130,12 +130,10 @@ public class UIActions extends SelfRenderingComponent
          return;
       }
       
-      ResponseWriter out = context.getResponseWriter();
-      
       String groupId = getValue();
       if (groupId != null && groupId.length() != 0)
       {
-         Config config = Application.getConfigService(context).getConfig("Actions");
+         Config config = Application.getConfigService(context).getGlobalConfig();
          if (config != null)
          {
             // find the Actions specific config element
@@ -222,11 +220,11 @@ public class UIActions extends SelfRenderingComponent
     * @param context
     * @param actionGroup
     */
+   @SuppressWarnings("unchecked")
    private void buildActionGroup(FacesContext context, ActionsConfigElement config, ActionGroup actionGroup)
       throws IOException
    {
       javax.faces.application.Application facesApp = context.getApplication();
-      Node node = getContext();
       ResourceBundle messages = Application.getBundle(context);
       
       // get overriding display attributes

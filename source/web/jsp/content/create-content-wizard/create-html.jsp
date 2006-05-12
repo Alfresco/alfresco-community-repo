@@ -47,11 +47,7 @@
    var isIE = (document.all);
    
 </script>
-</f:verbatim>
-                              
-<a:errors message="#{msg.error_wizard}" styleClass="errorMessage" />
-         
-<f:verbatim>                   
+
 <div id='editor' style='width:100%; height:360px'>
    </f:verbatim>
    <h:outputText value="#{WizardManager.bean.content}" escape="false" />

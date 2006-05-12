@@ -1,6 +1,6 @@
 <alfresco-config>
 
-   <config evaluator="string-compare" condition="Actions">
+   <config>
       <actions>
          <!-- each action is defined individually and then referenced in an 'action-group' block
               via an 'idref' attribute specifing the action definition to use -->
@@ -318,8 +318,7 @@
             </permissions>
             <label-id>create_content</label-id>
             <image>/images/icons/new_content.gif</image>
-            <action>createContent</action>
-            <action-listener>#{CreateContentWizard.startWizard}</action-listener>
+            <action>wizard:createContent</action>
          </action>
          
          <!-- Create space -->
@@ -330,7 +329,6 @@
             <label-id>create_space</label-id>
             <image>/images/icons/create_space.gif</image>
             <action>dialog:createSpace</action>
-            <!-- <action-listener>#{NewSpaceDialog.startWizard}</action-listener> -->
          </action>
          
          <!-- Create Advanced Space Wizard -->
@@ -341,7 +339,6 @@
             <label-id>advanced_space_wizard</label-id>
             <image>/images/icons/create_space.gif</image>
             <action>wizard:createSpace</action>
-            <!-- <action-listener>#{NewSpaceWizard.startWizard}</action-listener> -->
          </action>
          
          <!-- Manage Space Users -->
@@ -374,9 +371,6 @@
          
          <!-- Manage Deleted Items -->
          <action id="manage_deleted_items">
-            <permissions>
-               <permission allow="true">Write</permission>
-            </permissions>
             <label-id>manage_deleted_items</label-id>
             <image>/images/icons/trashcan.gif</image>
             <action>dialog:manageDeletedItems</action>
@@ -433,9 +427,9 @@
             <image>/images/icons/action.gif</image>
             <action>wizard:runAction</action>   
             <action-listener>#{WizardManager.setupParameters}</action-listener>
-		    <params>
-		       <param name="id">#{actionContext.id}</param>
-		    </params>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
          </action>
          
          <!-- Import into Space -->
@@ -466,7 +460,7 @@
          <!-- ReApply Rules -->
          <action id="reapply-rules">
          	<label-id>reapply_rules</label-id>
-            <image>/images/icons/export.gif</image>
+            <image>/images/icons/reapply_rules.gif</image>
             <action-listener>#{RulesBean.reapplyRules}</action-listener>
          </action>
          

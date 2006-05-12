@@ -41,6 +41,7 @@ public class DialogsElementReader implements ConfigElementReader
    public static final String ATTR_TITLE_ID = "title-id";
    public static final String ATTR_DESCRIPTION = "description";
    public static final String ATTR_DESCRIPTION_ID = "description-id";
+   public static final String ATTR_ERROR_MSG_ID = "error-message-id";
    
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
@@ -76,10 +77,11 @@ public class DialogsElementReader implements ConfigElementReader
             String titleId = item.attributeValue(ATTR_TITLE_ID);
             String description = item.attributeValue(ATTR_DESCRIPTION);
             String descriptionId = item.attributeValue(ATTR_DESCRIPTION_ID);
+            String errorMsgId = item.attributeValue(ATTR_ERROR_MSG_ID);
             
             DialogsConfigElement.DialogConfig cfg = new DialogsConfigElement.DialogConfig(
                   name, page, bean, actions, icon, title, titleId, description, 
-                  descriptionId);
+                  descriptionId, errorMsgId);
             
             configElement.addDialog(cfg);
          }

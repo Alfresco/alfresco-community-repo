@@ -402,6 +402,24 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    border-color: #003366;
 }
 
+.recoveredItemsList
+{
+   padding: 2px;
+   background-color: #EEEEEE;
+   border-width: 1px;
+   border-style: solid;
+   border-color: #AAAAAA;
+}
+
+.failedItemsList
+{
+   padding: 2px;
+   background-color: #EEEEEE;
+   border-width: 1px;
+   border-style: solid;
+   border-color: #e00028;
+}
+
 .wizardSectionHeading
 {
    padding: 2px;

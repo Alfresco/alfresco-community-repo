@@ -20,12 +20,6 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<%-- Edit Space Dialog Fragment --%>
-
-<%-- TODO: Move this to the container page and add error-message-id attribute to dialog config --%>
-
-<a:errors message="#{msg.error_dialog}" styleClass="errorMessage" />
-
 <h:panelGrid columns="1" rowClasses="wizardSectionHeading, paddingRow" 
              cellpadding="2" cellspacing="2" width="100%">
    <h:outputText value="#{msg.space_props}" />

@@ -121,13 +121,12 @@
                                  </tr>
                                  <tr><td colspan=2 class="paddingRow"></td></tr>
                                  <tr>
-
                                     <td>
                                        <h:outputText value="#{msg.destination}" />:&nbsp;
                                     </td>
                                     <td width=100%>
                                        <r:spaceSelector id="space-selector" label="#{msg.select_destination_prompt}" 
-                                            value="#{TrashcanBean.destination}"  styleClass="selector" />
+                                            value="#{TrashcanBean.destination}" styleClass="selector" />
                                     </td>
                                  </tr>
                                  <tr><td colspan=2 class="paddingRow"></td></tr>

@@ -104,7 +104,7 @@
                                  </tr>
                                  <tr>
                                     <td>
-                                       <h:outputText value="#{TrashcanBean.listedItems}" escape="false" />
+                                       <h:outputText value="#{TrashcanBean.listedItemsTable}" escape="false" />
                                     </td>
                                  </tr>
                                  <tr>

@@ -72,21 +72,21 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     */
    public ConfigElement combine(ConfigElement configElement)
    {
-      PropertySheetConfigElement combined = new PropertySheetConfigElement();
+      PropertySheetConfigElement combinedElement = new PropertySheetConfigElement();
       
       // add all the existing properties
       for (ItemConfig item : this.getItems().values())
       {
-         combined.addItem(item);
+         combinedElement.addItem(item);
       }
       
       // add all the properties from the given element
       for (ItemConfig item : ((PropertySheetConfigElement)configElement).getItems().values())
       {
-         combined.addItem(item);
+         combinedElement.addItem(item);
       }
       
-      return combined;
+      return combinedElement;
    }
    
    /**

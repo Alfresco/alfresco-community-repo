@@ -130,11 +130,13 @@ public class DialogsConfigElement extends ConfigElementAdapter
       protected String titleId;
       protected String description;
       protected String descriptionId;
+      protected String errorMsgId = "error_dialog";
       
       public DialogConfig(String name, String page, String bean,
                           String actionsConfigId, String icon, 
                           String title, String titleId,
-                          String description, String descriptionId)
+                          String description, String descriptionId,
+                          String errorMsgId)
       {
          // check the mandatory parameters are present
          ParameterCheck.mandatoryString("name", name);
@@ -150,6 +152,11 @@ public class DialogsConfigElement extends ConfigElementAdapter
          this.titleId = titleId;
          this.description = description;
          this.descriptionId = descriptionId;
+         
+         if (errorMsgId != null && errorMsgId.length() > 0)
+         {
+            this.errorMsgId = errorMsgId;
+         }
       }
       
       public String getDescription()
@@ -197,6 +204,11 @@ public class DialogsConfigElement extends ConfigElementAdapter
          return this.titleId;
       }
       
+      public String getErrorMessageId()
+      {
+         return this.errorMsgId;
+      }
+      
       /**
        * @see java.lang.Object#toString()
        */
@@ -212,7 +224,8 @@ public class DialogsConfigElement extends ConfigElementAdapter
          buffer.append(" title=").append(this.title);
          buffer.append(" titleId=").append(this.titleId);
          buffer.append(" description=").append(this.description);
-         buffer.append(" descriptionId=").append(this.descriptionId).append(")");
+         buffer.append(" descriptionId=").append(this.descriptionId);
+         buffer.append(" errorMsgId=").append(this.errorMsgId).append(")");
          return buffer.toString();
       }
    }

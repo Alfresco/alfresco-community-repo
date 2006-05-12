@@ -52,8 +52,6 @@ public class AlfrescoNavigationHandler extends NavigationHandler
    public final static String CLOSE_WIZARD_OUTCOME = WIZARD_PREFIX + "close";
    
    protected final static String CONFIG_NAV_BEAN = "NavigationBean";
-   protected final static String CONFIG_DIALOGS = "Dialogs";
-   protected final static String CONFIG_WIZARDS = "Wizards";
    
    protected String dialogContainer = null;
    protected String wizardContainer = null;
@@ -252,8 +250,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
    /**
     * Returns the dialog configuration object for the given dialog name.
     * If there is a node in the dispatch context a lookup is performed using
-    * the node. If this doesn't return any config or there is no dispatch
-    * context node a 'global' dialog lookup is performed.
+    * the node otherwise the global config section is used.
     * 
     * 
     * @param name The name of dialog being launched
@@ -265,32 +262,26 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       DialogConfig dialogConfig = null;
       ConfigService configSvc = Application.getConfigService(context);
       
+      Config config = null;
+      
       if (dispatchContext != null)
       {
-         Config config = configSvc.getConfig(dispatchContext);
-         if (config != null)
-         {
-            DialogsConfigElement dialogsCfg = (DialogsConfigElement)config.getConfigElement(
-                  DialogsConfigElement.CONFIG_ELEMENT_ID);
-            if (dialogsCfg != null)
-            {
-               dialogConfig = dialogsCfg.getDialog(name);
-            }
-         }
+         // use the node to perform the lookup (this will include the global section)
+         config = configSvc.getConfig(dispatchContext);
       }
-      
-      // if we didn't find a dialog via the dispatch look it up in the 'global' dialogs config
-      if (dialogConfig == null)
+      else
       {
-         Config config = configSvc.getConfig(CONFIG_DIALOGS);
-         if (config != null)
+         // just use the global 
+         config = configSvc.getGlobalConfig();
+      }
+
+      if (config != null)
+      {
+         DialogsConfigElement dialogsCfg = (DialogsConfigElement)config.getConfigElement(
+               DialogsConfigElement.CONFIG_ELEMENT_ID);
+         if (dialogsCfg != null)
          {
-            DialogsConfigElement dialogsCfg = (DialogsConfigElement)config.getConfigElement(
-                  DialogsConfigElement.CONFIG_ELEMENT_ID);
-            if (dialogsCfg != null)
-            {
-               dialogConfig = dialogsCfg.getDialog(name);
-            }
+            dialogConfig = dialogsCfg.getDialog(name);
          }
       }
       
@@ -300,7 +291,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
    /**
     * Returns the wizard configuration object for the given wizard name.
     * If there is a node in the dispatch context a lookup is performed using
-    * the node otherwise a 'global' wizard lookup is performed.
+    * the node otherwise the global config section is used.
     * 
     * @param name The name of wizard being launched
     * @param dispatchContext The node being acted upon
@@ -311,32 +302,26 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       WizardConfig wizardConfig = null;
       ConfigService configSvc = Application.getConfigService(context);
       
+      Config config = null;
+      
       if (dispatchContext != null)
       {
-         Config config = configSvc.getConfig(dispatchContext);
-         if (config != null)
-         {
-            WizardsConfigElement wizardsCfg = (WizardsConfigElement)config.getConfigElement(
-                  WizardsConfigElement.CONFIG_ELEMENT_ID);
-            if (wizardsCfg != null)
-            {
-               wizardConfig = wizardsCfg.getWizard(name);
-            }
-         }
+         // use the node to perform the lookup (this will include the global section)
+         config = configSvc.getConfig(dispatchContext);
       }
-      
-      // if we didn't find a dialog via the dispatch look it up in the 'global' wizards config
-      if (wizardConfig == null)
+      else
       {
-         Config config = configSvc.getConfig(CONFIG_WIZARDS);
-         if (config != null)
+         // just use the global 
+         config = configSvc.getGlobalConfig();
+      }
+
+      if (config != null)
+      {
+         WizardsConfigElement wizardsCfg = (WizardsConfigElement)config.getConfigElement(
+               WizardsConfigElement.CONFIG_ELEMENT_ID);
+         if (wizardsCfg != null)
          {
-            WizardsConfigElement wizardsCfg = (WizardsConfigElement)config.getConfigElement(
-                  WizardsConfigElement.CONFIG_ELEMENT_ID);
-            if (wizardsCfg != null)
-            {
-               wizardConfig = wizardsCfg.getWizard(name);
-            }
+            wizardConfig = wizardsCfg.getWizard(name);
          }
       }
       
@@ -354,11 +339,11 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       if (this.dialogContainer == null)
       {
          ConfigService configSvc = Application.getConfigService(context);
-         Config dialogsConfig = configSvc.getConfig(CONFIG_DIALOGS);
+         Config globalConfig = configSvc.getGlobalConfig();
          
-         if (dialogsConfig != null)
+         if (globalConfig != null)
          {
-            this.dialogContainer = dialogsConfig.getConfigElement("dialog-container").getValue();
+            this.dialogContainer = globalConfig.getConfigElement("dialog-container").getValue();
          }
       }
       
@@ -376,11 +361,11 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       if (this.wizardContainer == null)
       {
          ConfigService configSvc = Application.getConfigService(context);
-         Config wizardsConfig = configSvc.getConfig(CONFIG_WIZARDS);
+         Config globalConfig = configSvc.getGlobalConfig();
          
-         if (wizardsConfig != null)
+         if (globalConfig != null)
          {
-            this.wizardContainer = wizardsConfig.getConfigElement("wizard-container").getValue();
+            this.wizardContainer = globalConfig.getConfigElement("wizard-container").getValue();
          }
       }
       

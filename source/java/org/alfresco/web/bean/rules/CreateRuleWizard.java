@@ -243,7 +243,7 @@ public class CreateRuleWizard extends BaseActionWizard
          Config wizardCfg = svc.getConfig("Action Wizards");
          if (wizardCfg != null)
          {
-            ConfigElement typesCfg = wizardCfg.getConfigElement("types");
+            ConfigElement typesCfg = wizardCfg.getConfigElement("subtypes");
             if (typesCfg != null)
             {
                this.modelTypes = new ArrayList<SelectItem>();
@@ -277,12 +277,12 @@ public class CreateRuleWizard extends BaseActionWizard
             }
             else
             {
-               logger.warn("Could not find types configuration element");
+               logger.warn("Could not find 'subtypes' configuration element");
             }
          }
          else
          {
-            logger.warn("Could not find Action Wizards configuration section");
+            logger.warn("Could not find 'Action Wizards' configuration section");
          }
       }
       

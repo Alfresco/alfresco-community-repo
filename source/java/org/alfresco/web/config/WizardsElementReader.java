@@ -49,6 +49,7 @@ public class WizardsElementReader implements ConfigElementReader
    public static final String ATTR_DESCRIPTION_ID = "description-id";
    public static final String ATTR_INSTRUCTION = "instruction";
    public static final String ATTR_INSTRUCTION_ID = "instruction-id";
+   public static final String ATTR_ERROR_MSG_ID = "error-message-id";
    public static final String ATTR_IF = "if";
    public static final String ATTR_PATH = "path";
    
@@ -85,10 +86,11 @@ public class WizardsElementReader implements ConfigElementReader
             String titleId = wizard.attributeValue(ATTR_TITLE_ID);
             String description = wizard.attributeValue(ATTR_DESCRIPTION);
             String descriptionId = wizard.attributeValue(ATTR_DESCRIPTION_ID);
+            String errorMsgId = wizard.attributeValue(ATTR_ERROR_MSG_ID);
             
             // create the wizard config object
             WizardsConfigElement.WizardConfig wizardCfg = new WizardsConfigElement.WizardConfig(
-                  name, bean, actions, icon, title, titleId, description, descriptionId);
+                  name, bean, actions, icon, title, titleId, description, descriptionId, errorMsgId);
             
             Iterator<Element> steps = wizard.elementIterator(ELEMENT_STEP);
             while (steps.hasNext())

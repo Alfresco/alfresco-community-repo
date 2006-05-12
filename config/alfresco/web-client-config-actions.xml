@@ -460,7 +460,7 @@
          <!-- ReApply Rules -->
          <action id="reapply-rules">
          	<label-id>reapply_rules</label-id>
-            <image>/images/icons/export.gif</image>
+            <image>/images/icons/reapply_rules.gif</image>
             <action-listener>#{RulesBean.reapplyRules}</action-listener>
          </action>
          

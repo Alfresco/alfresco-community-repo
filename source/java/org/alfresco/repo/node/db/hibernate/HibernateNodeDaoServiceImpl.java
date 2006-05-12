@@ -36,6 +36,7 @@ import org.alfresco.repo.domain.hibernate.StoreImpl;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -56,9 +57,6 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements NodeDaoService
 {
     private static final String QUERY_GET_ALL_STORES = "store.GetAllStores";
-    private static final String QUERY_GET_NODE_ASSOC = "node.GetNodeAssoc";
-    private static final String QUERY_GET_NODE_ASSOC_TARGETS = "node.GetNodeAssocTargets";
-    private static final String QUERY_GET_NODE_ASSOC_SOURCES = "node.GetNodeAssocSources";
     private static final String QUERY_GET_CONTENT_DATA_STRINGS = "node.GetContentDataStrings";
     
     /** a uuid identifying this unique instance */
@@ -469,62 +467,27 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             final Node targetNode,
             final QName assocTypeQName)
     {
-        HibernateCallback callback = new HibernateCallback()
+        AssociationRef nodeAssocRef = new AssociationRef(
+                sourceNode.getNodeRef(),
+                assocTypeQName,
+                targetNode.getNodeRef());
+        // get all the source's target associations
+        Collection<NodeAssoc> assocs = sourceNode.getTargetNodeAssocs();
+        // hunt down the desired assoc
+        for (NodeAssoc assoc : assocs)
         {
-            public Object doInHibernate(Session session)
+            // is it a match?
+            if (!assoc.getNodeAssocRef().equals(nodeAssocRef))    // not a match
             {
-                Query query = session.getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODE_ASSOC);
-                query.setEntity("sourceNode", sourceNode)
-                     .setEntity("targetNode", targetNode)
-                     .setString("assocTypeQName", assocTypeQName.toString())
-                     .setMaxResults(1);
-                return query.uniqueResult();
+                continue;
             }
-        };
-        Object queryResult = getHibernateTemplate().execute(callback);
-        if (queryResult == null)
-        {
-            return null;
+            else
+            {
+                return assoc;
+            }
         }
-        NodeAssoc assoc = (NodeAssoc) queryResult;
-        // done
-        return assoc;
-    }
-
-    @SuppressWarnings("unchecked")
-    public Collection<Node> getNodeAssocTargets(final Node sourceNode, final QName assocTypeQName)
-    {
-        HibernateCallback callback = new HibernateCallback()
-        {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session.getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODE_ASSOC_TARGETS);
-                query.setEntity("sourceNode", sourceNode)
-                     .setString("assocTypeQName", assocTypeQName.toString());
-                return query.list();
-            }
-        };
-        List<Node> queryResults = (List) getHibernateTemplate().execute(callback);
-        // done
-        return queryResults;
-    }
-
-    @SuppressWarnings("unchecked")
-    public Collection<Node> getNodeAssocSources(final Node targetNode, final QName assocTypeQName)
-    {
-        HibernateCallback callback = new HibernateCallback()
-        {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session.getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODE_ASSOC_SOURCES);
-                query.setEntity("targetNode", targetNode)
-                     .setString("assocTypeQName", assocTypeQName.toString());
-                return query.list();
-            }
-        };
-        List<Node> queryResults = (List) getHibernateTemplate().execute(callback);
-        // done
-        return queryResults;
+        // not found
+        return null;
     }
 
     public void deleteNodeAssoc(NodeAssoc assoc)

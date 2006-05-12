@@ -16,7 +16,6 @@
  */
 package org.alfresco.repo.node.db;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.repo.domain.ChildAssoc;
@@ -172,16 +171,6 @@ public interface NodeDaoService
             Node sourceNode,
             Node targetNode,
             QName assocTypeQName);
-    
-    /**
-     * @return Returns the target nodes for the association
-     */
-    public Collection<Node> getNodeAssocTargets(Node sourceNode, QName assocTypeQName);
-    
-    /**
-     * @return Returns the source nodes for the association
-     */
-    public Collection<Node> getNodeAssocSources(Node targetNode, QName assocTypeQName);
     
     /**
      * @param assoc the node association to remove

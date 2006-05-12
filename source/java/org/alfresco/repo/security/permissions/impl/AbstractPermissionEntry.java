@@ -69,6 +69,17 @@ public abstract class AbstractPermissionEntry implements PermissionEntry
         return hashCode;
     }
 
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(200);
+        sb.append("PermissionEntry")
+          .append("[ authority=").append(getAuthority())
+          .append(", permission=").append(getPermissionReference())
+          .append(", access=").append(getAccessStatus())
+          .append("]");
+        return sb.toString();
+    }
     
 
 }

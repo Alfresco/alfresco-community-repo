@@ -31,7 +31,6 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
@@ -41,8 +40,6 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -64,6 +61,7 @@ public class FileImporterTest extends TestCase
     private PermissionService permissionService;
     private MimetypeService mimetypeService;
     private NamespaceService namespaceService;
+    private TransactionService transactionService;
 
     private ServiceRegistry serviceRegistry;
     private NodeRef rootNodeRef;
@@ -91,13 +89,14 @@ public class FileImporterTest extends TestCase
         permissionService = serviceRegistry.getPermissionService();
         mimetypeService = serviceRegistry.getMimetypeService();
         namespaceService = serviceRegistry.getNamespaceService();
+        transactionService = serviceRegistry.getTransactionService();
 
         authenticationComponent.setSystemUserAsCurrentUser();
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
     }
 
-    private FileImporter createFileImporter()
+    private FileImporter createFileImporter(boolean txnPerFile)
     {
         FileImporterImpl fileImporter = new FileImporterImpl();
         fileImporter.setAuthenticationService(authenticationService);
@@ -105,19 +104,21 @@ public class FileImporterTest extends TestCase
         fileImporter.setMimetypeService(mimetypeService);
         fileImporter.setNodeService(nodeService);
         fileImporter.setDictionaryService(dictionaryService);
+        fileImporter.setTransactionService(transactionService);
+        fileImporter.setTxnPerFile(txnPerFile);
         return fileImporter;
     }
 
     public void testCreateFile() throws Exception
     {
-        FileImporter fileImporter = createFileImporter();
+        FileImporter fileImporter = createFileImporter(false);
         File file = AbstractContentTransformerTest.loadQuickTestFile("xml");
         fileImporter.loadFile(rootNodeRef, file);
     }
 
     public void testLoadRootNonRecursive1()
     {
-        FileImporter fileImporter = createFileImporter();
+        FileImporter fileImporter = createFileImporter(false);
         URL url = this.getClass().getClassLoader().getResource("");
         File rootFile = new File(url.getFile());
         int count = fileImporter.loadFile(rootNodeRef, rootFile);
@@ -126,7 +127,7 @@ public class FileImporterTest extends TestCase
 
     public void testLoadRootNonRecursive2()
     {
-        FileImporter fileImporter = createFileImporter();
+        FileImporter fileImporter = createFileImporter(false);
         URL url = this.getClass().getClassLoader().getResource("");
         File root = new File(url.getFile());
         int count = fileImporter.loadFile(rootNodeRef, root, null, false);
@@ -135,7 +136,7 @@ public class FileImporterTest extends TestCase
 
     public void testLoadXMLFiles()
     {
-        FileImporter fileImporter = createFileImporter();
+        FileImporter fileImporter = createFileImporter(false);
         URL url = this.getClass().getClassLoader().getResource("");
         FileFilter filter = new XMLFileFilter();
         fileImporter.loadFile(rootNodeRef, new File(url.getFile()), filter, true);
@@ -143,7 +144,7 @@ public class FileImporterTest extends TestCase
 
     public void testLoadSourceTestResources()
     {
-        FileImporter fileImporter = createFileImporter();
+        FileImporter fileImporter = createFileImporter(false);
         URL url = this.getClass().getClassLoader().getResource("quick");
         FileFilter filter = new QuickFileFilter();
         fileImporter.loadFile(rootNodeRef, new File(url.getFile()), filter, true);
@@ -173,6 +174,7 @@ public class FileImporterTest extends TestCase
      *            <li>String: Directory to use as source (e.g. c:/temp)
      *            <li>String: New name to give the source.  It may have a suffix added (e.g. upload_xxx)
      *            <li>Integer: Number of times to repeat the load.
+     *            <li>Boolean: (optional - default 'false') Create each file/folder in a new transaction
      *            <li>String: (optional) user to authenticate as
      *            <li>String: (optional) password for authentication
      *            </ol>
@@ -191,8 +193,9 @@ public class FileImporterTest extends TestCase
         File sourceFile = new File(args[2]);
         String baseName = args[3];
         int target = Integer.parseInt(args[4]);
-        String userName = args.length > 5 ? args[5] : null;
-        String userPwd = args.length > 6 ? args[6] : "";
+        Boolean txnPerFile = args.length > 5 ? Boolean.parseBoolean(args[5]) : false;
+        String userName = args.length > 6 ? args[6] : null;
+        String userPwd = args.length > 7 ? args[7] : "";
         while (count < target)
         {
             count++;
@@ -240,13 +243,19 @@ public class FileImporterTest extends TestCase
                             userPwd,
                             test.authenticationService,
                             test.authenticationComponent);
-                    tx.commit();
+                }
+                tx.commit();
+
+                // only begin if we are doing it all in one transaction
+                if (!txnPerFile)
+                {
                     tx = transactionService.getUserTransaction();
                     tx.begin();
                 }
-
+                
                 long start = System.nanoTime();
-                int importCount = test.createFileImporter().loadNamedFile(
+                FileImporter importer = test.createFileImporter(txnPerFile);
+                int importCount = importer.loadNamedFile(
                         importLocation,
                         sourceFile,
                         true,
@@ -257,7 +266,10 @@ public class FileImporterTest extends TestCase
                 System.out.println("Created in: " + ((end - start) / 1000000.0) + "ms");
                 start = System.nanoTime();
 
-                tx.commit();
+                if (!txnPerFile)
+                {
+                    tx.commit();
+                }
                 end = System.nanoTime();
                 long second = end-start;
                 System.out.println("Committed in: " + ((end - start) / 1000000.0) + "ms");
@@ -265,55 +277,6 @@ public class FileImporterTest extends TestCase
                 System.out.println("Grand Total: "+ grandTotal);
                 System.out.println("Imported: " + importCount + " files or directories");
                 System.out.println("Average: " + (importCount / (total / 1000.0)) + " files per second");
-                
-                tx = transactionService.getUserTransaction(); 
-                tx.begin();
-                SearchParameters sp = new SearchParameters();
-                sp.setLanguage("lucene");
-                sp.setQuery("ISNODE:T");
-                sp.addStore(spacesStore);
-                start = System.nanoTime();
-                ResultSet rs = test.searchService.query(sp);
-                end = System.nanoTime();
-                System.out.println("Find all in: " + ((end - start) / 1000000.0) + "ms");
-                System.out.println("     = "+rs.length() +"\n\n");
-                rs.close();
-                
-                sp = new SearchParameters();
-                sp.setLanguage("lucene");
-                sp.setQuery("TEXT:\"andy\"");
-                sp.addStore(spacesStore);
-                start = System.nanoTime();
-                rs = test.searchService.query(sp);
-                end = System.nanoTime();
-                System.out.println("Find andy in: " + ((end - start) / 1000000.0) + "ms");
-                System.out.println("     = "+rs.length() +"\n\n");
-                rs.close();
-                
-                sp = new SearchParameters();
-                sp.setLanguage("lucene");
-                sp.setQuery("TYPE:\"" + ContentModel.TYPE_CONTENT.toString()  + "\"");
-                sp.addStore(spacesStore);
-                start = System.nanoTime();
-                rs = test.searchService.query(sp);
-                end = System.nanoTime();
-                System.out.println("Find content in: " + ((end - start) / 1000000.0) + "ms");
-                System.out.println("     = "+rs.length() +"\n\n");
-                rs.close();
-                
-                sp = new SearchParameters();
-                sp.setLanguage("lucene");
-                sp.setQuery("PATH:\"/*/*/*\"");
-                sp.addStore(spacesStore);
-                start = System.nanoTime();
-                rs = test.searchService.query(sp);
-                end = System.nanoTime();
-                System.out.println("Find /*/*/* in: " + ((end - start) / 1000000.0) + "ms");
-                System.out.println("     = "+rs.length() +"\n\n");
-                rs.close();
-                
-                tx.commit();
-                
             }
             catch (Throwable e)
             {

@@ -77,7 +77,7 @@ public class TrashcanBean implements IContextListener
    private static final String MSG_RECOVERED_ITEM_FAILURE_S = "recovered_item_failure_short";
    private static final String MSG_RECOVERED_ITEM_SUCCESS = "recovered_item_success";
    private static final String MSG_RECOVERY_REASON = "recovery_report_reason";
-   private static final String MSG_ORIGINAL_LOCATION = "original_location";
+   private static final String MSG_LOCATION = "location";
    private static final String MSG_NAME = "name";
    
    private static final String PROP_RECOVERSTATUS = "recoverstatus";
@@ -352,7 +352,7 @@ public class TrashcanBean implements IContextListener
     */
    public String getListedItemsTable()
    {
-      return buildItemsTable(getListedItems(), "recoveredItemsList", false);
+      return buildItemsTable(getListedItems(), "recoveredItemsList", false, true);
    }
    
    /**
@@ -360,7 +360,7 @@ public class TrashcanBean implements IContextListener
     */
    public String getSuccessItemsTable()
    {
-      return buildItemsTable(this.successItems, "recoveredItemsList", false);
+      return buildItemsTable(this.successItems, "recoveredItemsList", false, false);
    }
    
    /**
@@ -368,7 +368,7 @@ public class TrashcanBean implements IContextListener
     */
    public String getFailureItemsTable()
    {
-      return buildItemsTable(this.failureItems, "failedItemsList", true);
+      return buildItemsTable(this.failureItems, "failedItemsList", true, false);
    }
    
    /**
@@ -1066,14 +1066,17 @@ public class TrashcanBean implements IContextListener
    /**
     * Build an HTML table of the items that are to be or have been recovered.   
     * 
-    * @param items      List of Node objects to display in the table
-    * @param cssClass   CSS style to apply to the table
-    * @param report     Set true to report the reason for any failure. This flag requires that the Node
-    *                   object has a pseudo property "recoverstatus" containing the RestoreStatus.
+    * @param items          List of Node objects to display in the table
+    * @param cssClass       CSS style to apply to the table
+    * @param report         Set true to report the reason for any failure. This flag requires that the Node
+    *                       object has a pseudo property "recoverstatus" containing the RestoreStatus.
+    * @param archivedPath   Set true to show the path from the 'sys:archivedOriginalParentAssoc' property,
+    *                       else the current Node Path will be used.
+    *                   
     * 
     * @return HTML table of node info
     */
-   private String buildItemsTable(List<Node> items, String cssClass, boolean report)
+   private String buildItemsTable(List<Node> items, String cssClass, boolean report, boolean archivedPath)
    {
       FacesContext fc = FacesContext.getCurrentInstance();
       String contextPath = fc.getExternalContext().getRequestContextPath();
@@ -1087,14 +1090,18 @@ public class TrashcanBean implements IContextListener
       // title row
       buf.append("<tr style='border-bottom:1px'><th></th><th align=left><b>");
       buf.append(Application.getMessage(fc, MSG_NAME));
-      buf.append("</b></th><th align=left><b>");
-      buf.append(Application.getMessage(fc, MSG_ORIGINAL_LOCATION));
       buf.append("</b></th>");
-      if (report)
+      if (report == true)
       {
          buf.append("<th align=left>");
          buf.append(Application.getMessage(fc, MSG_RECOVERY_REASON));
          buf.append("</th>");
+      }
+      else
+      {
+         buf.append("<th align=left><b>");
+         buf.append(Application.getMessage(fc, MSG_LOCATION));
+         buf.append("</b></th>");
       }
       buf.append("</tr>");
       for (Node node : items)
@@ -1114,14 +1121,8 @@ public class TrashcanBean implements IContextListener
          buf.append("<img width=16 height=16 alt='' src='").append(contextPath).append(img).append("'>");
          buf.append("</td><td>");
          buf.append(node.getName());
-         buf.append("</td><td>");
-         ChildAssociationRef childRef =
-            (ChildAssociationRef)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
-         if (nodeService.exists(childRef.getParentRef()))
-         {
-            buf.append(Repository.getNamePath(nodeService, nodeService.getPath(childRef.getParentRef()), null, "/", null));
-         }
          buf.append("</td>");
+         
          if (report)
          {
             buf.append("<td>");
@@ -1147,6 +1148,25 @@ public class TrashcanBean implements IContextListener
             buf.append(Application.getMessage(fc, msg));
             buf.append("</td>");
          }
+         else
+         {
+            buf.append("<td>");
+            if (archivedPath)
+            {
+               ChildAssociationRef childRef =
+                  (ChildAssociationRef)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+               if (nodeService.exists(childRef.getParentRef()))
+               {
+                  buf.append(Repository.getNamePath(nodeService, nodeService.getPath(childRef.getParentRef()), null, "/", null));
+               }
+            }
+            else
+            {
+               buf.append(Repository.getNamePath(nodeService, nodeService.getPath(node.getNodeRef()), null, "/", null));
+            }
+            buf.append("</td>");
+         }
+
          buf.append("</tr>");
       }
       // end table

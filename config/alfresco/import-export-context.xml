@@ -94,6 +94,9 @@
 		<property name="nodeService">
 			<ref bean="NodeService" />
 		</property>
+        <property name="systemExporter">
+            <ref bean="systemExporterImporter" />
+        </property>
 		<property name="stores">
             <list>
                 <props>
@@ -109,6 +112,10 @@
                     <prop key="packageName">spaces</prop>
                 </props>
                 <props>
+                    <prop key="storeRef">${spaces.archive.store}</prop>
+                    <prop key="packageName">spaces_archive</prop>
+                </props>
+                <props>
                     <prop key="storeRef">workspace://lightWeightVersionStore</prop>
                     <prop key="packageName">versions</prop>
                 </props>
@@ -116,6 +123,40 @@
 		</property>
 	</bean>
 
+    <bean id="systemExporterImporter" class="org.alfresco.repo.importer.system.SystemExporterImporter">
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>      
+      <property name="patchDao">
+         <ref bean="patchDaoComponent" />
+      </property>
+      <property name="versionDao">
+         <ref bean="versionCounterDaoComponent" />
+      </property>
+    </bean>
+    
+
+    <!-- System Info Importer -->
+    
+    <bean id="systemInfoImporter" class="org.alfresco.repo.importer.system.SystemInfoBootstrap" abstract="true">
+        <property name="transactionService">
+            <ref bean="transactionComponent"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent" />
+        </property>
+        <property name="systemImporter">
+            <ref bean="systemExporterImporter" />
+        </property>
+        <property name="mustNotExistStoreUrls">
+            <list>
+                <value>${system.store}</value>
+            </list>
+        </property>
+    </bean>
 
 	<!-- General Repository Store Importer -->
 

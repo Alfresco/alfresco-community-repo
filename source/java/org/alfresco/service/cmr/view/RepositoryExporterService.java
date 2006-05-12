@@ -70,6 +70,7 @@ public interface RepositoryExporterService
     {
         public StoreRef storeRef;
         public String packageName;
+        public String mimeType; 
     }
 
     /**

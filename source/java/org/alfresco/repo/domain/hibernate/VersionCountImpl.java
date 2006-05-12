@@ -85,7 +85,7 @@ public class VersionCountImpl implements VersionCount
     /**
      * For Hibernate use
      */
-    private void setVersionCount(int versionCount)
+    public void setVersionCount(int versionCount)
     {
         this.versionCount = versionCount;
     }

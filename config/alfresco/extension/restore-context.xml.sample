@@ -3,6 +3,12 @@
 
 <beans>
 
+    <bean id="systemInfoBootstrap" parent="systemInfoImporter">
+        <property name="bootstrapView">
+        	<value>alfresco/extension/restore/export_systeminfo.xml</value>
+        </property>
+    </bean>
+
     <bean id="userBootstrap" parent="userStoreImporter">
         <property name="bootstrapViews">
             <list>
@@ -37,6 +43,17 @@
             </list>
         </property>
         <property name="log"><value>true</value></property>
+    </bean>
+
+    <bean id="spacesArchiveBootstrap" parent="spacesArchiveStoreImporter">
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/extension/restore/export_spaces_archive.acp</prop>
+                </props>
+            </list>
+        </property>
     </bean>
 
     <bean id="spacesBootstrap" parent="spacesStoreImporter">

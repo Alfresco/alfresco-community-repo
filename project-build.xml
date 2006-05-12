@@ -9,9 +9,12 @@
    </target>
 
    <target name="compile-jibx" depends="init">
-      <bind verbose="false" load="true" binding="${file.jibx.binding}">
+      <bind verbose="false" load="true" binding="${file.jibx.binding.m2}">
          <classpathset dir="${dir.classes}"/>
       </bind>
+      <bind verbose="false" load="true" binding="${file.jibx.binding.systeminfo}">
+	     <classpathset dir="${dir.classes}"/>
+	  </bind>
    </target>
 
    <target name="build-single-jar" depends="common.compile-java" description="Build an self-contained executable jar" >

@@ -56,4 +56,11 @@ public interface VersionCount
      * @see #incrementVersionCount()
      */
     public int getVersionCount();
+    
+    /**
+     * Sets the current version counter
+     * 
+     * @param  versionCount  the new version counter
+     */
+    public void setVersionCount(int versionCount);
 }

@@ -116,7 +116,6 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
      * 
      * TODO: Consider if this information needs to be persisted for recovery
      */
-
     private Set<NodeRef> deletions = new LinkedHashSet<NodeRef>();
 
     /**
@@ -801,7 +800,7 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
         if (commandList.size() > 0)
         {
             Command last = commandList.get(commandList.size() - 1);
-            if (last.action == command.action)
+            if ((last.action == command.action) && (last.nodeRef.equals(command.nodeRef)))
             {
                 return;
             }
@@ -842,7 +841,7 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
             Command current = it.previous();
             if (matchExact)
             {
-                if (current.action == command.action)
+                if ((current.action == command.action) && (current.nodeRef.equals(command.nodeRef)))
                 {
                     it.remove();
                     return;

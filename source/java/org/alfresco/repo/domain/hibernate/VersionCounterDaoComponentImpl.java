@@ -179,4 +179,22 @@ public class VersionCounterDaoComponentImpl
         // get an incremented count
         versionCounter.resetVersionCount();
     }
+    
+    /**
+     * Sets the version number for a specified store.
+     * 
+     * WARNING: calling this method will completely reset the current 
+     * version count for the specified store and cannot be undone.  
+     *
+     * @param storeRef  the store reference
+     * @param versionCount  the new version count
+     */
+    public synchronized void setVersionNumber(StoreRef storeRef, int versionCount)
+    {
+        // get the version counter
+        VersionCount versionCounter = getVersionCounter(storeRef);
+        // get an incremented count
+        versionCounter.setVersionCount(versionCount);
+    }
+    
 }

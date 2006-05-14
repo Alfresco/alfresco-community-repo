@@ -27,6 +27,9 @@
 
 	<!-- Bootstrap Files -->
 
+    <bean id="systemInfoBootstrap" parent="systemInfoImporter">
+    </bean>
+
     <bean id="userBootstrap" parent="userStoreImporter">
         <property name="bootstrapViews">
             <list>

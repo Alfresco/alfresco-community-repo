@@ -64,13 +64,13 @@ public class RepositoryExporterComponentTest extends BaseSpringTest
     {
         FileExportHandle[] handles = repositoryService.export("test");
         assertNotNull(handles);
-        assertEquals(4, handles.length);
+        assertEquals(6, handles.length);
         for (FileExportHandle tempFile : handles)
         {
             assertTrue(tempFile.exportFile.exists());
         }
     }
-
+        
     public void xtestRepositoryExport()
         throws Exception
     {
@@ -82,7 +82,7 @@ public class RepositoryExporterComponentTest extends BaseSpringTest
         // Export stores
         RepositoryExportHandle[] handles = repositoryService.export(container.getNodeRef(), "test");
         assertNotNull(handles);
-        assertEquals(4, handles.length);
+        assertEquals(6, handles.length);
         for (RepositoryExportHandle handle : handles)
         {
             assertTrue(nodeService.exists(handle.exportFile));

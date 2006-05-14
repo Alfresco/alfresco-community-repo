@@ -1206,24 +1206,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         return assocRef;
     }
     
-    public void testAssociationToIncorrectNodeType() throws Exception
-    {
-        AssociationRef assocRef = createAssociation();
-        NodeRef sourceRef = assocRef.getSourceRef();
-        NodeRef targetRef = assocRef.getTargetRef();
-        QName qname = assocRef.getTypeQName();
-        try
-        {
-            // attempt the association in reverse
-            nodeService.createAssociation(sourceRef, targetRef, qname);
-            fail("Incorrect node type not detected");
-        }
-        catch (RuntimeException e)
-        {
-            // expected
-        }
-    }
-    
     public void testDuplicateAssociationDetection() throws Exception
     {
         AssociationRef assocRef = createAssociation();

@@ -74,13 +74,24 @@ public class NodeAssocImpl implements NodeAssoc
     
     public AssociationRef getNodeAssocRef()
     {
+        boolean trashReference = false;
         // first check if it is available
         refReadLock.lock();
         try
         {
             if (nodeAssocRef != null)
             {
-                return nodeAssocRef;
+                // double check that the parent and child node references match those of our reference
+                if (nodeAssocRef.getSourceRef() != source.getNodeRef() ||
+                        nodeAssocRef.getTargetRef() != target.getNodeRef())
+                {
+                    trashReference = true;
+                }
+                else
+                {
+                    // we are sure that the reference is correct
+                    return nodeAssocRef;
+                }
             }
         }
         finally
@@ -92,7 +103,7 @@ public class NodeAssocImpl implements NodeAssoc
         try
         {
             // double check
-            if (nodeAssocRef == null )
+            if (nodeAssocRef == null || trashReference)
             {
                 nodeAssocRef = new AssociationRef(
                         getSource().getNodeRef(),

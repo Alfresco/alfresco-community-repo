@@ -209,7 +209,6 @@
          <action-group id="space_details_actions">
             <action idref="discuss_node" />
             <action idref="create_forum_node" />
-            <action idref="run_action" />
          </action-group>
          
          <!-- Actions Menu for Forums Details page -->

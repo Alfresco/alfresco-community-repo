@@ -278,7 +278,7 @@
                         </a:column>
                         
                         <%-- Space Actions column --%>
-                        <a:column actions="true" style="text-align:left">
+                        <a:column id="space-actions" actions="true" style="text-align:left">
                            <f:facet name="header">
                               <h:outputText value="#{msg.actions}"/>
                            </f:facet>
@@ -287,7 +287,7 @@
                            <r:actions id="acts1" value="space_browse" context="#{r}" showLink="false" styleClass="inlineAction" />
                            
                            <%-- More actions menu --%>
-                           <a:menu itemSpacing="4" image="/images/icons/more.gif" tooltip="#{msg.more_actions}" menuStyleClass="moreActionsMenu">
+                           <a:menu id="spaces-more-menu" itemSpacing="4" image="/images/icons/more.gif" tooltip="#{msg.more_actions}" menuStyleClass="moreActionsMenu">
                               <r:actions id="acts2" value="space_browse_menu" context="#{r}" />
                            </a:menu>
                         </a:column>
@@ -399,7 +399,7 @@
                         </a:column>
                         
                         <%-- Content Actions column --%>
-                        <a:column actions="true" style="text-align:left">
+                        <a:column id="content-actions" actions="true" style="text-align:left">
                            <f:facet name="header">
                               <h:outputText value="#{msg.actions}"/>
                            </f:facet>
@@ -408,7 +408,7 @@
                            <r:actions id="acts3" value="document_browse" context="#{r}" showLink="false" styleClass="inlineAction" />
                            
                            <%-- More actions menu --%>
-                           <a:menu itemSpacing="4" image="/images/icons/more.gif" tooltip="#{msg.more_actions}" menuStyleClass="moreActionsMenu">
+                           <a:menu id="content-more-menu" itemSpacing="4" image="/images/icons/more.gif" tooltip="#{msg.more_actions}" menuStyleClass="moreActionsMenu">
                               <r:actions id="acts4" value="document_browse_menu" context="#{r}" />
                            </a:menu>
                         </a:column>

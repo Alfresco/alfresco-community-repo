@@ -57,7 +57,6 @@ public class ArchiveAndRestoreTest extends TestCase
     private static final String USER_A = "aaaaa";
     private static final String USER_B = "bbbbb";
     private static final QName ASPECT_ATTACHABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "attachable");
-    private static final QName ASPECT_ATTACHABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "attachable");
     private static final QName ASSOC_ATTACHMENTS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "attachments");
     private static final QName QNAME_A = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "a");
     private static final QName QNAME_B = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "b");

@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.avm.hibernate.BasicAttributesBean;
+import org.alfresco.repo.avm.hibernate.BasicAttributesBeanImpl;
 import org.alfresco.repo.avm.hibernate.DirectoryEntry;
 import org.alfresco.repo.avm.hibernate.LayeredDirectoryNodeBean;
 import org.alfresco.repo.avm.hibernate.LayeredDirectoryNodeBeanImpl;
@@ -31,7 +33,7 @@ import org.alfresco.repo.avm.hibernate.LayeredDirectoryNodeBeanImpl;
  * Interface for a layered directory node.  Stub.
  * @author britt
  */
-public class LayeredDirectoryNode extends DirectoryNode
+public class LayeredDirectoryNode extends DirectoryNode implements Layered
 {
     /**
      * The underlying bean data.
@@ -55,6 +57,14 @@ public class LayeredDirectoryNode extends DirectoryNode
      */
     public LayeredDirectoryNode(String indirection, Repository repos)
     {
+        long time = System.currentTimeMillis();
+        BasicAttributesBean attrs = new BasicAttributesBeanImpl("britt",
+                                                                "britt",
+                                                                "britt",
+                                                                time,
+                                                                time,
+                                                                time);
+        repos.getSuperRepository().getSession().save(attrs);
         fData = new LayeredDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
                                                  -1,
                                                  -1,
@@ -62,6 +72,7 @@ public class LayeredDirectoryNode extends DirectoryNode
                                                  null,
                                                  null,
                                                  repos.getDataBean(),
+                                                 attrs,
                                                  -1,
                                                  indirection);
         setDataBean(fData);
@@ -74,8 +85,15 @@ public class LayeredDirectoryNode extends DirectoryNode
      * @param repos The Repository object we use.
      */
     public LayeredDirectoryNode(LayeredDirectoryNode other,
-                                    Repository repos)
+                                Repository repos)
     {
+        LayeredDirectoryNodeBean thatBean = (LayeredDirectoryNodeBean)other.getDataBean();
+        BasicAttributesBean attrs = new BasicAttributesBeanImpl(thatBean.getBasicAttributes());
+        long time = System.currentTimeMillis();
+        attrs.setModDate(time);
+        attrs.setAccessDate(time);
+        attrs.setLastModifier("britt");
+        repos.getSuperRepository().getSession().save(attrs);
         fData = new LayeredDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
                                                  -1,
                                                  -1,
@@ -83,11 +101,12 @@ public class LayeredDirectoryNode extends DirectoryNode
                                                  null,
                                                  null,
                                                  repos.getDataBean(),
+                                                 attrs,
                                                  -1,
                                                  other.getUnderlying());
-        fData.setAdded(((LayeredDirectoryNodeBean)other.getDataBean()).getAdded());
-        fData.setDeleted(((LayeredDirectoryNodeBean)other.getDataBean()).getDeleted());
-        fData.setPrimaryIndirection(((LayeredDirectoryNodeBean)other.getDataBean()).getPrimaryIndirection());
+        fData.setAdded(thatBean.getAdded());
+        fData.setDeleted(thatBean.getDeleted());
+        fData.setPrimaryIndirection(thatBean.getPrimaryIndirection());
         repos.getSuperRepository().getSession().save(fData);
     }
     
@@ -101,6 +120,12 @@ public class LayeredDirectoryNode extends DirectoryNode
                                 Repository repos,
                                 Lookup lPath)
     {
+        BasicAttributesBean attrs = new BasicAttributesBeanImpl(other.getDataBean().getBasicAttributes());
+        long time = System.currentTimeMillis();
+        attrs.setModDate(time);
+        attrs.setAccessDate(time);
+        attrs.setLastModifier("britt");
+        repos.getSuperRepository().getSession().save(attrs);
         fData = new LayeredDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
                                                  -1,
                                                  -1,
@@ -108,6 +133,7 @@ public class LayeredDirectoryNode extends DirectoryNode
                                                  null,
                                                  null,
                                                  repos.getDataBean(),
+                                                 attrs,
                                                  -1,
                                                  null);
         // TODO Is this right?
@@ -116,6 +142,7 @@ public class LayeredDirectoryNode extends DirectoryNode
         repos.getSuperRepository().getSession().save(fData);
     }
 
+    // TODO Something.
     public LayeredDirectoryNode(DirectoryNode dir,
                                 Repository repo,
                                 Lookup srcLookup,

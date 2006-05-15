@@ -81,10 +81,11 @@ public class LayeredDirectoryNodeBeanImpl extends DirectoryNodeBeanImpl implemen
                                         AVMNodeBean mergedFrom,
                                         DirectoryNodeBean parent,
                                         RepositoryBean repository,
+                                        BasicAttributesBean attrs,
                                         long layerID,
                                         String indirection)
     {
-        super(id, versionID, branchID, ancestor, mergedFrom, parent, repository);
+        super(id, versionID, branchID, ancestor, mergedFrom, parent, repository, attrs);
         fLayerID = layerID;
         fIndirection = indirection;
         fAdded = new HashMap<String, DirectoryEntry>();

@@ -80,7 +80,15 @@ public class TestPopulate extends TestCase
                     Issuer contentIssuer = new Issuer("content", 0);
                     Issuer repositoryIssuer = new Issuer("repository", 0);
                     // Make the initial root directory.
-                    PlainDirectoryNodeBean root = 
+                    long time = System.currentTimeMillis();
+                    BasicAttributesBean attrs = new BasicAttributesBeanImpl("britt",
+                                                                            "britt",
+                                                                            "britt",
+                                                                            time,
+                                                                            time,
+                                                                            time);
+                    session.save(attrs);
+                    PlainDirectoryNodeBean root =   
                         new PlainDirectoryNodeBeanImpl(nodeIssuer.issue(),        
                                                        0,
                                                        0,
@@ -88,6 +96,7 @@ public class TestPopulate extends TestCase
                                                        null,
                                                        null,
                                                        null,
+                                                       attrs,
                                                        true);
                     // Make a new repository.
                     RepositoryBean rep = 
@@ -112,11 +121,19 @@ public class TestPopulate extends TestCase
                     // Now read some things back, and modify some stuff.
                     Issuer nodeIssuer = (Issuer)session.get(Issuer.class, "node");
                     Issuer contentIssuer = (Issuer)session.get(Issuer.class, "content");
-                    RepositoryBean rep = (RepositoryBean)session.get(RepositoryBeanImpl.class, 0L);
+                    RepositoryBean rep = (RepositoryBean)session.get(RepositoryBeanImpl.class, "main");
                     long version = rep.getNextVersionID();
                     rep.setNextVersionID(version + 1);
                     assertTrue(rep != null);
                     PlainDirectoryNodeBean root = (PlainDirectoryNodeBean)rep.getRoot();
+                    long time = System.currentTimeMillis();
+                    BasicAttributesBean attrs = new BasicAttributesBeanImpl("britt",
+                                                                            "britt",
+                                                                            "britt",
+                                                                            time,
+                                                                            time,
+                                                                            time);
+                    session.save(attrs);
                     PlainDirectoryNodeBean newRoot = new PlainDirectoryNodeBeanImpl(nodeIssuer.issue(),
                                                                                     version,
                                                                                     0L,
@@ -124,8 +141,11 @@ public class TestPopulate extends TestCase
                                                                                     null,
                                                                                     null,
                                                                                     rep,
+                                                                                    attrs,
                                                                                     true);
                     ContentBean content = new ContentBeanImpl(contentIssuer.issue());
+                    attrs = new BasicAttributesBeanImpl(attrs);
+                    session.save(attrs);
                     PlainFileNodeBean file = new PlainFileNodeBeanImpl(nodeIssuer.issue(),
                                                                        version,
                                                                        0L,
@@ -133,6 +153,7 @@ public class TestPopulate extends TestCase
                                                                        null,
                                                                        newRoot,
                                                                        rep,
+                                                                       attrs,
                                                                        content);
                     content.setRefCount(content.getRefCount() + 1);
                     newRoot.getChildren().put("foo", new DirectoryEntry(AVMNodeType.PLAIN_FILE, file));
@@ -141,6 +162,8 @@ public class TestPopulate extends TestCase
                     content = new ContentBeanImpl(contentIssuer.issue());
                     content.setRefCount(content.getRefCount() + 1);
                     file.setIsNew(false);
+                    attrs = new BasicAttributesBeanImpl(attrs);
+                    session.save(attrs);
                     file = new PlainFileNodeBeanImpl(nodeIssuer.issue(),
                                                      version,
                                                      0L,
@@ -148,6 +171,7 @@ public class TestPopulate extends TestCase
                                                      null,
                                                      newRoot,
                                                      rep,
+                                                     attrs,
                                                      content);
                     session.save(content);
                     file.setIsNew(false);
@@ -187,11 +211,11 @@ public class TestPopulate extends TestCase
             {
                 public void perform(Session session)
                 {
-                    RepositoryBean rep = (RepositoryBean)session.get(RepositoryBeanImpl.class, 0L);
+                    RepositoryBean rep = (RepositoryBean)session.get(RepositoryBeanImpl.class, "main");
                     PlainDirectoryNodeBean root = (PlainDirectoryNodeBean)rep.getRoot();
                     PlainDirectoryNodeBean prev = (PlainDirectoryNodeBean)root.getAncestor();
+                    rep.getRoots().remove(rep.getRoot().getId());
                     rep.setRoot(prev);
-                    rep.getRoots().remove(1);
                     for (String name : root.getChildren().keySet())
                     {
                         AVMNodeBean child = root.getChildren().get(name).getChild();

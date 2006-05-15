@@ -154,7 +154,7 @@ public interface AVMService
      * @param name The name of the Repository.
      * @return A Set of version IDs
      */
-    public Set<Integer> getRepositoryVersions(String name);
+    public Set<Long> getRepositoryVersions(String name);
     
     /**
      * Lookup a node by version ids and path.  Note that an AVMNode is essentially

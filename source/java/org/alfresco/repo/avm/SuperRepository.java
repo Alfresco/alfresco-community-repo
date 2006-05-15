@@ -165,7 +165,7 @@ public interface SuperRepository
      * @param name The name of the repository.
      * @return A Set of IDs.
      */
-    public Set<Integer> getRepositoryVersions(String name);
+    public Set<Long> getRepositoryVersions(String name);
     
     /**
      * Issue a unique identifier for a new node.

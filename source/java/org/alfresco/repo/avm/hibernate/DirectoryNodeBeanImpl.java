@@ -46,8 +46,9 @@ public class DirectoryNodeBeanImpl extends AVMNodeBeanImpl implements DirectoryN
                                  AVMNodeBean ancestor,
                                  AVMNodeBean mergedFrom,
                                  DirectoryNodeBean parent,
-                                 RepositoryBean repository)
+                                 RepositoryBean repository,
+                                 BasicAttributesBean attrs)
     {
-        super(id, versionID, branchID, ancestor, mergedFrom, parent, repository);
+        super(id, versionID, branchID, ancestor, mergedFrom, parent, repository, attrs);
     }
 }

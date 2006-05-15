@@ -374,7 +374,7 @@ public class SuperRepositoryImpl implements SuperRepository
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.SuperRepository#getRepositoryVersions(java.lang.String)
      */
-    public Set<Integer> getRepositoryVersions(String name)
+    public Set<Long> getRepositoryVersions(String name)
     {
         Repository rep = getRepositoryByName(name);
         return rep.getVersions();

@@ -59,6 +59,11 @@ public class AVMNodeBeanImpl implements AVMNodeBean
     private RepositoryBean fRepository;
     
     /**
+     * The BasicAttributes.
+     */
+    private BasicAttributesBean fBasicAttributes;
+    
+    /**
      * Whether this node is new (and should therefore not be COWed).
      */
     private boolean fIsNew;
@@ -91,7 +96,8 @@ public class AVMNodeBeanImpl implements AVMNodeBean
                            AVMNodeBean ancestor,
                            AVMNodeBean mergedFrom,
                            DirectoryNodeBean parent,
-                           RepositoryBean repository)
+                           RepositoryBean repository,
+                           BasicAttributesBean attrs)
     {
         fID = id;
         fVersionID = versionID;
@@ -101,6 +107,7 @@ public class AVMNodeBeanImpl implements AVMNodeBean
         fParent = parent;
         fRepository = repository;
         fIsNew = true;
+        fBasicAttributes = attrs;
     }
     
     /* (non-Javadoc)
@@ -271,5 +278,21 @@ public class AVMNodeBeanImpl implements AVMNodeBean
     public void setVers(long vers)
     {
         fVers = vers;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.hibernate.AVMNodeBean#getBasicAttributes()
+     */
+    public BasicAttributesBean getBasicAttributes()
+    {
+        return fBasicAttributes;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.hibernate.AVMNodeBean#setBasicAttributes(org.alfresco.repo.avm.hibernate.BasicAttributesBean)
+     */
+    public void setBasicAttributes(BasicAttributesBean attrs)
+    {
+        fBasicAttributes = attrs;
     }
 }

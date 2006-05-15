@@ -10,6 +10,9 @@
 		</id>
 		<discriminator column="class_type" type="string" length="20"></discriminator>
 		<version column="vers" name="vers" type="long"></version>
+		<many-to-one name="basicAttributes" column="basic_attrs"
+			class="BasicAttributesBeanImpl" unique="true" cascade="all">
+		</many-to-one>
 		<many-to-one name="ancestor" column="ancestor_id"
 			class="AVMNodeBeanImpl">
 		</many-to-one>
@@ -94,5 +97,18 @@
 				<property name="indirection" type="string" length="511" column="indirection"></property>
 			</subclass>
 		</subclass>
+	</class>
+	<class name="BasicAttributesBeanImpl" proxy="BasicAttributesBean"
+		lazy="true" optimistic-lock="version" table="basic_attributes">
+		<id name="id" type="long">
+			<generator class="native"></generator>
+		</id>
+		<version column="vers" name="vers" type="long"></version>		
+		<property name="creator" type="string" not-null="true"></property>
+		<property name="owner" type="string" not-null="true"></property>
+		<property name="lastModifier" type="string" not-null="true"></property>
+		<property name="createDate" type="long" not-null="true"></property>
+		<property name="modDate" type="long" not-null="true"></property>
+		<property name="accessDate" type="long" not-null="true"></property>
 	</class>
 </hibernate-mapping>

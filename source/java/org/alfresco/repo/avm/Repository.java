@@ -131,7 +131,7 @@ public interface Repository
      * Get the version ids that this Repository has.
      * @return A Set of Version IDs.
      */
-    public Set<Integer> getVersions();
+    public Set<Long> getVersions();
     
     /**
      * Get the data bean.

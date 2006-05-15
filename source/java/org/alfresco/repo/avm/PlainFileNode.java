@@ -17,6 +17,8 @@
 
 package org.alfresco.repo.avm;
 
+import org.alfresco.repo.avm.hibernate.BasicAttributesBean;
+import org.alfresco.repo.avm.hibernate.BasicAttributesBeanImpl;
 import org.alfresco.repo.avm.hibernate.ContentBean;
 import org.alfresco.repo.avm.hibernate.ContentBeanImpl;
 import org.alfresco.repo.avm.hibernate.PlainFileNodeBean;
@@ -50,6 +52,14 @@ public class PlainFileNode extends FileNode
     public PlainFileNode(Repository repos)
     {
         ContentBean content = new ContentBeanImpl(repos.getSuperRepository().issueContentID());
+        long time = System.currentTimeMillis();
+        BasicAttributesBean attrs = new BasicAttributesBeanImpl("britt",
+                                                                "britt",
+                                                                "britt",
+                                                                time,
+                                                                time,
+                                                                time);
+        repos.getSuperRepository().getSession().save(attrs);
         fData = new PlainFileNodeBeanImpl(repos.getSuperRepository().issueID(),
                                           -1,
                                           -1,
@@ -57,6 +67,7 @@ public class PlainFileNode extends FileNode
                                           null,
                                           null,
                                           repos.getDataBean(),
+                                          attrs,
                                           content);
         content.setRefCount(1);
         // Transitive persistence should take care of content.
@@ -72,6 +83,12 @@ public class PlainFileNode extends FileNode
     public PlainFileNode(PlainFileNode other,
                          Repository repos)
     {
+        long time = System.currentTimeMillis();
+        BasicAttributesBean attrs = new BasicAttributesBeanImpl(other.getDataBean().getBasicAttributes());
+        attrs.setCreateDate(time);
+        attrs.setModDate(time);
+        attrs.setAccessDate(time);
+        repos.getSuperRepository().getSession().save(attrs);
         fData = new PlainFileNodeBeanImpl(repos.getSuperRepository().issueID(),
                                           -1,
                                           -1,
@@ -79,6 +96,7 @@ public class PlainFileNode extends FileNode
                                           null,
                                           null,
                                           repos.getDataBean(),
+                                          attrs,
                                           other.fData.getContent());
         repos.getSuperRepository().getSession().save(fData);
         fData.getContent().setRefCount(fData.getContent().getRefCount() + 1);

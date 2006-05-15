@@ -54,9 +54,10 @@ public class LayeredFileNodeBeanImpl extends FileNodeBeanImpl implements
                                    AVMNodeBean mergedFrom,
                                    DirectoryNodeBean parent,
                                    RepositoryBean repository,
+                                   BasicAttributesBean attrs,
                                    String indirection)
     {
-        super(id, versionID, branchID, ancestor, mergedFrom, parent, repository);
+        super(id, versionID, branchID, ancestor, mergedFrom, parent, repository, attrs);
         fIndirection = indirection;
     }
 

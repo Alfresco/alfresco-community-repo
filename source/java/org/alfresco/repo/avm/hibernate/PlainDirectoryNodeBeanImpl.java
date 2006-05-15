@@ -61,9 +61,10 @@ public class PlainDirectoryNodeBeanImpl extends DirectoryNodeBeanImpl implements
                                       AVMNodeBean mergedFrom,
                                       DirectoryNodeBean parent,
                                       RepositoryBean repository,
+                                      BasicAttributesBean attrs,
                                       boolean isRoot)
     {
-        super(id, versionID, branchID, ancestor, mergedFrom, parent, repository);
+        super(id, versionID, branchID, ancestor, mergedFrom, parent, repository, attrs);
         fChildren = new HashMap<String, DirectoryEntry>();
         fIsRoot = isRoot;
     }

@@ -393,11 +393,11 @@ public class AVMServiceImpl implements AVMService
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMService#getRepositoryVersions(java.lang.String)
      */
-    public Set<Integer> getRepositoryVersions(final String name)
+    public Set<Long> getRepositoryVersions(final String name)
     {
         class HTxnCallback implements HibernateTxnCallback
         {
-            public Set<Integer> versions;
+            public Set<Long> versions;
             
             public void perform(Session session)
             {

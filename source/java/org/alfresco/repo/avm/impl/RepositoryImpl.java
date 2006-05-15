@@ -26,10 +26,12 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMNode;
+import org.alfresco.repo.avm.AVMNodeFactory;
 import org.alfresco.repo.avm.DirectoryNode;
 import org.alfresco.repo.avm.FileContent;
 import org.alfresco.repo.avm.FileNode;
 import org.alfresco.repo.avm.FolderEntry;
+import org.alfresco.repo.avm.Layered;
 import org.alfresco.repo.avm.LayeredDirectoryNode;
 import org.alfresco.repo.avm.LayeredFileNode;
 import org.alfresco.repo.avm.Lookup;
@@ -38,6 +40,8 @@ import org.alfresco.repo.avm.PlainFileNode;
 import org.alfresco.repo.avm.Repository;
 import org.alfresco.repo.avm.SuperRepository;
 import org.alfresco.repo.avm.hibernate.AVMNodeBean;
+import org.alfresco.repo.avm.hibernate.BasicAttributesBean;
+import org.alfresco.repo.avm.hibernate.BasicAttributesBeanImpl;
 import org.alfresco.repo.avm.hibernate.DirectoryEntry;
 import org.alfresco.repo.avm.hibernate.DirectoryNodeBean;
 import org.alfresco.repo.avm.hibernate.PlainDirectoryNodeBean;
@@ -71,6 +75,14 @@ public class RepositoryImpl implements Repository
         fSuper = superRepo;
         fData = new RepositoryBeanImpl(name, null);
         fSuper.getSession().save(fData);
+        long time = System.currentTimeMillis();
+        BasicAttributesBean attrs = new BasicAttributesBeanImpl("britt",
+                                                                "britt",
+                                                                "britt",
+                                                                time,
+                                                                time,
+                                                                time);
+        superRepo.getSession().save(attrs);
         PlainDirectoryNodeBean rootBean = 
             new PlainDirectoryNodeBeanImpl(fSuper.issueID(),
                                            fData.getNextVersionID(),
@@ -79,6 +91,7 @@ public class RepositoryImpl implements Repository
                                            null,
                                            null,
                                            fData,
+                                           attrs,
                                            true // is root
                                            );
         fSuper.getSession().save(rootBean);
@@ -349,13 +362,13 @@ public class RepositoryImpl implements Repository
         dstDir.addChild(dstName, dstNode, dPath);
     }
 
+    // TODO Should this be propagated out to SuperRepository.
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.Repository#getVersions()
      */
-    public Set<Integer> getVersions()
+    public Set<Long> getVersions()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return fData.getRoots().keySet();
     }
 
     /* (non-Javadoc)
@@ -363,8 +376,7 @@ public class RepositoryImpl implements Repository
      */
     public RepositoryBean getDataBean()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return fData;
     }
 
     /* (non-Javadoc)
@@ -372,8 +384,7 @@ public class RepositoryImpl implements Repository
      */
     public SuperRepository getSuperRepository()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return fSuper;
     }
 
     /* (non-Javadoc)
@@ -381,8 +392,52 @@ public class RepositoryImpl implements Repository
      */
     public Lookup lookup(int version, String path)
     {
-        // TODO Auto-generated method stub
-        return null;
+        Lookup result = new Lookup(this, fData.getName());
+        if (path.length() == 0)
+        {
+            throw new AlfrescoRuntimeException("Invalid path: " + path);
+        }
+        String[] pathElements = path.split("/");
+        DirectoryNode dir = null;
+        if (version < 0)
+        {
+            dir = (DirectoryNode)AVMNodeFactory.CreateFromBean(fData.getRoot());
+        }
+        else
+        {
+            AVMNodeBean bean = fData.getRoots().get(version);
+            if (bean == null)
+            {
+                throw new AlfrescoRuntimeException("Invalid version: " + version);
+            }
+            dir = (DirectoryNode)AVMNodeFactory.CreateFromBean(bean);
+        }
+        result.add(dir, "");
+        if (pathElements.length == 0)
+        {
+            return result;
+        }
+        for (int i = 0; i < pathElements.length - 1; i++)
+        {
+            AVMNode child = dir.lookupChild(result, pathElements[i], version);
+            if (child == null)
+            {
+                throw new AlfrescoRuntimeException("Not found: " + pathElements[i]);
+            }
+            if (!(child instanceof DirectoryNode))
+            {
+                throw new AlfrescoRuntimeException("Not a directory: " + pathElements[i]);
+            }
+            dir = (DirectoryNode)child;
+            result.add(dir, pathElements[i]);
+        }
+        AVMNode child = dir.lookupChild(result, pathElements[pathElements.length - 1], version);
+        if (child == null)
+        {
+            throw new AlfrescoRuntimeException("Not found: " + pathElements[pathElements.length - 1]);
+        }
+        result.add(child, pathElements[pathElements.length - 1]);
+        return result;
     }
 
     /* (non-Javadoc)
@@ -390,8 +445,12 @@ public class RepositoryImpl implements Repository
      */
     public Lookup lookupDirectory(int version, String path)
     {
-        // TODO Auto-generated method stub
-        return null;
+        Lookup lPath = lookup(version, path);
+        if (!(lPath.getCurrentNode() instanceof DirectoryNode))
+        {
+            throw new AlfrescoRuntimeException("Not a directory: " + path);
+        }
+        return lPath;
     }
 
     /* (non-Javadoc)
@@ -399,7 +458,12 @@ public class RepositoryImpl implements Repository
      */
     public String getIndirectionPath(int version, String path)
     {
-        // TODO Auto-generated method stub
-        return null;
+        Lookup lPath = lookup(version, path);
+        AVMNode node = lPath.getCurrentNode();
+        if (node instanceof Layered)
+        {
+            return ((Layered)node).getUnderlying(lPath);
+        }
+        throw new AlfrescoRuntimeException("Not a layered node: " + path);
     }
 }

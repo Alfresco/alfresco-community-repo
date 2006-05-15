@@ -18,6 +18,8 @@
 package org.alfresco.repo.avm;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.avm.hibernate.BasicAttributesBean;
+import org.alfresco.repo.avm.hibernate.BasicAttributesBeanImpl;
 import org.alfresco.repo.avm.hibernate.LayeredFileNodeBean;
 import org.alfresco.repo.avm.hibernate.LayeredFileNodeBeanImpl;
 
@@ -25,7 +27,7 @@ import org.alfresco.repo.avm.hibernate.LayeredFileNodeBeanImpl;
  * A LayeredFileNode behaves like a copy on write symlink.
  * @author britt
  */
-public class LayeredFileNode extends FileNode
+public class LayeredFileNode extends FileNode implements Layered
 {
     /**
      * The data bean.
@@ -66,6 +68,14 @@ public class LayeredFileNode extends FileNode
      */
     public LayeredFileNode(String indirection, Repository repo)
     {
+        long time = System.currentTimeMillis();
+        BasicAttributesBean attrs = new BasicAttributesBeanImpl("britt",
+                                                                "britt",
+                                                                "britt",
+                                                                time,
+                                                                time,
+                                                                time);
+        repo.getSuperRepository().getSession().save(attrs);
         fData = new LayeredFileNodeBeanImpl(repo.getSuperRepository().issueID(),
                                             -1L,
                                             -1L,
@@ -73,6 +83,7 @@ public class LayeredFileNode extends FileNode
                                             null,
                                             null,
                                             repo.getDataBean(),
+                                            attrs,
                                             indirection);
         repo.getSuperRepository().getSession().save(fData);
         setDataBean(fData);
@@ -134,5 +145,13 @@ public class LayeredFileNode extends FileNode
     {
         assert false : "Never happens";
         return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.Layered#getUnderlying(org.alfresco.repo.avm.Lookup)
+     */
+    public String getUnderlying(Lookup lookup)
+    {
+        return fData.getIndirection();
     }
 }

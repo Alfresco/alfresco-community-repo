@@ -54,9 +54,10 @@ public class PlainFileNodeBeanImpl extends FileNodeBeanImpl implements PlainFile
                                  AVMNodeBean mergedFrom,
                                  DirectoryNodeBean parent,
                                  RepositoryBean repository,
+                                 BasicAttributesBean attrs,
                                  ContentBean content)
     {
-        super(id, versionID, branchID, ancestor, mergedFrom, parent, repository);
+        super(id, versionID, branchID, ancestor, mergedFrom, parent, repository, attrs);
         fContent = content;
     }
     

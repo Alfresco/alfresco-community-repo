@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.alfresco.repo.avm.hibernate.BasicAttributesBean;
+import org.alfresco.repo.avm.hibernate.BasicAttributesBeanImpl;
 import org.alfresco.repo.avm.hibernate.DirectoryEntry;
 import org.alfresco.repo.avm.hibernate.PlainDirectoryNodeBean;
 import org.alfresco.repo.avm.hibernate.PlainDirectoryNodeBeanImpl;
@@ -42,6 +44,14 @@ public class PlainDirectoryNode extends DirectoryNode
      */
     public PlainDirectoryNode(Repository repo)
     {
+        long time = System.currentTimeMillis();
+        BasicAttributesBean attrs = new BasicAttributesBeanImpl("britt",
+                                                                "britt",
+                                                                "britt",
+                                                                time,
+                                                                time,
+                                                                time);
+        repo.getSuperRepository().getSession().save(attrs);
         fData = new PlainDirectoryNodeBeanImpl(repo.getSuperRepository().issueID(),
                                                repo.getLatestVersion(),
                                                0L,
@@ -49,6 +59,7 @@ public class PlainDirectoryNode extends DirectoryNode
                                                null,
                                                null,
                                                repo.getDataBean(),
+                                               attrs,
                                                false);
         repo.getSuperRepository().getSession().save(fData);
     }
@@ -71,6 +82,12 @@ public class PlainDirectoryNode extends DirectoryNode
     public PlainDirectoryNode(PlainDirectoryNode other,
                               Repository repos)
     {
+        long time = System.currentTimeMillis();
+        BasicAttributesBean attrs = new BasicAttributesBeanImpl(other.getDataBean().getBasicAttributes());
+        attrs.setModDate(time);
+        attrs.setCreateDate(time);
+        attrs.setAccessDate(time);
+        repos.getSuperRepository().getSession().save(attrs);
         fData = new PlainDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
                                                -1,
                                                -1,
@@ -78,6 +95,7 @@ public class PlainDirectoryNode extends DirectoryNode
                                                null,
                                                null,
                                                repos.getDataBean(),
+                                               attrs,
                                                false);
         setDataBean(fData);
         fData.setChildren(new HashMap<String, DirectoryEntry>(((PlainDirectoryNodeBean)other.getDataBean()).getChildren()));

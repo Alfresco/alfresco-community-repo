@@ -131,4 +131,16 @@ public interface AVMNodeBean
      * @return The version.
      */
     public long getVers();
+    
+    /**
+     * Set the basic attributes.
+     * @param attrs The attributes to set.
+     */
+    public void setBasicAttributes(BasicAttributesBean attrs);
+    
+    /**
+     * Get the basic attributes.
+     * @return The attributes.
+     */
+    public BasicAttributesBean getBasicAttributes();
 }

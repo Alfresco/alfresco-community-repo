@@ -279,8 +279,8 @@
         <property name="id"><value>patch.forumsIcons</value></property>
         <property name="description"><value>patch.forumsIcons.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>7</value></property>
-        <property name="targetSchema"><value>8</value></property>
+        <property name="fixesToSchema"><value>12</value></property>
+        <property name="targetSchema"><value>13</value></property>
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>
@@ -289,8 +289,8 @@
         <property name="id"><value>patch.emailTemplatesFolder</value></property>
         <property name="description"><value>patch.emailTemplatesFolder.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>8</value></property>
-        <property name="targetSchema"><value>9</value></property>
+        <property name="fixesToSchema"><value>12</value></property>
+        <property name="targetSchema"><value>13</value></property>
         <!-- helper beans for execution -->
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
@@ -303,8 +303,8 @@
         <property name="id"><value>patch.emailTemplatesContent</value></property>
         <property name="description"><value>patch.emailTemplatesContent.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>9</value></property>
-        <property name="targetSchema"><value>10</value></property>
+        <property name="fixesToSchema"><value>12</value></property>
+        <property name="targetSchema"><value>13</value></property>
         <property name="templatesACP"><value>alfresco/templates/email_templates.acp</value></property>
         <!-- helper beans for execution -->
         <property name="importerBootstrap">

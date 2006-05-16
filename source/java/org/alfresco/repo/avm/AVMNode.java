@@ -153,15 +153,18 @@ public abstract class AVMNode
      */
     public AVMNode copyOnWrite(Lookup lPath)
     {
+        // Call the subclass's copy on write logic.
         AVMNode newMe = possiblyCopy(lPath);
-        String myName = lPath.getName();
-        lPath.upCurrentNode();
+        // No copying needed, so short circuit.
         if (newMe == null)
         {
             return this;
         }
-        Repository repos = getRepository();
+        String myName = lPath.getName();
+        lPath.upCurrentNode();
+        Repository repos = lPath.getRepository();
         newMe.setVersion(repos.getLatestVersion() + 1);
+        // Get our parent directory if we have one.
         DirectoryNode parent = null;
         if (getParent() != null)
         {
@@ -169,6 +172,7 @@ public abstract class AVMNode
         }
         if (parent != null)  
         {
+            // Recursive invocation.
             DirectoryNode newParent =
                 (DirectoryNode)parent.copyOnWrite(lPath);
             newParent.putChild(myName, newMe);
@@ -176,14 +180,13 @@ public abstract class AVMNode
         }
         else // Null parent means root of repository.
         {
-            newMe.setRepository(getRepository());
             repos.setNewRoot((DirectoryNode)newMe);
         }
+        newMe.setRepository(repos);
         newMe.setShouldBeCopied(false);
         repos.setNew(newMe);
         return newMe;
     }
-
 
     /**
      * Possibly copy ourselves.

@@ -55,12 +55,26 @@ public class AVMServiceImpl implements AVMService
     private ThreadLocal<SuperRepository> fSuperRepository;
     
     /**
+     * The storage directory.
+     */
+    private String fStorage;
+    
+    /**
      * Basic constructor for the service.
      */
     public AVMServiceImpl()
     {
         fSessionFactory = HibernateHelper.GetSessionFactory();
         fTransaction = new HibernateTxn(fSessionFactory);
+    }
+    
+    /**
+     * Set the location of file storage.
+     * @param storage
+     */
+    public void setStorage(String storage)
+    {
+        fStorage = storage;
     }
     
     /* (non-Javadoc)
@@ -74,7 +88,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 in = fSuperRepository.get().getInputStream(version, path);
             }
         };
@@ -94,7 +108,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 out = fSuperRepository.get().getOutputStream(path);
             }
         };
@@ -114,7 +128,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 listing = fSuperRepository.get().getListing(version, path);
             }
         }
@@ -132,7 +146,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 fSuperRepository.get().createFile(path, name);
             }
         }
@@ -149,7 +163,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 fSuperRepository.get().createDirectory(path, name);
             }
         }
@@ -166,7 +180,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 fSuperRepository.get().createLayeredFile(srcPath, parent, name);
             }
         }
@@ -183,7 +197,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 fSuperRepository.get().createLayeredDirectory(srcPath, parent, name);
             }
         }
@@ -200,7 +214,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 fSuperRepository.get().createRepository(name);
             }
         }
@@ -218,7 +232,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 fSuperRepository.get().createBranch(version, srcPath, dstPath, name);
             }
         }
@@ -235,7 +249,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 fSuperRepository.get().remove(parent, name);
             }
         }
@@ -253,7 +267,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 fSuperRepository.get().rename(srcParent, srcName, dstParent, dstName);
             }
         }
@@ -271,7 +285,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 fSuperRepository.get().slide(srcParent, srcName, dstParent, dstName);
             }
         }
@@ -290,7 +304,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 latestVersionID = fSuperRepository.get().getLatestVersionID(repName);
             }
         }
@@ -308,7 +322,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 fSuperRepository.get().createSnapshot(repositories);
             }
         }
@@ -327,7 +341,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 lookup = fSuperRepository.get().lookup(version, path);
             }
         }
@@ -345,7 +359,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 fSuperRepository.get().destroyRepository(name);
             }
         }
@@ -362,7 +376,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 fSuperRepository.get().purgeVersion(name, version);
             }
         }
@@ -381,7 +395,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 indirectionPath = fSuperRepository.get().getIndirectionPath(version, path);
             }
         }
@@ -401,7 +415,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform(Session session)
             {
-                fSuperRepository.set(new SuperRepositoryImpl(session));
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
                 versions = fSuperRepository.get().getRepositoryVersions(name);
             }
         }

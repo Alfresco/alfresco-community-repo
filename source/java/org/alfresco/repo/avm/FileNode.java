@@ -18,7 +18,7 @@
 package org.alfresco.repo.avm;
 
 /**
- * Interface for file objects.
+ * Base class for file objects.
  * @author britt
  */
 public abstract class FileNode extends AVMNode

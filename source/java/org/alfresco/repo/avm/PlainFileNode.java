@@ -145,7 +145,7 @@ public class PlainFileNode extends FileNode
      */
     public FileContent getContentForRead(int version)
     {
-        return FileContentFactory.CreateFileContentFromBean(fData.getContent());
+        return new FileContent(fData.getContent());
     }
 
     /**
@@ -159,6 +159,6 @@ public class PlainFileNode extends FileNode
             fData.setContent(new ContentBeanImpl(repo.getSuperRepository().issueContentID()));
             // Need to copy the underlying file data.
         }
-        return FileContentFactory.CreateFileContentFromBean(fData.getContent());
+        return new FileContent(fData.getContent());
     }
 }

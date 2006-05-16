@@ -18,7 +18,6 @@
 package org.alfresco.repo.avm;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -30,7 +29,11 @@ import org.alfresco.repo.avm.hibernate.LayeredDirectoryNodeBean;
 import org.alfresco.repo.avm.hibernate.LayeredDirectoryNodeBeanImpl;
 
 /**
- * Interface for a layered directory node.  Stub.
+ * A layered directory node.  A layered directory node points at
+ * an underlying directory, which may or may not exist.  The visible
+ * contents of a layered directory node is the contents of the underlying node
+ * pointed at plus those nodes added to or modified in the layered directory node minus
+ * those nodes which have been deleted in the layered directory node.
  * @author britt
  */
 public class LayeredDirectoryNode extends DirectoryNode implements Layered
@@ -57,7 +60,9 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
      */
     public LayeredDirectoryNode(String indirection, Repository repos)
     {
+        // Set up basic attributes for this node.
         long time = System.currentTimeMillis();
+        // TODO We'll fix this up when Britt understands user management.
         BasicAttributesBean attrs = new BasicAttributesBeanImpl("britt",
                                                                 "britt",
                                                                 "britt",

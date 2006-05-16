@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+<hibernate-mapping package="org.alfresco.repo.avm.hibernate">
+	<!-- AVMNodeBean is the abstract base for filesystem like objects.
+	     We're using the one table per class hierarchy strategy to implement
+	     polymorphism. -->
+	<class table="avm_nodes" lazy="true" abstract="true"
+		name="AVMNodeBeanImpl"
+		proxy="AVMNodeBean"
+		optimistic-lock="version">
+		<cache usage="read-write"/>
+		<!-- The id is set programmatically using an Issuer.  See below. -->
+		<id name="id" column="id" type="long"/>
+		<!-- I suppose this would be more efficient to encode type by an int. 
+		     We'll see if using a string makes a difference. -->
+		<discriminator column="class_type" type="string" length="20"/>
+		<!-- We're using hibernate's own versioning scheme for concurrency control.
+		     I don't know how well that will play with a full Spring-JTA stack. -->
+		<version column="vers" name="vers" type="long"/>
+		<!-- BasicAttributes are attributes that pretty much all AVMNodes will
+			 have. -->
+		<many-to-one name="basicAttributes" column="basic_attrs"
+			class="BasicAttributesBeanImpl" unique="true" cascade="all"/>
+		<many-to-one name="ancestor" column="ancestor_id"
+			class="AVMNodeBeanImpl"/>
+		<!-- Nothing does anything with this yet. We'll need it for
+			 complete versioning semantics. -->
+		<many-to-one name="mergedFrom" column="merged_from"
+			class="AVMNodeBeanImpl"/>
+		<!-- Parent is a very specific notion of containment. The parent
+		     of an AVMNode is the parent in which that node was created. -->
+		<many-to-one name="parent" column="parent_id"
+			class="DirectoryNodeBeanImpl"/>
+		<!-- This should really be not null, but I haven't figured out
+			 the right way to build the relation so that nullability constraints
+			 won't cause violations in the db during saves. -->
+		<many-to-one name="repository" column="repository"
+			class="RepositoryBeanImpl" cascade="save-update"/>
+		<property name="versionID" type="long" column="version_id"
+			not-null="true"/>
+		<!-- The branch id is always 0 for nodes that are not part of 
+			 a branch. -->
+		<property name="branchID" type="long" column="branch_id"
+			not-null="true"/>
+		<!-- This is, in fact a duplication of data, but an extremely
+			 convenient one. -->
+		<property name="isNew" column="is_new" type="boolean"
+			not-null="true"/>
+		<!-- Directories, two flavors. -->
+		<subclass name="DirectoryNodeBeanImpl" 
+		          proxy="DirectoryNodeBean" 
+		          abstract="true">
+		    <!-- A Layered Directory is our smart symlink thingy. -->
+			<subclass
+				name="LayeredDirectoryNodeBeanImpl"
+				proxy="LayeredDirectoryNodeBean" discriminator-value="layereddirectory">
+				<!-- The layer id is an implementation trick to disambiguate
+				     exactly what layer is being refered to in various circumstances. -->
+				<property name="layerID" column="layer_id" type="long" not-null="true"/>
+				<!-- The is the moral equivalent of the value of a symlink. -->
+				<property name="indirection" column="indirection" type="string" 
+				          length="511"/>
+				<!-- This marks a layered directory as either knowing itself what
+				     it points at (true) or inheriting what it points at from its
+				     container (false). -->
+				<property name="primaryIndirection" column="primary_indirection" type="boolean"/>
+				<!-- Map of names to DirectoryEntries. -->
+				<map name="added" cascade="all">
+					<key column="directory_id"/>
+					<map-key type="string" column="name"/>
+					<!-- A DirectoryEntry is a (node)type AVMNode reference pair.
+					     Should probably convert type into an integer code. -->					
+					<composite-element class="DirectoryEntry">
+						<property name="type" column="type_name"
+							type="string" length="30" not-null="true"/>
+						<many-to-one name="child"
+							class="AVMNodeBeanImpl"
+							cascade="save-update" not-null="true">
+						</many-to-one>
+					</composite-element>
+				</map>
+				<!-- This is just the set of names of children deleted (and therefore
+					 hidden) in this layer. -->
+				<set name="deleted" table="deleted_children"
+					fetch="join" cascade="all">
+					<key column="directory_id"/>
+					<element type="string" column="name"/>
+				</set>
+			</subclass>
+			<!-- Just plain directories. -->
+			<subclass name="PlainDirectoryNodeBeanImpl"
+				discriminator-value="plaindirectory" proxy="PlainDirectoryNodeBean">
+				<!-- For reference count based garbage collection of purged nodes 
+				     to work we need to specially mark the root directory of
+				     a Repository as special so that its absence of parents will
+				     not cause it to be vacuumed away.  TODO: for ease of queries, 
+				     this probably wants to be in the base class. -->
+				<property name="isRoot" column="is_root" type="boolean"/>
+				<!-- A map of names to DirectoryEntries.  In the AVM world, it makes sense
+				     that nodes don't know there own names, only there containers do. -->
+				<map name="children" cascade="all">
+					<key column="directory_id"/>
+					<map-key type="string" column="name"/>
+					<composite-element class="org.alfresco.repo.avm.hibernate.DirectoryEntry">
+						<property name="type" type="string" not-null="true" length="30" 
+							column="type_name"/>
+						<many-to-one name="child"
+							class="org.alfresco.repo.avm.hibernate.AVMNodeBeanImpl"
+							not-null="true" cascade="save-update">
+						</many-to-one>
+					</composite-element>
+				</map>
+			</subclass>
+		</subclass>
+		<!-- There are two kinds of files, plain and symlinky. -->
+		<subclass name="FileNodeBeanImpl"
+			proxy="FileNodeBean"
+			abstract="true">
+			<!-- Plain files just have a reference to a Content object. -->
+			<subclass discriminator-value="plainfile"
+				name="PlainFileNodeBeanImpl"
+				proxy="PlainFileNodeBean">
+				<many-to-one name="content" column="content_id"
+					class="ContentBeanImpl" fetch="join" cascade="save-update">
+				</many-to-one>
+			</subclass>
+			<!-- Layered files are almost exactly copy on write symlinks. -->
+			<subclass name="LayeredFileNodeBeanImpl"
+				discriminator-value="layeredfile" proxy="LayeredFileNodeBean">
+				<property name="indirection" type="string" length="511" column="indirection"/>
+			</subclass>
+		</subclass>
+	</class>
+	<!-- BasicAttributes are a glom of all the properties that (nearly) all filesystem like
+	     nodes have. -->
+	<class name="BasicAttributesBeanImpl" proxy="BasicAttributesBean"
+		lazy="true" optimistic-lock="version" table="basic_attributes">
+		<id name="id" type="long">
+			<generator class="native"></generator>
+		</id>
+		<version column="vers" name="vers" type="long"/>		
+		<property name="creator" type="string" not-null="true"/>
+		<property name="owner" type="string" not-null="true"/>
+		<property name="lastModifier" type="string" not-null="true"/>
+		<property name="createDate" type="long" not-null="true"/>
+		<property name="modDate" type="long" not-null="true"/>
+		<property name="accessDate" type="long" not-null="true"/>
+	</class>
+	<!-- Contents are objects to hang actual bytestreams off. They are explicitly reference
+	     counted. -->
+	<class table="contents" name="ContentBeanImpl" proxy="ContentBean"
+		optimistic-lock="version">
+		<cache usage="read-write" />
+		<id name="id" column="id" type="long"/>
+		<version name="vers" column="vers" type="long"/>
+		<!-- The reference count. Contents are explicitly reference counted for now, 
+			 however it make sense to fold this into a generalized garbage collection
+			 scheme. -->
+		<property name="refCount" column="ref_count" type="int"
+			not-null="true"/>
+	</class>	
+	<!-- Issuers issue ids. They are explicit primary key generators. They seem more
+	     convenient than using 'native' generators, and may be more efficient. Come
+	     to think of it I'm not convinced that this is true. However I had a reason for
+	     doing things this way... -->
+	<class name="Issuer" table="issuers" lazy="false"
+		optimistic-lock="version">
+		<cache usage="read-write" />
+		<id name="name" column="name" type="string" length="20"/>
+		<version name="vers" column="vers" type="long"/>
+		<property name="next" column="next" type="long"
+			not-null="true"/>
+	</class>
+	<!-- A Repository is the what we used to call a virtual repository. 
+		 Each Repository has it's own branch ids and layer ids but shares node ids
+		 with other repositories.  The physical repository is structured this way
+		 for better scaling. -->
+	<class table="repositories" name="RepositoryBeanImpl"
+		proxy="RepositoryBean" optimistic-lock="version">
+		<cache usage="read-write" />
+		<id name="name" column="name" type="string"/>
+		<version name="vers" column="vers" type="long"/>
+		<property type="long" name="nextVersionID"
+			column="next_version_id" not-null="true"/>
+		<!-- Every Repository has a root directory that is the current root directory. -->
+		<!-- This should be not-null but hibernate (or my own idiocy) makes that difficult. -->
+		<many-to-one name="root" class="DirectoryNodeBeanImpl"
+			column="current_root_id" unique="true" cascade="save-update">
+		</many-to-one>
+		<!-- In addition to the current root directory, a Repository maintains a set
+			 of versioned root directories. -->
+		<map name="roots" table="repository_roots">
+			<key column="repository_id"/>
+			<map-key type="long" column="version_id"/>
+			<many-to-many class="DirectoryNodeBeanImpl"
+				column="directory_id"/>
+		</map>
+		<!-- NewNodes keeps track of those nodes created since the last
+			 'snapshot' operation. -->
+		<set table="new_nodes" name="newNodes" cascade="all">
+			<key column="repository_id"/>
+			<many-to-many class="AVMNodeBeanImpl"
+				column="new_node_id"/>
+		</set>
+	</class>
+</hibernate-mapping>

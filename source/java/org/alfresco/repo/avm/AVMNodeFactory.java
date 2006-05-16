@@ -24,7 +24,8 @@ import org.alfresco.repo.avm.hibernate.PlainDirectoryNodeBean;
 import org.alfresco.repo.avm.hibernate.PlainFileNodeBean;
 
 /**
- * Responsible for instantiating AVMNode implementations.
+ * Responsible for instantiating AVMNode concrete subclasses from 
+ * underlying data beans.
  * @author britt
  */
 public class AVMNodeFactory

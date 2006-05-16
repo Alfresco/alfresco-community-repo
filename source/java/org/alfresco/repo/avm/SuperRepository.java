@@ -237,4 +237,10 @@ public interface SuperRepository
      * @return The Lookup.
      */
     public Lookup lookupDirectory(int version, String path);    
+    
+    /**
+     * Get the root directory in which file data is stored.
+     * @return The root directory of storage.
+     */
+    public String getStorageRoot();
 }

@@ -25,8 +25,8 @@ import java.util.Set;
 /**
  * This is the service interface for the [Alfresco|Addled|Advanced|Apotheosed] Versioning
  * Model.  It specifies methods that are close in functionality to the underlying
- * implementation, and is intended, for now, as an internal interface to build a different
- * implementation of NodeService and others.
+ * implementation, and is intended as both a first class Alfresco service and an
+ * aid in creating new implementations of existing services.
  * @author britt
  */
 public interface AVMService

@@ -201,6 +201,7 @@ public class TestPopulate extends TestCase
                     {
                         assertEquals(AVMNodeType.PLAIN_FILE, entry.getEntryType());
                     }
+                    assertEquals("britt", root.getBasicAttributes().getCreator());
                 }
             });
             assertTrue(result);

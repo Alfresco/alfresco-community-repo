@@ -17,11 +17,15 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Formatter;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.hibernate.ContentBean;
@@ -39,12 +43,23 @@ public class FileContent
     private ContentBean fData;
     
     /**
+     * The name of the file.
+     */
+    private String fName;
+    
+    /**
+     * The directory path of the file.
+     */
+    private String fPath;
+    
+    /**
      * Make one from a bean.
      * @param data The Bean with the data.
      */
     public FileContent(ContentBean data)
     {
         fData = data;
+        
     }
     
     /**
@@ -54,6 +69,17 @@ public class FileContent
     public FileContent(SuperRepository superRepo)
     {
         fData = new ContentBeanImpl(superRepo.issueContentID());
+        BufferedOutputStream out = new BufferedOutputStream(getOutputStream(superRepo));
+        // Make an empty file.
+        try
+        {
+            out.close();
+        }
+        catch (IOException ie)
+        {
+            throw new AlfrescoRuntimeException("Couldn't close file.", ie);
+        }
+        superRepo.getSession().save(fData);
     }
     
     /**
@@ -64,7 +90,25 @@ public class FileContent
     public FileContent(FileContent other, SuperRepository superRepo)
     {
         fData = new ContentBeanImpl(superRepo.issueContentID());
-        // TODO Something.
+        // Copy the contents from other to this.
+        BufferedInputStream in = new BufferedInputStream(other.getInputStream(superRepo));
+        BufferedOutputStream out = new BufferedOutputStream(this.getOutputStream(superRepo));
+        try
+        {
+            byte [] buff = new byte[4096];  // Nyah, nyah.
+            int bytesRead;
+            while ((bytesRead = in.read(buff)) != -1)
+            {
+                out.write(buff, 0, bytesRead);
+            }
+            out.close();
+            in.close();
+        }
+        catch (IOException ie)
+        {
+            throw new AlfrescoRuntimeException("I/O failure in Copy on Write.", ie);
+        }
+        superRepo.getSession().save(fData);
     }
 
     /**
@@ -92,8 +136,14 @@ public class FileContent
      */
     public InputStream getInputStream(SuperRepository superRepo)
     {
-        // TODO Something.
-        return null;
+        try
+        {
+            return new FileInputStream(getContentPath(superRepo));
+        }
+        catch (IOException ie)
+        {
+            throw new AlfrescoRuntimeException("Could not open for reading: " + getContentPath(superRepo), ie);
+        }
     }
 
     /**
@@ -103,8 +153,19 @@ public class FileContent
      */
     public OutputStream getOutputStream(SuperRepository superRepo)
     {
-        // TODO Something.
-        return null;
+        try
+        {
+            File dir = new File(getDirectoryPath(superRepo));
+            if (!dir.exists())
+            {
+                dir.mkdirs();
+            }
+            return new FileOutputStream(getContentPath(superRepo));
+        }
+        catch (IOException ie)
+        {
+            throw new AlfrescoRuntimeException("Could not open for writing: " + getContentPath(superRepo), ie);
+        }
     }
 
     /**
@@ -114,5 +175,52 @@ public class FileContent
     public ContentBean getDataBean()
     {
         return fData;
+    }
+    
+    /**
+     * Retrieve the full path for this content. 
+     * @param superRepo
+     * @return The full path for this content.
+     */
+    private String getContentPath(SuperRepository superRepo)
+    {
+        if (fName == null)
+        {
+            calcPathData(superRepo);
+        }
+        return fName;
+    }
+    
+    /**
+     * Get the directory path for this content.
+     * @param superRepo
+     * @return The directory path.
+     */
+    private String getDirectoryPath(SuperRepository superRepo)
+    {
+        if (fPath == null)
+        {
+            calcPathData(superRepo);
+        }
+        return fPath;
+    }
+    
+    /**
+     * Calculate the path data.
+     */
+    private void calcPathData(SuperRepository superRepo)
+    {
+        long id = fData.getId();
+        Formatter form = new Formatter(new StringBuilder());
+        form.format("%016x", id);
+        String name = form.toString();
+        form = new Formatter(new StringBuilder());
+        form.format("/%02x/%02x/%02x", 
+                    (id & 0xff000000) >> 24,
+                    (id & 0xff0000) >> 16,
+                    (id & 0xff00) >> 8);
+        String dir = form.toString();
+        fPath = superRepo.getStorageRoot() + dir;
+        fName = fPath + "/" + name;
     }
 }

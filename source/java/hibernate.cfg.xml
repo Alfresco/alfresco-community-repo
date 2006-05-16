@@ -15,9 +15,6 @@
   	<property name="c3po.max_size">20</property>
   	<property name="c3po.timeout">900</property>
   	<property name="c3po.max_statements">50</property>
-  	<mapping resource="org/alfresco/repo/avm/hibernate/Repository.hbm.xml"/>
-  	<mapping resource="org/alfresco/repo/avm/hibernate/AVMNode.hbm.xml"/>
-  	<mapping resource="org/alfresco/repo/avm/hibernate/Content.hbm.xml"/>
-  	<mapping resource="org/alfresco/repo/avm/hibernate/Issuer.hbm.xml"/>
+  	<mapping resource="org/alfresco/repo/avm/hibernate/AVM.hbm.xml"/>
   </session-factory>
 </hibernate-configuration>

@@ -22,7 +22,7 @@ import java.util.Map;
 import org.alfresco.repo.avm.hibernate.DirectoryEntry;
 
 /**
- * 
+ * Base class for Directories.
  * @author britt
  */
 public abstract class DirectoryNode extends AVMNode

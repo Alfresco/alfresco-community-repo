@@ -70,14 +70,21 @@ public class SuperRepositoryImpl implements SuperRepository
      * The layer id issuer.
      */
     private Issuer fLayerIssuer;
+
+    /**
+     * The file storage directory.
+     */
+    private String fStorage;
     
     /**
      * Make a new one, initialized with the session.
      * @param session The session for this operation.
+     * @param storage Where file data gets stored.
      */
-    public SuperRepositoryImpl(Session session)
+    public SuperRepositoryImpl(Session session, String storage)
     {
         fSession = session;
+        fStorage = storage;
         fNodeIssuer = (Issuer)fSession.get(Issuer.class, "node");
         fContentIssuer = (Issuer)fSession.get(Issuer.class, "content");
         fBranchIssuer = (Issuer)fSession.get(Issuer.class, "branch");
@@ -505,5 +512,13 @@ public class SuperRepositoryImpl implements SuperRepository
             throw new AlfrescoRuntimeException("Invalid path: " + path);
         }
         return pathParts;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.SuperRepository#getStorageRoot()
+     */
+    public String getStorageRoot()
+    {
+        return fStorage;
     }
 }

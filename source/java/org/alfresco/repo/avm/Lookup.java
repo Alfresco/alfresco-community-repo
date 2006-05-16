@@ -30,7 +30,6 @@ public class Lookup
     /**
      * The Repository.
      */
-    @SuppressWarnings("unused")
     private Repository fRepository;
 
     /**
@@ -286,5 +285,14 @@ public class Lookup
     public LayeredDirectoryNode getTopLayer()
     {
         return fTopLayer;
+    }
+    
+    /**
+     * Get the repository that this path is in.
+     * @return The repository.
+     */
+    public Repository getRepository()
+    {
+        return fRepository;
     }
 }

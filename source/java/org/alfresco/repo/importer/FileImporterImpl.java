@@ -159,11 +159,18 @@ public class FileImporterImpl implements FileImporter
             final File file,
             FileFilter filter,
             boolean recurse,
-            String containerName) throws Exception
+            final String containerName) throws Exception
     {
         if (containerName != null)
         {
-            NodeRef newContainer = createDirectory(container, containerName, containerName);
+            TransactionWork<NodeRef> createDirectoryWork = new TransactionWork<NodeRef>()
+            {
+                public NodeRef doWork() throws Exception
+                {
+                    return createDirectory(container, containerName, containerName);
+                }
+            };
+            NodeRef newContainer = TransactionUtil.executeInUserTransaction(transactionService, createDirectoryWork);
             return create(counter, newContainer, file, filter, recurse, null);
           
         }

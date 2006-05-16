@@ -1,5 +1,6 @@
-# Sample Hibernate configuration to enable Hibernate schema updates
-#hibernate.hbm2ddl.auto=update
+# Sample Hibernate configuration to disnable Hibernate schema updates
+# Values are "validate" or "update" (default)
+#hibernate.hbm2ddl.auto=validate
 
 #
 # Sample Hibernate configuration for changing Database dialect

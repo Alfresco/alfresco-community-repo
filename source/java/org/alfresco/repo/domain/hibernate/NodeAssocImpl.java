@@ -54,11 +54,6 @@ public class NodeAssocImpl implements NodeAssoc
         // add the forward associations
         this.setTarget(targetNode);
         this.setSource(sourceNode);
-        // Force initialization of the inverse collections
-        // so that we don't queue additions to them.
-        // This can go if we move to set-based collections
-        sourceNode.getSourceNodeAssocs().size();
-        targetNode.getTargetNodeAssocs().size();
         // add the inverse associations
         sourceNode.getTargetNodeAssocs().add(this);
         targetNode.getSourceNodeAssocs().add(this);

@@ -1,21 +1,4 @@
-/*
- * Copyright (C) 2005 Alfresco, Inc.
- *
- * Licensed under the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version
- * 2.1 of the License, or (at your option) any later version.
- * You may obtain a copy of the License at
- *
- *     http://www.gnu.org/licenses/lgpl.txt
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- * either express or implied. See the License for the specific
- * language governing permissions and limitations under the
- * License.
- */
-package org.alfresco.web.bean.wizard;
+package org.alfresco.web.bean.forums;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
@@ -23,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -36,35 +18,64 @@ import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.UIActionLink;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Backing bean class used to create discussions for documents
+ * Bean implementation for the "Create Discusssion Dialog".
  * 
  * @author gavinc
  */
-public class NewDiscussionWizard extends NewTopicWizard
+public class CreateDiscussionDialog extends CreateTopicDialog
 {
-   private static final Log logger = LogFactory.getLog(NewDiscussionWizard.class);
+   protected NodeRef discussingNodeRef;
    
-   private NodeRef discussingNodeRef;
-
-   /**
-    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#startWizard(javax.faces.event.ActionEvent)
-    */
+   private static final Log logger = LogFactory.getLog(CreateDiscussionDialog.class);
+   
+   // ------------------------------------------------------------------------------
+   // Wizard implementation
+   
    @Override
-   public void startWizard(ActionEvent event)
+   public void init(Map<String, String> parameters)
    {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String id = params.get("id");
+      super.init(parameters);
+      
+      // get the id of the node we are creating the discussion for
+      String id = parameters.get("id");
       if (id == null || id.length() == 0)
       {
-         throw new AlfrescoRuntimeException("startDiscussion called without an id");
+         throw new AlfrescoRuntimeException("createDiscussion called without an id");
       }
       
+      // create the topic to hold the discussions
+      createTopic(id);
+   }
+   
+   @Override
+   public String cancel()
+   {
+      // if the user cancels the creation of a discussion all the setup that was done 
+      // when the dialog started needs to be undone i.e. removing the created forum
+      // and the discussable aspect
+      deleteTopic();
+      
+      // as we are cancelling the creation of a discussion we know we need to go back
+      // to the browse screen, this also makes sure we don't end up in the forum that
+      // just got deleted!
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+             AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Helper methods
+
+   /**
+    * Creates a topic for the node with the given id
+    * 
+    * @param id The id of the node to discuss
+    */
+   protected void createTopic(String id)
+   {
       FacesContext context = FacesContext.getCurrentInstance();
       UserTransaction tx = null;
       NodeRef forumNodeRef = null;
@@ -78,7 +89,7 @@ public class NewDiscussionWizard extends NewTopicWizard
          
          if (this.nodeService.hasAspect(this.discussingNodeRef, ForumModel.ASPECT_DISCUSSABLE))
          {
-            throw new AlfrescoRuntimeException("startDiscussion called for an object that already has a discussion!");
+            throw new AlfrescoRuntimeException("createDiscussion called for an object that already has a discussion!");
          }
          
          // add the discussable aspect
@@ -123,23 +134,14 @@ public class NewDiscussionWizard extends NewTopicWizard
       if (forumNodeRef != null)
       {
          this.browseBean.clickSpace(forumNodeRef);
-         
-         // now initialise the wizard and navigate to it
-         super.startWizard(event);
-         context.getApplication().getNavigationHandler().handleNavigation(context, null, "dialog:createDiscussion");
       }
    }
-
+   
    /**
-    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#cancel()
+    * Deletes the setup performed during the initialisation of the dialog.
     */
-   @Override
-   public String cancel()
+   protected void deleteTopic()
    {
-      // if we cancel the creation of a discussion all the setup that was done 
-      // when the wizard started needs to be undone i.e. removing the created forum
-      // and the discussable aspect
-      
       FacesContext context = FacesContext.getCurrentInstance();
       UserTransaction tx = null;
       
@@ -165,16 +167,5 @@ public class NewDiscussionWizard extends NewTopicWizard
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                context, Repository.ERROR_GENERIC), e.getMessage()), e);
       }
-      
-      // do cancel processing
-      super.cancel();
-      
-      // as we are cancelling the creation of a discussion we know we need to go back
-      // to the browse screen, this also makes sure we don't end up in the forum that
-      // just got deleted!
-      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
-             AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
    }
-   
-   
 }

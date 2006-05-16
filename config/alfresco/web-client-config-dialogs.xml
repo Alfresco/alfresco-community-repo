@@ -12,7 +12,7 @@
          
          <!-- Definition of the edit space dialog -->      
          <dialog name="editSpace" page="/jsp/spaces/edit-space-dialog.jsp" managed-bean="EditSpaceDialog"
-                 icon="/images/icons/create_space_large.gif" title-id="modify_space_properties" 
+                 icon="/images/icons/details_large.gif" title-id="modify_space_properties" 
                  description-id="editspace_description" />
          
          <!-- Definition of the set content properties dialog -->
@@ -25,6 +25,50 @@
                  managed-bean="EditContentPropertiesDialog" icon="/images/icons/details_large.gif"
                  title-id="modify_content_properties" description-id="edit_content_description" />
          
+         
+         <!--                -->
+         <!-- Forums Dialogs -->
+         
+         <!-- Definition of the create forums dialog -->
+         <dialog name="createForums" page="/jsp/forums/create-dialog.jsp" managed-bean="CreateForumsDialog"
+                 icon="/images/icons/create_forums_large.gif" title-id="create_forums" 
+                 description-id="create_forums_description" error-message-id="error_create_forums_dialog" />
+         
+         <dialog name="editForums" page="/jsp/spaces/edit-space-dialog.jsp" managed-bean="EditSpaceDialog"
+                 icon="/images/icons/details_large.gif" title-id="modify_forums_properties" 
+                 description-id="edit_forums_description" />
+                 
+         <dialog name="createForum" page="/jsp/forums/create-dialog.jsp" managed-bean="CreateForumDialog"
+                 icon="/images/icons/create_forum_large.gif" title-id="create_forum" 
+                 description-id="create_forum_description" error-message-id="error_create_forum_dialog" />
+                 
+         <dialog name="editForum" page="/jsp/spaces/edit-space-dialog.jsp" managed-bean="EditSpaceDialog"
+                 icon="/images/icons/details_large.gif" title-id="modify_forum_properties" 
+                 description-id="edit_forum_description" />
+                 
+         <dialog name="createTopic" page="/jsp/forums/create-topic-dialog.jsp" managed-bean="CreateTopicDialog"
+                 icon="/images/icons/create_topic_large.gif" title-id="create_topic" 
+                 description-id="create_topic_description" error-message-id="error_create_topic_dialog" />
+                 
+         <dialog name="editTopic" page="/jsp/spaces/edit-space-dialog.jsp" managed-bean="EditSpaceDialog"
+                 icon="/images/icons/details_large.gif" title-id="modify_topic_properties" 
+                 description-id="edit_topic_description" />
+                 
+         <dialog name="createPost" page="/jsp/forums/create-post-dialog.jsp" managed-bean="CreatePostDialog"
+                 icon="/images/icons/create_post_large.gif" title-id="create_post" 
+                 description-id="create_post_description" error-message-id="error_create_post_dialog" />
+                 
+         <dialog name="createReply" page="/jsp/forums/create-reply-dialog.jsp" managed-bean="CreateReplyDialog"
+                 icon="/images/icons/post_reply_large.gif" title-id="post_reply" 
+                 description-id="create_reply_description" error-message-id="error_create_reply_dialog" />
+                 
+         <dialog name="editPost" page="/jsp/forums/create-post-dialog.jsp" managed-bean="EditPostDialog"
+                 icon="/images/icons/edit_post_large.gif" title-id="edit_post" 
+                 description-id="edit_post_description" error-message-id="error_create_post_dialog" />
+                 
+         <dialog name="createDiscussion" page="/jsp/forums/create-topic-dialog.jsp" managed-bean="CreateDiscussionDialog"
+                 icon="/images/icons/create_topic_large.gif" title-id="create_topic" 
+                 description-id="create_topic_description" error-message-id="error_create_topic_dialog" /> 
       </dialogs>
    </config>
    

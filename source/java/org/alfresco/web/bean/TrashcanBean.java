@@ -53,7 +53,7 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.QNameNodeMap;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wizard.NewSpaceWizard;
+import org.alfresco.web.bean.spaces.CreateSpaceWizard;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -531,7 +531,7 @@ public class TrashcanBean implements IContextListener
       public Object get(Node node) {
          QNameNodeMap props = (QNameNodeMap)node.getProperties();
          String icon = (String)props.getRaw("app:icon");
-         return "/images/icons/" + (icon != null ? icon : NewSpaceWizard.SPACE_ICON_DEFAULT) + ".gif";
+         return "/images/icons/" + (icon != null ? icon : CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME) + ".gif";
       }
    };
    
@@ -949,6 +949,7 @@ public class TrashcanBean implements IContextListener
    /**
     * @return the search query to use when displaying the list of deleted items
     */
+   @SuppressWarnings("deprecation")
    private String buildSearchQuery()
    {
       String query;

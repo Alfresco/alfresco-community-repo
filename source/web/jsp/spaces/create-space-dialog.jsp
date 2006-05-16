@@ -66,26 +66,45 @@
 
 <table cellpadding="2" cellspacing="2" border="0" width="100%">
    <tr>
-      <td colspan="2" class="wizardSectionHeading">
+      <td colspan="3" class="wizardSectionHeading">
          </f:verbatim>
-      	<h:outputText value="#{msg.space_props}" />
+      	<h:outputText value="#{msg.properties}" />
          <f:verbatim>
       </td>
    </tr>
    <tr>
+      <td align="middle">
+         </f:verbatim>
+         <h:graphicImage value="/images/icons/required_field.gif" alt="Required Field" />
+         <f:verbatim>
+      </td>
       <td>
          </f:verbatim>
       	<h:outputText value="#{msg.name}:" />
          <f:verbatim>
       </td>
-      <td>
+      <td width="85%">
          </f:verbatim>
          <h:inputText id="name" value="#{DialogManager.bean.name}" size="35" maxlength="1024" 
-                      onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState();"/>
-         <f:verbatim>&nbsp;*
+                      onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState();" />
+         <f:verbatim>
       </td>
    </tr>
    <tr>
+      <td></td>
+      <td>
+         </f:verbatim>
+         <h:outputText value="#{msg.title}:" />
+         <f:verbatim>
+      </td>
+      <td>
+         </f:verbatim>
+         <h:inputText id="title" value="#{DialogManager.bean.title}" size="35" maxlength="1024" />
+         <f:verbatim>
+      </td>
+   </tr>
+   <tr>
+      <td></td>
       <td>
          </f:verbatim>
       	<h:outputText value="#{msg.description}:" />
@@ -97,18 +116,11 @@
          <f:verbatim>
       </td>
    </tr>
-   <tr><td class="paddingRow"></td></tr>
    <tr>
-      <td colspan="2" class="wizardSectionHeading">&nbsp;
-         </f:verbatim>
-         <h:outputText value="#{msg.other_options}" />
-         <f:verbatim>
-      </td>
-   </tr>
-   <tr>
+      <td></td>
       <td>
          </f:verbatim>
-      	<h:outputText value="#{msg.choose_space_icon}:" />
+      	<h:outputText value="#{msg.icon}:" />
          <f:verbatim>
      	</td>
       <td>
@@ -120,14 +132,6 @@
          </a:imagePickerRadioPanel>
          <f:verbatim>
          </td></tr></table>
-      </td>
-   </tr>
-   <tr><td class="paddingRow"></td></tr>
-   <tr>
-      <td colspan="2">
-         </f:verbatim>
-      	<h:outputText value="#{msg.create_space_finish}" />
-         <f:verbatim>
       </td>
    </tr>
 </table>

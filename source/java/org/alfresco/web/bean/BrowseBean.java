@@ -48,7 +48,6 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
@@ -62,7 +61,7 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.QNameNodeMap;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wizard.NewSpaceWizard;
+import org.alfresco.web.bean.spaces.CreateSpaceWizard;
 import org.alfresco.web.config.ViewsConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
@@ -950,7 +949,7 @@ public class BrowseBean implements IContextListener
       public Object get(Node node) {
          QNameNodeMap props = (QNameNodeMap)node.getProperties();
          String icon = (String)props.getRaw("app:icon");
-         return (icon != null ? icon : NewSpaceWizard.SPACE_ICON_DEFAULT);
+         return (icon != null ? icon : CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME);
       }
    };
    
@@ -1083,7 +1082,6 @@ public class BrowseBean implements IContextListener
       {
          // user can either select a descendant of a node display on the page which means we
          // must add the it's parent and itself to the breadcrumb
-         List<IBreadcrumbHandler> location = this.navigator.getLocation();
          ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
          
          if (logger.isDebugEnabled())

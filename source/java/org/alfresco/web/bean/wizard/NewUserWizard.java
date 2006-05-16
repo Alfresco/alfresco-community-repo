@@ -45,6 +45,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.spaces.CreateSpaceWizard;
 import org.alfresco.web.bean.users.UsersBean;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
@@ -97,9 +98,6 @@ public class NewUserWizard extends AbstractWizardBean
 
    /** action context */
    private Node person = null;
-
-   /** ref to system people folder */
-   private NodeRef peopleRef = null;
 
    /** ref to the company home space folder */
    private NodeRef companyHomeSpaceRef = null;
@@ -497,7 +495,6 @@ public class NewUserWizard extends AbstractWizardBean
                props.put(ContentModel.PROP_ORGID, this.companyId);
                
                // create the node to represent the Person
-               String assocName = QName.createValidLocalName(this.userName);
                NodeRef newPerson = this.personService.createPerson(props);
                
                // ensure the user can access their own Person object
@@ -867,7 +864,6 @@ public class NewUserWizard extends AbstractWizardBean
     */
    private NodeRef createHomeSpace(String locationId, String spaceName, boolean error)
    {
-      String homeSpaceId = locationId;
       NodeRef homeSpaceNodeRef = null;
       if (spaceName != null && spaceName.length() != 0)
       {
@@ -908,7 +904,7 @@ public class NewUserWizard extends AbstractWizardBean
          
          // apply the uifacets aspect - icon, title and description props
          Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(3);
-         uiFacetsProps.put(ContentModel.PROP_ICON, NewSpaceWizard.SPACE_ICON_DEFAULT);
+         uiFacetsProps.put(ContentModel.PROP_ICON, CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME);
          uiFacetsProps.put(ContentModel.PROP_TITLE, spaceName);
          this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
          
@@ -916,7 +912,6 @@ public class NewUserWizard extends AbstractWizardBean
          
          // return the ID of the created space
          homeSpaceNodeRef = nodeRef;
-         homeSpaceId = nodeRef.getId();
       }
       
       return homeSpaceNodeRef;

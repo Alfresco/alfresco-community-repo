@@ -137,6 +137,19 @@ public class EditRuleWizard extends CreateRuleWizard
    }
    
    // ------------------------------------------------------------------------------
+   // Bean Getters and Setters
+   
+   /**
+    * Determines whether the rule type drop down list should be enabled.
+    * 
+    * @return true as the rule type drop down should be disabled
+    */
+   public boolean getRuleTypeDisabled()
+   {
+      return true;
+   }
+   
+   // ------------------------------------------------------------------------------
    // Helper methods
    
    /**

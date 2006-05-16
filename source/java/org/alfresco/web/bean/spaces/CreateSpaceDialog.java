@@ -14,6 +14,9 @@ import org.alfresco.web.app.Application;
  */
 public class CreateSpaceDialog extends CreateSpaceWizard
 {
+   // ------------------------------------------------------------------------------
+   // Wizard implementation
+   
    @Override
    public String getFinishButtonLabel()
    {

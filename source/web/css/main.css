@@ -483,3 +483,8 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 {
    vertical-align: -20%;
 }
+
+.alignTop
+{
+	vertical-align: top;
+}

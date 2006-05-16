@@ -84,14 +84,14 @@ public class CommandServlet extends BaseServlet
          return;
       }
       
+      uri = uri.substring(req.getContextPath().length());
       StringTokenizer t = new StringTokenizer(uri, "/");
       int tokenCount = t.countTokens();
-      if (tokenCount < 4)
+      if (tokenCount < 3)
       {
          throw new IllegalArgumentException("Command Servlet URL did not contain all required args: " + uri); 
       }
       
-      t.nextToken();    // skip web app name
       t.nextToken();    // skip servlet name
       
       // get the command processor to execute the command e.g. "workflow"
@@ -101,8 +101,8 @@ public class CommandServlet extends BaseServlet
       String command = t.nextToken();
       
       // get any remaining uri elements to pass to the processor
-      String[] args = new String[tokenCount - 4];
-      for (int i=0; i<tokenCount-4; i++)
+      String[] args = new String[tokenCount - 3];
+      for (int i=0; i<tokenCount-3; i++)
       {
          args[i] = t.nextToken();
       }

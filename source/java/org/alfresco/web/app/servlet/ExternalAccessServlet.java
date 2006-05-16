@@ -85,20 +85,21 @@ public class ExternalAccessServlet extends BaseServlet
          return;
       }
       
+      uri = uri.substring(req.getContextPath().length());
       StringTokenizer t = new StringTokenizer(uri, "/");
-      int count = t.countTokens();
-      if (count < 3)
+      int tokenCount = t.countTokens();
+      if (tokenCount < 2)
       {
          throw new IllegalArgumentException("Externally addressable URL did not contain all required args: " + uri); 
       }
-      t.nextToken();    // skip web app name
+      
       t.nextToken();    // skip servlet name
       
       String outcome = t.nextToken();
       
       // get rest of the tokens arguments
-      String[] args = new String[count - 3];
-      for (int i=0; i<count - 3; i++)
+      String[] args = new String[tokenCount - 2];
+      for (int i=0; i<tokenCount - 2; i++)
       {
          args[i] = t.nextToken();
       }

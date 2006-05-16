@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -100,14 +101,14 @@ public class TemplateContentServlet extends BaseServlet
          return;
       }
       
+      uri = uri.substring(req.getContextPath().length());
       StringTokenizer t = new StringTokenizer(uri, "/");
       int tokenCount = t.countTokens();
-      if (tokenCount < 5)
+      if (tokenCount < 4)
       {
          throw new IllegalArgumentException("Template Servlet URL did not contain all required args: " + uri); 
       }
       
-      t.nextToken();    // skip web app name
       t.nextToken();    // skip servlet name
       
       // get NodeRef to the content
@@ -116,7 +117,7 @@ public class TemplateContentServlet extends BaseServlet
       
       // get NodeRef to the template if supplied
       NodeRef templateRef = null;
-      if (tokenCount >= 8)
+      if (tokenCount >= 7)
       {
          storeRef = new StoreRef(t.nextToken(), t.nextToken());
          templateRef = new NodeRef(storeRef, t.nextToken());
@@ -165,7 +166,7 @@ public class TemplateContentServlet extends BaseServlet
             }
             
             // create the model - put the supplied noderef in as space/document as appropriate
-            Object model = getModel(serviceRegistry, req, res, nodeRef);
+            Object model = getModel(serviceRegistry, req.getSession(), req.getParameterMap(), nodeRef);
             
             // process the template against the node content directly to the response output stream
             // assuming the repo is capable of streaming in chunks, this should allow large files
@@ -215,14 +216,15 @@ public class TemplateContentServlet extends BaseServlet
     *  
     * @param services      ServiceRegistry required for TemplateNode construction
     * @param session       HttpSession for accessing current User
+    * @param paramMap      Request parameter map
     * @param nodeRef       NodeRef of the space/document to process template against
     * 
     * @return an object model ready for executing template against
     */
-   private Object getModel(ServiceRegistry services, HttpServletRequest req, HttpServletResponse res, NodeRef nodeRef)
+   private Object getModel(ServiceRegistry services, HttpSession session, Map paramMap, NodeRef nodeRef)
    {
       // build FreeMarker default model and merge
-      Map root = DefaultModelHelper.buildDefaultModel(services, Application.getCurrentUser(req.getSession())); 
+      Map root = DefaultModelHelper.buildDefaultModel(services, Application.getCurrentUser(session)); 
       
       // put the current NodeRef in as "space" and "document"
       TemplateNode node = new TemplateNode(nodeRef, services, this.imageResolver);

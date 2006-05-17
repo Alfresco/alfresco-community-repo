@@ -134,7 +134,7 @@
         </property>
     </bean>
 
-    <!-- enable DEBUG for 'org.alfresco.repo.cache.EhCacheTracerJob' to activate -->
+    <!-- enable DEBUG for 'org.alfresco.repo.cache.EhCacheTracerJob' and enable scheduler property to activate -->
     <bean id="ehCacheTracerJob" class="org.alfresco.util.TriggerBean">
         <property name="jobDetail">
             <bean id="ehCacheTracerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
@@ -143,6 +143,11 @@
                 </property>
             </bean>
         </property>
+        <!-- enable this to activate bean
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        -->
         <property name="startDelay">
             <value>3600000</value><!-- start after an hour -->
         </property>

@@ -334,6 +334,8 @@ public abstract class BaseDetailsBean
          String formId = Utils.getParentForm(fc, event.getComponent()).getClientId(fc);
          fc.addMessage(formId + ':' + getPropertiesPanelId(), facesMsg);
          
+         getNode().reset();
+         
          // commit the transaction
          tx.commit();
       }

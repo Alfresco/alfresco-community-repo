@@ -19,14 +19,6 @@
            <generator class="native" />
         </id>
 
-        <many-to-one
-               name="node"
-               class="org.alfresco.repo.domain.hibernate.NodeImpl"
-               unique="true"
-               not-null="true">
-            <column name="node_id" />
-        </many-to-one>
-         
         <set name="entries"
                inverse="true"
                lazy="false" 

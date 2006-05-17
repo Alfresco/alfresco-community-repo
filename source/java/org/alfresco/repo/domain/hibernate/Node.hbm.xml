@@ -38,14 +38,16 @@
          <property name="uuid" column="uuid" type="string" length="36" />
       </natural-id>
       <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
-      <!-- inverse assoc to access control list -->
-      <one-to-one 
+      <!-- forward assoc to access control list (optional) -->
+      <many-to-one
             name="accessControlList"
             class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"
-            property-ref="node"
+            column="acl_id"
             lazy="false"
             fetch="join"
-            cascade="delete" /> 
+            unique="false"
+            not-null="false"
+            cascade="delete" />
       <!-- forward assoc to properties -->
       <map
             name="properties" 
@@ -87,8 +89,8 @@
       <set
             name="parentAssocs"
             inverse="true" 
-            lazy="true" 
-            fetch="select"
+            lazy="false"
+            fetch="join"
             cascade="none"
             optimistic-lock="true" >
          <key column="child_node_id" />
@@ -98,8 +100,8 @@
       <set
             name="childAssocs"
             inverse="true"
-            lazy="true" 
-            fetch="select"
+            lazy="false"
+            fetch="join"
             cascade="none"
             optimistic-lock="true" >
          <key column="parent_node_id" />
@@ -173,8 +175,8 @@
       <many-to-one 
             name="parent"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
-            lazy="false"
-            fetch="join"
+            lazy="proxy"
+            fetch="select"
             optimistic-lock="true"
             not-null="true" >
          <column name="parent_node_id" />
@@ -182,8 +184,8 @@
       <!-- forward assoc to child node -->
       <many-to-one
             name="child" 
-            lazy="false"
-            fetch="join"
+            lazy="proxy"
+            fetch="select"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             optimistic-lock="true"
             not-null="true" >

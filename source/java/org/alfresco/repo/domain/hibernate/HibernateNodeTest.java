@@ -28,6 +28,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.ChildAssoc;
+import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.NodeKey;
@@ -35,12 +36,14 @@ import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.StoreKey;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.hibernate.CacheMode;
 import org.hibernate.exception.ConstraintViolationException;
 
 /**
@@ -385,6 +388,133 @@ public class HibernateNodeTest extends BaseSpringTest
         {
             txn.rollback();
         }
+    }
+    
+    /**
+     * Create some simple parent-child relationships and flush them.  Then read them back in without
+     * using the L2 cache.
+     */
+    public void testQueryJoins() throws Exception
+    {
+        getSession().setCacheMode(CacheMode.IGNORE);
         
+        // make a container node
+        Node containerNode = new NodeImpl();
+        containerNode.setStore(store);
+        containerNode.setUuid(GUID.generate());
+        containerNode.setTypeQName(ContentModel.TYPE_CONTAINER);
+        containerNode.getProperties().put(ContentModel.PROP_AUTHOR, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+        containerNode.getProperties().put(ContentModel.PROP_ARCHIVED_BY, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+        containerNode.getAspects().add(ContentModel.ASPECT_AUDITABLE);
+        Serializable containerNodeId = getSession().save(containerNode);
+        NodeKey containerNodeKey = new NodeKey(containerNode.getNodeRef());
+        NodeStatus containerNodeStatus = new NodeStatusImpl();
+        containerNodeStatus.setKey(containerNodeKey);
+        containerNodeStatus.setNode(containerNode);
+        containerNodeStatus.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        getSession().save(containerNodeStatus);
+        // make content node 1
+        Node contentNode1 = new NodeImpl();
+        contentNode1.setStore(store);
+        contentNode1.setUuid(GUID.generate());
+        contentNode1.setTypeQName(ContentModel.TYPE_CONTENT);
+        contentNode1.getProperties().put(ContentModel.PROP_AUTHOR, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+        contentNode1.getProperties().put(ContentModel.PROP_ARCHIVED_BY, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+        contentNode1.getAspects().add(ContentModel.ASPECT_AUDITABLE);
+        Serializable contentNode1Id = getSession().save(contentNode1);
+        NodeKey contentNodeKey1 = new NodeKey(contentNode1.getNodeRef());
+        NodeStatus contentNodeStatus1 = new NodeStatusImpl();
+        contentNodeStatus1.setKey(contentNodeKey1);
+        contentNodeStatus1.setNode(contentNode1);
+        contentNodeStatus1.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        getSession().save(contentNodeStatus1);
+        // make content node 2
+        Node contentNode2 = new NodeImpl();
+        contentNode2.setStore(store);
+        contentNode2.setUuid(GUID.generate());
+        contentNode2.setTypeQName(ContentModel.TYPE_CONTENT);
+        Serializable contentNode2Id = getSession().save(contentNode2);
+        contentNode2.getProperties().put(ContentModel.PROP_AUTHOR, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+        contentNode2.getProperties().put(ContentModel.PROP_ARCHIVED_BY, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+        contentNode2.getAspects().add(ContentModel.ASPECT_AUDITABLE);
+        NodeKey contentNodeKey2 = new NodeKey(contentNode2.getNodeRef());
+        NodeStatus contentNodeStatus2 = new NodeStatusImpl();
+        contentNodeStatus2.setKey(contentNodeKey2);
+        contentNodeStatus2.setNode(contentNode2);
+        contentNodeStatus2.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        getSession().save(contentNodeStatus2);
+        // create an association to content 1
+        ChildAssoc assoc1 = new ChildAssocImpl();
+        assoc1.setIsPrimary(true);
+        assoc1.setTypeQName(QName.createQName(null, "type1"));
+        assoc1.setQname(QName.createQName(null, "number1"));
+        assoc1.buildAssociation(containerNode, contentNode1);
+        getSession().save(assoc1);
+        // create an association to content 2
+        ChildAssoc assoc2 = new ChildAssocImpl();
+        assoc2.setIsPrimary(true);
+        assoc2.setTypeQName(QName.createQName(null, "type2"));
+        assoc2.setQname(QName.createQName(null, "number2"));
+        assoc2.buildAssociation(containerNode, contentNode2);
+        getSession().save(assoc2);
+        
+        // make sure that there are no entities cached in either L1 or L2
+        getSession().flush();
+        getSession().clear();
+
+        // now read the structure back in from the container down
+        containerNodeStatus = (NodeStatus) getSession().get(NodeStatusImpl.class, containerNodeKey);
+        containerNode = containerNodeStatus.getNode();
+        Collection<ChildAssoc> assocs = containerNode.getChildAssocs();
+        for (ChildAssoc assoc : assocs)
+        {
+            Node childNode = assoc.getChild();
+            Store store = childNode.getStore();
+            childNode.getAspects().size();
+            childNode.getProperties().size();
+            childNode.getParentAssocs().size();
+            childNode.getChildAssocs().size();
+            childNode.getSourceNodeAssocs().size();
+            childNode.getTargetNodeAssocs().size();
+            DbAccessControlList acl = childNode.getAccessControlList();
+            if (acl != null)
+            {
+                acl.getEntries().size();
+            }
+        }
+        
+        // clear out again
+        getSession().clear();
+
+        // now remove a property from each child
+        containerNodeStatus = (NodeStatus) getSession().get(NodeStatusImpl.class, containerNodeKey);
+        containerNode = containerNodeStatus.getNode();
+        assocs = containerNode.getChildAssocs();
+        for (ChildAssoc assoc : assocs)
+        {
+            Node childNode = assoc.getChild();
+            PropertyValue removed = childNode.getProperties().remove(ContentModel.PROP_ARCHIVED_BY);
+            assertNotNull("Property was not present", removed);
+        }
+        // expect that just the specific property gets removed in the delete statement
+        getSession().flush();
+        getSession().clear();
+        
+        // Create a second association to content 2
+        // create an association to content 2
+        containerNodeStatus = (NodeStatus) getSession().get(NodeStatusImpl.class, containerNodeKey);
+        containerNode = containerNodeStatus.getNode();
+        contentNodeStatus2 = (NodeStatus) getSession().get(NodeStatusImpl.class, contentNodeKey2);
+        contentNode2 = contentNodeStatus2.getNode();
+        ChildAssoc assoc3 = new ChildAssocImpl();
+        assoc3.setIsPrimary(false);
+        assoc3.setTypeQName(QName.createQName(null, "type3"));
+        assoc3.setQname(QName.createQName(null, "number3"));
+        assoc3.buildAssociation(containerNode, contentNode2);  // check whether the children are pulled in for this
+        getSession().save(assoc3);
+
+        // flush it
+        getSession().flush();
+        getSession().clear();
     }
 }

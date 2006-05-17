@@ -30,10 +30,6 @@ public interface DbAccessControlList
 {
     public long getId();
 
-    public Node getNode();
-    
-    public void setNode(Node node);
-    
     /**
      * 
      * @return Returns the access control entries for this access control list 

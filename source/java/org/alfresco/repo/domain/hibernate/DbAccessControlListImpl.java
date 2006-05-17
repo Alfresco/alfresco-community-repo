@@ -26,8 +26,6 @@ import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.DbAuthority;
 import org.alfresco.repo.domain.DbPermission;
 import org.alfresco.repo.domain.DbPermissionKey;
-import org.alfresco.repo.domain.Node;
-import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Session;
@@ -42,7 +40,6 @@ public class DbAccessControlListImpl extends LifecycleAdapter implements DbAcces
     private static Log logger = LogFactory.getLog(DbAccessControlListImpl.class);
 
     private long id;
-    private Node node;
     private Set<DbAccessControlEntry> entries;
     private boolean inherits;
     
@@ -57,7 +54,6 @@ public class DbAccessControlListImpl extends LifecycleAdapter implements DbAcces
         StringBuilder sb = new StringBuilder(128);
         sb.append("DbAccessControlListImpl")
           .append("[ id=").append(id)
-          .append(", node=").append(node)
           .append(", entries=").append(entries.size())
           .append(", inherits=").append(inherits)
           .append("]");
@@ -77,14 +73,13 @@ public class DbAccessControlListImpl extends LifecycleAdapter implements DbAcces
         }
         DbAccessControlList other = (DbAccessControlList) o;
 
-        return (this.inherits == other.getInherits())
-                && (EqualsHelper.nullSafeEquals(this.node, other.getNode()));
+        return (this.inherits == other.getInherits());
     }
 
     @Override
     public int hashCode()
     {
-        return (node == null ? 0 : node.hashCode());
+        return (inherits == false ? 0 : 17);
     }
 
     public long getId()
@@ -101,16 +96,6 @@ public class DbAccessControlListImpl extends LifecycleAdapter implements DbAcces
         this.id = id;
     }
 
-    public Node getNode()
-    {
-        return node;
-    }
-    
-    public void setNode(Node node)
-    {
-        this.node = node;
-    }
-    
     public Set<DbAccessControlEntry> getEntries()
     {
         return entries;

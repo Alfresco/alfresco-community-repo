@@ -37,12 +37,6 @@ public interface DbAccessControlList
     public Set<DbAccessControlEntry> getEntries();
     
     /**
-     * 
-     * @return Returns the access control entries for this access control list 
-     */
-    public Set<DbAccessControlEntry> getEntries();
-    
-    /**
      * Get inheritance behaviour
      * @return Returns the inheritance status of this list
      */

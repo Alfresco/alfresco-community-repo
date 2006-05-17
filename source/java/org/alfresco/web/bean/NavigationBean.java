@@ -47,7 +47,7 @@ import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.bean.wizard.NewSpaceWizard;
+import org.alfresco.web.bean.spaces.CreateSpaceWizard;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
@@ -305,6 +305,7 @@ public class NavigationBean
     * 
     * @return model containing current current space info.
     */
+   @SuppressWarnings("unchecked")
    public Map getTemplateModel()
    {
       HashMap model = new HashMap(1, 1.0f);
@@ -375,7 +376,7 @@ public class NavigationBean
             props = node.getProperties();
          }
          String icon = (String)props.get("app:icon");
-         props.put("icon", icon != null ? icon : NewSpaceWizard.SPACE_ICON_DEFAULT);
+         props.put("icon", icon != null ? icon : CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME);
          Path path = this.nodeService.getPath(nodeRef);
          
          // resolve CIFS network folder location for this node
@@ -617,6 +618,7 @@ public class NavigationBean
       /**
        * @see org.alfresco.web.ui.common.component.IBreadcrumbHandler#navigationOutcome(org.alfresco.web.ui.common.component.UIBreadcrumb)
        */
+      @SuppressWarnings("unchecked")
       public String navigationOutcome(UIBreadcrumb breadcrumb)
       {
          // set the current node to the specified top level node ID

@@ -53,6 +53,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    protected String templateSpaceId;
    protected String copyPolicy;
    protected String name;
+   protected String title;
    protected String description;
    protected String templateName;
    protected boolean saveAsTemplate;
@@ -62,6 +63,9 @@ public class CreateSpaceWizard extends BaseWizardBean
    
    // the NodeRef of the node created during finish
    protected NodeRef createdNode;
+   
+   // ------------------------------------------------------------------------------
+   // Wizard implementation
    
    /**
     * Initialises the wizard
@@ -85,7 +89,8 @@ public class CreateSpaceWizard extends BaseWizardBean
       this.existingSpaceId = null;
       this.templateSpaceId = null;
       this.name = null;
-      this.description = "";
+      this.title = null;
+      this.description = null;
       this.templateName = null;
       this.saveAsTemplate = false;
    }
@@ -122,7 +127,7 @@ public class CreateSpaceWizard extends BaseWizardBean
          // apply the uifacets aspect - icon, title and description props
          Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(5);
          uiFacetsProps.put(ContentModel.PROP_ICON, this.icon);
-         uiFacetsProps.put(ContentModel.PROP_TITLE, this.name);
+         uiFacetsProps.put(ContentModel.PROP_TITLE, this.title);
          uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
          this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
          
@@ -141,7 +146,8 @@ public class CreateSpaceWizard extends BaseWizardBean
          // copy from existing
          NodeRef copiedNode = this.fileFolderService.copy(sourceNode, parentSpace, this.name).getNodeRef(); 
          
-         // also need to set the new description and icon properties
+         // also need to set the new title, description and icon properties
+         this.nodeService.setProperty(copiedNode, ContentModel.PROP_TITLE, this.title);
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_DESCRIPTION, this.description);
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_ICON, this.icon);
          
@@ -160,7 +166,8 @@ public class CreateSpaceWizard extends BaseWizardBean
          NodeRef parentSpace = new NodeRef(Repository.getStoreRef(), this.navigator.getCurrentNodeId());
          // copy from the template
          NodeRef copiedNode = this.fileFolderService.copy(sourceNode, parentSpace, this.name).getNodeRef();
-         // also need to set the new description and icon properties
+         // also need to set the new title, description and icon properties
+         this.nodeService.setProperty(copiedNode, ContentModel.PROP_TITLE, this.title);
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_DESCRIPTION, this.description);
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_ICON, this.icon);
          
@@ -202,6 +209,9 @@ public class CreateSpaceWizard extends BaseWizardBean
       return outcome;
    }
 
+   // ------------------------------------------------------------------------------
+   // Bean Getters and Setters
+   
    /**
     * @return Returns the copyPolicy.
     */
@@ -296,6 +306,22 @@ public class CreateSpaceWizard extends BaseWizardBean
    public void setName(String name)
    {
       this.name = name;
+   }
+   
+   /**
+    * @return Returns the title.
+    */
+   public String getTitle()
+   {
+      return title;
+   }
+   
+   /**
+    * @param title The title to set.
+    */
+   public void setTitle(String title)
+   {
+      this.title = title;
    }
    
    /**
@@ -642,6 +668,9 @@ public class CreateSpaceWizard extends BaseWizardBean
       return icons;
    }
 
+   // ------------------------------------------------------------------------------
+   // Helper methods
+   
    /**
     * Formats the error message to display if an error occurs during finish processing
     * 

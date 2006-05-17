@@ -155,7 +155,7 @@
                            <td class="separator" width=1></td>
                            <td width=118 valign=middle>
                               <%-- View mode settings --%>
-                              <a:modeList itemSpacing="4" iconColumnWidth="20" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/Details.gif"
+                              <a:modeList id="viewMode" itemSpacing="4" iconColumnWidth="20" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/Details.gif"
                                     value="#{BrowseBean.browseViewMode}" actionListener="#{BrowseBean.viewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">
                                  <a:listItem value="details" label="#{msg.details_view}" />
                                  <a:listItem value="icons" label="#{msg.view_icon}" />

@@ -88,26 +88,45 @@
 
 <table cellpadding="3" cellspacing="2" border="0" width="100%">
    <tr>
-      <td colspan="2" class="wizardSectionHeading">
+      <td colspan="3" class="wizardSectionHeading">
          </f:verbatim>
          <h:outputText value="#{msg.title_space_details}"/>
          <f:verbatim>
       </td>
    </tr>
    <tr>
+      <td align="middle">
+         </f:verbatim>
+         <h:graphicImage value="/images/icons/required_field.gif" alt="Required Field" />
+         <f:verbatim>
+      </td>
       <td>
          </f:verbatim>
          <h:outputText value="#{msg.name}:"/>
          <f:verbatim>
       </td>
-      <td>
+      <td width="85%">
          </f:verbatim>
          <h:inputText id="name" value="#{WizardManager.bean.name}" size="35" maxlength="1024"
                       onkeyup="javascript:checkButtonState();" />
-         <f:verbatim>&nbsp;*
+         <f:verbatim>
       </td>
    </tr>
    <tr>
+      <td></td>
+      <td>
+         </f:verbatim>
+         <h:outputText value="#{msg.title}:" />
+         <f:verbatim>
+      </td>
+      <td>
+         </f:verbatim>
+         <h:inputText id="title" value="#{WizardManager.bean.title}" size="35" maxlength="1024" />
+         <f:verbatim>
+      </td>
+   </tr>
+   <tr>
+      <td></td>
       <td>
          </f:verbatim>
          <h:outputText value="#{msg.description}:"/>
@@ -120,15 +139,10 @@
       </td>
    </tr>
    <tr>
-      <td colspan="2" class="wizardSectionHeading">&nbsp;</f:verbatim>
-         <h:outputText value="#{msg.other_options}"/>
-         <f:verbatim>
-      </td>
-   </tr>
-   <tr>
+      <td></td>
       <td>
          </f:verbatim>
-         <h:outputText value="#{msg.choose_space_icon}:"/>
+         <h:outputText value="#{msg.icon}:"/>
          <f:verbatim>
       </td>
       <td>

@@ -84,14 +84,14 @@ public class CommandServlet extends BaseServlet
          return;
       }
       
+      uri = uri.substring(req.getContextPath().length());
       StringTokenizer t = new StringTokenizer(uri, "/");
       int tokenCount = t.countTokens();
-      if (tokenCount < 4)
+      if (tokenCount < 3)
       {
          throw new IllegalArgumentException("Command Servlet URL did not contain all required args: " + uri); 
       }
       
-      t.nextToken();    // skip web app name
       t.nextToken();    // skip servlet name
       
       // get the command processor to execute the command e.g. "workflow"
@@ -101,8 +101,8 @@ public class CommandServlet extends BaseServlet
       String command = t.nextToken();
       
       // get any remaining uri elements to pass to the processor
-      String[] args = new String[tokenCount - 4];
-      for (int i=0; i<tokenCount-4; i++)
+      String[] args = new String[tokenCount - 3];
+      for (int i=0; i<tokenCount-3; i++)
       {
          args[i] = t.nextToken();
       }
@@ -127,7 +127,7 @@ public class CommandServlet extends BaseServlet
             txn.begin();
             
             // inform the processor to execute the specified command
-            processor.process(serviceRegistry, req.getSession(), command);
+            processor.process(serviceRegistry, req, command);
             
             // commit the transaction
             txn.commit();
@@ -166,11 +166,18 @@ public class CommandServlet extends BaseServlet
    }
 
    /**
-    * @param procName
+    * Created the specified CommandProcessor instance. The name of the processor is looked up
+    * in the client config, it should find a valid class impl and then create it. 
+    *  
+    * @param procName      Name of the CommandProcessor to lookup in the client config.
+    * 
+    * @return CommandProcessor
+    * 
     * @throws InstantiationException
     * @throws IllegalAccessException
     */
-   private CommandProcessor createCommandProcessor(String procName) throws InstantiationException, IllegalAccessException
+   private CommandProcessor createCommandProcessor(String procName)
+      throws InstantiationException, IllegalAccessException
    {
       Config config = Application.getConfigService(getServletContext()).getConfig("Command Servlet");
       if (config == null)

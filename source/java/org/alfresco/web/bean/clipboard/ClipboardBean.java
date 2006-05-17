@@ -306,9 +306,10 @@ public class ClipboardBean
                   if (logger.isDebugEnabled())
                      logger.debug("Attempting to copy node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
                   
-                  if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT))
+                  if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT) ||
+                      dd.isSubClass(item.Node.getType(), ContentModel.TYPE_FOLDER))
                   {
-                     // call the node ops service to initiate the copy
+                     // copy the file/folder
                      this.fileFolderService.copy(
                            item.Node.getNodeRef(),
                            destRef,
@@ -316,6 +317,7 @@ public class ClipboardBean
                   }
                   else
                   {
+                     // copy the node
                      this.copyService.copy(
                            item.Node.getNodeRef(),
                            destRef,
@@ -330,13 +332,14 @@ public class ClipboardBean
                if (logger.isDebugEnabled())
                   logger.debug("Attempting to move node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
                
-               if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT))
+               if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT) ||
+                   dd.isSubClass(item.Node.getType(), ContentModel.TYPE_FOLDER))
                {
-                  // move the node
+                  // move the file/folder
                   this.fileFolderService.move(
                         item.Node.getNodeRef(),
                         destRef,
-                        name);      // TODO: could add "Copy of ..." here if move fails
+                        name);
                }
                else
                {

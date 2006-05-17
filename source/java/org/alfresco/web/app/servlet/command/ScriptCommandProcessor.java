@@ -17,12 +17,14 @@
 package org.alfresco.web.app.servlet.command;
 
 import java.io.PrintWriter;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -83,15 +85,26 @@ public final class ScriptCommandProcessor implements CommandProcessor
    }
    
    /**
-    * @see org.alfresco.web.app.servlet.command.CommandProcessor#process(org.alfresco.service.ServiceRegistry, java.lang.String)
+    * @see org.alfresco.web.app.servlet.command.CommandProcessor#process(org.alfresco.service.ServiceRegistry, javax.servlet.http.HttpServletRequest, java.lang.String)
     */
-   public void process(ServiceRegistry serviceRegistry, HttpSession session, String command)
+   public void process(ServiceRegistry serviceRegistry, HttpServletRequest request, String command)
    {
-      Map<String, Object> properties = new HashMap<String, Object>(2, 1.0f);
+      Map<String, Object> properties = new HashMap<String, Object>(4, 1.0f);
+      
       properties.put(ExecuteScriptCommand.PROP_SCRIPT, this.scriptRef);
       properties.put(ExecuteScriptCommand.PROP_DOCUMENT, this.docRef);
-      User user = Application.getCurrentUser(session);
+      User user = Application.getCurrentUser(request.getSession());
       properties.put(ExecuteScriptCommand.PROP_USERPERSON, user.getPerson());
+      
+      // add URL arguments as a special Scriptable Map property called 'args' 
+      Map<String, String> args = new ScriptableHashMap<String, String>();
+      Enumeration names = request.getParameterNames();
+      while (names.hasMoreElements())
+      {
+         String name = (String)names.nextElement();
+         args.put(name, request.getParameter(name));
+      }
+      properties.put(ExecuteScriptCommand.PROP_ARGS, args);
       
       Command cmd = CommandFactory.getInstance().createCommand(command);
       if (cmd == null)

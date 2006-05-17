@@ -114,13 +114,13 @@ public class DownloadContentServlet extends BaseServlet
       // TODO: add compression here?
       //       see http://servlets.com/jservlet2/examples/ch06/ViewResourceCompress.java for example
       //       only really needed if we don't use the built in compression of the servlet container
+      uri = uri.substring(req.getContextPath().length());
       StringTokenizer t = new StringTokenizer(uri, "/");
-      if (t.countTokens() < 7)
+      if (t.countTokens() < 6)
       {
          throw new IllegalArgumentException("Download URL did not contain all required args: " + uri); 
       }
       
-      t.nextToken();    // skip web app name
       t.nextToken();    // skip servlet name
       
       String attachToken = t.nextToken();

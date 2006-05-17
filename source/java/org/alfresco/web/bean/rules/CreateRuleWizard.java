@@ -213,6 +213,16 @@ public class CreateRuleWizard extends BaseActionWizard
    // Bean Getters and Setters
    
    /**
+    * Determines whether the rule type drop down list should be enabled.
+    * 
+    * @return false as the rule type drop down should be enabled
+    */
+   public boolean getRuleTypeDisabled()
+   {
+      return false;
+   }
+   
+   /**
     * Returns the properties for all the conditions as a JSF DataModel
     * 
     * @return JSF DataModel representing the condition properties

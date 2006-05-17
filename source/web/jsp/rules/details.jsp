@@ -45,10 +45,8 @@
       </td>
       <td width="90%">
          </f:verbatim>
-         <%--
-         disabled="#{WizardManager.bean.inEditMode}"
-         --%>
-         <h:selectOneMenu id="rule-type" value="#{WizardManager.bean.type}">
+         <h:selectOneMenu id="rule-type" value="#{WizardManager.bean.type}" 
+                          disabled="#{WizardManager.bean.ruleTypeDisabled}">
             <f:selectItems value="#{WizardManager.bean.types}" />
          </h:selectOneMenu>
          <f:verbatim>

@@ -77,22 +77,22 @@
                               </div>
                               <a:panel id="working-copy" rendered="#{DocumentDetailsBean.locked}">
                                  <div class="mainSubText">
-                                    <h:outputText value="#{msg.working_copy_document}" />:
-                                    <a:actionLink value="#{DocumentDetailsBean.workingCopyDocument.properties.name}" actionListener="#{BrowseBean.setupContentAction}" action="showDocDetails">
+                                    <h:outputText id="out-workingcopy" value="#{msg.working_copy_document}" />:
+                                    <a:actionLink id="act-details" rendered="#{DocumentDetailsBean.workingCopyDocument != null}" value="#{DocumentDetailsBean.workingCopyDocument.properties.name}" actionListener="#{BrowseBean.setupContentAction}" action="showDocDetails">
                                        <f:param name="id" value="#{DocumentDetailsBean.workingCopyDocument.id}" />
                                     </a:actionLink>
                                  </div>
                               </a:panel>
-                              <div class="mainSubText"><h:outputText value="#{msg.documentdetails_description}" /></div>
+                              <div class="mainSubText"><h:outputText id="doc-details" value="#{msg.documentdetails_description}" /></div>
                            </td>
                            
                            <%-- Navigation --%>
                            <td align=right>
-                              <a:actionLink value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{DocumentDetailsBean.previousItem}" action="showDocDetails">
+                              <a:actionLink id="act-prev" value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{DocumentDetailsBean.previousItem}" action="showDocDetails">
                                  <f:param name="id" value="#{DocumentDetailsBean.id}" />
                               </a:actionLink>
                               <img src="<%=request.getContextPath()%>/images/icons/nav_file.gif" width=24 height=24 align=absmiddle>
-                              <a:actionLink value="#{msg.next_item}" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{DocumentDetailsBean.nextItem}" action="showDocDetails">
+                              <a:actionLink id="act-next" value="#{msg.next_item}" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{DocumentDetailsBean.nextItem}" action="showDocDetails">
                                  <f:param name="id" value="#{DocumentDetailsBean.id}" />
                               </a:actionLink>
                            </td>
@@ -116,8 +116,6 @@
                      <table cellspacing="0" cellpadding="3" border="0" width="100%">
                         <tr>
                            <td width="100%" valign="top">
-                              <a:errors message="An error occurred" styleClass="errorMessage" />
-                           
                               <%-- wrapper comment used by the panel to add additional component facets --%>
                               <h:panelGroup id="dashboard-panel-facets">
                                  <f:facet name="title">
@@ -222,7 +220,8 @@
                                                   action="#{DocumentDetailsBean.applyInlineEditable}"
                                                   rendered="#{DocumentDetailsBean.inlineEditable == false}" />
                                           </r:permissionEvaluator>
-                                          <h:message for="document-props" styleClass="statusMessage" />
+                                          <h:messages id="error1" globalOnly="true" styleClass="errorMessage" layout="table" />
+                                          <h:message id="msg1" for="document-props" styleClass="statusMessage" />
                                        </td>
                                     </tr>
                                  </table>
@@ -253,7 +252,8 @@
                                                       columns="1" mode="view" labelStyleClass="propertiesLabel" externalConfig="true" />
                                           <h:outputText id="no-inline-msg2" value="<br/>#{msg.not_inline_editable}<br/>"
                                                rendered="#{DocumentDetailsBean.inlineEditable == false}" escape="false" />
-                                          <h:messages id="props-locked-msgs" styleClass="errorMessage" layout="table" />
+                                          <h:messages id="error2" globalOnly="true" styleClass="errorMessage" layout="table" />
+                                          <h:message id="msg2" for="document-props-locked" styleClass="statusMessage" />
                                        </td>
                                     </tr>
                                  </table>
@@ -383,7 +383,7 @@
                               <table cellpadding="1" cellspacing="1" border="0" width="100%">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.close}" action="dialog:close" styleClass="wizardButton" />
+                                       <h:commandButton id="close-btn" value="#{msg.close}" action="dialog:close" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

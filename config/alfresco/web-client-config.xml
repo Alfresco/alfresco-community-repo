@@ -81,7 +81,7 @@
          <view-impl>org.alfresco.web.ui.common.renderer.data.RichListRenderer$DetailsViewRenderer</view-impl>
          <view-impl>org.alfresco.web.ui.common.renderer.data.RichListRenderer$IconViewRenderer</view-impl>
          <view-impl>org.alfresco.web.ui.common.renderer.data.RichListRenderer$ListViewRenderer</view-impl>
-         <view-impl>org.alfresco.web.bean.ForumsBean$TopicBubbleViewRenderer</view-impl>
+         <view-impl>org.alfresco.web.bean.forums.ForumsBean$TopicBubbleViewRenderer</view-impl>
          
          <!-- default values for the views available in the client -->
          <view-defaults>

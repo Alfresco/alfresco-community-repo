@@ -1115,7 +1115,7 @@
          The bean that holds forums state.
       </description>
       <managed-bean-name>ForumsBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.ForumsBean</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.forums.ForumsBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1152,40 +1152,7 @@
          The bean that backs up the Create Forums Dialog
       </description>
       <managed-bean-name>CreateForumsDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewForumsWizard</managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>fileFolderService</property-name>
-         <value>#{FileFolderService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>navigator</property-name>
-         <value>#{NavigationBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>browseBean</property-name>
-         <value>#{BrowseBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>namespaceService</property-name>
-         <value>#{NamespaceService}</value>
-      </managed-property>
-   </managed-bean>
-   
-   <managed-bean>
-      <description>
-         The bean that backs up the Edit Forums Dialog
-      </description>
-      <managed-bean-name>EditForumsDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewForumsWizard</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.forums.CreateForumsDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1218,7 +1185,7 @@
          The bean that backs up the Create Forum Dialog
       </description>
       <managed-bean-name>CreateForumDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewForumWizard</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.forums.CreateForumDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1239,39 +1206,6 @@
       <managed-property>
          <property-name>searchService</property-name>
          <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>namespaceService</property-name>
-         <value>#{NamespaceService}</value>
-      </managed-property>
-   </managed-bean>
-   
-   <managed-bean>
-      <description>
-         The bean that backs up the Edit Forum Dialog
-      </description>
-      <managed-bean-name>EditForumDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewForumWizard</managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>fileFolderService</property-name>
-         <value>#{FileFolderService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>navigator</property-name>
-         <value>#{NavigationBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>browseBean</property-name>
-         <value>#{BrowseBean}</value>
       </managed-property>
       <managed-property>
          <property-name>namespaceService</property-name>
@@ -1284,7 +1218,7 @@
          The bean that backs up the Create Topic Dialog
       </description>
       <managed-bean-name>CreateTopicDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewTopicWizard</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.forums.CreateTopicDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1318,43 +1252,10 @@
    
    <managed-bean>
       <description>
-         The bean that backs up the Edit Topic Dialog
-      </description>
-      <managed-bean-name>EditTopicDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewTopicWizard</managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>fileFolderService</property-name>
-         <value>#{FileFolderService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>navigator</property-name>
-         <value>#{NavigationBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>browseBean</property-name>
-         <value>#{BrowseBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>namespaceService</property-name>
-         <value>#{NamespaceService}</value>
-      </managed-property>
-   </managed-bean>
-   
-   <managed-bean>
-      <description>
          The bean that backs up the Create Post Dialog
       </description>
       <managed-bean-name>CreatePostDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewPostWizard</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.forums.CreatePostDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1391,7 +1292,7 @@
          The bean that backs up the Edit Post Dialog
       </description>
       <managed-bean-name>EditPostDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewPostWizard</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.forums.EditPostDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1428,7 +1329,7 @@
          The bean that backs up the Create Reply Dialog
       </description>
       <managed-bean-name>CreateReplyDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewReplyWizard</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.forums.CreateReplyDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1465,7 +1366,7 @@
          The bean that backs up the Create Discussion Dialog
       </description>
       <managed-bean-name>CreateDiscussionDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.NewDiscussionWizard</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.forums.CreateDiscussionDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>

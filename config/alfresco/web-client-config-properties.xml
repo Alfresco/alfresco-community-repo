@@ -16,8 +16,9 @@
    <config evaluator="node-type" condition="folder">
       <property-sheet>
          <show-property name="name"/>
+         <show-property name="title"/>
          <show-property name="description"/>
-         <show-property name="icon" show-in-view-mode="false" display-label-id="choose_space_icon"
+         <show-property name="icon" show-in-view-mode="false" display-label-id="icon"
                         component-generator="SpaceIconPickerGenerator" />
       </property-sheet>
    </config>
@@ -26,6 +27,8 @@
       <property-sheet>
          <show-property name="name"/>
          <show-property name="description"/>
+         <show-property name="icon" show-in-view-mode="false" display-label-id="icon"
+                        component-generator="SpaceIconPickerGenerator" />
       </property-sheet>
    </config>
    
@@ -33,6 +36,8 @@
       <property-sheet>
          <show-property name="name"/>
          <show-property name="description"/>
+         <show-property name="icon" show-in-view-mode="false" display-label-id="icon"
+                        component-generator="SpaceIconPickerGenerator" />
       </property-sheet>
    </config>
    
@@ -40,6 +45,8 @@
       <property-sheet>
          <show-property name="name"/>
          <show-property name="description"/>
+         <show-property name="icon" show-in-view-mode="false" display-label-id="icon"
+                        component-generator="SpaceIconPickerGenerator" />
       </property-sheet>
    </config>
 

@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
@@ -64,6 +65,7 @@ public class DocumentDetailsBean extends BaseDetailsBean
    
    private static final String MSG_HAS_FOLLOWING_CATEGORIES = "has_following_categories";
    private static final String MSG_NO_CATEGORIES_APPLIED = "no_categories_applied";
+   private static final String MSG_SUCCESS_UNLOCK = "success_unlock";
    private static final String MSG_ERROR_ASPECT_INLINEEDITABLE = "error_aspect_inlineeditable";
    private static final String MSG_ERROR_ASPECT_VERSIONING = "error_aspect_versioning";
    private static final String MSG_ERROR_ASPECT_CLASSIFY = "error_aspect_classify";
@@ -817,6 +819,41 @@ public class DocumentDetailsBean extends BaseDetailsBean
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_ASPECT_VERSIONING), e.getMessage()), e);
+      }
+   }
+   
+   /**
+    * Action Handler to unlock a locked document
+    */
+   public void unlock(ActionEvent event)
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      
+      UserTransaction tx = null;
+      
+      try
+      {
+         tx = Repository.getUserTransaction(fc);
+         tx.begin();
+         
+         this.lockService.unlock(getNode().getNodeRef());
+         
+         String msg = Application.getMessage(fc, MSG_SUCCESS_UNLOCK);
+         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+         String formId = Utils.getParentForm(fc, event.getComponent()).getClientId(fc);
+         fc.addMessage(formId + ':' + getPropertiesPanelId(), facesMsg);
+         
+         getNode().reset();
+         
+         // commit the transaction
+         tx.commit();
+      }
+      catch (Throwable e)
+      {
+         // rollback the transaction
+         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               fc, Repository.ERROR_GENERIC), e.getMessage()), e);
       }
    }
    

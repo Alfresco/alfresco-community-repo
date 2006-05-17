@@ -779,69 +779,35 @@
       <!-- NOTE: we can't have a case for browse in here otherwise you can -->
       <!--       never navigate back to the main browse screen             -->
       <navigation-case>
-         <from-outcome>createForums</from-outcome>
-         <to-view-id>/jsp/forums/create-forums.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>showForumsDetails</from-outcome>
          <to-view-id>/jsp/forums/forums-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editForumsProperties</from-outcome>
-         <to-view-id>/jsp/forums/edit-forums.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>deleteForums</from-outcome>
-         <to-view-id>/jsp/forums/delete-forums.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>createForum</from-outcome>
-         <to-view-id>/jsp/forums/create-forum.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>deleteForum</from-outcome>
-         <to-view-id>/jsp/forums/delete-forum.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>showForumDetails</from-outcome>
          <to-view-id>/jsp/forums/forum-details.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>editForumProperties</from-outcome>
-         <to-view-id>/jsp/forums/edit-forum.jsp</to-view-id>
+         <from-outcome>showTopicDetails</from-outcome>
+         <to-view-id>/jsp/forums/topic-details.jsp</to-view-id>
+      </navigation-case>
+      
+      <navigation-case>
+         <from-outcome>deleteForums</from-outcome>
+         <to-view-id>/jsp/forums/delete-forums.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>createTopic</from-outcome>
-         <to-view-id>/jsp/forums/create-topic.jsp</to-view-id>
+         <from-outcome>deleteForum</from-outcome>
+         <to-view-id>/jsp/forums/delete-forum.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>deleteTopic</from-outcome>
          <to-view-id>/jsp/forums/delete-topic.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>showTopicDetails</from-outcome>
-         <to-view-id>/jsp/forums/topic-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editTopicProperties</from-outcome>
-         <to-view-id>/jsp/forums/edit-topic.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>createPost</from-outcome>
-         <to-view-id>/jsp/forums/create-post.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>createReply</from-outcome>
-         <to-view-id>/jsp/forums/create-reply.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editPost</from-outcome>
-         <to-view-id>/jsp/forums/edit-post.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>deletePost</from-outcome>
          <to-view-id>/jsp/forums/delete-post.jsp</to-view-id>
       </navigation-case>
+      
       <navigation-case>
          <from-outcome>manageInvitedUsers</from-outcome>
          <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
@@ -853,18 +819,6 @@
       <navigation-case>
          <from-outcome>export</from-outcome>
          <to-view-id>/jsp/dialog/export.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>createDiscussion</from-outcome>
-         <to-view-id>/jsp/forums/create-discussion.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/create-topic.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>showTopic</from-outcome>
-         <to-view-id>/jsp/forums/topic.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

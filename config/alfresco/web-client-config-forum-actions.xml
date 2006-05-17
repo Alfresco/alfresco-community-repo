@@ -36,7 +36,8 @@
             <evaluator>org.alfresco.web.action.evaluator.CreateForumNodeEvaluator</evaluator>
             <label-id>start_discussion</label-id>
             <image>/images/icons/create_forum.gif</image>
-            <action-listener>#{CreateDiscussionDialog.startWizard}</action-listener>
+            <action>dialog:createDiscussion</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -50,7 +51,6 @@
             <label-id>create_forums</label-id>
             <image>/images/icons/create_forums.gif</image>
             <action>dialog:createForums</action>
-            <action-listener>#{CreateForumsDialog.startWizard}</action-listener>
          </action>
          
          <!-- Create a Forum -->
@@ -61,7 +61,6 @@
             <label-id>create_forum</label-id>
             <image>/images/icons/create_forum.gif</image>
             <action>dialog:createForum</action>
-            <action-listener>#{CreateForumDialog.startWizard}</action-listener>
          </action>
          
          <!-- Delete a Forums space -->
@@ -100,7 +99,6 @@
             <label-id>create_topic</label-id>
             <image>/images/icons/create_topic.gif</image>
             <action>dialog:createTopic</action>
-            <action-listener>#{CreateTopicDialog.startWizard}</action-listener>
          </action>
          
          <!-- Delete a Topic -->
@@ -125,7 +123,6 @@
             <label-id>post_to_topic</label-id>
             <image>/images/icons/create_post.gif</image>
             <action>dialog:createPost</action>
-            <action-listener>#{CreatePostDialog.startWizard}</action-listener>
          </action>
          
          <!-- Post a reply to a Topic -->
@@ -136,7 +133,7 @@
             <label-id>post_reply</label-id>
             <image>/images/icons/post_reply.gif</image>
             <action>dialog:createReply</action>
-            <action-listener>#{CreateReplyDialog.startWizard}</action-listener>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -150,7 +147,7 @@
             <label-id>edit_post</label-id>
             <image>/images/icons/edit_post.gif</image>
             <action>dialog:editPost</action>
-            <action-listener>#{EditPostDialog.startWizardForEdit}</action-listener>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>

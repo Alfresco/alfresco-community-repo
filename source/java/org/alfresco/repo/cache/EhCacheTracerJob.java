@@ -82,6 +82,7 @@ public class EhCacheTracerJob implements Job
         
         long maxHeapSize = Runtime.getRuntime().maxMemory();
         long totalSize = 0L;
+        double estimatedMaxSize = 0L;
         // get all the caches
         String[] cacheNames = cacheManager.getCacheNames();
         logger.debug("Dumping EHCache info:");
@@ -97,13 +98,18 @@ public class EhCacheTracerJob implements Job
             logger.debug(analysis);
             // get the size
             totalSize += analysis.getSize();
+            estimatedMaxSize += Double.isNaN(analysis.getEstimatedMaxSize()) ? 0.0 : analysis.getEstimatedMaxSize();
         }
         // check the size
         double sizePercentage = (double)totalSize / (double)maxHeapSize * 100.0;
+        double maxSizePercentage = estimatedMaxSize / (double)maxHeapSize * 100.0;
         String msg = String.format(
-                "EHCaches currently consume %5.2f MB or %3.2f percent of system VM size",
+                "EHCaches currently consume %5.2f MB or %3.2f percent of system VM size. \n" +
+                "The estimated maximum size is %5.2f MB or %3.2f percent of system VM size.",
                 (double)totalSize / 1024.0 / 1024.0,
-                sizePercentage);
+                sizePercentage,
+                estimatedMaxSize / 1024.0 / 1024.0,
+                maxSizePercentage);
         logger.debug(msg);
     }
     
@@ -111,6 +117,13 @@ public class EhCacheTracerJob implements Job
     {
         private Cache cache;
         private long size = 0L;
+        double sizeMB;
+        long maxSize;
+        long currentSize;
+        long hitCount;
+        long missCount;
+        double percentageFull;
+        double estMaxSize;
         
         public CacheAnalysis(Cache cache) throws CacheException
         {
@@ -133,6 +146,11 @@ public class EhCacheTracerJob implements Job
             return size;
         }
         
+        public synchronized double getEstimatedMaxSize()
+        {
+            return estMaxSize;
+        }
+        
         @SuppressWarnings("unchecked")
         private synchronized void calculateSize() throws CacheException
         {
@@ -143,6 +161,13 @@ public class EhCacheTracerJob implements Job
                 Element element = cache.get(key);
                 size += getSize(element);
             }
+            sizeMB = (double)size/1024.0/1024.0;
+            maxSize = cache.getMaxElementsInMemory();
+            currentSize = cache.getMemoryStoreSize();
+            hitCount = cache.getHitCount();
+            missCount = cache.getMissCountNotFound();
+            percentageFull = (double)currentSize / (double)maxSize * 100.0;
+            estMaxSize = size / (double) currentSize * (double) maxSize;
         }
         
         private long getSize(Serializable obj)

@@ -40,8 +40,15 @@ public class ScriptableHashMap<K,V> extends HashMap implements Scriptable
      */
     public Object get(String name, Scriptable start)
     {
-        // get the property from the underlying map
-        return get(name);
+        // get the property from the underlying QName map
+        if ("length".equals(name))
+        {
+            return this.size();
+        }
+        else
+        {
+            return get(name);
+        }
     }
 
     /**

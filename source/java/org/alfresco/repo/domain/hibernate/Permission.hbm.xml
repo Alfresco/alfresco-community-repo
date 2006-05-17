@@ -19,13 +19,15 @@
            <generator class="native" />
         </id>
 
-        <many-to-one
-               name="node"
-               class="org.alfresco.repo.domain.hibernate.NodeImpl"
-               unique="true"
-               not-null="true">
-            <column name="node_id" />
-        </many-to-one>
+        <set name="entries"
+               inverse="true"
+               lazy="false" 
+               cascade="delete"
+               optimistic-lock="true"
+               fetch="join" >
+            <key column="acl_id" />
+            <one-to-many class="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl"  />
+        </set>
          
         <set name="entries"
                inverse="true"

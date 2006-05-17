@@ -127,7 +127,7 @@ public class CommandServlet extends BaseServlet
             txn.begin();
             
             // inform the processor to execute the specified command
-            processor.process(serviceRegistry, req.getSession(), command);
+            processor.process(serviceRegistry, req, command);
             
             // commit the transaction
             txn.commit();
@@ -166,11 +166,18 @@ public class CommandServlet extends BaseServlet
    }
 
    /**
-    * @param procName
+    * Created the specified CommandProcessor instance. The name of the processor is looked up
+    * in the client config, it should find a valid class impl and then create it. 
+    *  
+    * @param procName      Name of the CommandProcessor to lookup in the client config.
+    * 
+    * @return CommandProcessor
+    * 
     * @throws InstantiationException
     * @throws IllegalAccessException
     */
-   private CommandProcessor createCommandProcessor(String procName) throws InstantiationException, IllegalAccessException
+   private CommandProcessor createCommandProcessor(String procName)
+      throws InstantiationException, IllegalAccessException
    {
       Config config = Application.getConfigService(getServletContext()).getConfig("Command Servlet");
       if (config == null)

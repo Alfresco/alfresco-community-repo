@@ -18,6 +18,7 @@ package org.alfresco.web.app.servlet.command;
 
 import java.io.PrintWriter;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.service.ServiceRegistry;
@@ -60,10 +61,10 @@ public interface CommandProcessor
     * exception should be thrown to indicate this.
     *  
     * @param serviceRegistry  ServiceRegistry
-    * @param session          HttpSession
+    * @param request          HttpServletRequest
     * @param command          Name of the command to construct and execute
     */
-   public void process(ServiceRegistry serviceRegistry, HttpSession session, String command);
+   public void process(ServiceRegistry serviceRegistry, HttpServletRequest request, String command);
    
    /**
     * Output a simple status message to the supplied PrintWriter.

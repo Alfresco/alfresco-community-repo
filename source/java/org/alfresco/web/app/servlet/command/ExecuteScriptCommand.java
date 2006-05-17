@@ -39,8 +39,9 @@ public final class ExecuteScriptCommand implements Command
    public static final String PROP_SCRIPT = "script";
    public static final String PROP_DOCUMENT = "document";
    public static final String PROP_USERPERSON = "person";
+   public static final String PROP_ARGS = "args";
    
-   private static final String[] PROPERTIES = new String[] {PROP_SCRIPT, PROP_DOCUMENT, PROP_USERPERSON};
+   private static final String[] PROPERTIES = new String[] {PROP_SCRIPT, PROP_DOCUMENT, PROP_USERPERSON, PROP_ARGS};
    
    
    /**
@@ -89,6 +90,9 @@ public final class ExecuteScriptCommand implements Command
             docRef,
             spaceRef,
             DefaultModelHelper.imageResolver);
+      
+      // add the url arguments map
+      model.put("args", properties.get(PROP_ARGS));
       
       // execute the script and return the result
       return serviceRegistry.getScriptService().executeScript(scriptRef, null, model);

@@ -87,10 +87,9 @@ public class HibernatePermissionTest extends BaseSpringTest
 	{
         // create a new Node
         DbAccessControlList accessControlList = new DbAccessControlListImpl();
-        accessControlList.setNode(node);
         accessControlList.setInherits(true);
-        
         Serializable id = getSession().save(accessControlList);
+        node.setAccessControlList(accessControlList);
 			
         // throw the reference away and get the a new one for the id
         accessControlList = (DbAccessControlList) getSession().load(DbAccessControlListImpl.class, id);
@@ -166,9 +165,9 @@ public class HibernatePermissionTest extends BaseSpringTest
     {
         // create a new access control list for the node
         DbAccessControlList accessControlList = new DbAccessControlListImpl();
-        accessControlList.setNode(node);
         accessControlList.setInherits(true);
         Serializable nodeAclId = getSession().save(accessControlList);
+        node.setAccessControlList(accessControlList);
         
         DbAuthority recipient = new DbAuthorityImpl();
         recipient.setRecipient("Test");
@@ -196,6 +195,7 @@ public class HibernatePermissionTest extends BaseSpringTest
         assertEquals(1, accessControlEntry.getAuthority().getExternalKeys().size());
         
         // Check that deletion of the list cascades
+        node.setAccessControlList(null);
         getSession().delete(accessControlList);
         try
         {

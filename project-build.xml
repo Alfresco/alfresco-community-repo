@@ -47,6 +47,7 @@
          <fileset dir="${dir.common.lib}/treecache" includes="*.jar" />
          <fileset dir="${dir.common.lib}/swarmcache" includes="*.jar" />
          <fileset dir="${dir.project.core}/build/dist" includes="${dir.name.core}.jar" />
+         <fileset dir="${dir.project.dependency}/build/dist" includes="${dir.name.dependency}.jar" />
          <fileset dir="${dir.project.repository}/build/dist" includes="${dir.name.repository}.jar" />
          <fileset dir="${dir.project.remoteapi}/build/dist" includes="${dir.name.remoteapi}.jar" />
       </copy>

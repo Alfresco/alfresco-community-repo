@@ -42,10 +42,12 @@ public class PropertySheetElementReader implements ConfigElementReader
    public static final String ATTR_SHOW_IN_EDIT_MODE = "show-in-edit-mode";
    public static final String ATTR_SHOW_IN_VIEW_MODE = "show-in-view-mode";
    public static final String ATTR_COMPONENT_GENERATOR = "component-generator";
+   public static final String ATTR_IGNORE_IF_MISSING = "ignore-if-missing";
    
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
     */
+   @SuppressWarnings("unchecked")
    public ConfigElement parse(Element element)
    {
       PropertySheetConfigElement configElement = null;
@@ -78,9 +80,11 @@ public class PropertySheetElementReader implements ConfigElementReader
             
             if (ELEMENT_SHOW_PROPERTY.equals(item.getName()))
             {
+               String ignoreIfMissing = item.attributeValue(ATTR_IGNORE_IF_MISSING);
+               
                // add the property to show to the custom config element
                configElement.addProperty(propName, label, labelId, readOnly, converter, 
-                     inView, inEdit, compGenerator);
+                     inView, inEdit, compGenerator, ignoreIfMissing);
             }
             else if (ELEMENT_SHOW_ASSOC.equals(item.getName()))
             {

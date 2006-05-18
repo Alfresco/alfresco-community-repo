@@ -5,21 +5,28 @@
          <show-property name="name" />
          <show-property name="mimetype" display-label-id="content_type" 
                         component-generator="MimeTypeSelectorGenerator" />
-         <show-property name="title" />
-         <show-property name="description" />
+         <show-property name="title" display-label-id="title"
+                        ignore-if-missing="false" />
+         <show-property name="description" display-label-id="description"
+                        ignore-if-missing="false" />
          <show-property name="size" display-label-id="size" 
                         converter="org.alfresco.faces.ByteSizeConverter" 
                         show-in-edit-mode="false" />
+         <show-property name="author" display-label-id="author"
+                        ignore-if-missing="false" />
       </property-sheet>
    </config>
    
    <config evaluator="node-type" condition="folder">
       <property-sheet>
          <show-property name="name"/>
-         <show-property name="title"/>
-         <show-property name="description"/>
-         <show-property name="icon" show-in-view-mode="false" display-label-id="icon"
-                        component-generator="SpaceIconPickerGenerator" />
+         <show-property name="title" display-label-id="title"
+                        ignore-if-missing="false" />
+         <show-property name="description" display-label-id="description"
+                        ignore-if-missing="false" />
+         <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
+                        component-generator="SpaceIconPickerGenerator" 
+                        ignore-if-missing="false" />
       </property-sheet>
    </config>
    
@@ -27,7 +34,7 @@
       <property-sheet>
          <show-property name="name"/>
          <show-property name="description"/>
-         <show-property name="icon" show-in-view-mode="false" display-label-id="icon"
+         <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
                         component-generator="SpaceIconPickerGenerator" />
       </property-sheet>
    </config>
@@ -36,16 +43,15 @@
       <property-sheet>
          <show-property name="name"/>
          <show-property name="description"/>
-         <show-property name="icon" show-in-view-mode="false" display-label-id="icon"
+         <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
                         component-generator="SpaceIconPickerGenerator" />
       </property-sheet>
    </config>
    
    <config evaluator="node-type" condition="fm:topic">
       <property-sheet>
-         <show-property name="name"/>
-         <show-property name="description"/>
-         <show-property name="icon" show-in-view-mode="false" display-label-id="icon"
+         <show-property name="name" display-label-id="subject" />
+         <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
                         component-generator="SpaceIconPickerGenerator" />
       </property-sheet>
    </config>

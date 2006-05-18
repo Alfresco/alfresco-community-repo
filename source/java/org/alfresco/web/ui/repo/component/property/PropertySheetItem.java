@@ -42,6 +42,7 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
    protected String displayLabel;
    protected String converter;
    protected Boolean readOnly;
+   protected Boolean ignoreIfMissing;
    protected String componentGenerator;
    
    protected String resolvedDisplayLabel;
@@ -199,6 +200,38 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
    }
    
    /**
+    * @return Determines whether the item should be ignored (not rendered)
+    *         if the item can not be found
+    */
+   public boolean getIgnoreIfMissing()
+   {
+      if (this.ignoreIfMissing == null)
+      {
+         ValueBinding vb = getValueBinding("ignoreIfMissing");
+         if (vb != null)
+         {
+            this.ignoreIfMissing = (Boolean)vb.getValue(getFacesContext());
+         }
+      }
+      
+      if (this.ignoreIfMissing == null)
+      {
+         this.ignoreIfMissing = Boolean.TRUE;
+      }
+      
+      return this.ignoreIfMissing;
+   }
+
+   /**
+    * @param ignoreIfMissing Sets the whether the item will be ignored
+    *        if it can not be found
+    */
+   public void setIgnoreIfMissing(boolean ignoreIfMissing)
+   {
+      this.ignoreIfMissing = ignoreIfMissing;
+   }
+   
+   /**
     * @see javax.faces.component.StateHolder#restoreState(javax.faces.context.FacesContext, java.lang.Object)
     */
    public void restoreState(FacesContext context, Object state)
@@ -212,6 +245,7 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
       this.converter = (String)values[4];
       this.componentGenerator = (String)values[5];
       this.resolvedDisplayLabel = (String)values[6];
+      this.ignoreIfMissing = (Boolean)values[7];
    }
    
    /**
@@ -219,7 +253,7 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[7];
+      Object values[] = new Object[8];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.name;
@@ -228,6 +262,7 @@ public abstract class PropertySheetItem extends UIPanel implements NamingContain
       values[4] = this.converter;
       values[5] = this.componentGenerator;
       values[6] = this.resolvedDisplayLabel;
+      values[7] = this.ignoreIfMissing;
       return (values);
    }
    

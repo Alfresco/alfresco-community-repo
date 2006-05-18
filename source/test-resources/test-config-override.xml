@@ -86,7 +86,7 @@
    <config evaluator="string-compare" condition="Property Viewing">
       <property-sheet>
          <show-property name="description" show-in-view-mode="false" show-in-edit-mode="false" />
-         <show-property name="icon" />
+         <show-property name="icon" ignore-if-missing="false" />
          <show-property name="uuid" show-in-view-mode="true" />
       </property-sheet>
    </config>

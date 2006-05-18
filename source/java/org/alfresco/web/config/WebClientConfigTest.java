@@ -18,7 +18,6 @@ package org.alfresco.web.config;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -99,12 +98,14 @@ public class WebClientConfigTest extends BaseTest
       assertNotNull("createddate property config should not be null", createdDataProp);
       assertEquals("display label for createddate should be null", null, createdDataProp.getDisplayLabel());
       assertTrue("read only for createddate should be 'true'", createdDataProp.isReadOnly());
+      assertTrue("ignoreIfMissing for createddate should be 'true'", createdDataProp.getIgnoreIfMissing());
 
       ItemConfig iconProp = props.get("icon");
       assertNotNull("icon property config should not be null", iconProp);
       assertEquals("display label for icon should be null", null, iconProp.getDisplayLabel());
       assertEquals("component-generator", "SpaceIconPickerGenerator", iconProp.getComponentGenerator());
       assertFalse("read only for icon should be 'false'", iconProp.isReadOnly());
+      assertFalse("ignoreIfMissing for icon should be 'false'", iconProp.getIgnoreIfMissing());
       
       // test that a call to the generic getChildren call throws an error
       try
@@ -277,6 +278,7 @@ public class WebClientConfigTest extends BaseTest
       assertFalse("icon should not be read-only", iconCfg.isReadOnly());
       assertTrue("icon should be shown in view mode", iconCfg.isShownInViewMode());
       assertTrue("icon should be shown in edit mode", iconCfg.isShownInEditMode());
+      assertFalse("ignoreIfMissing for icon should be 'false'", iconCfg.getIgnoreIfMissing());
    }
    
    /**

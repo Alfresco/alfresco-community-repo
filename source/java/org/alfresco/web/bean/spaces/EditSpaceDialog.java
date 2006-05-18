@@ -31,7 +31,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
       super.init(parameters);
       
       // setup the space being edited
-      this.editableNode = this.browseBean.getActionSpace();
+      this.editableNode = new Node(this.browseBean.getActionSpace().getNodeRef());
       this.spaceType = this.editableNode.getType().toString();
    }
    
@@ -55,7 +55,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       // update the existing node in the repository
-      NodeRef nodeRef = this.editableNode.getNodeRef();
+      NodeRef nodeRef = this.browseBean.getActionSpace().getNodeRef();
       Map<String, Object> editedProps = this.editableNode.getProperties();
       
       // handle the name property separately, perform a rename in case it changed
@@ -67,6 +67,12 @@ public class EditSpaceDialog extends CreateSpaceDialog
       
       // get the current set of properties from the repository
       Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
+      
+      // add the "uifacets" aspect if required, properties will get set below
+      if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_UIFACETS) == false)
+      {
+         this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, null);
+      }
       
       // overwrite the current properties with the edited ones
       Iterator<String> iterProps = editedProps.keySet().iterator();
@@ -149,7 +155,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
    @Override
    protected String doPostCommitProcessing(FacesContext context, String outcome)
    {
-      this.editableNode.reset();
+      this.browseBean.getActionSpace().reset();
       
       return outcome;
    }

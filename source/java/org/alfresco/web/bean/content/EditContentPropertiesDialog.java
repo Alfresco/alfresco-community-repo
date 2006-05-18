@@ -2,7 +2,6 @@ package org.alfresco.web.bean.content;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -60,66 +59,54 @@ public class EditContentPropertiesDialog extends BaseDialogBean
          throws Exception
    {
       NodeRef nodeRef = this.browseBean.getDocument().getNodeRef();
-      Map<String, Object> props = this.editableNode.getProperties();
+      Map<String, Object> editedProps = this.editableNode.getProperties();
       
       // get the name and move the node as necessary
-      String name = (String) props.get(ContentModel.PROP_NAME);
+      String name = (String) editedProps.get(ContentModel.PROP_NAME);
       if (name != null)
       {
          fileFolderService.rename(nodeRef, name);
       }
       
-      Map<QName, Serializable> properties = this.nodeService.getProperties(nodeRef);
+      Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
       // we need to put all the properties from the editable bag back into 
       // the format expected by the repository
       
       // but first extract and deal with the special mimetype property for ContentData
-      String mimetype = (String)props.get(TEMP_PROP_MIMETYPE);
+      String mimetype = (String)editedProps.get(TEMP_PROP_MIMETYPE);
       if (mimetype != null)
       {
          // remove temporary prop from list so it isn't saved with the others
-         props.remove(TEMP_PROP_MIMETYPE);
-         ContentData contentData = (ContentData)props.get(ContentModel.PROP_CONTENT);
+         editedProps.remove(TEMP_PROP_MIMETYPE);
+         ContentData contentData = (ContentData)editedProps.get(ContentModel.PROP_CONTENT);
          if (contentData != null)
          {
             contentData = ContentData.setMimetype(contentData, mimetype);
-            props.put(ContentModel.PROP_CONTENT.toString(), contentData);
+            editedProps.put(ContentModel.PROP_CONTENT.toString(), contentData);
          }
       }
       
-      // extra and deal with the Author prop if the aspect has not been applied yet
-      String author = (String)props.get(ContentModel.PROP_AUTHOR);
-      if (author != null && author.length() != 0)
+      // add the "author" aspect if required, properties will get set below
+      if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUTHOR) == false)
       {
-         // add aspect if required
-         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUTHOR) == false)
-         {
-            Map<QName, Serializable> authorProps = new HashMap<QName, Serializable>(1, 1.0f);
-            authorProps.put(ContentModel.PROP_AUTHOR, author);
-            this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
-         }
-         // else it will get updated in the later setProperties() call
+         this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, null);
       }
       
-      // deal with adding the "titled" aspect if required
-      String title = (String)props.get(ContentModel.PROP_TITLE);
-      String description = (String)props.get(ContentModel.PROP_DESCRIPTION);
-      if (title != null || description != null)
+      // add the "titled" aspect if required, properties will get set below
+      if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
       {
-         // add the aspect to be sure it's present
          nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
-         // props will get added later in setProperties()
       }
       
       // add the remaining properties
-      Iterator<String> iterProps = props.keySet().iterator();
+      Iterator<String> iterProps = editedProps.keySet().iterator();
       while (iterProps.hasNext())
       {
          String propName = iterProps.next();
          QName qname = QName.createQName(propName);
          
          // make sure the property is represented correctly
-         Serializable propValue = (Serializable)props.get(propName);
+         Serializable propValue = (Serializable)editedProps.get(propName);
          
          // check for empty strings when using number types, set to null in this case
          if ((propValue != null) && (propValue instanceof String) && 
@@ -138,11 +125,11 @@ public class EditContentPropertiesDialog extends BaseDialogBean
             }
          }
          
-         properties.put(qname, propValue);
+         repoProps.put(qname, propValue);
       }
       
       // send the properties back to the repository
-      this.nodeService.setProperties(this.browseBean.getDocument().getNodeRef(), properties);
+      this.nodeService.setProperties(nodeRef, repoProps);
       
       // we also need to persist any association changes that may have been made
       

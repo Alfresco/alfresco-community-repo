@@ -28,8 +28,7 @@ public class LabelGenerator extends BaseComponentGenerator
       // add the component to the property sheet item
       item.getChildren().add(component);
       
-      // TODO: Turn the label red if the field is required
-      //       setup the 'for' attribute to associate with it the control
+      // TODO: setup the 'for' attribute to associate with it the control
       
       return component;
    }

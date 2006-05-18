@@ -10,7 +10,7 @@
 #
 # MySQL dialect (default)
 #
-#hibernate.dialect=org.hibernate.dialect.MySQLDialect
+#hibernate.dialect=org.hibernate.dialect.MySQLInnoDBDialect
 
 #
 # Oracle dialect

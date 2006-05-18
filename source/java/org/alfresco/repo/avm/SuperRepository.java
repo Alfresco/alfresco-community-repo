@@ -28,7 +28,7 @@ import org.hibernate.Session;
  * A SuperRepository is responsible for the high level implemenation of all
  * operations on Repositories.  It is responsible for issuing Node ids, branch ids,
  * and layer ids.  Repositories themselves are responsible for issuing version ids.
- * Paths in super repositories are of the form "repositoryname:/a/b/c/d
+ * Paths in super repositories are of the form "repositoryname:a/b/c/d".
  * @author britt
  */
 public interface SuperRepository

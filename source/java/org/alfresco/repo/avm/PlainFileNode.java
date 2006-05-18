@@ -25,8 +25,8 @@ import org.alfresco.repo.avm.hibernate.PlainFileNodeBean;
 import org.alfresco.repo.avm.hibernate.PlainFileNodeBeanImpl;
 
 /**
+ * A plain old file. Contains a Content object.
  * @author britt
- *
  */
 public class PlainFileNode extends FileNode
 {
@@ -47,11 +47,12 @@ public class PlainFileNode extends FileNode
 
     /**
      * Make one from just a repository.
+     * This is the constructor used when a brand new plain file is being made.
      * @param repos A Repository.
      */
     public PlainFileNode(Repository repos)
     {
-        ContentBean content = new ContentBeanImpl(repos.getSuperRepository().issueContentID());
+        FileContent content = new FileContent(repos.getSuperRepository());
         long time = System.currentTimeMillis();
         BasicAttributesBean attrs = new BasicAttributesBeanImpl("britt",
                                                                 "britt",
@@ -68,7 +69,7 @@ public class PlainFileNode extends FileNode
                                           null,
                                           repos.getDataBean(),
                                           attrs,
-                                          content);
+                                          content.getDataBean());
         content.setRefCount(1);
         // Transitive persistence should take care of content.
         repos.getSuperRepository().getSession().save(fData);
@@ -83,11 +84,15 @@ public class PlainFileNode extends FileNode
     public PlainFileNode(PlainFileNode other,
                          Repository repos)
     {
+        // Setup sensible BasicAttributes.
         long time = System.currentTimeMillis();
+        // TODO Figure out how to get user from context.
         BasicAttributesBean attrs = new BasicAttributesBeanImpl(other.getDataBean().getBasicAttributes());
         attrs.setCreateDate(time);
         attrs.setModDate(time);
         attrs.setAccessDate(time);
+        attrs.setCreator("britt");
+        attrs.setLastModifier("britt");
         repos.getSuperRepository().getSession().save(attrs);
         fData = new PlainFileNodeBeanImpl(repos.getSuperRepository().issueID(),
                                           -1,
@@ -103,6 +108,7 @@ public class PlainFileNode extends FileNode
         setDataBean(fData);
     }
     
+    // TODO I believe this is unnecessary (bhp)
     /**
      * Handle setting repository after a COW.
      * @param parent The possibly new parent directory.
@@ -154,11 +160,12 @@ public class PlainFileNode extends FileNode
      */
     public FileContent getContentForWrite(Repository repo)
     {
+        FileContent fc = new FileContent(fData.getContent());
         if (fData.getContent().getRefCount() > 1)
         {
-            fData.setContent(new ContentBeanImpl(repo.getSuperRepository().issueContentID()));
-            // Need to copy the underlying file data.
+            fc = new FileContent(fc, repo.getSuperRepository());
+            fData.setContent(fc.getDataBean());
         }
-        return new FileContent(fData.getContent());
+        return fc;
     }
 }

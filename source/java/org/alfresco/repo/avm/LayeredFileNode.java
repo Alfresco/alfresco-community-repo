@@ -43,6 +43,7 @@ public class LayeredFileNode extends FileNode implements Layered
         setDataBean(fData);
     }
     
+    // TODO Is this ever used?
     /**
      * Basically a copy constructor.
      * @param other The file to make a copy of.
@@ -50,15 +51,65 @@ public class LayeredFileNode extends FileNode implements Layered
      */
     public LayeredFileNode(LayeredFileNode other, Repository repo)
     {
-        // TODO Something.
+        long time = System.currentTimeMillis();
+        BasicAttributesBean attrs =
+            new BasicAttributesBeanImpl(other.getDataBean().getBasicAttributes());
+        attrs.setCreateDate(time);
+        attrs.setModDate(time);
+        attrs.setAccessDate(time);
+        attrs.setCreator("britt");
+        attrs.setLastModifier("britt");
+        repo.getSuperRepository().getSession().save(attrs);
+        fData = 
+            new LayeredFileNodeBeanImpl(repo.getSuperRepository().issueID(),
+                                        -1L,
+                                        -1L,
+                                        null,
+                                        null,
+                                        null,
+                                        repo.getDataBean(),
+                                        attrs,
+                                        other.fData.getIndirection()); 
+        repo.getSuperRepository().getSession().save(fData);
+        setDataBean(fData);
     }
 
+    // TODO I'm not at all sure that these are the right semantics.
+    /**
+     * Create a new one in a layered context, when it is the result of 
+     * a renaming.
+     * @param file The node we are being made from.
+     * @param repos The Repository.
+     * @param srcLookup The lookup for the source parent directory.  We
+     * need this to get calculate the correct indirection information.
+     * @param name The name
+     */
     public LayeredFileNode(FileNode file,
-                             Repository repos,
-                             Lookup srcLookup,
-                             String name)
+                           Repository repos,
+                           Lookup srcLookup,
+                           String name)
     {
-        // TODO Something.
+        long time = System.currentTimeMillis();
+        BasicAttributesBean attrs =
+            new BasicAttributesBeanImpl(file.getDataBean().getBasicAttributes());
+        attrs.setCreateDate(time);
+        attrs.setModDate(time);
+        attrs.setAccessDate(time);
+        attrs.setCreator("britt");
+        attrs.setLastModifier("britt");
+        repos.getSuperRepository().getSession().save(attrs);
+        fData = 
+            new LayeredFileNodeBeanImpl(repos.getSuperRepository().issueID(),
+                                        -1L,
+                                        -1L,
+                                        null,
+                                        null,
+                                        null,
+                                        repos.getDataBean(),
+                                        attrs,
+                                        srcLookup.getIndirectionPath() + "/" + name); 
+        repos.getSuperRepository().getSession().save(fData);
+        setDataBean(fData);
     }
     
     /**
@@ -108,6 +159,8 @@ public class LayeredFileNode extends FileNode implements Layered
     public AVMNode possiblyCopy(Lookup lPath)
     {
         // LayeredFileNodes are always copied.
+        // TODO This is busted.  Need to set the PlainFileNode contents
+        // to share with underlying file node.
         PlainFileNode newMe = new PlainFileNode(getRepository());
         newMe.setAncestor(this);
         return newMe;

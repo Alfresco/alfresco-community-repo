@@ -59,7 +59,6 @@ public class FileContent
     public FileContent(ContentBean data)
     {
         fData = data;
-        
     }
     
     /**
@@ -69,6 +68,7 @@ public class FileContent
     public FileContent(SuperRepository superRepo)
     {
         fData = new ContentBeanImpl(superRepo.issueContentID());
+        fData.setRefCount(1);
         BufferedOutputStream out = new BufferedOutputStream(getOutputStream(superRepo));
         // Make an empty file.
         try
@@ -90,6 +90,7 @@ public class FileContent
     public FileContent(FileContent other, SuperRepository superRepo)
     {
         fData = new ContentBeanImpl(superRepo.issueContentID());
+        fData.setRefCount(1);
         // Copy the contents from other to this.
         BufferedInputStream in = new BufferedInputStream(other.getInputStream(superRepo));
         BufferedOutputStream out = new BufferedOutputStream(this.getOutputStream(superRepo));

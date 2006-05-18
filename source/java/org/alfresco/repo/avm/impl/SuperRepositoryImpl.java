@@ -76,6 +76,8 @@ public class SuperRepositoryImpl implements SuperRepository
      */
     private String fStorage;
     
+    // TODO Issuers are handled in a repugnant manner here.  Something better
+    // would be nice.
     /**
      * Make a new one, initialized with the session.
      * @param session The session for this operation.

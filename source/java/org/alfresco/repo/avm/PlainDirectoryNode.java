@@ -28,8 +28,8 @@ import org.alfresco.repo.avm.hibernate.PlainDirectoryNodeBean;
 import org.alfresco.repo.avm.hibernate.PlainDirectoryNodeBeanImpl;
 
 /**
+ * A plain directory.  No monkey tricks except for possiblyCopy.
  * @author britt
- *
  */
 public class PlainDirectoryNode extends DirectoryNode
 {
@@ -44,7 +44,9 @@ public class PlainDirectoryNode extends DirectoryNode
      */
     public PlainDirectoryNode(Repository repo)
     {
+        // Make up initial BasicAttributes.
         long time = System.currentTimeMillis();
+        // TODO figure out how to get user information from context.
         BasicAttributesBean attrs = new BasicAttributesBeanImpl("britt",
                                                                 "britt",
                                                                 "britt",
@@ -62,10 +64,12 @@ public class PlainDirectoryNode extends DirectoryNode
                                                attrs,
                                                false);
         repo.getSuperRepository().getSession().save(fData);
+        setDataBean(fData);
     }
     
     /**
-     * Make one up from its bean data.
+     * Make one up from its bean data.  Used when a PlainDirectory is
+     * restored from the database.
      * @param data The bean data.
      */
     public PlainDirectoryNode(PlainDirectoryNodeBean data)
@@ -82,11 +86,15 @@ public class PlainDirectoryNode extends DirectoryNode
     public PlainDirectoryNode(PlainDirectoryNode other,
                               Repository repos)
     {
+        // Make up appropriate BasicAttributes.
         long time = System.currentTimeMillis();
+        // TODO Need to figure out how to get user information from context.
         BasicAttributesBean attrs = new BasicAttributesBeanImpl(other.getDataBean().getBasicAttributes());
         attrs.setModDate(time);
         attrs.setCreateDate(time);
         attrs.setAccessDate(time);
+        attrs.setCreator("britt");
+        attrs.setLastModifier("britt");
         repos.getSuperRepository().getSession().save(attrs);
         fData = new PlainDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
                                                -1,
@@ -110,6 +118,8 @@ public class PlainDirectoryNode extends DirectoryNode
      */   
     public boolean addChild(String name, AVMNode child, Lookup lPath)
     {
+        // No, if a child with the given name exists. Note that uniqueness
+        // of names is built into the AVM, as opposed to being configurable.
         if (fData.getChildren().containsKey(name))
         {
             return false;
@@ -117,7 +127,7 @@ public class PlainDirectoryNode extends DirectoryNode
         DirectoryNode toModify = (DirectoryNode)copyOnWrite(lPath);
         toModify.putChild(name, child);
         child.setParent(toModify);
-        child.setRepository(toModify.getRepository());
+        child.setRepository(lPath.getRepository());
         return true;
     }
 
@@ -128,10 +138,11 @@ public class PlainDirectoryNode extends DirectoryNode
      */
     public boolean directlyContains(AVMNode node)
     {
-        return fData.getChildren().containsValue(node.getDataBean());
+        // TODO This is inefficient; maybe use a two way map.
+        DirectoryEntry entry = new DirectoryEntry(node.getType(), node.getDataBean()); 
+        return fData.getChildren().containsValue(entry);
     }
 
-    
     /**
      * Get a directory listing.
      * @param lPath The lookup path.
@@ -140,6 +151,8 @@ public class PlainDirectoryNode extends DirectoryNode
      */
     public Map<String, DirectoryEntry> getListing(Lookup lPath, int version)
     {
+        // Maybe this is pointless, but it's nice to be able to iterate
+        // over entries in a defined order.
         return new TreeMap<String, DirectoryEntry>(fData.getChildren());
     }
 
@@ -177,6 +190,7 @@ public class PlainDirectoryNode extends DirectoryNode
      */
     public boolean removeChild(String name, Lookup lPath)
     {
+        // Can't remove it if it's not there.
         if (!fData.getChildren().containsKey(name))
         {
             return false;
@@ -196,6 +210,8 @@ public class PlainDirectoryNode extends DirectoryNode
         fData.getChildren().put(name, new DirectoryEntry(node.getType(), node.getDataBean()));
     }
 
+    // TODO I don't think this is at all necessary in the world without
+    // mounted VirtualRepositories.
     /**
      * Set repository after copy on write. 
      * @param parent The parent after copy on write.
@@ -222,13 +238,15 @@ public class PlainDirectoryNode extends DirectoryNode
         // Otherwise do an actual copy.
         DirectoryNode newMe = null;
         long newBranchID = lPath.getHighestBranch();
+        // In a layered context a copy on write creates a new 
+        // layered directory.
         if (lPath.isLayered())
         {
-            newMe = new LayeredDirectoryNode(this, getRepository(), lPath);
+            newMe = new LayeredDirectoryNode(this, lPath.getRepository(), lPath);
         }
         else
         {
-            newMe = new PlainDirectoryNode(this, getRepository());
+            newMe = new PlainDirectoryNode(this, lPath.getRepository());
         }
         newMe.setAncestor(this);
         newMe.setBranchID(newBranchID);

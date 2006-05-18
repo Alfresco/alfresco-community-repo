@@ -93,8 +93,10 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
                                 Repository repos)
     {
         LayeredDirectoryNodeBean thatBean = (LayeredDirectoryNodeBean)other.getDataBean();
+        // Copy the basic attributes and update.
         BasicAttributesBean attrs = new BasicAttributesBeanImpl(thatBean.getBasicAttributes());
         long time = System.currentTimeMillis();
+        attrs.setCreateDate(time);
         attrs.setModDate(time);
         attrs.setAccessDate(time);
         attrs.setLastModifier("britt");
@@ -109,6 +111,7 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
                                                  attrs,
                                                  -1,
                                                  other.getUnderlying());
+        setDataBean(fData);
         fData.setAdded(thatBean.getAdded());
         fData.setDeleted(thatBean.getDeleted());
         fData.setPrimaryIndirection(thatBean.getPrimaryIndirection());
@@ -141,24 +144,48 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
                                                  attrs,
                                                  -1,
                                                  null);
-        // TODO Is this right?
-        fData.setAdded(other.getListing(lPath, -1));
+        setDataBean(fData);
+        // TODO Is this right?  I don't think so.
+        // fData.setAdded(other.getListing(lPath, -1));
         fData.setPrimaryIndirection(false);
         repos.getSuperRepository().getSession().save(fData);
     }
 
-    // TODO Something.
+    /**
+     * Create a new layered directory based on a directory we are being named from
+     * that is in not in the layer of the source lookup.
+     * @param dir The directory
+     * @param repo The repository
+     * @param srcLookup The source lookup.
+     * @param name The name of the target.
+     */
     public LayeredDirectoryNode(DirectoryNode dir,
                                 Repository repo,
                                 Lookup srcLookup,
                                 String name)
     {
-/*
-        fAdded = new HashMap<String, RepoNode>();
-        fDeleted = new HashSet<String>();
-        fProxied = srcLookup.getIndirectionPath() + "/" + name;
-        fIsPrimaryIndirection = true;
-*/
+        // Make BasicAttributes and set them correctly.
+        BasicAttributesBean attrs = new BasicAttributesBeanImpl(dir.getDataBean().getBasicAttributes());
+        long time = System.currentTimeMillis();
+        attrs.setCreateDate(time);
+        attrs.setModDate(time);
+        attrs.setAccessDate(time);
+        attrs.setCreator("britt");
+        attrs.setLastModifier("britt");
+        repo.getSuperRepository().getSession().save(attrs);
+        fData = new LayeredDirectoryNodeBeanImpl(repo.getSuperRepository().issueID(),
+                                                 -1,
+                                                 -1,
+                                                 null,
+                                                 null,
+                                                 null,
+                                                 repo.getDataBean(),
+                                                 attrs,
+                                                 -1,
+                                                 srcLookup.getIndirectionPath() + "/" + name);
+        setDataBean(fData);
+        fData.setPrimaryIndirection(true);
+        repo.getSuperRepository().getSession().save(fData);
     }   
     
     /**
@@ -229,7 +256,6 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         {
             LayeredDirectoryNode dir = (LayeredDirectoryNode)parent;
             setLayerID(dir.getLayerID());
-            // TODO Is this right?
             setRepository(parent.getRepository());
         }
     }
@@ -245,6 +271,8 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         {
             return null;
         }
+        // Capture the repository.
+        Repository repo = lPath.getRepository();
         // Otherwise we do an actual copy.
         LayeredDirectoryNode newMe = null;
         long newBranchID = lPath.getHighestBranch();
@@ -253,19 +281,19 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
             if (hasPrimaryIndirection())
             {
                 newMe = new LayeredDirectoryNode(lPath.getIndirectionPath(), 
-                                                 getRepository());
+                                                 repo);
             }
             else
             {
                 newMe = new LayeredDirectoryNode((String)null, 
-                                                 getRepository());
+                                                 repo);
                 newMe.setPrimaryIndirection(false);
             }
         }
         else
         {
             newMe = new LayeredDirectoryNode(this,
-                                                 getRepository());
+                                             repo);
                                              
             newMe.setLayerID(getLayerID());
         }
@@ -274,6 +302,8 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         return newMe;
     }
 
+    // TODO Start around here.
+    
     /**
      * Insert a child node without COW.
      * @param name The name to give the child.

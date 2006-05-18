@@ -19,8 +19,8 @@ package org.alfresco.repo.avm.hibernate;
 
 
 /**
+ * Shared Content between files.
  * @author britt
- *
  */
 public class ContentBeanImpl implements ContentBean
 {

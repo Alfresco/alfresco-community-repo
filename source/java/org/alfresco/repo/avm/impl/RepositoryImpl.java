@@ -76,6 +76,7 @@ public class RepositoryImpl implements Repository
         fData = new RepositoryBeanImpl(name, null);
         fSuper.getSession().save(fData);
         long time = System.currentTimeMillis();
+        // TODO Obviously we have to figure out how to get users from context.
         BasicAttributesBean attrs = new BasicAttributesBeanImpl("britt",
                                                                 "britt",
                                                                 "britt",
@@ -175,7 +176,6 @@ public class RepositoryImpl implements Repository
         {
             newDir = new PlainDirectoryNode(this);
         }
-        // TODO Untangle when you are going to set a new version id.
         newDir.setVersion(getLatestVersion() + 1);
         this.setNew(newDir);
         dir.addChild(name, newDir, lPath);
@@ -197,11 +197,15 @@ public class RepositoryImpl implements Repository
             new LayeredDirectoryNode(srcPath, this);
         if (lPath.isLayered())
         {
+            // When a layered directory is made inside of a layered context,
+            // it gets its layer id from the topmost layer in its lookup
+            // path.
             LayeredDirectoryNode top = lPath.getTopLayer();
             newDir.setLayerID(top.getLayerID());
         }
         else
         {
+            // Otherwise we issue a brand new layer id.
             newDir.setLayerID(fSuper.issueLayerID());
         }
         dir.addChild(name, newDir, lPath);
@@ -237,6 +241,7 @@ public class RepositoryImpl implements Repository
         {
             throw new AlfrescoRuntimeException("Child exists: " + name);
         }
+        // TODO Reexamine decision to not check validity of srcPath.
         LayeredFileNode newFile =
             new LayeredFileNode(srcPath, this);
         dir.addChild(dstPath, newFile, lPath);
@@ -291,6 +296,7 @@ public class RepositoryImpl implements Repository
             throw new AlfrescoRuntimeException("Not a file: " + path);
         }
         FileNode file = (FileNode)node;
+        file = (FileNode)file.copyOnWrite(lPath);
         FileContent content = file.getContentForWrite(this);
         return content.getOutputStream(fSuper);
     }
@@ -356,13 +362,17 @@ public class RepositoryImpl implements Repository
         // Make a new version of source directly to be slid.
         LayeredDirectoryNode dstNode =
             new LayeredDirectoryNode((LayeredDirectoryNode)srcNode, this);
-        // Relookup the destination.
+        // Relookup the destination, since the lookup have been invalidated
+        // by the src copy on write.
         dPath = lookup(-1, dstPath);
         dstDir = (DirectoryNode)dPath.getCurrentNode();
         dstDir.addChild(dstName, dstNode, dPath);
     }
 
-    // TODO Should this be propagated out to SuperRepository.
+    // TODO This is problematic.  As time goes on this returns
+    // larger and larger data sets.  Perhaps what we should do is
+    // provide methods for getting versions by date range, n most 
+    // recent etc.
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.Repository#getVersions()
      */
@@ -392,13 +402,16 @@ public class RepositoryImpl implements Repository
      */
     public Lookup lookup(int version, String path)
     {
+        // Make up a Lookup to hold the results.
         Lookup result = new Lookup(this, fData.getName());
         if (path.length() == 0)
         {
             throw new AlfrescoRuntimeException("Invalid path: " + path);
         }
         String[] pathElements = path.split("/");
+        // Grab the root node to start the lookup.
         DirectoryNode dir = null;
+        // Versions less than 0 mean get current.
         if (version < 0)
         {
             dir = (DirectoryNode)AVMNodeFactory.CreateFromBean(fData.getRoot());
@@ -412,11 +425,14 @@ public class RepositoryImpl implements Repository
             }
             dir = (DirectoryNode)AVMNodeFactory.CreateFromBean(bean);
         }
+        // Add an entry for the root.
         result.add(dir, "");
         if (pathElements.length == 0)
         {
             return result;
         }
+        // Now look up each path element in sequence up to one
+        // before the end.
         for (int i = 0; i < pathElements.length - 1; i++)
         {
             AVMNode child = dir.lookupChild(result, pathElements[i], version);
@@ -424,6 +440,7 @@ public class RepositoryImpl implements Repository
             {
                 throw new AlfrescoRuntimeException("Not found: " + pathElements[i]);
             }
+            // Every element that is not the last needs to be a directory.
             if (!(child instanceof DirectoryNode))
             {
                 throw new AlfrescoRuntimeException("Not a directory: " + pathElements[i]);
@@ -431,6 +448,7 @@ public class RepositoryImpl implements Repository
             dir = (DirectoryNode)child;
             result.add(dir, pathElements[i]);
         }
+        // Now look up the last element.
         AVMNode child = dir.lookupChild(result, pathElements[pathElements.length - 1], version);
         if (child == null)
         {
@@ -445,6 +463,8 @@ public class RepositoryImpl implements Repository
      */
     public Lookup lookupDirectory(int version, String path)
     {
+        // Just do a regular lookup and assert that the last element
+        // is a directory.
         Lookup lPath = lookup(version, path);
         if (!(lPath.getCurrentNode() instanceof DirectoryNode))
         {

@@ -105,4 +105,39 @@ public class DirectoryEntry
     {
         return fType.name();
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (!(obj instanceof DirectoryEntry))
+        {
+            return false;
+        }
+        return fChild.equals(((DirectoryEntry)obj).fChild);
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        return fChild.hashCode();
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        return "[" + fType.name() + "] " + fChild.getId();
+    }
 }

@@ -75,7 +75,9 @@ public class Lookup
     private int fPosition;
     
     /**
-     * Create a new instance.
+     * Create a new one.
+     * @param repository The Repository that's being looked in.
+     * @param repName The name of that Repsository.
      */
     public Lookup(Repository repository, String repName)
     {
@@ -145,7 +147,8 @@ public class Lookup
     }
     
     /**
-     * Set the current node to one higher in the lookup.
+     * Set the current node to one higher in the lookup.  This is used
+     * repeatedly during copy on write.
      */
     public void upCurrentNode()
     {
@@ -178,6 +181,8 @@ public class Lookup
         {
             return true;
         }
+        // Walk up the containment chain and determine if each parent-child
+        // relationship is one of direct containment.
         while (pos > 1)
         {
             DirectoryNode dir = (DirectoryNode)fComponents.get(pos - 1).getNode();
@@ -248,19 +253,17 @@ public class Lookup
             }
             LayeredDirectoryNode oNode =
                 (LayeredDirectoryNode)node;
-            if (oNode.getLayerID() == fTopLayer.getLayerID())
+            if (oNode.getLayerID() == fTopLayer.getLayerID() &&
+                oNode.hasPrimaryIndirection())
             {
-                if (oNode.hasPrimaryIndirection())
+                StringBuilder builder = new StringBuilder();
+                builder.append(oNode.getUnderlying());
+                for (int i = pos + 1; i <= fPosition; i++)
                 {
-                    StringBuilder builder = new StringBuilder();
-                    builder.append(oNode.getUnderlying());
-                    for (int i = pos + 1; i <= fPosition; i++)
-                    {
-                        builder.append("/");
-                        builder.append(fComponents.get(i).getName());
-                    }
-                    return builder.toString();
+                    builder.append("/");
+                    builder.append(fComponents.get(i).getName());
                 }
+                return builder.toString();
             }
         }
         // TODO This is gross.  There has to be a neater way to do this.

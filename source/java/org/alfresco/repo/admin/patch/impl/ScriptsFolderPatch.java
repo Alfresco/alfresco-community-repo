@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -25,13 +26,17 @@ import java.util.Properties;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.view.ImporterService;
+import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
 import org.springframework.context.MessageSource;
+import org.springframework.core.io.ClassPathResource;
 
 /**
  * Ensures that the <b>scripts</b> folder is present.
@@ -59,15 +64,23 @@ public class ScriptsFolderPatch extends AbstractPatch
     private static final String PROPERTY_ICON = "space-icon-default";
     
     private ImporterBootstrap importerBootstrap;
+    private ImporterService importerService;
     private MessageSource messageSource;
     
     protected NodeRef dictionaryNodeRef;
     protected Properties configuration;
     protected NodeRef scriptsFolderNodeRef;
     
+    private String scriptsACP;
+    
     public void setImporterBootstrap(ImporterBootstrap importerBootstrap)
     {
         this.importerBootstrap = importerBootstrap;
+    }
+    
+    public void setImporterService(ImporterService importerService)
+    {
+        this.importerService = importerService;
     }
 
     public void setMessageSource(MessageSource messageSource)
@@ -75,16 +88,20 @@ public class ScriptsFolderPatch extends AbstractPatch
         this.messageSource = messageSource;
     }
 
-    /**
+    public void setScriptsACP(String scriptsACP)
+    {
+        this.scriptsACP = scriptsACP;
+    }
+
+   /**
      * Ensure that required common properties have been set
      */
     protected void checkCommonProperties() throws Exception
     {
-        if (importerBootstrap == null)
-        {
-            throw new PatchException("'importerBootstrap' property has not been set");
-        }
-        else if (namespaceService == null)
+        checkPropertyNotNull(importerBootstrap, "importerBootstrap");
+        checkPropertyNotNull(importerService, "importerService");
+        checkPropertyNotNull(messageSource, "messageSource");
+        if (namespaceService == null)
         {
             throw new PatchException("'namespaceService' property has not been set");
         }
@@ -96,6 +113,7 @@ public class ScriptsFolderPatch extends AbstractPatch
         {
             throw new PatchException("'nodeService' property has not been set");
         }
+        checkPropertyNotNull(scriptsACP, "scriptsACP");
     }
     
     /**
@@ -193,6 +211,19 @@ public class ScriptsFolderPatch extends AbstractPatch
         {
             // create it
             createFolder();
+            
+            // import the content
+            try
+            {
+               authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+               
+               importContent();
+            }
+            finally
+            {
+               authenticationComponent.clearCurrentSecurityContext();
+            }
+            
             msg = I18NUtil.getMessage(MSG_CREATED, scriptsFolderNodeRef);
         }
         else
@@ -250,5 +281,14 @@ public class ScriptsFolderPatch extends AbstractPatch
         nodeService.addAspect(scriptsFolderNodeRef, ContentModel.ASPECT_UIFACETS, null);
         
         // done
+    }
+    
+    private void importContent() throws IOException
+    {
+        // import the content
+        ClassPathResource acpResource = new ClassPathResource(this.scriptsACP);
+        ACPImportPackageHandler acpHandler = new ACPImportPackageHandler(acpResource.getFile(), null);
+        Location importLocation = new Location(this.scriptsFolderNodeRef);
+        importerService.importView(acpHandler, importLocation, null, null);
     }
 }

@@ -347,13 +347,17 @@
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>12</value></property>
         <property name="targetSchema"><value>13</value></property>
+        <property name="scriptsACP"><value>alfresco/bootstrap/example_javascripts.acp</value></property>
         <!-- helper beans for execution -->
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>
         <property name="messageSource">
             <ref bean="bootstrapSpacesMessageSource" />
-        </property>   
+        </property>
+        <property name="importerService">
+            <ref bean="importerComponent" />
+        </property>
     </bean>
     
 </beans>

@@ -170,14 +170,6 @@ public class FileFolderPerformanceTester extends TestCase
                     }
                     for (int j = 0; j < folders.length; j++)
                     {
-                        if (logger.isDebugEnabled())
-                        {
-                            String msg = String.format(
-                                    "Thread %s loading file %4d into folder %4d",
-                                    Thread.currentThread().getName(),
-                                    i, j);
-                            logger.debug(msg);
-                        }
                         final NodeRef folderRef = folders[j];
                         TransactionWork<FileInfo> createFileWork = new TransactionWork<FileInfo>()
                         {
@@ -206,9 +198,10 @@ public class FileFolderPerformanceTester extends TestCase
                 long time = (end - start);
                 double average = (double) time / (double) (folderCount * currentFileCount);
                 double percentComplete = (double) currentFileCount / (double) fileCount * 100.0;
-                System.out.println(
+                logger.debug("\n" +
                         "[" + Thread.currentThread().getName() + "] \n" +
-                        "   Created " + currentFileCount + " files in each of " + folderCount + " folders: \n" +
+                        "   Created " + currentFileCount + " files in each of " + folderCount +
+                            " folders (" + (randomOrder ? "shuffled" : "in order") + "): \n" +
                         "   Progress: " + String.format("%9.2f", percentComplete) +  " percent complete \n" +
                         "   Average: " + String.format("%10.2f", average) + " ms per file \n" +
                         "   Average: " + String.format("%10.2f", 1000.0/average) + " files per second");
@@ -216,7 +209,7 @@ public class FileFolderPerformanceTester extends TestCase
         };
 
         // kick off the required number of threads
-        System.out.println(
+        logger.debug("\n" +
                 "Starting " + threadCount +
                 " threads loading " + fileCount +
                 " files in each of " + folderCount +
@@ -243,43 +236,38 @@ public class FileFolderPerformanceTester extends TestCase
         }
     }
     
-    public void test1Folder10Children() throws Exception
+    public void test_2_ordered_1_10() throws Exception
     {
         buildStructure(rootFolderRef, 2, false, 1, 10, null);
     }
-    
-    public void test10Folders100ChildrenMultiTxn() throws Exception
+//    
+//    public void test_4_ordered_10_100() throws Exception
+//    {
+//        buildStructure(rootFolderRef, 4, false, 10, 100, new double[] {0.25, 0.50, 0.75});
+//    }
+//    
+//    public void test_4_shuffled_10_100() throws Exception
+//    {
+//        buildStructure(rootFolderRef, 4, true, 10, 100, new double[] {0.25, 0.50, 0.75});
+//    }
+    public void test_4_shuffled_100_100() throws Exception
     {
-        buildStructure(rootFolderRef, 2, false, 10, 100, new double[] {0.50});
+        buildStructure(
+                rootFolderRef,
+                4,
+                true,
+                100,
+                100,
+                new double[] {0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
     }
-//    
-//    public void test10Folders100ChildrenMultiTxnMultiThread() throws Exception
+//    public void test_4_shuffled_1000_1000() throws Exception
 //    {
-//        buildStructure(4, rootFolderRef, 10, 100);
-//    }
-//
-//    public void test1000Folders1000ChildrenMultiTxnMultiThread() throws Exception
-//    {
-//        buildStructure(rootFolderRef, 4, true, 1000, 1000);
-//    }
-//    
-//    public void test100Folders1Child() throws Exception
-//    {
-//        timeBuildStructure(rootFolderRef, 100, 1);
-//    }
-//    
-//    public void test1000Folders10Children() throws Exception
-//    {
-//        timeBuildStructure(rootFolderRef, 1000, 10);
-//    }
-//    
-//    public void test1000Folders100Children() throws Exception
-//    {
-//        timeBuildStructure(rootFolderRef, 5, 100);
-//    }
-//    
-//    public void test1000Folders1000Children() throws Exception
-//    {
-//        timeBuildStructure(rootFolderRef, 1000, 1000);
+//        buildStructure(
+//                rootFolderRef,
+//                4,
+//                true,
+//                1000,
+//                1000,
+//                new double[] {0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
 //    }
 }

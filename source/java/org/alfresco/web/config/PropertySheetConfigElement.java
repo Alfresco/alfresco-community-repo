@@ -139,13 +139,16 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     *        sheet is in view mode
     * @param inEdit Sets whether the property should be shown when the property 
     *        sheet is in edit mode
-    * @parm compGenerator The name of a bean that can be used as a component generator
+    * @param compGenerator The name of a bean that can be used as a component generator
+    * @param ignoreIfMissing Sets whether the property should be rendered if it is not
+    *        found in the data dictionary or the node itself
     */
    /*package*/ void addProperty(String name, String displayLabel, String displayLabelId, String readOnly, 
-                                String converter, String inView, String inEdit, String compGenerator)
+                                String converter, String inView, String inEdit, String compGenerator,
+                                String ignoreIfMissing)
    {
       addItem(new PropertyConfig(name, displayLabel, displayLabelId, Boolean.parseBoolean(readOnly), 
-            converter, inView, inEdit, compGenerator));
+            converter, inView, inEdit, compGenerator, ignoreIfMissing));
    }
    
    /**
@@ -160,7 +163,7 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     *        sheet is in view mode
     * @param inEdit Sets whether the property should be shown when the property 
     *        sheet is in edit mode
-    * @parm compGenerator The name of a bean that can be used as a component generator
+    * @param compGenerator The name of a bean that can be used as a component generator
     */
    /*package*/ void addAssociation(String name, String displayLabel, String displayLabelId, String readOnly, 
                                    String converter, String inView, String inEdit, String compGenerator)
@@ -181,7 +184,7 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
     *        sheet is in view mode
     * @param inEdit Sets whether the property should be shown when the property 
     *        sheet is in edit mode
-    * @parm compGenerator The name of a bean that can be used as a component generator
+    * @param compGenerator The name of a bean that can be used as a component generator
     */
    /*package*/ void addChildAssociation(String name, String displayLabel, String displayLabelId, String readOnly, 
                                         String converter, String inView, String inEdit, String compGenerator)
@@ -257,10 +260,11 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
       private boolean readOnly;
       private boolean showInViewMode = true;
       private boolean showInEditMode = true;
+      private boolean ignoreIfMissing = true;
       
       public ItemConfig(String name, String displayLabel, String displayLabelId, 
             boolean readOnly, String converter, String inView, String inEdit, 
-            String compGenerator)
+            String compGenerator, String ignoreIfMissing)
       {
          this.name = name;
          this.displayLabel = displayLabel;
@@ -276,6 +280,10 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
          if (inEdit != null)
          {
             this.showInEditMode = Boolean.parseBoolean(inEdit);
+         }
+         if (ignoreIfMissing != null)
+         {
+            this.ignoreIfMissing = Boolean.parseBoolean(ignoreIfMissing);
          }
       }
       
@@ -344,6 +352,15 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
       }
       
       /**
+       * @return Whether the property should be rendered if it is not found in the
+       *         data dictionary or the node itself. 
+       */
+      public boolean getIgnoreIfMissing()
+      {
+         return this.ignoreIfMissing;
+      }  
+      
+      /**
        * @see java.lang.Object#toString()
        */
       public String toString()
@@ -356,6 +373,7 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
          buffer.append(" read-only=").append(this.readOnly);
          buffer.append(" show-in-view-mode=").append(this.showInViewMode);
          buffer.append(" show-in-edit-mode=").append(this.showInEditMode);
+         buffer.append(" ignore-if-missing=").append(this.ignoreIfMissing);
          buffer.append(" component-generator=").append(this.componentGenerator).append(")");
          return buffer.toString();
       }
@@ -368,10 +386,10 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
    {
       public PropertyConfig(String name, String displayLabel, String displayLabelId, 
             boolean readOnly, String converter, String inView, String inEdit, 
-            String compGenerator)
+            String compGenerator, String ignoreIfMissing)
       {
          super(name, displayLabel, displayLabelId, readOnly, converter, 
-               inView, inEdit, compGenerator);
+               inView, inEdit, compGenerator, ignoreIfMissing);
       }
    }
    
@@ -385,7 +403,7 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
             String compGenerator)
       {
          super(name, displayLabel, displayLabelId, readOnly, converter, 
-               inView, inEdit, compGenerator);
+               inView, inEdit, compGenerator, null);
       }
    }
    
@@ -399,7 +417,7 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
             String compGenerator)
       {
          super(name, displayLabel, displayLabelId, readOnly, converter, 
-               inView, inEdit, compGenerator);
+               inView, inEdit, compGenerator, null);
       }
    }
 }

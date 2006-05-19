@@ -41,6 +41,7 @@ import org.springframework.web.jsf.FacesContextUtils;
 public class UIProperty extends PropertySheetItem
 {
    private static Log logger = LogFactory.getLog(UIProperty.class);
+   private static Log missingPropsLogger = LogFactory.getLog("alfresco.missingProperties");
 
    /**
     * Default constructor
@@ -76,8 +77,9 @@ public class UIProperty extends PropertySheetItem
       if (propDef == null)
       {
          // there is no definition for the node, so it may have been added to
-         // the node as an additional property, so look for it in the node itself
-         if (node.hasProperty(propertyName))
+         // the node as an additional property, so look for it in the node itself.
+         // Or, if the ignoreIfMissing flag is set to false, show the property 
+         if (node.hasProperty(propertyName) || getIgnoreIfMissing() == false)
          {
             String displayLabel = (String)getDisplayLabel();
             if (displayLabel == null)
@@ -91,8 +93,9 @@ public class UIProperty extends PropertySheetItem
          }
          else
          {
-            // warn the user that the property was not found anywhere!
-            logger.warn("Failed to find property definition for property '" + propertyName + "' for node: " + node.getNodeRef().toString());
+            // warn the user that the property was not found anywhere
+            if (missingPropsLogger.isDebugEnabled())
+               missingPropsLogger.debug("Failed to find property '" + propertyName + "' for node: " + node.getNodeRef().toString());
          }
       }
       else

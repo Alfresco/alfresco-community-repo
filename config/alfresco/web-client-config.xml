@@ -175,7 +175,6 @@
    <config evaluator="string-compare" condition="Content Wizards">
       <!-- The list of custom content types to show in the content wizards -->
       <content-types>
-         <type name="cm:dictionaryModel"/>
       </content-types>
       
       <!-- The list of mime types that can be created inline -->
@@ -196,7 +195,6 @@
       </subtypes>
       <!-- The list of content types shown in the specialise-type action -->
       <specialise-types>
-         <type name="cm:dictionaryModel"/>
       </specialise-types>
       <!-- The list of aspects to show in the add/remove features action -->
       <!-- and the has-aspect condition -->

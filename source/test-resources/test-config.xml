@@ -161,7 +161,8 @@
          <show-property name="createddate" read-only="true" />
          <show-property name="modifieddate" read-only="true" />
          <show-property name="description" display-label="Description" read-only="false" />
-         <show-property name="icon" component-generator="SpaceIconPickerGenerator" />
+         <show-property name="icon" component-generator="SpaceIconPickerGenerator" 
+                        ignore-if-missing="false" />
          <show-property name="size" read-only="true" show-in-edit-mode="false" />
       </property-sheet>
    </config>

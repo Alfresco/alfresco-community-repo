@@ -743,6 +743,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
          propSheetItem.setName(item.getName());
          propSheetItem.setConverter(item.getConverter());
          propSheetItem.setComponentGenerator(item.getComponentGenerator());
+         propSheetItem.setIgnoreIfMissing(item.getIgnoreIfMissing());
 
          String displayLabel = item.getDisplayLabel();
          if (item.getDisplayLabelId() != null)

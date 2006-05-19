@@ -19,8 +19,6 @@ package org.alfresco.repo.avm;
 
 import org.alfresco.repo.avm.hibernate.BasicAttributesBean;
 import org.alfresco.repo.avm.hibernate.BasicAttributesBeanImpl;
-import org.alfresco.repo.avm.hibernate.ContentBean;
-import org.alfresco.repo.avm.hibernate.ContentBeanImpl;
 import org.alfresco.repo.avm.hibernate.PlainFileNodeBean;
 import org.alfresco.repo.avm.hibernate.PlainFileNodeBeanImpl;
 

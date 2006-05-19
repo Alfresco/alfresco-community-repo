@@ -76,9 +76,9 @@ public class TestPopulate extends TestCase
                 public void perform(Session session)
                 {
                     // Set up issuers.
-                    Issuer nodeIssuer = new Issuer("node", 0);
-                    Issuer contentIssuer = new Issuer("content", 0);
-                    Issuer repositoryIssuer = new Issuer("repository", 0);
+                    Issuer nodeIssuer = new Issuer("node", 0, session);
+                    Issuer contentIssuer = new Issuer("content", 0, session);
+                    Issuer repositoryIssuer = new Issuer("repository", 0, session);
                     // Make the initial root directory.
                     long time = System.currentTimeMillis();
                     BasicAttributesBean attrs = new BasicAttributesBeanImpl("britt",
@@ -105,9 +105,6 @@ public class TestPopulate extends TestCase
                     session.save(rep);
                     rep.getRoots().put(rep.getNextVersionID(), root);
                     rep.setNextVersionID(rep.getNextVersionID() + 1);
-                    session.save(nodeIssuer);
-                    session.save(contentIssuer);
-                    session.save(repositoryIssuer);
                     root.setIsNew(false);
                 }
             });

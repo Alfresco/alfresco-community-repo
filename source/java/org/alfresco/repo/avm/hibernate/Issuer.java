@@ -17,6 +17,8 @@
 
 package org.alfresco.repo.avm.hibernate;
 
+import org.hibernate.Session;
+
 /**
  * This is a helper class that knows how to issue identifiers.
  * @author britt
@@ -51,10 +53,11 @@ public class Issuer
      * @param name The name of this issuer.
      * @param next The next number to issue.
      */
-    public Issuer(String name, long next)
+    public Issuer(String name, long next, Session session)
     {
         fName = name;
         fNext = next;
+        session.save(this);
     }
     
     // Bean methods.

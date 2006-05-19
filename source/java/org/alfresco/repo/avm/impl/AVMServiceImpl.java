@@ -30,8 +30,10 @@ import org.alfresco.repo.avm.SuperRepository;
 import org.alfresco.repo.avm.hibernate.HibernateHelper;
 import org.alfresco.repo.avm.hibernate.HibernateTxn;
 import org.alfresco.repo.avm.hibernate.HibernateTxnCallback;
+import org.alfresco.repo.avm.hibernate.Issuer;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.tool.hbm2ddl.SchemaExport;
 
 /**
  * Implements the AVMService.  Stub.
@@ -61,11 +63,44 @@ public class AVMServiceImpl implements AVMService
     
     /**
      * Basic constructor for the service.
+     * @param createTables Flag for whether tables should be created.
      */
     public AVMServiceImpl()
     {
+        fSuperRepository = new ThreadLocal<SuperRepository>();
         fSessionFactory = HibernateHelper.GetSessionFactory();
         fTransaction = new HibernateTxn(fSessionFactory);
+    }
+    
+    /**
+     * Final initialization of the service.  Must be called only on a 
+     * fully initialized instance.
+     * @param createTables Whether we should create tables, and a default
+     * repository.
+     */
+    public void init(boolean createTables)
+    {
+        if (createTables)
+        {
+            SchemaExport se = new SchemaExport(HibernateHelper.GetConfiguration());
+            se.drop(false, true);
+            se.create(false, true);
+            class HTxnCallback implements HibernateTxnCallback
+            {
+                public InputStream in = null;
+                
+                public void perform(Session session)
+                {
+                    new Issuer("node", 0L, session);
+                    new Issuer("content", 0L, session);
+                    new Issuer("branch", 0L, session);
+                    new Issuer("layer", 0L, session);
+                }
+            };
+            HTxnCallback doit = new HTxnCallback();
+            fTransaction.perform(doit);
+            createRepository("main");
+        }        
     }
     
     /**

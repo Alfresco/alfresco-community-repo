@@ -153,13 +153,16 @@ public class SuperRepositoryImpl implements SuperRepository
         String [] pathParts = SplitPath(srcPath);
         Repository srcRepo = getRepositoryByName(pathParts[0]);
         Lookup sPath = srcRepo.lookup(version, pathParts[1]);
-        // Lookup the destination direcctory.
+        // Lookup the destination directory.
         pathParts = SplitPath(dstPath);
         Repository dstRepo = getRepositoryByName(pathParts[0]);
         Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1]);
         DirectoryNode dirNode = (DirectoryNode)dPath.getCurrentNode();
         AVMNode srcNode = sPath.getCurrentNode();
         AVMNode dstNode = null;
+        // We do different things depending on what kind of thing we're 
+        // branching from. I'd be considerably happier if we disallowed
+        // certain scenarios, but Jon won't let me :P (bhp).
         if (srcNode instanceof PlainDirectoryNode)
         {
             dstNode = new PlainDirectoryNode((PlainDirectoryNode)srcNode, dstRepo);
@@ -200,6 +203,7 @@ public class SuperRepositoryImpl implements SuperRepository
     public void rename(String srcPath, String srcName, String dstPath,
             String dstName)
     {
+        // This is about as ugly as it gets.  
         String [] pathParts = SplitPath(srcPath);
         Repository srcRepo = getRepositoryByName(pathParts[0]);
         Lookup sPath = srcRepo.lookupDirectory(-1, pathParts[1]);
@@ -246,6 +250,8 @@ public class SuperRepositoryImpl implements SuperRepository
         }
         else if (srcNode instanceof LayeredDirectoryNode)
         {
+            // TODO I think I need to subdivide this logic again.
+            // based on whether the destination is a layer or not.
             if (!sPath.isLayered() || (sPath.isInThisLayer() &&
                 srcDir instanceof LayeredDirectoryNode &&
                 ((LayeredDirectoryNode)srcDir).directlyContains(srcNode)))
@@ -295,6 +301,9 @@ public class SuperRepositoryImpl implements SuperRepository
         srcDir.removeChild(srcName, sPath);
     }
 
+    // TODO Should we allow cross-repository sliding.  Tentatively no, because
+    // it serves no earthly purpose. God knows we need to trim the combinatorial
+    // tree of possibilities.
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.SuperRepository#slide(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
@@ -502,7 +511,7 @@ public class SuperRepositoryImpl implements SuperRepository
     }
     
     /**
-     * Utility to split a path, foo:/bar/baz into its repository and path parts.
+     * Utility to split a path, foo:bar/baz into its repository and path parts.
      * @param path The fully qualified path.
      * @return The repository name and the repository path.
      */

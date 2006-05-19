@@ -33,7 +33,6 @@ public class EditSpaceDialog extends CreateSpaceDialog
       // setup the space being edited
       this.editableNode = new Node(this.browseBean.getActionSpace().getNodeRef());
       this.spaceType = this.editableNode.getType().toString();
-      this.spaceType = this.editableNode.getType().toString();
    }
    
    @Override

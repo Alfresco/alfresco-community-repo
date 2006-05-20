@@ -77,8 +77,8 @@ public class TestPopulate extends TestCase
                 {
                     // Set up issuers.
                     Issuer nodeIssuer = new Issuer("node", 0, session);
-                    Issuer contentIssuer = new Issuer("content", 0, session);
-                    Issuer repositoryIssuer = new Issuer("repository", 0, session);
+                    new Issuer("content", 0, session);
+                    new Issuer("repository", 0, session);
                     // Make the initial root directory.
                     long time = System.currentTimeMillis();
                     BasicAttributesBean attrs = new BasicAttributesBeanImpl("britt",

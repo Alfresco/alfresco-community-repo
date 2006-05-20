@@ -142,6 +142,8 @@ public class SuperRepositoryImpl implements SuperRepository
         // Newing up the object causes it to be written to the db.
         @SuppressWarnings("unused") 
         Repository rep = new RepositoryImpl(this, name);
+        // Special handling for repository creation.
+        rep.getDataBean().getRoot().setIsNew(false);
     }
 
     /* (non-Javadoc)
@@ -485,7 +487,7 @@ public class SuperRepositoryImpl implements SuperRepository
      */
     private Repository getRepositoryByName(String name)
     {
-        Query query = fSession.createQuery("from repositories r where r.name = :name");
+        Query query = fSession.createQuery("from RepositoryBeanImpl r where r.name = :name");
         query.setString("name", name);
         return new RepositoryImpl(this, (RepositoryBean)query.uniqueResult());
     }

@@ -4,10 +4,10 @@
 	<!-- AVMNodeBean is the abstract base for filesystem like objects.
 	     We're using the one table per class hierarchy strategy to implement
 	     polymorphism. -->
-	<class table="avm_nodes" lazy="true" abstract="true"
+	<class table="avm_nodes" abstract="true"
 		name="AVMNodeBeanImpl"
 		proxy="AVMNodeBean"
-		optimistic-lock="version">
+		optimistic-lock="version" lazy="false">
 		<cache usage="read-write"/>
 		<!-- The id is set programmatically using an Issuer.  See below. -->
 		<id name="id" column="id" type="long"/>
@@ -49,61 +49,65 @@
 		<!-- Directories, two flavors. -->
 		<subclass name="DirectoryNodeBeanImpl" 
 		          proxy="DirectoryNodeBean" 
-		          abstract="true">
+		          abstract="true"
+		          lazy="false">
 		    <!-- A Layered Directory is our smart symlink thingy. -->
-			<subclass
-				name="LayeredDirectoryNodeBeanImpl"
-				proxy="LayeredDirectoryNodeBean" discriminator-value="layereddirectory">
-				<!-- The layer id is an implementation trick to disambiguate
-				     exactly what layer is being refered to in various circumstances. -->
-				<property name="layerID" column="layer_id" type="long" not-null="true"/>
-				<!-- The is the moral equivalent of the value of a symlink. -->
-				<property name="indirection" column="indirection" type="string" 
-				          length="511"/>
-				<!-- This marks a layered directory as either knowing itself what
-				     it points at (true) or inheriting what it points at from its
-				     container (false). -->
-				<property name="primaryIndirection" column="primary_indirection" type="boolean"/>
-				<!-- Map of names to DirectoryEntries. -->
-				<map name="added" cascade="all">
-					<key column="directory_id"/>
-					<map-key type="string" column="name"/>
-					<!-- A DirectoryEntry is a (node)type AVMNode reference pair.
-					     Should probably convert type into an integer code. -->					
-					<composite-element class="DirectoryEntry">
-						<property name="type" column="type_name"
-							type="string" length="30" not-null="true"/>
-						<many-to-one name="child"
-							class="AVMNodeBeanImpl"
-							cascade="save-update" not-null="true">
-						</many-to-one>
-					</composite-element>
-				</map>
-				<!-- This is just the set of names of children deleted (and therefore
-					 hidden) in this layer. -->
-				<set name="deleted" table="deleted_children"
-					fetch="join" cascade="all">
-					<key column="directory_id"/>
-					<element type="string" column="name"/>
-				</set>
-			</subclass>
-			<!-- Just plain directories. -->
+		    <subclass name="LayeredDirectoryNodeBeanImpl"
+		    	proxy="LayeredDirectoryNodeBean"
+		    	discriminator-value="layereddirectory" lazy="false">
+		    	<!-- The layer id is an implementation trick to disambiguate
+		    		exactly what layer is being refered to in various circumstances. -->
+		    	<property name="layerID" column="layer_id" type="long"
+		    		not-null="true" />
+		    	<!-- The is the moral equivalent of the value of a symlink. -->
+		    	<property name="indirection" column="indirection"
+		    		type="string" length="511" />
+		    	<!-- This marks a layered directory as either knowing itself what
+		    		it points at (true) or inheriting what it points at from its
+		    		container (false). -->
+		    	<property name="primaryIndirection"
+		    		column="primary_indirection" type="boolean" />
+		    	<!-- Map of names to DirectoryEntries. -->
+		    	<map name="added" cascade="all">
+		    		<key column="directory_id" />
+		    		<map-key type="string" column="name" />
+		    		<!-- A DirectoryEntry is a (node)type AVMNode reference pair.
+		    			Should probably convert type into an integer code. -->
+		    		<composite-element class="DirectoryEntry">
+		    			<property name="type" column="type_name"
+		    				type="string" length="30" not-null="true" />
+		    			<many-to-one name="child"
+		    				class="AVMNodeBeanImpl" cascade="save-update"
+		    				not-null="true">
+		    			</many-to-one>
+		    		</composite-element>
+		    	</map>
+		    	<!-- This is just the set of names of children deleted (and therefore
+		    		hidden) in this layer. -->
+		    	<set name="deleted" table="deleted_children"
+		    		fetch="join" cascade="all">
+		    		<key column="directory_id" />
+		    		<element type="string" column="name" />
+		    	</set>
+		    </subclass>
+		    <!-- Just plain directories. -->
 			<subclass name="PlainDirectoryNodeBeanImpl"
-				discriminator-value="plaindirectory" proxy="PlainDirectoryNodeBean">
+				discriminator-value="plaindirectory" proxy="PlainDirectoryNodeBean" lazy="false">
 				<!-- For reference count based garbage collection of purged nodes 
-				     to work we need to specially mark the root directory of
-				     a Repository as special so that its absence of parents will
-				     not cause it to be vacuumed away.  TODO: for ease of queries, 
-				     this probably wants to be in the base class. -->
-				<property name="isRoot" column="is_root" type="boolean"/>
+					to work we need to specially mark the root directory of
+					a Repository as special so that its absence of parents will
+					not cause it to be vacuumed away.  TODO: for ease of queries, 
+					this probably wants to be in the base class. -->
+				<property name="isRoot" column="is_root" type="boolean" />
 				<!-- A map of names to DirectoryEntries.  In the AVM world, it makes sense
-				     that nodes don't know there own names, only there containers do. -->
+					that nodes don't know there own names, only there containers do. -->
 				<map name="children" cascade="all">
-					<key column="directory_id"/>
-					<map-key type="string" column="name"/>
-					<composite-element class="org.alfresco.repo.avm.hibernate.DirectoryEntry">
-						<property name="type" type="string" not-null="true" length="30" 
-							column="type_name"/>
+					<key column="directory_id" />
+					<map-key type="string" column="name" />
+					<composite-element
+						class="org.alfresco.repo.avm.hibernate.DirectoryEntry">
+						<property name="type" type="string"
+							not-null="true" length="30" column="type_name" />
 						<many-to-one name="child"
 							class="org.alfresco.repo.avm.hibernate.AVMNodeBeanImpl"
 							not-null="true" cascade="save-update">
@@ -115,19 +119,20 @@
 		<!-- There are two kinds of files, plain and symlinky. -->
 		<subclass name="FileNodeBeanImpl"
 			proxy="FileNodeBean"
-			abstract="true">
+			abstract="true"
+			lazy="false">
 			<!-- Plain files just have a reference to a Content object. -->
 			<subclass discriminator-value="plainfile"
-				name="PlainFileNodeBeanImpl"
-				proxy="PlainFileNodeBean">
+				name="PlainFileNodeBeanImpl" proxy="PlainFileNodeBean" lazy="false">
 				<many-to-one name="content" column="content_id"
 					class="ContentBeanImpl" fetch="join" cascade="save-update">
 				</many-to-one>
 			</subclass>
 			<!-- Layered files are almost exactly copy on write symlinks. -->
 			<subclass name="LayeredFileNodeBeanImpl"
-				discriminator-value="layeredfile" proxy="LayeredFileNodeBean">
-				<property name="indirection" type="string" length="511" column="indirection"/>
+				discriminator-value="layeredfile" proxy="LayeredFileNodeBean" lazy="false">
+				<property name="indirection" type="string" length="511"
+					column="indirection" />
 			</subclass>
 		</subclass>
 	</class>

@@ -222,4 +222,39 @@ public class BasicAttributesBeanImpl implements BasicAttributesBean
     {
         return fAccessDate;
     }
+
+    // TODO This is probably wrong.
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (fID == null)
+        {
+            return false;
+        }
+        if (!(obj instanceof BasicAttributesBean))
+        {
+            return false;
+        }
+        return fID == ((BasicAttributesBean)obj).getId();
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        if (fID == null)
+        {
+            return 0;
+        }
+        return fID.hashCode();
+    }
 }

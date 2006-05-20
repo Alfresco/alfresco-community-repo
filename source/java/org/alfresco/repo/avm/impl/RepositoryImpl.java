@@ -99,6 +99,7 @@ public class RepositoryImpl implements Repository
         fData.setRoot(rootBean);
         fData.getRoots().put(fData.getNextVersionID(), rootBean);
         fData.setNextVersionID(fData.getNextVersionID());
+        fSuper.getSession().save(fData);
     }
     
     /**

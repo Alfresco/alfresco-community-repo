@@ -17,6 +17,8 @@
 
 package org.alfresco.repo.avm;
 
+import java.util.ArrayList;
+
 import org.alfresco.repo.avm.hibernate.HibernateHelper;
 import org.alfresco.repo.avm.impl.AVMServiceImpl;
 import org.hibernate.cfg.Configuration;
@@ -56,6 +58,7 @@ public class AVMServiceTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
+        HibernateHelper.Reset();
     }
     
     /**
@@ -63,5 +66,44 @@ public class AVMServiceTest extends TestCase
      */
     public void testNothing()
     {
+    }
+    
+    /**
+     * Test making a simple directory.
+     */
+    public void testCreateDirectory()
+    {
+        try
+        {
+            fService.createDirectory("main:/", "testdir");
+            ArrayList<String> toSnapshot = new ArrayList<String>();
+            toSnapshot.add("main");
+            fService.createSnapshot(toSnapshot);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
+     * Test creating a file.
+     */
+    public void testCreateFile()
+    {
+        try
+        {
+            testCreateDirectory();
+            fService.createFile("main:testdir", "testfile");
+            ArrayList<String> toSnapshot = new ArrayList<String>();
+            toSnapshot.add("main");
+            fService.createSnapshot(toSnapshot);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
     }
 }

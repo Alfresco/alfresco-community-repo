@@ -30,6 +30,25 @@ public class HibernateHelper
     
     static 
     {
+        Reset();
+    }
+    
+    public static SessionFactory GetSessionFactory()
+    {
+        return fgFactory;
+    }
+    
+    public static Configuration GetConfiguration()
+    {
+        return fgCfg;
+    }
+    
+    public static void Reset()
+    {
+        if (fgFactory != null)
+        {
+            fgFactory.close();
+        }
         try
         {
             fgCfg = new Configuration();
@@ -41,15 +60,5 @@ public class HibernateHelper
             t.printStackTrace(System.err);
             System.exit(1);
         }
-    }
-    
-    public static SessionFactory GetSessionFactory()
-    {
-        return fgFactory;
-    }
-    
-    public static Configuration GetConfiguration()
-    {
-        return fgCfg;
     }
 }

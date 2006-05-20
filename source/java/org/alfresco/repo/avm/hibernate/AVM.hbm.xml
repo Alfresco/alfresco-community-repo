@@ -7,7 +7,7 @@
 	<class table="avm_nodes" abstract="true"
 		name="AVMNodeBeanImpl"
 		proxy="AVMNodeBean"
-		optimistic-lock="version" lazy="false">
+		optimistic-lock="version" lazy="true">
 		<cache usage="read-write"/>
 		<!-- The id is set programmatically using an Issuer.  See below. -->
 		<id name="id" column="id" type="long"/>
@@ -50,11 +50,11 @@
 		<subclass name="DirectoryNodeBeanImpl" 
 		          proxy="DirectoryNodeBean" 
 		          abstract="true"
-		          lazy="false">
+		          lazy="true">
 		    <!-- A Layered Directory is our smart symlink thingy. -->
 		    <subclass name="LayeredDirectoryNodeBeanImpl"
 		    	proxy="LayeredDirectoryNodeBean"
-		    	discriminator-value="layereddirectory" lazy="false">
+		    	discriminator-value="layereddirectory" lazy="true">
 		    	<!-- The layer id is an implementation trick to disambiguate
 		    		exactly what layer is being refered to in various circumstances. -->
 		    	<property name="layerID" column="layer_id" type="long"
@@ -92,7 +92,7 @@
 		    </subclass>
 		    <!-- Just plain directories. -->
 			<subclass name="PlainDirectoryNodeBeanImpl"
-				discriminator-value="plaindirectory" proxy="PlainDirectoryNodeBean" lazy="false">
+				discriminator-value="plaindirectory" proxy="PlainDirectoryNodeBean" lazy="true">
 				<!-- For reference count based garbage collection of purged nodes 
 					to work we need to specially mark the root directory of
 					a Repository as special so that its absence of parents will
@@ -123,14 +123,14 @@
 			lazy="false">
 			<!-- Plain files just have a reference to a Content object. -->
 			<subclass discriminator-value="plainfile"
-				name="PlainFileNodeBeanImpl" proxy="PlainFileNodeBean" lazy="false">
+				name="PlainFileNodeBeanImpl" proxy="PlainFileNodeBean" lazy="true">
 				<many-to-one name="content" column="content_id"
 					class="ContentBeanImpl" fetch="join" cascade="save-update">
 				</many-to-one>
 			</subclass>
 			<!-- Layered files are almost exactly copy on write symlinks. -->
 			<subclass name="LayeredFileNodeBeanImpl"
-				discriminator-value="layeredfile" proxy="LayeredFileNodeBean" lazy="false">
+				discriminator-value="layeredfile" proxy="LayeredFileNodeBean" lazy="true">
 				<property name="indirection" type="string" length="511"
 					column="indirection" />
 			</subclass>

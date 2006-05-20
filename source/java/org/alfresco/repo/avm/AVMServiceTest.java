@@ -79,6 +79,8 @@ public class AVMServiceTest extends TestCase
             ArrayList<String> toSnapshot = new ArrayList<String>();
             toSnapshot.add("main");
             fService.createSnapshot(toSnapshot);
+            AVMNode node = fService.lookup(-1, "main:/");
+            assertTrue(node instanceof PlainDirectoryNode);
         }
         catch (Exception e)
         {

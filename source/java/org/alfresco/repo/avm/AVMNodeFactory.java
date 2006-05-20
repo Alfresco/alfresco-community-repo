@@ -22,6 +22,7 @@ import org.alfresco.repo.avm.hibernate.LayeredDirectoryNodeBean;
 import org.alfresco.repo.avm.hibernate.LayeredFileNodeBean;
 import org.alfresco.repo.avm.hibernate.PlainDirectoryNodeBean;
 import org.alfresco.repo.avm.hibernate.PlainFileNodeBean;
+import org.hibernate.proxy.HibernateProxy;
 
 /**
  * Responsible for instantiating AVMNode concrete subclasses from 
@@ -40,6 +41,8 @@ public class AVMNodeFactory
         {
             return null;
         }
+        HibernateProxy proxy = (HibernateProxy)bean;
+        bean = (AVMNodeBean)proxy.getHibernateLazyInitializer().getImplementation();
         if (bean instanceof PlainFileNodeBean)
         {
             return new PlainFileNode((PlainFileNodeBean)bean);

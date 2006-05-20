@@ -40,6 +40,13 @@ public class ContentBeanImpl implements ContentBean
     private long fVers;
     
     /**
+     * Default constructor.
+     */
+    public ContentBeanImpl()
+    {
+    }
+
+    /**
      * Basic constructor with an id.
      */
     public ContentBeanImpl(long id)

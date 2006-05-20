@@ -10,28 +10,6 @@ package org.alfresco.repo.avm.hibernate;
 public interface BasicAttributesBean
 {
     /**
-     * Set the id.
-     * @param id
-     */
-    public void setId(Long id);
-    
-    /**
-     * Get the id.
-     * @return The id.
-     */
-    public Long getId();
-    
-    /**
-     * Set the version (for concurrency control.)
-     */
-    public void setVers(long vers);
-    
-    /**
-     * Get the version (for concurrency control.)
-     */
-    public long getVers();
-    
-    /**
      * Set the creator of the node.
      * @param creator The creator to set.
      */

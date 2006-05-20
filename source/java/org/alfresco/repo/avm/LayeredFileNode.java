@@ -59,7 +59,6 @@ public class LayeredFileNode extends FileNode implements Layered
         attrs.setAccessDate(time);
         attrs.setCreator("britt");
         attrs.setLastModifier("britt");
-        repo.getSuperRepository().getSession().save(attrs);
         fData = 
             new LayeredFileNodeBeanImpl(repo.getSuperRepository().issueID(),
                                         -1L,
@@ -97,7 +96,6 @@ public class LayeredFileNode extends FileNode implements Layered
         attrs.setAccessDate(time);
         attrs.setCreator("britt");
         attrs.setLastModifier("britt");
-        repos.getSuperRepository().getSession().save(attrs);
         fData = 
             new LayeredFileNodeBeanImpl(repos.getSuperRepository().issueID(),
                                         -1L,
@@ -126,7 +124,6 @@ public class LayeredFileNode extends FileNode implements Layered
                                                                 time,
                                                                 time,
                                                                 time);
-        repo.getSuperRepository().getSession().save(attrs);
         fData = new LayeredFileNodeBeanImpl(repo.getSuperRepository().issueID(),
                                             -1L,
                                             -1L,

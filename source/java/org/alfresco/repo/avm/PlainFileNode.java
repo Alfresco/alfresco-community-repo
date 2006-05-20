@@ -58,7 +58,6 @@ public class PlainFileNode extends FileNode
                                                                 time,
                                                                 time,
                                                                 time);
-        repos.getSuperRepository().getSession().save(attrs);
         fData = new PlainFileNodeBeanImpl(repos.getSuperRepository().issueID(),
                                           -1,
                                           -1,
@@ -91,7 +90,6 @@ public class PlainFileNode extends FileNode
         attrs.setAccessDate(time);
         attrs.setCreator("britt");
         attrs.setLastModifier("britt");
-        repos.getSuperRepository().getSession().save(attrs);
         fData = new PlainFileNodeBeanImpl(repos.getSuperRepository().issueID(),
                                           -1,
                                           -1,

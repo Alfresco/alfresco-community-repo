@@ -53,7 +53,6 @@ public class PlainDirectoryNode extends DirectoryNode
                                                                 time,
                                                                 time,
                                                                 time);
-        repo.getSuperRepository().getSession().save(attrs);
         fData = new PlainDirectoryNodeBeanImpl(repo.getSuperRepository().issueID(),
                                                repo.getLatestVersion(),
                                                0L,
@@ -95,7 +94,6 @@ public class PlainDirectoryNode extends DirectoryNode
         attrs.setAccessDate(time);
         attrs.setCreator("britt");
         attrs.setLastModifier("britt");
-        repos.getSuperRepository().getSession().save(attrs);
         fData = new PlainDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
                                                -1,
                                                -1,

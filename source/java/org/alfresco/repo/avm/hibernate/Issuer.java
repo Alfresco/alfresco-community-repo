@@ -26,7 +26,7 @@ import org.hibernate.Session;
 public class Issuer
 {
     /**
-     * The name of this issuer.  Used as the primary key in it's
+     * The name of this issuer.  Used as the primary key in its
      * mapping.
      */
     private String fName;
@@ -121,5 +121,31 @@ public class Issuer
     public void setVers(long vers)
     {
         fVers = vers;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (!(obj instanceof Issuer))
+        {
+            return false;
+        }
+        return fName.equals(((Issuer)obj).getName());
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        return fName.hashCode();
     }
 }

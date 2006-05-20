@@ -98,6 +98,7 @@ public class AVMServiceTest extends TestCase
         {
             testCreateDirectory();
             fService.createFile("main:testdir", "testfile");
+            fService.createFile("main:/", "testfile2");
             ArrayList<String> toSnapshot = new ArrayList<String>();
             toSnapshot.add("main");
             fService.createSnapshot(toSnapshot);

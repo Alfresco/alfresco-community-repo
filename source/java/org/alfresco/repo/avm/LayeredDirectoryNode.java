@@ -69,7 +69,6 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
                                                                 time,
                                                                 time,
                                                                 time);
-        repos.getSuperRepository().getSession().save(attrs);
         fData = new LayeredDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
                                                  -1,
                                                  -1,
@@ -100,7 +99,6 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         attrs.setModDate(time);
         attrs.setAccessDate(time);
         attrs.setLastModifier("britt");
-        repos.getSuperRepository().getSession().save(attrs);
         fData = new LayeredDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
                                                  -1,
                                                  -1,
@@ -133,7 +131,6 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         attrs.setModDate(time);
         attrs.setAccessDate(time);
         attrs.setLastModifier("britt");
-        repos.getSuperRepository().getSession().save(attrs);
         fData = new LayeredDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
                                                  -1,
                                                  -1,
@@ -172,7 +169,6 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         attrs.setAccessDate(time);
         attrs.setCreator("britt");
         attrs.setLastModifier("britt");
-        repo.getSuperRepository().getSession().save(attrs);
         fData = new LayeredDirectoryNodeBeanImpl(repo.getSuperRepository().issueID(),
                                                  -1,
                                                  -1,

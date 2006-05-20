@@ -87,8 +87,6 @@ public class AVMServiceImpl implements AVMService
             se.create(false, true);
             class HTxnCallback implements HibernateTxnCallback
             {
-                public InputStream in = null;
-                
                 public void perform(Session session)
                 {
                     new Issuer("node", 0L, session);

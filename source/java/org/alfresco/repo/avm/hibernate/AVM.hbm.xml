@@ -19,8 +19,6 @@
 		<version column="vers" name="vers" type="long"/>
 		<!-- BasicAttributes are attributes that pretty much all AVMNodes will
 			 have. -->
-		<many-to-one name="basicAttributes" column="basic_attrs"
-			class="BasicAttributesBeanImpl" unique="true" cascade="all"/>
 		<many-to-one name="ancestor" column="ancestor_id"
 			class="AVMNodeBeanImpl"/>
 		<!-- Nothing does anything with this yet. We'll need it for
@@ -46,6 +44,14 @@
 			 convenient one. -->
 		<property name="isNew" column="is_new" type="boolean"
 			not-null="true"/>
+		<component name="basicAttributes" class="BasicAttributesBeanImpl">
+			<property name="creator" type="string" not-null="true"/>
+			<property name="owner" type="string" not-null="true"/>
+			<property name="lastModifier" type="string" not-null="true"/>
+			<property name="createDate" type="long" not-null="true"/>
+			<property name="modDate" type="long" not-null="true"/>
+			<property name="accessDate" type="long" not-null="true"/>
+		</component>
 		<!-- Directories, two flavors. -->
 		<subclass name="DirectoryNodeBeanImpl" 
 		          proxy="DirectoryNodeBean" 
@@ -135,21 +141,6 @@
 					column="indirection" />
 			</subclass>
 		</subclass>
-	</class>
-	<!-- BasicAttributes are a glom of all the properties that (nearly) all filesystem like
-	     nodes have. -->
-	<class name="BasicAttributesBeanImpl" proxy="BasicAttributesBean"
-		lazy="true" optimistic-lock="version" table="basic_attributes">
-		<id name="id" type="long">
-			<generator class="native"></generator>
-		</id>
-		<version column="vers" name="vers" type="long"/>		
-		<property name="creator" type="string" not-null="true"/>
-		<property name="owner" type="string" not-null="true"/>
-		<property name="lastModifier" type="string" not-null="true"/>
-		<property name="createDate" type="long" not-null="true"/>
-		<property name="modDate" type="long" not-null="true"/>
-		<property name="accessDate" type="long" not-null="true"/>
 	</class>
 	<!-- Contents are objects to hang actual bytestreams off. They are explicitly reference
 	     counted. -->

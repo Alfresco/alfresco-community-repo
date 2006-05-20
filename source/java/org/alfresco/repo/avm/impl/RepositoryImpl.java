@@ -83,7 +83,6 @@ public class RepositoryImpl implements Repository
                                                                 time,
                                                                 time,
                                                                 time);
-        superRepo.getSession().save(attrs);
         PlainDirectoryNodeBean rootBean = 
             new PlainDirectoryNodeBeanImpl(fSuper.issueID(),
                                            fData.getNextVersionID(),

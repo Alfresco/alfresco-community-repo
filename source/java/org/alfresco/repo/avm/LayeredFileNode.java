@@ -61,7 +61,7 @@ public class LayeredFileNode extends FileNode implements Layered
         attrs.setLastModifier("britt");
         fData = 
             new LayeredFileNodeBeanImpl(repo.getSuperRepository().issueID(),
-                                        -1L,
+                                        -1,
                                         -1L,
                                         null,
                                         null,
@@ -98,7 +98,7 @@ public class LayeredFileNode extends FileNode implements Layered
         attrs.setLastModifier("britt");
         fData = 
             new LayeredFileNodeBeanImpl(repos.getSuperRepository().issueID(),
-                                        -1L,
+                                        -1,
                                         -1L,
                                         null,
                                         null,
@@ -125,7 +125,7 @@ public class LayeredFileNode extends FileNode implements Layered
                                                                 time,
                                                                 time);
         fData = new LayeredFileNodeBeanImpl(repo.getSuperRepository().issueID(),
-                                            -1L,
+                                            -1,
                                             -1L,
                                             null,
                                             null,
@@ -143,10 +143,6 @@ public class LayeredFileNode extends FileNode implements Layered
      */
     public void handlePostCopy(DirectoryNode parent)
     {
-        if (parent != null)
-        {
-            setRepository(parent.getRepository());
-        }
     }
     
     /**
@@ -158,7 +154,7 @@ public class LayeredFileNode extends FileNode implements Layered
         // LayeredFileNodes are always copied.
         // TODO This is busted.  Need to set the PlainFileNode contents
         // to share with underlying file node.
-        PlainFileNode newMe = new PlainFileNode(getRepository());
+        PlainFileNode newMe = new PlainFileNode(lPath.getRepository());
         newMe.setAncestor(this);
         return newMe;
     }
@@ -167,7 +163,7 @@ public class LayeredFileNode extends FileNode implements Layered
      * Get the type of this node.
      * @return The type.
      */
-    public AVMNodeType getType()
+    public int getType()
     {
         return AVMNodeType.LAYERED_FILE;
     }
@@ -176,16 +172,16 @@ public class LayeredFileNode extends FileNode implements Layered
      * Get the content of the specified version.
      * @return A FileContent object.
      */
-    public FileContent getContentForRead(int version)
+    public FileContent getContentForRead(int version, Repository repo)
     {
-        Lookup lookup = getRepository().getSuperRepository().lookup(version, fData.getIndirection());
+        Lookup lookup = repo.getSuperRepository().lookup(version, fData.getIndirection());
         AVMNode node = lookup.getCurrentNode();
         if (!(node instanceof FileNode))
         {
             throw new AlfrescoRuntimeException("Missing Link.");
         }
         FileNode file = (FileNode)node;
-        return file.getContentForRead(version);
+        return file.getContentForRead(version, repo);
     }
 
     /**
@@ -203,5 +199,13 @@ public class LayeredFileNode extends FileNode implements Layered
     public String getUnderlying(Lookup lookup)
     {
         return fData.getIndirection();
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    public String toString(Lookup lPath)
+    {
+        return "[LF:" + fData.getId() + ":" + fData.getIndirection() + "]";
     }
 }

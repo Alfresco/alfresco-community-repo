@@ -336,6 +336,15 @@ public class SuperRepositoryImpl implements SuperRepository
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.SuperRepository#createSnapshot(java.lang.String)
+     */
+    public void createSnapshot(String repository)
+    {
+        Repository repo = getRepositoryByName(repository);
+        repo.createSnapshot();
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.repo.avm.SuperRepository#remove(java.lang.String, java.lang.String)
      */
     public void remove(String path, String name)
@@ -394,7 +403,7 @@ public class SuperRepositoryImpl implements SuperRepository
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.SuperRepository#getRepositoryVersions(java.lang.String)
      */
-    public Set<Long> getRepositoryVersions(String name)
+    public Set<Integer> getRepositoryVersions(String name)
     {
         Repository rep = getRepositoryByName(name);
         return rep.getVersions();

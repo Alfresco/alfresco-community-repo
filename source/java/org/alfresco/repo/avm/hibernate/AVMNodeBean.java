@@ -39,13 +39,13 @@ public interface AVMNodeBean
      * Set the version id.
      * @param id The version id of the node.
      */
-    public void setVersionID(long id);
+    public void setVersionID(int id);
 
     /**
      * Get the version id of this node.
      * @return The version id.
      */
-    public long getVersionID();
+    public int getVersionID();
 
     /**
      * Set the parent of this node.  This is only a canonical parent,

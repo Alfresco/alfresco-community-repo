@@ -42,7 +42,7 @@ public class FileNodeBeanImpl extends AVMNodeBeanImpl implements FileNodeBean
      * @param parent The parent.
      */
     public FileNodeBeanImpl(long id,
-                            long versionID,
+                            int versionID,
                             long branchID,
                             AVMNodeBean ancestor,
                             AVMNodeBean mergedFrom,

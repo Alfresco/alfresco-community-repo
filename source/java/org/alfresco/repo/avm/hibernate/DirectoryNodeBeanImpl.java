@@ -41,7 +41,7 @@ public class DirectoryNodeBeanImpl extends AVMNodeBeanImpl implements DirectoryN
      * @param parent The parent.
      */
     public DirectoryNodeBeanImpl(long id,
-                                 long versionID,
+                                 int versionID,
                                  long branchID,
                                  AVMNodeBean ancestor,
                                  AVMNodeBean mergedFrom,

@@ -21,10 +21,10 @@ package org.alfresco.repo.avm;
  * This defines the different types of FolderEntrys.
  * @author britt
  */
-public enum AVMNodeType
+public interface AVMNodeType
 {
-    PLAIN_FILE,
-    LAYERED_FILE,
-    PLAIN_DIRECTORY,
-    LAYERED_DIRECTORY
+    public static final int PLAIN_FILE = 0;
+    public static final int LAYERED_FILE = 1;
+    public static final int PLAIN_DIRECTORY = 2;
+    public static final int LAYERED_DIRECTORY = 3;
 }

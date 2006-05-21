@@ -48,7 +48,7 @@ public class LayeredFileNodeBeanImpl extends FileNodeBeanImpl implements
      * @param indirection The indirection pointer.
      */
     public LayeredFileNodeBeanImpl(long id,
-                                   long versionID,
+                                   int versionID,
                                    long branchID,
                                    AVMNodeBean ancestor,
                                    AVMNodeBean mergedFrom,

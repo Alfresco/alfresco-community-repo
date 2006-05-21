@@ -104,19 +104,6 @@ public class PlainFileNode extends FileNode
         setDataBean(fData);
     }
     
-    // TODO I believe this is unnecessary (bhp)
-    /**
-     * Handle setting repository after a COW.
-     * @param parent The possibly new parent directory.
-     */
-    public void handlePostCopy(DirectoryNode parent)
-    {
-        if (parent != null)
-        {
-            setRepository(parent.getRepository());
-        }
-    }
-
     /**
      * Copy on write logic.
      * @param lPath The lookup path. 
@@ -127,7 +114,7 @@ public class PlainFileNode extends FileNode
         {
             return null;
         }
-        PlainFileNode newMe = new PlainFileNode(this, getRepository());
+        PlainFileNode newMe = new PlainFileNode(this, lPath.getRepository());
         newMe.setAncestor(this);
         newMe.setBranchID(lPath.getHighestBranch());
         return newMe;
@@ -137,7 +124,7 @@ public class PlainFileNode extends FileNode
      * Get the type of this node.
      * @return The type.
      */
-    public AVMNodeType getType()
+    public int getType()
     {
         return AVMNodeType.PLAIN_FILE;
     }
@@ -145,7 +132,7 @@ public class PlainFileNode extends FileNode
     /**
      * Get content for reading.
      */
-    public FileContent getContentForRead(int version)
+    public FileContent getContentForRead(int version, Repository repo)
     {
         return new FileContent(fData.getContent());
     }
@@ -163,5 +150,22 @@ public class PlainFileNode extends FileNode
             fData.setContent(fc.getDataBean());
         }
         return fc;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNode#toString(org.alfresco.repo.avm.Lookup)
+     */
+    @Override
+    public String toString(Lookup lPath)
+    {
+        return "[PF:" + fData.getId() + "]";
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNode#handlePostCopy(org.alfresco.repo.avm.DirectoryNode)
+     */
+    @Override
+    public void handlePostCopy(DirectoryNode parent)
+    {
     }
 }

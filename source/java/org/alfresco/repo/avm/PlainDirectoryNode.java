@@ -216,10 +216,6 @@ public class PlainDirectoryNode extends DirectoryNode
      */
     public void handlePostCopy(DirectoryNode parent)
     {
-        if (parent != null)
-        {
-            setRepository(parent.getRepository());
-        }
     }
 
     /**
@@ -255,8 +251,17 @@ public class PlainDirectoryNode extends DirectoryNode
      * Get the type of this node. 
      * @return The type of this node.
      */
-    public AVMNodeType getType()
+    public int getType()
     {
         return AVMNodeType.PLAIN_DIRECTORY;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNode#toString(org.alfresco.repo.avm.Lookup)
+     */
+    @Override
+    public String toString(Lookup lPath)
+    {
+        return "[PD:" + fData.getId() + "]";
     }    
 }

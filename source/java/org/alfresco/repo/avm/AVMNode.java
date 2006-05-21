@@ -105,7 +105,7 @@ public abstract class AVMNode
      * Set the version number.
      * @param version The version number to set.
      */
-    public void setVersion(long version)
+    public void setVersion(int version)
     {
         fData.setVersionID(version);
     }
@@ -213,15 +213,6 @@ public abstract class AVMNode
     }
 
     /**
-     * Get the Repository we 'belong' to.
-     * @return The Repository.
-     */
-    public Repository getRepository()
-    {
-        return RepositoryFactory.GetInstance().createFromBean(fData.getRepository());
-    }
-    
-    /**
      * Get the data bean in this node.
      * @return The data bean.
      */
@@ -242,5 +233,11 @@ public abstract class AVMNode
     /**
      * Get the type of this node.
      */
-    public abstract AVMNodeType getType();
+    public abstract int getType();
+    
+    /**
+     * Get a debugging string representation.
+     * @param lPath The Lookup.
+     */
+    public abstract String toString(Lookup lPath);
 }

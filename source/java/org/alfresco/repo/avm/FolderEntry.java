@@ -32,7 +32,7 @@ public class FolderEntry
     /**
      * The type of the entry.
      */
-    private AVMNodeType fType;
+    private int fType;
 
     /**
      * @return the name
@@ -53,7 +53,7 @@ public class FolderEntry
     /**
      * @return the type
      */
-    public AVMNodeType getType()
+    public int getType()
     {
         return fType;
     }
@@ -61,8 +61,35 @@ public class FolderEntry
     /**
      * @param type the type to set
      */
-    public void setType(AVMNodeType type)
+    public void setType(int type)
     {
         fType = type;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (!(obj instanceof FolderEntry))
+        {
+            return false;
+        }
+        FolderEntry other = (FolderEntry)obj;
+        return fName.equals(other.fName) && fType == other.fType;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        return fName.hashCode() + fType;
     }
 }

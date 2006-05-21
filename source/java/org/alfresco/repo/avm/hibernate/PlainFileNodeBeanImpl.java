@@ -48,7 +48,7 @@ public class PlainFileNodeBeanImpl extends FileNodeBeanImpl implements PlainFile
      * @param content The content object.
      */
     public PlainFileNodeBeanImpl(long id,
-                                 long versionID,
+                                 int versionID,
                                  long branchID,
                                  AVMNodeBean ancestor,
                                  AVMNodeBean mergedFrom,

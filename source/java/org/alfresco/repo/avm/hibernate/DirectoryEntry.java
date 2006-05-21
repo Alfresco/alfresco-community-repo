@@ -28,7 +28,7 @@ public class DirectoryEntry
     /**
      * The type of entry a node is.
      */
-    private AVMNodeType fType; 
+    private int fType; 
     
     /**
      * This is the actual child Node.
@@ -47,31 +47,13 @@ public class DirectoryEntry
      * @param type The type.
      * @param child The child node.
      */
-    public DirectoryEntry(AVMNodeType type, AVMNodeBean child)
+    public DirectoryEntry(int type, AVMNodeBean child)
     {
         fType = type;
         fChild = child;
     }
     
-    /**
-     * Set the entry type.
-     * @param type The type to set.
-     */
-    public void setEntryType(AVMNodeType type)
-    {
-        fType = type;
-    }
-    
-    /**
-     * Get the entry type.
-     * @return The type.
-     */
-    public AVMNodeType getEntryType()
-    {
-        return fType;
-    }
-    
-    /**
+    /** 
      * Set the child.
      * @param child The child to set.
      */
@@ -91,19 +73,19 @@ public class DirectoryEntry
     
     /**
      * Set the type by name.
-     * @param name The name of the type.
+     * @param type The type.
      */
-    public void setType(String name)
+    public void setType(int type)
     {
-        fType = Enum.valueOf(AVMNodeType.class, name);
+        fType = type;
     }
     
     /**
-     * Get the type name.
+     * Get the type.
      */
-    public String getType()
+    public int getType()
     {
-        return fType.name();
+        return fType;
     }
 
     /* (non-Javadoc)
@@ -138,6 +120,6 @@ public class DirectoryEntry
     @Override
     public String toString()
     {
-        return "[" + fType.name() + "] " + fChild.getId();
+        return "[" + fType + "] " + fChild.getId();
     }
 }

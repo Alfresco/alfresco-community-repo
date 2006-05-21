@@ -41,8 +41,11 @@ public class AVMNodeFactory
         {
             return null;
         }
-        HibernateProxy proxy = (HibernateProxy)bean;
-        bean = (AVMNodeBean)proxy.getHibernateLazyInitializer().getImplementation();
+        if (bean instanceof HibernateProxy)
+        {
+            HibernateProxy proxy = (HibernateProxy)bean;
+            bean = (AVMNodeBean)proxy.getHibernateLazyInitializer().getImplementation();
+        }
         if (bean instanceof PlainFileNodeBean)
         {
             return new PlainFileNode((PlainFileNodeBean)bean);

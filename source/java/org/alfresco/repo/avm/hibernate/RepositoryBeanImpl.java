@@ -41,12 +41,12 @@ public class RepositoryBeanImpl implements RepositoryBean
     /**
      * The root directories for all versions.
      */
-    private Map<Long, DirectoryNodeBean> fRoots;
+    private Map<Integer, DirectoryNodeBean> fRoots;
     
     /**
      * The next version id.
      */
-    private long fNextVersionID;
+    private int fNextVersionID;
     
     /**
      * The nodes that are new since the last end operation.
@@ -76,7 +76,7 @@ public class RepositoryBeanImpl implements RepositoryBean
         fName = name;
         fNextVersionID = 0;
         fRoot = root;
-        fRoots = new HashMap<Long, DirectoryNodeBean>();
+        fRoots = new HashMap<Integer, DirectoryNodeBean>();
         fNewNodes = new HashSet<AVMNodeBean>();
     }
     
@@ -115,7 +115,7 @@ public class RepositoryBeanImpl implements RepositoryBean
     /* (non-Javadoc)
      * @see org.alfresco.proto.avm.Repository#setRoots(java.util.Map)
      */
-    public void setRoots(Map<Long, DirectoryNodeBean> roots)
+    public void setRoots(Map<Integer, DirectoryNodeBean> roots)
     {
         fRoots = roots;
     }
@@ -123,7 +123,7 @@ public class RepositoryBeanImpl implements RepositoryBean
     /* (non-Javadoc)
      * @see org.alfresco.proto.avm.Repository#getRoots()
      */
-    public Map<Long, DirectoryNodeBean> getRoots()
+    public Map<Integer, DirectoryNodeBean> getRoots()
     {
         return fRoots;
     }
@@ -131,7 +131,7 @@ public class RepositoryBeanImpl implements RepositoryBean
     /* (non-Javadoc)
      * @see org.alfresco.proto.avm.Repository#setNextVersionID(int)
      */
-    public void setNextVersionID(long nextVersionID)
+    public void setNextVersionID(int nextVersionID)
     {
         fNextVersionID = nextVersionID;
     }
@@ -139,7 +139,7 @@ public class RepositoryBeanImpl implements RepositoryBean
     /* (non-Javadoc)
      * @see org.alfresco.proto.avm.Repository#getNextVersionID()
      */
-    public long getNextVersionID()
+    public int getNextVersionID()
     {
         return fNextVersionID;
     }

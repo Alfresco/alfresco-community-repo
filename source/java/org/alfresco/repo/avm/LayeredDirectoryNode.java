@@ -78,6 +78,7 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
                                                  repos.getDataBean(),
                                                  attrs,
                                                  -1,
+                                                 true,
                                                  indirection);
         setDataBean(fData);
         repos.getSuperRepository().getSession().save(fData);
@@ -108,11 +109,12 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
                                                  repos.getDataBean(),
                                                  attrs,
                                                  -1,
+                                                 thatBean.getPrimaryIndirection(),
                                                  other.getUnderlying());
         setDataBean(fData);
         fData.setAdded(thatBean.getAdded());
         fData.setDeleted(thatBean.getDeleted());
-        fData.setPrimaryIndirection(thatBean.getPrimaryIndirection());
+        // fData.setPrimaryIndirection(thatBean.getPrimaryIndirection());
         repos.getSuperRepository().getSession().save(fData);
     }
     
@@ -140,11 +142,12 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
                                                  repos.getDataBean(),
                                                  attrs,
                                                  -1,
+                                                 false,
                                                  null);
         setDataBean(fData);
         // TODO Is this right?  I don't think so.
         // fData.setAdded(other.getListing(lPath, -1));
-        fData.setPrimaryIndirection(false);
+        // fData.setPrimaryIndirection(false);
         repos.getSuperRepository().getSession().save(fData);
     }
 
@@ -178,9 +181,9 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
                                                  repo.getDataBean(),
                                                  attrs,
                                                  -1,
+                                                 true,
                                                  srcLookup.getIndirectionPath() + "/" + name);
         setDataBean(fData);
-        fData.setPrimaryIndirection(true);
         repo.getSuperRepository().getSession().save(fData);
     }   
     
@@ -252,7 +255,6 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         {
             LayeredDirectoryNode dir = (LayeredDirectoryNode)parent;
             setLayerID(dir.getLayerID());
-            setRepository(parent.getRepository());
         }
     }
 
@@ -324,7 +326,7 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         {
             try
             {
-                Lookup lookup = getRepository().getSuperRepository().lookupDirectory(-1, getUnderlying(lPath));
+                Lookup lookup = lPath.getRepository().getSuperRepository().lookupDirectory(-1, getUnderlying(lPath));
                 DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
                 if (dir.lookupChild(lookup, name, -1) != null)
                 {
@@ -339,7 +341,7 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         DirectoryNode toModify = (DirectoryNode)copyOnWrite(lPath);
         toModify.putChild(name, child);
         child.setParent(toModify);
-        child.setRepository(toModify.getRepository());
+        child.setRepository(lPath.getRepository());
         return true;
     }
 
@@ -359,7 +361,7 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         Map<String, DirectoryEntry> baseListing = null;
         try
         {
-            Lookup lookup = getRepository().getSuperRepository().lookupDirectory(version, getUnderlying(lPath));
+            Lookup lookup = lPath.getRepository().getSuperRepository().lookupDirectory(version, getUnderlying(lPath));
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
             baseListing = dir.getListing(lookup, version);
         }
@@ -396,7 +398,7 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         AVMNode child = null;
         try
         {
-            Lookup lookup = getRepository().getSuperRepository().lookupDirectory(version, getUnderlying(lPath));
+            Lookup lookup = lPath.getRepository().getSuperRepository().lookupDirectory(version, getUnderlying(lPath));
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
             child = dir.lookupChild(lookup, name, version);
         }
@@ -446,7 +448,7 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         {
             try
             {
-                Lookup lookup = getRepository().getSuperRepository().lookupDirectory(-1, getUnderlying(lPath));
+                Lookup lookup = lPath.getRepository().getSuperRepository().lookupDirectory(-1, getUnderlying(lPath));
                 DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
                 if (dir.lookupChild(lookup, name, -1) == null)
                 {
@@ -467,8 +469,16 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMNode#getType()
      */
-    public AVMNodeType getType()
+    public int getType()
     {
         return AVMNodeType.LAYERED_DIRECTORY;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    public String toString(Lookup lPath)
+    {
+        return "[LD:" + fData.getId() + ":" + getUnderlying(lPath) + "]";
     }
 }

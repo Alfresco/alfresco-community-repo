@@ -55,25 +55,25 @@ public interface RepositoryBean
      * Set the roots map.
      * @param roots The Map of version ids to roots.
      */
-    public void setRoots(Map<Long, DirectoryNodeBean> roots);
+    public void setRoots(Map<Integer, DirectoryNodeBean> roots);
     
     /**
      * Get the roots map.
      * @return The roots map.
      */
-    public Map<Long, DirectoryNodeBean> getRoots();
+    public Map<Integer, DirectoryNodeBean> getRoots();
     
     /**
      * Set the next version id.
      * @param nextVersionID The value to set.
      */
-    public void setNextVersionID(long nextVersionID);
+    public void setNextVersionID(int nextVersionID);
     
     /**
      * Get the next version id.
      * @return The next version id.
      */
-    public long getNextVersionID();
+    public int getNextVersionID();
     
     /**
      * Set the new nodes.

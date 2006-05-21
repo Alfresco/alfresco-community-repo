@@ -72,10 +72,11 @@ public class LayeredDirectoryNodeBeanImpl extends DirectoryNodeBeanImpl implemen
      * @param mergedFrom The node that merged into us.
      * @param parent The parent node.
      * @param layerID The layer id of this node.
+     * @param primary Whether this is a primary indirection node.
      * @param indirection The indirection pointer of this.
      */
     public LayeredDirectoryNodeBeanImpl(long id,
-                                        long versionID,
+                                        int versionID,
                                         long branchID,
                                         AVMNodeBean ancestor,
                                         AVMNodeBean mergedFrom,
@@ -83,10 +84,12 @@ public class LayeredDirectoryNodeBeanImpl extends DirectoryNodeBeanImpl implemen
                                         RepositoryBean repository,
                                         BasicAttributesBean attrs,
                                         long layerID,
+                                        boolean primary,
                                         String indirection)
     {
         super(id, versionID, branchID, ancestor, mergedFrom, parent, repository, attrs);
         fLayerID = layerID;
+        fPrimaryIndirection = primary;
         fIndirection = indirection;
         fAdded = new HashMap<String, DirectoryEntry>();
         fDeleted = new HashSet<String>();

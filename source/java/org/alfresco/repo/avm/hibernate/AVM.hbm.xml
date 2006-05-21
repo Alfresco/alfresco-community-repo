@@ -34,7 +34,7 @@
 			 won't cause violations in the db during saves. -->
 		<many-to-one name="repository" column="repository"
 			class="RepositoryBeanImpl" cascade="save-update"/>
-		<property name="versionID" type="long" column="version_id"
+		<property name="versionID" type="int" column="version_id"
 			not-null="true"/>
 		<!-- The branch id is always 0 for nodes that are not part of 
 			 a branch. -->
@@ -80,8 +80,8 @@
 		    		<!-- A DirectoryEntry is a (node)type AVMNode reference pair.
 		    			Should probably convert type into an integer code. -->
 		    		<composite-element class="DirectoryEntry">
-		    			<property name="type" column="type_name"
-		    				type="string" length="30" not-null="true" />
+		    			<property name="type" column="type_code"
+		    				type="int" not-null="true" />
 		    			<many-to-one name="child"
 		    				class="AVMNodeBeanImpl" cascade="save-update"
 		    				not-null="true">
@@ -106,14 +106,14 @@
 					this probably wants to be in the base class. -->
 				<property name="isRoot" column="is_root" type="boolean" />
 				<!-- A map of names to DirectoryEntries.  In the AVM world, it makes sense
-					that nodes don't know there own names, only there containers do. -->
+					that nodes don't know there own names, only their containers do. -->
 				<map name="children" cascade="all">
 					<key column="directory_id" />
 					<map-key type="string" column="name" />
 					<composite-element
 						class="org.alfresco.repo.avm.hibernate.DirectoryEntry">
-						<property name="type" type="string"
-							not-null="true" length="30" column="type_name" />
+						<property name="type" type="int"
+							not-null="true" column="type_code" />
 						<many-to-one name="child"
 							class="org.alfresco.repo.avm.hibernate.AVMNodeBeanImpl"
 							not-null="true" cascade="save-update">
@@ -176,7 +176,7 @@
 		<cache usage="read-write" />
 		<id name="name" column="name" type="string"/>
 		<version name="vers" column="vers" type="long"/>
-		<property type="long" name="nextVersionID"
+		<property type="int" name="nextVersionID"
 			column="next_version_id" not-null="true"/>
 		<!-- Every Repository has a root directory that is the current root directory. -->
 		<!-- This should be not-null but hibernate (or my own idiocy) makes that difficult. -->
@@ -187,7 +187,7 @@
 			 of versioned root directories. -->
 		<map name="roots" table="repository_roots">
 			<key column="repository_id"/>
-			<map-key type="long" column="version_id"/>
+			<map-key type="int" column="version_id"/>
 			<many-to-many class="DirectoryNodeBeanImpl"
 				column="directory_id"/>
 		</map>

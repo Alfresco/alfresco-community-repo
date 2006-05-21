@@ -277,7 +277,9 @@ public class Lookup
      */
     public String getCurrentIndirection()
     {
-        return fComponents.get(fPosition).getIndirection();
+        String value = fComponents.get(fPosition).getIndirection();
+        System.err.println(value);
+        return value;
     }
     
     /**

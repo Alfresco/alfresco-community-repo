@@ -114,6 +114,12 @@ public interface SuperRepository
      */
     public void createSnapshot(List<String> repositories);
     
+    /**
+     * Create a snapshot of a single repository.
+     * @param repository The name of the repsository.
+     */
+    public void createSnapshot(String repository);
+    
     // Different flavors of deletions.
     
     /**
@@ -165,7 +171,7 @@ public interface SuperRepository
      * @param name The name of the repository.
      * @return A Set of IDs.
      */
-    public Set<Long> getRepositoryVersions(String name);
+    public Set<Integer> getRepositoryVersions(String name);
     
     /**
      * Issue a unique identifier for a new node.

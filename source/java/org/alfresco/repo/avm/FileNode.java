@@ -28,7 +28,7 @@ public abstract class FileNode extends AVMNode
      * @param version The version to get in.
      * @return A FileContent object.
      */
-    public abstract FileContent getContentForRead(int version);
+    public abstract FileContent getContentForRead(int version, Repository repo);
     
     /**
      * Get the content object for writing.  This will do COW

@@ -122,7 +122,7 @@ public class RepositoryImpl implements Repository
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.Repository#getLatestVersion()
      */
-    public long getLatestVersion()
+    public int getLatestVersion()
     {
         return fData.getNextVersionID();
     }
@@ -261,7 +261,7 @@ public class RepositoryImpl implements Repository
             throw new AlfrescoRuntimeException("Not a file: " + path + " r " + version);
         }
         FileNode file = (FileNode)node;
-        FileContent content = file.getContentForRead(version);
+        FileContent content = file.getContentForRead(version, this);
         return content.getInputStream(fSuper);
     }
 
@@ -278,7 +278,7 @@ public class RepositoryImpl implements Repository
         {
             FolderEntry item = new FolderEntry();
             item.setName(name);
-            item.setType(listing.get(name).getEntryType());
+            item.setType(listing.get(name).getType());
             results.add(item);
         }
         return results;
@@ -376,7 +376,7 @@ public class RepositoryImpl implements Repository
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.Repository#getVersions()
      */
-    public Set<Long> getVersions()
+    public Set<Integer> getVersions()
     {
         return fData.getRoots().keySet();
     }

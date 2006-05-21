@@ -150,21 +150,25 @@ public interface AVMService
     public void createSnapshot(List<String> repositories);
     
     /**
+     * Snapshot the given repository.
+     * @param repository The name of the repository to snapshot.
+     */
+    public void createSnapshot(String repository);
+    
+    /**
      * Get the set of version IDs in a Repository
      * @param name The name of the Repository.
      * @return A Set of version IDs
      */
-    public Set<Long> getRepositoryVersions(String name);
+    public Set<Integer> getRepositoryVersions(String name);
     
     /**
-     * Lookup a node by version ids and path.  Note that an AVMNode is essentially
-     * informational only.  There is very little you can do to an AVMNode in the absence
-     * of path information.
+     * Lookup a node by version ids and path.
      * @param version The version id to look under.
      * @param path The simple absolute path to the parent directory.
-     * @return An AVMNode.
+     * @return A Lookup object.
      */
-    public AVMNode lookup(int version, String path);
+    public Lookup lookup(int version, String path);
     
     /**
      * Get the indirection path for a layered file or directory.

@@ -31,7 +31,7 @@ public class AVMNodeBeanImpl implements AVMNodeBean
     /**
      * The Version ID
      */
-    private long fVersionID;
+    private int fVersionID;
     
     /**
      * The Branch ID
@@ -91,7 +91,7 @@ public class AVMNodeBeanImpl implements AVMNodeBean
      * @param repository The repository.
      */
     public AVMNodeBeanImpl(long id,
-                           long versionID,
+                           int versionID,
                            long branchID,
                            AVMNodeBean ancestor,
                            AVMNodeBean mergedFrom,
@@ -155,7 +155,7 @@ public class AVMNodeBeanImpl implements AVMNodeBean
     /* (non-Javadoc)
      * @see org.alfresco.proto.avm.AVMNode#setVersionID(int)
      */
-    public void setVersionID(long id)
+    public void setVersionID(int id)
     {
         fVersionID = id;
     }
@@ -163,7 +163,7 @@ public class AVMNodeBeanImpl implements AVMNodeBean
     /* (non-Javadoc)
      * @see org.alfresco.proto.avm.AVMNode#getVersionID()
      */
-    public long getVersionID()
+    public int getVersionID()
     {
         return fVersionID;
     }

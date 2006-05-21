@@ -55,7 +55,7 @@ public class PlainDirectoryNodeBeanImpl extends DirectoryNodeBeanImpl implements
      * @param isRoot Whether this is a root node.
      */
     public PlainDirectoryNodeBeanImpl(long id,
-                                      long versionID,
+                                      int versionID,
                                       long branchID,
                                       AVMNodeBean ancestor,
                                       AVMNodeBean mergedFrom,

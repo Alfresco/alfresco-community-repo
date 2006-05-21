@@ -43,7 +43,7 @@ public interface Repository
      * Get the latest version id.
      * @return The latest version.
      */
-    public long getLatestVersion();
+    public int getLatestVersion();
     
     /**
      * Inform this Repository that the root node is new.
@@ -131,7 +131,7 @@ public interface Repository
      * Get the version ids that this Repository has.
      * @return A Set of Version IDs.
      */
-    public Set<Long> getVersions();
+    public Set<Integer> getVersions();
     
     /**
      * Get the data bean.

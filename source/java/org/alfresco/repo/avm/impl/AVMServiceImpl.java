@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.repo.avm.AVMNode;
 import org.alfresco.repo.avm.AVMService;
 import org.alfresco.repo.avm.FolderEntry;
 import org.alfresco.repo.avm.Lookup;
@@ -364,9 +363,26 @@ public class AVMServiceImpl implements AVMService
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMService#createSnapshot(java.lang.String)
+     */
+    public void createSnapshot(final String repository)
+    {
+        class HTxnCallback implements HibernateTxnCallback
+        {
+            public void perform(Session session)
+            {
+                fSuperRepository.set(new SuperRepositoryImpl(session, fStorage));
+                fSuperRepository.get().createSnapshot(repository);
+            }
+        }
+        HTxnCallback doit = new HTxnCallback();
+        fTransaction.perform(doit);
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMService#lookup(int, java.lang.String)
      */
-    public AVMNode lookup(final int version, final String path)
+    public Lookup lookup(final int version, final String path)
     {
         class HTxnCallback implements HibernateTxnCallback
         {
@@ -380,7 +396,7 @@ public class AVMServiceImpl implements AVMService
         }
         HTxnCallback doit = new HTxnCallback();
         fTransaction.perform(doit);
-        return doit.lookup.getCurrentNode();
+        return doit.lookup;
     }
 
     /* (non-Javadoc)
@@ -440,11 +456,11 @@ public class AVMServiceImpl implements AVMService
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMService#getRepositoryVersions(java.lang.String)
      */
-    public Set<Long> getRepositoryVersions(final String name)
+    public Set<Integer> getRepositoryVersions(final String name)
     {
         class HTxnCallback implements HibernateTxnCallback
         {
-            public Set<Long> versions;
+            public Set<Integer> versions;
             
             public void perform(Session session)
             {

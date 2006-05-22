@@ -87,6 +87,7 @@ public final class ExecuteScriptCommand implements Command
             personRef,
             new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId()),
             (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER),
+            scriptRef,
             docRef,
             spaceRef,
             DefaultModelHelper.imageResolver);

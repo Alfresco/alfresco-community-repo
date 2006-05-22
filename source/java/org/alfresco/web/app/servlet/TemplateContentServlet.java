@@ -168,7 +168,7 @@ public class TemplateContentServlet extends BaseServlet
             }
             
             // create the model - put the supplied noderef in as space/document as appropriate
-            Object model = getModel(serviceRegistry, req, nodeRef);
+            Object model = getModel(serviceRegistry, req, templateRef, nodeRef);
             
             // process the template against the node content directly to the response output stream
             // assuming the repo is capable of streaming in chunks, this should allow large files
@@ -218,11 +218,12 @@ public class TemplateContentServlet extends BaseServlet
     *  
     * @param services      ServiceRegistry required for TemplateNode construction
     * @param req           Http request - for accessing Session and url args
+    * @param templateRef   NodeRef of the template itself 
     * @param nodeRef       NodeRef of the space/document to process template against
     * 
     * @return an object model ready for executing template against
     */
-   private Object getModel(ServiceRegistry services, HttpServletRequest req, NodeRef nodeRef)
+   private Object getModel(ServiceRegistry services, HttpServletRequest req, NodeRef templateRef, NodeRef nodeRef)
    {
       // build FreeMarker default model and merge
       Map root = DefaultModelHelper.buildDefaultModel(services, Application.getCurrentUser(req.getSession())); 
@@ -231,6 +232,7 @@ public class TemplateContentServlet extends BaseServlet
       TemplateNode node = new TemplateNode(nodeRef, services, this.imageResolver);
       root.put("space", node);
       root.put("document", node);
+      root.put("template", new TemplateNode(templateRef, services, this.imageResolver));
       
       // add URL arguments as a map called 'args' to the root of the model
       Map<String, String> args = new HashMap<String, String>(8, 1.0f);

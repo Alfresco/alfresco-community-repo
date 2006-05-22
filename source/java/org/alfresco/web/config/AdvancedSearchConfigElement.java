@@ -104,6 +104,14 @@ public class AdvancedSearchConfigElement extends ConfigElementAdapter
          }
       }
       
+      if (newElement.getFolderTypes() != null)
+      {
+         for (String type : newElement.getFolderTypes())
+         {
+            combinedElement.addFolderType(type);
+         }
+      }
+      
       if (newElement.getCustomProperties() != null)
       {
          for (CustomProperty property : newElement.getCustomProperties())

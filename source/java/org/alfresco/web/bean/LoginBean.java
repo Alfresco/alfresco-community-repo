@@ -27,11 +27,9 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
-import javax.portlet.PortletRequest;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.config.Config;
-import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -305,14 +303,14 @@ public class LoginBean
             
             // if a redirect URL has been provided then use that
             // this allows servlets etc. to provide a URL to return too after a successful login
-            String redirectURL = (String)fc.getExternalContext().getSessionMap().get(LOGIN_REDIRECT_KEY);
+            String redirectURL = (String)session.get(LOGIN_REDIRECT_KEY);
             if (redirectURL != null)
             {
                if (logger.isDebugEnabled())
                   logger.debug("Redirect URL found: " + redirectURL);
                
                // remove redirect URL from session
-               fc.getExternalContext().getSessionMap().remove(LOGIN_REDIRECT_KEY);
+               session.remove(LOGIN_REDIRECT_KEY);
                
                try
                {
@@ -355,30 +353,39 @@ public class LoginBean
    {
       FacesContext context = FacesContext.getCurrentInstance();
       
-      Map session = context.getExternalContext().getSessionMap();
-      User user = (User) session.get(AuthenticationHelper.AUTHENTICATION_USER);
-      
       // need to capture this value before invalidating the session
       boolean externalAuth = isAlfrescoAuth();
       
       // Invalidate Session for this user.
-      // This causes the sessionDestroyed() event to be processed by ContextListener
-      // which is responsible for invalidating the ticket and clearing the security context
       if (Application.inPortalServer() == false)
       {
+         // This causes the sessionDestroyed() event to be processed by ContextListener
+         // which is responsible for invalidating the ticket and clearing the security context
          HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
          request.getSession().invalidate();
       }
       else
       {
-         PortletRequest request = (PortletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-         request.getPortletSession().invalidate();
+         Map session = context.getExternalContext().getSessionMap();
+         User user = (User)session.get(AuthenticationHelper.AUTHENTICATION_USER);
+         if (user != null)
+         {
+            // invalidate ticket and clear the Security context for this thread
+            authenticationService.invalidateTicket(user.getTicket());
+            authenticationService.clearCurrentSecurityContext();
+         }
+         // remove all objects from our session by hand
+         // we do this as invalidating the Portal session would invalidate all other portlets!
+         for (Object key : session.keySet())
+         {
+            session.remove(key);
+         }
       }
       
       // Request that the username cookie state is removed - this is not
       // possible from JSF - so instead we setup a session variable
       // which will be detected by the login.jsp/Portlet as appropriate.
-      session = context.getExternalContext().getSessionMap();
+      Map session = context.getExternalContext().getSessionMap();
       session.put(AuthenticationHelper.SESSION_INVALIDATED, true);
       
       // set language to last used

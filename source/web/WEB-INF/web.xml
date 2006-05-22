@@ -1,0 +1,226 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!DOCTYPE web-app PUBLIC
+  "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+  "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+   <display-name>Alfresco Web Client</display-name>
+    
+   <description>Alfresco Web Client</description>
+   
+   <context-param>
+      <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
+      <param-value>server</param-value>
+   </context-param>
+
+   <context-param>
+      <param-name>javax.faces.CONFIG_FILES</param-name>
+      <param-value>/WEB-INF/faces-config-app.xml,/WEB-INF/faces-config-beans.xml,/WEB-INF/faces-config-navigation.xml,/WEB-INF/faces-config-common.xml,/WEB-INF/faces-config-repo.xml,WEB-INF/faces-config-custom.xml</param-value>
+   </context-param>
+
+   <context-param>
+      <param-name>org.apache.myfaces.ALLOW_JAVASCRIPT</param-name>
+      <param-value>true</param-value>
+   </context-param>
+    
+   <context-param>
+      <param-name>org.apache.myfaces.DETECT_JAVASCRIPT</param-name>
+      <param-value>false</param-value>
+      <description>This is an EXPERIMENTAL feature, so leave it off for now!</description>
+    </context-param>
+
+    <!-- TODO: Change this to false for production -->
+    <context-param>
+        <param-name>org.apache.myfaces.PRETTY_HTML</param-name>
+        <param-value>true</param-value>
+        <description>
+            If true, rendered HTML code will be formatted, so that it is "human readable".
+            i.e. additional line separators and whitespace will be written, that do not
+            influence the HTML code.
+            Default: "true"
+        </description>
+    </context-param>
+
+    <context-param>
+        <param-name>org.apache.myfaces.AUTO_SCROLL</param-name>
+        <param-value>false</param-value>
+        <description>
+            If true, a javascript function will be rendered that is able to restore the
+            former vertical scroll on every request. Convenient feature if you have pages
+            with long lists and you do not want the browser page to always jump to the top
+            if you trigger a link or button action that stays on the same page.
+            Default: "false"
+        </description>
+    </context-param>
+
+   <context-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>
+         classpath:alfresco/web-client-application-context.xml
+         classpath:web-services-application-context.xml
+         classpath:alfresco/application-context.xml 
+      </param-value>
+      <description>Spring config file locations</description>
+   </context-param>
+
+   <filter>
+      <filter-name>Authentication Filter</filter-name>
+      <filter-class>org.alfresco.web.app.servlet.AuthenticationFilter</filter-class>
+      
+      <!-- For Novell IChain support use the following filter -->
+      <!-- (Enterprise version only)                          -->
+      <!--
+        <filter-class>org.alfresco.web.app.servlet.NovellIChainsHTTPRequestAuthenticationFilter</filter-class>
+      -->
+      
+      <!-- For NTLM authentication support use the following filter -->
+      <!-- (Enterprise version only)                                -->
+      <!--
+        <filter-class>org.alfresco.web.app.servlet.NTLMAuthenticationFilter</filter-class>
+      -->
+   </filter>
+
+   <filter>
+      <filter-name>WebDAV Authentication Filter</filter-name>
+      <filter-class>org.alfresco.repo.webdav.auth.AuthenticationFilter</filter-class>
+      
+      <!-- For NTLM authentication support use the following filter -->
+      <!-- (Enterprise version only)                                -->
+      <!--
+        <filter-class>org.alfresco.repo.webdav.auth.NTLMAuthenticationFilter</filter-class>
+      -->
+   </filter>
+
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/faces/*</url-pattern>
+   </filter-mapping>
+   
+   <!-- For NTLM authentication support enable the following mapping -->
+   <!-- (Enterprise version only)                                    -->
+   <!--
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/navigate/*</url-pattern>
+   </filter-mapping>
+   -->
+      
+   <filter-mapping>
+      <filter-name>WebDAV Authentication Filter</filter-name>
+      <url-pattern>/webdav/*</url-pattern>
+   </filter-mapping>
+   
+   <listener>
+      <listener-class>org.apache.myfaces.webapp.StartupServletContextListener</listener-class>
+   </listener>
+   
+   <listener>
+      <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+   </listener>
+   
+   <listener>
+      <listener-class>org.alfresco.web.app.ContextListener</listener-class>
+   </listener>
+   
+   <!-- Faces Servlet -->
+   <servlet>
+      <servlet-name>Faces Servlet</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.AlfrescoFacesServlet</servlet-class>
+      <load-on-startup>1</load-on-startup>
+   </servlet>
+   
+   <servlet>
+      <servlet-name>uploadFile</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.UploadFileServlet</servlet-class>
+   </servlet>
+   
+   <servlet>
+      <servlet-name>downloadContent</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.DownloadContentServlet</servlet-class>
+   </servlet>
+   
+   <servlet>
+      <servlet-name>externalAccess</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.ExternalAccessServlet</servlet-class>
+   </servlet>
+   
+   <servlet>
+      <servlet-name>templateContent</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.TemplateContentServlet</servlet-class>
+   </servlet>
+   
+   <servlet>
+      <servlet-name>commandServlet</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.CommandServlet</servlet-class>
+   </servlet>
+   
+   <servlet>
+      <servlet-name>axis</servlet-name>
+      <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
+      <load-on-startup>5</load-on-startup>
+   </servlet>
+   
+   <servlet>
+      <servlet-name>WebDAV</servlet-name>
+      <servlet-class>org.alfresco.repo.webdav.WebDAVServlet</servlet-class>
+      <init-param>
+         <param-name>store</param-name>
+         <param-value>workspace://SpacesStore</param-value>
+      </init-param>
+      <init-param>
+         <param-name>rootPath</param-name>
+         <param-value>/app:company_home</param-value>
+      </init-param>
+      <load-on-startup>5</load-on-startup>
+   </servlet>
+   
+   <servlet-mapping>
+      <servlet-name>Faces Servlet</servlet-name>
+      <url-pattern>/faces/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>uploadFile</servlet-name>
+      <url-pattern>/uploadFileServlet</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>downloadContent</servlet-name>
+      <url-pattern>/download/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>externalAccess</servlet-name>
+      <url-pattern>/navigate/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>templateContent</servlet-name>
+      <url-pattern>/template/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>commandServlet</servlet-name>
+      <url-pattern>/command/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>axis</servlet-name>
+      <url-pattern>/api/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+		<servlet-name>WebDAV</servlet-name>
+		<url-pattern>/webdav/*</url-pattern>
+   </servlet-mapping>
+   
+   <session-config>
+      <session-timeout>60</session-timeout>
+   </session-config>
+   
+   <welcome-file-list>
+      <welcome-file>index.jsp</welcome-file>
+   </welcome-file-list>
+
+</web-app>

@@ -7,14 +7,8 @@
    <!-- we want to build a WAR file in this project -->
    <target name="package" depends="package-war" />
 
-   <!-- copy the template web.xml and replace the "@facesconfig@" token with list of faces config files -->
-   <target name="generate-web-xml" depends="init">
-      <copy file="${dir.src.webinf}/${file.name.war.template}" tofile="${dir.src.webinf}/web.xml" overwrite="yes" />
-      <replace file="${dir.src.webinf}/web.xml" token="@facesconfig@" value="${files.faces.config}" />
-   </target>
-
    <!-- override the common assemble-war target -->
-   <target name="assemble-war" depends="common.assemble-war, generate-web-xml">
+   <target name="assemble-war" depends="common.assemble-war">
       <fail unless="server" message="You must supply a value for the 'server' property to indicate which WAR to build" />
       
       <condition property="isTomcat">
@@ -88,10 +82,6 @@
       <delete>
          <fileset dir="${dir.assemble}/WEB-INF/lib" includes="${webinf.lib.delete.jboss}" />
       </delete>
-   </target>
-   
-   <target name="clean" depends="common.clean" description="Cleans all the normal files plus web.xml">
-      <delete file="${dir.src.webinf}/web.xml" />
    </target>
   
 </project>

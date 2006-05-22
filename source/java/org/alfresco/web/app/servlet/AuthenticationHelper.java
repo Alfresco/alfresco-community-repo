@@ -107,6 +107,8 @@ public final class AuthenticationHelper
       }
       else
       {
+         // TODO: this prefix is not consistent between JSR-168 vendors!
+         //       we need a solution for each vendor?
          user = (User)session.getAttribute(AlfrescoFacesPortlet.MANAGED_BEAN_PREFIX + AUTHENTICATION_USER);
       }
       

@@ -174,16 +174,17 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
    {
       if (logger.isDebugEnabled()) logger.debug("HTTP session destroyed: " + event.getSession().getId());
 
-      User user;
+      String userKey;
       if (Application.inPortalServer() == false)
       {
-         user = (User)event.getSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+         userKey = AuthenticationHelper.AUTHENTICATION_USER;
       }
       else
       {
-         user = (User)event.getSession().getAttribute(AlfrescoFacesPortlet.MANAGED_BEAN_PREFIX + AuthenticationHelper.AUTHENTICATION_USER);
+         userKey = AlfrescoFacesPortlet.MANAGED_BEAN_PREFIX + AuthenticationHelper.AUTHENTICATION_USER;
       }
       
+      User user = (User)event.getSession().getAttribute(userKey);
       if (user != null)
       {
          // invalidate ticket and clear the Security context for this thread
@@ -191,7 +192,7 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
          AuthenticationService authService = (AuthenticationService)ctx.getBean("authenticationService");
          authService.invalidateTicket(user.getTicket());
          authService.clearCurrentSecurityContext();
-         event.getSession().removeAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+         event.getSession().removeAttribute(userKey);
       }
    }
 }

@@ -75,6 +75,7 @@
 		    		column="primary_indirection" type="boolean" />
 		    	<!-- Map of names to DirectoryEntries. -->
 		    	<map name="added" cascade="all">
+		    		<cache usage="read-write"/>
 		    		<key column="directory_id" />
 		    		<map-key type="string" column="name" />
 		    		<!-- A DirectoryEntry is a (node)type AVMNode reference pair.
@@ -92,6 +93,7 @@
 		    		hidden) in this layer. -->
 		    	<set name="deleted" table="deleted_children"
 		    		fetch="join" cascade="all">
+		    		<cache usage="read-write"/>
 		    		<key column="directory_id" />
 		    		<element type="string" column="name" />
 		    	</set>
@@ -108,14 +110,15 @@
 				<!-- A map of names to DirectoryEntries.  In the AVM world, it makes sense
 					that nodes don't know there own names, only their containers do. -->
 				<map name="children" cascade="all">
+					<cache usage="read-write"/>
 					<key column="directory_id" />
 					<map-key type="string" column="name" />
 					<composite-element
-						class="org.alfresco.repo.avm.hibernate.DirectoryEntry">
+						class="DirectoryEntry">
 						<property name="type" type="int"
 							not-null="true" column="type_code" />
 						<many-to-one name="child"
-							class="org.alfresco.repo.avm.hibernate.AVMNodeBeanImpl"
+							class="AVMNodeBeanImpl"
 							not-null="true" cascade="save-update">
 						</many-to-one>
 					</composite-element>
@@ -186,6 +189,7 @@
 		<!-- In addition to the current root directory, a Repository maintains a set
 			 of versioned root directories. -->
 		<map name="roots" table="repository_roots">
+			<cache usage="read-write"/>
 			<key column="repository_id"/>
 			<map-key type="int" column="version_id"/>
 			<many-to-many class="DirectoryNodeBeanImpl"
@@ -194,6 +198,7 @@
 		<!-- NewNodes keeps track of those nodes created since the last
 			 'snapshot' operation. -->
 		<set table="new_nodes" name="newNodes" cascade="all">
+			<cache usage="read-write"/>
 			<key column="repository_id"/>
 			<many-to-many class="AVMNodeBeanImpl"
 				column="new_node_id"/>

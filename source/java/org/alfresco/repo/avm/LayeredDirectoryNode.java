@@ -18,6 +18,7 @@
 package org.alfresco.repo.avm;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -71,7 +72,7 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
                                                                 time);
         fData = new LayeredDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
                                                  -1,
-                                                 -1,
+                                                 0,
                                                  null,
                                                  null,
                                                  null,
@@ -102,7 +103,7 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         attrs.setLastModifier("britt");
         fData = new LayeredDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
                                                  -1,
-                                                 -1,
+                                                 0,
                                                  null,
                                                  null,
                                                  null,
@@ -112,8 +113,8 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
                                                  thatBean.getPrimaryIndirection(),
                                                  other.getUnderlying());
         setDataBean(fData);
-        fData.setAdded(thatBean.getAdded());
-        fData.setDeleted(thatBean.getDeleted());
+        fData.setAdded(new HashMap<String, DirectoryEntry>(thatBean.getAdded()));
+        fData.setDeleted(new HashSet<String>(thatBean.getDeleted()));
         // fData.setPrimaryIndirection(thatBean.getPrimaryIndirection());
         repos.getSuperRepository().getSession().save(fData);
     }
@@ -135,7 +136,7 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         attrs.setLastModifier("britt");
         fData = new LayeredDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
                                                  -1,
-                                                 -1,
+                                                 0,
                                                  null,
                                                  null,
                                                  null,
@@ -174,7 +175,7 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
         attrs.setLastModifier("britt");
         fData = new LayeredDirectoryNodeBeanImpl(repo.getSuperRepository().issueID(),
                                                  -1,
-                                                 -1,
+                                                 0,
                                                  null,
                                                  null,
                                                  null,

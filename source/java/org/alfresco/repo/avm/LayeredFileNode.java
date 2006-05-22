@@ -62,7 +62,7 @@ public class LayeredFileNode extends FileNode implements Layered
         fData = 
             new LayeredFileNodeBeanImpl(repo.getSuperRepository().issueID(),
                                         -1,
-                                        -1L,
+                                        0L,
                                         null,
                                         null,
                                         null,
@@ -99,7 +99,7 @@ public class LayeredFileNode extends FileNode implements Layered
         fData = 
             new LayeredFileNodeBeanImpl(repos.getSuperRepository().issueID(),
                                         -1,
-                                        -1L,
+                                        0L,
                                         null,
                                         null,
                                         null,
@@ -126,7 +126,7 @@ public class LayeredFileNode extends FileNode implements Layered
                                                                 time);
         fData = new LayeredFileNodeBeanImpl(repo.getSuperRepository().issueID(),
                                             -1,
-                                            -1L,
+                                            0L,
                                             null,
                                             null,
                                             null,
@@ -151,10 +151,16 @@ public class LayeredFileNode extends FileNode implements Layered
      */
     public AVMNode possiblyCopy(Lookup lPath)
     {
-        // LayeredFileNodes are always copied.
-        // TODO This is busted.  Need to set the PlainFileNode contents
-        // to share with underlying file node.
-        PlainFileNode newMe = new PlainFileNode(lPath.getRepository());
+        Lookup lookup = lPath.getRepository().getSuperRepository().lookup(-1, fData.getIndirection());
+        AVMNode indirect = lookup.getCurrentNode();
+        if (!(indirect instanceof FileNode))
+        {
+            throw new AlfrescoRuntimeException("Unbacked layered file node.");
+        }
+        // This is a mildly dirty trick.  We use getContentForRead so as not to startle
+        // the ultimate destination content into copying itself prematurely.
+        FileContent content = ((FileNode)indirect).getContentForRead(-1, lPath.getRepository());
+        PlainFileNode newMe = new PlainFileNode(content, lPath.getRepository(), fData.getBasicAttributes());
         newMe.setAncestor(this);
         return newMe;
     }

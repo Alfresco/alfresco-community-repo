@@ -244,7 +244,7 @@ public class RepositoryImpl implements Repository
         // TODO Reexamine decision to not check validity of srcPath.
         LayeredFileNode newFile =
             new LayeredFileNode(srcPath, this);
-        dir.addChild(dstPath, newFile, lPath);
+        dir.addChild(name, newFile, lPath);
         newFile.setVersion(getLatestVersion() + 1);
         setNew(newFile);
     }
@@ -407,6 +407,10 @@ public class RepositoryImpl implements Repository
         if (path.length() == 0)
         {
             throw new AlfrescoRuntimeException("Invalid path: " + path);
+        }
+        if (path.length() > 1)
+        {
+            path = path.substring(1);
         }
         String[] pathElements = path.split("/");
         // Grab the root node to start the lookup.

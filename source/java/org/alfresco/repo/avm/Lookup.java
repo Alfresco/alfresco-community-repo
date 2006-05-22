@@ -120,7 +120,15 @@ public class Lookup
             }
             else
             {
-                comp.setIndirection(fComponents.get(fPosition).getIndirection() + "/" + name);
+                String parentIndirection = fComponents.get(fPosition).getIndirection();
+                if (parentIndirection.endsWith("/"))
+                {
+                    comp.setIndirection(parentIndirection + name);
+                }
+                else
+                {
+                    comp.setIndirection(parentIndirection + "/" + name);
+                }
             }
             fLayeredYet = true;
             // Record the first layer seen.
@@ -278,7 +286,6 @@ public class Lookup
     public String getCurrentIndirection()
     {
         String value = fComponents.get(fPosition).getIndirection();
-        System.err.println(value);
         return value;
     }
     

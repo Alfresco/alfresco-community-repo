@@ -17,8 +17,6 @@
 
 package org.alfresco.repo.avm.hibernate;
 
-import org.alfresco.repo.avm.AVMNodeType;
-
 /**
  * This holds Directory Entries in directories.
  * @author britt

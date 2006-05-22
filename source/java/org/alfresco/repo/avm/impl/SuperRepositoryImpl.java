@@ -217,7 +217,7 @@ public class SuperRepositoryImpl implements SuperRepository
         }
         pathParts = SplitPath(dstPath);
         Repository dstRepo = getRepositoryByName(pathParts[0]);
-        Lookup dPath = dstRepo.lookupDirectory(-1, dstPath);
+        Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1]);
         DirectoryNode dstDir = (DirectoryNode)dPath.getCurrentNode();
         AVMNode dstNode = dstDir.lookupChild(dPath, dstName, -1);
         if (dstNode != null)

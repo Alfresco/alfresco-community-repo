@@ -96,7 +96,7 @@ public class PlainDirectoryNode extends DirectoryNode
         attrs.setLastModifier("britt");
         fData = new PlainDirectoryNodeBeanImpl(repos.getSuperRepository().issueID(),
                                                -1,
-                                               -1,
+                                               0,
                                                null,
                                                null,
                                                null,

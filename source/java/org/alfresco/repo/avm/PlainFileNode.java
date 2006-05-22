@@ -60,7 +60,7 @@ public class PlainFileNode extends FileNode
                                                                 time);
         fData = new PlainFileNodeBeanImpl(repos.getSuperRepository().issueID(),
                                           -1,
-                                          -1,
+                                          0,
                                           null,
                                           null,
                                           null,
@@ -92,7 +92,7 @@ public class PlainFileNode extends FileNode
         attrs.setLastModifier("britt");
         fData = new PlainFileNodeBeanImpl(repos.getSuperRepository().issueID(),
                                           -1,
-                                          -1,
+                                          0,
                                           null,
                                           null,
                                           null,
@@ -103,7 +103,40 @@ public class PlainFileNode extends FileNode
         fData.getContent().setRefCount(fData.getContent().getRefCount() + 1);
         setDataBean(fData);
     }
-    
+
+    /**
+     * Constructor that takes a FileContent to share.
+     * @param content The FileContent to share.
+     * @param repos The Repository.
+     */
+    public PlainFileNode(FileContent content,
+                         Repository repos,
+                         BasicAttributesBean oAttrs)
+    {
+        // Setup sensible BasicAttributes.
+        long time = System.currentTimeMillis();
+        // TODO Figure out how to get user from context.
+        
+        BasicAttributesBean attrs = new BasicAttributesBeanImpl(oAttrs);
+        attrs.setCreateDate(time);
+        attrs.setModDate(time);
+        attrs.setAccessDate(time);
+        attrs.setCreator("britt");
+        attrs.setLastModifier("britt");
+        fData = new PlainFileNodeBeanImpl(repos.getSuperRepository().issueID(),
+                                          -1,
+                                          0,
+                                          null,
+                                          null,
+                                          null,
+                                          repos.getDataBean(),
+                                          attrs,
+                                          content.getDataBean());
+        repos.getSuperRepository().getSession().save(fData);
+        fData.getContent().setRefCount(fData.getContent().getRefCount() + 1);
+        setDataBean(fData);
+    }
+
     /**
      * Copy on write logic.
      * @param lPath The lookup path. 

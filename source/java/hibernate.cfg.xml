@@ -9,12 +9,13 @@
   	<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
   	<property name="current_session_context_class">thread</property>
   	<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
-  	<property name="show_sql">true</property>
+  	<property name="show_sql">false</property>
   	<property name="connection.isolation">2</property>
   	<property name="c3po.min_size">5</property>
   	<property name="c3po.max_size">20</property>
   	<property name="c3po.timeout">900</property>
   	<property name="c3po.max_statements">50</property>
+<!-- <property name="cache.use_query_cache">true</property> -->
   	<mapping resource="org/alfresco/repo/avm/hibernate/AVM.hbm.xml"/>
   </session-factory>
 </hibernate-configuration>

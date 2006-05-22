@@ -238,15 +238,18 @@ public class RhinoScriptService implements ScriptService
      * @param person        The current user Person Node
      * @param companyHome   The CompanyHome ref
      * @param userHome      The User home space ref
+     * @param script        Optional ref to the script itself
      * @param document      Optional ref to a document Node
      * @param space         Optional ref to a space Node
      * 
      * @return A Map of global scope scriptable Node objects
      */
-    public static Map<String, Object> buildDefaultModel(ServiceRegistry services,
-            NodeRef person, NodeRef companyHome, NodeRef userHome, NodeRef document, NodeRef space)
+    public static Map<String, Object> buildDefaultModel(
+            ServiceRegistry services,
+            NodeRef person, NodeRef companyHome, NodeRef userHome,
+            NodeRef script, NodeRef document, NodeRef space)
     {
-        return buildDefaultModel(services, person, companyHome, userHome, document, space, null);
+        return buildDefaultModel(services, person, companyHome, userHome, script, document, space, null);
     }
     
     /**
@@ -255,6 +258,7 @@ public class RhinoScriptService implements ScriptService
      * 'companyhome' - the Company Home node<br>
      * 'userhome' - the current user home space node<br>
      * 'person' - the node representing the current user Person<br>
+     * 'script' - the node representing the script itself (may not be available)<br>
      * 'document' - document context node (may not be available)<br>
      * 'space' - space context node (may not be available)
      * 
@@ -262,14 +266,17 @@ public class RhinoScriptService implements ScriptService
      * @param person        The current user Person Node
      * @param companyHome   The CompanyHome ref
      * @param userHome      The User home space ref
+     * @param script        Optional ref to the script itself
      * @param document      Optional ref to a document Node
      * @param space         Optional ref to a space Node
      * @param resolver      Image resolver to resolve icon images etc.
      * 
      * @return A Map of global scope scriptable Node objects
      */
-    public static Map<String, Object> buildDefaultModel(ServiceRegistry services,
-            NodeRef person, NodeRef companyHome, NodeRef userHome, NodeRef document, NodeRef space,
+    public static Map<String, Object> buildDefaultModel(
+            ServiceRegistry services,
+            NodeRef person, NodeRef companyHome, NodeRef userHome,
+            NodeRef script, NodeRef document, NodeRef space,
             TemplateImageResolver resolver)
     {
         Map<String, Object> model = new HashMap<String, Object>();
@@ -278,6 +285,10 @@ public class RhinoScriptService implements ScriptService
         model.put("companyhome", new Node(companyHome, services, resolver));
         model.put("userhome", new Node(userHome, services, resolver));
         model.put("person", new Node(person, services, resolver));
+        if (script != null)
+        {
+            model.put("script", new Node(script, services, resolver));
+        }
         if (document != null)
         {
             model.put("document", new Node(document, services, resolver));

@@ -101,6 +101,7 @@ public class ScriptActionExecutor extends ActionExecuterAbstractBase
                         personRef,
                         getCompanyHome(),
                         homeSpaceRef,
+                        scriptRef,
                         actionedUponNodeRef,
                         spaceRef);
                 

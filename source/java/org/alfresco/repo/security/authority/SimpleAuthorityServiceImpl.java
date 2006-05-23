@@ -207,4 +207,9 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         
     }
 
+    public boolean authorityExists(String name)
+    {
+        return false;
+    }
+
 }

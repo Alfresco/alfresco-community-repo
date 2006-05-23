@@ -237,9 +237,11 @@ public class AuthorityServiceTest extends TestCase
         String auth4;
         String auth5;
 
+        assertFalse(pubAuthorityService.authorityExists(pubAuthorityService.getName(AuthorityType.GROUP, "one")));
         assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(0, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "one");
+        assertTrue(pubAuthorityService.authorityExists(auth1));
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(1, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "two");

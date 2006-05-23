@@ -171,5 +171,13 @@ public interface AuthorityService
      * @return
      */
     public String getName(AuthorityType type, String shortName);
+    
+    /**
+     * Check if an authority exists.
+     * 
+     * @param name (the long name). 
+     * @return
+     */
+    public boolean authorityExists(String name);
 
 }

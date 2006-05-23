@@ -166,14 +166,14 @@ public class EhCacheTracerJob implements Job
                 Element element = cache.get(key);
                 size += getSize(element);
                 count++;
-                if (count >= 1000)
+                if (count >= 50)
                 {
                     break;
                 }
             }
             
             // the size must be multiplied by the ratio of the count to actual size
-            size = count > 0L ? (long) (size * ((double)keys.size()/(double)count)) : 0L;
+            size = count > 0 ? (long) ((double)size * ((double)keys.size()/(double)count)) : 0L;
             
             sizeMB = (double)size/1024.0/1024.0;
             maxSize = cache.getMaxElementsInMemory();

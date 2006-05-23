@@ -26,6 +26,20 @@
 
 <r:page titleId="title_action_specialise_type">
 
+<script type="text/javascript">
+   function itemSelected(inputField)
+   {
+      if (inputField.selectedIndex == 0)
+      {
+         document.getElementById("specialise-type-action:ok-button").disabled = true;
+      }
+      else
+      {
+         document.getElementById("specialise-type-action:ok-button").disabled = false;
+      }
+   }
+</script>
+
 <f:view>
    
    <%-- load a bundle of properties with I18N strings --%>
@@ -105,7 +119,8 @@
                                  <tr>
                                     <td><nobr><h:outputText value="#{msg.select_type}"/></nobr></td>
                                     <td width="90%">
-                                       <h:selectOneMenu value="#{WizardManager.bean.actionProperties.objecttype}">
+                                       <h:selectOneMenu value="#{WizardManager.bean.actionProperties.objecttype}"
+                                                        id="type" onchange="javascript:itemSelected(this);">
                                           <f:selectItems value="#{WizardManager.bean.objectTypes}" />
                                        </h:selectOneMenu>
                                     </td>
@@ -120,7 +135,8 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.ok}" action="#{WizardManager.bean.addAction}" styleClass="wizardButton" />
+                                       <h:commandButton id="ok-button" value="#{msg.ok}" action="#{WizardManager.bean.addAction}" 
+                                                        disabled="true" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                                  <tr>

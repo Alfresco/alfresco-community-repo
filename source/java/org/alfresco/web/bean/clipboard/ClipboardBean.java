@@ -31,6 +31,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
@@ -260,7 +261,7 @@ public class ClipboardBean
                   
                   // we create a special Link Object node that has a property to reference the original
                   // use FileFolderService to check if already exists as using nodeService directly here
-                  String linkTo = Application.getMessage(FacesContext.getCurrentInstance(), MSG_LINK_TO);
+                  String linkTo = Application.getMessage(FacesContext.getCurrentInstance(), MSG_LINK_TO);                
                   
                   // create the node using the nodeService (can only use FileFolderService for content)
                   Map<QName, Serializable> props = new HashMap<QName, Serializable>(4, 1.0f);
@@ -357,8 +358,16 @@ public class ClipboardBean
          }
          catch (FileExistsException fileExistsErr)
          {
-            String copyOf = Application.getMessage(FacesContext.getCurrentInstance(), MSG_COPY_OF);
-            name = copyOf + ' ' + name;
+            if (item.Mode == ClipboardStatus.COPY)
+            {    
+                String copyOf = Application.getMessage(FacesContext.getCurrentInstance(), MSG_COPY_OF);
+                name = copyOf + ' ' + name;
+            }
+            else
+            {
+                // we should not rename an item when it is being moved
+                throw fileExistsErr;
+            }
          }
       }
    }

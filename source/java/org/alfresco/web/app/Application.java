@@ -72,6 +72,7 @@ public class Application
    private static String emailTemplatesFolderName;
    private static String savedSearchesFolderName;
    private static String scriptsFolderName;
+   private static String guestHomeFolderName;
    
    /**
     * Private constructor to prevent instantiation of this class 
@@ -380,7 +381,6 @@ public class Application
       return getSavedSearchesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
    }
    
-   
    /**
     * @return Return the JavaScript scripts folder name
     */
@@ -395,6 +395,22 @@ public class Application
    public static String getScriptsFolderName(FacesContext context)
    {
       return getScriptsFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return Return the Guest Home folder name
+    */
+   public static String getGuestHomeFolderName(ServletContext context)
+   {
+      return getGuestHomeFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return  Return the Guest Home folder name
+    */
+   public static String getGuestHomeFolderName(FacesContext context)
+   {
+      return getGuestHomeFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
    }
    
    /**
@@ -762,6 +778,24 @@ public class Application
       }
       
       return scriptsFolderName;
+   }
+   
+   /**
+    * Returns the Guest Home folder name name
+    * 
+    * @param context The spring context
+    * @return The Guest Home folder name
+    */
+   private static String getGuestHomeFolderName(WebApplicationContext context)
+   {
+      if (guestHomeFolderName == null)
+      {
+         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
+         Properties configuration = bootstrap.getConfiguration();
+         guestHomeFolderName = configuration.getProperty("spaces.guest_home.childname");
+      }
+      
+      return guestHomeFolderName;
    }
    
    /**

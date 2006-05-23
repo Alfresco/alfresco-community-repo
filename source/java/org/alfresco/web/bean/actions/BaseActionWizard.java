@@ -329,10 +329,8 @@ public abstract class BaseActionWizard extends BaseWizardBean
          
          // add the well known object type to start with
          this.objectTypes = new ArrayList<SelectItem>(5);
-         this.objectTypes.add(new SelectItem(ContentModel.TYPE_CONTENT.toString(), 
-               Application.getMessage(context, "content")));
          
-         // add any configured content sub-types to the list
+         // add any configured content or folder sub-types to the list
          ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Action Wizards");
          if (wizardCfg != null)
@@ -345,8 +343,13 @@ public abstract class BaseActionWizard extends BaseWizardBean
                   QName idQName = Repository.resolveToQName(child.getAttribute("name"));
                   TypeDefinition typeDef = this.dictionaryService.getType(idQName);
                   
+                  // make sure the type is a subtype of content or folder but not 
+                  // the content or folder type itself
                   if (typeDef != null &&
-                      this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT))
+                      typeDef.getName().equals(ContentModel.TYPE_CONTENT) == false &&
+                      typeDef.getName().equals(ContentModel.TYPE_FOLDER) == false &&
+                      (this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT) ||
+                      this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_FOLDER)))
                   {
                      // try and get the display label from config
                      String label = Utils.getDisplayLabel(context, child);
@@ -370,6 +373,10 @@ public abstract class BaseActionWizard extends BaseWizardBean
                // make sure the list is sorted by the label
                QuickSort sorter = new QuickSort(this.objectTypes, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
                sorter.sort();
+               
+               // add the select an action item at the start of the list
+               this.objectTypes.add(0, new SelectItem("null", 
+                     Application.getMessage(FacesContext.getCurrentInstance(), "select_a_type")));
             }
             else
             {

@@ -26,10 +26,11 @@
                <td width=100% style="background-image: url(<%=request.getContextPath()%>/images/parts/titlebar_bg.gif)">
                   <%-- Toolbar --%>
                   <a:modeList itemSpacing="3" iconColumnWidth="0" horizontal="true"
-                        itemStyleClass="topToolbar" itemLinkStyleClass="topToolbarLink" selectedStyleClass="topToolbarHighlight" selectedLinkStyleClass="topToolbarLinkHighlight"
+                        itemStyleClass="topToolbar" itemLinkStyleClass="topToolbarLink" selectedStyleClass="topToolbar" selectedLinkStyleClass="topToolbarLink"
                         value="#{NavigationBean.toolbarLocation}" actionListener="#{NavigationBean.toolbarLocationChanged}">
-                     <a:listItem value="company" label="#{msg.company_home}" />
+                     <a:listItem value="company" label="#{msg.company_home}" rendered="#{NavigationBean.companyHomeVisible}" />
                      <a:listItem value="home" label="#{msg.my_home}" />
+                     <a:listItem value="guest" label="#{msg.guest_home}" rendered="#{NavigationBean.isGuest == false && NavigationBean.guestHomeVisible}" />
                   </a:modeList>
                </td>
                <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_end.gif" width=8 height=30></td>

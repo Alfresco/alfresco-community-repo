@@ -189,7 +189,7 @@
                         </a:column>
                         
                         <%-- Actions column --%>
-                        <a:column actions="true" style="text-align:left">
+                        <a:column id="col1" actions="true" style="text-align:left">
                            <f:facet name="header">
                               <h:outputText value="#{msg.actions}"/>
                            </f:facet>

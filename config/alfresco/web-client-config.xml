@@ -193,7 +193,7 @@
          <type name="folder" display-label-id="space"/>
          <type name="content"/>
       </subtypes>
-      <!-- The list of content types shown in the specialise-type action -->
+      <!-- The list of content and/or folder types shown in the specialise-type action -->
       <specialise-types>
       </specialise-types>
       <!-- The list of aspects to show in the add/remove features action -->

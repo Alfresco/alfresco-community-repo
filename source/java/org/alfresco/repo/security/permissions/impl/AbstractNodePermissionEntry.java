@@ -32,6 +32,18 @@ public abstract class AbstractNodePermissionEntry implements
     {
         super();
     }
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(200);
+        sb.append("NodePermissionEntry")
+          .append("[ node=").append(getNodeRef())
+          .append(", entries=").append(getPermissionEntries())
+          .append(", inherits=").append(inheritPermissions())
+          .append("]");
+        return sb.toString();
+    }
 
     @Override
     public boolean equals(Object o)

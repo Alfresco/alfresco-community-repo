@@ -160,7 +160,7 @@ public class Win32NetBIOSLanaMonitor extends Thread
             
             m_listeners = new LanaListener[len];
         }
-        else if ( lana > m_listeners.length)
+        else if ( lana >= m_listeners.length)
         {
             // Extend the LANA listener array
             

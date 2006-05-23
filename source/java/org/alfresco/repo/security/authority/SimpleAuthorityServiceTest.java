@@ -21,6 +21,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -91,7 +92,7 @@ public class SimpleAuthorityServiceTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
-        authenticationService.clearCurrentSecurityContext();
+        AuthenticationUtil.clearCurrentSecurityContext();
         tx.rollback();
         super.tearDown();
     }
@@ -106,6 +107,8 @@ public class SimpleAuthorityServiceTest extends TestCase
 
     public void testAdminUser()
     {
+        assertFalse(authorityService.authorityExists("woof"));
+        
         authenticationComponent.setCurrentUser("admin");
         assertTrue(authorityService.hasAdminAuthority());
         assertTrue(pubAuthorityService.hasAdminAuthority());
@@ -119,6 +122,7 @@ public class SimpleAuthorityServiceTest extends TestCase
 
     public void testAuthorities()
     {
+        assertFalse(pubAuthorityService.authorityExists("woof"));
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.ADMIN).size());
         assertTrue(pubAuthorityService.getAllAuthorities(AuthorityType.ADMIN).contains(
                 PermissionService.ADMINISTRATOR_AUTHORITY));

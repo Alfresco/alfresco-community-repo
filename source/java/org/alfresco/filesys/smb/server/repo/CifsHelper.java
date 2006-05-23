@@ -214,16 +214,21 @@ public class CifsHelper
             
             // Check the lock status of the file
             
-            if ( hasLockedFilesAsOffline())
-            {
-                String lockTypeStr = (String) nodeProperties.get(ContentModel.PROP_LOCK_TYPE);
+            String lockTypeStr = (String) nodeProperties.get(ContentModel.PROP_LOCK_TYPE);
                     
-                if ( lockTypeStr != null)
-                {
-                    // File is locked so mark it as offline
-    
-                    fileInfo.setFileAttributes(fileInfo.getFileAttributes() + FileAttribute.NTOffline);
-                }
+            if ( lockTypeStr != null)
+            {
+                // File is locked so mark it as read-only and offline
+
+            	int attr = fileInfo.getFileAttributes();
+            	
+            	if (( attr & FileAttribute.ReadOnly) == 0)
+            		attr += FileAttribute.ReadOnly;
+            	
+                if ( hasLockedFilesAsOffline())
+                	attr += FileAttribute.NTOffline;
+                
+                fileInfo.setFileAttributes( attr);
             }
         }
         

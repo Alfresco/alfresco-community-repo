@@ -89,6 +89,13 @@ public class AuthorityDAOImpl implements AuthorityDAO
         this.userToAuthorityCache = userToAuthorityCache;
     }
 
+    public boolean authorityExists(String name)
+    {
+        NodeRef ref = getAuthorityOrNull(name); 
+        return ref != null;
+    }   
+    
+    
     public void addAuthority(String parentName, String childName)
     {
         NodeRef parentRef = getAuthorityOrNull(parentName);

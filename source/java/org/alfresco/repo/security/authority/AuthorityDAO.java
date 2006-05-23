@@ -88,4 +88,12 @@ public interface AuthorityDAO
      * @return
      */
     Set<String> getAllAuthorities(AuthorityType type);
+    
+    /**
+     * Test if an authority already exists.
+     * 
+     * @param name
+     * @return
+     */
+    boolean authorityExists(String name);
 }

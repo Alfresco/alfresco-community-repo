@@ -519,20 +519,24 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             {
                 // Get the file information for the node
                 
+                session.beginTransaction(transactionService, true);
                 finfo = cifsHelper.getFileInformation(nodeRef);
 
                 // DEBUG
                 
-                if ( logger.isDebugEnabled())
+                if ( logger.isInfoEnabled())
                     logger.debug("getInfo using cached noderef for path " + path);
             }
             
             // If the required node was not in the state cache, the parent folder node might be
             
-            session.beginTransaction(transactionService, true);
             
             if ( finfo == null)
             {
+            	//	Start a transaction
+            	
+                session.beginTransaction(transactionService, true);
+                
                 String[] paths = FileName.splitPath( path);
                 
                 if ( paths[0] != null && paths[0].length() > 1)
@@ -548,7 +552,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                         
                         // DEBUG
                         
-                        if ( logger.isDebugEnabled())
+                        if ( logger.isInfoEnabled())
                             logger.debug("getInfo using cached noderef for parent " + path);
                     }
                 }
@@ -906,6 +910,13 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             if ( params.hasAccessMode(AccessMode.NTDelete) &&
                     permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED)
                 throw new AccessDeniedException("No delete access to " + params.getFullPath());
+
+            // Check if the file has a lock
+            
+            String lockTypeStr = (String) nodeService.getProperty( nodeRef, ContentModel.PROP_LOCK_TYPE);
+            
+            if ( params.hasAccessMode(AccessMode.NTWrite) && lockTypeStr != null)
+                throw new AccessDeniedException("File is locked, no write access to " + params.getFullPath());
             
             //  Check if there is a file state for the file
 
@@ -1042,7 +1053,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                         
                         // DEBUG
                         
-                        if ( logger.isDebugEnabled())
+                        if ( logger.isInfoEnabled())
                             logger.debug("Create file using cached noderef for path " + paths[0]);
                     }
                 }
@@ -1084,6 +1095,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                         "   node: " + nodeRef + "\n" +
                         "   network file: " + netFile);
             }
+            
             return netFile;
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
@@ -1860,6 +1872,12 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 // check that the node exists
                 if (nodeService.exists(fstate.getNodeRef()))
                 {
+                	// Bump the file states expiry time
+                	
+                    fstate.setExpiryTime(System.currentTimeMillis() + FileState.DefTimeout);
+                    
+                    // Return the cached noderef
+                    
                     return fstate.getNodeRef();
                 }
                 else

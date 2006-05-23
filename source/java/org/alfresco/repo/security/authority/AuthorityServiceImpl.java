@@ -241,4 +241,9 @@ public class AuthorityServiceImpl implements AuthorityService
         authorityDAO.removeAuthority(parentName, childName);
     }
 
+    public boolean authorityExists(String name)
+    {
+       return authorityDAO.authorityExists(name);
+    }
+
 }

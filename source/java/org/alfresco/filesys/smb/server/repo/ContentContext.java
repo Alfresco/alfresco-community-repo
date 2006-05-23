@@ -226,4 +226,24 @@ public class ContentContext extends DiskDeviceContext
     {
         m_urlFileName = urlFileName;
     }
+
+    /**
+     * Close the filesystem context
+     */
+	public void CloseContext() {
+		
+		// Check if file states are enabled
+		
+		if ( hasStateTable())
+		{
+			//	Shutdown the file state checker thread
+			
+			getStateTable().shutdownRequest();
+		}
+		
+		//	Call the base class
+		
+		super.CloseContext();
+	}
+    
 }

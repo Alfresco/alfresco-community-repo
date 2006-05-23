@@ -81,7 +81,7 @@ public class EhCacheTracerJob implements Job
         }
         
         long maxHeapSize = Runtime.getRuntime().maxMemory();
-        long totalSize = 0L;
+        long allCachesTotalSize = 0L;
         double estimatedMaxSize = 0L;
         // get all the caches
         String[] cacheNames = cacheManager.getCacheNames();
@@ -97,16 +97,19 @@ public class EhCacheTracerJob implements Job
             CacheAnalysis analysis = new CacheAnalysis(cache);
             logger.debug(analysis);
             // get the size
-            totalSize += analysis.getSize();
-            estimatedMaxSize += Double.isNaN(analysis.getEstimatedMaxSize()) ? 0.0 : analysis.getEstimatedMaxSize();
+            allCachesTotalSize += analysis.getSize();
+            double cacheEstimatedMaxSize = analysis.getEstimatedMaxSize();
+            estimatedMaxSize += (Double.isNaN(cacheEstimatedMaxSize) || Double.isInfinite(cacheEstimatedMaxSize))
+                                ? 0.0
+                                : cacheEstimatedMaxSize;
         }
         // check the size
-        double sizePercentage = (double)totalSize / (double)maxHeapSize * 100.0;
+        double sizePercentage = (double)allCachesTotalSize / (double)maxHeapSize * 100.0;
         double maxSizePercentage = estimatedMaxSize / (double)maxHeapSize * 100.0;
         String msg = String.format(
                 "EHCaches currently consume %5.2f MB or %3.2f percent of system VM size. \n" +
                 "The estimated maximum size is %5.2f MB or %3.2f percent of system VM size.",
-                (double)totalSize / 1024.0 / 1024.0,
+                (double)allCachesTotalSize / 1024.0 / 1024.0,
                 sizePercentage,
                 estimatedMaxSize / 1024.0 / 1024.0,
                 maxSizePercentage);
@@ -156,11 +159,22 @@ public class EhCacheTracerJob implements Job
         {
             // calculate the cache deep size - EHCache 1.1 is always returning 0L
             List<Serializable> keys = cache.getKeys();
+            // only count a maximum of 1000 entities
+            int count = 0;
             for (Serializable key : keys)
             {
                 Element element = cache.get(key);
                 size += getSize(element);
+                count++;
+                if (count >= 50)
+                {
+                    break;
+                }
             }
+            
+            // the size must be multiplied by the ratio of the count to actual size
+            size = count > 0 ? (long) ((double)size * ((double)keys.size()/(double)count)) : 0L;
+            
             sizeMB = (double)size/1024.0/1024.0;
             maxSize = cache.getMaxElementsInMemory();
             currentSize = cache.getMemoryStoreSize();

@@ -44,7 +44,7 @@
     </bean>
     
     
-    <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.PermissionServiceImpl">
+    <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.AllowPermissionServiceImpl">
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
@@ -578,6 +578,7 @@
                 org.alfresco.service.cmr.security.AuthorityService.getContainingAuthorities=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getShortName=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getName=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.authorityExists=ACL_METHOD.ROLE_ADMINISTRATOR
             </value>
         </property>
     </bean>

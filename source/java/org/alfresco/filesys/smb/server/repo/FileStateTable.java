@@ -50,6 +50,14 @@ public class FileStateTable implements Runnable
 
     private long m_cacheTimer = 2 * 60000L; // 2 minutes default
 
+    //	File state checker thread
+    
+    private Thread m_thread;
+    
+    //	Shutdown request flag
+    
+    private boolean m_shutdown;
+    
     /**
      * Class constructor
      */
@@ -59,10 +67,10 @@ public class FileStateTable implements Runnable
 
         // Start the expired file state checker thread
 
-        Thread th = new Thread(this);
-        th.setDaemon(true);
-        th.setName("FileStateExpire");
-        th.start();
+        m_thread = new Thread(this);
+        m_thread.setDaemon(true);
+        m_thread.setName("FileStateExpire");
+        m_thread.start();
     }
 
     /**
@@ -366,7 +374,9 @@ public class FileStateTable implements Runnable
 
         // Loop forever
 
-        while (true)
+    	m_shutdown = false;
+    	
+        while ( m_shutdown == false)
         {
 
             // Sleep for the required interval
@@ -379,6 +389,18 @@ public class FileStateTable implements Runnable
             {
             }
 
+            //	Check for shutdown
+            
+            if ( m_shutdown == true)
+            {
+            	//	Debug
+            	
+            	if ( logger.isDebugEnabled())
+            		logger.debug("FileStateExpire thread closing");
+
+            	return;
+            }
+            	
             try
             {
 
@@ -401,6 +423,22 @@ public class FileStateTable implements Runnable
         }
     }
 
+	/**
+	 * Request the file state checker thread to shutdown
+	 */
+	public final void shutdownRequest() {
+		m_shutdown = true;
+		
+		if ( m_thread != null)
+		{
+			try {
+				m_thread.interrupt();
+			}
+			catch (Exception ex) {
+			}
+		}
+	}
+    
     /**
      * Dump the state cache entries to the specified stream
      */

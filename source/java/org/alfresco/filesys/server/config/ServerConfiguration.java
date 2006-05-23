@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 
@@ -1743,7 +1744,7 @@ public class ServerConfiguration implements ApplicationListener
         if (platformStr == null || platformStr.length() == 0)
             return platformTypes;
 
-        StringTokenizer token = new StringTokenizer(platformStr.toUpperCase(), ",");
+        StringTokenizer token = new StringTokenizer(platformStr.toUpperCase(Locale.ENGLISH), ",");
         String typ = null;
 
         try

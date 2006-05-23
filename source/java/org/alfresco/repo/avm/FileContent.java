@@ -69,11 +69,10 @@ public class FileContent
     {
         fData = new ContentBeanImpl(superRepo.issueContentID());
         fData.setRefCount(1);
-        BufferedOutputStream out = new BufferedOutputStream(getOutputStream(superRepo));
         // Make an empty file.
         try
         {
-            out.close();
+            getOutputStream(superRepo).close();
         }
         catch (IOException ie)
         {

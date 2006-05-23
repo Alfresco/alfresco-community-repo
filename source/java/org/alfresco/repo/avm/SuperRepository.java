@@ -218,7 +218,7 @@ public interface SuperRepository
      * @param name The name of the repository.
      * @return The latest version id for the given repository.
      */
-    public long getLatestVersionID(String name);
+    public int getLatestVersionID(String name);
     
     /**
      * Get the indirection path for a layered node.

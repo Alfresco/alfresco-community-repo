@@ -10,13 +10,15 @@
   	<property name="current_session_context_class">thread</property>
   	<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
   	<property name="show_sql">false</property>
-    <property name="order_updates">true</property>
+    <property name="order_updates">false</property>
   	<property name="connection.isolation">2</property>
   	<property name="c3p0.min_size">5</property>
   	<property name="c3p0.max_size">20</property>
   	<property name="c3p0.timeout">900</property>
   	<property name="c3p0.max_statements">500</property>
-<!--  <property name="cache.use_query_cache">true</property> -->
+  	<property name="default_batch_fetch_size">16</property>
+  	<property name="jdbc.batch_versioned_data">true</property>
+    <property name="cache.use_query_cache">false</property>
   	<mapping resource="org/alfresco/repo/avm/hibernate/AVM.hbm.xml"/>
   </session-factory>
 </hibernate-configuration>

@@ -297,8 +297,8 @@ public class RepositoryImpl implements Repository
         }
         FileNode file = (FileNode)node;
         file = (FileNode)file.copyOnWrite(lPath);
-        FileContent content = file.getContentForWrite(this);
-        return content.getOutputStream(fSuper);
+        FileContent content = file.getContentForWrite(this); 
+        return content.getOutputStream(fSuper);    // TODO Do we really need fSuper?
     }
 
     /* (non-Javadoc)
@@ -403,7 +403,7 @@ public class RepositoryImpl implements Repository
     public Lookup lookup(int version, String path)
     {
         // Make up a Lookup to hold the results.
-        Lookup result = new Lookup(this, fData.getName());
+        Lookup result = new Lookup(this, fData.getName());  // TODO redundant.
         if (path.length() == 0)
         {
             throw new AlfrescoRuntimeException("Invalid path: " + path);

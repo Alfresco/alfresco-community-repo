@@ -106,7 +106,7 @@
 					a Repository as special so that its absence of parents will
 					not cause it to be vacuumed away.  TODO: for ease of queries, 
 					this probably wants to be in the base class. -->
-				<property name="isRoot" column="is_root" type="boolean" />
+				<property name="isRoot" column="is_root" type="boolean"/>
 				<!-- A map of names to DirectoryEntries.  In the AVM world, it makes sense
 					that nodes don't know there own names, only their containers do. -->
 				<map name="children" cascade="all" fetch="join" lazy="true">
@@ -197,7 +197,7 @@
 		</map>
 		<!-- NewNodes keeps track of those nodes created since the last
 			 'snapshot' operation. -->
-		<set table="new_nodes" name="newNodes" cascade="all">
+		<set table="new_nodes" name="newNodes" fetch="join" lazy="true" cascade="all">
 			<cache usage="read-write"/>
 			<key column="repository_id"/>
 			<many-to-many class="AVMNodeBeanImpl"

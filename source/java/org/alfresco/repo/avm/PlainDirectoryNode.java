@@ -200,7 +200,7 @@ public class PlainDirectoryNode extends DirectoryNode
 
     /**
      * Put a new child node into this directory.  No copy.
-     * @param name The namke of the child.
+     * @param name The name of the child.
      * @param node The node to add.
      */
     public void putChild(String name, AVMNode node)

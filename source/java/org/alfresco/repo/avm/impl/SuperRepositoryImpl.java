@@ -36,6 +36,7 @@ import org.alfresco.repo.avm.Repository;
 import org.alfresco.repo.avm.SuperRepository;
 import org.alfresco.repo.avm.hibernate.Issuer;
 import org.alfresco.repo.avm.hibernate.RepositoryBean;
+import org.alfresco.repo.avm.hibernate.RepositoryBeanImpl;
 import org.hibernate.Query;
 import org.hibernate.Session;
 
@@ -483,7 +484,7 @@ public class SuperRepositoryImpl implements SuperRepository
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.SuperRepository#getLatestVersionID(java.lang.String)
      */
-    public long getLatestVersionID(String name)
+    public int getLatestVersionID(String name)
     {
         Repository rep = getRepositoryByName(name);
         return rep.getLatestVersion();
@@ -496,9 +497,12 @@ public class SuperRepositoryImpl implements SuperRepository
      */
     private Repository getRepositoryByName(String name)
     {
+/*
         Query query = fSession.createQuery("from RepositoryBeanImpl r where r.name = :name");
         query.setString("name", name);
         return new RepositoryImpl(this, (RepositoryBean)query.uniqueResult());
+*/
+        return new RepositoryImpl(this, (RepositoryBean)fSession.get(RepositoryBeanImpl.class, name));
     }
 
     /* (non-Javadoc)

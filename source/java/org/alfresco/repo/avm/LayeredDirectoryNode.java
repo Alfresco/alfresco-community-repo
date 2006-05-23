@@ -120,7 +120,8 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
     }
     
     /**
-     * Construct one from a PlainDirectoryNode.
+     * Construct one from a PlainDirectoryNode.  Called when a COW is performed in a layered
+     * context.
      * @param other The PlainDirectoryNode.
      * @param repos The Repository we should belong to.
      * @param lPath The Lookup object.
@@ -129,6 +130,7 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
                                 Repository repos,
                                 Lookup lPath)
     {
+        // TODO Fix this yada, yada.
         BasicAttributesBean attrs = new BasicAttributesBeanImpl(other.getDataBean().getBasicAttributes());
         long time = System.currentTimeMillis();
         attrs.setModDate(time);

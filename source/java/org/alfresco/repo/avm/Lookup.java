@@ -121,7 +121,8 @@ public class Lookup
             else
             {
                 String parentIndirection = fComponents.get(fPosition).getIndirection();
-                if (parentIndirection.endsWith("/"))
+                if (parentIndirection.endsWith("/"))  // TODO This currently is impossible because
+                                                      // root dirs are always plain.
                 {
                     comp.setIndirection(parentIndirection + name);
                 }

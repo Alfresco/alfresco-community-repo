@@ -328,11 +328,11 @@ public class AVMServiceImpl implements AVMService
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMService#getLatestVersionID(java.lang.String)
      */
-    public long getLatestVersionID(final String repName)
+    public int getLatestVersionID(final String repName)
     {
         class HTxnCallback implements HibernateTxnCallback
         {
-            public long latestVersionID;
+            public int latestVersionID;
             
             public void perform(Session session)
             {

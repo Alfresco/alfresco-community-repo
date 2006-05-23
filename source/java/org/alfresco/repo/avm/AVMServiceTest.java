@@ -23,6 +23,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.alfresco.repo.avm.hibernate.HibernateHelper;
 import org.alfresco.repo.avm.impl.AVMServiceImpl;
@@ -282,15 +283,19 @@ public class AVMServiceTest extends TestCase
         try
         {
             setupBasicTree();
-            System.out.println(recursiveList("main", -1));
+            TreeMap<Integer, String> history = new TreeMap<Integer, String>();
+            checkHistory(history, "main");
+            System.out.println(history.get(0));
             fService.removeNode("main:/a/b/c", "foo");
             fService.createSnapshot("main");
-            System.out.println(recursiveList("main", -1));
+            checkHistory(history, "main");
+            System.out.println(history.get(1));
             List<FolderEntry> l = fService.getDirectoryListing(-1, "main:/a/b/c");
             assertEquals(1, l.size());
             fService.removeNode("main:/d", "e");
             fService.createSnapshot("main");
-            System.out.println(recursiveList("main", -1));
+            checkHistory(history, "main");
+            System.out.println(history.get(2));
             l = fService.getDirectoryListing(-1, "main:/d");
             assertEquals(0, l.size());
         }
@@ -412,6 +417,188 @@ public class AVMServiceTest extends TestCase
     }
     
     /**
+     * Test COW in various circumstances.
+     */
+    public void testDeepCOW()
+    {
+        try
+        {
+            // Makes a layer on top of a layer on top of a plain directory.
+            // Assures that the correct layers are copied when files
+            // are added in the two layers.
+            fService.createDirectory("main:/", "a");
+            fService.createDirectory("main:/a", "b");
+            fService.createSnapshot("main");
+            List<FolderEntry> listing = fService.getDirectoryListing(-1, "main:/a");
+            assertEquals(1, listing.size());
+            assertEquals("b", listing.get(0).getName());
+            fService.createLayeredDirectory("main:/a", "main:/", "c");
+            fService.createLayeredDirectory("main:/c", "main:/", "d");
+            fService.createFile("main:/d/b", "foo.txt");
+            fService.createSnapshot("main");
+            System.out.println(recursiveList("main", -1));
+            listing = fService.getDirectoryListing(-1, "main:/d/b");
+            assertEquals(1, listing.size());
+            assertEquals("foo.txt", listing.get(0).getName());
+            fService.createFile("main:/c/b", "bar.txt");
+            fService.createSnapshot("main");
+            System.out.println(recursiveList("main", -1));
+            listing = fService.getDirectoryListing(-1, "main:/c/b");
+            assertEquals(1, listing.size());
+            assertEquals("bar.txt", listing.get(0).getName());
+            listing = fService.getDirectoryListing(-1, "main:/d/b");
+            assertEquals(2, listing.size());
+            assertEquals("bar.txt", listing.get(0).getName());
+            assertEquals("foo.txt", listing.get(1).getName());
+            fService.rename("main:/", "c", "main:/", "e");
+            fService.createSnapshot("main");
+            System.out.println(recursiveList("main", -1));
+            listing = fService.getDirectoryListing(-1, "main:/d/b");
+            assertEquals(1, listing.size());
+            assertEquals("foo.txt", listing.get(0).getName());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
+     * Test branching and layering interaction.
+     */
+    public void testBranchAndLayer()
+    {
+        try
+        {
+            // Create a simple directory hierarchy.
+            fService.createDirectory("main:/", "a");
+            fService.createDirectory("main:/a", "b");
+            fService.createFile("main:/a/b", "c.txt");
+            fService.createFile("main:/a/b", "d.txt");
+            fService.createFile("main:/a", "e.txt");
+            fService.createSnapshot("main");
+            // Make a branch off of a.
+            fService.createBranch(-1, "main:/a", "main:/", "branch");
+            fService.createSnapshot("main");
+            // The branch should contain exactly the same things as the thing
+            // it branched from.
+            String original = recursiveList("main:/a", -1, 0);
+            original = original.substring(original.indexOf('\n'));
+            String branch = recursiveList("main:/branch", -1, 0);
+            branch = branch.substring(branch.indexOf('\n'));
+            assertEquals(original, branch);
+            // Make a layer pointing to /branch/b
+            fService.createLayeredDirectory("main:/branch/b", "main:/", "layer");
+            fService.createSnapshot("main");
+            // The new layer should contain exactly the same things as the thing it is layered to.
+            original = recursiveList("main:/branch/b", -1, 0);
+            original = original.substring(original.indexOf('\n'));
+            String layer = recursiveList("main:/layer", -1, 0);
+            layer = layer.substring(layer.indexOf('\n'));
+            assertEquals(original, layer);
+            // Make a modification in /a/b, the original branch.
+            PrintStream out = new PrintStream(fService.getFileOutputStream("main:/a/b/c.txt"));
+            out.println("I am c, modified in main:/a/b.");
+            out.close();
+            fService.createSnapshot("main");
+            // The layer should still have identical content to /branch/b.
+            original = recursiveList("main:/branch/b", -1, 0);
+            original = original.substring(original.indexOf('\n'));
+            layer = recursiveList("main:/layer", -1, 0);
+            layer = layer.substring(layer.indexOf('\n'));
+            assertEquals(original, layer);
+            // But the layer won't have contents identical to /a/b's
+            original = recursiveList("main:/a/b", -1, 0);
+            original = original.substring(original.indexOf('\n'));
+            assertFalse(original.equals(layer));
+            // Make a modification in /branch/b
+            out = new PrintStream(fService.getFileOutputStream("main:/branch/b/d.txt"));
+            out.println("I am d, modified in main:/branch/b");
+            out.close();
+            fService.createSnapshot("main");
+            // The layer contents should be identical to the latest contents of /branch/b.
+            original = recursiveList("main:/branch/b", -1, 0);
+            original = original.substring(original.indexOf('\n'));
+            layer = recursiveList("main:/layer", -1, 0);
+            layer = layer.substring(layer.indexOf('\n'));
+            assertEquals(original, layer);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
+     * Test basic Layering.
+     */
+    public void testLayering()
+    {
+        try
+        {
+            // Make some directories;
+            fService.createDirectory("main:/", "a");
+            fService.createDirectory("main:/a", "b");
+            fService.createDirectory("main:/a/b", "c");
+            fService.createDirectory("main:/a/b/c", "d");
+            fService.createSnapshot("main");
+            // Now make some layers.  Three to be precise.
+            fService.createLayeredDirectory("main:/a", "main:/", "e");
+            fService.createLayeredDirectory("main:/e", "main:/", "f");
+            fService.createLayeredDirectory("main:/f", "main:/", "g");
+            fService.createSnapshot("main");
+            // e, f, g should all have the same contents as a.
+            String a = recursiveList("main:/a", -1, 0);
+            a = a.substring(a.indexOf('\n'));
+            String e = recursiveList("main:/e", -1, 0);
+            e = e.substring(e.indexOf('\n'));
+            String f = recursiveList("main:/f", -1, 0);
+            f = f.substring(f.indexOf('\n'));
+            String g = recursiveList("main:/g", -1, 0);
+            g = g.substring(g.indexOf('\n'));
+            assertEquals(a, e);
+            assertEquals(a, f);
+            assertEquals(a, g);
+            // Now make a file in /g/b/c/d and /f/b/c/d
+            fService.createFile("main:/g/b/c/d", "foo");
+            fService.createFile("main:/f/b/c/d", "bar");
+            fService.createSnapshot("main");
+            // /g/b/c/d should contain foo and bar.
+            List<FolderEntry> listing = fService.getDirectoryListing(-1, "main:/g/b/c/d");
+            assertEquals(2, listing.size());
+            assertEquals("bar", listing.get(0).getName());
+            assertEquals("foo", listing.get(1).getName());
+            // /f/b/c/d should contain just bar.
+            listing = fService.getDirectoryListing(-1, "main:/f/b/c/d");
+            assertEquals(1, listing.size());
+            assertEquals("bar", listing.get(0).getName());
+            // Now do something in the bottom layer.
+            fService.createFile("main:/a/b/c", "baz");
+            fService.createSnapshot("main");
+            // /e/b/c should contain baz and d
+            listing = fService.getDirectoryListing(-1, "main:/e/b/c");
+            assertEquals(2, listing.size());
+            assertEquals("baz", listing.get(0).getName());
+            assertEquals("d", listing.get(1).getName());
+            // Now add something in the e layer.
+            fService.createFile("main:/e/b/c/d", "bing");
+            fService.createSnapshot("main");
+            // /f/b/c/d should now contain bar and bing.
+            listing = fService.getDirectoryListing(-1, "main:/f/b/c/d");
+            assertEquals(2, listing.size());
+            assertEquals("bar", listing.get(0).getName());
+            assertEquals("bing", listing.get(1).getName());
+            System.out.println(recursiveList("main", -1));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+        }
+    }
+    
+    /**
      * Test adding 100 files to each directory.
      */
     public void testAdd100()
@@ -434,6 +621,7 @@ public class AVMServiceTest extends TestCase
                 }
             }
             fService.createSnapshot("main");
+            System.out.println(recursiveList("main", -1));
         }
         catch (Exception e)
         {
@@ -505,5 +693,18 @@ public class AVMServiceTest extends TestCase
         ArrayList<String> toSnapshot = new ArrayList<String>();
         toSnapshot.add("main");
         fService.createSnapshot(toSnapshot);
+    }
+    
+    /**
+     * Check that history has not been screwed up.
+     */
+    private void checkHistory(TreeMap<Integer, String> history, String repName)
+    {
+        for (Integer i : history.keySet())
+        {
+            assertEquals(history.get(i), recursiveList(repName, i));
+        }
+        int latest = fService.getLatestVersionID(repName);
+        history.put(latest - 1, recursiveList(repName, -1));
     }
 }

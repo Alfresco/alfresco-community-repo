@@ -138,7 +138,7 @@ public interface AVMService
      * @param repName The name of the repository.
      * @return The latest version id of the repository.
      */
-    public long getLatestVersionID(String repName);
+    public int getLatestVersionID(String repName);
     
     /**
      * Snapshot the given repositories.  When this is called everything that has been added,

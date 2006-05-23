@@ -200,7 +200,7 @@ public class UIClipboardShelfItem extends UIShelfItem
             out.write(buildActionLink(ACTION_REMOVE_ITEM, i, bundle.getString(MSG_REMOVE_ITEM), WebResources.IMAGE_REMOVE));
             out.write("&nbsp;");
             out.write(buildActionLink(ACTION_PASTE_ITEM, i, bundle.getString(MSG_PASTE_ITEM), WebResources.IMAGE_PASTE));
-            if (item.Mode == ClipboardStatus.COPY)
+            if (item.Mode == ClipboardStatus.COPY && dd.isSubClass(item.Node.getType(), ContentModel.TYPE_LINK) == false)
             {
                out.write("&nbsp;");
                out.write(buildActionLink(ACTION_PASTE_LINK, i, bundle.getString(MSG_PASTE_LINK), WebResources.IMAGE_PASTE_LINK));

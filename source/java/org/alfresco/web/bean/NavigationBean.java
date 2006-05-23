@@ -129,6 +129,14 @@ public class NavigationBean
    {
       return Application.getCurrentUser(FacesContext.getCurrentInstance());
    }
+   
+   /**
+    * @return true if the system is running within a JSR-168 portal container
+    */
+   public boolean getInPortalServer()
+   {
+      return Application.inPortalServer();
+   }
 
    /**
     * Return the expanded state of the Shelf panel wrapper component

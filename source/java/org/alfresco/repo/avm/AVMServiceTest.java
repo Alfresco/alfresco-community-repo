@@ -412,6 +412,37 @@ public class AVMServiceTest extends TestCase
     }
     
     /**
+     * Test adding 100 files to each directory.
+     */
+    public void testAdd100()
+    {
+        try
+        {
+            String [] dirs = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j" };
+            for (String dir : dirs)
+            {
+                fService.createDirectory("main:/", dir);
+                dir = "main:/" + dir;
+                for (int i = 0; i < 50; i++)
+                {
+                    fService.createFile(dir, "file" + i);
+                    System.out.println(dir + "/file" + i);
+                    PrintStream out = 
+                        new PrintStream(fService.getFileOutputStream(dir + "/file" + i));
+                    out.println("I am " + dir + "/file" + i);
+                    out.close();
+                }
+            }
+            fService.createSnapshot("main");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
      * Helper to write a recursive listing of a repository at a given version.
      * @param repoName The name of the repository.
      * @param version The version to look under.

@@ -109,10 +109,10 @@
 				<property name="isRoot" column="is_root" type="boolean" />
 				<!-- A map of names to DirectoryEntries.  In the AVM world, it makes sense
 					that nodes don't know there own names, only their containers do. -->
-				<map name="children" cascade="all">
+				<map name="children" cascade="all" fetch="join" lazy="true">
 					<cache usage="read-write"/>
-					<key column="directory_id" />
-					<map-key type="string" column="name" />
+					<key column="directory_id"/>
+					<map-key type="string" column="name"/>
 					<composite-element
 						class="DirectoryEntry">
 						<property name="type" type="int"

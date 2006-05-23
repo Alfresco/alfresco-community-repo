@@ -227,6 +227,12 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       }
    }
    
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      return false;
+   }
+   
    // ------------------------------------------------------------------------------
    // Bean getters and setters
 

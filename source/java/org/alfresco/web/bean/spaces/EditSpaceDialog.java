@@ -41,6 +41,12 @@ public class EditSpaceDialog extends CreateSpaceDialog
       return Application.getMessage(FacesContext.getCurrentInstance(), "ok");
    }
    
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      return false;
+   }
+   
    /**
     * Returns the editable node
     * 

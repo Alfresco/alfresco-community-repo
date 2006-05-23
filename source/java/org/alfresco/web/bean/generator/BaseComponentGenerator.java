@@ -35,6 +35,7 @@ import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet.ClientValidation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StringUtils;
 import org.springframework.web.jsf.FacesContextUtils;
 
 public abstract class BaseComponentGenerator implements IComponentGenerator
@@ -398,7 +399,8 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
       // add the validation failed message to show (use the value of the 
       // label component of the given item)
       String msg = Application.getMessage(context, "validation_mandatory");
-      params.add("'" + MessageFormat.format(msg, new Object[] {item.getResolvedDisplayLabel()}) + "'");
+      addStringConstraintParam(params, 
+            MessageFormat.format(msg, new Object[] {item.getResolvedDisplayLabel()}));
       
       // add the validation case to the property sheet
       propertySheet.addClientValidation(new ClientValidation("validateMandatory",
@@ -504,12 +506,12 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
       try
       {
          // encode the expression so it can be unescaped by JavaScript
-         params.add("'" + URLEncoder.encode(expression, "UTF-8") + "'");
+         addStringConstraintParam(params, URLEncoder.encode(expression, "UTF-8"));
       }
       catch (UnsupportedEncodingException e)
       {
          // just add the expression as is
-         params.add("'" + expression + "'");
+         addStringConstraintParam(params, expression);
       }
       
       // add the requiresMatch parameter
@@ -517,12 +519,12 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
       
       // add the validation failed messages
       String matchMsg = Application.getMessage(context, "validation_regex");
-      params.add("'" + MessageFormat.format(matchMsg, new Object[] 
-            {property.getResolvedDisplayLabel()}) + "'");
+      addStringConstraintParam(params, 
+            MessageFormat.format(matchMsg, new Object[] {property.getResolvedDisplayLabel()}));
 
       String noMatchMsg = Application.getMessage(context, "validation_regex_not_match");
-      params.add("'" + MessageFormat.format(noMatchMsg, new Object[] 
-            {property.getResolvedDisplayLabel()}) + "'");
+      addStringConstraintParam(params,
+            MessageFormat.format(noMatchMsg, new Object[] {property.getResolvedDisplayLabel()}));
       
       // add the validation case to the property sheet
       propertySheet.addClientValidation(new ClientValidation("validateRegex",
@@ -562,8 +564,8 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
       
       // add the validation failed message to show
       String msg = Application.getMessage(context, "validation_string_length");
-      params.add("'" + MessageFormat.format(msg, new Object[] 
-            {property.getResolvedDisplayLabel(), min, max}) + "'");
+      addStringConstraintParam(params, 
+            MessageFormat.format(msg, new Object[] {property.getResolvedDisplayLabel(), min, max}));
       
       // add the validation case to the property sheet
       propertySheet.addClientValidation(new ClientValidation("validateStringLength",
@@ -603,8 +605,8 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
       
       // add the validation failed message to show
       String msg = Application.getMessage(context, "validation_numeric_range");
-      params.add("'" + MessageFormat.format(msg, new Object[] 
-            {property.getResolvedDisplayLabel(), min, max}) + "'");
+      addStringConstraintParam(params, 
+            MessageFormat.format(msg, new Object[] {property.getResolvedDisplayLabel(), min, max}));
       
       // add the validation case to the property sheet
       propertySheet.addClientValidation(new ClientValidation("validateNumberRange",
@@ -693,6 +695,20 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
          Node node, String associationName)
    {
       return getDataDictionary(context).getAssociationDefinition(node, associationName);
+   }
+   
+   /**
+    * Adds the given string parameter to the list of parameters to be used for
+    * validating constraints on the client.
+    * This method adds the quotes around the given parameter and also escapes
+    * any ocurrences of the double quote character.
+    * 
+    * @param params The list of parameters for the constraint
+    * @param param The string parameter to add
+    */
+   protected void addStringConstraintParam(List<String> params, String param)
+   {
+      params.add("\"" + StringUtils.replace(param, "\"", "\\\"") + "\"");
    }
    
    private DataDictionary getDataDictionary(FacesContext context)

@@ -102,7 +102,10 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         // done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Created access control list for node: " + nodeRef);
+            logger.debug(
+                    "Created access control list for node: \n" +
+                    "   node: " + nodeRef + "\n" +
+                    "   acl: " + npe);
         }
         return npe;
     }
@@ -313,7 +316,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         // done
         if (logger.isDebugEnabled())
         {
-            logger.debug("" + (entry == null ? "Did not find" : "Found") + "entry for criteria: \n" +
+            logger.debug("" + (entry == null ? "Did not find" : "Found") + " entry for criteria: \n" +
                     "   node: " + node.getId() + "\n" +
                     "   authority: " + authority + "\n" +
                     "   permission: " + permission);

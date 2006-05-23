@@ -159,11 +159,22 @@ public class EhCacheTracerJob implements Job
         {
             // calculate the cache deep size - EHCache 1.1 is always returning 0L
             List<Serializable> keys = cache.getKeys();
+            // only count a maximum of 1000 entities
+            int count = 0;
             for (Serializable key : keys)
             {
                 Element element = cache.get(key);
                 size += getSize(element);
+                count++;
+                if (count >= 1000)
+                {
+                    break;
+                }
             }
+            
+            // the size must be multiplied by the ratio of the count to actual size
+            size = count > 0L ? (long) (size * ((double)keys.size()/(double)count)) : 0L;
+            
             sizeMB = (double)size/1024.0/1024.0;
             maxSize = cache.getMaxElementsInMemory();
             currentSize = cache.getMemoryStoreSize();

@@ -5,21 +5,27 @@
          <show-property name="name" />
          <show-property name="mimetype" display-label-id="content_type" 
                         component-generator="MimeTypeSelectorGenerator" />
+         <!-- NOTE: The following 3 properties are defined here to cover -->
+         <!--       the scenario where content is added via CIFS or FTP -->
+         <!--       and so the properties are missing -->
          <show-property name="title" display-label-id="title"
                         ignore-if-missing="false" />
          <show-property name="description" display-label-id="description"
                         ignore-if-missing="false" />
+         <show-property name="author" display-label-id="author"
+                        ignore-if-missing="false" />
          <show-property name="size" display-label-id="size" 
                         converter="org.alfresco.faces.ByteSizeConverter" 
                         show-in-edit-mode="false" />
-         <show-property name="author" display-label-id="author"
-                        ignore-if-missing="false" />
       </property-sheet>
    </config>
    
    <config evaluator="node-type" condition="folder">
       <property-sheet>
          <show-property name="name"/>
+         <!-- NOTE: The following 3 properties are defined here to cover -->
+         <!--       the scenario where folders are created via CIFS or FTP -->
+         <!--       and so the properties are missing -->
          <show-property name="title" display-label-id="title"
                         ignore-if-missing="false" />
          <show-property name="description" display-label-id="description"
@@ -87,6 +93,24 @@
       </property-sheet>
    </config>
    
+   <config evaluator="aspect-name" condition="titled">
+      <property-sheet>
+         <!-- The 'name' property isn't part of the titled aspect -->
+         <!-- but it's presence here will force it to the top of the -->
+         <!-- list when custom types are defined in  -->
+         <!-- web-client-config-custom.xml -->
+         <show-property name="name" />
+         <show-property name="title" />
+         <show-property name="description" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="author">
+      <property-sheet>
+         <show-property name="author" />
+      </property-sheet>
+   </config>
+   
    <config evaluator="aspect-name" condition="complianceable">
       <property-sheet>
          <show-property name="removeAfter"/>
@@ -135,12 +159,6 @@
    <config evaluator="aspect-name" condition="localizable">
       <property-sheet>
          <show-property name="locale"/>
-      </property-sheet>
-   </config>
-   
-   <config evaluator="aspect-name" condition="author">
-      <property-sheet>
-         <show-property name="author" />
       </property-sheet>
    </config>
    

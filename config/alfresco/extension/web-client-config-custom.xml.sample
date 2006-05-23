@@ -68,11 +68,8 @@
 
    <config evaluator="node-type" condition="my:sop">
       <property-sheet>
-      <show-property name="name" />
          <show-property name="mimetype" display-label-id="content_type" 
                         component-generator="MimeTypeSelectorGenerator" />
-         <show-property name="title" />
-         <show-property name="description" />
          <show-property name="size" display-label-id="size" 
                         converter="org.alfresco.faces.ByteSizeConverter" 
                         show-in-edit-mode="false" />               

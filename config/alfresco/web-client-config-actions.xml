@@ -381,6 +381,7 @@
             <permissions>
                <permission allow="true">TakeOwnership</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.TakeOwnershipDocEvaluator</evaluator>
             <label-id>take_ownership</label-id>
             <image>/images/icons/take_ownership.gif</image>
             <action-listener>#{DocumentDetailsBean.takeOwnership}</action-listener>

@@ -105,7 +105,7 @@ public class NavigationBean
    {
       this.ruleService = ruleService;
    }
-   
+
    /**
     * @param cifsServer The cifsServer to set.
     */
@@ -484,6 +484,67 @@ public class NavigationBean
       return this.dispatchContext;
    }
    
+   /**
+    * @return Node representing the Company Home folder
+    */
+   public Node getCompanyHomeNode()
+   {
+      if (this.companyHomeNode == null)
+      {
+         NodeRef companyRootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
+         this.companyHomeNode = new Node(companyRootRef);
+      }
+      return this.companyHomeNode;
+   }
+   
+   /**
+    * @return Node representing the Guest Home Space folder
+    */
+   public Node getGuestHomeNode()
+   {
+      if (this.guestHomeNode == null)
+      {
+         try
+         {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            String xpath = Application.getRootPath(fc) + "/" + Application.getGuestHomeFolderName(fc);
+            List<NodeRef> guestHomeRefs = this.searchService.selectNodes(
+                  this.nodeService.getRootNode(Repository.getStoreRef()),
+                  xpath, null, this.namespaceService, false);
+            if (guestHomeRefs.size() == 1)
+            {
+               this.guestHomeNode = new Node(guestHomeRefs.get(0));
+            }
+         }
+         catch (InvalidNodeRefException err1)
+         {
+            // cannot continue if this occurs
+         }
+         catch (AccessDeniedException err2)
+         {
+            // cannot see node if this occurs
+         }
+      }
+      return this.guestHomeNode;
+   }
+   
+   /**
+    * @return true if the Company home node is accessable to the current user
+    */
+   public boolean getCompanyHomeVisible()
+   {
+      return getCompanyHomeNode().hasPermission(PermissionService.READ);
+   }
+   
+   /**
+    * @return true if the Guest home node is accessable to the current user
+    */
+   public boolean getGuestHomeVisible()
+   {
+      Node guestHome = getGuestHomeNode();
+      return guestHome != null && guestHome.hasPermission(PermissionService.READ);
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Navigation action event handlers
@@ -522,11 +583,10 @@ public class NavigationBean
          if (LOCATION_COMPANY.equals(location))
          {
             List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
-            NodeRef companyRootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
-            String companySpaceName = Repository.getNameForNode(this.nodeService, companyRootRef);
-            elements.add(new NavigationBreadcrumbHandler(companyRootRef, companySpaceName));
+            Node companyHome = getCompanyHomeNode();
+            elements.add(new NavigationBreadcrumbHandler(companyHome.getNodeRef(), companyHome.getName()));
             setLocation(elements);
-            setCurrentNodeId(companyRootRef.getId());
+            setCurrentNodeId(companyHome.getId());
          }
          else if (LOCATION_HOME.equals(location))
          {
@@ -537,6 +597,14 @@ public class NavigationBean
             elements.add(new NavigationBreadcrumbHandler(homeSpaceRef, homeSpaceName));
             setLocation(elements);
             setCurrentNodeId(homeSpaceRef.getId());
+         }
+         else if (LOCATION_GUEST.equals(location))
+         {
+            List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
+            Node guestHome = getGuestHomeNode();
+            elements.add(new NavigationBreadcrumbHandler(guestHome.getNodeRef(), guestHome.getName()));
+            setLocation(elements);
+            setCurrentNodeId(guestHome.getId());
          }
          
          // we need to force a navigation to refresh the browse screen breadcrumb
@@ -665,6 +733,7 @@ public class NavigationBean
    /** constant values used by the toolbar location modelist control */
    private static final String LOCATION_COMPANY = "company";
    private static final String LOCATION_HOME = "home";
+   private static final String LOCATION_GUEST = "guest";
    
    private static final String ERROR_DELETED_FOLDER = "error_deleted_folder";
    
@@ -700,6 +769,12 @@ public class NavigationBean
    
    /** Node we are using for dispatching */
    private Node dispatchContext = null;
+   
+   /** Node representing the guest home */
+   private Node guestHomeNode = null;
+   
+   /** Node representing the company home */
+   private Node companyHomeNode = null;
    
    /** Current toolbar location */
    private String toolbarLocation = LOCATION_HOME;

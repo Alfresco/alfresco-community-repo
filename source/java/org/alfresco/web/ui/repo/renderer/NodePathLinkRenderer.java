@@ -219,6 +219,7 @@ public class NodePathLinkRenderer extends BaseRenderer
       
       NodeRef lastElementRef = null;
       int size = (showLeaf ? path.size() : path.size() - 1);
+      int lastElementPos = (showLeaf ? path.size() - 1 : path.size() - 2);
       for (int i=0; i<size; i++)
       {
          Path.Element element = path.get(i);
@@ -230,7 +231,7 @@ public class NodePathLinkRenderer extends BaseRenderer
             {
                elementString = Repository.getNameForNode(getNodeService(context), elementRef.getChildRef());
             }
-            if (i == path.size() - 2)
+            if (i == lastElementPos)
             {
                lastElementRef = elementRef.getChildRef();
             }

@@ -100,8 +100,8 @@
       <set
             name="childAssocs"
             inverse="true"
-            lazy="false"
-            fetch="join"
+            lazy="true"
+            fetch="select"
             cascade="none"
             optimistic-lock="true" >
          <key column="parent_node_id" />

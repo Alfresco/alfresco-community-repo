@@ -43,8 +43,7 @@
         </property>
     </bean>
     
-    
-    <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.AllowPermissionServiceImpl">
+    <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.PermissionServiceImpl">
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>

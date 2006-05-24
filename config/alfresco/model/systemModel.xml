@@ -139,6 +139,10 @@
                <type>d:datetime</type>
                <mandatory>true</mandatory>
             </property>
+            <property name="sys:archivedOriginalOwner">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
          </properties>
       </aspect>
       <aspect name="sys:archived-assocs">

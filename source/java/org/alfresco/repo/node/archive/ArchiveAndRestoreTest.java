@@ -37,7 +37,9 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -70,6 +72,7 @@ public class ArchiveAndRestoreTest extends TestCase
     private PermissionService permissionService;
     private AuthenticationComponent authenticationComponent;
     private AuthenticationService authenticationService;
+    private OwnableService ownableService;
     private TransactionService transactionService;
     
     private UserTransaction txn;
@@ -104,6 +107,7 @@ public class ArchiveAndRestoreTest extends TestCase
         permissionService = serviceRegistry.getPermissionService();
         authenticationService = serviceRegistry.getAuthenticationService();
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        ownableService = (OwnableService) ctx.getBean("ownableService");
         transactionService = serviceRegistry.getTransactionService();
         
         // Start a transaction
@@ -138,12 +142,6 @@ public class ArchiveAndRestoreTest extends TestCase
                     PermissionService.ALL_PERMISSIONS,
                     true);
             
-            // grant everyone rights to the archive store
-            permissionService.setPermission(
-                    archiveStoreRootNodeRef,
-                    PermissionService.ALL_AUTHORITIES,
-                    PermissionService.ALL_PERMISSIONS,
-                    true);
         }
         finally
         {
@@ -320,6 +318,17 @@ public class ArchiveAndRestoreTest extends TestCase
     {
         NodeRef archiveNodeRef = nodeService.getStoreArchiveNode(workStoreRef);
         assertEquals("Mapping of archived store is not correct", archiveStoreRootNodeRef, archiveNodeRef);
+    }
+    
+    public void testArchivedAspect() throws Exception
+    {
+        // delete 'a'
+        nodeService.deleteNode(a);
+        // check that it has the aspect and that the properties are correct
+        assertTrue("Archived aspect not present", nodeService.hasAspect(a_, ContentModel.ASPECT_ARCHIVED));
+        Map<QName, Serializable> properties = nodeService.getProperties(a_);
+        assertNotNull("Original owner property not present", properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER));
+        assertEquals("Original owner property is incorrect", USER_A, properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER));
     }
     
     public void testArchiveAndRestoreNodeBB() throws Exception
@@ -568,6 +577,10 @@ public class ArchiveAndRestoreTest extends TestCase
         nodeService.deleteNode(b);
         commitAndBeginNewTransaction();
         
+        // check that archived nodes are visible
+        verifyNodeExistence(a_, true);
+        verifyNodeExistence(b_, true);
+        
         nodeArchiveService.purgeAllArchivedNodes(workStoreRef);
 
         commitAndBeginNewTransaction();
@@ -581,35 +594,51 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyNodeExistence(aa_, false);
         verifyNodeExistence(bb_, false);
     }
-//    
-//    public void testPermissionsForRestore() throws Exception
-//    {
-//        // user A deletes 'a'
-//        authenticationService.authenticate(USER_A, USER_A.toCharArray());
-//        nodeService.deleteNode(a);
-//        // user B deletes 'b'
-//        authenticationService.authenticate(USER_B, USER_B.toCharArray());
-//        nodeService.deleteNode(b);
-//        
-//        // user B can't see archived 'a'
-//        List<RestoreNodeReport> restoredByB = nodeArchiveService.restoreAllArchivedNodes(workStoreRef);
-//        assertEquals("User B should not have seen A's delete", 1, restoredByB.size());
-//    }
-//    
-//    /**
-//     * Deny the current user the rights to write to the destination location
-//     * and ensure that the use-case is handled properly.
-//     */
-//    public void testPermissionsLackingOnDestination() throws Exception
-//    {
-//        // remove 'b', deny permissions to workspace root and attempt a restore
-//        nodeService.deleteNode(b);
-//        permissionService.setPermission(workStoreRootNodeRef, USER_B, PermissionService.ADD_CHILDREN, false);
-//        commitAndBeginNewTransaction();
-//        
-//        // the restore of b should fail for user B
-//        authenticationService.authenticate(USER_B, USER_B.toCharArray());
-//        RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(b_);
-//        assertEquals("Expected permission denied status", RestoreStatus.FAILURE_PERMISSION, report.getStatus());
-//    }
+    
+    public void testDeletedOwnership() throws Exception
+    {
+        // check that A is the current owner of 'b'
+        String bOwner = ownableService.getOwner(b);
+        assertEquals("User A must own 'b'", USER_A, bOwner);
+        // user B deletes 'b'
+        authenticationService.authenticate(USER_B, USER_B.toCharArray());
+        nodeService.deleteNode(b);
+        // check that B is the owner of 'b_'
+        String b_Owner = ownableService.getOwner(b_);
+        assertEquals("User B must own 'b_'", USER_B, b_Owner);
+    }
+    
+    /**
+     * Check that node ownership changes correctly
+     */
+    public void testPermissionsForRestore() throws Exception
+    {
+        // user A deletes 'a'
+        authenticationService.authenticate(USER_A, USER_A.toCharArray());
+        nodeService.deleteNode(a);
+        // user B deletes 'b'
+        authenticationService.authenticate(USER_B, USER_B.toCharArray());
+        nodeService.deleteNode(b);
+
+        // user B can't see archived 'a'
+        List<RestoreNodeReport> restoredByB = nodeArchiveService.restoreAllArchivedNodes(workStoreRef);
+        assertEquals("User B should be able to see only B's delete", 1, restoredByB.size());
+    }
+    
+    /**
+     * Deny the current user the rights to write to the destination location
+     * and ensure that the use-case is handled properly.
+     */
+    public void testPermissionsLackingOnDestination() throws Exception
+    {
+        // remove 'b', deny permissions to workspace root and attempt a restore
+        nodeService.deleteNode(b);
+        permissionService.setPermission(workStoreRootNodeRef, USER_B, PermissionService.ADD_CHILDREN, false);
+        commitAndBeginNewTransaction();
+        
+        // the restore of b should fail for user B
+        authenticationService.authenticate(USER_B, USER_B.toCharArray());
+        RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(b_);
+        assertEquals("Expected permission denied status", RestoreStatus.FAILURE_PERMISSION, report.getStatus());
+    }
 }

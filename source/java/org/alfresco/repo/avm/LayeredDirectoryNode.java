@@ -353,7 +353,9 @@ public class LayeredDirectoryNode extends DirectoryNode implements Layered
      */
     public boolean directlyContains(AVMNode node)
     {
-        return fData.getAdded().containsValue(node.getDataBean());
+        DirectoryEntry entry = new DirectoryEntry(node.getType(),
+                                                  node.getDataBean());
+        return fData.getAdded().containsValue(entry);
     }
 
     /* (non-Javadoc)

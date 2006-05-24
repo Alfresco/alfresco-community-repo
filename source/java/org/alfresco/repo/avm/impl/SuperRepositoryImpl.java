@@ -88,10 +88,10 @@ public class SuperRepositoryImpl implements SuperRepository
     {
         fSession = session;
         fStorage = storage;
-        fNodeIssuer = (Issuer)fSession.get(Issuer.class, "node");
-        fContentIssuer = (Issuer)fSession.get(Issuer.class, "content");
-        fBranchIssuer = (Issuer)fSession.get(Issuer.class, "branch");
-        fLayerIssuer = (Issuer)fSession.get(Issuer.class, "layer");
+        fNodeIssuer = null;
+        fContentIssuer = null;
+        fBranchIssuer = null;
+        fLayerIssuer = null;
     }
 
     /* (non-Javadoc)
@@ -186,7 +186,7 @@ public class SuperRepositoryImpl implements SuperRepository
         dstNode.setVersion(dstRepo.getLatestVersion() + 1);
         dstRepo.setNew(dstNode);
         dstNode.setAncestor(srcNode);
-        dstNode.setBranchID(fBranchIssuer.issue());
+        dstNode.setBranchID(issueBranchID());
         dirNode.addChild(name, dstNode, dPath);
     }
 
@@ -270,7 +270,7 @@ public class SuperRepositoryImpl implements SuperRepository
                 // we need to compute the indirection path for this layer after the rename.
                 dstNode =
                     new LayeredDirectoryNode((DirectoryNode)srcNode, dstRepo, sPath, srcName);
-                ((LayeredDirectoryNode)dstNode).setLayerID(fLayerIssuer.issue());
+                ((LayeredDirectoryNode)dstNode).setLayerID(issueLayerID());
             }
         }
         else if (srcNode instanceof LayeredFileNode)
@@ -415,6 +415,10 @@ public class SuperRepositoryImpl implements SuperRepository
      */
     public long issueID()
     {
+        if (fNodeIssuer == null)
+        {
+            fNodeIssuer = (Issuer)fSession.get(Issuer.class, "node");
+        }
         return fNodeIssuer.issue();
     }
 
@@ -423,6 +427,10 @@ public class SuperRepositoryImpl implements SuperRepository
      */
     public long issueContentID()
     {
+        if (fContentIssuer == null)
+        {
+            fContentIssuer = (Issuer)fSession.get(Issuer.class, "content");
+        }
         return fContentIssuer.issue();
     }
 
@@ -431,7 +439,20 @@ public class SuperRepositoryImpl implements SuperRepository
      */
     public long issueLayerID()
     {
+        if (fLayerIssuer == null)
+        {
+            fLayerIssuer = (Issuer)fSession.get(Issuer.class, "layer");
+        }
         return fLayerIssuer.issue();
+    }
+    
+    private long issueBranchID()
+    {
+        if (fBranchIssuer == null)
+        {
+            fBranchIssuer = (Issuer)fSession.get(Issuer.class, "branch");
+        }
+        return fBranchIssuer.issue();
     }
 
     /* (non-Javadoc)

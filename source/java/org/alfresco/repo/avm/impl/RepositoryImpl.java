@@ -346,7 +346,7 @@ public class RepositoryImpl implements Repository
             throw new AlfrescoRuntimeException("Not in this layer: " + srcName);
         }
         Lookup dPath = lookupDirectory(-1, dstPath);
-        if (!dPath.isLayered() || dPath.getTopLayer() != sPath.getTopLayer())
+        if (!dPath.isLayered() || !dPath.getTopLayer().equals(sPath.getTopLayer()))
         {
             throw new AlfrescoRuntimeException("Destination must be in same layer: " + dstPath);
         }

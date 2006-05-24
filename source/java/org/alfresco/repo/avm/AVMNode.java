@@ -240,4 +240,30 @@ public abstract class AVMNode
      * @param lPath The Lookup.
      */
     public abstract String toString(Lookup lPath);
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (!(obj instanceof AVMNode))
+        {
+            return false;
+        }
+        return getDataBean().equals(((AVMNode)obj).getDataBean());
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        return getDataBean().hashCode();
+    }
 }

@@ -19,6 +19,8 @@ package org.alfresco.repo.dictionary;
 import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+
 
 /**
  * Property Definition

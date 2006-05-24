@@ -204,7 +204,10 @@ import org.alfresco.service.namespace.QName;
     }
     
 
-    /*package*/ void resolveInheritance(ModelQuery query)
+    /*package*/ void resolveInheritance(
+            ModelQuery query,
+            NamespacePrefixResolver prefixResolver,
+            Map<QName, ConstraintDefinition> modelConstraints)
     {
         // Retrieve parent class
         ClassDefinition parentClass = (parentName == null) ? null : query.getClass(parentName);
@@ -221,7 +224,9 @@ import org.alfresco.service.namespace.QName;
                 }
                 else
                 {
-                    inheritedProperties.put(def.getName(), new M2PropertyDefinition(this, def, override));
+                    inheritedProperties.put(
+                            def.getName(),
+                            new M2PropertyDefinition(this, def, override, prefixResolver, modelConstraints));
                 }
             }
         }

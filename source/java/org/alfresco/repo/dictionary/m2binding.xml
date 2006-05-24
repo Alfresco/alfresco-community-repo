@@ -77,6 +77,9 @@
                   <value style="text" field="isMandatory" />
                </structure>
                <value name="default" field="defaultValue" usage="optional"/>
+               <structure name="constraints" usage="optional">
+                  <collection field="constraints" item-type="org.alfresco.repo.dictionary.M2Constraint" factory="org.alfresco.repo.dictionary.M2Model.createList"/>
+               </structure>
             </structure>
          </collection>
       </structure>

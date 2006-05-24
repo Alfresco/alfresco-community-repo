@@ -449,7 +449,7 @@
     
     <!-- Lock and Unlock require the related aspect specific permissions. Querying the   -->
     <!-- lock status just requires read access to the node.                              -->
-     
+    
     <bean id="LockService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
@@ -461,6 +461,7 @@
                 org.alfresco.service.cmr.lock.LockService.getLockStatus=ACL_NODE.0.sys:base.Read
                 org.alfresco.service.cmr.lock.LockService.getLockType=ACL_NODE.0.sys:base.Read
                 org.alfresco.service.cmr.lock.LockService.checkForLock=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.lock.LockService.getLocks=ACL_NODE.0.sys:base.Read
             </value>
         </property>
     </bean>

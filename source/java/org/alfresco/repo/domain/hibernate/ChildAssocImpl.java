@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.io.Serializable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -29,8 +30,10 @@ import org.alfresco.util.EqualsHelper;
 /**
  * @author Derek Hulley
  */
-public class ChildAssocImpl implements ChildAssoc
+public class ChildAssocImpl implements ChildAssoc, Serializable
 {
+    private static final long serialVersionUID = -8993272236626580410L;
+
     private Long id;
     private Node parent;
     private Node child;

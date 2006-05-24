@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.alfresco.repo.domain.AppliedPatch;
@@ -25,8 +26,10 @@ import org.alfresco.repo.domain.AppliedPatch;
  * 
  * @author Derek Hulley
  */
-public class AppliedPatchImpl implements AppliedPatch
+public class AppliedPatchImpl implements AppliedPatch, Serializable
 {
+    private static final long serialVersionUID = 2694230422651768785L;
+
     private String id;
     private String description;
     private int fixesFromSchema;

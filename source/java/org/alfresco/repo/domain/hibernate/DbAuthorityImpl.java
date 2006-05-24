@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,7 +32,8 @@ import org.hibernate.Session;
  * 
  * @author andyh
  */
-public class DbAuthorityImpl extends LifecycleAdapter implements DbAuthority
+public class DbAuthorityImpl extends LifecycleAdapter
+    implements DbAuthority, Serializable
 {
     private static final long serialVersionUID = -5582068692208928127L;
     

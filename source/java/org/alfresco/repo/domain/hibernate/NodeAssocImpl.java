@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.io.Serializable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -31,8 +32,10 @@ import org.alfresco.util.EqualsHelper;
  * 
  * @author Derek Hulley
  */
-public class NodeAssocImpl implements NodeAssoc
+public class NodeAssocImpl implements NodeAssoc, Serializable
 {
+    private static final long serialVersionUID = 864534636913524867L;
+
     private long id;
     private Node source;
     private Node target;

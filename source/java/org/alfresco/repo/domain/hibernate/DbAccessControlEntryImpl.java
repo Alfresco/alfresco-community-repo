@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.domain.DbAccessControlEntry;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.DbAuthority;
@@ -27,8 +29,11 @@ import org.alfresco.util.EqualsHelper;
  * 
  * @author andyh
  */
-public class DbAccessControlEntryImpl extends LifecycleAdapter implements DbAccessControlEntry
+public class DbAccessControlEntryImpl extends LifecycleAdapter
+    implements DbAccessControlEntry, Serializable
 {
+    private static final long serialVersionUID = -418837862334064582L;
+
     /** The object id */
     private long id;
     

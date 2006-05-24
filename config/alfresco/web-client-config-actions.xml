@@ -10,7 +10,7 @@
             <!-- a list of permissions to evaluate action against before checking other preconditions -->
             <permissions>
                <!-- each permission can be an Allow or Deny check -->
-               <permission allow="te">Write</permission>
+               <permission allow="true">Write</permission>
                <permission allow="false">AddChildren</permission>
             </permissions>
             <!-- the evaluator is a class implementing the org.alfresco.web.action.ActionEvaluator contract,

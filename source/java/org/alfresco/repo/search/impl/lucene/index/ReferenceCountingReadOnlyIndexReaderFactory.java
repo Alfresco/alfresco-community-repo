@@ -28,17 +28,6 @@ import org.springframework.aop.target.SingletonTargetSource;
 
 public class ReferenceCountingReadOnlyIndexReaderFactory
 {
-    public interface RefCounting
-    {
-        public void incrementRefCount();
-
-        public void decrementRefCount() throws IOException;
-
-        public boolean isUsed();
-
-        public void setClosable() throws IOException;
-    }
-
     public static IndexReader createReader(IndexReader indexReader)
     {
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
@@ -49,7 +38,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         return proxy;
     }
 
-    public static class Interceptor extends DelegatingIntroductionInterceptor implements RefCounting
+    public static class Interceptor extends DelegatingIntroductionInterceptor implements ReferenceCounting
     {
         
         private static final long serialVersionUID = 7693185658022810428L;
@@ -58,7 +47,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
 
         int refCount = 0;
 
-        boolean shouldClose = false;
+        boolean invalidForReuse = false;
 
         Interceptor(IndexReader indexReader)
         {
@@ -76,7 +65,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             // Close
             else if (methodName.equals("close"))
             {
-                decrementRefCount();
+                decrementReferenceCount();
                 return null;
             }
             else
@@ -85,12 +74,12 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             }
         }
 
-        public synchronized void incrementRefCount()
+        public synchronized void incrementReferenceCount()
         {
             refCount++;
         }
 
-        public synchronized void decrementRefCount() throws IOException
+        public synchronized void decrementReferenceCount() throws IOException
         {
             refCount--;
             closeIfRequired();
@@ -98,7 +87,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
 
         private void closeIfRequired() throws IOException
         {
-            if ((refCount == 0) && shouldClose)
+            if ((refCount == 0) && invalidForReuse)
             {
                 indexReader.close();
             }
@@ -109,9 +98,9 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             return (refCount > 0);
         }
 
-        public synchronized void setClosable() throws IOException
+        public synchronized void setInvalidForReuse() throws IOException
         {
-            shouldClose = true;
+            invalidForReuse = true;
             closeIfRequired();
         }
     }

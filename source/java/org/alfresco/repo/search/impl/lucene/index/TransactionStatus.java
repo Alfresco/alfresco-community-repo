@@ -1,27 +1,20 @@
 package org.alfresco.repo.search.impl.lucene.index;
 
+
 /**
- * Status of indexes that make up the whole index.
- * This starts with the value from javax.transaction.Status.
+ * Status of indexes that make up the whole index. This starts with the value from javax.transaction.Status.
  * 
- * Lifecycle
- * ---------
+ * Lifecycle ---------
  * 
- * As a transaction starts, the delta is ACTIVE
- * It may be MARKED_ROLLBACK -> ROLLED BACK
- * -> PREPARING -> PREPARED -> COMMITTING -> COMMITTED...
- * with roll back at any time
+ * As a transaction starts, the delta is ACTIVE It may be MARKED_ROLLBACK -> ROLLED BACK -> PREPARING -> PREPARED -> COMMITTING -> COMMITTED... with roll back at any time
  * 
- * If the index has any delayed indexing it commits to
- * COMMITTED_REQUIRES_REINDEX
- * and then the overlay can go from -> COMMITTED_REINDEXING -> COMMITTED_REINDEXED
+ * If the index has any delayed indexing it commits to COMMITTED_REQUIRES_REINDEX and then the overlay can go from -> COMMITTED_REINDEXING -> COMMITTED_REINDEXED
  * 
  * If there was no reindexing required the delat commits as COMMITTED
  * 
  * A delta changes to an index overlay as it is committed.
  * 
- * For an overlay in COMMITTED or COMMITTED_REINDEXED it can have its delete list applied 
- * to sub indexes. At this point it becomes a sub index.
+ * For an overlay in COMMITTED or COMMITTED_REINDEXED it can have its delete list applied to sub indexes. At this point it becomes a sub index.
  * 
  * @author Andy Hind
  */
@@ -29,45 +22,229 @@ package org.alfresco.repo.search.impl.lucene.index;
 public enum TransactionStatus
 {
     // Match the order in javax.transaction.Status so ordinal values are correct
-    ACTIVE,
-    MARKED_ROLLBACK,
-    PREPARED,
-    COMMITTED,
-    ROLLEDBACK,
-    UNKNOWN,
-    NO_TRANSACTION,
-    PREPARING,
-    COMMITTING,
-    ROLLINGBACK,
-    
+    ACTIVE
+    {
+        public boolean follows(TransactionStatus previous)
+        {
+            return false;
+        }
+    },
+
+    MARKED_ROLLBACK
+    {
+        public boolean follows(TransactionStatus previous)
+        {
+            return previous.allowsRollbackOrMark(previous);
+        }
+    },
+
+    PREPARED
+    {
+        public boolean follows(TransactionStatus previous)
+        {
+            return previous == TransactionStatus.PREPARING;
+        }
+    },
+
+    COMMITTED
+    {
+        public boolean isCommitted()
+        {
+            return true;
+        }
+
+        public boolean follows(TransactionStatus previous)
+        {
+            return previous == TransactionStatus.COMMITTING;
+        }
+    },
+
+    ROLLEDBACK
+    {
+        public boolean follows(TransactionStatus previous)
+        {
+            return previous == TransactionStatus.ROLLINGBACK;
+        }
+    },
+
+    UNKNOWN
+    {
+        public boolean follows(TransactionStatus previous)
+        {
+            return false;
+        }
+    },
+
+    NO_TRANSACTION
+    {
+        public boolean follows(TransactionStatus previous)
+        {
+            return false;
+        }
+    },
+
+    PREPARING
+    {
+        public boolean follows(TransactionStatus previous)
+        {
+            return previous == TransactionStatus.ACTIVE;
+        }
+    },
+
+    COMMITTING
+    {
+        public boolean follows(TransactionStatus previous)
+        {
+            return previous == TransactionStatus.PREPARED;
+        }
+    },
+
+    ROLLINGBACK
+    {
+        public boolean follows(TransactionStatus previous)
+        {
+            return previous.allowsRollbackOrMark(previous);
+        }
+    },
+
     /*
-     * This entry is the source for an active merge.
-     * The result will be in a new index.
+     * This entry is the source for an active merge. The result will be in a new index.
      */
-    MERGING,
-    
+    MERGE
+    {
+        public boolean isCommitted()
+        {
+            return true;
+        }
+
+        public boolean follows(TransactionStatus previous)
+        {
+            return false;
+        }
+    },
+
     /*
      * A new index element that is being made by a merge.
      */
-    MERGING_TARGET,
-    
+    MERGE_TARGET
+    {
+        public boolean follows(TransactionStatus previous)
+        {
+            return false;
+        }
+    },
+
     /*
      * These index overlays require reindexing
      */
-    COMMITTED_REQUIRES_REINDEX,
-    
+    COMMITTED_REQUIRES_REINDEX
+    {
+        public boolean isCommitted()
+        {
+            return true;
+        }
+
+        public boolean follows(TransactionStatus previous)
+        {
+            return false;
+        }
+    },
+
     /*
-     *  These index overlays are reindexing
+     * These index overlays are reindexing
      */
-    COMMITTED_REINDEXING,
-    
+    COMMITTED_REINDEXING
+    {
+        public boolean isCommitted()
+        {
+            return true;
+        }
+
+        public boolean follows(TransactionStatus previous)
+        {
+            return false;
+        }
+    },
+
     /*
      * These index overlays have ben reindexed.
      */
-    COMMITTED_REINDEXED,
-    
+    COMMITTED_REINDEXED
+    {
+        public boolean isCommitted()
+        {
+            return true;
+        }
+
+        public boolean follows(TransactionStatus previous)
+        {
+            return false;
+        }
+    },
+
+    /*
+     * Committed but the index still has deletions
+     */
+
+    COMMITTED_WITH_DELETIONS
+    {
+        public boolean isCommitted()
+        {
+            return true;
+        }
+
+        public boolean follows(TransactionStatus previous)
+        {
+            return false;
+        }
+    },
+
+    /*
+     * Pending deleted are being committed to for the delta.
+     */
+    COMMITTED_DELETING
+    {
+        public boolean isCommitted()
+        {
+            return true;
+        }
+
+        public boolean follows(TransactionStatus previous)
+        {
+            return false;
+        }
+    },
+
     /*
      * An entry that may be deleted
      */
-    DELETABLE;
+    DELETABLE
+    {
+        public boolean follows(TransactionStatus previous)
+        {
+            return false;
+        }
+    };
+
+    public boolean isCommitted()
+    {
+        return false;
+    }
+
+    public abstract boolean follows(TransactionStatus previous);
+
+    private boolean allowsRollbackOrMark(TransactionStatus previous)
+    {
+        switch (previous)
+        {
+        case ACTIVE:
+        case MARKED_ROLLBACK:
+        case PREPARED:
+        case PREPARING:
+        case COMMITTING:
+            return true;
+        default:
+            return false;
+        }
+    }
 }

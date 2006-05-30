@@ -26,18 +26,29 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.FileChannel.MapMode;
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.zip.CRC32;
 
+import javax.swing.plaf.multi.MultiInternalFrameUI;
+
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.search.impl.lucene.LuceneAnalyser;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.repo.search.IndexerException;
+import org.alfresco.repo.search.impl.lucene.ClosingIndexSearcher;
+import org.alfresco.repo.search.impl.lucene.FilterIndexReaderByNodeRefs;
+import org.alfresco.repo.search.impl.lucene.LuceneIndexer;
 import org.alfresco.util.GUID;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
 
 /**
@@ -62,6 +73,8 @@ import org.apache.lucene.index.Term;
  * Incomplete delete merging does not matter - the overlay would still exist and be treated as such. So a document may be deleted in the index as well as in the applied overlay. It
  * is still correctly deleted.
  * 
+ * NOTE: Public methods locak as required, the private methods assume that the appropriate locks have been obtained.
+ * 
  * TODO: Write element status into individual directories. This would be enough for recovery if both index files are lost or corrupted.
  * 
  * TODO: Tidy up index status at start up or after some time. How long would you leave a merge to run?
@@ -82,6 +95,11 @@ public class IndexInfo
      * The default name for the back up file that holds the index information
      */
     private static String INDEX_INFO_BACKUP = "IndexInfoBackup";
+
+    /**
+     * Is this index shared by more than one repository? We can make many lock optimisations if the index is not shared.
+     */
+    private boolean indexIsShared;
 
     /**
      * The directory that holds the index
@@ -122,38 +140,50 @@ public class IndexInfo
     /**
      * Lock for the index entries
      */
-    ReentrantReadWriteLock entriesReadWriteLock = new ReentrantReadWriteLock();
-
-    /**
-     * Lock for switching over the main cached reader
-     */
-    ReentrantReadWriteLock mainIndexReaderReadWriteLock = new ReentrantReadWriteLock();
+    private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
     /**
      * Read only index readers that also do reference counting.
      */
-    private HashMap<String, IndexWriter> referenceCountingReadOnlyIndexReaders = new HashMap<String, IndexWriter>();
+    private HashMap<String, IndexReader> referenceCountingReadOnlyIndexReaders = new HashMap<String, IndexReader>();
 
     /**
-     * Index writers
+     * Main index reader
+     */
+    private IndexReader mainIndexReader;
+
+    /**
+     * Index writers for deltas
      */
     private HashMap<String, IndexWriter> indexWriters = new HashMap<String, IndexWriter>();
 
     /**
-     * Index Readers
+     * Index Readers for deltas
      */
     private HashMap<String, IndexReader> indexReaders = new HashMap<String, IndexReader>();
 
-    private DictionaryService dictionaryService;
+    /**
+     * Map of state transitions
+     */
+    private EnumMap<TransactionStatus, Transition> transitions = new EnumMap<TransactionStatus, Transition>(
+            TransactionStatus.class);
 
+    /**
+     * Construct an index in the given directory.
+     * 
+     * @param indexDirectory
+     */
     public IndexInfo(File indexDirectory)
     {
         super();
+        initialiseTransitions();
+
         this.indexDirectory = indexDirectory;
 
+        // Make sure the directory exists
         if (!this.indexDirectory.exists())
         {
-            if (this.indexDirectory.mkdirs())
+            if (!this.indexDirectory.mkdirs())
             {
                 throw new AlfrescoRuntimeException("Failed to create index directory");
             }
@@ -163,29 +193,33 @@ public class IndexInfo
             throw new AlfrescoRuntimeException("The index must be held in a directory");
         }
 
+        // Create the info files.
         File indexInfoFile = new File(this.indexDirectory, INDEX_INFO);
         File indexInfoBackupFile = new File(this.indexDirectory, INDEX_INFO_BACKUP);
         if (createFile(indexInfoFile) && createFile(indexInfoBackupFile))
         {
+            // a spanking new index
             version = 0;
         }
 
+        // Open the files and channels
         this.indexInfoRAF = openFile(indexInfoFile);
         this.indexInfoChannel = this.indexInfoRAF.getChannel();
 
         this.indexInfoBackupRAF = openFile(indexInfoBackupFile);
         this.indexInfoBackupChannel = this.indexInfoBackupRAF.getChannel();
 
+        // Read info from disk if this is not a new index.
         if (version == -1)
         {
-            entriesReadWriteLock.writeLock().lock();
+            readWriteLock.writeLock().lock();
             try
             {
                 doWithFileLock(new LockWork<Object>()
                 {
                     public Object doWork() throws Exception
                     {
-                        checkStatus();
+                        setStatusFromFile();
                         return null;
                     }
 
@@ -193,19 +227,9 @@ public class IndexInfo
             }
             finally
             {
-                entriesReadWriteLock.writeLock().unlock();
+                readWriteLock.writeLock().unlock();
             }
         }
-    }
-
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
-    public DictionaryService getDictionaryService()
-    {
-        return dictionaryService;
     }
 
     /**
@@ -229,39 +253,53 @@ public class IndexInfo
         return reader;
     }
 
+    /**
+     * The delta information does not need to be saved to disk.
+     * 
+     * @param id
+     * @return
+     * @throws IOException
+     */
     private File ensureDeltaExistsAndIsRegistered(String id) throws IOException
     {
         File location = new File(indexDirectory, id);
         if (!IndexReader.indexExists(location))
         {
-            IndexWriter creator = new IndexWriter(location, new LuceneAnalyser(dictionaryService), true);
+            IndexWriter creator = new IndexWriter(location, new StandardAnalyzer(), true);
             creator.setUseCompoundFile(true);
             creator.close();
         }
-        entriesReadWriteLock.readLock().lock();
+        readWriteLock.readLock().lock();
         try
         {
             if (!indexEntries.containsKey(id))
             {
-                entriesReadWriteLock.writeLock().lock();
+                readWriteLock.readLock().unlock();
+                // release to upgrade to write lock
+                readWriteLock.writeLock().lock();
                 try
                 {
-                    indexEntries.put(id, new IndexEntry(IndexType.DELTA, id, "", TransactionStatus.ACTIVE, ""));
+                    if (!indexEntries.containsKey(id))
+                    {
+                        indexEntries.put(id, new IndexEntry(IndexType.DELTA, id, "", TransactionStatus.ACTIVE, ""));
+                    }
                 }
                 finally
                 {
-                    entriesReadWriteLock.writeLock().unlock();
+                    // Downgrade
+                    readWriteLock.readLock().lock();
+                    readWriteLock.writeLock().unlock();
                 }
             }
         }
         finally
         {
-            entriesReadWriteLock.readLock().unlock();
+            readWriteLock.readLock().unlock();
         }
         return location;
     }
 
-    public IndexWriter getDeltaIndexWriter(String id) throws IOException
+    public IndexWriter getDeltaIndexWriter(String id, Analyzer analyzer) throws IOException
     {
         IndexWriter writer = indexWriters.get(id);
         if (writer == null)
@@ -269,7 +307,7 @@ public class IndexInfo
             // close index writer if required
             closeDeltaIndexReader(id);
             File location = ensureDeltaExistsAndIsRegistered(id);
-            writer = new IndexWriter(location, new LuceneAnalyser(dictionaryService), false);
+            writer = new IndexWriter(location, analyzer, false);
             indexWriters.put(id, writer);
         }
         return writer;
@@ -295,20 +333,298 @@ public class IndexInfo
         }
     }
 
-    public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader()
+    public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader() throws IOException
     {
-        return null;
+        readWriteLock.readLock().lock();
+        try
+        {
+            if (mainIndexReader == null)
+            {
+                readWriteLock.readLock().unlock();
+                readWriteLock.writeLock().lock();
+                try
+                {
+                    if (mainIndexReader == null)
+                    {
+                        // Sync with disk image if required
+                        doWithFileLock(new LockWork<Object>()
+                        {
+                            public Object doWork() throws Exception
+                            {
+                                return null;
+                            }
+
+                        });
+                        mainIndexReader = createMainIndexReader();
+                    }
+                }
+                finally
+                {
+                    readWriteLock.readLock();
+                    readWriteLock.writeLock().unlock();
+                }
+            }
+            return mainIndexReader;
+        }
+        finally
+        {
+            readWriteLock.readLock().unlock();
+        }
     }
 
-    public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader(String id)
+    public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader(LuceneIndexer luceneIndexer) throws IOException
     {
-        return null;
+        readWriteLock.readLock().lock();
+        try
+        {
+            if (mainIndexReader == null)
+            {
+                readWriteLock.readLock().unlock();
+                readWriteLock.writeLock().lock();
+                try
+                {
+                    if (mainIndexReader == null)
+                    {
+                        // Sync with disk image if required
+                        doWithFileLock(new LockWork<Object>()
+                        {
+                            public Object doWork() throws Exception
+                            {
+                                return null;
+                            }
+
+                        });
+                        mainIndexReader = createMainIndexReader();
+                    }
+                }
+                finally
+                {
+                    readWriteLock.readLock();
+                    readWriteLock.writeLock().unlock();
+                }
+            }
+            // Combine the index delta with the main index
+            // Make sure the index is written to disk
+            // TODO: Should use the in memory index but we often end up forcing to disk anyway.
+            // Is it worth it?
+            luceneIndexer.flushPending();
+            IndexReader deltaReader = getDeltaIndexReader(luceneIndexer.getDeltaId());
+            IndexReader reader = new MultiReader(new IndexReader[] {
+                    new FilterIndexReaderByNodeRefs(mainIndexReader, luceneIndexer.getDeletions()), deltaReader });
+            return reader;
+        }
+        finally
+        {
+            readWriteLock.readLock().unlock();
+        }
     }
 
-    public void setStatus(String id, TransactionStatus status, Set<Term> toDelete)
+    public void setStatus(final String id, final TransactionStatus state, final Set<Term> toDelete, final Set<Term> read)
+            throws IOException
     {
+        final Transition transition = getTransition(state);
+        readWriteLock.writeLock().lock();
+        try
+        {
+            doWithFileLock(new LockWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    transition.transition(id, toDelete, read);
+                    return null;
+                }
+
+            });
+        }
+        finally
+        {
+            readWriteLock.writeLock().unlock();
+        }
+    }
+
+    //
+    // Internal support for status management
+    //
+
+    private Transition getTransition(TransactionStatus state)
+    {
+        Transition transition = transitions.get(state);
+        if (transition != null)
+        {
+            return transition;
+        }
+        else
+        {
+            throw new IndexerException("Invalid state " + state);
+        }
 
     }
+
+    private void initialiseTransitions()
+    {
+
+        transitions.put(TransactionStatus.PREPARING, new PreparingTransition());
+        transitions.put(TransactionStatus.PREPARED, new PreparedTransition());
+        transitions.put(TransactionStatus.COMMITTING, new CommittingTransition());
+        transitions.put(TransactionStatus.COMMITTED, new CommittedTransition());
+        transitions.put(TransactionStatus.ROLLINGBACK, new RollingBackTransition());
+        transitions.put(TransactionStatus.ROLLEDBACK, new RolledBackTransition());
+
+    }
+
+    private interface Transition
+    {
+        void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException;
+    }
+
+    private class PreparingTransition implements Transition
+    {
+        public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+            IndexEntry entry = indexEntries.get(id);
+            if (entry == null)
+            {
+                throw new IndexerException("Unknown transaction " + id);
+            }
+
+            if (TransactionStatus.PREPARING.follows(entry.getStatus()))
+            {
+                entry.setStatus(TransactionStatus.PREPARING);
+                writeStatus();
+            }
+            else
+            {
+                throw new IndexerException("Invalid transition for "
+                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.PREPARING);
+            }
+        }
+    }
+
+    private class PreparedTransition implements Transition
+    {
+        public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+            IndexEntry entry = indexEntries.get(id);
+            if (entry == null)
+            {
+                throw new IndexerException("Unknown transaction " + id);
+            }
+
+            if (TransactionStatus.PREPARED.follows(entry.getStatus()))
+            {
+                entry.setStatus(TransactionStatus.PREPARED);
+                writeStatus();
+            }
+            else
+            {
+                throw new IndexerException("Invalid transition for "
+                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.PREPARED);
+            }
+        }
+    }
+
+    private class CommittingTransition implements Transition
+    {
+        public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+            IndexEntry entry = indexEntries.get(id);
+            if (entry == null)
+            {
+                throw new IndexerException("Unknown transaction " + id);
+            }
+
+            if (TransactionStatus.COMMITTING.follows(entry.getStatus()))
+            {
+                entry.setStatus(TransactionStatus.COMMITTING);
+                writeStatus();
+            }
+            else
+            {
+                throw new IndexerException("Invalid transition for "
+                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.COMMITTING);
+            }
+        }
+    }
+
+    private class CommittedTransition implements Transition
+    {
+        public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+            IndexEntry entry = indexEntries.get(id);
+            if (entry == null)
+            {
+                throw new IndexerException("Unknown transaction " + id);
+            }
+
+            if (TransactionStatus.COMMITTED.follows(entry.getStatus()))
+            {
+                // Do the deletions
+
+                entry.setStatus(TransactionStatus.COMMITTED);
+                writeStatus();
+            }
+            else
+            {
+                throw new IndexerException("Invalid transition for "
+                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.COMMITTED);
+            }
+        }
+    }
+
+    private class RollingBackTransition implements Transition
+    {
+        public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+            IndexEntry entry = indexEntries.get(id);
+            if (entry == null)
+            {
+                throw new IndexerException("Unknown transaction " + id);
+            }
+
+            if (TransactionStatus.ROLLINGBACK.follows(entry.getStatus()))
+            {
+                entry.setStatus(TransactionStatus.ROLLINGBACK);
+                writeStatus();
+            }
+            else
+            {
+                throw new IndexerException("Invalid transition for "
+                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.ROLLINGBACK);
+            }
+        }
+    }
+
+    private class RolledBackTransition implements Transition
+    {
+        public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+            IndexEntry entry = indexEntries.get(id);
+            if (entry == null)
+            {
+                throw new IndexerException("Unknown transaction " + id);
+            }
+
+            if (TransactionStatus.ROLLEDBACK.follows(entry.getStatus()))
+            {
+                entry.setStatus(TransactionStatus.ROLLEDBACK);
+                writeStatus();
+            }
+            else
+            {
+                throw new IndexerException("Invalid transition for "
+                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.ROLLEDBACK);
+            }
+        }
+    }
+
+    //
+    //
+    // Internal methods for implementation support
+    // ===========================================
+    //
+    // These methods should all be called with the appropriate locks.
+    //
+    //
 
     private static boolean createFile(File file)
     {
@@ -353,7 +669,7 @@ public class IndexInfo
      * @param raf
      * @throws IOException
      */
-    private void checkStatus() throws IOException
+    private void setStatusFromFile() throws IOException
     {
         try
         {
@@ -362,9 +678,119 @@ public class IndexInfo
         catch (IOException e)
         {
             // The first data file is corrupt so we fall back to the back up
-            System.out.println("BACKUP");
             setStatusFromFile(indexInfoBackupChannel);
         }
+        clearOldReaders();
+    }
+
+    private void clearOldReaders() throws IOException
+    {
+        // Find valid
+        HashSet<String> valid = new HashSet<String>();
+        for (String id : indexEntries.keySet())
+        {
+            IndexEntry entry = indexEntries.get(id);
+            if (entry.getStatus().isCommitted())
+            {
+                valid.add(id);
+            }
+        }
+        // Find current invalid
+        HashSet<String> inValid = new HashSet<String>();
+        for (String id : referenceCountingReadOnlyIndexReaders.keySet())
+        {
+            if (!valid.contains(id))
+            {
+                inValid.add(id);
+            }
+        }
+        // Clear invalid
+        boolean hasInvalid = false;
+        for (String id : inValid)
+        {
+            IndexReader reader = referenceCountingReadOnlyIndexReaders.remove(id);
+            ReferenceCounting referenceCounting = (ReferenceCounting) reader;
+            referenceCounting.setInvalidForReuse();
+            hasInvalid = true;
+        }
+        if (hasInvalid)
+        {
+            mainIndexReader = null;
+        }
+    }
+
+    private IndexReader createMainIndexReader() throws IOException
+    {
+        IndexReader reader = null;
+        for (String id : indexEntries.keySet())
+        {
+            IndexEntry entry = indexEntries.get(id);
+            if (entry.getStatus().isCommitted())
+            {
+                IndexReader subReader = getReferenceCountingIndexReader(id);
+                if (reader == null)
+                {
+                    reader = subReader;
+                }
+                else
+                {
+                    reader = new MultiReader(new IndexReader[] { reader, subReader });
+                }
+            }
+        }
+        return reader;
+    }
+
+    private IndexReader getReferenceCountingIndexReader(String id) throws IOException
+    {
+        IndexReader reader = referenceCountingReadOnlyIndexReaders.get(id);
+        if (reader == null)
+        {
+            File location = new File(indexDirectory, id);
+            reader = IndexReader.open(location);
+            reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(reader);
+        }
+        return reader;
+    }
+
+    private boolean checkVersion() throws IOException
+    {
+        try
+        {
+            return checkVersion(indexInfoChannel);
+        }
+        catch (IOException e)
+        {
+            // The first data file is corrupt so we fall back to the back up
+            return checkVersion(indexInfoBackupChannel);
+        }
+    }
+
+    private boolean checkVersion(FileChannel channel) throws IOException
+    {
+        if (channel.size() > 0)
+        {
+            channel.position(0);
+            ByteBuffer buffer;
+
+            if (useNIOMemoryMapping)
+            {
+                MappedByteBuffer mbb = channel.map(MapMode.READ_ONLY, 0, 8);
+                mbb.load();
+                buffer = mbb;
+            }
+            else
+            {
+                buffer = ByteBuffer.wrap(new byte[8]);
+                channel.read(buffer);
+                buffer.position(0);
+            }
+
+            buffer.position(0);
+            long onDiskVersion = buffer.getLong();
+            return (version == onDiskVersion);
+        }
+        return (version == 0);
     }
 
     private void setStatusFromFile(FileChannel channel) throws IOException
@@ -551,18 +977,26 @@ public class IndexInfo
         return size;
     }
 
-    public interface LockWork<Result>
+    private interface LockWork<Result>
     {
         public Result doWork() throws Exception;
     }
 
-    public <R> R doWithFileLock(LockWork<R> lockWork)
+    private <R> R doWithFileLock(LockWork<R> lockWork)
     {
         FileLock fileLock = null;
         R result = null;
         try
         {
-            fileLock = indexInfoChannel.lock();
+            if (indexIsShared)
+            {
+                fileLock = indexInfoChannel.lock();
+                if (!checkVersion())
+                {
+                    setStatusFromFile();
+                    clearOldReaders();
+                }
+            }
             result = lockWork.doWork();
             return result;
         }
@@ -594,54 +1028,37 @@ public class IndexInfo
         }
     }
 
-    public static void main(String[] args)
+    public static void main(String[] args) throws IOException
     {
+        System.setProperty("disableLuceneLocks", "true");
+
         int repeat = 100;
         final IndexInfo ii = new IndexInfo(new File("c:\\indexTest"));
-        ii.indexEntries.clear();
 
-        for (int i = 0; i < 100; i++)
-        {
-            String guid = GUID.generate();
-            ii.indexEntries.put(guid, new IndexEntry(IndexType.INDEX, guid, GUID.generate(),
-                    TransactionStatus.COMMITTED, ""));
-        }
-
-        long totalTime = 0;
-        long count = 0;
+        long totalTimeA = 0;
+        long countA = 0;
 
         while (true)
         {
             long start = System.nanoTime();
-
-            for (int i = 0; i < repeat; i++)
+            ii.indexEntries.clear();
+            for (int i = 0; i < 100; i++)
             {
-                ii.entriesReadWriteLock.writeLock().lock();
-                try
-                {
-                    ii.doWithFileLock(new LockWork<Object>()
-                    {
-                        public Object doWork() throws Exception
-                        {
-
-                            ii.version = 0;
-                            ii.checkStatus();
-                            ii.writeStatus();
-                            return null;
-                        }
-                    });
-                }
-                finally
-                {
-                    ii.entriesReadWriteLock.writeLock().unlock();
-                }
+                String guid = GUID.generate();
+                ii.indexEntries.put(guid, new IndexEntry(IndexType.DELTA, guid, GUID.generate(),
+                        TransactionStatus.ACTIVE, ""));
+                ii.getDeltaIndexReader(guid);
+                ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
+                ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
+                ii.setStatus(guid, TransactionStatus.COMMITTING, null, null);
+                ii.setStatus(guid, TransactionStatus.COMMITTED, null, null);
             }
 
             long end = System.nanoTime();
 
-            totalTime += (end - start);
-            count += repeat;
-            float average = count * 1000000000f / totalTime;
+            totalTimeA += (end - start);
+            countA += repeat;
+            float average = countA * 1000000000f / totalTimeA;
 
             System.out.println("Repeated "
                     + repeat + " in " + ((end - start) / 1000000000.0) + "    average = " + average);

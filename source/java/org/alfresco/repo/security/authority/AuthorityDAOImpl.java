@@ -47,7 +47,7 @@ import org.alfresco.util.ISO9075;
 
 public class AuthorityDAOImpl implements AuthorityDAO
 {
-    private static final StoreRef STOREREF_USERS = new StoreRef("user", "alfrescoUserStore");
+    public static final StoreRef STOREREF_USERS = new StoreRef("user", "alfrescoUserStore");
 
     private NodeService nodeService;
     private NamespacePrefixResolver namespacePrefixResolver;
@@ -152,7 +152,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             NodeRef authorityContainerRef = getAuthorityContainer();
             nodeService.createNode(
                     authorityContainerRef,
-                    ContentModel.ASSOC_MEMBER,
+                    ContentModel.ASSOC_CHILDREN,
                     QName.createQName("usr", name, namespacePrefixResolver),
                     ContentModel.TYPE_AUTHORITY_CONTAINER,
                     props);

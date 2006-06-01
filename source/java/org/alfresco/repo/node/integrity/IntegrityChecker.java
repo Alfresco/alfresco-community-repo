@@ -286,14 +286,8 @@ public class IntegrityChecker
                 childAssocRef.getChildRef());
         save(event);
         
-        // check target role
-        event = new AssocTargetRoleIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                childAssocRef.getParentRef(),
-                childAssocRef.getTypeQName(),
-                childAssocRef.getQName());
-        save(event);
+        onCreateChildAssociation(childAssocRef);
+        
         
         // check for associations defined on the new node (child)
         NodeRef childRef = childAssocRef.getChildRef();

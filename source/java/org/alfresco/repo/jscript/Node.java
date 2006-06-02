@@ -782,7 +782,7 @@ public final class Node implements Serializable
     public void save()
     {
         // persist properties back to the node in the DB 
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>(this.properties.size());
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(getProperties().size());
         for (String key : this.properties.keySet())
         {
             Serializable value = (Serializable)this.properties.get(key);
@@ -911,9 +911,9 @@ public final class Node implements Serializable
     }
     
     /**
-     * Delete this node. Any references to this Node or its NodeRef should be discarded!
+     * Remove this node. Any references to this Node or its NodeRef should be discarded!
      */
-    public boolean delete()
+    public boolean remove()
     {
         boolean success = false;
         

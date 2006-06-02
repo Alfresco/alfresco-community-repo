@@ -1,7 +1,6 @@
 package org.alfresco.web.bean.rules;
 
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,25 +15,21 @@ import javax.faces.model.SelectItem;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.evaluator.CompareMimeTypeEvaluator;
-import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
-import org.alfresco.repo.action.evaluator.HasAspectEvaluator;
-import org.alfresco.repo.action.evaluator.InCategoryEvaluator;
-import org.alfresco.repo.action.evaluator.IsSubTypeEvaluator;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.actions.BaseActionWizard;
+import org.alfresco.web.bean.actions.IHandler;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.rules.handlers.BaseConditionHandler;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
@@ -48,9 +43,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateRuleWizard extends BaseActionWizard
 {
-   public static final String PROP_CONDITION_NAME = "conditionName";
-   public static final String PROP_CONDITION_SUMMARY = "conditionSummary";
-   public static final String PROP_CONDITION_NOT = "notcondition";
+   protected static final String PROP_CONDITION_NAME = "conditionName";
+   protected static final String PROP_CONDITION_SUMMARY = "conditionSummary";
    
    protected RuleService ruleService;
    protected RulesBean rulesBean;
@@ -60,6 +54,7 @@ public class CreateRuleWizard extends BaseActionWizard
    private List<SelectItem> types;
    private List<SelectItem> conditions;
    
+   protected Map<String, IHandler> conditionHandlers;
    protected Map<String, Serializable> currentConditionProperties;
    protected List<Map<String, Serializable>> allConditionsProperties;
 
@@ -72,8 +67,6 @@ public class CreateRuleWizard extends BaseActionWizard
    protected boolean runInBackground;
    protected boolean applyToSubSpaces;
    protected boolean editingCondition;
-   
-   protected static final String CONDITION_PAGES_LOCATION = "/jsp/rules/";
    
    private static final Log logger = LogFactory.getLog(CreateRuleWizard.class);
 
@@ -94,6 +87,8 @@ public class CreateRuleWizard extends BaseActionWizard
       this.conditions = null;
       
       this.allConditionsProperties = new ArrayList<Map<String, Serializable>>();
+      
+      initialiseConditionHandlers();
    }
    
    @Override
@@ -488,29 +483,31 @@ public class CreateRuleWizard extends BaseActionWizard
       
       FacesContext context = FacesContext.getCurrentInstance();
       this.returnViewId = context.getViewRoot().getViewId();
-      String viewId = calculateConditionViewId(this.condition);
+      String viewId = null;
       
       HashMap<String, Serializable> condProps = new HashMap<String, Serializable>(3);
       condProps.put(PROP_CONDITION_NAME, this.condition);
       this.currentConditionProperties = condProps;
       
-      // determine whether the condition being added has any parameters
-      ActionConditionDefinition conditionDef = this.actionService.
-            getActionConditionDefinition(this.condition);
-      if (conditionDef.hasParameterDefinitions())
+      // get the handler for the condition, if there isn't one we presume it
+      // is a no-parameter condition
+      IHandler handler = this.conditionHandlers.get(this.condition);
+      if (handler != null)
       {
-         // setup any defaults for the UI and override the viewId if necessary
-         String overridenViewId = setupUIDefaultsForCondition(condProps);
-         if (overridenViewId != null)
-         {
-            viewId = overridenViewId;
-         }
+         // setup any UI defaults the condition may have and get the location of
+         // the JSP used to collect the parameters
+         handler.setupUIDefaults(condProps);
+         viewId = handler.getJSPPath();
       }
       else
       {
-         // just add the condition to the list and use the title as the summary
+         // just add the action to the list and use the title as the summary
+         ActionConditionDefinition conditionDef = this.actionService.
+               getActionConditionDefinition(this.condition);
          condProps.put(PROP_CONDITION_SUMMARY, conditionDef.getTitle());
-         condProps.put(PROP_CONDITION_NOT, Boolean.FALSE);
+         condProps.put(BaseConditionHandler.PROP_CONDITION_NOT, Boolean.FALSE);
+         // add the no params marker so we can disable the edit action
+         condProps.put(NO_PARAMS_MARKER, "no-params");
          this.allConditionsProperties.add(condProps);
          
          // come back to the same page we're on now as there are no params to collect
@@ -543,8 +540,9 @@ public class CreateRuleWizard extends BaseActionWizard
       FacesContext context = FacesContext.getCurrentInstance();
       this.returnViewId = context.getViewRoot().getViewId();
       
-      // refresh the wizard
-      goToPage(context, calculateConditionViewId(this.condition));
+      // go to the condition page (as there is an edit option visible,
+      // there must be a handler for the condition so we don't check)
+      goToPage(context, this.conditionHandlers.get(this.condition).getJSPPath());
    }
    
    /**
@@ -553,7 +551,11 @@ public class CreateRuleWizard extends BaseActionWizard
    public void addCondition()
    {
       FacesContext context = FacesContext.getCurrentInstance();
-      String summary = buildConditionSummary();
+      
+      // this is called from the actions page so there must be a handler
+      // present so there's no need to check for null
+      String summary = this.conditionHandlers.get(this.condition).generateSummary(
+            context, this, this.currentConditionProperties);
       
       if (summary != null)
       {
@@ -654,8 +656,14 @@ public class CreateRuleWizard extends BaseActionWizard
       {
          String conditionName = (String)condParams.get(PROP_CONDITION_NAME);
          this.condition = conditionName;
-         this.currentConditionProperties = condParams;
-         Map<String, Serializable> repoCondParams = buildConditionParams();
+         
+         // get the condition handler to prepare for the save
+         Map<String, Serializable> repoCondParams = new HashMap<String, Serializable>();
+         IHandler handler = this.conditionHandlers.get(this.condition);
+         if (handler != null)
+         {
+            handler.prepareForSave(condParams, repoCondParams);
+         }
          
          // add the condition to the rule
          ActionCondition condition = this.actionService.
@@ -663,7 +671,7 @@ public class CreateRuleWizard extends BaseActionWizard
          condition.setParameterValues(repoCondParams);
          
          // specify whether the condition result should be inverted
-         Boolean not = (Boolean)condParams.get(PROP_CONDITION_NOT);
+         Boolean not = (Boolean)condParams.get(BaseConditionHandler.PROP_CONDITION_NOT);
          condition.setInvertCondition(((Boolean)not).booleanValue());
          
          rule.addActionCondition(condition);
@@ -676,8 +684,14 @@ public class CreateRuleWizard extends BaseActionWizard
          // to setup the currentActionProperties and action variables
          String actionName = (String)actionParams.get(PROP_ACTION_NAME);
          this.action = actionName;
-         this.currentActionProperties = actionParams;
-         Map<String, Serializable> repoActionParams = buildActionParams();
+         
+         // get the action handler to prepare for the save
+         Map<String, Serializable> repoActionParams = new HashMap<String, Serializable>();
+         IHandler handler = this.actionHandlers.get(this.action);
+         if (handler != null)
+         {
+            handler.prepareForSave(actionParams, repoActionParams);
+         }
          
          // add the action to the rule
          Action action = this.actionService.createAction(actionName);
@@ -689,170 +703,53 @@ public class CreateRuleWizard extends BaseActionWizard
    }
    
    /**
-    * Sets up any default state required by the UI for collecting the 
-    * condition settings. The view id to use for the condition UI can also
-    * be overridden by returing the path to the relevant JSP.
-    * 
-    * @props The map of properties being used for the current condition
-    * @return An optional overridden JSP to use for condition settings collection
+    * Initialises the condition handlers from the current configuration.
     */
-   protected String setupUIDefaultsForCondition(HashMap<String, Serializable> props)
+   protected void initialiseConditionHandlers()
    {
-      // NOTE: none of the built in conditions have any defaults to setup
-      
-      return null;
-   }
-   
-   /**
-    * Builds the Map of properties for the given condition in the format the repo is expecting
-    * 
-    * @return The Map the repo is expecting
-    */
-   protected Map<String, Serializable> buildConditionParams()
-   {
-      Map<String, Serializable> repoParams = new HashMap<String, Serializable>();
-      
-      if (ComparePropertyValueEvaluator.NAME.equals(this.condition))
+      if (this.conditionHandlers == null)
       {
-         // add the text to compare
-         String text = (String)this.currentConditionProperties.get(PROP_CONTAINS_TEXT);
-         repoParams.put(ComparePropertyValueEvaluator.PARAM_VALUE, text);
-      }
-      else if (InCategoryEvaluator.NAME.equals(this.condition))
-      {
-         // put the selected category in the condition params
-         NodeRef nodeRef = (NodeRef)this.currentConditionProperties.get(PROP_CATEGORY);
-         repoParams.put(InCategoryEvaluator.PARAM_CATEGORY_VALUE, nodeRef);
-         
-         // add the classifiable aspect
-         repoParams.put(InCategoryEvaluator.PARAM_CATEGORY_ASPECT, ContentModel.ASPECT_GEN_CLASSIFIABLE);
-      }
-      else if (IsSubTypeEvaluator.NAME.equals(this.condition))
-      {
-         // add the model type
-         QName type = QName.createQName((String)this.currentConditionProperties.get(PROP_MODEL_TYPE));
-         repoParams.put(IsSubTypeEvaluator.PARAM_TYPE, type);
-      }
-      else if (HasAspectEvaluator.NAME.equals(this.condition))
-      {
-         // add the aspect
-         QName aspect = QName.createQName((String)this.currentConditionProperties.get(PROP_ASPECT));
-         repoParams.put(HasAspectEvaluator.PARAM_ASPECT, aspect);
-      }
-      else if (CompareMimeTypeEvaluator.NAME.equals(this.condition))
-      {
-         // add the mimetype
-         String mimeType = (String)this.currentConditionProperties.get(PROP_MIMETYPE);
-         repoParams.put(CompareMimeTypeEvaluator.PARAM_VALUE, mimeType);
-      }
-      
-      return repoParams;
-   }
-   
-   /**
-    * Returns a summary string for the current condition
-    * 
-    * @return The summary or null if a summary could not be built
-    */
-   protected String buildConditionSummary()
-   {
-      String summary = null;
-      FacesContext context = FacesContext.getCurrentInstance();
-      Boolean not = (Boolean)this.currentConditionProperties.get(PROP_CONDITION_NOT);
-         
-      if (ComparePropertyValueEvaluator.NAME.equals(this.condition))
-      {
-         String msgId = not.booleanValue() ? 
-               "condition_compare_property_value_not" : "condition_compare_property_value";
-         
-         String text = (String)this.currentConditionProperties.get(PROP_CONTAINS_TEXT);
-         
-         summary = MessageFormat.format(Application.getMessage(context, msgId),
-               new Object[] {text});
-      }
-      else if (InCategoryEvaluator.NAME.equals(this.condition))
-      {
-         String msgId = not.booleanValue() ? "condition_in_category_not" : "condition_in_category";
-         
-         String name = Repository.getNameForNode(this.nodeService, 
-               (NodeRef)this.currentConditionProperties.get(PROP_CATEGORY));
-         
-         summary = MessageFormat.format(Application.getMessage(context, msgId),
-               new Object[] {name});
-      }
-      else if (IsSubTypeEvaluator.NAME.equals(this.condition))
-      {
-         String msgId = not.booleanValue() ? "condition_is_subtype_not" : "condition_is_subtype";
-         
-         String label = null;
-         String typeName = (String)this.currentConditionProperties.get(PROP_MODEL_TYPE);
-         for (SelectItem item : this.getModelTypes())
+         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
+         Config wizardCfg = svc.getConfig("Action Wizards");
+         if (wizardCfg != null)
          {
-            if (item.getValue().equals(typeName))
+            ConfigElement conditionHandlerCfg = wizardCfg.getConfigElement("condition-handlers");
+            if (conditionHandlerCfg != null)
             {
-               label = item.getLabel();
-               break;
+               this.conditionHandlers = new HashMap<String, IHandler>(20);
+               
+               // instantiate each handler and store in the map
+               for (ConfigElement child : conditionHandlerCfg.getChildren())
+               {
+                  String conditionName = child.getAttribute("name");
+                  String handlerClass = child.getAttribute("class");
+                  
+                  if (conditionName != null && conditionName.length() > 0 &&
+                      handlerClass != null && handlerClass.length() > 0)
+                  {
+                     try
+                     {
+                        Class klass = Class.forName(handlerClass);
+                        IHandler handler = (IHandler)klass.newInstance();
+                        this.conditionHandlers.put(conditionName, handler);
+                     }
+                     catch (Exception e)
+                     {
+                        throw new AlfrescoRuntimeException("Failed to setup condition handler for '" + 
+                              conditionName + "'", e);
+                     }
+                  }
+               }
+            }
+            else
+            {
+               logger.warn("Could not find 'condition-handlers' configuration element");
             }
          }
-         
-         summary = MessageFormat.format(Application.getMessage(context, msgId),
-               new Object[] {label});
-      }
-      else if (HasAspectEvaluator.NAME.equals(this.condition))
-      {
-         String msgId = not.booleanValue() ? "condition_has_aspect_not" : "condition_has_aspect";
-         
-         String label = null;
-         String aspectName = (String)this.currentConditionProperties.get(PROP_ASPECT);
-         for (SelectItem item : this.getAspects())
+         else
          {
-            if (item.getValue().equals(aspectName))
-            {
-               label = item.getLabel();
-               break;
-            }
+            logger.warn("Could not find 'Action Wizards' configuration section");
          }
-         
-         summary = MessageFormat.format(Application.getMessage(context, msgId),
-               new Object[] {label});
       }
-      else if (CompareMimeTypeEvaluator.NAME.equals(this.condition))
-      {
-         String msgId = not.booleanValue() ? "condition_compare_mime_type_not" : "condition_compare_mime_type";
-         
-         String label = null;
-         String mimetype = (String)this.currentConditionProperties.get(PROP_MIMETYPE);
-         for (SelectItem item : this.getMimeTypes())
-         {
-            if (item.getValue().equals(mimetype))
-            {
-               label = item.getLabel();
-               break;
-            }
-         }
-         
-         summary = MessageFormat.format(Application.getMessage(context, msgId),
-               new Object[] {label});
-      }
-      else
-      {
-         // as the default case (i.e. for conditions with no parameters) use the title
-         ActionConditionDefinition conditionDef = this.actionService.
-               getActionConditionDefinition(this.condition);
-         summary = conditionDef.getTitle();
-      }
-      
-      return summary;
-   }
-   
-   /**
-    * Calculates the viewId for the given condition id
-    * 
-    * @param conditionId The id of the condition to generate the view id for
-    * @return The view id
-    */
-   protected String calculateConditionViewId(String conditionId)
-   {
-      return CONDITION_PAGES_LOCATION + conditionId + ".jsp";
    }
 }

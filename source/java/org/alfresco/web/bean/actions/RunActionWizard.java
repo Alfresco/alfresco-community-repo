@@ -2,6 +2,7 @@ package org.alfresco.web.bean.actions;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -37,8 +38,14 @@ public class RunActionWizard extends BaseActionWizard
          // to setup the currentActionProperties and action variables
          String actionName = (String)actionParams.get(PROP_ACTION_NAME);
          this.action = actionName;
-         this.currentActionProperties = actionParams;
-         Map<String, Serializable> repoActionParams = buildActionParams();
+         
+         // get the action handler to prepare for the save
+         Map<String, Serializable> repoActionParams = new HashMap<String, Serializable>();
+         IHandler handler = this.actionHandlers.get(this.action);
+         if (handler != null)
+         {
+            handler.prepareForSave(actionParams, repoActionParams);
+         }
          
          // add the action to the rule
          Action action = this.actionService.createAction(actionName);

@@ -18,21 +18,8 @@ import javax.faces.model.SelectItem;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
-import org.alfresco.repo.action.executer.CheckInActionExecuter;
-import org.alfresco.repo.action.executer.CheckOutActionExecuter;
-import org.alfresco.repo.action.executer.CopyActionExecuter;
-import org.alfresco.repo.action.executer.ImageTransformActionExecuter;
-import org.alfresco.repo.action.executer.ImporterActionExecuter;
-import org.alfresco.repo.action.executer.LinkCategoryActionExecuter;
-import org.alfresco.repo.action.executer.MailActionExecuter;
-import org.alfresco.repo.action.executer.MoveActionExecuter;
-import org.alfresco.repo.action.executer.RemoveFeaturesActionExecuter;
-import org.alfresco.repo.action.executer.ScriptActionExecutor;
-import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
-import org.alfresco.repo.action.executer.SpecialiseTypeActionExecuter;
-import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -43,10 +30,10 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.TemplateSupportBean;
+import org.alfresco.web.bean.actions.handlers.MailHandler;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
@@ -64,38 +51,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class BaseActionWizard extends BaseWizardBean
 {
-   public static final String PROP_ACTION_NAME = "actionName";
-   public static final String PROP_ACTION_SUMMARY = "actionSummary";
-   public static final String PROP_CATEGORY = "category";
-   public static final String PROP_ASPECT = "aspect";
-   public static final String PROP_DESTINATION = "destinationLocation";
-   public static final String PROP_APPROVE_STEP_NAME = "approveStepName";
-   public static final String PROP_APPROVE_ACTION = "approveAction";
-   public static final String PROP_APPROVE_FOLDER = "approveFolder";
-   public static final String PROP_REJECT_STEP_PRESENT = "rejectStepPresent";
-   public static final String PROP_REJECT_STEP_NAME = "rejectStepName";
-   public static final String PROP_REJECT_ACTION = "rejectAction";
-   public static final String PROP_REJECT_FOLDER = "rejectFolder";
-   public static final String PROP_CHECKIN_DESC = "checkinDescription";
-   public static final String PROP_CHECKIN_MINOR = "checkinMinorChange";
-   public static final String PROP_TRANSFORMER = "transformer";
-   public static final String PROP_IMAGE_TRANSFORMER = "imageTransformer";
-   public static final String PROP_TRANSFORM_OPTIONS = "transformOptions";
-   public static final String PROP_ENCODING = "encoding";
-   public static final String PROP_MESSAGE = "message";
-   public static final String PROP_SUBJECT = "subject";
-   public static final String PROP_TO = "to";
-   public static final String PROP_FROM = "from";
-   public static final String PROP_TEMPLATE = "template";
-   public static final String PROP_OBJECT_TYPE = "objecttype";
-   public static final String PROP_PROPERTY = "property";
-   public static final String PROP_CONTAINS_TEXT = "containstext";
-   public static final String PROP_MODEL_TYPE = "modeltype";
-   public static final String PROP_MIMETYPE = "mimetype";
-   public static final String PROP_MODEL_ASPECT = "modelaspect";
-   public static final String PROP_TYPE_OR_ASPECT = "typeoraspect";
-   public static final String PROP_SCRIPT = "script";
-   
+   protected static final String PROP_ACTION_NAME = "actionName";
+   protected static final String PROP_ACTION_SUMMARY = "actionSummary";
+   protected static final String NO_PARAMS_MARKER = "noParamsMarker"; 
+
    protected ActionService actionService;
    protected MimetypeService mimetypeService;
    protected PersonService personService;
@@ -121,11 +80,9 @@ public abstract class BaseActionWizard extends BaseWizardBean
    protected Map<String, Serializable> currentActionProperties;
    protected List<Map<String, Serializable>> allActionsProperties;
    
-   protected static final String ACTION_PAGES_LOCATION = "/jsp/actions/";
+   protected Map<String, IHandler> actionHandlers;
    
    private static final Log logger = LogFactory.getLog(BaseActionWizard.class);
-   private static final String IMPORT_ENCODING = "UTF-8";
-   
    
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -139,21 +96,14 @@ public abstract class BaseActionWizard extends BaseWizardBean
       this.users = null;
       this.actions = null;
       this.emailRecipientsDataModel = null;
-      this.emailRecipients = new ArrayList<RecipientWrapper>(4);
       this.usingTemplate = null;
       
+      this.emailRecipients = new ArrayList<RecipientWrapper>(4);
       this.allActionsProperties = new ArrayList<Map<String, Serializable>>();
       this.currentActionProperties = new HashMap<String, Serializable>(3);
       
-      // default the approve and reject actions
-      this.currentActionProperties.put(PROP_APPROVE_ACTION, "move");
-      this.currentActionProperties.put(PROP_REJECT_STEP_PRESENT, "yes");
-      this.currentActionProperties.put(PROP_REJECT_ACTION, "move");
-      
-      // default the checkin minor change
-      this.currentActionProperties.put(PROP_CHECKIN_MINOR, new Boolean(true));
+      initialiseActionHandlers();
    }
-   
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
@@ -528,6 +478,15 @@ public abstract class BaseActionWizard extends BaseWizardBean
       return this.imageTransformers;
    }
    
+   /**
+    * Returns the current list of email recipients
+    * 
+    * @return List of email recipients
+    */
+   public List<RecipientWrapper> getEmailRecipients()
+   {
+      return this.emailRecipients;
+   }
    
    // ------------------------------------------------------------------------------
    // Action event handlers
@@ -542,27 +501,29 @@ public abstract class BaseActionWizard extends BaseWizardBean
       
       FacesContext context = FacesContext.getCurrentInstance();
       this.returnViewId = context.getViewRoot().getViewId();
-      String viewId = calculateActionViewId(this.action);
+      String viewId = null;
       
       HashMap<String, Serializable> actionProps = new HashMap<String, Serializable>(3);
       actionProps.put(PROP_ACTION_NAME, this.action);
       this.currentActionProperties = actionProps;
       
-      // determine whether the action being added has any parameters
-      ActionDefinition actionDef = this.actionService.getActionDefinition(this.action);
-      if (actionDef.hasParameterDefinitions())
+      // get the handler for the action, if there isn't one we presume it
+      // is a no-parameter action
+      IHandler handler = this.actionHandlers.get(this.action);
+      if (handler != null)
       {
-         // setup any defaults for the UI and override the viewId if necessary
-         String overridenViewId = setupUIDefaultsForAction(actionProps);
-         if (overridenViewId != null)
-         {
-            viewId = overridenViewId;
-         }
+         // setup any UI defaults the action may have and get the location of
+         // the JSP used to collect the parameters
+         handler.setupUIDefaults(actionProps);
+         viewId = handler.getJSPPath();
       }
       else
       {
          // just add the action to the list and use the title as the summary
+         ActionDefinition actionDef = this.actionService.getActionDefinition(this.action);
          actionProps.put(PROP_ACTION_SUMMARY, actionDef.getTitle());
+         // add the no params marker so we can disable the edit action
+         actionProps.put(NO_PARAMS_MARKER, "no-params");
          this.allActionsProperties.add(actionProps);
          
          // come back to the same page we're on now as there are no params to collect
@@ -595,8 +556,9 @@ public abstract class BaseActionWizard extends BaseWizardBean
       FacesContext context = FacesContext.getCurrentInstance();
       this.returnViewId = context.getViewRoot().getViewId();
       
-      // refresh the wizard
-      goToPage(context, calculateActionViewId(this.action));
+      // go to the action page (as there is an edit option visible,
+      // there must be a handler for the action so we don't check)
+      goToPage(context, this.actionHandlers.get(this.action).getJSPPath());
    }
    
    /**
@@ -605,7 +567,11 @@ public abstract class BaseActionWizard extends BaseWizardBean
    public void addAction()
    {
       FacesContext context = FacesContext.getCurrentInstance();
-      String summary = buildActionSummary();
+      
+      // this is called from the actions page so there must be a handler
+      // present so there's no need to check for null
+      String summary = this.actionHandlers.get(this.action).generateSummary(
+            context, this, this.currentActionProperties);
       
       if (summary != null)
       {
@@ -709,18 +675,20 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    public void insertTemplate(ActionEvent event)
    {
-      String template = (String)this.currentActionProperties.get(PROP_TEMPLATE);
+      String template = (String)this.currentActionProperties.get(MailHandler.PROP_TEMPLATE);
       if (template != null && template.equals(TemplateSupportBean.NO_SELECTION) == false)
       {
          // get the content of the template so the user can get a basic preview of it
          try
          {
             NodeRef templateRef = new NodeRef(Repository.getStoreRef(), template);
-            ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+            ContentService cs = Repository.getServiceRegistry(
+                  FacesContext.getCurrentInstance()).getContentService();
             ContentReader reader = cs.getReader(templateRef, ContentModel.PROP_CONTENT);
             if (reader != null && reader.exists())
             {
-               this.currentActionProperties.put(PROP_MESSAGE, reader.getContentString());
+               this.currentActionProperties.put(MailHandler.PROP_MESSAGE, 
+                     reader.getContentString());
                
                usingTemplate = template;
             }
@@ -738,7 +706,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    public void discardTemplate(ActionEvent event)
    {
-      this.currentActionProperties.put(PROP_MESSAGE, "");
+      this.currentActionProperties.put(MailHandler.PROP_MESSAGE, "");
       usingTemplate = null;
    }
    
@@ -786,7 +754,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
    // ------------------------------------------------------------------------------
    // Helper methods
    
-   protected String displayLabelForAuthority(String authority)
+   public String displayLabelForAuthority(String authority)
    {
        String label = authority;
        
@@ -802,515 +770,6 @@ public abstract class BaseActionWizard extends BaseWizardBean
        }
        
        return label;
-   }
-   
-   /**
-    * Sets up any default state required by the UI for collecting the 
-    * action settings. The view id to use for the action UI can also
-    * be overridden by returing the path to the relevant JSP.
-    * 
-    * @props The map of properties being used for the current action
-    * @return An optional overridden JSP to use for action settings collection
-    */
-   protected String setupUIDefaultsForAction(HashMap<String, Serializable> props)
-   {
-      String overridenViewId = null;
-      
-      if (SimpleWorkflowActionExecuter.NAME.equals(this.action))
-      {
-         this.currentActionProperties.put("approveAction", "move");
-         this.currentActionProperties.put("rejectStepPresent", "yes");
-         this.currentActionProperties.put("rejectAction", "move");
-      }
-      else if (CheckInActionExecuter.NAME.equals(this.action))
-      {
-         this.currentActionProperties.put(PROP_CHECKIN_MINOR, new Boolean(true));
-      }
-      
-      return overridenViewId;
-   }
-   
-   /**
-    * Build the param map for the current Action instance.
-    * <p>
-    * Based on the params set by the UI, build the params needed to create the action.
-    * 
-    * @return param map
-    */
-   protected Map<String, Serializable> buildActionParams()
-   {
-      // set up parameters maps for the action
-      Map<String, Serializable> repoParams = new HashMap<String, Serializable>();
-      
-      if (AddFeaturesActionExecuter.NAME.equals(this.action))
-      {
-         QName aspect = Repository.resolveToQName((String)this.currentActionProperties.get(PROP_ASPECT));
-         repoParams.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, aspect);
-      }
-      else if (RemoveFeaturesActionExecuter.NAME.equals(this.action))
-      {
-         QName aspect = Repository.resolveToQName((String)this.currentActionProperties.get(PROP_ASPECT));
-         repoParams.put(RemoveFeaturesActionExecuter.PARAM_ASPECT_NAME, aspect);
-      }
-      else if (CopyActionExecuter.NAME.equals(this.action))
-      {
-         // add the destination space id to the action properties
-         NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         repoParams.put(CopyActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
-         
-         // add the type and name of the association to create when the copy
-         // is performed
-         repoParams.put(CopyActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
-               ContentModel.ASSOC_CONTAINS);
-         repoParams.put(CopyActionExecuter.PARAM_ASSOC_QNAME, 
-               QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy"));
-      }
-      else if (MoveActionExecuter.NAME.equals(this.action))
-      {
-         // add the destination space id to the action properties
-         NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         repoParams.put(MoveActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
-         
-         // add the type and name of the association to create when the move
-         // is performed
-         repoParams.put(MoveActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
-               ContentModel.ASSOC_CONTAINS);
-         repoParams.put(MoveActionExecuter.PARAM_ASSOC_QNAME, 
-               QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "move"));
-      }
-      else if (SimpleWorkflowActionExecuter.NAME.equals(this.action))
-      {
-         // add the approve step name
-         repoParams.put(SimpleWorkflowActionExecuter.PARAM_APPROVE_STEP,
-               (String)this.currentActionProperties.get(PROP_APPROVE_STEP_NAME));
-         
-         // add whether the approve step will copy or move the content
-         boolean approveMove = true;
-         String approveAction = (String)this.currentActionProperties.get(PROP_APPROVE_ACTION);
-         if (approveAction != null && approveAction.equals("copy"))
-         {
-            approveMove = false;
-         }
-         
-         repoParams.put(SimpleWorkflowActionExecuter.PARAM_APPROVE_MOVE, Boolean.valueOf(approveMove));
-         
-         // add the destination folder of the content
-         NodeRef approveDestNodeRef = null;
-         Object approveDestNode = this.currentActionProperties.get(PROP_APPROVE_FOLDER);
-         if (approveDestNode instanceof NodeRef)
-         {
-            approveDestNodeRef = (NodeRef)approveDestNode;
-         }
-         else if (approveDestNode instanceof String)
-         {
-            approveDestNodeRef = new NodeRef((String)approveDestNode);
-         }
-         repoParams.put(SimpleWorkflowActionExecuter.PARAM_APPROVE_FOLDER, approveDestNodeRef);
-         
-         // determine whether we have a reject step or not
-         boolean requireReject = true;
-         String rejectStepPresent = (String)this.currentActionProperties.get(PROP_REJECT_STEP_PRESENT);
-         if (rejectStepPresent != null && rejectStepPresent.equals("no"))
-         {
-            requireReject = false;
-         }
-
-         if (requireReject)
-         {
-            // add the reject step name
-            repoParams.put(SimpleWorkflowActionExecuter.PARAM_REJECT_STEP,
-                  (String)this.currentActionProperties.get(PROP_REJECT_STEP_NAME));
-         
-            // add whether the reject step will copy or move the content
-            boolean rejectMove = true;
-            String rejectAction = (String)this.currentActionProperties.get(PROP_REJECT_ACTION);
-            if (rejectAction != null && rejectAction.equals("copy"))
-            {
-               rejectMove = false;
-            }
-            
-            repoParams.put(SimpleWorkflowActionExecuter.PARAM_REJECT_MOVE, Boolean.valueOf(rejectMove));
-            
-            // add the destination folder of the content
-            NodeRef rejectDestNodeRef = null;
-            Object rejectDestNode = this.currentActionProperties.get(PROP_REJECT_FOLDER);
-            if (rejectDestNode instanceof NodeRef)
-            {
-               rejectDestNodeRef = (NodeRef)rejectDestNode;
-            }
-            else if (rejectDestNode instanceof String)
-            {
-               rejectDestNodeRef = new NodeRef((String)rejectDestNode);
-            }
-            repoParams.put(SimpleWorkflowActionExecuter.PARAM_REJECT_FOLDER, rejectDestNodeRef);
-         }
-      }
-      else if (LinkCategoryActionExecuter.NAME.equals(this.action))
-      {
-         // add the classifiable aspect
-         repoParams.put(LinkCategoryActionExecuter.PARAM_CATEGORY_ASPECT,
-               ContentModel.ASPECT_GEN_CLASSIFIABLE);
-         
-         // put the selected category in the action params
-         NodeRef catNodeRef = (NodeRef)this.currentActionProperties.get(PROP_CATEGORY);
-         repoParams.put(LinkCategoryActionExecuter.PARAM_CATEGORY_VALUE, 
-               catNodeRef);
-      }
-      else if (CheckOutActionExecuter.NAME.equals(this.action))
-      {
-         // specify the location the checked out working copy should go
-         // add the destination space id to the action properties
-         NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         repoParams.put(CheckOutActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
-         
-         // add the type and name of the association to create when the 
-         // check out is performed
-         repoParams.put(CheckOutActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
-               ContentModel.ASSOC_CONTAINS);
-         repoParams.put(CheckOutActionExecuter.PARAM_ASSOC_QNAME, 
-               QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "checkout"));
-      }
-      else if (CheckInActionExecuter.NAME.equals(this.action))
-      {
-         // add the description for the checkin to the action params
-         repoParams.put(CheckInActionExecuter.PARAM_DESCRIPTION, 
-               this.currentActionProperties.get(PROP_CHECKIN_DESC));
-         
-         // add the minor change flag
-         repoParams.put(CheckInActionExecuter.PARAM_MINOR_CHANGE,
-               this.currentActionProperties.get(PROP_CHECKIN_MINOR));
-      }
-      else if (TransformActionExecuter.NAME.equals(this.action))
-      {
-         // add the transformer to use
-         repoParams.put(TransformActionExecuter.PARAM_MIME_TYPE,
-               this.currentActionProperties.get(PROP_TRANSFORMER));
-         
-         // add the destination space id to the action properties
-         NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         repoParams.put(TransformActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
-         
-         // add the type and name of the association to create when the copy
-         // is performed
-         repoParams.put(TransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
-               ContentModel.ASSOC_CONTAINS);
-         repoParams.put(TransformActionExecuter.PARAM_ASSOC_QNAME, 
-               QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy"));
-      }
-      else if (ImageTransformActionExecuter.NAME.equals(this.action))
-      {
-         // add the transformer to use
-         repoParams.put(ImageTransformActionExecuter.PARAM_MIME_TYPE,
-               this.currentActionProperties.get(PROP_IMAGE_TRANSFORMER));
-         
-         // add the options
-         repoParams.put(ImageTransformActionExecuter.PARAM_CONVERT_COMMAND, 
-               this.currentActionProperties.get(PROP_TRANSFORM_OPTIONS));
-         
-         // add the destination space id to the action properties
-         NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         repoParams.put(TransformActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
-         
-         // add the type and name of the association to create when the copy
-         // is performed
-         repoParams.put(TransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
-               ContentModel.ASSOC_CONTAINS);
-         repoParams.put(TransformActionExecuter.PARAM_ASSOC_QNAME, 
-               QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy"));
-      }
-      else if (MailActionExecuter.NAME.equals(this.action))
-      {
-         // add the person(s) it's going to as a list of authorities
-         List<String> recipients = new ArrayList<String>(emailRecipients.size());
-         for (int i=0; i<emailRecipients.size(); i++)
-         {
-            RecipientWrapper wrapper = emailRecipients.get(i);
-            recipients.add(wrapper.authority);
-         }
-         
-         repoParams.put(MailActionExecuter.PARAM_TO_MANY, (Serializable)recipients);
-         
-         // add the actual email text to send
-         repoParams.put(MailActionExecuter.PARAM_TEXT, 
-         this.currentActionProperties.get(PROP_MESSAGE));    
-             
-         // add the subject for the email
-         repoParams.put(MailActionExecuter.PARAM_SUBJECT,
-               this.currentActionProperties.get(PROP_SUBJECT));
-         
-         // add the from address
-         String from = Application.getClientConfig(FacesContext.getCurrentInstance()).getFromEmailAddress();
-         repoParams.put(MailActionExecuter.PARAM_FROM, from);
-         
-         // add the template if one was selected by the user
-         if (this.usingTemplate != null)
-         {
-            repoParams.put(MailActionExecuter.PARAM_TEMPLATE, new NodeRef(Repository.getStoreRef(), this.usingTemplate));
-         }
-      }
-      else if (ImporterActionExecuter.NAME.equals(this.action))
-      {
-         // add the encoding
-         repoParams.put(ImporterActionExecuter.PARAM_ENCODING, IMPORT_ENCODING);
-         
-         // add the destination for the import
-         NodeRef destNodeRef = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         repoParams.put(ImporterActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
-      }
-      else if (SpecialiseTypeActionExecuter.NAME.equals(this.action))
-      {
-         // add the specialisation type
-         String objectType = (String)this.currentActionProperties.get(PROP_OBJECT_TYPE);
-         repoParams.put(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, QName.createQName(objectType));
-      }
-      else if (ScriptActionExecutor.NAME.equals(this.action))
-      {
-         // add the selected script noderef to the action properties
-         String id = (String)this.currentActionProperties.get(PROP_SCRIPT);
-         NodeRef scriptRef = new NodeRef(Repository.getStoreRef(), id);
-         repoParams.put(ScriptActionExecutor.PARAM_SCRIPTREF, scriptRef);
-         repoParams.put(ScriptActionExecutor.PARAM_SPACEREF, this.navigator.getCurrentNode().getNodeRef());
-      }
-      
-      return repoParams;
-   }
-   
-   /**
-    * Returns a summary string for the current action
-    * 
-    * @return The summary or null if a summary could not be built
-    */
-   protected String buildActionSummary()
-   {
-      String summary = null;
-      FacesContext context = FacesContext.getCurrentInstance();
-      
-      if (AddFeaturesActionExecuter.NAME.equals(this.action))
-      {
-         String label = null;
-         String aspect = (String)this.currentActionProperties.get(PROP_ASPECT);
-            
-         // find the label used by looking through the SelectItem list
-         for (SelectItem item : this.getAspects())
-         {
-            if (item.getValue().equals(aspect))
-            {
-               label = item.getLabel();
-               break;
-            }
-         }
-
-         summary = MessageFormat.format(Application.getMessage(context, "action_add_features"),
-               new Object[] {label});
-      }
-      else if (RemoveFeaturesActionExecuter.NAME.equals(this.action))
-      {
-         String label = null;
-         String aspect = (String)this.currentActionProperties.get(PROP_ASPECT);
-            
-         // find the label used by looking through the SelectItem list
-         for (SelectItem item : this.getAspects())
-         {
-            if (item.getValue().equals(aspect))
-            {
-               label = item.getLabel();
-               break;
-            }
-         }
-
-         summary = MessageFormat.format(Application.getMessage(context, "action_remove_features"),
-               new Object[] {label});
-      }
-      else if (CopyActionExecuter.NAME.equals(this.action))
-      {
-         NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         String spaceName = Repository.getNameForNode(this.nodeService, space);
-         
-         summary = MessageFormat.format(Application.getMessage(context, "action_copy"),
-               new Object[] {spaceName});
-      }
-      else if (MoveActionExecuter.NAME.equals(this.action))
-      {
-         NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         String spaceName = Repository.getNameForNode(this.nodeService, space);
-         
-         summary = MessageFormat.format(Application.getMessage(context, "action_move"),
-               new Object[] {spaceName});
-      }
-      else if (SimpleWorkflowActionExecuter.NAME.equals(this.action))
-      {
-         String approveStepName = (String)this.currentActionProperties.get(PROP_APPROVE_STEP_NAME);
-         String approveAction = (String)this.currentActionProperties.get(PROP_APPROVE_ACTION);
-         NodeRef approveFolder = (NodeRef)this.currentActionProperties.get(PROP_APPROVE_FOLDER);
-         String approveFolderName = Repository.getNameForNode(this.nodeService, approveFolder);
-         String approveMsg = MessageFormat.format(Application.getMessage(context, "action_simple_workflow"), 
-               new Object[] {Application.getMessage(context, approveAction), 
-                             approveFolderName, approveStepName});
-         
-         String rejectMsg = null;
-         String rejectStep = (String)this.currentActionProperties.get(PROP_REJECT_STEP_PRESENT);
-         if (rejectStep != null && "yes".equals(rejectStep))
-         {
-            String rejectStepName = (String)this.currentActionProperties.get(PROP_REJECT_STEP_NAME);
-            String rejectAction = (String)this.currentActionProperties.get(PROP_REJECT_ACTION);
-            NodeRef rejectFolder = (NodeRef)this.currentActionProperties.get(PROP_REJECT_FOLDER);
-            String rejectFolderName = Repository.getNameForNode(this.nodeService, rejectFolder);
-            rejectMsg = MessageFormat.format(Application.getMessage(context, "action_simple_workflow"), 
-               new Object[] {Application.getMessage(context, rejectAction),
-                             rejectFolderName, rejectStepName});
-         }
-         
-         StringBuilder builder = new StringBuilder(approveMsg);
-         if (rejectMsg != null)
-         {
-            builder.append(" ");
-            builder.append(rejectMsg);
-         }
-         
-         summary = builder.toString();
-      }
-      else if (LinkCategoryActionExecuter.NAME.equals(this.action))
-      {
-         NodeRef cat = (NodeRef)this.currentActionProperties.get(PROP_CATEGORY);
-         String name = Repository.getNameForNode(this.nodeService, cat);
-         
-         summary = MessageFormat.format(Application.getMessage(context, "action_link_category"),
-               new Object[] {name});
-      }
-      else if (CheckOutActionExecuter.NAME.equals(this.action))
-      {
-         NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         String spaceName = Repository.getNameForNode(this.nodeService, space);
-         
-         summary = MessageFormat.format(Application.getMessage(context, "action_check_out"),
-               new Object[] {spaceName});
-      }
-      else if (CheckInActionExecuter.NAME.equals(this.action))
-      {
-         String comment = (String)this.currentActionProperties.get(PROP_CHECKIN_DESC);
-         Boolean minorChange = (Boolean)this.currentActionProperties.get(PROP_CHECKIN_MINOR);
-         String change = null;
-         if (minorChange != null && minorChange.booleanValue())
-         {
-            change = Application.getMessage(context, "minor_change");
-         }
-         else
-         {
-            change = Application.getMessage(context, "major_change");
-         }
-         
-         summary = MessageFormat.format(Application.getMessage(context, "action_check_in"),
-               new Object[] {change, comment});
-      }
-      else if (TransformActionExecuter.NAME.equals(this.action))
-      {
-         String label = null;
-         NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         String name = Repository.getNameForNode(this.nodeService, space);
-         String transformer = (String)this.currentActionProperties.get(PROP_TRANSFORMER);
-         
-         // find the label used by looking through the SelectItem list
-         for (SelectItem item : this.getTransformers())
-         {
-            if (item.getValue().equals(transformer))
-            {
-               label = item.getLabel();
-               break;
-            }
-         }
-         
-         summary = MessageFormat.format(Application.getMessage(context, "action_transform"),
-               new Object[] {name, label});
-      }
-      else if (ImageTransformActionExecuter.NAME.equals(this.action))
-      {
-         String label = null;
-         NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         String name = Repository.getNameForNode(this.nodeService, space);
-         String transformer = (String)this.currentActionProperties.get(PROP_IMAGE_TRANSFORMER);
-         String option = (String)this.currentActionProperties.get(PROP_TRANSFORM_OPTIONS);
-         
-         // find the label used by looking through the SelectItem list
-         for (SelectItem item : this.getImageTransformers())
-         {
-            if (item.getValue().equals(transformer))
-            {
-               label = item.getLabel();
-               break;
-            }
-         }
-         
-         summary = MessageFormat.format(Application.getMessage(context, "action_transform_image"),
-               new Object[] {name, label, option});
-      }
-      else if (MailActionExecuter.NAME.equals(this.action))
-      {
-         String addresses = (String)this.currentActionProperties.get(PROP_TO);
-         
-         if (addresses == null || addresses.length() == 0)
-         {
-            if (this.emailRecipients.size() != 0)
-            {
-               StringBuilder builder = new StringBuilder();
-               
-               for (int i=0; i<this.emailRecipients.size(); i++)
-               {
-                  RecipientWrapper wrapper = this.emailRecipients.get(i);
-                  if (i != 0)
-                  {
-                     builder.append(", ");
-                  }
-                  builder.append(wrapper.getName());
-               }
-               
-               addresses = builder.toString();
-            }
-         }
-         
-         summary = MessageFormat.format(Application.getMessage(context, "action_mail"),
-               new Object[] {addresses});
-      }
-      else if (ImporterActionExecuter.NAME.equals(this.action))
-      {
-         NodeRef space = (NodeRef)this.currentActionProperties.get(PROP_DESTINATION);
-         String spaceName = Repository.getNameForNode(this.nodeService, space);
-         
-         summary = MessageFormat.format(Application.getMessage(context, "action_import"),
-               new Object[] {spaceName});
-      }
-      else if (SpecialiseTypeActionExecuter.NAME.equals(this.action))
-      {
-         String label = null;
-         String objectType = (String)this.currentActionProperties.get(PROP_OBJECT_TYPE);
-         for (SelectItem item  : getObjectTypes())
-         {
-            if (item.getValue().equals(objectType) == true)
-            {
-               label = item.getLabel();
-               break;
-            }
-         }
-            
-         summary = MessageFormat.format(Application.getMessage(context, "action_specialise_type"),
-               new Object[] {label});
-      }
-      else if (ScriptActionExecutor.NAME.equals(this.action))
-      {
-         String id = (String)this.currentActionProperties.get(PROP_SCRIPT);
-         NodeRef scriptRef = new NodeRef(Repository.getStoreRef(), id);
-         String scriptName = Repository.getNameForNode(this.nodeService, scriptRef);
-         
-         summary = MessageFormat.format(Application.getMessage(context, "action_script"),
-               new Object[] {scriptName});
-      }
-      else
-      {
-         // as the default case (i.e. for actions with no parameters) use the title
-         ActionDefinition actionDef = this.actionService.getActionDefinition(this.action);
-         summary = actionDef.getTitle();
-      }
-      
-      return summary;
    }
    
    /**
@@ -1330,16 +789,55 @@ public abstract class BaseActionWizard extends BaseWizardBean
    }
    
    /**
-    * Calculates the viewId for the given action id
-    * 
-    * @param actionId The id of the action to generate the view id for
-    * @return The view id
+    * Initialises the action handlers from the current configuration.
     */
-   protected String calculateActionViewId(String actionId)
+   protected void initialiseActionHandlers()
    {
-      return ACTION_PAGES_LOCATION + actionId + ".jsp";
+      if (this.actionHandlers == null)
+      {
+         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
+         Config wizardCfg = svc.getConfig("Action Wizards");
+         if (wizardCfg != null)
+         {
+            ConfigElement actionHandlerCfg = wizardCfg.getConfigElement("action-handlers");
+            if (actionHandlerCfg != null)
+            {
+               this.actionHandlers = new HashMap<String, IHandler>(20);
+               
+               // instantiate each handler and store in the map
+               for (ConfigElement child : actionHandlerCfg.getChildren())
+               {
+                  String actionName = child.getAttribute("name");
+                  String handlerClass = child.getAttribute("class");
+                  
+                  if (actionName != null && actionName.length() > 0 &&
+                      handlerClass != null && handlerClass.length() > 0)
+                  {
+                     try
+                     {
+                        Class klass = Class.forName(handlerClass);
+                        IHandler handler = (IHandler)klass.newInstance();
+                        this.actionHandlers.put(actionName, handler);
+                     }
+                     catch (Exception e)
+                     {
+                        throw new AlfrescoRuntimeException("Failed to setup action handler for '" + 
+                              actionName + "'", e);
+                     }
+                  }
+               }
+            }
+            else
+            {
+               logger.warn("Could not find 'action-handlers' configuration element");
+            }
+         }
+         else
+         {
+            logger.warn("Could not find 'Action Wizards' configuration section");
+         }
+      }
    }
-   
    
    // ------------------------------------------------------------------------------
    // Inner classes

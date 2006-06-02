@@ -111,14 +111,14 @@
                <f:facet name="header">
                   <h:outputText value="#{msg.summary}" />
                </f:facet>
-               <h:outputText value="#{row.actionSummary}"/>
+               <h:outputText value="#{row.actionSummary}" />
                <h:outputText value="&nbsp;&nbsp;" escape="false"/>
             </h:column>
             <h:column>
                <a:actionLink action="#{WizardManager.bean.removeAction}" image="/images/icons/delete.gif"
                              value="#{msg.remove}" showLink="false" style="padding-left:6px;padding-right:2px" />
                <a:actionLink action="#{WizardManager.bean.editAction}" image="/images/icons/edit_icon.gif"
-                             value="#{msg.change}" showLink="false" />
+                             value="#{msg.change}" showLink="false" rendered='#{row.noParamsMarker == null}' />
             </h:column>
          </h:dataTable>
          <a:panel id="no-items" rendered="#{WizardManager.bean.allActionsDataModel.rowCount == 0}">

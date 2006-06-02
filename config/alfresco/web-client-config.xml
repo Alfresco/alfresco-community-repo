@@ -224,6 +224,33 @@
          <transformer name="image/jpeg"/>
          <transformer name="image/png"/>
       </image-transformers>
+      
+      <!-- The classes used to handle actions -->
+      <action-handlers>
+         <handler name="add-features" class="org.alfresco.web.bean.actions.handlers.AddFeaturesHandler" />
+         <handler name="check-in" class="org.alfresco.web.bean.actions.handlers.CheckInHandler" />
+         <handler name="check-out" class="org.alfresco.web.bean.actions.handlers.CheckOutHandler" />
+         <handler name="copy" class="org.alfresco.web.bean.actions.handlers.CopyHandler" />
+         <handler name="import" class="org.alfresco.web.bean.actions.handlers.ImportHandler" />
+         <handler name="link-category" class="org.alfresco.web.bean.actions.handlers.LinkCategoryHandler" />
+         <handler name="mail" class="org.alfresco.web.bean.actions.handlers.MailHandler" />
+         <handler name="move" class="org.alfresco.web.bean.actions.handlers.MoveHandler" />
+         <handler name="remove-features" class="org.alfresco.web.bean.actions.handlers.RemoveFeaturesHandler" />
+         <handler name="script" class="org.alfresco.web.bean.actions.handlers.ScriptHandler" />
+         <handler name="simple-workflow" class="org.alfresco.web.bean.actions.handlers.SimpleWorkflowHandler" />
+         <handler name="specialise-type" class="org.alfresco.web.bean.actions.handlers.SpecialiseTypeHandler" />
+         <handler name="transform" class="org.alfresco.web.bean.actions.handlers.TransformHandler" />
+         <handler name="transform-image" class="org.alfresco.web.bean.actions.handlers.TransformImageHandler" />
+      </action-handlers>
+      
+      <!-- The classes used to handle conditions -->
+      <condition-handlers>
+         <handler name="compare-mime-type" class="org.alfresco.web.bean.rules.handlers.CompareMimeTypeHandler" />
+         <handler name="compare-property-value" class="org.alfresco.web.bean.rules.handlers.PropertyValueHandler" />
+         <handler name="has-aspect" class="org.alfresco.web.bean.rules.handlers.HasAspectHandler" />
+         <handler name="in-category" class="org.alfresco.web.bean.rules.handlers.InCategoryHandler" />
+         <handler name="is-subtype" class="org.alfresco.web.bean.rules.handlers.IsSubTypeHandler" />
+      </condition-handlers>
    </config>
    
    <!-- This config sections below hold all the icons choices -->

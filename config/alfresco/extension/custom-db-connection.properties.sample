@@ -4,6 +4,8 @@
 
 #db.username=alfresco
 #db.password=alfresco
+#db.pool.initial=10
+#db.pool.max=100
 
 #
 # MySQL connection (This is default and requires mysql-connector-java-3.1.12-bin.jar, which ships with the Alfresco server)

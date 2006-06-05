@@ -23,24 +23,27 @@
     </bean>
 
     <!-- Datasource bean -->
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
-        <property name="driverClassName">
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass">
             <value>${db.driver}</value>
         </property>
-        <property name="url">
+        <property name="jdbcUrl">
             <value>${db.url}</value>
         </property>
-        <property name="username">
+        <property name="user">
             <value>${db.username}</value>
         </property>
         <property name="password">
             <value>${db.password}</value>
         </property>
-        <property name="initialSize" >
-            <value>20</value>
+        <property name="initialPoolSize" >
+            <value>${db.pool.initial}</value>
         </property>
-        <property name="maxActive" >
-            <value>20</value>
+        <property name="maxPoolSize" >
+            <value>${db.pool.max}</value>
+        </property>
+        <property name="numHelperThreads" >
+            <value>1</value>
         </property>
     </bean>
 

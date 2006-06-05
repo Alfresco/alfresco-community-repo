@@ -19,13 +19,11 @@ package org.alfresco.web.app.servlet;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -173,8 +171,7 @@ public class DownloadContentServlet extends BaseServlet
          {
             // set header based on filename - will force a Save As from the browse if it doesn't recognise it
             // this is better than the default response of the browser trying to display the contents
-            String encname = filename.replace('%', '=');
-            res.setHeader("Content-Disposition", "attachment;filename=\"=?ISO-8859-1?Q?" + encname + "?=\"");
+            res.setHeader("Content-Disposition", "attachment");
          }
          
          // get the content reader

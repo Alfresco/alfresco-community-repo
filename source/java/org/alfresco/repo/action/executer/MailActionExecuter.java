@@ -23,9 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.template.DateCompareMethod;
 import org.alfresco.repo.template.HasAspectMethod;
 import org.alfresco.repo.template.I18NMessageMethod;
@@ -33,7 +35,6 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateNode;
@@ -44,8 +45,9 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.mail.javamail.MimeMessagePreparator;
 
 /**
  * Mail action executor implementation.
@@ -168,100 +170,106 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      */
     @Override
     protected void executeImpl(
-            Action ruleAction,
-            NodeRef actionedUponNodeRef) 
+            final Action ruleAction,
+            final NodeRef actionedUponNodeRef) 
     {
-        // Create the simple mail message
-        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-        
-        // set recipient
-        String to = (String)ruleAction.getParameterValue(PARAM_TO);
-        if (to != null && to.length() != 0)
+        // Create the mime mail message
+        MimeMessagePreparator mailPreparer = new MimeMessagePreparator()
         {
-            simpleMailMessage.setTo(to);
-        }
-        else
-        {
-            // see if multiple recipients have been supplied - as a list of authorities
-            List<String> authorities = (List<String>)ruleAction.getParameterValue(PARAM_TO_MANY);
-            if (authorities != null && authorities.size() != 0)
+            public void prepare(MimeMessage mimeMessage) throws MessagingException
             {
-                List<String> recipients = new ArrayList<String>(authorities.size());
-                for (String authority : authorities)
+                MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
+                
+                // set recipient
+                String to = (String)ruleAction.getParameterValue(PARAM_TO);
+                if (to != null && to.length() != 0)
                 {
-                    AuthorityType authType = AuthorityType.getAuthorityType(authority);
-                    if (authType.equals(AuthorityType.USER))
+                    message.setTo(to);
+                }
+                else
+                {
+                    // see if multiple recipients have been supplied - as a list of authorities
+                    List<String> authorities = (List<String>)ruleAction.getParameterValue(PARAM_TO_MANY);
+                    if (authorities != null && authorities.size() != 0)
                     {
-                        if (this.personService.personExists(authority) == true)
+                        List<String> recipients = new ArrayList<String>(authorities.size());
+                        for (String authority : authorities)
                         {
-                            NodeRef person = this.personService.getPerson(authority);
-                            String address = (String)this.nodeService.getProperty(person, ContentModel.PROP_EMAIL);
-                            if (address != null && address.length() != 0)
+                            AuthorityType authType = AuthorityType.getAuthorityType(authority);
+                            if (authType.equals(AuthorityType.USER))
                             {
-                                recipients.add(address);
-                            }
-                        }
-                    }
-                    else if (authType.equals(AuthorityType.GROUP))
-                    {
-                        // else notify all members of the group
-                        Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
-                        for (String userAuth : users)
-                        {
-                            if (this.personService.personExists(userAuth) == true)
-                            {
-                                NodeRef person = this.personService.getPerson(authority);
-                                String address = (String)this.nodeService.getProperty(person, ContentModel.PROP_EMAIL);
-                                if (address != null && address.length() != 0)
+                                if (personService.personExists(authority) == true)
                                 {
-                                    recipients.add(address);
+                                    NodeRef person = personService.getPerson(authority);
+                                    String address = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+                                    if (address != null && address.length() != 0)
+                                    {
+                                        recipients.add(address);
+                                    }
+                                }
+                            }
+                            else if (authType.equals(AuthorityType.GROUP))
+                            {
+                                // else notify all members of the group
+                                Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
+                                for (String userAuth : users)
+                                {
+                                    if (personService.personExists(userAuth) == true)
+                                    {
+                                        NodeRef person = personService.getPerson(authority);
+                                        String address = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+                                        if (address != null && address.length() != 0)
+                                        {
+                                            recipients.add(address);
+                                        }
+                                    }
                                 }
                             }
                         }
+                        
+                        message.setTo(recipients.toArray(new String[recipients.size()]));
                     }
                 }
                 
-                simpleMailMessage.setTo(recipients.toArray(new String[recipients.size()]));
+                // set subject line
+                message.setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
+                
+                // See if an email template has been specified
+                String text = null;
+                NodeRef templateRef = (NodeRef)ruleAction.getParameterValue(PARAM_TEMPLATE);
+                if (templateRef != null)
+                {
+                    // build the email template model
+                    Map<String, Object> model = createEmailTemplateModel(actionedUponNodeRef);
+                    
+                    // process the template against the model
+                    text = templateService.processTemplate("freemarker", templateRef.toString(), model);
+                }
+                
+                // set the text body of the message
+                if (text == null)
+                {
+                    text = (String)ruleAction.getParameterValue(PARAM_TEXT);
+                }
+                message.setText(text);
+                
+                // set the from address - use the default if not set
+                String from = (String)ruleAction.getParameterValue(PARAM_FROM);
+                if (from != null)
+                {
+                    message.setFrom(from);
+                }
+                else
+                {
+                    message.setFrom(FROM_ADDRESS);
+                }
             }
-        }
-        
-        // set subject line
-        simpleMailMessage.setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
-        
-        // See if an email template has been specified
-        String text = null;
-        NodeRef templateRef = (NodeRef)ruleAction.getParameterValue(PARAM_TEMPLATE);
-        if (templateRef != null)
-        {
-            // build the email template model
-            Map<String, Object> model = createEmailTemplateModel(actionedUponNodeRef);
-            
-            // process the template against the model
-            text = templateService.processTemplate("freemarker", templateRef.toString(), model);
-        }
-        
-        // set the text body of the message
-        if (text == null)
-        {
-            text = (String)ruleAction.getParameterValue(PARAM_TEXT);
-        }
-        simpleMailMessage.setText(text);
-        
-        // set the from address - use the default if not set
-        String from = (String)ruleAction.getParameterValue(PARAM_FROM);
-        if (from != null)
-        {
-            simpleMailMessage.setFrom(from);
-        }
-        else
-        {
-            simpleMailMessage.setFrom(FROM_ADDRESS);
-        }
+        };
         
         try
         {
             // Send the message
-            javaMailSender.send(simpleMailMessage);
+            javaMailSender.send(mailPreparer);
         }
         catch (Throwable e)
         {

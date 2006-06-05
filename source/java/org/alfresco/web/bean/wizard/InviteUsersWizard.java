@@ -30,6 +30,8 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
@@ -57,6 +59,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.mail.javamail.MimeMessagePreparator;
 
 /**
  * @author Kevin Roast
@@ -105,6 +109,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    private String automaticText = null;
    private String template = null;
    private String usingTemplate = null;
+   private String finalBody;
    
    /**
     * @return a cached list of available permissions for the type being dealt with
@@ -277,9 +282,9 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
     * @param from       From text message
     * @param roleText   The role display label for the user invite notification
     */
-   private void notifyUser(NodeRef person, NodeRef node, String from, String roleText)
+   private void notifyUser(NodeRef person, NodeRef node, final String from, String roleText)
    {
-      String to = (String)this.nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+      final String to = (String)this.nodeService.getProperty(person, ContentModel.PROP_EMAIL);
       
       if (to != null && to.length() != 0)
       {
@@ -289,21 +294,28 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
             FacesContext fc = FacesContext.getCurrentInstance();
             
             // use template service to format the email
+            NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.usingTemplate);
             ServiceRegistry services = Repository.getServiceRegistry(fc);
             Map<String, Object> model = DefaultModelHelper.buildDefaultModel(
-                  services, Application.getCurrentUser(fc));
+                  services, Application.getCurrentUser(fc), templateRef);
             model.put("role", roleText);
             model.put("space", new TemplateNode(node, Repository.getServiceRegistry(fc), null));
             
-            NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.usingTemplate);
             body = services.getTemplateService().processTemplate("freemarker", templateRef.toString(), model);
          }
+         this.finalBody = body;
          
-         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-         simpleMailMessage.setTo(to);
-         simpleMailMessage.setSubject(this.subject);
-         simpleMailMessage.setText(body);
-         simpleMailMessage.setFrom(from);
+         MimeMessagePreparator mailPreparer = new MimeMessagePreparator()
+         {
+            public void prepare(MimeMessage mimeMessage) throws MessagingException
+            {
+               MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
+               message.setTo(to);
+               message.setSubject(subject);
+               message.setText(finalBody);
+               message.setFrom(from);
+            }
+         };
          
          if (logger.isDebugEnabled())
             logger.debug("Sending notification email to: " + to + "\n...with subject:\n" + subject + "\n...with body:\n" + body);
@@ -311,7 +323,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
          try
          {
             // Send the message
-            this.mailSender.send(simpleMailMessage);
+            this.mailSender.send(mailPreparer);
          }
          catch (Throwable e)
          {

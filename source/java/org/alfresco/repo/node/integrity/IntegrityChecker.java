@@ -278,19 +278,23 @@ public class IntegrityChecker
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
+        NodeRef childRef = childAssocRef.getChildRef();
         IntegrityEvent event = null;
         // check properties on child node
         event = new PropertiesIntegrityEvent(
                 nodeService,
                 dictionaryService,
-                childAssocRef.getChildRef());
+                childRef);
         save(event);
         
+        // check that the multiplicity and other properties of the new association are allowed
         onCreateChildAssociation(childAssocRef);
         
+        // check mandatory aspects
+        event = new AspectsIntegrityEvent(nodeService, dictionaryService, childRef);
+        save(event);
         
         // check for associations defined on the new node (child)
-        NodeRef childRef = childAssocRef.getChildRef();
         QName childNodeTypeQName = nodeService.getType(childRef);
         ClassDefinition nodeTypeDef = dictionaryService.getClass(childNodeTypeQName);
         if (nodeTypeDef == null)
@@ -370,10 +374,15 @@ public class IntegrityChecker
     }
 
     /**
-     * No checking performed: The property changes will be handled
+     * @see AspectsIntegrityEvent
      */
     public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
+        IntegrityEvent event = null;
+        // check mandatory aspects
+        event = new AspectsIntegrityEvent(nodeService, dictionaryService, nodeRef);
+        save(event);
+        
     }
 
     /**

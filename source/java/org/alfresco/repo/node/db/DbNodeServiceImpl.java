@@ -595,20 +595,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // get the node
         Node node = getNodeNotNull(nodeRef);
         
-        // check that the aspect may be removed
-        TypeDefinition nodeTypeDef = dictionaryService.getType(node.getTypeQName());
-        if (nodeTypeDef == null)
-        {
-            throw new InvalidNodeRefException("The node type is no longer valid: " + nodeRef, nodeRef);
-        }
-        List<AspectDefinition> defaultAspects = nodeTypeDef.getDefaultAspects();
-        if (defaultAspects.contains(aspectDef))
-        {
-            throw new InvalidAspectException(
-                    "The aspect is a default for the node's type and cannot be removed: " + aspectTypeQName,
-                    aspectTypeQName);
-        }
-        
         // remove the aspect, if present
         boolean removed = node.getAspects().remove(aspectTypeQName);
         // if the aspect was present, remove the associated properties

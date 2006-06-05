@@ -135,8 +135,22 @@ public class IntegrityTest extends TestCase
     
     public void tearDown() throws Exception
     {
-        authenticationComponent.clearCurrentSecurityContext();
-        txn.rollback();
+        try
+        {
+            authenticationComponent.clearCurrentSecurityContext();
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+        }
+        try
+        {
+            txn.rollback();
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -218,6 +232,15 @@ public class IntegrityTest extends TestCase
     {
         NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_ASPECT, allProperties);
         checkIntegrityNoFailure();
+    }
+
+    public void testRemoveMandatoryAspect() throws Exception
+    {
+        NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_ASPECT, allProperties);
+        // just remove the aspect
+        nodeService.removeAspect(nodeRef, TEST_ASPECT_WITH_PROPERTIES);
+        
+        checkIntegrityExpectFailure("Failed to removal of mandatory aspect", 1);
     }
 
     public void testCreateTargetOfAssocsWithMandatorySourcesPresent() throws Exception

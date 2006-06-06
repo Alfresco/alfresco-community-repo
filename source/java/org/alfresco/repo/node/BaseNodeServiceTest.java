@@ -621,17 +621,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // check that the titled aspect is present
         assertTrue("Titled aspect not present",
                 nodeService.hasAspect(nodeRef, ASPECT_QNAME_TEST_TITLED));
-        
-        // attempt to remove the aspect
-        try
-        {
-            nodeService.removeAspect(nodeRef, ASPECT_QNAME_TEST_TITLED);
-            fail("Failed to prevent removal of type-required aspect");
-        }
-        catch (InvalidAspectException e)
-        {
-            // expected
-        }
     }
     
     public static class BadOnDeleteNodePolicy implements

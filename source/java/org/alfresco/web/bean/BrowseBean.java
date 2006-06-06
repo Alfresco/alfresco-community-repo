@@ -565,7 +565,7 @@ public class BrowseBean implements IContextListener
                   	 this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                   {
                      // create our Node representation
-                     node = new MapNode(nodeRef, this.nodeService, false);
+                     node = new MapNode(nodeRef, this.nodeService, true);
                      node.addPropertyResolver("icon", this.resolverSpaceIcon);
                      node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                      
@@ -575,7 +575,7 @@ public class BrowseBean implements IContextListener
                   else if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
                   {
                      // create our Node representation
-                     node = new MapNode(nodeRef, this.nodeService, false);
+                     node = new MapNode(nodeRef, this.nodeService, true);
                      setupCommonBindingProperties(node);
                      
                      this.contentNodes.add(node);
@@ -584,7 +584,7 @@ public class BrowseBean implements IContextListener
                   else if (ContentModel.TYPE_FILELINK.equals(type))
                   {
                      // create our File Link Node representation
-                     node = new MapNode(nodeRef, this.nodeService, false);
+                     node = new MapNode(nodeRef, this.nodeService, true);
                      node.addPropertyResolver("url", this.resolverLinkUrl);
                      node.addPropertyResolver("webdavUrl", this.resolverLinkWebdavUrl);
                      node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
@@ -597,7 +597,7 @@ public class BrowseBean implements IContextListener
                   else if (ContentModel.TYPE_FOLDERLINK.equals(type))
                   {
                      // create our Folder Link Node representation
-                     node = new MapNode(nodeRef, this.nodeService, false);
+                     node = new MapNode(nodeRef, this.nodeService, true);
                      node.addPropertyResolver("icon", this.resolverSpaceIcon);
                      node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                      

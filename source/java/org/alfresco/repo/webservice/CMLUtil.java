@@ -39,6 +39,7 @@ import org.alfresco.repo.webservice.types.NamedValue;
 import org.alfresco.repo.webservice.types.ParentReference;
 import org.alfresco.repo.webservice.types.Predicate;
 import org.alfresco.repo.webservice.types.Reference;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -68,6 +69,7 @@ public class CMLUtil
     private SearchService searchService;
     private NamespaceService namespaceService;
     private CopyService copyService;
+    private DictionaryService dictionaryService;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -87,6 +89,11 @@ public class CMLUtil
     public void setCopyService(CopyService copyService)
     {
         this.copyService = copyService;
+    }
+    
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
     
     /**
@@ -249,6 +256,12 @@ public class CMLUtil
         results.add(createResult(CREATE, null, nodeRef));
     }
     
+    /**
+     * Get a property map from the named value array that can be used when setting properties
+     * 
+     * @param namedValues   a array of named value properties
+     * @return              a property map of vlaues
+     */ 
     private PropertyMap getPropertyMap(NamedValue[] namedValues)
     {
         PropertyMap properties = new PropertyMap();
@@ -257,7 +270,8 @@ public class CMLUtil
             for (NamedValue value : namedValues)
             {
                 QName qname = QName.createQName(value.getName());
-                properties.put(qname, value.getValue());
+                Serializable propValue = Utils.getValueFromNamedValue(this.dictionaryService, qname, value);
+                properties.put(qname, propValue);
             }
         }
         return properties;

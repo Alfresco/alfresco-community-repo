@@ -44,7 +44,6 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.apache.axis.MessageContext;
 import org.apache.commons.logging.Log;
@@ -199,7 +198,7 @@ public class RepositoryWebService extends AbstractWebService implements
                     .getBatchSize(msgContext), store, query, includeMetaData);
             QueryResult queryResult = querySession
                     .getNextResultsBatch(this.searchService, this.nodeService,
-                            this.namespaceService);
+                            this.namespaceService, this.dictionaryService);
 
             // add the session to the cache if there are more results to come
             if (queryResult.getQuerySession() != null)
@@ -255,7 +254,7 @@ public class RepositoryWebService extends AbstractWebService implements
                     .getBatchSize(MessageContext.getCurrentContext()), node);
             QueryResult queryResult = querySession
                     .getNextResultsBatch(this.searchService, this.nodeService,
-                            this.namespaceService);
+                            this.namespaceService, this.dictionaryService);
 
             // add the session to the cache if there are more results to come
             if (queryResult.getQuerySession() != null)
@@ -314,7 +313,7 @@ public class RepositoryWebService extends AbstractWebService implements
                     .getBatchSize(MessageContext.getCurrentContext()), node);
             QueryResult queryResult = querySession
                     .getNextResultsBatch(this.searchService, this.nodeService,
-                            this.namespaceService);
+                            this.namespaceService, this.dictionaryService);
 
             // add the session to the cache if there are more results to come
             if (queryResult.getQuerySession() != null)
@@ -368,7 +367,7 @@ public class RepositoryWebService extends AbstractWebService implements
             QuerySession querySession = new AssociatedQuerySession(Utils.getBatchSize(MessageContext.getCurrentContext()), node);
             QueryResult queryResult = querySession
                     .getNextResultsBatch(this.searchService, this.nodeService,
-                            this.namespaceService);
+                            this.namespaceService, this.dictionaryService);
 
             // add the session to the cache if there are more results to come
             if (queryResult.getQuerySession() != null)
@@ -435,7 +434,7 @@ public class RepositoryWebService extends AbstractWebService implements
 
             // get the next batch of results
             queryResult = session.getNextResultsBatch(this.searchService,
-                    this.nodeService, this.namespaceService);
+                    this.nodeService, this.namespaceService, this.dictionaryService);
 
             // remove the QuerySession from the cache if there are no more
             // results to come
@@ -647,17 +646,8 @@ public class RepositoryWebService extends AbstractWebService implements
                 NamedValue[] properties = new NamedValue[propertyMap.size()];
                 int propertyIndex = 0;
                 for (Map.Entry<QName, Serializable> entry : propertyMap.entrySet())
-                {
-                    String value = null;
-                    try
-                    {
-                        value = DefaultTypeConverter.INSTANCE.convert(String.class, entry.getValue());
-                    } 
-                    catch (Throwable exception)
-                    {
-                        value = entry.getValue().toString();
-                    } 
-                    properties[propertyIndex] = new NamedValue(entry.getKey().toString(), value);
+                { 
+                    properties[propertyIndex] = Utils.createNamedValue(this.dictionaryService, entry.getKey(), entry.getValue());
                     propertyIndex++;
                 }
                 

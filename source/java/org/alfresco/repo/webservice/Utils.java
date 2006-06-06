@@ -19,6 +19,7 @@ package org.alfresco.repo.webservice;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,8 @@ import org.alfresco.repo.webservice.types.Store;
 import org.alfresco.repo.webservice.types.StoreEnum;
 import org.alfresco.repo.webservice.types.Version;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -75,6 +78,139 @@ public class Utils
     private Utils()
     {
         // don't allow construction
+    }
+    
+    /**
+     * Utility method to convert from a string representation of a property value into the correct object representation.
+     * 
+     * @param dictionaryService     the dictionary service
+     * @param propertyName          the qname of the property in question
+     * @param propertyValue         the property vlaue as a string
+     * @return                      the object value of the property
+     */
+    public static Serializable getValueFromNamedValue(DictionaryService dictionaryService, QName propertyName, NamedValue namedValue)
+    {
+        Serializable result = null;
+        org.alfresco.service.cmr.dictionary.PropertyDefinition propDef = dictionaryService.getProperty(propertyName);
+        if (propDef != null)
+        {    
+            DataTypeDefinition propertyType = propDef.getDataType();
+            if (propertyType != null)
+            {           
+                if (namedValue.getIsMultiValue() == false)
+                {
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("Converting single-valued property '" + propertyName.toString() + "' with value " + namedValue.getValue());
+                    }
+                    
+                    result = (Serializable)DefaultTypeConverter.INSTANCE.convert(propertyType, namedValue.getValue());
+                }
+                else
+                {
+                    String[] values = namedValue.getValues();
+                    
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("Converting multi-valued property '" + propertyName.toString() + "' with values " + values.toString());
+                    }
+                    
+                    if (values != null)
+                    {
+                        Collection<Serializable> collection = new ArrayList<Serializable>(values.length);
+                        for (String value : values)
+                        {
+                            collection.add((Serializable)DefaultTypeConverter.INSTANCE.convert(propertyType, value));
+                        }
+                        
+                        if (logger.isDebugEnabled() == true)
+                        {
+                            logger.debug("The collection for the multi-value property has been generated '" + collection.toString());
+                        }
+                        
+                        result = (Serializable)collection;
+                    }
+                }
+            }
+            else
+            {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("No property definition was found for property '" + propertyName.toString() + "'");
+                }
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Create a named value object from the property name and value informaiton
+     * 
+     * @param dictionaryService     the dictionary service
+     * @param propertyName          the property qname
+     * @param propertyValue         the property value
+     * @return                      the namedValue object
+     */
+    public static NamedValue createNamedValue(DictionaryService dictionaryService, QName propertyName, Serializable propertyValue)
+    {
+        NamedValue namedValue = new NamedValue();
+        namedValue.setName(propertyName.toString());
+        
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("Creating named value for property '" + propertyName + "' with value '" + propertyValue + "'");
+        }
+        
+        if (propertyValue != null)
+        {
+            org.alfresco.service.cmr.dictionary.PropertyDefinition propDef = dictionaryService.getProperty(propertyName);
+            if (propDef != null)
+            {
+                if (propDef.isMultiValued() == true)
+                {
+                    namedValue.setIsMultiValue(true);
+                    if (propertyValue instanceof Collection)
+                    {
+                        if (logger.isDebugEnabled() == true)
+                        {
+                            logger.debug("Converting multivalue for property '" + propertyName + "'");
+                        } 
+                        
+                       Collection<Serializable> collection = (Collection<Serializable>)propertyValue;
+                       String[] values = new String[collection.size()];
+                       int count = 0;
+                       for (Serializable value : collection)
+                       {
+                           values[count] = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+                           count ++;
+                       } 
+                       namedValue.setValues(values);
+                    }
+                }
+                else
+                {
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("Converting single value for property '" + propertyName + "'");
+                    }
+                    
+                    namedValue.setIsMultiValue(false);
+                    namedValue.setValue(DefaultTypeConverter.INSTANCE.convert(String.class, propertyValue));
+                }
+            }
+            else
+            {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("No property definition found for property '" + propertyName + "'");
+                }
+                
+                namedValue.setIsMultiValue(false);
+                namedValue.setValue(propertyValue.toString());
+            }
+        }
+        
+        return namedValue;
     }
 
     /**
@@ -437,7 +573,7 @@ public class Utils
             {
                 value = entry.getValue().toString();
             }
-            namedValues[iIndex] = new NamedValue(entry.getKey(), value);
+            namedValues[iIndex] = new NamedValue(entry.getKey(), false, value, null);
             iIndex++;
         }
         webServiceVersion.setCommentaries(namedValues);

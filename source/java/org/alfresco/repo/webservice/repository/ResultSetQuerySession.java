@@ -24,14 +24,15 @@ import org.alfresco.repo.webservice.types.NamedValue;
 import org.alfresco.repo.webservice.types.Query;
 import org.alfresco.repo.webservice.types.ResultSetRowNode;
 import org.alfresco.repo.webservice.types.Store;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -70,7 +71,7 @@ public class ResultSetQuerySession extends AbstractQuerySession
    /**
     * @see org.alfresco.repo.webservice.repository.QuerySession#getNextResultsBatch(org.alfresco.service.cmr.search.SearchService, org.alfresco.service.cmr.repository.NodeService, org.alfresco.service.namespace.NamespaceService)
     */
-   public QueryResult getNextResultsBatch(SearchService searchService, NodeService nodeService, NamespaceService namespaceService)
+   public QueryResult getNextResultsBatch(SearchService searchService, NodeService nodeService, NamespaceService namespaceService, DictionaryService dictionaryService)
    {
       QueryResult queryResult = null;
       
@@ -114,16 +115,6 @@ public class ResultSetQuerySession extends AbstractQuerySession
                int col = 0;
                for (Path path : values.keySet())
                {
-                  String value = null;
-                  try
-                  {
-                      value = DefaultTypeConverter.INSTANCE.convert(String.class, values.get(path));
-                  } 
-                  catch (Throwable exception)
-                  {
-                      value = values.get(path).toString();
-                  }
-               
                   // Get the attribute QName from the result path
                   String attributeName = path.last().toString();
                   if (attributeName.startsWith("@") == true)
@@ -131,7 +122,7 @@ public class ResultSetQuerySession extends AbstractQuerySession
                       attributeName = attributeName.substring(1);
                   }
                
-                  columns[col] = new NamedValue(attributeName, value);
+                  columns[col] = Utils.createNamedValue(dictionaryService, QName.createQName(attributeName), values.get(path)); //new NamedValue(attributeName, value);
                   col++;
                }
 

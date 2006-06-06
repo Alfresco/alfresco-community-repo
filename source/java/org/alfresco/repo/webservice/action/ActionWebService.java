@@ -530,7 +530,11 @@ public class ActionWebService extends AbstractWebService implements ActionServic
                 {
                     value = entry.getValue().toString();
                 } 
-                namedValues[index] = new NamedValue(entry.getKey(), value);
+                NamedValue namedValue = new NamedValue();
+                namedValue.setName(entry.getKey());
+                namedValue.setIsMultiValue(false);
+                namedValue.setValue(value);               
+                namedValues[index] = namedValue;
                 index++;
             }
         }

@@ -297,7 +297,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
             NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.usingTemplate);
             ServiceRegistry services = Repository.getServiceRegistry(fc);
             Map<String, Object> model = DefaultModelHelper.buildDefaultModel(
-                  services, Application.getCurrentUser(fc), templateRef);
+                  services, Application.getCurrentUser(fc));
             model.put("role", roleText);
             model.put("space", new TemplateNode(node, Repository.getServiceRegistry(fc), null));
             

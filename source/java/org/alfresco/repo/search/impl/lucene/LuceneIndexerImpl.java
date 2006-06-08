@@ -38,6 +38,7 @@ import javax.transaction.xa.XAResource;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
@@ -53,7 +54,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -110,6 +110,9 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
      * Content service to get content for indexing.
      */
     private ContentService contentService;
+    
+    /** the maximum transformation time to allow atomically, defaulting to 20ms */
+    private long maxAtomicTransformationTime = 20;
 
     /**
      * A list of all deletions we have made - at merge these deletions need to be made against the main index.
@@ -196,9 +199,21 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
         this.contentService = contentService;
     }
 
-    /*******************************************************************************************************************************************************************************
-     * * Indexer Implementation * **************************
+    /**
+     * Set the maximum average transformation time allowed to a transformer in order to have
+     * the transformation performed in the current transaction.  The default is 20ms. 
+     * 
+     * @param maxAtomicTransformationTime the maximum average time that a text transformation may
+     *      take in order to be performed atomically.
      */
+    public void setMaxAtomicTransformationTime(long maxAtomicTransformationTime)
+    {
+        this.maxAtomicTransformationTime = maxAtomicTransformationTime;
+    }
+    
+    /*===========================
+     * Indexer Implementation
+     ============================*/
 
     /**
      * Utility method to check we are in the correct state to do work Also keeps track of the dirty flag.
@@ -1177,19 +1192,20 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
         for (QName propertyName : properties.keySet())
         {
             Serializable value = properties.get(propertyName);
-            isAtomic = indexProperty(nodeRef, propertyName, value, xdoc, isAtomic, true);
             if (indexAllProperties)
             {
-                indexProperty(nodeRef, propertyName, value, xdoc, false, false);
+                indexProperty(nodeRef, propertyName, value, xdoc, false);
+            }
+            else
+            {
+                isAtomic &= indexProperty(nodeRef, propertyName, value, xdoc, true);
             }
         }
 
         boolean isRoot = nodeRef.equals(nodeService.getRootNode(nodeRef.getStoreRef()));
 
-        StringBuilder parentBuffer = new StringBuilder();
         StringBuilder qNameBuffer = new StringBuilder(64);
 
-        int containerCount = 0;
         for (Iterator<Pair<Path, QName>> it = paths.iterator(); it.hasNext(); /**/)
         {
             Pair<Path, QName> pair = it.next();
@@ -1361,11 +1377,19 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
         }
     }
 
-    private boolean indexProperty(NodeRef nodeRef, QName propertyName, Serializable value, Document doc,
-            boolean isAtomic, boolean indexAtomicProperties)
+    /**
+     * @param indexAtomicPropertiesOnly true to ignore all properties that must be indexed
+     *      non-atomically
+     * @return Returns true if the property was indexed atomically, or false if it
+     *      should be done asynchronously
+     */
+    private boolean indexProperty(
+            NodeRef nodeRef, QName propertyName, Serializable value, Document doc,
+            boolean indexAtomicPropertiesOnly)
     {
-        String attributeName = "@"
-                + QName.createQName(propertyName.getNamespaceURI(), ISO9075.encode(propertyName.getLocalName()));
+        String attributeName = "@" + QName.createQName(
+                propertyName.getNamespaceURI(),
+                ISO9075.encode(propertyName.getLocalName()));
 
         boolean store = true;
         boolean index = true;
@@ -1382,140 +1406,166 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
             atomic = propertyDef.isIndexedAtomically();
             isContent = propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT);
         }
-        isAtomic &= atomic;
-
-        if (value != null)
+        if (value == null)
         {
-            if (indexAtomicProperties == atomic)
+            // the value is null
+            return true;
+        }
+        else if (indexAtomicPropertiesOnly && !atomic)
+        {
+            // we are only doing atomic properties and the property is definitely non-atomic
+            return false;
+        }
+        
+        if (!indexAtomicPropertiesOnly)
+        {
+            doc.removeFields(propertyName.toString());
+        }
+        boolean wereAllAtomic = true;
+        // convert value to String
+        for (String strValue : DefaultTypeConverter.INSTANCE.getCollection(String.class, value))
+        {
+            if (strValue == null)
             {
-                if (!indexAtomicProperties)
+                // nothing to index
+                continue;
+            }
+            // String strValue = ValueConverter.convert(String.class, value);
+            // TODO: Need to add with the correct language based analyser
+
+            if (isContent)
+            {
+                ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
+                if (!index || contentData.getMimetype() == null)
                 {
-                    doc.removeFields(propertyName.toString());
+                    // no mimetype or property not indexed
+                    continue;
                 }
-                // convert value to String
-                for (String strValue : DefaultTypeConverter.INSTANCE.getCollection(String.class, value))
+                // store mimetype in index - even if content does not index it is useful
+                doc.add(new Field(
+                        attributeName + ".mimetype",
+                        contentData.getMimetype(),
+                        false, true, false));
+
+                ContentReader reader = contentService.getReader(nodeRef, propertyName);
+                if (reader != null && reader.exists())
                 {
-                    if (strValue != null)
+                    boolean readerReady = true;
+                    // transform if necessary (it is not a UTF-8 text document)
+                    if (!EqualsHelper.nullSafeEquals(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN)
+                            || !EqualsHelper.nullSafeEquals(reader.getEncoding(), "UTF-8"))
                     {
-                        // String strValue = ValueConverter.convert(String.class, value);
-                        // TODO: Need to add with the correct language based analyser
-
-                        if (isContent)
+                        // get the transformer
+                        ContentTransformer transformer = contentService.getTransformer(
+                                reader.getMimetype(),
+                                MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                        // is this transformer good enough?
+                        if (transformer == null)
                         {
-                            ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
-                            if (contentData.getMimetype() != null && index)
+                            // log it
+                            if (s_logger.isDebugEnabled())
                             {
-                                // store mimetype in index - even if content does not index it is useful
-                                doc.add(new Field(attributeName + ".mimetype", contentData.getMimetype(), false, true,
-                                        false));
-
-                                ContentReader reader = contentService.getReader(nodeRef, propertyName);
-                                if (reader != null && reader.exists())
-                                {
-                                    boolean readerReady = true;
-                                    // transform if necessary (it is not a UTF-8
-                                    // text document)
-                                    if (!EqualsHelper.nullSafeEquals(reader.getMimetype(),
-                                            MimetypeMap.MIMETYPE_TEXT_PLAIN)
-                                            || !EqualsHelper.nullSafeEquals(reader.getEncoding(), "UTF-8"))
-                                    {
-                                        ContentWriter writer = contentService.getTempWriter();
-                                        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                                        // this is what the analyzers expect on the stream
-                                        writer.setEncoding("UTF-8");
-                                        try
-                                        {
-                                            contentService.transform(reader, writer);
-                                            // point the reader to the new-written content
-                                            reader = writer.getReader();
-                                        }
-                                        catch (NoTransformerException e)
-                                        {
-                                            // log it
-                                            if (s_logger.isDebugEnabled())
-                                            {
-                                                s_logger.debug("Not indexed: No transformation", e);
-                                            }
-                                            // don't index from the reader
-                                            readerReady = false;
-                                            // not indexed: no transformation
-                                            doc.add(Field.Text("TEXT", NOT_INDEXED_NO_TRANSFORMATION));
-                                            doc.add(Field.Text(attributeName, NOT_INDEXED_NO_TRANSFORMATION));
-                                        }
-                                        catch (ContentIOException e)
-                                        {
-                                            // log it
-                                            if (s_logger.isDebugEnabled())
-                                            {
-                                                s_logger.debug("Not indexed: Transformation failed", e);
-                                            }
-                                            // don't index from the reader
-                                            readerReady = false;
-                                            // not indexed: transformation
-                                            // failed
-                                            doc.add(Field.Text("TEXT", NOT_INDEXED_TRANSFORMATION_FAILED));
-                                            doc.add(Field.Text(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED));
-                                        }
-                                    }
-                                    // add the text field using the stream from the
-                                    // reader, but only if the reader is valid
-                                    if (readerReady)
-                                    {
-                                        InputStreamReader isr = null;
-                                        InputStream ris = reader.getContentInputStream();
-                                        try
-                                        {
-                                            isr = new InputStreamReader(ris, "UTF-8");
-                                        }
-                                        catch (UnsupportedEncodingException e)
-                                        {
-                                            isr = new InputStreamReader(ris);
-                                        }
-                                        doc.add(Field.Text("TEXT", isr));
-
-                                        ris = reader.getReader().getContentInputStream();
-                                        try
-                                        {
-                                            isr = new InputStreamReader(ris, "UTF-8");
-                                        }
-                                        catch (UnsupportedEncodingException e)
-                                        {
-                                            isr = new InputStreamReader(ris);
-                                        }
-
-                                        doc.add(Field.Text("@"
-                                                + QName.createQName(propertyName.getNamespaceURI(), ISO9075
-                                                        .encode(propertyName.getLocalName())), isr));
-                                    }
-                                }
-
-                                else
-                                // URL not present (null reader) or no content at the URL (file missing)
-                                {
-                                    // log it
-                                    if (s_logger.isDebugEnabled())
-                                    {
-                                        s_logger.debug("Not indexed: Content Missing \n"
-                                                + "   node: " + nodeRef + "\n" + "   reader: " + reader + "\n"
-                                                + "   content exists: "
-                                                + (reader == null ? " --- " : Boolean.toString(reader.exists())));
-                                    }
-                                    // not indexed: content missing
-                                    doc.add(Field.Text("TEXT", NOT_INDEXED_CONTENT_MISSING));
-                                    doc.add(Field.Text(attributeName, NOT_INDEXED_CONTENT_MISSING));
-                                }
+                                s_logger.debug(
+                                        "Not indexed: No transformation: \n" +
+                                        "   source: " + reader + "\n" +
+                                        "   target: " + MimetypeMap.MIMETYPE_TEXT_PLAIN);
                             }
+                            // don't index from the reader
+                            readerReady = false;
+                            // not indexed: no transformation
+                            doc.add(Field.Text("TEXT", NOT_INDEXED_NO_TRANSFORMATION));
+                            doc.add(Field.Text(attributeName, NOT_INDEXED_NO_TRANSFORMATION));
+                        }
+                        else if (indexAtomicPropertiesOnly && transformer.getTransformationTime() > maxAtomicTransformationTime)
+                        {
+                            // only indexing atomic properties
+                            // indexing will take too long, so push it to the background
+                            wereAllAtomic = false;
                         }
                         else
                         {
-                            doc.add(new Field(attributeName, strValue, store, index, tokenise));
+                            // We have a transformer that is fast enough
+                            ContentWriter writer = contentService.getTempWriter();
+                            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                            // this is what the analyzers expect on the stream
+                            writer.setEncoding("UTF-8");
+                            try
+                            {
+                                
+                                transformer.transform(reader, writer);
+                                // point the reader to the new-written content
+                                reader = writer.getReader();
+                            }
+                            catch (ContentIOException e)
+                            {
+                                // log it
+                                if (s_logger.isDebugEnabled())
+                                {
+                                    s_logger.debug("Not indexed: Transformation failed", e);
+                                }
+                                // don't index from the reader
+                                readerReady = false;
+                                // not indexed: transformation
+                                // failed
+                                doc.add(Field.Text("TEXT", NOT_INDEXED_TRANSFORMATION_FAILED));
+                                doc.add(Field.Text(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED));
+                            }
                         }
                     }
+                    // add the text field using the stream from the
+                    // reader, but only if the reader is valid
+                    if (readerReady)
+                    {
+                        InputStreamReader isr = null;
+                        InputStream ris = reader.getContentInputStream();
+                        try
+                        {
+                            isr = new InputStreamReader(ris, "UTF-8");
+                        }
+                        catch (UnsupportedEncodingException e)
+                        {
+                            isr = new InputStreamReader(ris);
+                        }
+                        doc.add(Field.Text("TEXT", isr));
+
+                        ris = reader.getReader().getContentInputStream();
+                        try
+                        {
+                            isr = new InputStreamReader(ris, "UTF-8");
+                        }
+                        catch (UnsupportedEncodingException e)
+                        {
+                            isr = new InputStreamReader(ris);
+                        }
+
+                        doc.add(Field.Text("@" + QName.createQName(
+                                propertyName.getNamespaceURI(),
+                                ISO9075.encode(propertyName.getLocalName())), isr));
+                    }
                 }
+                else
+                // URL not present (null reader) or no content at the URL (file missing)
+                {
+                    // log it
+                    if (s_logger.isDebugEnabled())
+                    {
+                        s_logger.debug("Not indexed: Content Missing \n"
+                                + "   node: " + nodeRef + "\n" + "   reader: " + reader + "\n"
+                                + "   content exists: "
+                                + (reader == null ? " --- " : Boolean.toString(reader.exists())));
+                    }
+                    // not indexed: content missing
+                    doc.add(Field.Text("TEXT", NOT_INDEXED_CONTENT_MISSING));
+                    doc.add(Field.Text(attributeName, NOT_INDEXED_CONTENT_MISSING));
+                }
+            }
+            else
+            {
+                doc.add(new Field(attributeName, strValue, store, index, tokenise));
             }
         }
 
-        return isAtomic;
+        return wereAllAtomic;
     }
 
     private Map<ChildAssociationRef, Counter> getNodeCounts(NodeRef nodeRef)

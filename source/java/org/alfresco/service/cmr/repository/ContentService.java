@@ -16,6 +16,7 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
 
@@ -106,6 +107,18 @@ public interface ContentService
      */
     public void transform(ContentReader reader, ContentWriter writer)
             throws NoTransformerException, ContentIOException;
+    
+    /**
+     * Fetch the transformer that is capable of transforming the content in the
+     * given source mimetype to the given target mimetype.
+     * 
+     * @param the source mimetype
+     * @param the target mimetype
+     * @return Returns a transformer that can be used, or null if one was not available
+     * 
+     * @see ContentAccessor#getMimetype()
+     */
+    public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype);
     
     /**
      * Returns whether a transformer exists that can read the content from

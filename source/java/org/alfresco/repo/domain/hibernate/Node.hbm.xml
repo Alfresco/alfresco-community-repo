@@ -52,8 +52,8 @@
       <map
             name="properties" 
             table="node_properties"
-            lazy="false" 
-            fetch="join"  
+            lazy="true" 
+            fetch="select"  
             sort="unsorted"
             inverse="false" 
             optimistic-lock="true"

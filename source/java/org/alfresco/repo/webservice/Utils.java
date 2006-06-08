@@ -97,7 +97,7 @@ public class Utils
             DataTypeDefinition propertyType = propDef.getDataType();
             if (propertyType != null)
             {           
-                if (namedValue.getIsMultiValue() == false)
+                if (namedValue == null || namedValue.getIsMultiValue() == false)
                 {
                     if (logger.isDebugEnabled() == true)
                     {

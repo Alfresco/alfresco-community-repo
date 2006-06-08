@@ -135,6 +135,9 @@ public class LuceneIndexerAndSearcherFactory implements LuceneIndexerAndSearcher
 
     private QueryRegisterComponent queryRegister;
 
+    /** the maximum transformation time to allow atomically, defaulting to 20ms */
+    private long maxAtomicTransformationTime = 20;
+
     private int indexerMaxFieldLength;
 
     /**
@@ -187,6 +190,18 @@ public class LuceneIndexerAndSearcherFactory implements LuceneIndexerAndSearcher
         this.queryRegister = queryRegister;
     }
 
+    /**
+     * Set the maximum average transformation time allowed to a transformer in order to have
+     * the transformation performed in the current transaction.  The default is 20ms. 
+     * 
+     * @param maxAtomicTransformationTime the maximum average time that a text transformation may
+     *      take in order to be performed atomically.
+     */
+    public void setMaxAtomicTransformationTime(long maxAtomicTransformationTime)
+    {
+        this.maxAtomicTransformationTime = maxAtomicTransformationTime;
+    }
+    
     /**
      * Check if we are in a global transactoin according to the transaction
      * manager
@@ -345,6 +360,7 @@ public class LuceneIndexerAndSearcherFactory implements LuceneIndexerAndSearcher
         indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setLuceneFullTextSearchIndexer(luceneFullTextSearchIndexer);
         indexer.setContentService(contentService);
+        indexer.setMaxAtomicTransformationTime(maxAtomicTransformationTime);
         return indexer;
     }
 

@@ -199,13 +199,6 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
         this.contentService = contentService;
     }
 
-    /**
-     * Set the maximum average transformation time allowed to a transformer in order to have
-     * the transformation performed in the current transaction.  The default is 20ms. 
-     * 
-     * @param maxAtomicTransformationTime the maximum average time that a text transformation may
-     *      take in order to be performed atomically.
-     */
     public void setMaxAtomicTransformationTime(long maxAtomicTransformationTime)
     {
         this.maxAtomicTransformationTime = maxAtomicTransformationTime;

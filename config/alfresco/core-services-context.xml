@@ -210,6 +210,9 @@
         <property name="queryRegister">
             <ref bean="queryRegisterComponent" />
         </property>
+        <property name="maxAtomicTransformationTime">
+            <value>${lucene.maxAtomicTransformationTime}</value>  <!-- milliseconds allowed for inline text transformation -->
+        </property>
         <property name="queryMaxClauses">
             <value>${lucene.query.maxClauses}</value>
         </property>

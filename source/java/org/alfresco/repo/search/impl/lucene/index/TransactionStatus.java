@@ -21,17 +21,48 @@ package org.alfresco.repo.search.impl.lucene.index;
 
 public enum TransactionStatus
 {
+    
     // Match the order in javax.transaction.Status so ordinal values are correct
     ACTIVE
     {
-        public boolean follows(TransactionStatus previous)
+        public boolean isCommitted()
         {
             return false;
+        }
+        
+        public boolean isTransient()
+        {
+            return true;
+        }
+        
+        public boolean canBeReordered()
+        {
+            return true;
+        }
+        
+        public boolean follows(TransactionStatus previous)
+        {
+            return previous == null;
         }
     },
 
     MARKED_ROLLBACK
     {
+        public boolean isCommitted()
+        {
+            return false;
+        }
+        
+        public boolean isTransient()
+        {
+            return true;
+        }
+        
+        public boolean canBeReordered()
+        {
+            return true;
+        }
+        
         public boolean follows(TransactionStatus previous)
         {
             return previous.allowsRollbackOrMark(previous);
@@ -40,6 +71,21 @@ public enum TransactionStatus
 
     PREPARED
     {
+        public boolean isCommitted()
+        {
+            return false;
+        }
+        
+        public boolean isTransient()
+        {
+            return false;
+        }
+
+        public boolean canBeReordered()
+        {
+            return false;
+        }
+        
         public boolean follows(TransactionStatus previous)
         {
             return previous == TransactionStatus.PREPARING;
@@ -53,6 +99,16 @@ public enum TransactionStatus
             return true;
         }
 
+        public boolean isTransient()
+        {
+            return false;
+        }
+        
+        public boolean canBeReordered()
+        {
+            return false;
+        }
+        
         public boolean follows(TransactionStatus previous)
         {
             return previous == TransactionStatus.COMMITTING;
@@ -61,6 +117,21 @@ public enum TransactionStatus
 
     ROLLEDBACK
     {
+        public boolean isCommitted()
+        {
+            return false;
+        }
+        
+        public boolean isTransient()
+        {
+            return true;
+        }
+        
+        public boolean canBeReordered()
+        {
+            return true;
+        }
+        
         public boolean follows(TransactionStatus previous)
         {
             return previous == TransactionStatus.ROLLINGBACK;
@@ -69,6 +140,21 @@ public enum TransactionStatus
 
     UNKNOWN
     {
+        public boolean isCommitted()
+        {
+            return false;
+        }
+        
+        public boolean isTransient()
+        {
+            return true;
+        }
+        
+        public boolean canBeReordered()
+        {
+            return true;
+        }
+        
         public boolean follows(TransactionStatus previous)
         {
             return false;
@@ -77,6 +163,21 @@ public enum TransactionStatus
 
     NO_TRANSACTION
     {
+        public boolean isCommitted()
+        {
+            return false;
+        }
+        
+        public boolean isTransient()
+        {
+            return true;
+        }
+        
+        public boolean canBeReordered()
+        {
+            return true;
+        }
+        
         public boolean follows(TransactionStatus previous)
         {
             return false;
@@ -85,6 +186,21 @@ public enum TransactionStatus
 
     PREPARING
     {
+        public boolean isCommitted()
+        {
+            return false;
+        }
+        
+        public boolean isTransient()
+        {
+            return true;
+        }
+        
+        public boolean canBeReordered()
+        {
+            return true;
+        }
+        
         public boolean follows(TransactionStatus previous)
         {
             return previous == TransactionStatus.ACTIVE;
@@ -93,6 +209,21 @@ public enum TransactionStatus
 
     COMMITTING
     {
+        public boolean isCommitted()
+        {
+            return false;
+        }
+        
+        public boolean isTransient()
+        {
+            return true;
+        }
+        
+        public boolean canBeReordered()
+        {
+            return false;
+        }
+        
         public boolean follows(TransactionStatus previous)
         {
             return previous == TransactionStatus.PREPARED;
@@ -101,6 +232,21 @@ public enum TransactionStatus
 
     ROLLINGBACK
     {
+        public boolean isCommitted()
+        {
+            return false;
+        }
+
+        public boolean isTransient()
+        {
+            return true;
+        }
+        
+        public boolean canBeReordered()
+        {
+            return true;
+        }
+        
         public boolean follows(TransactionStatus previous)
         {
             return previous.allowsRollbackOrMark(previous);
@@ -117,6 +263,16 @@ public enum TransactionStatus
             return true;
         }
 
+        public boolean isTransient()
+        {
+            return false;
+        }
+        
+        public boolean canBeReordered()
+        {
+            return false;
+        }
+        
         public boolean follows(TransactionStatus previous)
         {
             return false;
@@ -128,6 +284,21 @@ public enum TransactionStatus
      */
     MERGE_TARGET
     {
+        public boolean isCommitted()
+        {
+            return false;
+        }
+        
+        public boolean isTransient()
+        {
+            return false;
+        }
+        
+        public boolean canBeReordered()
+        {
+            return false;
+        }
+        
         public boolean follows(TransactionStatus previous)
         {
             return false;
@@ -137,67 +308,108 @@ public enum TransactionStatus
     /*
      * These index overlays require reindexing
      */
-    COMMITTED_REQUIRES_REINDEX
-    {
-        public boolean isCommitted()
-        {
-            return true;
-        }
-
-        public boolean follows(TransactionStatus previous)
-        {
-            return false;
-        }
-    },
+//    COMMITTED_REQUIRES_REINDEX
+//    {
+//        public boolean isCommitted()
+//        {
+//            return true;
+//        }
+//
+//        public boolean isTransient()
+//        {
+//            return false;
+//        }
+//        
+//        public boolean canBeReordered()
+//        {
+//            return false;
+//        }
+//        
+//        public boolean follows(TransactionStatus previous)
+//        {
+//            return false;
+//        }
+//    },
 
     /*
      * These index overlays are reindexing
      */
-    COMMITTED_REINDEXING
-    {
-        public boolean isCommitted()
-        {
-            return true;
-        }
-
-        public boolean follows(TransactionStatus previous)
-        {
-            return false;
-        }
-    },
+//    COMMITTED_REINDEXING
+//    {
+//        public boolean isCommitted()
+//        {
+//            return true;
+//        }
+//
+//        
+//        public boolean canBeReordered()
+//        {
+//            return false;
+//        }
+//        
+//        public boolean isTransient()
+//        {
+//            return false;
+//        }
+//        
+//        public boolean follows(TransactionStatus previous)
+//        {
+//            return false;
+//        }
+//    },
 
     /*
      * These index overlays have ben reindexed.
      */
-    COMMITTED_REINDEXED
-    {
-        public boolean isCommitted()
-        {
-            return true;
-        }
-
-        public boolean follows(TransactionStatus previous)
-        {
-            return false;
-        }
-    },
+//    COMMITTED_REINDEXED
+//    {
+//        public boolean isCommitted()
+//        {
+//            return true;
+//        }
+//
+//        public boolean isTransient()
+//        {
+//            return false;
+//        }
+//        
+//        public boolean canBeReordered()
+//        {
+//            return false;
+//        }
+//        
+//        public boolean follows(TransactionStatus previous)
+//        {
+//            return false;
+//        }
+//    },
 
     /*
      * Committed but the index still has deletions
      */
 
-    COMMITTED_WITH_DELETIONS
-    {
-        public boolean isCommitted()
-        {
-            return true;
-        }
-
-        public boolean follows(TransactionStatus previous)
-        {
-            return false;
-        }
-    },
+//    COMMITTED_WITH_DELETIONS
+//    {
+//        public boolean isCommitted()
+//        {
+//            return true;
+//        }
+//
+//        public boolean isTransient()
+//        {
+//            return false;
+//        }
+//        
+//        public boolean canBeReordered()
+//        {
+//            return false;
+//        }
+//        
+//        public boolean follows(TransactionStatus previous)
+//        {
+//            return false;
+//        }
+//    },
 
     /*
      * Pending deleted are being committed to for the delta.
@@ -209,6 +421,16 @@ public enum TransactionStatus
             return true;
         }
 
+        public boolean isTransient()
+        {
+            return false;
+        }
+        
+        public boolean canBeReordered()
+        {
+            return false;
+        }
+        
         public boolean follows(TransactionStatus previous)
         {
             return false;
@@ -220,16 +442,32 @@ public enum TransactionStatus
      */
     DELETABLE
     {
-        public boolean follows(TransactionStatus previous)
+        public boolean isCommitted()
         {
             return false;
         }
+        
+        public boolean isTransient()
+        {
+            return false;
+        }
+        
+        public boolean canBeReordered()
+        {
+            return false;
+        }
+        
+        public boolean follows(TransactionStatus previous)
+        {
+            return true;
+        }
     };
 
-    public boolean isCommitted()
-    {
-        return false;
-    }
+    public abstract boolean isCommitted();
+    
+    public abstract boolean isTransient();
+    
+    public abstract boolean canBeReordered();
 
     public abstract boolean follows(TransactionStatus previous);
 

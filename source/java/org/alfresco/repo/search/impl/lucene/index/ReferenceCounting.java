@@ -24,7 +24,7 @@ public interface ReferenceCounting
 
     public void decrementReferenceCount() throws IOException;
 
-    public boolean isUsed();
+    public int getReferenceCount();
 
     public void setInvalidForReuse() throws IOException;
 }

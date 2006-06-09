@@ -26,36 +26,42 @@ class IndexEntry
     /**
      * The type of the index entry
      */
-    IndexType type;
+    private IndexType type;
 
     /**
      * The unique name of the index entry
      */
-    String name;
+    private String name;
     
     /**
      * The preceeding index name.
      * Allows deltas etc to apply to the index or an overlay for example. 
      */
-    String parentName;
+    private String parentName;
 
     /**
-     * The status of the inedx entry
+     * The status of the index entry
      */
-    TransactionStatus status;
+    private TransactionStatus status;
     
     /**
      * If merging, the id where the result is going
      */
-    String mergeId;
-
-    IndexEntry(IndexType type, String name,  String parentName, TransactionStatus status, String mergeId)
+    private String mergeId;
+    
+    private long documentCount; 
+    
+    private long deletions;
+    
+    IndexEntry(IndexType type, String name,  String parentName, TransactionStatus status, String mergeId, long documentCount, long deletions)
     {
         this.type = type;
         this.name = name;
         this.parentName = parentName;
         this.status = status;
         this.mergeId = mergeId;
+        this.documentCount = documentCount;
+        this.deletions = deletions;
     }
 
     public String getMergeId()
@@ -106,6 +112,36 @@ class IndexEntry
     public void setType(IndexType type)
     {
         this.type = type;
+    }
+
+    public long getDocumentCount()
+    {
+        return documentCount;
+    }
+
+    public void setDocumentCount(long documentCount)
+    {
+        this.documentCount = documentCount;
+    }
+    
+    public long getDeletions()
+    {
+        return deletions;
+    }
+
+    public void setDeletions(long deletions)
+    {
+        this.deletions = deletions;
+    }
+
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append(" Name=").append(getName()).append(" ");
+        builder.append("Type=").append(getType()).append(" ");
+        builder.append("Status=").append(getStatus()).append(" ");
+        builder.append("Docs=").append(getDocumentCount()).append(" ");
+        return builder.toString();
     }
     
     

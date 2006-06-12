@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Wrapper;
 import org.springframework.util.StringUtils;
@@ -87,7 +87,6 @@ public final class Node implements Serializable
     private NodeRef nodeRef;
     private String name;
     private QName type;
-    private String path;
     private String id;
     private Set<QName> aspects = null;
     private ScriptableQNameMap<String, Serializable> properties = null;
@@ -101,6 +100,7 @@ public final class Node implements Serializable
     private TemplateImageResolver imageResolver = null;
     private Node parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
+    // NOTE: see the reset() method when adding new cached members!
     
     
     // ------------------------------------------------------------------------------
@@ -321,7 +321,7 @@ public final class Node implements Serializable
             for (AssociationRef ref : refs)
             {
                 String qname = ref.getTypeQName().toString();
-                Node[] nodes = (Node[])assocs.get(qname);
+                Node[] nodes = (Node[])this.assocs.get(qname);
                 if (nodes == null)
                 {
                     // first access for the list for this qname
@@ -333,7 +333,7 @@ public final class Node implements Serializable
                     System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
                     nodes = newNodes;
                 }
-                nodes[nodes.length] = new Node(ref.getTargetRef(), this.services, this.imageResolver);
+                nodes[nodes.length - 1] = new Node(ref.getTargetRef(), this.services, this.imageResolver);
                 
                 this.assocs.put(ref.getTypeQName().toString(), nodes);
             }
@@ -801,6 +801,37 @@ public final class Node implements Serializable
                 // unwrap a Java object from a JavaScript wrapper
                 value = (Serializable)((Wrapper)value).unwrap();
             }
+            else if (value instanceof ScriptableObject)
+            {
+                // a scriptable object will probably indicate a multi-value property
+                // set using a JavaScript Array object
+                ScriptableObject values = (ScriptableObject)value;
+                
+                // convert JavaScript array of values to a List of Serializable objects
+                Object[] propIds = values.getIds();
+                List<Serializable> propValues = new ArrayList<Serializable>(propIds.length);
+                for (int i=0; i<propIds.length; i++)
+                {
+                    // work on each key in turn
+                    Object propId = propIds[i];
+                    
+                    // we are only interested in keys that indicate a list of values
+                    if (propId instanceof Integer)
+                    {
+                        // get the value out for the specified key - make sure it is Serializable
+                        Object val = values.get((Integer)propId, values);
+                        if (val instanceof Wrapper)
+                        {
+                            val = ((Wrapper)val).unwrap();
+                        }
+                        if (val instanceof Serializable)
+                        {
+                            propValues.add((Serializable)val);
+                        }
+                    }
+                }
+                value = (Serializable)propValues;
+            }
             props.put(createQName(key), value);
         }
         this.nodeService.setProperties(this.nodeRef, props);
@@ -920,6 +951,9 @@ public final class Node implements Serializable
         try
         {
             this.nodeService.deleteNode(this.nodeRef);
+            
+            reset();
+            
             success = true;
         }
         catch (AccessDeniedException accessErr)
@@ -1004,7 +1038,10 @@ public final class Node implements Serializable
                         destination.getNodeRef(),
                         ContentModel.ASSOC_CONTAINS,
                         getPrimaryParentAssoc().getQName());
-                this.parent = null; // has been changed - so reset it
+                
+                // reset cached values
+                reset();
+                
                 success = true;
             }
         }
@@ -1083,8 +1120,8 @@ public final class Node implements Serializable
                 this.nodeService.addAspect(this.nodeRef, aspectQName, aspectProps);
                 
                 // reset the relevant cached node members
-                this.aspects = null;
-                this.properties = null;
+                reset();
+                
                 success = true;
             }
             catch (InvalidAspectException aspectErr)
@@ -1115,6 +1152,26 @@ public final class Node implements Serializable
             qname = QName.createQName(s, this.services.getNamespaceService());
         }
         return qname;
+    }
+    
+    /**
+     * Reset the Node cached state
+     */
+    private void reset()
+    {
+       this.name = null;
+       this.type = null;
+       this.properties = null;
+       this.aspects = null;
+       this.assocs = null;
+       this.children = null;
+       this.displayPath = null;
+       this.isDocument = null;
+       this.isContainer = null;
+       this.mimetype = null;
+       this.size = null;
+       this.parent = null;
+       this.primaryParentAssoc = null;
     }
     
     /**

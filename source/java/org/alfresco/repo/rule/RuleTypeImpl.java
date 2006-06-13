@@ -130,16 +130,8 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
                     logger.debug("Triggering rule " + rule.getId());
                 }
                 
-                if (rule.getExecuteAsychronously() == true)
-                {
-                    // Execute the rule now since it will be be queued for async execution later
-                    this.actionService.executeAction(rule, actionedUponNodeRef);
-                }
-                else
-                {
-                    // Queue the rule to be executed at the end of the transaction (but still in the transaction)
-                    ((RuntimeRuleService)this.ruleService).addRulePendingExecution(nodeRef, actionedUponNodeRef, rule);
-                }
+                // Queue the rule to be executed at the end of the transaction (but still in the transaction)
+                ((RuntimeRuleService)this.ruleService).addRulePendingExecution(nodeRef, actionedUponNodeRef, rule);
             }
         }
         else

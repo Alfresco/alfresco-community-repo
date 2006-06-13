@@ -287,6 +287,10 @@
         <property name="memberAttribute">
             <value>member</value>
         </property>
+        
+        <property name="authorityDAO">
+            <ref bean="authorityDAO"/>
+        </property>
     </bean>
     
     <!-- Job definitions to import LDAP people and groups -->
@@ -397,6 +401,13 @@
         <property name="namespacePrefixResolver">
             <ref bean="namespaceService"/>
         </property>
+        
+        
+        <property name="caches">
+            <set>
+                <ref bean="permissionsAccessCache"/>
+            </set>
+        </property>
     </bean>
     
     <!-- The bean that imports xml descibing groups -->
@@ -437,6 +448,16 @@
         <property name="namespacePrefixResolver">
             <ref bean="namespaceService"/>
         </property>
+        
+        <!-- caches to clear on import of groups -->
+        <property name="caches">
+            <set>
+                <ref bean="userToAuthorityCache"/>
+                <ref bean="permissionsAccessCache"/>
+            </set>
+        </property>
+        
+        <!-- userToAuthorityCache -->
     </bean>
     
 </beans>

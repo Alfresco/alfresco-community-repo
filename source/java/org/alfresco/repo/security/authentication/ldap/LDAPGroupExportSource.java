@@ -32,12 +32,16 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ExportSource;
 import org.alfresco.repo.importer.ExportSourceImporterException;
+import org.alfresco.repo.security.authority.AuthorityDAO;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
@@ -85,6 +89,8 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
     private QName viewValueQName;
 
     private QName viewIdRef;
+
+    private AuthorityDAO authorityDAO;
 
     public LDAPGroupExportSource()
     {
@@ -139,6 +145,11 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
     public void setErrorOnMissingMembers(boolean errorOnMissingMembers)
     {
         this.errorOnMissingMembers = errorOnMissingMembers;
+    }
+
+    public void setAuthorityDAO(AuthorityDAO authorityDAO)
+    {
+        this.authorityDAO = authorityDAO;
     }
 
     public void generateExport(XMLWriter writer)
@@ -222,7 +233,8 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
         String toId = lookup.get(sl.to).guid;
 
         AttributesImpl attrs = new AttributesImpl();
-        attrs.addAttribute(viewIdRef.getNamespaceURI(), viewIdRef.getLocalName(), viewIdRef.toPrefixString(), null, fromId);
+        attrs.addAttribute(viewIdRef.getNamespaceURI(), viewIdRef.getLocalName(), viewIdRef.toPrefixString(), null,
+                fromId);
 
         writer.startElement(viewRef.getNamespaceURI(), viewRef.getLocalName(),
                 viewRef.toPrefixString(namespaceService), attrs);
@@ -234,7 +246,8 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                 ContentModel.ASSOC_MEMBER.toPrefixString(namespaceService), new AttributesImpl());
 
         AttributesImpl attrsRef = new AttributesImpl();
-        attrsRef.addAttribute(viewIdRef.getNamespaceURI(), viewIdRef.getLocalName(), viewIdRef.toPrefixString(), null, toId);
+        attrsRef.addAttribute(viewIdRef.getNamespaceURI(), viewIdRef.getLocalName(), viewIdRef.toPrefixString(), null,
+                toId);
         attrsRef.addAttribute(childQName.getNamespaceURI(), childQName.getLocalName(), childQName.toPrefixString(),
                 null, QName.createQName(ContentModel.USER_MODEL_URI, sl.to).toPrefixString(namespaceService));
 
@@ -255,13 +268,13 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
 
     private void addRootGroup(HashMap<String, Group> lookup, Group group, XMLWriter writer) throws SAXException
     {
+        QName nodeUUID = QName.createQName("sys:node-uuid", namespaceService);
 
         AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, childQName.getLocalName(), childQName
                 .toPrefixString(), null, QName.createQName(ContentModel.USER_MODEL_URI, group.gid).toPrefixString(
                 namespaceService));
-        attrs.addAttribute(viewId.getNamespaceURI(), viewId.getLocalName(), viewId
-                .toPrefixString(), null, group.guid);
+        attrs.addAttribute(viewId.getNamespaceURI(), viewId.getLocalName(), viewId.toPrefixString(), null, group.guid);
 
         writer.startElement(ContentModel.TYPE_AUTHORITY_CONTAINER.getNamespaceURI(),
                 ContentModel.TYPE_AUTHORITY_CONTAINER.getLocalName(), ContentModel.TYPE_AUTHORITY_CONTAINER
@@ -301,6 +314,23 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
             addgroup(lookup, child, writer);
         }
 
+        if ((authorityDAO != null ) && authorityDAO.authorityExists(group.gid))
+        {
+            NodeRef authNodeRef = authorityDAO.getAuthorityNodeRefOrNull(group.gid);
+            if (authNodeRef != null)
+            {
+                String uguid = authorityDAO.getAuthorityNodeRefOrNull(group.gid).getId();
+
+                writer.startElement(nodeUUID.getNamespaceURI(), nodeUUID.getLocalName(), nodeUUID
+                        .toPrefixString(namespaceService), new AttributesImpl());
+
+                writer.characters(uguid.toCharArray(), 0, uguid.length());
+
+                writer.endElement(nodeUUID.getNamespaceURI(), nodeUUID.getLocalName(), nodeUUID
+                        .toPrefixString(namespaceService));
+            }
+        }
+
         writer.endElement(ContentModel.TYPE_AUTHORITY_CONTAINER.getNamespaceURI(),
                 ContentModel.TYPE_AUTHORITY_CONTAINER.getLocalName(), ContentModel.TYPE_AUTHORITY_CONTAINER
                         .toPrefixString(namespaceService));
@@ -337,9 +367,10 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                 SearchResult result = (SearchResult) searchResults.next();
                 Attributes attributes = result.getAttributes();
                 Attribute gidAttribute = attributes.get(groupIdAttributeName);
-                if(gidAttribute == null)
+                if (gidAttribute == null)
                 {
-                    throw new ExportSourceImporterException("Group returned by group search does not have mandatory group id attribute "+attributes);
+                    throw new ExportSourceImporterException(
+                            "Group returned by group search does not have mandatory group id attribute " + attributes);
                 }
                 String gid = (String) gidAttribute.get(0);
 
@@ -421,9 +452,9 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                         }
                         Attributes attributes = result.getAttributes();
                         Attribute objectclass = attributes.get("objectclass");
-                        if(objectclass == null)
+                        if (objectclass == null)
                         {
-                            throw new ExportSourceImporterException("Failed to find attribute objectclass for DN "+dn);
+                            throw new ExportSourceImporterException("Failed to find attribute objectclass for DN " + dn);
                         }
                         for (int i = 0; i < objectclass.size(); i++)
                         {
@@ -447,9 +478,10 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                                 try
                                 {
                                     Attribute groupIdAttribute = attributes.get(groupIdAttributeName);
-                                    if(groupIdAttribute == null)
+                                    if (groupIdAttribute == null)
                                     {
-                                        throw new ExportSourceImporterException("Group missing group id attribute DN ="+dn + "  att = "+groupIdAttributeName);
+                                        throw new ExportSourceImporterException("Group missing group id attribute DN ="
+                                                + dn + "  att = " + groupIdAttributeName);
                                     }
                                     id = (String) groupIdAttribute.get(0);
                                 }
@@ -471,9 +503,10 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                                 try
                                 {
                                     Attribute userIdAttribute = attributes.get(userIdAttributeName);
-                                    if(userIdAttribute == null)
+                                    if (userIdAttribute == null)
                                     {
-                                        throw new ExportSourceImporterException("User missing user id attribute DN ="+dn + "  att = "+userIdAttributeName);
+                                        throw new ExportSourceImporterException("User missing user id attribute DN ="
+                                                + dn + "  att = " + userIdAttributeName);
                                     }
                                     id = (String) userIdAttribute.get(0);
                                 }
@@ -495,7 +528,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                         {
                             if (isGroup == null)
                             {
-                                throw new ExportSourceImporterException("Type not recognised for DN"+dn);
+                                throw new ExportSourceImporterException("Type not recognised for DN" + dn);
                             }
                             else if (isGroup)
                             {
@@ -580,7 +613,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
 
         private Group(String gid)
         {
-            this.gid =  "GROUP_" + gid;
+            this.gid = "GROUP_" + gid;
         }
 
         @Override
@@ -613,8 +646,8 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
 
         private SecondaryLink(String from, String to)
         {
-            this.from =   from;
-            this.to =  to;
+            this.from = from;
+            this.to = to;
         }
 
         @Override
@@ -648,17 +681,22 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
         }
     }
 
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args) throws Exception
     {
         ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
         ExportSource source = (ExportSource) ctx.getBean("ldapGroupExportSource");
 
+        TransactionService txs = (TransactionService) ctx.getBean("transactionComponent");
+        UserTransaction tx = txs.getUserTransaction();
+        tx.begin();
+        
         File file = new File(args[0]);
         Writer writer = new BufferedWriter(new FileWriter(file));
         XMLWriter xmlWriter = createXMLExporter(writer);
         source.generateExport(xmlWriter);
         xmlWriter.close();
 
+        tx.commit();
     }
 
     private static XMLWriter createXMLExporter(Writer writer)

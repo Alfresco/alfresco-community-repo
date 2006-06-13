@@ -21,14 +21,14 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
+import java.util.Set;
 
 import javax.transaction.UserTransaction;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -52,20 +52,22 @@ public class ExportSourceImporter implements ImporterJobSPI
     private ExportSource exportSource;
 
     private AuthenticationComponent authenticationComponent;
-    
+
     private StoreRef storeRef;
 
     private String path;
-    
+
     private boolean clearAllChildren;
-    
+
     private NodeService nodeService;
-    
+
     private SearchService searchService;
-    
+
     private NamespacePrefixResolver namespacePrefixResolver;
-    
+
     private TransactionService transactionService;
+
+    private Set<SimpleCache> caches;
 
     public ExportSourceImporter()
     {
@@ -96,7 +98,7 @@ public class ExportSourceImporter implements ImporterJobSPI
     {
         this.storeRef = new StoreRef(storeRef);
     }
-    
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
@@ -111,8 +113,11 @@ public class ExportSourceImporter implements ImporterJobSPI
     {
         this.nodeService = nodeService;
     }
-    
-    
+
+    public void setCaches(Set<SimpleCache> caches)
+    {
+        this.caches = caches;
+    }
 
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
@@ -124,6 +129,7 @@ public class ExportSourceImporter implements ImporterJobSPI
         this.searchService = searchService;
     }
 
+    @SuppressWarnings("unchecked")
     public void doImport()
     {
         UserTransaction userTransaction = null;
@@ -132,18 +138,28 @@ public class ExportSourceImporter implements ImporterJobSPI
             userTransaction = transactionService.getUserTransaction();
             userTransaction.begin();
             authenticationComponent.setSystemUserAsCurrentUser();
-            if(clearAllChildren)
+            if (clearAllChildren)
             {
-                List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef), path, null, namespacePrefixResolver, false);
-                for(NodeRef ref: refs)
+                List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef), path, null,
+                        namespacePrefixResolver, false);
+                for (NodeRef ref : refs)
                 {
-                    for(ChildAssociationRef car: nodeService.getChildAssocs(ref))
+                    for (ChildAssociationRef car : nodeService.getChildAssocs(ref))
                     {
                         nodeService.deleteNode(car.getChildRef());
                     }
                 }
             }
-            
+
+            if (caches != null)
+            {
+                for (SimpleCache cache : caches)
+                {
+
+                    cache.clear();
+                }
+            }
+
             File tempFile = TempFileProvider.createTempFile("ExportSourceImporter-", ".xml");
             Writer writer = new BufferedWriter(new FileWriter(tempFile));
             XMLWriter xmlWriter = createXMLExporter(writer);
@@ -157,12 +173,36 @@ public class ExportSourceImporter implements ImporterJobSPI
 
             importerService.importView(reader, location, REPLACE_BINDING, null);
             reader.close();
+
+            if (caches != null)
+            {
+                for (SimpleCache cache : caches)
+                {
+                    cache.clear();
+                }
+            }
+
             userTransaction.commit();
         }
-        catch(Throwable t)
+        catch (Throwable t)
         {
-            try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) {}
-            try {authenticationComponent.clearCurrentSecurityContext(); } catch (Exception ex) {}
+            try
+            {
+                if (userTransaction != null)
+                {
+                    userTransaction.rollback();
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            try
+            {
+                authenticationComponent.clearCurrentSecurityContext();
+            }
+            catch (Exception ex)
+            {
+            }
             throw new ExportSourceImporterException("Failed to import", t);
         }
         finally

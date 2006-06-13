@@ -18,6 +18,7 @@ package org.alfresco.repo.security.authority;
 
 import java.util.Set;
 
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityType;
 
 public interface AuthorityDAO
@@ -96,4 +97,12 @@ public interface AuthorityDAO
      * @return
      */
     boolean authorityExists(String name);
+    
+    /**
+     * Get a node ref for the authority if one exists
+     * 
+     * @param name
+     * @return
+     */
+    NodeRef getAuthorityNodeRefOrNull(String name);
 }

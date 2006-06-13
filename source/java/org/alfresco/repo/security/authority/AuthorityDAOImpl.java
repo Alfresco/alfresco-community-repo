@@ -50,11 +50,17 @@ public class AuthorityDAOImpl implements AuthorityDAO
     public static final StoreRef STOREREF_USERS = new StoreRef("user", "alfrescoUserStore");
 
     private NodeService nodeService;
+
     private NamespacePrefixResolver namespacePrefixResolver;
+
     private QName qnameAssocSystem;
+
     private QName qnameAssocAuthorities;
+
     private SearchService searchService;
+
     private DictionaryService dictionaryService;
+
     private SimpleCache<String, ArrayList<NodeRef>> userToAuthorityCache;
 
     public AuthorityDAOImpl()
@@ -91,11 +97,10 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     public boolean authorityExists(String name)
     {
-        NodeRef ref = getAuthorityOrNull(name); 
+        NodeRef ref = getAuthorityOrNull(name);
         return ref != null;
-    }   
-    
-    
+    }
+
     public void addAuthority(String parentName, String childName)
     {
         NodeRef parentRef = getAuthorityOrNull(parentName);
@@ -120,11 +125,8 @@ public class AuthorityDAOImpl implements AuthorityDAO
             {
                 throw new UnknownAuthorityException("An authority was not found for " + childName);
             }
-            nodeService.addChild(
-                    parentRef,
-                    childRef,
-                    ContentModel.ASSOC_MEMBER,
-                    QName.createQName("usr", childName, namespacePrefixResolver));
+            nodeService.addChild(parentRef, childRef, ContentModel.ASSOC_MEMBER, QName.createQName("usr", childName,
+                    namespacePrefixResolver));
         }
 
     }
@@ -140,22 +142,14 @@ public class AuthorityDAOImpl implements AuthorityDAO
             {
                 throw new UnknownAuthorityException("An authority was not found for " + parentName);
             }
-            nodeService.createNode(
-                    parentRef,
-                    ContentModel.ASSOC_MEMBER,
-                    QName.createQName("usr", name, namespacePrefixResolver),
-                    ContentModel.TYPE_AUTHORITY_CONTAINER,
-                    props);
+            nodeService.createNode(parentRef, ContentModel.ASSOC_MEMBER, QName.createQName("usr", name,
+                    namespacePrefixResolver), ContentModel.TYPE_AUTHORITY_CONTAINER, props);
         }
         else
         {
             NodeRef authorityContainerRef = getAuthorityContainer();
-            nodeService.createNode(
-                    authorityContainerRef,
-                    ContentModel.ASSOC_CHILDREN,
-                    QName.createQName("usr", name, namespacePrefixResolver),
-                    ContentModel.TYPE_AUTHORITY_CONTAINER,
-                    props);
+            nodeService.createNode(authorityContainerRef, ContentModel.ASSOC_CHILDREN, QName.createQName("usr", name,
+                    namespacePrefixResolver), ContentModel.TYPE_AUTHORITY_CONTAINER, props);
         }
     }
 
@@ -430,9 +424,8 @@ public class AuthorityDAOImpl implements AuthorityDAO
             {
                 for (ResultSetRow row : rs)
                 {
-                    String test = DefaultTypeConverter.INSTANCE.convert(
-                            String.class,
-                            nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_AUTHORITY_NAME));
+                    String test = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row
+                            .getNodeRef(), ContentModel.PROP_AUTHORITY_NAME));
                     if (test.equals(name))
                     {
                         return row.getNodeRef();
@@ -457,9 +450,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
     private NodeRef getAuthorityContainer()
     {
         NodeRef rootNodeRef = nodeService.getRootNode(STOREREF_USERS);
-        List<ChildAssociationRef> results = nodeService.getChildAssocs(
-                rootNodeRef,
-                RegexQNamePattern.MATCH_ALL,
+        List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL,
                 qnameAssocSystem);
         NodeRef sysNodeRef = null;
         if (results.size() == 0)
@@ -470,10 +461,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
         {
             sysNodeRef = results.get(0).getChildRef();
         }
-        results = nodeService.getChildAssocs(
-                sysNodeRef,
-                RegexQNamePattern.MATCH_ALL,
-                qnameAssocAuthorities);
+        results = nodeService.getChildAssocs(sysNodeRef, RegexQNamePattern.MATCH_ALL, qnameAssocAuthorities);
         NodeRef authNodeRef = null;
         if (results.size() == 0)
         {
@@ -485,4 +473,10 @@ public class AuthorityDAOImpl implements AuthorityDAO
         }
         return authNodeRef;
     }
+
+    public NodeRef getAuthorityNodeRefOrNull(String name)
+    {
+        return getAuthorityOrNull(name);
+    }
+
 }

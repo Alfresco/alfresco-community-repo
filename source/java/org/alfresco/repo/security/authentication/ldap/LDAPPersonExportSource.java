@@ -19,7 +19,6 @@ package org.alfresco.repo.security.authentication.ldap;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
@@ -31,6 +30,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ExportSource;
@@ -38,6 +38,7 @@ import org.alfresco.repo.importer.ExportSourceImporterException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,7 +51,7 @@ import org.xml.sax.helpers.AttributesImpl;
 public class LDAPPersonExportSource implements ExportSource
 {
     private static Log s_logger = LogFactory.getLog(LDAPPersonExportSource.class);
-    
+
     private String personQuery = "(objectclass=inetOrgPerson)";
 
     private String searchBase;
@@ -149,24 +150,28 @@ public class LDAPPersonExportSource implements ExportSource
 
                 SearchControls userSearchCtls = new SearchControls();
                 userSearchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-                System.out.println("COUNT "+userSearchCtls.getCountLimit());
-                System.out.println("TIME "+userSearchCtls.getTimeLimit());
+               
                 userSearchCtls.setCountLimit(Integer.MAX_VALUE);
-                
+
                 NamingEnumeration searchResults = ctx.search(searchBase, personQuery, userSearchCtls);
                 while (searchResults.hasMoreElements())
                 {
                     SearchResult result = (SearchResult) searchResults.next();
                     Attributes attributes = result.getAttributes();
                     Attribute uidAttribute = attributes.get(userIdAttributeName);
+                    if (uidAttribute == null)
+                    {
+                        throw new ExportSourceImporterException(
+                                "User returned by user search does not have mandatory user id attribute " + attributes);
+                    }
                     String uid = (String) uidAttribute.get(0);
 
-                    if(s_logger.isDebugEnabled())
+                    if (s_logger.isDebugEnabled())
                     {
-                        s_logger.debug("Adding user for "+uid);
+                        s_logger.debug("Adding user for " + uid);
                     }
-                    System.out.println("User "+uid);
-                    
+                  
+
                     writer.startElement(ContentModel.TYPE_PERSON.getNamespaceURI(), ContentModel.TYPE_PERSON
                             .getLocalName(), ContentModel.TYPE_PERSON.toPrefixString(namespaceService), attrs);
 
@@ -199,13 +204,17 @@ public class LDAPPersonExportSource implements ExportSource
                                 .toPrefixString(namespaceService), new AttributesImpl());
 
                         // cater for null
-                        String attribute = attributeMapping.get(key);
-                        if (attribute != null)
+                        String attributeName = attributeMapping.get(key);
+                        if (attributeName != null)
                         {
-                            String value = (String) attributes.get(attribute).get(0);
-                            if (value != null)
+                            Attribute attribute = attributes.get(attributeName);
+                            if (attribute != null)
                             {
-                                writer.characters(value.toCharArray(), 0, value.length());
+                                String value = (String) attribute.get(0);
+                                if (value != null)
+                                {
+                                    writer.characters(value.toCharArray(), 0, value.length());
+                                }
                             }
                         }
 
@@ -292,17 +301,21 @@ public class LDAPPersonExportSource implements ExportSource
         }
     }
 
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args) throws Exception
     {
         ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
         ExportSource source = (ExportSource) ctx.getBean("ldapPeopleExportSource");
-
+        TransactionService txs = (TransactionService) ctx.getBean("transactionComponent");
+        UserTransaction tx = txs.getUserTransaction();
+        tx.begin();
+        
         File file = new File(args[0]);
         Writer writer = new BufferedWriter(new FileWriter(file));
         XMLWriter xmlWriter = createXMLExporter(writer);
         source.generateExport(xmlWriter);
         xmlWriter.close();
 
+        tx.commit();
     }
 
     private static XMLWriter createXMLExporter(Writer writer)

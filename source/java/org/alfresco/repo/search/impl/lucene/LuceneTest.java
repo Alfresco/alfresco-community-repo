@@ -858,7 +858,7 @@ public class LuceneTest extends TestCase
                 + System.currentTimeMillis() + "_1", indexerAndSearcher);
 
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -882,7 +882,7 @@ public class LuceneTest extends TestCase
                 + System.currentTimeMillis() + "_1", indexerAndSearcher);
 
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -1073,7 +1073,7 @@ public class LuceneTest extends TestCase
         LuceneIndexerImpl indexer = LuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_" + (new Random().nextInt()), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -1785,7 +1785,7 @@ public class LuceneTest extends TestCase
         LuceneIndexerImpl indexer = LuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -1821,7 +1821,7 @@ public class LuceneTest extends TestCase
         LuceneIndexerImpl indexer = LuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2058,7 +2058,7 @@ public class LuceneTest extends TestCase
         LuceneIndexerImpl indexer = LuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2090,7 +2090,7 @@ public class LuceneTest extends TestCase
         LuceneIndexerImpl indexer = LuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2120,7 +2120,7 @@ public class LuceneTest extends TestCase
         LuceneIndexerImpl indexer = LuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2358,7 +2358,7 @@ public class LuceneTest extends TestCase
         LuceneIndexerImpl indexer = LuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2601,7 +2601,7 @@ public class LuceneTest extends TestCase
         indexer = LuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(),
                 indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2645,7 +2645,7 @@ public class LuceneTest extends TestCase
         LuceneIndexerImpl indexer = LuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2714,7 +2714,7 @@ public class LuceneTest extends TestCase
         LuceneIndexerImpl indexer = LuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_" + (new Random().nextInt()), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2793,7 +2793,7 @@ public class LuceneTest extends TestCase
         LuceneIndexerImpl indexer = LuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_" + (new Random().nextInt()), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -3126,7 +3126,7 @@ public class LuceneTest extends TestCase
         LuceneIndexerImpl indexer = LuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_" + (new Random().nextInt()), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);

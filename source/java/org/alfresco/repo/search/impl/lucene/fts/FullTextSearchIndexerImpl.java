@@ -20,7 +20,10 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.alfresco.repo.search.Indexer;
+import org.alfresco.repo.search.IndexerSPI;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexer;
+import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.springframework.context.ApplicationContext;
@@ -36,7 +39,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
 
     private static Set<StoreRef> indexing = new HashSet<StoreRef>();
 
-    LuceneIndexerAndSearcherFactory luceneIndexerAndSearcherFactory;
+    LuceneIndexerAndSearcher luceneIndexerAndSearcherFactory;
 
     private int pauseCount = 0;
 
@@ -161,7 +164,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
         if (toIndex != null)
         {
             //System.out.println("Indexing "+toIndex+" at "+(new java.util.Date()));
-            LuceneIndexer indexer = luceneIndexerAndSearcherFactory.getIndexer(toIndex);
+            IndexerSPI indexer = luceneIndexerAndSearcherFactory.getIndexer(toIndex);
             indexer.registerCallBack(this);
             indexer.updateFullTextSearch(1000);
         }
@@ -198,7 +201,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
         return nextStoreRef;
     }
 
-    public void setLuceneIndexerAndSearcherFactory(LuceneIndexerAndSearcherFactory luceneIndexerAndSearcherFactory)
+    public void setLuceneIndexerAndSearcherFactory(LuceneIndexerAndSearcher luceneIndexerAndSearcherFactory)
     {
         this.luceneIndexerAndSearcherFactory = luceneIndexerAndSearcherFactory;
     }

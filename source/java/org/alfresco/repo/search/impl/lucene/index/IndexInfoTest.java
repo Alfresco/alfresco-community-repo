@@ -85,7 +85,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
         File tempLocation = TempFileProvider.getTempDir();
         File testArea = new File(tempLocation, "IndexInfoTest");
         File testDir = new File(testArea, "" + System.currentTimeMillis());
-        final IndexInfo ii = new IndexInfo(testDir);
+        final IndexInfo ii = IndexInfo.getIndexInfo(testDir);
 
         for (int i = 0; i < WORD_LIST.length; i++)
         {
@@ -107,7 +107,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
             ii.closeDeltaIndexWriter(guid);
             ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-            ii.setPreparedState(guid, deletions, 1);
+            ii.setPreparedState(guid, deletions, 1, false);
             ii.getDeletions(guid);
             ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -128,7 +128,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             }
             reader.close();
 
-            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions);
+            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions, false);
             assertEquals(reader.numDocs(), i + 1);
             for (int j = 0; j < WORD_LIST.length; j++)
             {
@@ -183,7 +183,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
         File tempLocation = TempFileProvider.getTempDir();
         File testArea = new File(tempLocation, "IndexInfoTest");
         File testDir = new File(testArea, "" + System.currentTimeMillis());
-        final IndexInfo ii = new IndexInfo(testDir);
+        final IndexInfo ii =  IndexInfo.getIndexInfo(testDir);
 
         for (int i = 0; i < CREATE_LIST.length; i++)
         {
@@ -208,7 +208,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
             ii.closeDeltaIndexWriter(guid);
             ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-            ii.setPreparedState(guid, new HashSet<NodeRef>(), 1);
+            ii.setPreparedState(guid, new HashSet<NodeRef>(), 1, false);
             ii.getDeletions(guid);
             ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -229,7 +229,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             }
             reader.close();
 
-            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<NodeRef>());
+            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<NodeRef>(), false);
             assertEquals(reader.numDocs(), i + 1);
             for (int j = 0; j < CREATE_LIST.length; j++)
             {
@@ -281,7 +281,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             ii.setStatus(guid, TransactionStatus.ACTIVE, null, null);
             ii.closeDeltaIndexWriter(guid);
             ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-            ii.setPreparedState(guid, deletions, 1);
+            ii.setPreparedState(guid, deletions, 1, false);
             ii.getDeletions(guid);
             ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -304,7 +304,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             }
             reader.close();
 
-            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions);
+            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions, false);
             assertEquals(reader.numDocs(), UPDATE_LIST.length - i - 1);
             lastDoc = -1;
             for (int j = 0; j < CREATE_LIST.length; j++)
@@ -372,7 +372,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
         File tempLocation = TempFileProvider.getTempDir();
         File testArea = new File(tempLocation, "IndexInfoTest");
         File testDir = new File(testArea, "" + System.currentTimeMillis());
-        final IndexInfo ii = new IndexInfo(testDir);
+        final IndexInfo ii =  IndexInfo.getIndexInfo(testDir);
 
         for (int i = 0; i < CREATE_LIST.length; i++)
         {
@@ -397,7 +397,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
             ii.closeDeltaIndexWriter(guid);
             ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-            ii.setPreparedState(guid, new HashSet<NodeRef>(), 1);
+            ii.setPreparedState(guid, new HashSet<NodeRef>(), 1, false);
             ii.getDeletions(guid);
             ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -418,7 +418,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             }
             reader.close();
 
-            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<NodeRef>());
+            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<NodeRef>(), false);
             assertEquals(reader.numDocs(), i + 1);
             for (int j = 0; j < CREATE_LIST.length; j++)
             {
@@ -480,7 +480,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
             ii.closeDeltaIndexWriter(guid);
             ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-            ii.setPreparedState(guid, deletions, 1);
+            ii.setPreparedState(guid, deletions, 1, false);
             ii.getDeletions(guid);
             ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -517,7 +517,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             }
             reader.close();
 
-            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions);
+            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions, false);
             assertEquals(reader.numDocs(), UPDATE_LIST.length);
             lastDoc = -1;
             for (int j = 0; j < CREATE_LIST.length; j++)
@@ -599,7 +599,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
         File tempLocation = TempFileProvider.getTempDir();
         File testArea = new File(tempLocation, "IndexInfoTest");
         File testDir = new File(testArea, "" + System.currentTimeMillis());
-        final IndexInfo ii = new IndexInfo(testDir);
+        final IndexInfo ii =  IndexInfo.getIndexInfo(testDir);
         
         Thread thread1 = new Thread(new Test(ii, CREATE_LIST, UPDATE_LIST));
         Thread thread2 = new Thread(new Test(ii, CREATE_LIST_2, UPDATE_LIST_2));
@@ -663,7 +663,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
                     ii.closeDeltaIndexWriter(guid);
                     ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-                    ii.setPreparedState(guid, new HashSet<NodeRef>(), 1);
+                    ii.setPreparedState(guid, new HashSet<NodeRef>(), 1, false);
                     ii.getDeletions(guid);
                     ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -687,7 +687,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                     }
                     reader.close();
 
-                    reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<NodeRef>());
+                    reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<NodeRef>(), false);
                     lastDoc = -1;
                     for (int j = 0; j < create.length; j++)
                     {
@@ -751,7 +751,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
                     ii.closeDeltaIndexWriter(guid);
                     ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-                    ii.setPreparedState(guid, deletions, 1);
+                    ii.setPreparedState(guid, deletions, 1, false);
                     ii.getDeletions(guid);
                     ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -788,7 +788,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                     }
                     reader.close();
 
-                    reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions);
+                    reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions, false);
                     
                     lastDoc = -1;
                     for (int j = 0; j < create.length; j++)

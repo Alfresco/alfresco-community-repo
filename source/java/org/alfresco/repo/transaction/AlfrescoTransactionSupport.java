@@ -26,6 +26,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
+import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.util.GUID;
@@ -250,7 +251,7 @@ public abstract class AlfrescoTransactionSupport
      * @param indexerAndSearcher the Lucene indexer to perform transaction completion
      *      tasks on
      */
-    public static void bindLucene(LuceneIndexerAndSearcherFactory indexerAndSearcher)
+    public static void bindLucene(LuceneIndexerAndSearcher indexerAndSearcher)
     {
         // get transaction-local synchronization
         TransactionSynchronizationImpl synch = getSynchronization();
@@ -426,7 +427,7 @@ public abstract class AlfrescoTransactionSupport
         private final String txnId;
         private final Set<NodeDaoService> nodeDaoServices;
         private final Set<IntegrityChecker> integrityCheckers;
-        private final Set<LuceneIndexerAndSearcherFactory> lucenes;
+        private final Set<LuceneIndexerAndSearcher> lucenes;
         private final Set<TransactionListener> listeners;
         private final Map<Object, Object> resources;
         
@@ -440,7 +441,7 @@ public abstract class AlfrescoTransactionSupport
             this.txnId = txnId;
             nodeDaoServices = new HashSet<NodeDaoService>(3);
             integrityCheckers = new HashSet<IntegrityChecker>(3);
-            lucenes = new HashSet<LuceneIndexerAndSearcherFactory>(3);
+            lucenes = new HashSet<LuceneIndexerAndSearcher>(3);
             listeners = new HashSet<TransactionListener>(5);
             resources = new HashMap<Object, Object>(17);
         }
@@ -472,7 +473,7 @@ public abstract class AlfrescoTransactionSupport
          * @return Returns a set of <tt>LuceneIndexerAndSearcherFactory</tt> that will be called
          *      during end-of-transaction processing
          */
-        public Set<LuceneIndexerAndSearcherFactory> getLucenes()
+        public Set<LuceneIndexerAndSearcher> getLucenes()
         {
             return lucenes;
         }
@@ -589,7 +590,7 @@ public abstract class AlfrescoTransactionSupport
             // flush
             flush();
             // prepare the indexes
-            for (LuceneIndexerAndSearcherFactory lucene : lucenes)
+            for (LuceneIndexerAndSearcher lucene : lucenes)
             {
                 lucene.prepare();
             }
@@ -630,7 +631,7 @@ public abstract class AlfrescoTransactionSupport
             }
             
             // commit/rollback Lucene
-            for (LuceneIndexerAndSearcherFactory lucene : lucenes)
+            for (LuceneIndexerAndSearcher lucene : lucenes)
             {
                 try
                 {

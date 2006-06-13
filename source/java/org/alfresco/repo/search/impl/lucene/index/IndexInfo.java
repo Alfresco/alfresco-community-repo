@@ -48,6 +48,7 @@ import java.util.zip.CRC32;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.FilterIndexReaderByNodeRefs;
+import org.alfresco.repo.search.impl.lucene.FilterIndexReaderByNodeRefs2;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.GUID;
@@ -60,9 +61,13 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Hits;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
-import org.hibernate.criterion.Order;
 
 /**
  * The information that makes up an index.
@@ -111,6 +116,8 @@ public class IndexInfo
     private static String INDEX_INFO_BACKUP = "IndexInfoBackup";
 
     private static String INDEX_INFO_DELETIONS = "IndexInfoDeletions";
+
+    private static String OLD_INDEX = "index";
 
     /**
      * Is this index shared by more than one repository? We can make many lock optimisations if the index is not shared.
@@ -196,12 +203,25 @@ public class IndexInfo
 
     private Directory emptyIndex = new RAMDirectory();
 
+    private static HashMap<File, IndexInfo> indexInfos = new HashMap<File, IndexInfo>();
+
+    public static synchronized IndexInfo getIndexInfo(File file)
+    {
+        IndexInfo indexInfo = indexInfos.get(file);
+        if (indexInfo == null)
+        {
+            indexInfo = new IndexInfo(file);
+            indexInfos.put(file, indexInfo);
+        }
+        return indexInfo;
+    }
+
     /**
      * Construct an index in the given directory.
      * 
      * @param indexDirectory
      */
-    public IndexInfo(File indexDirectory)
+    private IndexInfo(File indexDirectory)
     {
         super();
         initialiseTransitions();
@@ -228,6 +248,8 @@ public class IndexInfo
         {
             // a spanking new index
             version = 0;
+
+           
         }
 
         // Open the files and channels
@@ -238,7 +260,50 @@ public class IndexInfo
         this.indexInfoBackupChannel = this.indexInfoBackupRAF.getChannel();
 
         // Read info from disk if this is not a new index.
-        if (version == -1)
+        if (version == 0)
+        {
+            // Check if an old style index exists
+
+            final File oldIndex = new File(this.indexDirectory, OLD_INDEX);
+            if (IndexReader.indexExists(oldIndex))
+            {
+                getWriteLock();
+                try
+                {
+                    doWithFileLock(new LockWork<Object>()
+                    {
+                        public Object doWork() throws Exception
+                        {
+                            IndexWriter writer;
+                            try
+                            {
+                                writer = new IndexWriter(oldIndex, new StandardAnalyzer(), false);
+                                writer.optimize();
+                                long docs = writer.docCount();
+                                writer.close();
+
+                                indexEntries.put(OLD_INDEX, new IndexEntry(IndexType.INDEX, OLD_INDEX, "",
+                                        TransactionStatus.COMMITTED, "", docs, 0, false));
+
+                                writeStatus();
+                            }
+                            catch (IOException e)
+                            {
+                                throw new IndexerException("Failed to optimise old index");
+                            }
+                            return null;
+                        }
+                    });
+                }
+                finally
+                {
+                    releaseWriteLock();
+                }
+
+            }
+        }
+
+        else if (version == -1)
         {
             getWriteLock();
             try
@@ -358,6 +423,11 @@ public class IndexInfo
      */
     public IndexReader getDeltaIndexReader(String id) throws IOException
     {
+        if (id == null)
+        {
+            throw new IndexerException("\"null\" is not a valid identifier for a transaction");
+        }
+
         // No read lock required as the delta should be bound to one thread only
         // Index readers are simply thread safe
         IndexReader reader = indexReaders.get(id);
@@ -390,6 +460,11 @@ public class IndexInfo
      */
     private File ensureDeltaIsRegistered(String id) throws IOException
     {
+        if (id == null)
+        {
+            throw new IndexerException("\"null\" is not a valid identifier for a transaction");
+        }
+
         // A write lock is required if we have to update the local index entries.
         // There should only be one thread trying to access this delta.
         File location = new File(indexDirectory, id);
@@ -406,8 +481,8 @@ public class IndexInfo
                     // Make sure the index exists
                     if (!indexEntries.containsKey(id))
                     {
-                        indexEntries.put(id,
-                                new IndexEntry(IndexType.DELTA, id, "", TransactionStatus.ACTIVE, "", 0, 0));
+                        indexEntries.put(id, new IndexEntry(IndexType.DELTA, id, "", TransactionStatus.ACTIVE, "", 0,
+                                0, false));
                     }
                 }
                 finally
@@ -426,11 +501,11 @@ public class IndexInfo
         return location;
     }
 
-    private IndexWriter makeDeltaIndexWriter(File location) throws IOException
+    private IndexWriter makeDeltaIndexWriter(File location, Analyzer analyzer) throws IOException
     {
         if (!IndexReader.indexExists(location))
         {
-            IndexWriter creator = new IndexWriter(location, new StandardAnalyzer(), true);
+            IndexWriter creator = new IndexWriter(location, analyzer, true);
             creator.setUseCompoundFile(true);
             creator.minMergeDocs = 1000;
             creator.mergeFactor = 5;
@@ -442,6 +517,11 @@ public class IndexInfo
 
     public IndexWriter getDeltaIndexWriter(String id, Analyzer analyzer) throws IOException
     {
+        if (id == null)
+        {
+            throw new IndexerException("\"null\" is not a valid identifier for a transaction");
+        }
+
         // No read lock required as the delta should be bound to one thread only
         IndexWriter writer = indexWriters.get(id);
         if (writer == null)
@@ -449,7 +529,7 @@ public class IndexInfo
             // close index writer if required
             closeDeltaIndexReader(id);
             File location = ensureDeltaIsRegistered(id);
-            writer = makeDeltaIndexWriter(location);
+            writer = makeDeltaIndexWriter(location, analyzer);
             if (writer == null)
             {
                 writer = new IndexWriter(location, analyzer, false);
@@ -465,34 +545,50 @@ public class IndexInfo
 
     public void closeDeltaIndexReader(String id) throws IOException
     {
+        if (id == null)
+        {
+            throw new IndexerException("\"null\" is not a valid identifier for a transaction");
+        }
+
         // No lock required as the delta applied to one thread. The delta is still active.
-        IndexReader reader = indexReaders.get(id);
+        IndexReader reader = indexReaders.remove(id);
         if (reader != null)
         {
             reader.close();
-            indexReaders.remove(id);
         }
     }
 
     public void closeDeltaIndexWriter(String id) throws IOException
     {
+        if (id == null)
+        {
+            throw new IndexerException("\"null\" is not a valid identifier for a transaction");
+        }
+
         // No lock required as the delta applied to one thread. The delta is still active.
-        IndexWriter writer = indexWriters.get(id);
+        IndexWriter writer = indexWriters.remove(id);
         if (writer != null)
         {
             writer.close();
-            indexWriters.remove(id);
         }
     }
 
     public void closeDelta(String id) throws IOException
     {
+        if (id == null)
+        {
+            throw new IndexerException("\"null\" is not a valid identifier for a transaction");
+        }
         closeDeltaIndexReader(id);
         closeDeltaIndexWriter(id);
     }
 
     public Set<NodeRef> getDeletions(String id) throws IOException
     {
+        if (id == null)
+        {
+            throw new IndexerException("\"null\" is not a valid identifier for a transaction");
+        }
         // Check state
         Set<NodeRef> deletions = new HashSet<NodeRef>();
         File location = new File(indexDirectory, id);
@@ -513,8 +609,13 @@ public class IndexInfo
 
     }
 
-    public void setPreparedState(String id, Set<NodeRef> toDelete, long documents) throws IOException
+    public void setPreparedState(String id, Set<NodeRef> toDelete, long documents, boolean deleteNodesOnly)
+            throws IOException
     {
+        if (id == null)
+        {
+            throw new IndexerException("\"null\" is not a valid identifier for a transaction");
+        }
         // Check state
         if (toDelete.size() > 0)
         {
@@ -544,12 +645,14 @@ public class IndexInfo
             {
                 throw new IndexerException("Invalid index delta id " + id);
             }
-            if (entry.getStatus() != TransactionStatus.PREPARING)
+            if ((entry.getStatus() != TransactionStatus.PREPARING)
+                    && (entry.getStatus() != TransactionStatus.COMMITTING))
             {
                 throw new IndexerException("Deletes and doc count can only be set on a preparing index");
             }
             entry.setDocumentCount(documents);
             entry.setDeletions(toDelete.size());
+            entry.setDeletOnlyNodes(deleteNodesOnly);
         }
         finally
         {
@@ -618,9 +721,13 @@ public class IndexInfo
         }
     }
 
-    public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader(String id, Set<NodeRef> deletions)
-            throws IOException
+    public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader(String id, Set<NodeRef> deletions,
+            boolean deleteOnlyNodes) throws IOException
     {
+        if (id == null)
+        {
+            throw new IndexerException("\"null\" is not a valid identifier for a transaction");
+        }
         getReadLock();
         try
         {
@@ -677,9 +784,12 @@ public class IndexInfo
             // TODO: Should use the in memory index but we often end up forcing to disk anyway.
             // Is it worth it?
             // luceneIndexer.flushPending();
-            IndexReader deltaReader = getDeltaIndexReader(id);
+            IndexReader deltaReader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(id,
+                    getDeltaIndexReader(id));
+            ReferenceCounting deltaRefCount = (ReferenceCounting) deltaReader;
+            deltaRefCount.incrementReferenceCount();
             IndexReader reader = new MultiReader(new IndexReader[] {
-                    new FilterIndexReaderByNodeRefs(mainIndexReader, deletions), deltaReader });
+                    new FilterIndexReaderByNodeRefs2(mainIndexReader, deletions, deleteOnlyNodes), deltaReader });
             return reader;
         }
         finally
@@ -691,6 +801,10 @@ public class IndexInfo
     public void setStatus(final String id, final TransactionStatus state, final Set<Term> toDelete, final Set<Term> read)
             throws IOException
     {
+        if (id == null)
+        {
+            throw new IndexerException("\"null\" is not a valid identifier for a transaction");
+        }
         final Transition transition = getTransition(state);
         getWriteLock();
         try
@@ -1043,12 +1157,16 @@ public class IndexInfo
             IndexEntry entry = indexEntries.get(id);
             if (entry != null)
             {
-                throw new IndexerException("TX Already active " + id);
+                if (entry.getStatus() != TransactionStatus.ACTIVE)
+                {
+                    throw new IndexerException("TX Already active " + id);
+                }
             }
 
             if (TransactionStatus.ACTIVE.follows(null))
             {
-                indexEntries.put(id, new IndexEntry(IndexType.DELTA, id, "", TransactionStatus.ACTIVE, "", 0, 0));
+                indexEntries
+                        .put(id, new IndexEntry(IndexType.DELTA, id, "", TransactionStatus.ACTIVE, "", 0, 0, false));
             }
             else
             {
@@ -1199,7 +1317,8 @@ public class IndexInfo
                     else if (entry.getType() == IndexType.DELTA)
                     {
                         reader = new MultiReader(new IndexReader[] {
-                                new FilterIndexReaderByNodeRefs(reader, getDeletions(entry.getName())), subReader });
+                                new FilterIndexReaderByNodeRefs2(reader, getDeletions(entry.getName()), entry
+                                        .isDeletOnlyNodes()), subReader });
                     }
                 }
             }
@@ -1351,10 +1470,14 @@ public class IndexInfo
                     crc32.update((int) (deletions >>> 32) & 0xFFFFFFFF);
                     crc32.update((int) (deletions >>> 0) & 0xFFFFFFFF);
 
+                    byte deleteOnlyNodesFlag = buffer.get();
+                    crc32.update(deleteOnlyNodesFlag);
+                    boolean isDeletOnlyNodes = deleteOnlyNodesFlag == 1;
+
                     if (!status.isTransient())
                     {
                         newIndexEntries.put(name, new IndexEntry(indexType, name, parentName, status, mergeId,
-                                documentCount, deletions));
+                                documentCount, deletions, isDeletOnlyNodes));
                     }
                 }
                 long onDiskCRC32 = buffer.getLong();
@@ -1465,6 +1588,9 @@ public class IndexInfo
             buffer.putLong(entry.getDeletions());
             crc32.update((int) (entry.getDeletions() >>> 32) & 0xFFFFFFFF);
             crc32.update((int) (entry.getDeletions() >>> 0) & 0xFFFFFFFF);
+
+            buffer.put(entry.isDeletOnlyNodes() ? (byte) 1 : (byte) 0);
+            crc32.update(entry.isDeletOnlyNodes() ? new byte[] { (byte) 1 } : new byte[] { (byte) 0 });
         }
         buffer.putLong(crc32.getValue());
 
@@ -1496,6 +1622,7 @@ public class IndexInfo
             size += (entry.getMergeId().length()) + 4;
             size += 8;
             size += 8;
+            size += 1;
         }
         size += 8;
         return size;
@@ -1589,7 +1716,7 @@ public class IndexInfo
 
                 ii.closeDeltaIndexWriter(guid);
                 ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-                ii.setPreparedState(guid, deletions, docs);
+                ii.setPreparedState(guid, deletions, docs, false);
                 ii.getDeletions(guid);
                 ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
                 ii.setStatus(guid, TransactionStatus.COMMITTING, null, null);
@@ -1937,7 +2064,7 @@ public class IndexInfo
             final HashSet<String> invalidIndexes = new HashSet<String>();
 
             final HashMap<String, Long> newIndexCounts = new HashMap<String, Long>();
-            
+
             try
             {
                 LinkedHashMap<String, IndexReader> readers = new LinkedHashMap<String, IndexReader>();
@@ -1964,9 +2091,31 @@ public class IndexInfo
                         IndexReader reader = readers.get(key);
                         for (NodeRef nodeRef : deletions)
                         {
-                            if (reader.delete(new Term("ID", nodeRef.toString())) > 0)
+                            if (currentDelete.isDeletOnlyNodes())
                             {
-                                invalidIndexes.add(key);
+                                Searcher searcher = new IndexSearcher(reader);
+
+                                BooleanQuery query = new BooleanQuery();
+                                query.add(new TermQuery(new Term("ID", nodeRef.toString())), true, false);
+                                query.add(new TermQuery(new Term("ISNODE", "T")), false, false);
+                                Hits hits = searcher.search(query);
+                                if (hits.length() > 0)
+                                {
+                                    for (int i = 0; i < hits.length(); i++)
+                                    {
+                                        reader.delete(hits.id(i));
+                                        invalidIndexes.add(key);
+                                    }
+                                }
+                                searcher.close();
+
+                            }
+                            else
+                            {
+                                if (reader.delete(new Term("ID", nodeRef.toString())) > 0)
+                                {
+                                    invalidIndexes.add(key);
+                                }
                             }
                         }
 
@@ -2016,14 +2165,14 @@ public class IndexInfo
                             }
 
                         }
-                        
-                        for(String key : newIndexCounts.keySet())
+
+                        for (String key : newIndexCounts.keySet())
                         {
                             Long newCount = newIndexCounts.get(key);
                             IndexEntry entry = indexEntries.get(key);
                             entry.setDocumentCount(newCount);
                         }
-                        
+
                         writeStatus();
 
                         for (String id : invalidIndexes)
@@ -2051,7 +2200,7 @@ public class IndexInfo
                             }
                             mainIndexReader = null;
                         }
-                        
+
                         if (s_logger.isDebugEnabled())
                         {
                             for (String id : toDelete.keySet())
@@ -2064,21 +2213,18 @@ public class IndexInfo
                             }
                             s_logger.debug("...deleting done");
                         }
-                        
+
                         dumpInfo();
-                        
+
                         return null;
                     }
 
-                    
                 });
             }
             finally
             {
                 releaseWriteLock();
             }
-
-        
 
             // TODO: Flush readers etc
 
@@ -2147,7 +2293,7 @@ public class IndexInfo
                         if (set.size() > 0)
                         {
                             IndexEntry target = new IndexEntry(IndexType.INDEX, guid, "",
-                                    TransactionStatus.MERGE_TARGET, guid, count, 0);
+                                    TransactionStatus.MERGE_TARGET, guid, count, 0, false);
                             set.put(guid, target);
                             // rebuild merged index elements
                             LinkedHashMap<String, IndexEntry> reordered = new LinkedHashMap<String, IndexEntry>();
@@ -2287,7 +2433,7 @@ public class IndexInfo
                         }
 
                         dumpInfo();
-                        
+
                         writeStatus();
 
                         clearOldReaders();

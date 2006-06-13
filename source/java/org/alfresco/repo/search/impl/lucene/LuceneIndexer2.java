@@ -29,7 +29,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 /**
  * @author Andy Hind
  */
-public interface LuceneIndexer extends IndexerSPI, Lockable
+public interface LuceneIndexer2 extends IndexerSPI
 {
 
     public void commit();
@@ -43,4 +43,5 @@ public interface LuceneIndexer extends IndexerSPI, Lockable
     public String getDeltaId();
     public  void flushPending() throws LuceneIndexException;
     public Set<NodeRef> getDeletions();
+    public boolean getDeleteOnlyNodes();
 }

@@ -53,7 +53,9 @@ class IndexEntry
     
     private long deletions;
     
-    IndexEntry(IndexType type, String name,  String parentName, TransactionStatus status, String mergeId, long documentCount, long deletions)
+    private boolean deletOnlyNodes;
+    
+    IndexEntry(IndexType type, String name,  String parentName, TransactionStatus status, String mergeId, long documentCount, long deletions, boolean deletOnlyNodes)
     {
         this.type = type;
         this.name = name;
@@ -62,6 +64,7 @@ class IndexEntry
         this.mergeId = mergeId;
         this.documentCount = documentCount;
         this.deletions = deletions;
+        this.deletOnlyNodes = deletOnlyNodes;
     }
 
     public String getMergeId()
@@ -132,6 +135,16 @@ class IndexEntry
     public void setDeletions(long deletions)
     {
         this.deletions = deletions;
+    }
+
+    public boolean isDeletOnlyNodes()
+    {
+        return deletOnlyNodes;
+    }
+
+    public void setDeletOnlyNodes(boolean deletOnlyNodes)
+    {
+        this.deletOnlyNodes = deletOnlyNodes;
     }
 
     public String toString()

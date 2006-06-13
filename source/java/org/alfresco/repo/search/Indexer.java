@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.search;
 
+import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexerImpl;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -99,7 +100,8 @@ public interface Indexer
      * @param relationshipRef
      */
     public void deleteChildRelationship(ChildAssociationRef relationshipRef);
-    
+
+  
     
 
 }

@@ -24,3 +24,9 @@
 #
 #db.driver=com.sybase.jdbc2.jdbc.SybDriver
 #db.url=jdbc:sybase:Tds:localhost:2638/alfresco
+
+#
+# SQLServer connection (requires jdts-1.2.jar or equivalent - http://jtds.sourceforge.net/)
+#
+#db.driver=net.sourceforge.jtds.jdbc.Driver
+#db.url=jdbc:jtds:sqlserver://your-server-name/alfresco

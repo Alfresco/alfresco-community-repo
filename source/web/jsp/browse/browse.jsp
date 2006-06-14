@@ -182,7 +182,18 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      
-                     <a:panel id="spaces-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.browse_spaces}">
+                     <%-- wrapper comment used by the panel to add additional component facets --%>
+                     <h:panelGroup id="spaces-panel-facets">
+                        <f:facet name="title">
+                           <a:panel id="page-controls1" style="font-size:9px">
+                              <h:outputText value="#{msg.items_per_page}" id="items-txt1"/>
+                              <h:inputText id="spaces-pages" value="#{BrowseBean.browsePageSizeString}" style="width:24px;margin-left:4px;margin-right:4px" maxlength="3" />
+                              <h:commandButton id="items-btn1" value="#{msg.ok}" actionListener="#{BrowseBean.updatePageSize}" />
+                           </a:panel>
+                        </f:facet>
+                     </h:panelGroup>
+                     <a:panel id="spaces-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle"
+                              label="#{msg.browse_spaces}" progressive="true" facetsId="spaces-panel-facets">
                      
                      <%-- Spaces List --%>
                      <a:richList id="spacesList" binding="#{BrowseBean.spacesRichList}" viewMode="#{BrowseBean.browseViewMode}" pageSize="#{BrowseBean.browsePageSize}"
@@ -192,107 +203,107 @@
                         <%-- component to display if the list is empty --%>
                         <f:facet name="empty">
                            <%-- TODO: either build complete message in BrowseBean or have no icon... --%>
-                           <h:outputFormat value="#{msg.no_space_items}" escape="false" rendered="#{NavigationBean.searchContext == null}">
+                           <h:outputFormat id="no-space-items" value="#{msg.no_space_items}" escape="false" rendered="#{NavigationBean.searchContext == null}">
                               <f:param value="#{msg.create_space}" />
                            </h:outputFormat>
                         </f:facet>
                         
                         <%-- Primary column for details view mode --%>
-                        <a:column primary="true" width="200" style="padding:2px;text-align:left" rendered="#{BrowseBean.browseViewMode == 'details'}">
+                        <a:column id="col1" primary="true" width="200" style="padding:2px;text-align:left" rendered="#{BrowseBean.browseViewMode == 'details'}">
                            <f:facet name="header">
-                              <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
+                              <a:sortLink id="col1-sort" label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
                            </f:facet>
                            <f:facet name="small-icon">
-                              <a:actionLink value="#{r.name}" image="/images/icons/#{r.smallIcon}.gif" actionListener="#{BrowseBean.clickSpace}" showLink="false">
+                              <a:actionLink id="col1-act1" value="#{r.name}" image="/images/icons/#{r.smallIcon}.gif" actionListener="#{BrowseBean.clickSpace}" showLink="false">
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
                            </f:facet>
-                           <a:actionLink value="#{r.name}" actionListener="#{BrowseBean.clickSpace}">
+                           <a:actionLink id="col1-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}">
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
                         </a:column>
                         
                         <%-- Primary column for icons view mode --%>
-                        <a:column primary="true" style="padding:2px;text-align:left;vertical-align:top;" rendered="#{BrowseBean.browseViewMode == 'icons'}">
+                        <a:column id="col2" primary="true" style="padding:2px;text-align:left;vertical-align:top;" rendered="#{BrowseBean.browseViewMode == 'icons'}">
                            <f:facet name="large-icon">
-                              <a:actionLink value="#{r.name}" image="/images/icons/#{r.icon}.gif" actionListener="#{BrowseBean.clickSpace}" showLink="false">
+                              <a:actionLink id="col2-act1" value="#{r.name}" image="/images/icons/#{r.icon}.gif" actionListener="#{BrowseBean.clickSpace}" showLink="false">
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
                            </f:facet>
-                           <a:actionLink value="#{r.name}" actionListener="#{BrowseBean.clickSpace}" styleClass="header">
+                           <a:actionLink id="col2-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}" styleClass="header">
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
                         </a:column>
                         
                         <%-- Primary column for list view mode --%>
-                        <a:column primary="true" style="padding:2px;text-align:left" rendered="#{BrowseBean.browseViewMode == 'list'}">
+                        <a:column id="col3" primary="true" style="padding:2px;text-align:left" rendered="#{BrowseBean.browseViewMode == 'list'}">
                            <f:facet name="large-icon">
-                              <a:actionLink value="#{r.name}" image="/images/icons/#{r.icon}.gif" actionListener="#{BrowseBean.clickSpace}" showLink="false">
+                              <a:actionLink id="col3-act1" value="#{r.name}" image="/images/icons/#{r.icon}.gif" actionListener="#{BrowseBean.clickSpace}" showLink="false">
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
                            </f:facet>
-                           <a:actionLink value="#{r.name}" actionListener="#{BrowseBean.clickSpace}" styleClass="title">
+                           <a:actionLink id="col3-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}" styleClass="title">
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
                         </a:column>
                         
                         <%-- Description column for all view modes --%>
-                        <a:column style="text-align:left">
+                        <a:column id="col4" style="text-align:left">
                            <f:facet name="header">
-                              <a:sortLink label="#{msg.description}" value="description" styleClass="header"/>
+                              <a:sortLink id="col4-sort" label="#{msg.description}" value="description" styleClass="header"/>
                            </f:facet>
-                           <h:outputText value="#{r.description}" />
+                           <h:outputText id="col4-txt" value="#{r.description}" />
                         </a:column>
                         
                         <%-- Path column for search mode in details view mode --%>
-                        <a:column style="text-align:left" rendered="#{NavigationBean.searchContext != null && BrowseBean.browseViewMode == 'details'}">
+                        <a:column id="col5" style="text-align:left" rendered="#{NavigationBean.searchContext != null && BrowseBean.browseViewMode == 'details'}">
                            <f:facet name="header">
-                              <a:sortLink label="#{msg.path}" value="displayPath" styleClass="header"/>
+                              <a:sortLink id="col5-sort" label="#{msg.path}" value="displayPath" styleClass="header"/>
                            </f:facet>
-                           <r:nodePath value="#{r.path}" actionListener="#{BrowseBean.clickSpacePath}" />
+                           <r:nodePath id="col5-path" value="#{r.path}" actionListener="#{BrowseBean.clickSpacePath}" />
                         </a:column>
                         
                         <%-- Created Date column for details view mode --%>
-                        <a:column style="text-align:left" rendered="#{BrowseBean.browseViewMode == 'details'}">
+                        <a:column id="col6" style="text-align:left" rendered="#{BrowseBean.browseViewMode == 'details'}">
                            <f:facet name="header">
-                              <a:sortLink label="#{msg.created}" value="created" styleClass="header"/>
+                              <a:sortLink id="col6-sort" label="#{msg.created}" value="created" styleClass="header"/>
                            </f:facet>
-                           <h:outputText value="#{r.created}">
+                           <h:outputText id="col6-txt" value="#{r.created}">
                               <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
                            </h:outputText>
                         </a:column>
                         
                         <%-- Modified Date column for details/icons view modes --%>
-                        <a:column style="text-align:left" rendered="#{BrowseBean.browseViewMode == 'details' || BrowseBean.browseViewMode == 'icons'}">
+                        <a:column id="col7" style="text-align:left" rendered="#{BrowseBean.browseViewMode == 'details' || BrowseBean.browseViewMode == 'icons'}">
                            <f:facet name="header">
-                              <a:sortLink label="#{msg.modified}" value="modified" styleClass="header"/>
+                              <a:sortLink id="col7-sort" label="#{msg.modified}" value="modified" styleClass="header"/>
                            </f:facet>
-                           <h:outputText value="#{r.modified}">
+                           <h:outputText id="col7-txt" value="#{r.modified}">
                               <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
                            </h:outputText>
                         </a:column>
                         
                         <%-- Node Descendants links for list view mode --%>
-                        <a:column style="text-align:left" rendered="#{BrowseBean.browseViewMode == 'list'}">
-                           <r:nodeDescendants value="#{r.nodeRef}" styleClass="header" actionListener="#{BrowseBean.clickDescendantSpace}" />
+                        <a:column id="col8" style="text-align:left" rendered="#{BrowseBean.browseViewMode == 'list'}">
+                           <r:nodeDescendants id="col8-kids" value="#{r.nodeRef}" styleClass="header" actionListener="#{BrowseBean.clickDescendantSpace}" />
                         </a:column>
                         
                         <%-- Space Actions column --%>
-                        <a:column id="space-actions" actions="true" style="text-align:left">
+                        <a:column id="col9" actions="true" style="text-align:left">
                            <f:facet name="header">
-                              <h:outputText value="#{msg.actions}"/>
+                              <h:outputText id="col9-txt" value="#{msg.actions}"/>
                            </f:facet>
                            
                            <%-- actions are configured in web-client-config-actions.xml --%>
-                           <r:actions id="acts1" value="space_browse" context="#{r}" showLink="false" styleClass="inlineAction" />
+                           <r:actions id="col9-acts1" value="space_browse" context="#{r}" showLink="false" styleClass="inlineAction" />
                            
                            <%-- More actions menu --%>
                            <a:menu id="spaces-more-menu" itemSpacing="4" image="/images/icons/more.gif" tooltip="#{msg.more_actions}" menuStyleClass="moreActionsMenu">
-                              <r:actions id="acts2" value="space_browse_menu" context="#{r}" />
+                              <r:actions id="col9-acts2" value="space_browse_menu" context="#{r}" />
                            </a:menu>
                         </a:column>
                         
-                        <a:dataPager styleClass="pager" />
+                        <a:dataPager id="pager1" styleClass="pager" />
                      </a:richList>
                      
                      </a:panel>
@@ -306,7 +317,15 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      
-                     <a:panel id="content-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.browse_content}">
+                     <%--<h:panelGroup id="content-panel-facets">
+                        <f:facet name="title">
+                           <a:panel id="page-controls2" style="font-size:9px">
+                              <h:outputText value="#{msg.items_per_page}" id="items-txt2"/>:&nbsp;<h:inputText id="content-pages" value="#{BrowseBean.browsePageSize}" style="width:24px" />
+                           </a:panel>
+                        </f:facet>
+                     </h:panelGroup>--%>
+                     <a:panel id="content-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle"
+                           label="#{msg.browse_content}" progressive="true"><%--facetsId="content-panel-facets"--%>
                      
                      <%-- Content list --%>
                      <a:richList id="contentRichList" binding="#{BrowseBean.contentRichList}" viewMode="#{BrowseBean.browseViewMode}" pageSize="#{BrowseBean.browsePageSize}"
@@ -316,104 +335,104 @@
                         <%-- component to display if the list is empty --%>
                         <f:facet name="empty">
                            <%-- TODO: either build complete message in BrowseBean or have no icon... --%>
-                           <h:outputFormat value="#{msg.no_content_items}" escape="false" rendered="#{NavigationBean.searchContext == null}">
+                           <h:outputFormat id="no-content-items" value="#{msg.no_content_items}" escape="false" rendered="#{NavigationBean.searchContext == null}">
                               <f:param value="#{msg.add_content}" />
                               <f:param value="#{msg.create_content}" />
                            </h:outputFormat>
                         </f:facet>
                         
                         <%-- Primary column for details view mode --%>
-                        <a:column primary="true" width="200" style="padding:2px;text-align:left" rendered="#{BrowseBean.browseViewMode == 'details'}">
+                        <a:column id="col10" primary="true" width="200" style="padding:2px;text-align:left" rendered="#{BrowseBean.browseViewMode == 'details'}">
                            <f:facet name="header">
-                              <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
+                              <a:sortLink id="col10-sort" label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
                            </f:facet>
                            <f:facet name="small-icon">
-                              <a:actionLink value="#{r.name}" href="#{r.url}" target="new" image="#{r.fileType16}" showLink="false" styleClass="inlineAction" />
+                              <a:actionLink id="col10-act1" value="#{r.name}" href="#{r.url}" target="new" image="#{r.fileType16}" showLink="false" styleClass="inlineAction" />
                            </f:facet>
-                           <a:actionLink value="#{r.name}" href="#{r.url}" target="new" />
-                           <r:lockIcon value="#{r.nodeRef}" align="absmiddle" />
+                           <a:actionLink id="col10-act2" value="#{r.name}" href="#{r.url}" target="new" />
+                           <r:lockIcon id="col10-lock" value="#{r.nodeRef}" align="absmiddle" />
                         </a:column>
                         
                         <%-- Primary column for icons view mode --%>
-                        <a:column primary="true" style="padding:2px;text-align:left;vertical-align:top;" rendered="#{BrowseBean.browseViewMode == 'icons'}">
+                        <a:column id="col11" primary="true" style="padding:2px;text-align:left;vertical-align:top;" rendered="#{BrowseBean.browseViewMode == 'icons'}">
                            <f:facet name="large-icon">
-                              <a:actionLink value="#{r.name}" href="#{r.url}" target="new" image="#{r.fileType32}" showLink="false" styleClass="inlineAction" />
+                              <a:actionLink id="col11-act1" value="#{r.name}" href="#{r.url}" target="new" image="#{r.fileType32}" showLink="false" styleClass="inlineAction" />
                            </f:facet>
-                           <a:actionLink value="#{r.name}" href="#{r.url}" target="new" styleClass="header" />
-                           <r:lockIcon value="#{r.nodeRef}" align="absmiddle" />
+                           <a:actionLink id="col11-act2" value="#{r.name}" href="#{r.url}" target="new" styleClass="header" />
+                           <r:lockIcon id="col11-lock" value="#{r.nodeRef}" align="absmiddle" />
                         </a:column>
                         
                         <%-- Primary column for list view mode --%>
-                        <a:column primary="true" style="padding:2px;text-align:left" rendered="#{BrowseBean.browseViewMode == 'list'}">
+                        <a:column id="col12" primary="true" style="padding:2px;text-align:left" rendered="#{BrowseBean.browseViewMode == 'list'}">
                            <f:facet name="large-icon">
-                              <a:actionLink value="#{r.name}" href="#{r.url}" target="new" image="#{r.fileType32}" showLink="false" styleClass="inlineAction" />
+                              <a:actionLink id="col12-act1" value="#{r.name}" href="#{r.url}" target="new" image="#{r.fileType32}" showLink="false" styleClass="inlineAction" />
                            </f:facet>
-                           <a:actionLink value="#{r.name}" href="#{r.url}" target="new" styleClass="title" />
-                           <r:lockIcon value="#{r.nodeRef}" align="absmiddle" />
+                           <a:actionLink id="col12-act2" value="#{r.name}" href="#{r.url}" target="new" styleClass="title" />
+                           <r:lockIcon id="col12-lock" value="#{r.nodeRef}" align="absmiddle" />
                         </a:column>
                         
                         <%-- Description column for all view modes --%>
-                        <a:column style="text-align:left">
+                        <a:column id="col13" style="text-align:left">
                            <f:facet name="header">
-                              <a:sortLink label="#{msg.description}" value="description" styleClass="header"/>
+                              <a:sortLink id="col13-sort" label="#{msg.description}" value="description" styleClass="header"/>
                            </f:facet>
-                           <h:outputText value="#{r.description}" />
+                           <h:outputText id="col13-txt" value="#{r.description}" />
                         </a:column>
                         
                         <%-- Path column for search mode in details view mode --%>
-                        <a:column style="text-align:left" rendered="#{NavigationBean.searchContext != null && BrowseBean.browseViewMode == 'details'}">
+                        <a:column id="col14" style="text-align:left" rendered="#{NavigationBean.searchContext != null && BrowseBean.browseViewMode == 'details'}">
                            <f:facet name="header">
-                              <a:sortLink label="#{msg.path}" value="displayPath" styleClass="header"/>
+                              <a:sortLink id="col14-sort" label="#{msg.path}" value="displayPath" styleClass="header"/>
                            </f:facet>
-                           <r:nodePath value="#{r.path}" actionListener="#{BrowseBean.clickSpacePath}" />
+                           <r:nodePath id="col14-path" value="#{r.path}" actionListener="#{BrowseBean.clickSpacePath}" />
                         </a:column>
                         
                         <%-- Size for details/icons view modes --%>
-                        <a:column style="text-align:left" rendered="#{BrowseBean.browseViewMode == 'details' || BrowseBean.browseViewMode == 'icons'}">
+                        <a:column id="col15" style="text-align:left" rendered="#{BrowseBean.browseViewMode == 'details' || BrowseBean.browseViewMode == 'icons'}">
                            <f:facet name="header">
-                              <a:sortLink label="#{msg.size}" value="size" styleClass="header"/>
+                              <a:sortLink id="col15-sort" label="#{msg.size}" value="size" styleClass="header"/>
                            </f:facet>
-                           <h:outputText value="#{r.size}">
+                           <h:outputText id="col15-txt" value="#{r.size}">
                               <a:convertSize />
                            </h:outputText>
                         </a:column>
                         
                         <%-- Created Date column for details view mode --%>
-                        <a:column style="text-align:left" rendered="#{BrowseBean.browseViewMode == 'details'}">
+                        <a:column id="col16" style="text-align:left" rendered="#{BrowseBean.browseViewMode == 'details'}">
                            <f:facet name="header">
-                              <a:sortLink label="#{msg.created}" value="created" styleClass="header"/>
+                              <a:sortLink id="col16-sort" label="#{msg.created}" value="created" styleClass="header"/>
                            </f:facet>
-                           <h:outputText value="#{r.created}">
+                           <h:outputText id="col16-txt" value="#{r.created}">
                               <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
                            </h:outputText>
                         </a:column>
                         
                         <%-- Modified Date column for details/icons view modes --%>
-                        <a:column style="text-align:left" rendered="#{BrowseBean.browseViewMode == 'details' || BrowseBean.browseViewMode == 'icons'}">
+                        <a:column id="col17" style="text-align:left" rendered="#{BrowseBean.browseViewMode == 'details' || BrowseBean.browseViewMode == 'icons'}">
                            <f:facet name="header">
-                              <a:sortLink label="#{msg.modified}" value="modified" styleClass="header"/>
+                              <a:sortLink id="col17-sort" label="#{msg.modified}" value="modified" styleClass="header"/>
                            </f:facet>
-                           <h:outputText value="#{r.modified}">
+                           <h:outputText id="col17-txt" value="#{r.modified}">
                               <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
                            </h:outputText>
                         </a:column>
                         
                         <%-- Content Actions column --%>
-                        <a:column id="content-actions" actions="true" style="text-align:left">
+                        <a:column id="col18" actions="true" style="text-align:left">
                            <f:facet name="header">
-                              <h:outputText value="#{msg.actions}"/>
+                              <h:outputText id="col18-txt" value="#{msg.actions}"/>
                            </f:facet>
                            
                            <%-- actions are configured in web-client-config-actions.xml --%>
-                           <r:actions id="acts3" value="document_browse" context="#{r}" showLink="false" styleClass="inlineAction" />
+                           <r:actions id="col18-acts1" value="document_browse" context="#{r}" showLink="false" styleClass="inlineAction" />
                            
                            <%-- More actions menu --%>
                            <a:menu id="content-more-menu" itemSpacing="4" image="/images/icons/more.gif" tooltip="#{msg.more_actions}" menuStyleClass="moreActionsMenu">
-                              <r:actions id="acts4" value="document_browse_menu" context="#{r}" />
+                              <r:actions id="col18-acts2" value="document_browse_menu" context="#{r}" />
                            </a:menu>
                         </a:column>
                         
-                        <a:dataPager styleClass="pager" />
+                        <a:dataPager id="pager2" styleClass="pager" />
                      </a:richList>
                      
                      </a:panel>

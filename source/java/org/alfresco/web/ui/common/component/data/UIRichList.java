@@ -409,7 +409,7 @@ public class UIRichList extends UIComponentBase implements IDataContainer
       int rowCount = getDataModel().size();
       // if a page size is specified, then we use that
       int pageSize = getPageSize();
-      if (pageSize != -1)
+      if (pageSize != -1 && pageSize != 0)
       {
          // calc start row index based on current page index
          this.rowIndex = (this.currentPage * pageSize) - 1;

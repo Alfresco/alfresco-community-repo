@@ -35,6 +35,7 @@ import org.alfresco.repo.template.XPathResultsMap;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -82,6 +83,7 @@ public final class TemplateNode implements Serializable
     private String id;
     private Set<QName> aspects = null;
     private QNameMap<String, Object> properties;
+    private List<String> permissions = null;
     private boolean propsRetrieved = false;
     private ServiceRegistry services = null;
     private Boolean isDocument = null;
@@ -472,6 +474,32 @@ public final class TemplateNode implements Serializable
         }
         
         return locked;
+    }
+    
+    /**
+     * @return List of permissions applied to this Node.
+     *         Strings returned are of the format [ALLOWED|DENIED];[USERNAME|GROUPNAME];PERMISSION for example
+     *         ALLOWED;kevinr;Consumer so can be easily tokenized on the ';' character.
+     */
+    public List<String> getPermissions()
+    {
+        if (this.permissions == null)
+        {
+            String userName = this.services.getAuthenticationService().getCurrentUserName();
+            this.permissions = new ArrayList<String>(4);
+            Set<AccessPermission> acls = this.services.getPermissionService().getAllSetPermissions(this.nodeRef);
+            for (AccessPermission permission : acls)
+            {
+                StringBuilder buf = new StringBuilder(64);
+                buf.append(permission.getAccessStatus())
+                .append(';')
+                .append(permission.getAuthority())
+                .append(';')
+                .append(permission.getPermission());
+                this.permissions.add(buf.toString());
+            }
+        }
+        return this.permissions;
     }
     
     /**

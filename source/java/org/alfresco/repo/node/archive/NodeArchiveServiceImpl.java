@@ -72,6 +72,17 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         return nodeService.getStoreArchiveNode(originalStoreRef);
     }
 
+    public NodeRef getArchivedNode(NodeRef originalNodeRef)
+    {
+        StoreRef orginalStoreRef = originalNodeRef.getStoreRef();
+        NodeRef archiveRootNodeRef = nodeService.getStoreArchiveNode(orginalStoreRef);
+        // create the likely location of the archived node
+        NodeRef archivedNodeRef = new NodeRef(
+                archiveRootNodeRef.getStoreRef(),
+                originalNodeRef.getId());
+        return archivedNodeRef;
+    }
+
     /**
      * Get all the nodes that were archived <b>from</b> the given store.
      */

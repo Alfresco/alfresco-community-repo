@@ -29,6 +29,32 @@
 
 <r:page titleId="title_browse">
 
+<script language="JavaScript1.2">
+   function applySizeSpaces(e)
+   {
+      return applySize(e, 'spaces-apply');
+   }
+   
+   function applySizeContent(e)
+   {
+      return applySize(e, 'content-apply');
+   }
+   
+   function applySize(e, field)
+   {
+      var keycode;
+      if (window.event) keycode = window.event.keyCode;
+      else if (e) keycode = e.which;
+      if (keycode == 13)
+      {
+      	document.forms['browse']['browse:act'].value='browse:' + field;
+         document.forms['browse'].submit();
+         return false;
+      }
+      return true;
+   }
+</script>
+
 <f:view>
    <%
       FacesContext fc = FacesContext.getCurrentInstance();
@@ -187,8 +213,8 @@
                         <f:facet name="title">
                            <a:panel id="page-controls1" style="font-size:9px">
                               <h:outputText value="#{msg.items_per_page}" id="items-txt1"/>
-                              <h:inputText id="spaces-pages" value="#{BrowseBean.browsePageSizeString}" style="width:24px;margin-left:4px;margin-right:4px" maxlength="3" />
-                              <h:commandButton id="items-btn1" value="#{msg.ok}" actionListener="#{BrowseBean.updatePageSize}" />
+                              <h:inputText id="spaces-pages" value="#{BrowseBean.pageSizeSpacesStr}" style="width:24px;margin-left:4px" maxlength="3" onkeyup="return applySizeSpaces(event);" />
+                              <div style="display:none"><a:actionLink id="spaces-apply" value="" actionListener="#{BrowseBean.updateSpacesPageSize}" /></div>
                            </a:panel>
                         </f:facet>
                      </h:panelGroup>
@@ -196,7 +222,7 @@
                               label="#{msg.browse_spaces}" progressive="true" facetsId="spaces-panel-facets">
                      
                      <%-- Spaces List --%>
-                     <a:richList id="spacesList" binding="#{BrowseBean.spacesRichList}" viewMode="#{BrowseBean.browseViewMode}" pageSize="#{BrowseBean.browsePageSize}"
+                     <a:richList id="spacesList" binding="#{BrowseBean.spacesRichList}" viewMode="#{BrowseBean.browseViewMode}" pageSize="#{BrowseBean.pageSizeSpaces}"
                            styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
                            value="#{BrowseBean.nodes}" var="r">
                         
@@ -317,18 +343,20 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      
-                     <%--<h:panelGroup id="content-panel-facets">
+                     <h:panelGroup id="content-panel-facets">
                         <f:facet name="title">
                            <a:panel id="page-controls2" style="font-size:9px">
-                              <h:outputText value="#{msg.items_per_page}" id="items-txt2"/>:&nbsp;<h:inputText id="content-pages" value="#{BrowseBean.browsePageSize}" style="width:24px" />
+                              <h:outputText value="#{msg.items_per_page}" id="items-txt2"/>
+                              <h:inputText id="content-pages" value="#{BrowseBean.pageSizeContentStr}" style="width:24px;margin-left:4px" maxlength="3" onkeyup="return applySizeContent(event);" />
+                              <div style="display:none"><a:actionLink id="content-apply" value="" actionListener="#{BrowseBean.updateContentPageSize}" /></div>
                            </a:panel>
                         </f:facet>
-                     </h:panelGroup>--%>
+                     </h:panelGroup>
                      <a:panel id="content-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle"
-                           label="#{msg.browse_content}" progressive="true"><%--facetsId="content-panel-facets"--%>
+                           label="#{msg.browse_content}" progressive="true" facetsId="content-panel-facets">
                      
                      <%-- Content list --%>
-                     <a:richList id="contentRichList" binding="#{BrowseBean.contentRichList}" viewMode="#{BrowseBean.browseViewMode}" pageSize="#{BrowseBean.browsePageSize}"
+                     <a:richList id="contentRichList" binding="#{BrowseBean.contentRichList}" viewMode="#{BrowseBean.browseViewMode}" pageSize="#{BrowseBean.pageSizeContent}"
                            styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
                            value="#{BrowseBean.content}" var="r">
                         

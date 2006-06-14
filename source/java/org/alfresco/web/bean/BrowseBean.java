@@ -187,38 +187,47 @@ public class BrowseBean implements IContextListener
          fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dashboard");
       }
    }
-   
-   /**
-    * @return Returns the browsePageSize.
-    */
-   public int getBrowsePageSize()
+
+   public int getPageSizeContent()
    {
-      return this.browsePageSize;
-   }
-   
-   /**
-    * @param browsePageSize The browsePageSize to set.
-    */
-   public void setBrowsePageSize(int browsePageSize)
-   {
-      this.browsePageSize = browsePageSize;
-      this.browsePageSizeString = Integer.toString(browsePageSize);
-   }
-   
-   /**
-    * @return browsePageSizeString
-    */
-   public String getBrowsePageSizeString()
-   {
-      return this.browsePageSizeString;
+      return this.pageSizeContent;
    }
 
-   /**
-    * @param browsePageSizeString to set
-    */
-   public void setBrowsePageSizeString(String browsePageSizeString)
+   public void setPageSizeContent(int pageSizeContent)
    {
-      this.browsePageSizeString = browsePageSizeString;
+      this.pageSizeContent = pageSizeContent;
+      this.pageSizeContentStr = Integer.toString(pageSizeContent);
+   }
+
+   public int getPageSizeSpaces()
+   {
+      return this.pageSizeSpaces;
+   }
+
+   public void setPageSizeSpaces(int pageSizeSpaces)
+   {
+      this.pageSizeSpaces = pageSizeSpaces;
+      this.pageSizeSpacesStr = Integer.toString(pageSizeSpaces);
+   }
+   
+   public String getPageSizeContentStr()
+   {
+      return this.pageSizeContentStr;
+   }
+
+   public void setPageSizeContentStr(String pageSizeContentStr)
+   {
+      this.pageSizeContentStr = pageSizeContentStr;
+   }
+
+   public String getPageSizeSpacesStr()
+   {
+      return this.pageSizeSpacesStr;
+   }
+
+   public void setPageSizeSpacesStr(String pageSizeSpacesStr)
+   {
+      this.pageSizeSpacesStr = pageSizeSpacesStr;
    }
 
    /**
@@ -496,11 +505,12 @@ public class BrowseBean implements IContextListener
       if (VIEWMODE_DASHBOARD.equals(viewMode) == false)
       { 
          // set the page size based on the style of display
-         setBrowsePageSize(this.viewsConfig.getDefaultPageSize(PAGE_NAME_BROWSE, 
-               viewMode));
+         int pageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_BROWSE, viewMode);
+         setPageSizeContent(pageSize);
+         setPageSizeSpaces(pageSize);
          
          if (logger.isDebugEnabled())
-            logger.debug("Browse view page size set to: " + getBrowsePageSize());
+            logger.debug("Browse view page size set to: " + pageSize);
          
          setDashboardView(false);
          
@@ -1015,25 +1025,50 @@ public class BrowseBean implements IContextListener
    /**
     * Update page size based on user selection
     */
-   public void updatePageSize(ActionEvent event)
+   public void updateSpacesPageSize(ActionEvent event)
    {
       try
       {
-         int size = Integer.parseInt(this.browsePageSizeString);
+         int size = Integer.parseInt(this.pageSizeSpacesStr);
          if (size >= 0)
          {
-            this.browsePageSize = size;
+            this.pageSizeSpaces = size;
          }
          else
          {
             // reset to known value if this occurs
-            this.browsePageSizeString = Integer.toString(this.browsePageSize);
+            this.pageSizeSpacesStr = Integer.toString(this.pageSizeSpaces);
          }
       }
       catch (NumberFormatException err)
       {
          // reset to known value if this occurs
-         this.browsePageSizeString = Integer.toString(this.browsePageSize);
+         this.pageSizeSpacesStr = Integer.toString(this.pageSizeSpaces);
+      }
+   }
+   
+   /**
+    * Update page size based on user selection
+    */
+   public void updateContentPageSize(ActionEvent event)
+   {
+      try
+      {
+         int size = Integer.parseInt(this.pageSizeContentStr);
+         if (size >= 0)
+         {
+            this.pageSizeContent = size;
+         }
+         else
+         {
+            // reset to known value if this occurs
+            this.pageSizeContentStr = Integer.toString(this.pageSizeContent);
+         }
+      }
+      catch (NumberFormatException err)
+      {
+         // reset to known value if this occurs
+         this.pageSizeContentStr = Integer.toString(this.pageSizeContent);
       }
    }
    
@@ -1453,7 +1488,9 @@ public class BrowseBean implements IContextListener
             getConfigElement(ViewsConfigElement.CONFIG_ELEMENT_ID);
       
       this.browseViewMode = this.viewsConfig.getDefaultView(PAGE_NAME_BROWSE);
-      setBrowsePageSize(this.viewsConfig.getDefaultPageSize(PAGE_NAME_BROWSE, this.browseViewMode));
+      int pageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_BROWSE, this.browseViewMode);
+      setPageSizeContent(pageSize);
+      setPageSizeSpaces(pageSize);
    }
    
    /**
@@ -1739,9 +1776,11 @@ public class BrowseBean implements IContextListener
    /** The current browse view mode - set to a well known IRichListRenderer identifier */
    private String browseViewMode;
    
-   /** The current browse view page size */
-   private int browsePageSize;
-   private String browsePageSizeString;
+   /** The current browse view page sizes */
+   private int pageSizeSpaces;
+   private int pageSizeContent;
+   private String pageSizeSpacesStr;
+   private String pageSizeContentStr;
    
    /** True if current space has a dashboard (template) view available */
    private boolean dashboardView;

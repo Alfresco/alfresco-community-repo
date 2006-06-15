@@ -517,6 +517,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         properties.remove(ContentModel.PROP_STORE_PROTOCOL);
         properties.remove(ContentModel.PROP_STORE_IDENTIFIER);
         properties.remove(ContentModel.PROP_NODE_UUID);
+        properties.remove(ContentModel.PROP_NODE_DBID);
     }
     
     /**

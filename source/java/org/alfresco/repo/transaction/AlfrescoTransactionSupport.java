@@ -24,10 +24,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
-import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
@@ -107,8 +105,8 @@ public abstract class AlfrescoTransactionSupport
     {
         TransactionSynchronizationImpl synch = getSynchronization();
         
-        Set<NodeDaoService> services = synch.getNodeDaoServices();
-        for (NodeDaoService service : services)
+        Set<TransactionalDao> services = synch.getDaoServices();
+        for (TransactionalDao service : services)
         {
            if (service.isDirty())
            {
@@ -196,20 +194,20 @@ public abstract class AlfrescoTransactionSupport
      * This method can be called repeatedly as long as the service being bound
      * implements <tt>equals</tt> and <tt>hashCode</tt>.
      * 
-     * @param nodeDaoService
+     * @param daoService
      */
-    public static void bindNodeDaoService(NodeDaoService nodeDaoService)
+    public static void bindDaoService(TransactionalDao daoService)
     {
         // get transaction-local synchronization
         TransactionSynchronizationImpl synch = getSynchronization();
         
         // bind the service in
-        boolean bound = synch.getNodeDaoServices().add(nodeDaoService);
+        boolean bound = synch.getDaoServices().add(daoService);
         
         // done
         if (logger.isDebugEnabled())
         {
-            logBoundService(nodeDaoService, bound); 
+            logBoundService(daoService, bound); 
         }
     }
 
@@ -321,7 +319,7 @@ public abstract class AlfrescoTransactionSupport
      * <p>
      * The flush may include:
      * <ul>
-     *   <li>{@link NodeDaoService#flush()}</li>
+     *   <li>{@link TransactionalDao#flush()}</li>
      *   <li>{@link RuleService#executePendingRules()}</li>
      *   <li>{@link IntegrityChecker#checkIntegrity()}</li>
      * </ul>
@@ -425,7 +423,7 @@ public abstract class AlfrescoTransactionSupport
     private static class TransactionSynchronizationImpl extends TransactionSynchronizationAdapter
     {
         private final String txnId;
-        private final Set<NodeDaoService> nodeDaoServices;
+        private final Set<TransactionalDao> daoServices;
         private final Set<IntegrityChecker> integrityCheckers;
         private final Set<LuceneIndexerAndSearcher> lucenes;
         private final Set<TransactionListener> listeners;
@@ -439,7 +437,7 @@ public abstract class AlfrescoTransactionSupport
         public TransactionSynchronizationImpl(String txnId)
         {
             this.txnId = txnId;
-            nodeDaoServices = new HashSet<NodeDaoService>(3);
+            daoServices = new HashSet<TransactionalDao>(3);
             integrityCheckers = new HashSet<IntegrityChecker>(3);
             lucenes = new HashSet<LuceneIndexerAndSearcher>(3);
             listeners = new HashSet<TransactionListener>(5);
@@ -452,12 +450,12 @@ public abstract class AlfrescoTransactionSupport
         }
 
         /**
-         * @return Returns a set of <tt>NodeDaoService</tt> instances that will be called
+         * @return Returns a set of <tt>TransactionalDao</tt> instances that will be called
          *      during end-of-transaction processing
          */
-        public Set<NodeDaoService> getNodeDaoServices()
+        public Set<TransactionalDao> getDaoServices()
         {
-            return nodeDaoServices;
+            return daoServices;
         }
         
         /**
@@ -500,7 +498,7 @@ public abstract class AlfrescoTransactionSupport
             StringBuilder sb = new StringBuilder(50);
             sb.append("TransactionSychronizationImpl")
               .append("[ txnId=").append(txnId)
-              .append(", node service=").append(nodeDaoServices.size())
+              .append(", daos=").append(daoServices.size())
               .append(", integrity=").append(integrityCheckers.size())
               .append(", indexers=").append(lucenes.size())
               .append(", resources=").append(resources)
@@ -525,9 +523,9 @@ public abstract class AlfrescoTransactionSupport
                 listener.flush();
             }
             // flush changes
-            for (NodeDaoService nodeDaoServices : getNodeDaoServices())
+            for (TransactionalDao daoService : getDaoServices())
             {
-                nodeDaoServices.flush();
+                daoService.flush();
             }
         }
         

@@ -105,9 +105,14 @@
          <ref bean="sessionFactory" />
       </property>
    </bean>
-   <bean id="dbNodeDaoServiceTxnRegistration" class="org.alfresco.repo.transaction.NodeDaoServiceTransactionInterceptor" >
-      <property name="nodeDaoService">
+   <bean id="dbNodeDaoServiceTxnRegistration" class="org.alfresco.repo.transaction.TransactionalDaoInterceptor" >
+      <property name="daoService">
          <ref bean="nodeDaoServiceImpl" />
+      </property>
+   </bean>
+   <bean id="persmissionDaoServiceTxnRegistration" class="org.alfresco.repo.transaction.TransactionalDaoInterceptor" >
+      <property name="daoService">
+         <ref bean="permissionsDaoComponent" />
       </property>
    </bean>
    <bean id="nodeDaoService" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -35,6 +35,7 @@ import org.alfresco.repo.domain.hibernate.NodeStatusImpl;
 import org.alfresco.repo.domain.hibernate.StoreImpl;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionalDao;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -54,7 +55,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * 
  * @author Derek Hulley
  */
-public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements NodeDaoService
+public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements NodeDaoService, TransactionalDao
 {
     private static final String QUERY_GET_ALL_STORES = "store.GetAllStores";
     private static final String QUERY_GET_CONTENT_DATA_STRINGS = "node.GetContentDataStrings";

@@ -17,7 +17,6 @@
 package org.alfresco.repo.transaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.node.db.NodeDaoService;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.beans.factory.InitializingBean;
@@ -31,16 +30,16 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * @author Derek Hulley
  */
-public class NodeDaoServiceTransactionInterceptor implements MethodInterceptor, InitializingBean
+public class TransactionalDaoInterceptor implements MethodInterceptor, InitializingBean
 {
-    private NodeDaoService nodeDaoService;
+    private TransactionalDao daoService;
 
     /**
-     * @param nodeDaoService the <tt>NodeDaoService</tt> to register
+     * @param daoService the <tt>NodeDaoService</tt> to register
      */
-    public void setNodeDaoService(NodeDaoService nodeDaoService)
+    public void setDaoService(TransactionalDao daoService)
     {
-        this.nodeDaoService = nodeDaoService;
+        this.daoService = daoService;
     }
 
     /**
@@ -48,15 +47,15 @@ public class NodeDaoServiceTransactionInterceptor implements MethodInterceptor, 
      */
     public void afterPropertiesSet() throws Exception
     {
-        if (nodeDaoService == null)
+        if (daoService == null)
         {
-            throw new AlfrescoRuntimeException("NodeDaoService is required: " + this);
+            throw new AlfrescoRuntimeException("TransactionalDao is required: " + this);
         }
     }
 
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
-        AlfrescoTransactionSupport.bindNodeDaoService(nodeDaoService);
+        AlfrescoTransactionSupport.bindDaoService(daoService);
         // propogate the call
         return invocation.proceed();
     }

@@ -35,10 +35,12 @@ import org.alfresco.repo.security.permissions.impl.PermissionsDaoComponent;
 import org.alfresco.repo.security.permissions.impl.SimpleNodePermissionEntry;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionEntry;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
+import org.alfresco.repo.transaction.TransactionalDao;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.orm.hibernate3.HibernateCallback;
@@ -52,7 +54,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * 
  * @author andyh
  */
-public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements PermissionsDaoComponent
+public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements PermissionsDaoComponent, TransactionalDao
 {
     private static final boolean INHERIT_PERMISSIONS_DEFAULT = true;
     public static final String QUERY_GET_PERMISSION = "permission.GetPermission";
@@ -61,11 +63,70 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     
     private NodeDaoService nodeDaoService;
 
+    /** a uuid identifying this unique instance */
+    private String uuid;
+
+    /**
+     * 
+     */
     public PermissionsDaoComponentImpl()
     {
-        super();
+        this.uuid = GUID.generate();
     }
 
+    /**
+     * Checks equality by type and uuid
+     */
+    public boolean equals(Object obj)
+    {
+        if (obj == null)
+        {
+            return false;
+        }
+        else if (!(obj instanceof PermissionsDaoComponentImpl))
+        {
+            return false;
+        }
+        PermissionsDaoComponentImpl that = (PermissionsDaoComponentImpl) obj;
+        return this.uuid.equals(that.uuid);
+    }
+    
+    /**
+     * @see #uuid
+     */
+    public int hashCode()
+    {
+        return uuid.hashCode();
+    }
+
+    /**
+     * Does this <tt>Session</tt> contain any changes which must be
+     * synchronized with the store?
+     * 
+     * @return true => changes are pending
+     */
+    public boolean isDirty()
+    {
+        // create a callback for the task
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                return session.isDirty();
+            }
+        };
+        // execute the callback
+        return ((Boolean)getHibernateTemplate().execute(callback)).booleanValue();
+    }
+
+    /**
+     * Just flushes the session
+     */
+    public void flush()
+    {
+        getSession().flush();
+    }
+        
     public void setNodeDaoService(NodeDaoService nodeDaoService)
     {
         this.nodeDaoService = nodeDaoService;

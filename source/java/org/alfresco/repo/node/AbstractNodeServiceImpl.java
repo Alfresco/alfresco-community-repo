@@ -530,13 +530,15 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      * is always present as a property on a node.
      * 
      * @param nodeRef the node reference containing the values required
+     * @param nodeDbId the database-assigned ID
      * @param properties the node properties
      */
-    protected void addReferencableProperties(NodeRef nodeRef, Map<QName, Serializable> properties)
+    protected void addReferencableProperties(NodeRef nodeRef, Long nodeDbId, Map<QName, Serializable> properties)
     {
         properties.put(ContentModel.PROP_STORE_PROTOCOL, nodeRef.getStoreRef().getProtocol());
         properties.put(ContentModel.PROP_STORE_IDENTIFIER, nodeRef.getStoreRef().getIdentifier());
         properties.put(ContentModel.PROP_NODE_UUID, nodeRef.getId());
+        properties.put(ContentModel.PROP_NODE_DBID, nodeDbId);
         // add the ID as the name, if required
         if (properties.get(ContentModel.PROP_NAME) == null)
         {

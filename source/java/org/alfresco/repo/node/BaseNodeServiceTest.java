@@ -1028,10 +1028,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         Serializable wsProtocol = nodeService.getProperty(rootNodeRef, ContentModel.PROP_STORE_PROTOCOL);
         Serializable wsIdentifier = nodeService.getProperty(rootNodeRef, ContentModel.PROP_STORE_IDENTIFIER);
         Serializable nodeUuid = nodeService.getProperty(rootNodeRef, ContentModel.PROP_NODE_UUID);
+        Serializable nodeDbId = nodeService.getProperty(rootNodeRef, ContentModel.PROP_NODE_DBID);
         
         assertNotNull("Workspace Protocol property not present", wsProtocol);
         assertNotNull("Workspace Identifier property not present", wsIdentifier);
         assertNotNull("Node UUID property not present", nodeUuid);
+        assertNotNull("Node DB ID property not present", nodeDbId);
         
         assertEquals("Workspace Protocol property incorrect", rootNodeRef.getStoreRef().getProtocol(), wsProtocol);
         assertEquals("Workspace Identifier property incorrect", rootNodeRef.getStoreRef().getIdentifier(), wsIdentifier);
@@ -1042,6 +1044,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertTrue("Workspace Protocol property not present in map", properties.containsKey(ContentModel.PROP_STORE_PROTOCOL));
         assertTrue("Workspace Identifier property not present in map", properties.containsKey(ContentModel.PROP_STORE_IDENTIFIER));
         assertTrue("Node UUID property not present in map", properties.containsKey(ContentModel.PROP_NODE_UUID));
+        assertTrue("Node DB ID property not present in map", properties.containsKey(ContentModel.PROP_NODE_DBID));
     }
     
     public void testGetParentAssocs() throws Exception

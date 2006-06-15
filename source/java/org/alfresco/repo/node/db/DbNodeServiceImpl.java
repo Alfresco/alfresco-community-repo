@@ -770,7 +770,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             ret.put(propertyQName, value);
         }
         // spoof referencable properties
-        addReferencableProperties(nodeRef, ret);
+        addReferencableProperties(nodeRef, node.getId(), ret);
         // done
         return ret;
     }
@@ -793,6 +793,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
         // get the property from the node
         Node node = getNodeNotNull(nodeRef);
+        
+        if (qname.equals(ContentModel.PROP_NODE_DBID))
+        {
+            return node.getId();
+        }
+        
         Map<QName, PropertyValue> properties = node.getProperties();
         PropertyValue propertyValue = properties.get(qname);
         

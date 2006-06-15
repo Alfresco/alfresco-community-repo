@@ -115,6 +115,10 @@
 					<type>d:text</type>
 					<mandatory enforced="true">true</mandatory>
 				</property>
+				<property name="sys:node-dbid">
+					<type>d:long</type>
+					<mandatory enforced="true">true</mandatory>
+				</property>
 			</properties>
 		</aspect>
 

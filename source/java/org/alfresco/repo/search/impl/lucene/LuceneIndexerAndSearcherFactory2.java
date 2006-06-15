@@ -1036,7 +1036,6 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         
         /**
          * Makes a backup of the source directory via a temporary folder
-         * @param storeRef
          */
         private void backupDirectory(File sourceDir, File tempDir, File targetDir) throws Exception
         {

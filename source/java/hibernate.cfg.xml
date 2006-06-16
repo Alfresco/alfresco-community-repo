@@ -3,22 +3,35 @@
 "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd" >
 <hibernate-configuration>
   <session-factory>
-  	<property name="connection.username">root</property>
+<!-- 
+	<property name="connection.username">britt</property>
+  	<property name="connection.password"></property>
+  	<property name="connection.url">jdbc:postgresql://127.0.0.1/avm</property>
+  	<property name="connection.driver_class">org.postgresql.Driver</property>
+-->
+   	<property name="connection.username">root</property>
   	<property name="connection.password"></property>
   	<property name="connection.url">jdbc:mysql://127.0.0.1/avm</property>
   	<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
   	<property name="current_session_context_class">thread</property>
-  	<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
+	<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
+<!-- <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property> -->
   	<property name="show_sql">false</property>
     <property name="order_updates">false</property>
   	<property name="connection.isolation">2</property>
-  	<property name="c3p0.min_size">5</property>
-  	<property name="c3p0.max_size">20</property>
-  	<property name="c3p0.timeout">900</property>
-  	<property name="c3p0.max_statements">500</property>
+<!--
+  	<property name="connection.connection_provider">org.sciencething.cpool.ConnectionProvider</property>
+  	<property name="cpool.size">20</property>
+--> 
+    <property name="c3p0.min_size">16</property>
+  	<property name="c3p0.max_size">16</property>
+  	<property name="c3p0.timeout">60</property>
+  	<property name="c3p0.max_statements">0</property>
   	<property name="default_batch_fetch_size">16</property>
-  	<property name="jdbc.batch_versioned_data">true</property>
-    <property name="cache.use_query_cache">false</property>
+  	<property name="jdbc.batch_versioned_data">false</property>
+  	<property name="jdbc.batch_size">0</property>
+  	<property name="cach.use_second_level_cache">true</property>
+    <property name="cache.use_query_cache">true</property>
   	<mapping resource="org/alfresco/repo/avm/hibernate/AVM.hbm.xml"/>
   </session-factory>
 </hibernate-configuration>

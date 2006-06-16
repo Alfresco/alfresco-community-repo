@@ -7,7 +7,7 @@ package org.alfresco.repo.avm;
  * Layered nodes share this method.
  * @author britt
  */
-public interface Layered
+interface Layered
 {
     /**
      * Get the indirection, or underlying path that this 
@@ -17,4 +17,11 @@ public interface Layered
      * @return
      */
     public String getUnderlying(Lookup lookup);
+
+    /**
+     * Get the raw indirection of a layered node.
+     * @return The raw indirection, which will be null for
+     * LayeredDirectoryNodes that are not primary indirections.
+     */
+    public String getIndirection();
 }

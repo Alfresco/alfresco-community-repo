@@ -14,12 +14,28 @@
  * language governing permissions and limitations under the
  * License.
  */
+
 package org.alfresco.repo.avm;
 
+import junit.framework.TestCase;
+
 /**
- * Interface for a layered file node.
+ * Simple sanity test for Issuer;
  * @author britt
  */
-interface LayeredFileNode extends FileNode, Layered
+public class IssuerTest extends TestCase
 {
+    /**
+     * Sanity check issuer logic.
+     */
+    public void testSanity()
+    {
+        Issuer issuer = new Issuer("test", 0L);
+        for (int i = 0; i < 500; i++)
+        {
+            issuer.issue();
+        }
+        issuer = new Issuer("test");
+        assertTrue(issuer.issue() >= 500);
+    }
 }

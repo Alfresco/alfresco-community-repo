@@ -21,7 +21,7 @@ package org.alfresco.repo.avm;
  * Represents a path component in a lookup.
  * @author britt
  */
-public class LookupComponent
+class LookupComponent
 {
     /**
      * The name of this component.
@@ -32,11 +32,6 @@ public class LookupComponent
      * The node of this component.
      */
     private AVMNode fNode;
-    
-    /**
-     * The highest branch seen by this component.
-     */
-    private long fHighestBranch;
     
     /**
      * The indirection path (if any) for this node.
@@ -52,14 +47,11 @@ public class LookupComponent
      * Whether this node is in a layer.
      */
     private boolean fLayered;
-
+    
     /**
-     * @return the highestBranch
+     * Whether this needs copying.
      */
-    public long getHighestBranch()
-    {
-        return fHighestBranch;
-    }
+    private boolean fNeedsCopy;
     
     /**
      * Create a new empty lookup component.
@@ -69,14 +61,7 @@ public class LookupComponent
     }
     
     /**
-     * @param highestBranch the highestBranch to set
-     */
-    public void setHighestBranch(long highestBranch)
-    {
-        fHighestBranch = highestBranch;
-    }
-
-    /**
+     * Get the indirection.
      * @return the indirection
      */
     public String getIndirection()
@@ -85,6 +70,7 @@ public class LookupComponent
     }
 
     /**
+     * Set the indirection.
      * @param indirection the indirection to set
      */
     public void setIndirection(String indirection)
@@ -93,7 +79,9 @@ public class LookupComponent
     }
 
     /**
-     * @return the layered
+     * Is this component layered. I.e. has it seen a layer yet in
+     * its lookup.
+     * @return Whether this component is layered.
      */
     public boolean isLayered()
     {
@@ -101,7 +89,8 @@ public class LookupComponent
     }
 
     /**
-     * @param layered the layered to set
+     * Set whether this node is layered.
+     * @param layered
      */
     public void setLayered(boolean layered)
     {
@@ -109,6 +98,8 @@ public class LookupComponent
     }
 
     /**
+     * Get the index of the lowest (in the path lookup sense) layer
+     * seen at this component's point in the lookup.
      * @return the lowestLayerIndex
      */
     public int getLowestLayerIndex()
@@ -117,6 +108,8 @@ public class LookupComponent
     }
 
     /**
+     * Set the index of the lowest (in the path lookup sense) layer
+     * seen at this components's point in the lookup.
      * @param lowestLayerIndex the lowestLayerIndex to set
      */
     public void setLowestLayerIndex(int lowestLayerIndex)
@@ -125,6 +118,7 @@ public class LookupComponent
     }
 
     /**
+     * Get the path component name.
      * @return the name
      */
     public String getName()
@@ -133,6 +127,7 @@ public class LookupComponent
     }
 
     /**
+     * Set the path component name.
      * @param name the name to set
      */
     public void setName(String name)
@@ -141,6 +136,7 @@ public class LookupComponent
     }
 
     /**
+     * Get the looked up node for this component.
      * @return the node
      */
     public AVMNode getNode()
@@ -149,10 +145,29 @@ public class LookupComponent
     }
 
     /**
+     * Set the node for this component.
      * @param node the node to set
      */
     public void setNode(AVMNode node)
     {
         fNode = node;
+    }
+
+    /**
+     * Set the needs copy bit.
+     * @param needs Whether this component needs to be copied.
+     */
+    public void setNeedsCopy(boolean needs)
+    {
+        fNeedsCopy = needs;
+    }
+    
+    /**
+     * Does this component need a copy.
+     * @return Whether it does.
+     */
+    public boolean getNeedsCopy()
+    {
+        return fNeedsCopy;
     }
 }

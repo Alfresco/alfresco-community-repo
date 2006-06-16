@@ -14,41 +14,48 @@
  * language governing permissions and limitations under the
  * License.
  */
-
 package org.alfresco.repo.avm;
 
+import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.avm.hibernate.DirectoryEntry;
-
 /**
- * Base class for Directories.
+ * The interface for Directory Nodes.
  * @author britt
  */
-public abstract class DirectoryNode extends AVMNode
+interface DirectoryNode extends AVMNode
 {
     /**
      * Does this directory directly contain the specified node.
      * @param node The node to check.
      * @return Whether it does.
      */
-    public abstract boolean directlyContains(AVMNode node);
-    
+    public boolean directlyContains(AVMNode node);
+
     /**
      * Put child into this directory directly.  No copy on write.
      * @param name The name to give it.
      * @param node The child.
      */
-    public abstract void putChild(String name, AVMNode node);
-    
+    public void putChild(String name, AVMNode node);
+
     /**
      * Lookup a child node.
      * @param lPath The Lookup so far.
      * @param name The name of the child to lookup.
      * @param version The version to look under.
+     * @param visited A Set of full paths visited. Used for cycle checking.
      */
-    public abstract AVMNode lookupChild(Lookup lPath, String name, int version);
+    public AVMNode lookupChild(Lookup lPath, String name, int version);
     
+    /**
+     * Lookup a child node using an AVMNodeDescriptor as context.
+     * @param mine The node descriptor for this.
+     * @param name The name of the child to lookup.
+     * @return The descriptor for the looked up child.
+     */
+    public AVMNodeDescriptor lookupChild(AVMNodeDescriptor mine, String name);
+
     /**
      * Add a child node.  Fails if child already exists.
      * Copy is possible.
@@ -56,28 +63,60 @@ public abstract class DirectoryNode extends AVMNode
      * @param child The child to add.
      * @param The lookup path.
      */
-    public abstract boolean addChild(String name, AVMNode child,
-                                     Lookup lPath);
-    
+    public boolean addChild(String name, AVMNode child, Lookup lPath);
+
     /**
      * Remove a child node. Fails if child does not exist.
      * Copy is possible.
      * @param name The name of the child to remove.
      * @param lPath The lookup path.
      */
-    public abstract boolean removeChild(String name, Lookup lPath);
-    
+    public boolean removeChild(String name, Lookup lPath);
+
     /**
      * Remove a child directly.  No copy is possible.
      * @param name The name of the child to remove.
      */
-    public abstract void rawRemoveChild(String name);
-    
+    public void rawRemoveChild(String name);
+
     /**
      * Get a directory listing.
      * @param lPath The lookup context.
      * @param version The version to look under.
      * @return A Map of names to DirectoryEntries.
      */
-    public abstract Map<String, DirectoryEntry> getListing(Lookup lPath, int version);
+    public Map<String, AVMNode> getListing(Lookup lPath);
+
+    /**
+     * Get a listing from a directory specified by an AVMNodeDescriptor.
+     * @param dir The directory to list.
+     * @return A Map of names to node descriptors
+     */
+    public Map<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir);
+    
+    /**
+     * Set the directory, which must be in a layer, into a primary
+     * indirection taking its indirection from the Lookup.
+     * @param lPath The Lookup.
+     */
+    public void turnPrimary(Lookup lPath);
+
+    /**
+     * Retarget a layered directory.
+     * @param lPath The Lookup.
+     * @param target The target path.
+     */
+    public void retarget(Lookup lPath, String target);
+    
+    /**
+     * Get all the directly contained children of a node.
+     * @return A List of Child entries.
+     */
+    public List<ChildEntry> getChildren();
+
+    /**
+     * Set whether this node is a root node.
+     * @param isRoot
+     */
+    public void setIsRoot(boolean isRoot);
 }

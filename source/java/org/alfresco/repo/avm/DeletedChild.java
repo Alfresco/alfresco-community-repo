@@ -14,12 +14,24 @@
  * language governing permissions and limitations under the
  * License.
  */
+
 package org.alfresco.repo.avm;
 
 /**
- * Interface for a layered file node.
+ * Interface to a deleted directory entry in a layered directory.
  * @author britt
  */
-interface LayeredFileNode extends FileNode, Layered
+public interface DeletedChild
 {
+    /**
+     * Get the name of the deleted child.
+     * @return The name.
+     */
+    public String getName();
+    
+    /**
+     * Get the parent of this deleted child
+     * @return The parent.
+     */
+    public LayeredDirectoryNode getParent();
 }

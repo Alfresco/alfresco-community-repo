@@ -14,12 +14,29 @@
  * language governing permissions and limitations under the
  * License.
  */
+
 package org.alfresco.repo.avm;
 
 /**
- * Interface for a layered file node.
+ * Base class for file objects.
  * @author britt
  */
-interface LayeredFileNode extends FileNode, Layered
+abstract class FileNodeImpl extends AVMNodeImpl implements FileNode
 {
+    /**
+     * Default constructor.
+     */
+    protected FileNodeImpl()
+    {
+    }
+    
+    /**
+     * Pass through constructor.
+     * @param id The newly assigned object id.
+     * @param repo The repository we belong to.
+     */
+    public FileNodeImpl(long id, Repository repo)
+    {
+        super(id, repo);
+    }
 }

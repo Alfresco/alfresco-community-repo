@@ -14,158 +14,193 @@
  * language governing permissions and limitations under the
  * License.
  */
-
 package org.alfresco.repo.avm;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.repo.avm.hibernate.RepositoryBean;
-
-
 /**
- * This is the interface between low level repository objects
- * and the high level implementation of the repository.
+ * The repository interface.  Methods for filesystem like, versioning,
+ * and layering operations.
  * @author britt
  */
-public interface Repository
+interface Repository
 {
     /**
-     * Inform this Repository that a Node is new and should
-     * therefore not be copied.
-     * @param node The node that is reporting itself.
+     * This returns the next version in this repository that will be snapshotted.
+     * @return The next version to be snapshotted.
      */
-    public void setNew(AVMNode node);
-    
+    public int getNextVersionID();
+
     /**
-     * Get the latest version id.
-     * @return The latest version.
-     */
-    public int getLatestVersion();
-    
-    /**
-     * Inform this Repository that the root node is new.
-     * @param root The new root directory node.
+     * Set a new root for this repository.
+     * @param root The root to set.
      */
     public void setNewRoot(DirectoryNode root);
-    
+
     /**
-     * Make a snapshot.  Equivalent of subversion end of commit.  A new
-     * version number is issued.
+     * Snapshots this repository.  This sets all nodes in the
+     * the repository to the should be copied state, and creates
+     * a new version root.
      */
     public void createSnapshot();
 
     /**
      * Create a new directory.
-     * @param path The path to the directory for creation.
-     * @param name The name for the new directory.
+     * @param path The path to the parent directory.
+     * @param name The name to give the new directory.
      */
     public void createDirectory(String path, String name);
 
     /**
-     * Create a layered directory over srcPath at dstPath/name.
-     * @param srcPath Fully qualified path.
-     * @param dstPath Repository path to target directory.
-     * @param name What the new layered directory should be called.
+     * Create a new layered directory.
+     * @param srcPath The path that the new layered directory will point at.
+     * @param dstPath The path to the directory to create the new layered directory in.
+     * @param name The name of the new layered directory.
      */
-    public void createLayeredDirectory(String srcPath, String dstPath, String name);
+    public void createLayeredDirectory(String srcPath, String dstPath,
+                                       String name);
 
     /**
-     * Create a new empty file.
-     * @param path The path to the directory for creation.
-     * @param name The name for the new file.
+     * Create a new file. The designated file cannot already exist.
+     * @param path The path to the directory to contain the new file.
+     * @param name The name to give the new file.
+     * @param source An InputStream of data to put in the file.  May be null.
      */
-    public void createFile(String path, String name);
+    public OutputStream createFile(String path, String name);
 
     /**
-     * Create a layered file over srcPath at dstPath/name
-     * @param srcPath Fully qualified path.
-     * @param dstPath Repository path.
-     * @param name The name the new layered file should have.
+     * Create a new layered file.
+     * @param srcPath The target path for the new file.
+     * @param dstPath The path to the directory to make the new file in.
+     * @param name The name of the new file.
      */
     public void createLayeredFile(String srcPath, String dstPath, String name);
-    
+
     /**
-     * Get an input stream from an existing file.
-     * TODO Figure out nio way of doing things.
-     * @param version The version id to look under.
+     * Get an InputStream from a file.
+     * @param version The version to look under.
      * @param path The path to the file.
-     * @return An InputStream.
+     * @return An InputStream
      */
     public InputStream getInputStream(int version, String path);
-    
+
     /**
-     * Get a directory listing.
+     * Get a listing of the designated directory.
      * @param version The version to look under.
      * @param path The path to the directory.
-     * @return A List of FolderEntries.
+     * @return A listing.
      */
     public List<FolderEntry> getListing(int version, String path);
-    
+
     /**
-     * Get an OutputStream to an existing file.  This may trigger a copy.
+     * Get an output stream to a file.
      * @param path The path to the file.
+     * @return An OutputStream
      */
     public OutputStream getOutputStream(String path);
     
     /**
-     * Remove a node from a directory.
-     * @param path The path to the directory.
+     * Get a random access file to the given file.
+     * @param version The version id (read-only if not -1)
+     * @param path The path to the file.
+     * @param access The access for RandomAccessFile.
+     * @return A RandomAccessFile.
+     */
+    public RandomAccessFile getRandomAccess(int version, String path, String access);
+
+    /**
+     * Remove a node and all of its contents.
+     * @param path The path to the node's parent directory.
      * @param name The name of the node to remove.
      */
     public void removeNode(String path, String name);
-    
+
     /**
-     * This moves a node from one place in a layer to another place in 
-     * the same layer without leaving a deleted entry in the source directory.
-     * @param srcPath The path containing the src node.
-     * @param srcName The name of the src node.
-     * @param dstPath The destination container.
-     * @param dstName The name of the destination node.
+     * Uncover a whited out node.
+     * @param dirPath The path to the directory.
+     * @param name The name to uncover.
      */
-    public void slide(String srcPath, String srcName, String dstPath, String dstName);
-    
+    public void uncover(String dirPath, String name);
+
+    // TODO This is problematic.  As time goes on this returns
+    // larger and larger data sets.  Perhaps what we should do is
+    // provide methods for getting versions by date range, n most 
+    // recent etc.
     /**
-     * Get the version ids that this Repository has.
-     * @return A Set of Version IDs.
+     * Get all the version ids for this repository.
+     * @return A Set of all versions.
      */
     public Set<Integer> getVersions();
-    
-    /**
-     * Get the data bean.
-     * @return The data bean.
-     */
-    public RepositoryBean getDataBean();
-    
+
     /**
      * Get the super repository.
      * @return The SuperRepository.
      */
     public SuperRepository getSuperRepository();
-    
+
     /**
-     * Get a lookup object for a path.
+     * Lookup a node.
      * @param version The version to look under.
-     * @param path The Repository path.
-     * @return The Lookup.
+     * @param path The path to the node.
+     * @return A Lookup object.
      */
     public Lookup lookup(int version, String path);
-    
+
     /**
-     * Get a lookup object for a path.  Directory only.
+     * Lookup a directory.
      * @param version The version to look under.
-     * @param path The Repository path.
-     * @return The Lookup.
+     * @param path The path to the directory.
+     * @return A Lookup object.
      */
     public Lookup lookupDirectory(int version, String path);
-    
+
     /**
-     * Get the indirection path of a layered node.
-     * @param version The version id.
-     * @param path The Repository path.
+     * For a layered node, get its indirection.
+     * @param version The version to look under.
+     * @param path The path to the node.
      * @return The indirection.
      */
     public String getIndirectionPath(int version, String path);
+
+    /**
+     * Make the indicated directory a primary indirection.
+     * @param path The Repository relative path.
+     */
+    public void makePrimary(String path);
+
+    /**
+     * Change the target of a layered directory.
+     * @param path The path to the layered directory.
+     * @param target The new target path.
+     */
+    public void retargetLayeredDirectory(String path, String target);
+    
+    /**
+     * Get the root directory of this Repository.
+     * @return The root directory.
+     */
+    public DirectoryNode getRoot();
+
+    /**
+     * Get the specified root as a descriptor.
+     * @param version The version to get (-1 for head).
+     * @return The specified root or null.
+     */
+    public AVMNodeDescriptor getRoot(int version);
+    
+    /**
+     * Get the name of this repository.
+     * @return The name.
+     */
+    public String getName();
+    
+    /**
+     * Purge all the nodes reachable only by the given version.
+     * @param version
+     */
+    public void purgeVersion(int version);
 }

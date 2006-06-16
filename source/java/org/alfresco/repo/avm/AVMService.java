@@ -19,7 +19,9 @@ package org.alfresco.repo.avm;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -27,6 +29,7 @@ import java.util.Set;
  * Model.  It specifies methods that are close in functionality to the underlying
  * implementation, and is intended as both a first class Alfresco service and an
  * aid in creating new implementations of existing services.
+ * Paths are of the form repositoryname:/foo/bar/baz
  * @author britt
  */
 public interface AVMService
@@ -40,10 +43,19 @@ public interface AVMService
     public InputStream getFileInputStream(int version, String path);
     
     /**
-     * Get an output stream to a file node.
+     * Get an output stream to a file node.  The file must already exist.
      * @param path The simple absolute path to the file node.
      */
     public OutputStream getFileOutputStream(String path);
+    
+    /**
+     * Get a random access file to the given path.
+     * @param version The version to find.
+     * @param path The path to the file.
+     * @param access The access mode for RandomAccessFile.
+     * @return A RandomAccessFile
+     */
+    public RandomAccessFile getRandomAccess(int version, String path, String access);
     
     /**
      * Get a listing of a Folder by name.
@@ -54,14 +66,22 @@ public interface AVMService
     public List<FolderEntry> getDirectoryListing(int version, String path);
     
     /**
-     * Create a new File.
-     * @param parent The simple absolute path to the parent.
-     * @param name The name to give the file.
+     * Get a directory listing from a node descriptor.
+     * @param dir The directory node descriptor.
+     * @return A Map of names to node descriptors.
      */
-    public void createFile(String path, String name);
+    public Map<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir);
     
     /**
-     * Create a new Folder.
+     * Create a new File. Fails if the file already exists.
+     * @param path The simple absolute path to the parent.
+     * @param name The name to give the file.
+     * @param source A possibly null stream to draw initial contents from.
+     */
+    public OutputStream createFile(String path, String name);
+    
+    /**
+     * Create a new directory.
      * @param parent The simple absolute path to the parent.
      * @param name The name to give the folder.
      */
@@ -69,26 +89,26 @@ public interface AVMService
     
     /**
      * Create a new layered file.
-     * @param srcPath The simple absolute path that the new file will shadow.
+     * @param srcPath The simple absolute path that the new file will point at.
      * @param parent The simple absolute path to the parent.
      * @param name The name to give the new file.
      */
     public void createLayeredFile(String srcPath, String parent, String name);
     
     /**
-     * Create a new layered folder.
-     * @param srcPath The simple absolute path that the new folder will shadow.
+     * Create a new layered directory.
+     * @param srcPath The simple absolute path that the new folder will point at.
      * @param parent The simple absolute path to the parent.
      * @param name The name to give the new folder.
      */
     public void createLayeredDirectory(String srcPath, String parent, String name);
 
     /**
-     * Retarget a layered folder.
+     * Retarget a layered directory.
      * @param path Path to the layered directory.
      * @param target The new target to aim at.
      */
-    public void retargetLayeredFolder(String path, String target);
+    public void retargetLayeredDirectory(String path, String target);
     
     /**
      * Create a new Repository.  All Repositories are top level in a hierarchical
@@ -124,14 +144,13 @@ public interface AVMService
     public void rename(String srcParent, String srcName, String dstParent, String dstName);
     
     /**
-     * Slide a directory from one place in a layer to another uncovering what was
-     * underneath it.
-     * @param srcParent The simple absolute path to the parent folder.
-     * @param srcName The name of the node in the src Folder.
-     * @param dstParent The simple absolute path to the destination folder.
-     * @param dstName The name that the node will have in the destination folder.
+     * Uncover a name in a layered directory.  That is, if the layered
+     * directory has a deleted entry of the given name remove that
+     * name from the deleted list.
+     * @param dirPath The path to the layered directory.
+     * @param name The name to uncover.
      */
-    public void slide(String srcParent, String srcName, String dstParent, String dstName);
+    public void uncover(String dirPath, String name);
 
     /**
      * Get the latest version id of the repository.
@@ -163,12 +182,34 @@ public interface AVMService
     public Set<Integer> getRepositoryVersions(String name);
     
     /**
+     * Get the names of all repositories. 
+     * @return A List of all names.
+     */
+    public List<String> getRepositoryNames();
+    
+    /**
+     * Get the specified root of a repository.
+     * @param version The version to look up.
+     * @param name The name of the repository.
+     * @return A descriptor for the specified root.
+     */
+    public AVMNodeDescriptor getRepositoryRoot(int version, String name);
+        
+    /**
      * Lookup a node by version ids and path.
      * @param version The version id to look under.
      * @param path The simple absolute path to the parent directory.
-     * @return A Lookup object.
+     * @return An AVMNodeDescriptor.
      */
-    public Lookup lookup(int version, String path);
+    public AVMNodeDescriptor lookup(int version, String path);
+    
+    /**
+     * Lookup a node from a directory node.
+     * @param dir The descriptor for the directory node.
+     * @param name The name to lookup.
+     * @return The descriptor for the child.
+     */
+    public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name);
     
     /**
      * Get the indirection path for a layered file or directory.
@@ -179,10 +220,10 @@ public interface AVMService
     public String getIndirectionPath(int version, String path);
     
     /**
-     * Destroy a repository.  This is a complete wipe of a Repository.
+     * Purge a repository.  This is a complete wipe of a Repository.
      * @param name The name of the Repository.
      */
-    public void destroyRepository(String name);
+    public void purgeRepository(String name);
     
     /**
      * Purge a version from a repository.  Deletes everything that lives in
@@ -191,4 +232,10 @@ public interface AVMService
      * @param name The name of the Repository from which to purge it.
      */
     public void purgeVersion(int version, String name);
+    
+    /**
+     * Make a directory into a primary indirection node.
+     * @param path The full path.
+     */
+    public void makePrimary(String path);
 }

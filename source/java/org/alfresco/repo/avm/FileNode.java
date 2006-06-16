@@ -14,25 +14,26 @@
  * language governing permissions and limitations under the
  * License.
  */
-
 package org.alfresco.repo.avm;
 
 /**
- * Base class for file objects.
+ * Interface for the generic idea of a file.
  * @author britt
  */
-public abstract class FileNode extends AVMNode
+interface FileNode extends AVMNode
 {
     /**
      * Get the content object associated with this node, for reading.
      * @param version The version to get in.
      * @return A FileContent object.
      */
-    public abstract FileContent getContentForRead(int version, Repository repo);
-    
+    public FileContent getContentForRead(Repository repo);
+
     /**
      * Get the content object for writing.  This will do COW
      * as needed.
+     * @param The repository.
+     * @return A FileContent object.
      */
-    public abstract FileContent getContentForWrite(Repository repo);
+    public FileContent getContentForWrite(Repository repo);
 }

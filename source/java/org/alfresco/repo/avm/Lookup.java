@@ -20,22 +20,25 @@ package org.alfresco.repo.avm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.LockMode;
+import org.hibernate.Session;
+
 /**
  * This holds all the information necessary to perform operations
- * on AVMNodes.
+ * on AVMNodes, and is internall structured as a list of path components
+ * from the root directory of a repository.
  * @author britt
  */
-public class Lookup
+class Lookup
 {
     /**
      * The Repository.
      */
-    private Repository fRepository;
+    private RepositoryImpl fRepository;
 
     /**
      * The name of the Repository.
      */
-    @SuppressWarnings("unused")
     private String fRepName;
     
     /**
@@ -60,11 +63,6 @@ public class Lookup
     private int fTopLayerIndex;
     
     /**
-     * The highest branch id seen in the lookup.
-     */
-    private long fHighestBranchID;
-    
-    /**
      * The lowest layered directory node's index seen so far.
      */
     private int fLowestLayerIndex;
@@ -75,21 +73,26 @@ public class Lookup
     private int fPosition;
     
     /**
+     * Whether a needs-to-be-copied component has been seen.
+     */
+    private boolean fNeedsCopying;
+    
+    /**
      * Create a new one.
      * @param repository The Repository that's being looked in.
      * @param repName The name of that Repsository.
      */
-    public Lookup(Repository repository, String repName)
+    public Lookup(RepositoryImpl repository, String repName)
     {
         fRepository = repository;
         fRepName = repName;
         fComponents = new ArrayList<LookupComponent>();
         fLayeredYet = false;
         fTopLayer = null;
-        fHighestBranchID = 0;
         fPosition = -1;
         fTopLayerIndex = -1;
         fLowestLayerIndex = -1;
+        fNeedsCopying = false;
     }
     
     /**
@@ -102,26 +105,37 @@ public class Lookup
         LookupComponent comp = new LookupComponent();
         comp.setName(name);
         comp.setNode(node);
-        // Bump up the highest branch id seen if necessary.
-        if (node.getBranchID() > fHighestBranchID)
+//        SuperRepository.GetInstance().getSession().lock(node, LockMode.READ);
+        if (!node.getIsNew())
         {
-            fHighestBranchID = node.getBranchID();
+            fNeedsCopying = true;
         }
-        // Set the highest branch id seen by this component in the lookup.
-        comp.setHighestBranch(fHighestBranchID);
+        else
+        {
+            if (fPosition >= 0 && (!((DirectoryNode)fComponents.get(fPosition).getNode()).directlyContains(node) ||
+                                   !isDirectlyContained()))
+            {
+                fNeedsCopying = true;
+            }
+        }
+        comp.setNeedsCopy(fNeedsCopying);
         // Record various things if this is layered.
-        if (node instanceof LayeredDirectoryNode)
+        if (node.getType() == AVMNodeType.LAYERED_DIRECTORY)
         {
             LayeredDirectoryNode oNode = (LayeredDirectoryNode)node;
             // Record the indirection path that should be used.
-            if (oNode.hasPrimaryIndirection())
+            if (oNode.getPrimaryIndirection())
             {
                 comp.setIndirection(oNode.getUnderlying());
             }
             else
             {
                 String parentIndirection = fComponents.get(fPosition).getIndirection();
-                if (parentIndirection.endsWith("/"))  // TODO This currently is impossible because
+                if (parentIndirection == null)
+                {
+                    System.out.println("Oink!");
+                }
+                if (parentIndirection.endsWith("/"))  // This currently is impossible because
                                                       // root dirs are always plain.
                 {
                     comp.setIndirection(parentIndirection + name);
@@ -173,6 +187,28 @@ public class Lookup
         assert fPosition >= 0;
         return fComponents.get(fPosition).isLayered();
     }
+
+    /**
+     * Determine if a node is directly contained.
+     */
+    private boolean isDirectlyContained()
+    {
+        if (!isLayered())
+        {
+            return true;
+        }
+        int pos = fPosition;
+        while (pos > 1)
+        {
+            DirectoryNode dir = (DirectoryNode)fComponents.get(pos - 1).getNode();
+            if (!dir.directlyContains(fComponents.get(pos).getNode()))
+            {
+                return false;
+            }
+            pos--;
+        }
+        return true;
+    }
     
     /**
      * Determine if a node is directly in this layer.
@@ -199,22 +235,13 @@ public class Lookup
             {
                 return false;
             }
-            if (dir == fTopLayer)
+            if (dir.equals(fTopLayer))
             {
                 return true;
             }
             pos--;
         }
         return false;
-    }
-    
-    /**
-     * Get the highest branch traversed in this lookup at the current position.
-     * @return The highest branch traversed.
-     */
-    public long getHighestBranch()
-    {
-        return fComponents.get(fPosition).getHighestBranch();
     }
     
     /**
@@ -256,14 +283,14 @@ public class Lookup
         for (int pos = lowestLayerIndex; pos >= fTopLayerIndex; pos--)
         {
             AVMNode node = fComponents.get(pos).getNode();
-            if (!(node instanceof LayeredDirectoryNode))
+            if (node.getType() != AVMNodeType.LAYERED_DIRECTORY)
             {
                 continue;
             }
             LayeredDirectoryNode oNode =
                 (LayeredDirectoryNode)node;
             if (oNode.getLayerID() == fTopLayer.getLayerID() &&
-                oNode.hasPrimaryIndirection())
+                oNode.getPrimaryIndirection())
             {
                 StringBuilder builder = new StringBuilder();
                 builder.append(oNode.getUnderlying());
@@ -308,4 +335,47 @@ public class Lookup
     {
         return fRepository;
     }
+    
+    /**
+     * Get the path represented by this lookup.
+     * @return The canonical path for this lookup.
+     */
+    public String getRepresentedPath()
+    {
+        if (fComponents.size() == 1)
+        {
+            return fRepName + ":/";
+        }
+        StringBuilder builder = new StringBuilder();
+        builder.append(fRepName);
+        builder.append(':');
+        int count = fComponents.size();
+        for (int i = 1; i < count; i++)
+        {
+            builder.append('/');
+            builder.append(fComponents.get(i).getName());
+        }
+        return builder.toString();
+    }
+    
+    /**
+     * Get whether the current node needs copying.
+     * @return Whether the current node needs copying.
+     */
+    public boolean needsCopying()
+    {
+        return fComponents.get(fPosition).getNeedsCopy();
+    }
+    
+    /**
+     * Acquire locks for writing, in path lookup order.
+     */
+//    public void acquireLocks()
+//    {
+//        Session sess = SuperRepository.GetInstance().getSession();
+//        for (LookupComponent comp : fComponents)
+//        {
+//            sess.lock(comp.getNode(), LockMode.UPGRADE);
+//        }
+//    }
 }

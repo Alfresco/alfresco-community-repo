@@ -65,11 +65,12 @@ public class GroupsBean implements IContextListener
 {
    private static final String FILTER_CHILDREN = "children";
    private static final String FILTER_ALL      = "all";
-
+   
    private static final String DEFAULT_OUTCOME = "finish";
-
+   
+   private static final String MSG_ERR_EXISTS = "groups_err_exists";
    private static final String MSG_GROUPS = "root_groups";
-
+   
    private static Logger logger = Logger.getLogger(GroupsBean.class);
    
    /** The NodeService to be used by the bean */
@@ -648,15 +649,24 @@ public class GroupsBean implements IContextListener
    {
       String outcome = DEFAULT_OUTCOME;
       
+      FacesContext context = FacesContext.getCurrentInstance();
       UserTransaction tx = null;
       try
       {
-         FacesContext context = FacesContext.getCurrentInstance();
          tx = Repository.getUserTransaction(context);
          tx.begin();
          
          // create new Group using Authentication Service
-         this.authService.createAuthority(AuthorityType.GROUP, getActionGroup(), this.name);
+         String groupName = this.authService.getName(AuthorityType.GROUP, this.name);
+         if (this.authService.authorityExists(groupName) == false)
+         {
+            this.authService.createAuthority(AuthorityType.GROUP, getActionGroup(), this.name);
+         }
+         else
+         {
+            Utils.addErrorMessage(Application.getMessage(context, MSG_ERR_EXISTS));
+            outcome = null;
+         }
          
          // commit the transaction
          tx.commit();
@@ -666,7 +676,7 @@ public class GroupsBean implements IContextListener
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+               context, Repository.ERROR_GENERIC), err.getMessage()), err);
          outcome = null;
       }
       

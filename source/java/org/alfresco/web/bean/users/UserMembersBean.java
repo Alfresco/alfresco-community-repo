@@ -34,6 +34,7 @@ import javax.faces.model.ListDataModel;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -589,6 +590,7 @@ public abstract class UserMembersBean implements IContextListener
             // and add each of the new permissions in turn
             NodeRef nodeRef = getNode().getNodeRef();
             this.permissionService.clearPermission(nodeRef, getPersonAuthority());
+            AlfrescoTransactionSupport.flush();
             for (PermissionWrapper wrapper : personRoles)
             {
                this.permissionService.setPermission(

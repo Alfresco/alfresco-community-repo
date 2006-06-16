@@ -111,14 +111,13 @@
                <f:facet name="header">
                   <h:outputText value="#{msg.summary}" />
                </f:facet>
-               <h:outputText value="#{row.conditionSummary}"/>
+               <h:outputText value="#{row.conditionSummary}" />
             </h:column>
             <h:column>
                <a:actionLink action="#{WizardManager.bean.removeCondition}" image="/images/icons/delete.gif"
                              value="#{msg.remove}" showLink="false" style="padding-left:6px;padding-right:2px" />
                <a:actionLink action="#{WizardManager.bean.editCondition}" image="/images/icons/edit_icon.gif"
-                             value="#{msg.change}" showLink="false" 
-                             rendered='#{row.conditionName != "no-condition"}'/>
+                             value="#{msg.change}" showLink="false" rendered='#{row.noParamsMarker == null}' />
             </h:column>
          </h:dataTable>
          <a:panel id="no-items" rendered="#{WizardManager.bean.allConditionsDataModel.rowCount == 0}">

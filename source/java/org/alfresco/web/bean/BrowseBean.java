@@ -186,28 +186,50 @@ public class BrowseBean implements IContextListener
          FacesContext fc = FacesContext.getCurrentInstance();
          fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dashboard");
       }
-      else
-      {
-         navigateBrowseScreen();
-      }
    }
-   
-   /**
-    * @return Returns the browsePageSize.
-    */
-   public int getBrowsePageSize()
+
+   public int getPageSizeContent()
    {
-      return this.browsePageSize;
+      return this.pageSizeContent;
    }
-   
-   /**
-    * @param browsePageSize The browsePageSize to set.
-    */
-   public void setBrowsePageSize(int browsePageSize)
+
+   public void setPageSizeContent(int pageSizeContent)
    {
-      this.browsePageSize = browsePageSize;
+      this.pageSizeContent = pageSizeContent;
+      this.pageSizeContentStr = Integer.toString(pageSizeContent);
+   }
+
+   public int getPageSizeSpaces()
+   {
+      return this.pageSizeSpaces;
+   }
+
+   public void setPageSizeSpaces(int pageSizeSpaces)
+   {
+      this.pageSizeSpaces = pageSizeSpaces;
+      this.pageSizeSpacesStr = Integer.toString(pageSizeSpaces);
    }
    
+   public String getPageSizeContentStr()
+   {
+      return this.pageSizeContentStr;
+   }
+
+   public void setPageSizeContentStr(String pageSizeContentStr)
+   {
+      this.pageSizeContentStr = pageSizeContentStr;
+   }
+
+   public String getPageSizeSpacesStr()
+   {
+      return this.pageSizeSpacesStr;
+   }
+
+   public void setPageSizeSpacesStr(String pageSizeSpacesStr)
+   {
+      this.pageSizeSpacesStr = pageSizeSpacesStr;
+   }
+
    /**
     * @return Returns the minimum length of a valid search string.
     */
@@ -483,20 +505,19 @@ public class BrowseBean implements IContextListener
       if (VIEWMODE_DASHBOARD.equals(viewMode) == false)
       { 
          // set the page size based on the style of display
-         setBrowsePageSize(this.viewsConfig.getDefaultPageSize(PAGE_NAME_BROWSE, 
-               viewMode));
+         int pageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_BROWSE, viewMode);
+         setPageSizeContent(pageSize);
+         setPageSizeSpaces(pageSize);
          
          if (logger.isDebugEnabled())
-            logger.debug("Browse view page size set to: " + getBrowsePageSize());
+            logger.debug("Browse view page size set to: " + pageSize);
          
-         // in case we left for dashboard 
-         if (isDashboardView() == true)
-         {
-            setDashboardView(false);
-         }
+         setDashboardView(false);
          
          // push the view mode into the lists
          setBrowseViewMode(viewMode);
+         
+         navigateBrowseScreen();
       }
       else
       {
@@ -565,7 +586,7 @@ public class BrowseBean implements IContextListener
                   	 this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                   {
                      // create our Node representation
-                     node = new MapNode(nodeRef, this.nodeService, false);
+                     node = new MapNode(nodeRef, this.nodeService, true);
                      node.addPropertyResolver("icon", this.resolverSpaceIcon);
                      node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                      
@@ -575,7 +596,7 @@ public class BrowseBean implements IContextListener
                   else if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
                   {
                      // create our Node representation
-                     node = new MapNode(nodeRef, this.nodeService, false);
+                     node = new MapNode(nodeRef, this.nodeService, true);
                      setupCommonBindingProperties(node);
                      
                      this.contentNodes.add(node);
@@ -584,7 +605,7 @@ public class BrowseBean implements IContextListener
                   else if (ContentModel.TYPE_FILELINK.equals(type))
                   {
                      // create our File Link Node representation
-                     node = new MapNode(nodeRef, this.nodeService, false);
+                     node = new MapNode(nodeRef, this.nodeService, true);
                      node.addPropertyResolver("url", this.resolverLinkUrl);
                      node.addPropertyResolver("webdavUrl", this.resolverLinkWebdavUrl);
                      node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
@@ -597,7 +618,7 @@ public class BrowseBean implements IContextListener
                   else if (ContentModel.TYPE_FOLDERLINK.equals(type))
                   {
                      // create our Folder Link Node representation
-                     node = new MapNode(nodeRef, this.nodeService, false);
+                     node = new MapNode(nodeRef, this.nodeService, true);
                      node.addPropertyResolver("icon", this.resolverSpaceIcon);
                      node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                      
@@ -999,6 +1020,56 @@ public class BrowseBean implements IContextListener
    {
       // set the current node Id ready for page refresh
       this.navigator.setCurrentNodeId( this.navigator.getCurrentNodeId() );
+   }
+   
+   /**
+    * Update page size based on user selection
+    */
+   public void updateSpacesPageSize(ActionEvent event)
+   {
+      try
+      {
+         int size = Integer.parseInt(this.pageSizeSpacesStr);
+         if (size >= 0)
+         {
+            this.pageSizeSpaces = size;
+         }
+         else
+         {
+            // reset to known value if this occurs
+            this.pageSizeSpacesStr = Integer.toString(this.pageSizeSpaces);
+         }
+      }
+      catch (NumberFormatException err)
+      {
+         // reset to known value if this occurs
+         this.pageSizeSpacesStr = Integer.toString(this.pageSizeSpaces);
+      }
+   }
+   
+   /**
+    * Update page size based on user selection
+    */
+   public void updateContentPageSize(ActionEvent event)
+   {
+      try
+      {
+         int size = Integer.parseInt(this.pageSizeContentStr);
+         if (size >= 0)
+         {
+            this.pageSizeContent = size;
+         }
+         else
+         {
+            // reset to known value if this occurs
+            this.pageSizeContentStr = Integer.toString(this.pageSizeContent);
+         }
+      }
+      catch (NumberFormatException err)
+      {
+         // reset to known value if this occurs
+         this.pageSizeContentStr = Integer.toString(this.pageSizeContent);
+      }
    }
    
    /**
@@ -1417,8 +1488,9 @@ public class BrowseBean implements IContextListener
             getConfigElement(ViewsConfigElement.CONFIG_ELEMENT_ID);
       
       this.browseViewMode = this.viewsConfig.getDefaultView(PAGE_NAME_BROWSE);
-      this.browsePageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_BROWSE, 
-            this.browseViewMode);
+      int pageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_BROWSE, this.browseViewMode);
+      setPageSizeContent(pageSize);
+      setPageSizeSpaces(pageSize);
    }
    
    /**
@@ -1704,8 +1776,11 @@ public class BrowseBean implements IContextListener
    /** The current browse view mode - set to a well known IRichListRenderer identifier */
    private String browseViewMode;
    
-   /** The current browse view page size */
-   private int browsePageSize;
+   /** The current browse view page sizes */
+   private int pageSizeSpaces;
+   private int pageSizeContent;
+   private String pageSizeSpacesStr;
+   private String pageSizeContentStr;
    
    /** True if current space has a dashboard (template) view available */
    private boolean dashboardView;

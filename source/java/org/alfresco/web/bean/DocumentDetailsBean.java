@@ -45,14 +45,13 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
-import org.alfresco.web.bean.actions.BaseActionWizard;
+import org.alfresco.web.bean.actions.handlers.SimpleWorkflowHandler;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
-import org.apache.log4j.Logger;
 
 /**
  * Backing bean providing access to the details of a document
@@ -73,8 +72,6 @@ public class DocumentDetailsBean extends BaseDetailsBean
    private static final String MSG_ERROR_WORKFLOW_APPROVE = "error_workflow_approve";
    private static final String MSG_ERROR_UPDATE_SIMPLEWORKFLOW = "error_update_simpleworkflow";
    private static final String MSG_ERROR_UPDATE_CATEGORY = "error_update_category";
-
-   private static Logger logger = Logger.getLogger(DocumentDetailsBean.class);
    
    protected LockService lockService;
    protected CopyService copyService;
@@ -344,7 +341,6 @@ public class DocumentDetailsBean extends BaseDetailsBean
       
       try
       {
-         FacesContext context = FacesContext.getCurrentInstance();
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
          tx.begin();
          
@@ -494,25 +490,25 @@ public class DocumentDetailsBean extends BaseDetailsBean
 
          // put the workflow properties in a separate map for use by the JSP
          this.workflowProperties = new HashMap<String, Serializable>(7);
-         this.workflowProperties.put(BaseActionWizard.PROP_APPROVE_STEP_NAME, 
+         this.workflowProperties.put(SimpleWorkflowHandler.PROP_APPROVE_STEP_NAME, 
                approveStepName);
-         this.workflowProperties.put(BaseActionWizard.PROP_APPROVE_ACTION, 
+         this.workflowProperties.put(SimpleWorkflowHandler.PROP_APPROVE_ACTION, 
                approveMove ? "move" : "copy");
-         this.workflowProperties.put(BaseActionWizard.PROP_APPROVE_FOLDER, approveFolder);
+         this.workflowProperties.put(SimpleWorkflowHandler.PROP_APPROVE_FOLDER, approveFolder);
          
          if (rejectStepName == null || rejectMove == null || rejectFolder == null)
          {
-            this.workflowProperties.put(BaseActionWizard.PROP_REJECT_STEP_PRESENT, "no");
+            this.workflowProperties.put(SimpleWorkflowHandler.PROP_REJECT_STEP_PRESENT, "no");
          }
          else
          {
-            this.workflowProperties.put(BaseActionWizard.PROP_REJECT_STEP_PRESENT, 
+            this.workflowProperties.put(SimpleWorkflowHandler.PROP_REJECT_STEP_PRESENT, 
                   "yes");
-            this.workflowProperties.put(BaseActionWizard.PROP_REJECT_STEP_NAME, 
+            this.workflowProperties.put(SimpleWorkflowHandler.PROP_REJECT_STEP_NAME, 
                   rejectStepName);
-            this.workflowProperties.put(BaseActionWizard.PROP_REJECT_ACTION, 
+            this.workflowProperties.put(SimpleWorkflowHandler.PROP_REJECT_ACTION, 
                   rejectMove ? "move" : "copy");
-            this.workflowProperties.put(BaseActionWizard.PROP_REJECT_FOLDER, 
+            this.workflowProperties.put(SimpleWorkflowHandler.PROP_REJECT_FOLDER, 
                   rejectFolder);
          }
       }
@@ -546,7 +542,6 @@ public class DocumentDetailsBean extends BaseDetailsBean
       
       try
       {
-         FacesContext context = FacesContext.getCurrentInstance();
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
          tx.begin();
          
@@ -558,11 +553,11 @@ public class DocumentDetailsBean extends BaseDetailsBean
          
          // set the approve step name
          updateProps.put(ContentModel.PROP_APPROVE_STEP,
-               this.workflowProperties.get(BaseActionWizard.PROP_APPROVE_STEP_NAME));
+               this.workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_STEP_NAME));
          
          // specify whether the approve step will copy or move the content
          boolean approveMove = true;
-         String approveAction = (String)this.workflowProperties.get(BaseActionWizard.PROP_APPROVE_ACTION);
+         String approveAction = (String)this.workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_ACTION);
          if (approveAction != null && approveAction.equals("copy"))
          {
             approveMove = false;
@@ -571,12 +566,12 @@ public class DocumentDetailsBean extends BaseDetailsBean
          
          // create node ref representation of the destination folder
          updateProps.put(ContentModel.PROP_APPROVE_FOLDER,
-               this.workflowProperties.get(BaseActionWizard.PROP_APPROVE_FOLDER));
+               this.workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_FOLDER));
          
          // determine whether there should be a reject step
          boolean requireReject = true;
          String rejectStepPresent = (String)this.workflowProperties.get(
-               BaseActionWizard.PROP_REJECT_STEP_PRESENT);
+               SimpleWorkflowHandler.PROP_REJECT_STEP_PRESENT);
          if (rejectStepPresent != null && rejectStepPresent.equals("no"))
          {
             requireReject = false;
@@ -586,12 +581,12 @@ public class DocumentDetailsBean extends BaseDetailsBean
          {
             // set the reject step name
             updateProps.put(ContentModel.PROP_REJECT_STEP,
-                  this.workflowProperties.get(BaseActionWizard.PROP_REJECT_STEP_NAME));
+                  this.workflowProperties.get(SimpleWorkflowHandler.PROP_REJECT_STEP_NAME));
          
             // specify whether the reject step will copy or move the content
             boolean rejectMove = true;
             String rejectAction = (String)this.workflowProperties.get(
-                  BaseActionWizard.PROP_REJECT_ACTION);
+                  SimpleWorkflowHandler.PROP_REJECT_ACTION);
             if (rejectAction != null && rejectAction.equals("copy"))
             {
                rejectMove = false;
@@ -600,7 +595,7 @@ public class DocumentDetailsBean extends BaseDetailsBean
 
             // create node ref representation of the destination folder
             updateProps.put(ContentModel.PROP_REJECT_FOLDER,
-                  this.workflowProperties.get(BaseActionWizard.PROP_REJECT_FOLDER));
+                  this.workflowProperties.get(SimpleWorkflowHandler.PROP_REJECT_FOLDER));
          }
          else
          {

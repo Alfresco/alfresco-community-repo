@@ -181,6 +181,13 @@ public class NodeImpl extends ItemImpl implements Node
             childAssocDef = getNodeTypeChildAssocDefForParent(nodeService, dictionaryService, parentRef, nodeType);
         }
 
+        // Do not allow creation of sys:base (it's really an abstract type)
+        // TODO: Consider adding abstract to the content model
+        if (nodeType.equals(ContentModel.TYPE_BASE))
+        {
+            throw new RepositoryException("Node type of node to add is " + nodeType.toPrefixString(session.getNamespaceResolver()) + " which is an abstract type");
+        }
+        
         // Create node
         // Note: Integrity exception will be thrown when the node is saved
         ChildAssociationRef childRef = nodeService.createNode(parentRef, childAssocDef.getName(), nodeName, nodeType);

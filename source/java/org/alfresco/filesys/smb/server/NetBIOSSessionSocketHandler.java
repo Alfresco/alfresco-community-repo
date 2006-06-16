@@ -29,6 +29,8 @@ import org.alfresco.filesys.smb.mailslot.TcpipNetBIOSHostAnnouncer;
  */
 public class NetBIOSSessionSocketHandler extends SessionSocketHandler
 {
+    // Session Thread group
+    private static final ThreadGroup THREAD_GROUP_SESSION = new ThreadGroup("NETBIOS_SESSION_GROUP");
 
     /**
      * Class constructor
@@ -96,7 +98,7 @@ public class NetBIOSSessionSocketHandler extends SessionSocketHandler
 
                     // Start the new session in a seperate thread
 
-                    Thread srvThread = new Thread(srvSess);
+                    Thread srvThread = new Thread(THREAD_GROUP_SESSION, srvSess);
                     srvThread.setDaemon(true);
                     srvThread.setName("Sess_N" + srvSess.getSessionId() + "_"
                             + sessSock.getInetAddress().getHostAddress());

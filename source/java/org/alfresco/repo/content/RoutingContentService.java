@@ -377,6 +377,18 @@ public class RoutingContentService implements ContentService
      * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
      * @see org.alfresco.repo.content.transform.ContentTransformer
      */
+    public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)
+    {
+        // look for a transformer
+        ContentTransformer transformer = transformerRegistry.getTransformer(sourceMimetype, targetMimetype);
+        // done
+        return transformer;
+    }
+    
+    /**
+     * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
+     * @see org.alfresco.repo.content.transform.ContentTransformer
+     */
     public boolean isTransformable(ContentReader reader, ContentWriter writer)
     {
         // check that source and target mimetypes are available

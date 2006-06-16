@@ -6,12 +6,11 @@
    <bean name="fileFolderService" class="org.alfresco.repo.model.filefolder.FileFolderServiceImpl" init-method="init">
       <property name="namespaceService"><ref bean="namespaceService" /></property>
       <property name="dictionaryService"><ref bean="dictionaryService" /></property>
-      <property name="nodeService"><ref bean="NodeService" /></property>
-      <property name="copyService"><ref bean="CopyService" /></property>
-      <!-- NOTE: using Big SearchService until AR-279 is completed -->
-      <property name="searchService"><ref bean="SearchService" /></property>
-      <property name="contentService"><ref bean="ContentService" /></property>
-      <property name="mimetypeService"><ref bean="MimetypeService" /></property>
+      <property name="nodeService"><ref bean="nodeService" /></property>
+      <property name="copyService"><ref bean="copyService" /></property>
+      <property name="searchService"><ref bean="searchService" /></property>
+      <property name="contentService"><ref bean="contentService" /></property>
+      <property name="mimetypeService"><ref bean="mimetypeService" /></property>
 
       <property name="systemPaths">
          <list>

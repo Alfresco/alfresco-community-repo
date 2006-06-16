@@ -33,6 +33,7 @@ import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
 
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -175,6 +176,10 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 }
                 return decide(authentication, object, config, (NodeRef) returnedObject);
             }
+            else if (FileInfo.class.isAssignableFrom(returnedObject.getClass()))
+            {
+                return decide(authentication, object, config, (FileInfo) returnedObject);
+            }
             else if (ChildAssociationRef.class.isAssignableFrom(returnedObject.getClass()))
             {
                 if (log.isDebugEnabled())
@@ -237,7 +242,10 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
     }
 
-    public NodeRef decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
+    public NodeRef decide(
+            Authentication authentication,
+            Object object,
+            ConfigAttributeDefinition config,
             NodeRef returnedObject) throws AccessDeniedException
 
     {
@@ -274,6 +282,20 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
         }
 
+        return returnedObject;
+    }
+
+    public FileInfo decide(
+            Authentication authentication,
+            Object object,
+            ConfigAttributeDefinition config,
+            FileInfo returnedObject) throws AccessDeniedException
+
+    {
+        NodeRef nodeRef = returnedObject.getNodeRef();
+        // this is virtually equivalent to the noderef
+        decide(authentication, object, config, nodeRef);
+        // the noderef was allowed
         return returnedObject;
     }
 
@@ -455,31 +477,23 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     if (StoreRef.class.isAssignableFrom(nextObject.getClass()))
                     {
                         testNodeRef = nodeService.getRootNode((StoreRef) nextObject);
-                        if (log.isDebugEnabled())
-                        {
-                            log.debug("\tNode Test on store " + nodeService.getPath(testNodeRef));
-                        }
                     }
                     else if (NodeRef.class.isAssignableFrom(nextObject.getClass()))
                     {
                         testNodeRef = (NodeRef) nextObject;
-                        if (log.isDebugEnabled())
-                        {
-                            log.debug("\tNode Test on node " + nodeService.getPath(testNodeRef));
-                        }
                     }
                     else if (ChildAssociationRef.class.isAssignableFrom(nextObject.getClass()))
                     {
                         testNodeRef = ((ChildAssociationRef) nextObject).getChildRef();
-                        if (log.isDebugEnabled())
-                        {
-                            log.debug("\tNode Test on child association ref using " + nodeService.getPath(testNodeRef));
-                        }
+                    }
+                    else if (FileInfo.class.isAssignableFrom(nextObject.getClass()))
+                    {
+                        testNodeRef = ((FileInfo) nextObject).getNodeRef();
                     }
                     else
                     {
                         throw new ACLEntryVoterException(
-                                "The specified parameter is not a collection of NodeRefs or ChildAssociationRefs");
+                                "The specified parameter is not a collection of NodeRefs, ChildAssociationRefs or FileInfos");
                     }
                 }
                 else if (cad.typeString.equals(AFTER_ACL_PARENT))
@@ -488,27 +502,18 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     {
                         // Will be allowed
                         testNodeRef = null;
-                        if (log.isDebugEnabled())
-                        {
-                            log.debug("\tParent Test on store ");
-                        }
                     }
                     else if (NodeRef.class.isAssignableFrom(nextObject.getClass()))
                     {
                         testNodeRef = nodeService.getPrimaryParent((NodeRef) nextObject).getParentRef();
-                        if (log.isDebugEnabled())
-                        {
-                            log.debug("\tParent test on node " + nodeService.getPath(testNodeRef));
-                        }
                     }
                     else if (ChildAssociationRef.class.isAssignableFrom(nextObject.getClass()))
                     {
                         testNodeRef = ((ChildAssociationRef) nextObject).getParentRef();
-                        if (log.isDebugEnabled())
-                        {
-                            log.debug("\tParent Test on child association ref using "
-                                    + nodeService.getPath(testNodeRef));
-                        }
+                    }
+                    else if (FileInfo.class.isAssignableFrom(nextObject.getClass()))
+                    {
+                        testNodeRef = ((FileInfo) nextObject).getNodeRef();
                     }
                     else
                     {
@@ -516,7 +521,12 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                                 "The specified parameter is not a collection of NodeRefs or ChildAssociationRefs");
                     }
                 }
-
+                
+                if (log.isDebugEnabled())
+                {
+                    log.debug("\t" + cad.typeString + " test on " + testNodeRef + " from " + nextObject.getClass().getName());
+                }
+                
                 if (allowed
                         && (testNodeRef != null)
                         && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
@@ -576,6 +586,10 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     {
                         testNodeRef = ((ChildAssociationRef) current).getChildRef();
                     }
+                    else if (FileInfo.class.isAssignableFrom(current.getClass()))
+                    {
+                        testNodeRef = ((FileInfo) current).getNodeRef();
+                    }
                     else
                     {
                         throw new ACLEntryVoterException("The specified array is not of NodeRef or ChildAssociationRef");
@@ -596,10 +610,19 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     {
                         testNodeRef = ((ChildAssociationRef) current).getParentRef();
                     }
+                    else if (FileInfo.class.isAssignableFrom(current.getClass()))
+                    {
+                        testNodeRef = ((FileInfo) current).getNodeRef();
+                    }
                     else
                     {
                         throw new ACLEntryVoterException("The specified array is not of NodeRef or ChildAssociationRef");
                     }
+                }
+
+                if (log.isDebugEnabled())
+                {
+                    log.debug("\t" + cad.typeString + " test on " + testNodeRef + " from " + current.getClass().getName());
                 }
 
                 if (incudedSet.get(i)

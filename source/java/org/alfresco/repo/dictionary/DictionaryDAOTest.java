@@ -24,6 +24,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.dictionary.constraint.RegexConstraint;
+import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
@@ -35,6 +36,7 @@ import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 
 public class DictionaryDAOTest extends TestCase
@@ -144,6 +146,38 @@ public class DictionaryDAOTest extends TestCase
         
         // make sure it is the correct type of constraint
         assertTrue("Expected type REGEX constraint", constraint instanceof RegexConstraint);
+    }
+    
+    public void testConstraintsOverrideInheritance()
+    {
+        QName baseQName = QName.createQName(TEST_URL, "base");
+        QName fileQName = QName.createQName(TEST_URL, "file");
+        QName folderQName = QName.createQName(TEST_URL, "folder");
+        QName prop1QName = QName.createQName(TEST_URL, "prop1");
+
+        // get the base property
+        PropertyDefinition prop1Def = service.getProperty(baseQName, prop1QName);
+        assertNotNull(prop1Def);
+        List<ConstraintDefinition> prop1Constraints = prop1Def.getConstraints();
+        assertEquals("Incorrect number of constraints", 2, prop1Constraints.size());
+        assertTrue("Constraint instance incorrect", prop1Constraints.get(0).getConstraint() instanceof RegexConstraint);
+        assertTrue("Constraint instance incorrect", prop1Constraints.get(1).getConstraint() instanceof StringLengthConstraint);
+
+        // check the inherited property on folder (must be same as above)
+        prop1Def = service.getProperty(folderQName, prop1QName);
+        assertNotNull(prop1Def);
+        prop1Constraints = prop1Def.getConstraints();
+        assertEquals("Incorrect number of constraints", 2, prop1Constraints.size());
+        assertTrue("Constraint instance incorrect", prop1Constraints.get(0).getConstraint() instanceof RegexConstraint);
+        assertTrue("Constraint instance incorrect", prop1Constraints.get(1).getConstraint() instanceof StringLengthConstraint);
+
+        // check the overridden property on file (must be reverse of above)
+        prop1Def = service.getProperty(fileQName, prop1QName);
+        assertNotNull(prop1Def);
+        prop1Constraints = prop1Def.getConstraints();
+        assertEquals("Incorrect number of constraints", 2, prop1Constraints.size());
+        assertTrue("Constraint instance incorrect", prop1Constraints.get(0).getConstraint() instanceof StringLengthConstraint);
+        assertTrue("Constraint instance incorrect", prop1Constraints.get(1).getConstraint() instanceof RegexConstraint);
     }
 
     public void testArchive()

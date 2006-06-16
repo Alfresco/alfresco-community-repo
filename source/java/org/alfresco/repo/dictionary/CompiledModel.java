@@ -90,7 +90,14 @@ import org.apache.commons.logging.LogFactory;
             resolveDependencies(query, namespaceDAO);
             
             // Phase 3: Resolve inheritance of values within class hierachy
-            resolveInheritance(query);
+            NamespacePrefixResolver localPrefixes = createLocalPrefixResolver(model, namespaceDAO);
+            resolveInheritance(query, localPrefixes, constraints);
+            
+            // Phase 4: Resolve constraint dependencies
+            for (ConstraintDefinition def : constraints.values())
+            {
+                ((M2ConstraintDefinition)def).resolveDependencies(query);
+            }
         }
         catch(Exception e)
         {
@@ -220,10 +227,6 @@ import org.apache.commons.logging.LogFactory;
         {
             ((M2ClassDefinition)def).resolveDependencies(query, prefixResolver, constraints);
         }
-        for (ConstraintDefinition def : constraints.values())
-        {
-            ((M2ConstraintDefinition)def).resolveDependencies(query);
-        }
     }
         
 
@@ -232,7 +235,10 @@ import org.apache.commons.logging.LogFactory;
      * 
      * @param query support for querying other items in model
      */
-    private void resolveInheritance(ModelQuery query)
+    private void resolveInheritance(
+            ModelQuery query,
+            NamespacePrefixResolver prefixResolver,
+            Map<QName, ConstraintDefinition> modelConstraints)
     {
         // Calculate order of class processing (root to leaf)
         Map<Integer,List<ClassDefinition>> order = new TreeMap<Integer,List<ClassDefinition>>();
@@ -270,7 +276,7 @@ import org.apache.commons.logging.LogFactory;
         {
             for (ClassDefinition def : order.get(depth))
             {
-                ((M2ClassDefinition)def).resolveInheritance(query);
+                ((M2ClassDefinition)def).resolveInheritance(query, prefixResolver, modelConstraints);
             }
         }
     }

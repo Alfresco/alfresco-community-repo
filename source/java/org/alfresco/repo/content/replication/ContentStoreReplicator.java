@@ -18,7 +18,6 @@ package org.alfresco.repo.content.replication;
 
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.node.index.IndexRecovery;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -48,18 +47,12 @@ public class ContentStoreReplicator
     private ContentStore sourceStore;
     private ContentStore targetStore;
     
-    /** used to ensure that this instance gets started once only */
-    private boolean started;
-    /** set this on to keep replicating and never stop.  The default is <code>true</code>. */
-    private boolean runContinuously;
-    /** the time to wait between passes */
-    private long waitTime;
+    /** used to ensure that the threads don't queue up on this component */
+    private boolean busy;
 
     public ContentStoreReplicator()
     {
-        this.started = false;
-        this.runContinuously = true;
-        this.waitTime = 60000L;
+        this.busy = false;
     }
     
     /**
@@ -83,43 +76,44 @@ public class ContentStoreReplicator
     }
 
     /**
-     * Set whether the thread should run continuously or terminate after
-     * a first pass.
-     * 
-     * @param runContinuously true to run continously (default)
+     * @deprecated use the {@link ContentStoreReplicatorJob job} to trigger
      */
     public void setRunContinuously(boolean runContinuously)
     {
-        this.runContinuously = runContinuously;
+        logger.warn(
+                "Property 'runContinuously' has been deprecated.\n" +
+                "   Use the " + ContentStoreReplicatorJob.class.getName() + " to trigger");
     }
 
     /**
-     * Set the time to wait between replication passes (in seconds)
-     * 
-     * @param waitTime the time between passes (in seconds).  Default is 60s.
+     * @deprecated use the {@link ContentStoreReplicatorJob job} to trigger
      */
     public void setWaitTime(long waitTime)
     {
-        // convert to millis
-        this.waitTime = waitTime * 1000L;
+        logger.warn(
+                "Property 'runContinuously' has been deprecated.\n" +
+                "   Use the " + ContentStoreReplicatorJob.class.getName() + " to trigger");
     }
 
     /**
-     * Kick off the replication thread.  This method can be used once.
+     * Kick off the replication thread.  If one is already busy, then this method does
+     * nothing.
      */
     public synchronized void start()
     {
-        if (started)
+        if (busy)
         {
-            throw new AlfrescoRuntimeException("This ContentStoreReplicator has already been started");
+            return;
         }
         // create a low-priority, daemon thread to do the work
         Runnable runnable = new ReplicationRunner();
         Thread thread = new Thread(runnable);
+        thread.setName("ContentStoreReplicator");
         thread.setPriority(Thread.MIN_PRIORITY);
         thread.setDaemon(true);
         // start it
         thread.start();
+        busy = true;
     }
     
     /**
@@ -131,38 +125,18 @@ public class ContentStoreReplicator
     {
         public void run()
         {
-            // keep this thread going permanently
-            while (true)
+            try
             {
-                try
-                {
-                    ContentStoreReplicator.this.replicate();
-                    // check if the process should terminate
-                    if (!runContinuously)
-                    {
-                        // the thread has caught up with all the available work and should not
-                        // run continuously
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Thread quitting - first pass of replication complete:");
-                        }
-                        break;
-                    }
-                    // pause the the required wait time
-                    synchronized(ContentStoreReplicator.this)
-                    {
-                        ContentStoreReplicator.this.wait(waitTime);
-                    }
-                }
-                catch (InterruptedException e)
-                {
-                    // ignore
-                }
-                catch (Throwable e)
-                {
-                    // report
-                    logger.error("Replication failure", e);
-                }
+                ContentStoreReplicator.this.replicate();
+            }
+            catch (Throwable e)
+            {
+                // report
+                logger.error("Replication failure", e);
+            }
+            finally
+            {
+                busy = false;
             }
         }
     }
@@ -246,7 +220,7 @@ public class ContentStoreReplicator
      * 
      * @author Derek Hulley
      */
-    public class ContentStoreReplicatorJob implements Job
+    public static class ContentStoreReplicatorJob implements Job
     {
         /** KEY_CONTENT_STORE_REPLICATOR = 'contentStoreReplicator' */
         public static final String KEY_CONTENT_STORE_REPLICATOR = "contentStoreReplicator";

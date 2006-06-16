@@ -915,6 +915,7 @@
             <list>
                 <idref local="FileFolderService_transaction" />
                 <idref local="exceptionTranslator" />
+                <idref bean="FileFolderService_security" />
     		</list>
     	</property>
     </bean>

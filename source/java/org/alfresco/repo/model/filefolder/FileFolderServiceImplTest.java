@@ -56,16 +56,16 @@ public class FileFolderServiceImplTest extends TestCase
 {
     private static final String IMPORT_VIEW = "filefolder/filefolder-test-import.xml";
     
-    private static final String NAME_L0_FILE_A = "L0: File A";
-    private static final String NAME_L0_FILE_B = "L0: File B";
-    private static final String NAME_L0_FOLDER_A = "L0: Folder A";
-    private static final String NAME_L0_FOLDER_B = "L0: Folder B";
-    private static final String NAME_L0_FOLDER_C = "L0: Folder C";
-    private static final String NAME_L1_FOLDER_A = "L1: Folder A";
-    private static final String NAME_L1_FOLDER_B = "L1: Folder B";
-    private static final String NAME_L1_FILE_A = "L1: File A";
-    private static final String NAME_L1_FILE_B = "L1: File B";
-    private static final String NAME_L1_FILE_C = "L1: File C (%_)";
+    private static final String NAME_L0_FILE_A = "L0- File A";
+    private static final String NAME_L0_FILE_B = "L0- File B";
+    private static final String NAME_L0_FOLDER_A = "L0- Folder A";
+    private static final String NAME_L0_FOLDER_B = "L0- Folder B";
+    private static final String NAME_L0_FOLDER_C = "L0- Folder C";
+    private static final String NAME_L1_FOLDER_A = "L1- Folder A";
+    private static final String NAME_L1_FOLDER_B = "L1- Folder B";
+    private static final String NAME_L1_FILE_A = "L1- File A";
+    private static final String NAME_L1_FILE_B = "L1- File B";
+    private static final String NAME_L1_FILE_C = "L1- File C (%_)";
     private static final String NAME_DUPLICATE = "DUPLICATE";
     
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -118,7 +118,14 @@ public class FileFolderServiceImplTest extends TestCase
     
     public void tearDown() throws Exception
     {
-        txn.rollback();
+        try
+        {
+            txn.rollback();
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -196,7 +203,7 @@ public class FileFolderServiceImplTest extends TestCase
     {
         List<FileInfo> files = fileFolderService.search(
                 workingRootNodeRef,
-                "?1:*",
+                "?1-*",
                 true,
                 true,
                 true);
@@ -209,7 +216,7 @@ public class FileFolderServiceImplTest extends TestCase
     {
         List<FileInfo> files = fileFolderService.search(
                 workingRootNodeRef,
-                "?1:*",
+                "?1-*",
                 true,
                 false,
                 true);

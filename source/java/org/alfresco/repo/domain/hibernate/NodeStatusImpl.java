@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeKey;
 import org.alfresco.repo.domain.NodeStatus;
@@ -26,8 +28,10 @@ import org.alfresco.util.EqualsHelper;
  * 
  * @author Derek Hulley
  */
-public class NodeStatusImpl implements NodeStatus
+public class NodeStatusImpl implements NodeStatus, Serializable
 {
+    private static final long serialVersionUID = -802747893314715639L;
+
     private NodeKey key;
     private Node node;
     private String changeTxnId;

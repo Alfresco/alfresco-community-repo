@@ -53,6 +53,10 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
 
     // Constants
     //
+    
+    // Session Thread group
+    private static final ThreadGroup THREAD_GROUP_SESSION = new ThreadGroup("W32NETBIOS_SESSION_GROUP");
+
     // Default LANA offline polling interval
 
     public static final long LANAPollingInterval = 5000; // 5 seconds
@@ -605,7 +609,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
 
                 // Start the new session in a seperate thread
 
-                Thread srvThread = new Thread(srvSess);
+                Thread srvThread = new Thread(THREAD_GROUP_SESSION, srvSess);
                 srvThread.setDaemon(true);
                 srvThread.setName("Sess_W" + srvSess.getSessionId() + "_LSN" + lsn);
                 srvThread.start();
@@ -750,7 +754,7 @@ public class Win32NetBIOSSessionSocketHandler extends SessionSocketHandler imple
 
                 // Start the new session in a seperate thread
 
-                Thread srvThread = new Thread(srvSess);
+                Thread srvThread = new Thread(THREAD_GROUP_SESSION, srvSess);
                 srvThread.setDaemon(true);
                 srvThread.setName("Sess_WS" + srvSess.getSessionId());
                 srvThread.start();

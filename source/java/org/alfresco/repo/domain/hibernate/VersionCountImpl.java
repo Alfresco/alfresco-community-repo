@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.domain.StoreKey;
 import org.alfresco.repo.domain.VersionCount;
 
@@ -24,9 +26,11 @@ import org.alfresco.repo.domain.VersionCount;
  * 
  * @author Derek Hulley
  */
-public class VersionCountImpl implements VersionCount
+public class VersionCountImpl implements VersionCount, Serializable
 {
-	private StoreKey key;
+    private static final long serialVersionUID = 6420375860928877809L;
+
+    private StoreKey key;
     @SuppressWarnings("unused")
     private long version;    // used by Hibernate for concurrency
     private int versionCount;

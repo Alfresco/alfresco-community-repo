@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.io.Serializable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -30,9 +31,11 @@ import org.alfresco.service.cmr.repository.StoreRef;
  * 
  * @author Derek Hulley
  */
-public class StoreImpl implements Store
+public class StoreImpl implements Store, Serializable
 {
-	private StoreKey key;
+    private static final long serialVersionUID = -6135740209100885890L;
+
+    private StoreKey key;
     private Node rootNode;
 
     private transient ReadLock refReadLock;

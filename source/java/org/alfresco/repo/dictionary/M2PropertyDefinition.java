@@ -44,8 +44,7 @@ import org.alfresco.service.namespace.QName;
     private QName name;
     private QName propertyTypeName;
     private DataTypeDefinition dataType;
-    private List<ConstraintDefinition> constraints = new ArrayList<ConstraintDefinition>(5);
-    private Map<QName, ConstraintDefinition> constraintsByQName = new HashMap<QName, ConstraintDefinition>(7);
+    private List<ConstraintDefinition> constraintDefs = Collections.emptyList();
     
     /*package*/ M2PropertyDefinition(
             ClassDefinition classDef,
@@ -64,10 +63,12 @@ import org.alfresco.service.namespace.QName;
     /*package*/ M2PropertyDefinition(
             ClassDefinition classDef,
             PropertyDefinition propertyDef,
-            M2PropertyOverride override)
+            M2PropertyOverride override,
+            NamespacePrefixResolver prefixResolver,
+            Map<QName, ConstraintDefinition> modelConstraints)
     {
         this.classDef = classDef;
-        this.m2Property = createOverriddenProperty(propertyDef, override);
+        this.m2Property = createOverriddenProperty(propertyDef, override, prefixResolver, modelConstraints);
         this.name = propertyDef.getName();
         this.dataType = propertyDef.getDataType();
         this.propertyTypeName = this.dataType.getName();
@@ -100,15 +101,30 @@ import org.alfresco.service.namespace.QName;
         }
 
         // Construct constraints
-        for (M2Constraint constraint : m2Property.getConstraints())
+        constraintDefs = buildConstraints(
+                m2Property.getConstraints(),
+                this,
+                prefixResolver,
+                modelConstraints);
+    }
+    
+    private static List<ConstraintDefinition> buildConstraints(
+            List<M2Constraint> m2constraints,
+            M2PropertyDefinition m2PropertyDef,
+            NamespacePrefixResolver prefixResolver,
+            Map<QName, ConstraintDefinition> modelConstraints)
+    {
+        List<ConstraintDefinition> constraints = new ArrayList<ConstraintDefinition>(5);
+        Map<QName, ConstraintDefinition> constraintsByQName = new HashMap<QName, ConstraintDefinition>(7);
+        for (M2Constraint constraint : m2constraints)
         {
-            ConstraintDefinition def = new M2ConstraintDefinition(this, constraint, prefixResolver);
+            ConstraintDefinition def = new M2ConstraintDefinition(m2PropertyDef, constraint, prefixResolver);
             QName qname = def.getName();
             if (constraintsByQName.containsKey(qname))
             {
                 throw new DictionaryException(
                         "d_dictionary.property.err.duplicate_constraint_on_property",
-                        def.getName().toPrefixString(), name.toPrefixString());
+                        def.getName().toPrefixString(), m2PropertyDef.name.toPrefixString());
             }
             else if (modelConstraints.containsKey(qname))
             {
@@ -120,8 +136,9 @@ import org.alfresco.service.namespace.QName;
             constraints.add(def);
             modelConstraints.put(qname, def);
         }
+        // done
+        return constraints;
     }
-    
     
     /**
      * Create a property definition whose values are overridden
@@ -130,7 +147,11 @@ import org.alfresco.service.namespace.QName;
      * @param override  the overridden values
      * @return  the property definition
      */
-    private M2Property createOverriddenProperty(PropertyDefinition propertyDef, M2PropertyOverride override)
+    private M2Property createOverriddenProperty(
+            PropertyDefinition propertyDef,
+            M2PropertyOverride override,
+            NamespacePrefixResolver prefixResolver,
+            Map<QName, ConstraintDefinition> modelConstraints)
     {
         M2Property property = new M2Property();
         
@@ -160,6 +181,21 @@ import org.alfresco.service.namespace.QName;
         }
         property.setMandatory(isOverrideMandatory == null ? propertyDef.isMandatory() : isOverrideMandatory);
         property.setMandatoryEnforced(isOverrideMandatoryEnforced);
+
+        // inherit or override constraints
+        List<M2Constraint> overrideConstraints = override.getConstraints();
+        if (overrideConstraints != null)
+        {
+            constraintDefs = buildConstraints(
+                    overrideConstraints,
+                    (M2PropertyDefinition) propertyDef,
+                    prefixResolver,
+                    modelConstraints);
+        }
+        else
+        {
+            this.constraintDefs = propertyDef.getConstraints();
+        }
 
         // Copy all other properties as they are
         property.setDescription(propertyDef.getDescription());
@@ -323,6 +359,6 @@ import org.alfresco.service.namespace.QName;
 
     public List<ConstraintDefinition> getConstraints()
     {
-        return Collections.unmodifiableList(constraints);
+        return constraintDefs;
     }
 }

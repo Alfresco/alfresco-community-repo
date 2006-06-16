@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,8 +44,10 @@ import org.alfresco.util.EqualsHelper;
  * 
  * @author Derek Hulley
  */
-public class NodeImpl extends LifecycleAdapter implements Node
+public class NodeImpl extends LifecycleAdapter implements Node, Serializable
 {
+    private static final long serialVersionUID = -2101330674810283053L;
+
     private Long id;
     private Store store;
     private String uuid;

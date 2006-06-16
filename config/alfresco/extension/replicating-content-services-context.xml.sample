@@ -11,29 +11,44 @@
    <bean id="backupContentStore"
          class="org.alfresco.repo.content.filestore.FileContentStore">
       <constructor-arg>
-         <value>s:/backups/alfresco</value>
+         <value>${dir.contentstore}/../backups/alfresco</value>
       </constructor-arg>
    </bean>
 
-   <bean id="primaryContentStoreBackupComponent"
+   <bean id="contentStoreReplicator"
          class="org.alfresco.repo.content.replication.ContentStoreReplicator"
-         depends-on="fileContentStore, backupContentStore"
-         init-method="start">
+         depends-on="fileContentStore, backupContentStore" >
       <!-- content source -->
       <property name="sourceStore">
-          <value>fileContentStore</value>
+          <ref bean="fileContentStore" />
       </property>
       <!-- content target -->
       <property name="targetStore">
-          <value>backupContentStore</value>
+          <ref bean="backupContentStore" />
       </property>
-      <!-- set to 'false' to perform a single pass before quitting -->
-      <property name="runContinuously">
-          <value>true</value>
+   </bean>
+
+   <bean id="contentStoreBackupTrigger" class="org.alfresco.util.CronTriggerBean">
+      <property name="jobDetail">
+         <bean class="org.springframework.scheduling.quartz.JobDetailBean">
+            <property name="jobClass">
+               <value>org.alfresco.repo.content.replication.ContentStoreReplicator$ContentStoreReplicatorJob</value>
+            </property>
+            <property name="jobDataAsMap">
+               <map>
+                  <entry key="contentStoreReplicator">
+                     <ref bean="contentStoreReplicator" />
+                  </entry>
+               </map>
+            </property>
+         </bean>
       </property>
-      <!-- time between passes -->
-      <property name="waitTime">
-          <value>60</value>
+      <property name="scheduler">
+         <ref bean="schedulerFactory" />
+      </property>
+      <!-- trigger at 3am each day -->
+      <property name="cronExpression">
+         <value>0 0 03 * * ?</value>
       </property>
    </bean>
 

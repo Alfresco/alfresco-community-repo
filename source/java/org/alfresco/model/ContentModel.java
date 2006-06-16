@@ -35,6 +35,7 @@ public interface ContentModel
     static final QName PROP_STORE_PROTOCOL = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "store-protocol");
     static final QName PROP_STORE_IDENTIFIER = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "store-identifier");
     static final QName PROP_NODE_UUID = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "node-uuid");
+    static final QName PROP_NODE_DBID = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "node-dbid");
     
     // tag for incomplete nodes
     static final QName ASPECT_INCOMPLETE = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "incomplete");
@@ -44,6 +45,7 @@ public interface ContentModel
     static final QName PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedOriginalParentAssoc");
     static final QName PROP_ARCHIVED_BY = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedBy");
     static final QName PROP_ARCHIVED_DATE = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedDate");
+    static final QName PROP_ARCHIVED_ORIGINAL_OWNER = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedOriginalOwner");
     static final QName ASPECT_ARCHIVED_ASSOCS = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archived-assocs");
     static final QName PROP_ARCHIVED_PARENT_ASSOCS = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedParentAssocs");
     static final QName PROP_ARCHIVED_CHILD_ASSOCS = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedChildAssocs");

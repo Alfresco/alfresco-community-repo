@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.util.List;
+
 
 /**
  * Property override definition
@@ -29,7 +31,7 @@ public class M2PropertyOverride
     private Boolean isMandatory;
     private boolean isMandatoryEnforced = false;
     private String defaultValue;
-    
+    private List<M2Constraint> constraints;
     
     /*package*/ M2PropertyOverride()
     {
@@ -74,5 +76,9 @@ public class M2PropertyOverride
     {
         this.defaultValue = defaultValue;
     }
-    
+
+    public List<M2Constraint> getConstraints()
+    {
+        return constraints;
+    }    
 }

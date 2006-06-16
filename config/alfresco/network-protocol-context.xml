@@ -66,6 +66,7 @@
       <property name="fileFolderService"><ref bean="FileFolderService" /></property>
       <property name="mimetypeService"><ref bean="mimetypeService" /></property>
       <property name="permissionService"><ref bean="permissionService"/></property>
+      <property name="allowWrites"><value>${server.transaction.allow-writes}</value></property>
    </bean>
    
 </beans>

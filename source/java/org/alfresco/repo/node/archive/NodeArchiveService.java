@@ -41,6 +41,15 @@ public interface NodeArchiveService
     public NodeRef getStoreArchiveNode(StoreRef originalStoreRef);
     
     /**
+     * Get the likely node reference for the original node.  There is no
+     * guarantee that the node exists in the archive store.
+     * 
+     * @param originalNodeRef the original node reference
+     * @return Returns the node ref of the node if it was archived.
+     */
+    public NodeRef getArchivedNode(NodeRef originalNodeRef);
+    
+    /**
      * Attempt to restore the given archived node into its original location.
      * <p>
      * <b>TRANSACTIONS:</b> This method will execute in a new transaction.

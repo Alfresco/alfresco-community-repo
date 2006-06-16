@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.domain.DbPermission;
 import org.alfresco.repo.domain.DbPermissionKey;
 import org.alfresco.service.namespace.QName;
@@ -31,7 +33,8 @@ import org.hibernate.Session;
  * 
  * @author andyh
  */
-public class DbPermissionImpl extends LifecycleAdapter implements DbPermission
+public class DbPermissionImpl extends LifecycleAdapter
+    implements DbPermission, Serializable
 {   
     private static final long serialVersionUID = -6352566900815035461L;
     

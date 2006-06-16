@@ -14,7 +14,7 @@
          dynamic-insert="false"
          select-before-update="false"
          optimistic-lock="version" >
-      <id column="id" length="32" name="id" type="string" />
+      <id column="id" length="64" name="id" type="string" />
       <property name="description" column="description" type="string" length="1024" />
       <property name="fixesFromSchema" column="fixes_from_schema" type="integer" />
       <property name="fixesToSchema" column="fixes_to_schema" type="integer" />

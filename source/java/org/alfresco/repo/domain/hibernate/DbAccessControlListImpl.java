@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,8 +36,11 @@ import org.hibernate.Session;
  * 
  * @author andyh
  */
-public class DbAccessControlListImpl extends LifecycleAdapter implements DbAccessControlList
+public class DbAccessControlListImpl extends LifecycleAdapter
+    implements DbAccessControlList, Serializable
 {
+    private static final long serialVersionUID = 3123277428227075648L;
+
     private static Log logger = LogFactory.getLog(DbAccessControlListImpl.class);
 
     private long id;

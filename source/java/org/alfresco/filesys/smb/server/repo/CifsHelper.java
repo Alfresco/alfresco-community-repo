@@ -64,6 +64,7 @@ public class CifsHelper
     private FileFolderService fileFolderService;
     private MimetypeService mimetypeService;
     private PermissionService permissionService;
+    private boolean isReadOnly;
     
     // Mark locked files as offline
     
@@ -74,6 +75,7 @@ public class CifsHelper
      */
     public CifsHelper()
     {
+        isReadOnly = false;
     }
     
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -99,6 +101,24 @@ public class CifsHelper
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+
+    /**
+     * @return Returns true if all files/folders should be treated as read-only
+     */
+    public boolean isReadOnly()
+    {
+        return isReadOnly;
+    }
+
+    /**
+     * Set whether the system allows files to be edited or not.  The default is
+     * to allow writes.
+     * @param allowWrites true to allow writes, otherwise false for read-only mode
+     */
+    public void setAllowWrites(boolean allowWrites)
+    {
+        this.isReadOnly = !allowWrites;
     }
 
     /**
@@ -216,7 +236,7 @@ public class CifsHelper
             
             String lockTypeStr = (String) nodeProperties.get(ContentModel.PROP_LOCK_TYPE);
                     
-            if ( lockTypeStr != null)
+            if ( lockTypeStr != null )
             {
                 // File is locked so mark it as read-only and offline
 
@@ -256,8 +276,16 @@ public class CifsHelper
         
         // Read/write access
         
-        if ( permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
-            fileInfo.setFileAttributes(fileInfo.getFileAttributes() + FileAttribute.ReadOnly);
+        boolean hasPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED; 
+        if (isReadOnly || !hasPermission)
+        {
+            int attr = fileInfo.getFileAttributes();
+            if (( attr & FileAttribute.ReadOnly) == 0)
+            {
+                attr += FileAttribute.ReadOnly;
+                fileInfo.setFileAttributes(attr);
+            }
+        }
 
         // Set the normal file attribute if no other attributes are set
         

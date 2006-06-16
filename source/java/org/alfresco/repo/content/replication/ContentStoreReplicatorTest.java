@@ -61,8 +61,6 @@ public class ContentStoreReplicatorTest extends TestCase
         replicator = new ContentStoreReplicator();
         replicator.setSourceStore(sourceStore);
         replicator.setTargetStore(targetStore);
-        replicator.setRunContinuously(false);       // replicate once
-        replicator.setWaitTime(0);
     }
     
     /**
@@ -111,8 +109,6 @@ public class ContentStoreReplicatorTest extends TestCase
      */
     public void testContinuousReplication() throws Exception
     {
-        replicator.setRunContinuously(true);
-        replicator.setWaitTime(0L);
         replicator.start();
         
         String duplicateUrl = AbstractContentStore.createNewUrl();
@@ -149,5 +145,16 @@ public class ContentStoreReplicatorTest extends TestCase
         
         sourceUrls.containsAll(targetUrls);
         targetUrls.contains(sourceUrls);
+    }
+    
+    /**
+     * Call the replicator repeatedly to check that it prevents concurrent use
+     */
+    public void testRepeatedReplication() throws Exception
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            replicator.start();
+        }
     }
 }

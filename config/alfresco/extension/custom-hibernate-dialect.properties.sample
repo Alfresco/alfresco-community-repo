@@ -21,3 +21,8 @@
 # Sybase dialect
 #
 #hibernate.dialect=org.hibernate.dialect.SybaseAnywhereDialect
+
+#
+# SQLServer dialect
+#
+#hibernate.dialect=org.hibernate.dialect.SQLServerDialect

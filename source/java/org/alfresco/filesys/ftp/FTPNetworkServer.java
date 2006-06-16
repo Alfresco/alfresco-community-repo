@@ -46,6 +46,10 @@ public class FTPNetworkServer extends NetworkFileServer implements Runnable
 
     // Constants
     //
+    
+    // Session Thread group
+    private static final ThreadGroup THREAD_GROUP_SESSION = new ThreadGroup("FTP_SESSION_GROUP");
+    
     // Server version
 
     private static final String ServerVersion = "3.5.0";
@@ -446,7 +450,7 @@ public class FTPNetworkServer extends NetworkFileServer implements Runnable
 
                 // Start the new session in a seperate thread
 
-                Thread srvThread = new Thread(srvSess);
+                Thread srvThread = new Thread(THREAD_GROUP_SESSION, srvSess);
                 srvThread.setDaemon(true);
                 srvThread.setName("Sess_FTP" + srvSess.getSessionId() + "_"
                         + sessSock.getInetAddress().getHostAddress());

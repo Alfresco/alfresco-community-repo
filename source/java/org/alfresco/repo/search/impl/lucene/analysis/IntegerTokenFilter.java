@@ -49,11 +49,18 @@ public class IntegerTokenFilter extends Tokenizer
         Token candidate;
         while((candidate = baseTokeniser.next()) != null)
         {
-            Integer integer = Integer.valueOf(candidate.termText());
-            String valueString = NumericEncoder.encode(integer.intValue());
-            Token integerToken = new Token(valueString, candidate.startOffset(), candidate.startOffset(),
-                    candidate.type());
-            return integerToken;
+            try
+            {
+                Integer integer = Integer.valueOf(candidate.termText());
+                String valueString = NumericEncoder.encode(integer.intValue());
+                Token integerToken = new Token(valueString, candidate.startOffset(), candidate.startOffset(),
+                        candidate.type());
+                return integerToken;
+            }
+            catch (NumberFormatException e)
+            {
+                // just ignore and try the next one
+            }
         }
         return null;
     }

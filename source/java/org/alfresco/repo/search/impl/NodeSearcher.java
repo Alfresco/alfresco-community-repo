@@ -66,7 +66,7 @@ public class NodeSearcher
     /**
      * @see NodeServiceXPath
      */
-    public synchronized List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpathIn,
+    public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpathIn,
             QueryParameterDefinition[] paramDefs, NamespacePrefixResolver namespacePrefixResolver,
             boolean followAllParentLinks, String language)
     {

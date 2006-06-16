@@ -19,6 +19,7 @@ package org.alfresco.repo.search.impl.lucene;
 import java.util.Set;
 
 import org.alfresco.repo.search.Indexer;
+import org.alfresco.repo.search.IndexerSPI;
 import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -28,7 +29,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 /**
  * @author Andy Hind
  */
-public interface LuceneIndexer extends Indexer, Lockable
+public interface LuceneIndexer extends IndexerSPI, Lockable
 {
 
     public void commit();
@@ -38,9 +39,6 @@ public interface LuceneIndexer extends Indexer, Lockable
     public void setNodeService(NodeService nodeService);
     public void setDictionaryService(DictionaryService dictionaryService);
     public void setLuceneFullTextSearchIndexer(FullTextSearchIndexer luceneFullTextSearchIndexer);
-    
-    public void updateFullTextSearch(int size);
-    public void registerCallBack(FTSIndexerAware indexer);
     
     public String getDeltaId();
     public  void flushPending() throws LuceneIndexException;

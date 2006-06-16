@@ -595,20 +595,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // get the node
         Node node = getNodeNotNull(nodeRef);
         
-        // check that the aspect may be removed
-        TypeDefinition nodeTypeDef = dictionaryService.getType(node.getTypeQName());
-        if (nodeTypeDef == null)
-        {
-            throw new InvalidNodeRefException("The node type is no longer valid: " + nodeRef, nodeRef);
-        }
-        List<AspectDefinition> defaultAspects = nodeTypeDef.getDefaultAspects();
-        if (defaultAspects.contains(aspectDef))
-        {
-            throw new InvalidAspectException(
-                    "The aspect is a default for the node's type and cannot be removed: " + aspectTypeQName,
-                    aspectTypeQName);
-        }
-        
         // remove the aspect, if present
         boolean removed = node.getAspects().remove(aspectTypeQName);
         // if the aspect was present, remove the associated properties
@@ -784,7 +770,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             ret.put(propertyQName, value);
         }
         // spoof referencable properties
-        addReferencableProperties(nodeRef, ret);
+        addReferencableProperties(nodeRef, node.getId(), ret);
         // done
         return ret;
     }
@@ -807,6 +793,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
         // get the property from the node
         Node node = getNodeNotNull(nodeRef);
+        
+        if (qname.equals(ContentModel.PROP_NODE_DBID))
+        {
+            return node.getId();
+        }
+        
         Map<QName, PropertyValue> properties = node.getProperties();
         PropertyValue propertyValue = properties.get(qname);
         
@@ -1310,7 +1302,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         ChildAssoc primaryParentAssoc = nodeDaoService.getPrimaryParentAssoc(node);
         
         // add the aspect
-        node.getAspects().add(ContentModel.ASPECT_ARCHIVED);
+        Set<QName> aspects = node.getAspects();
+        aspects.add(ContentModel.ASPECT_ARCHIVED);
         Map<QName, PropertyValue> properties = node.getProperties();
         PropertyValue archivedByProperty = makePropertyValue(
                 dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_BY),
@@ -1324,6 +1317,21 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC),
                 primaryParentAssoc.getChildAssocRef());
         properties.put(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC, archivedPrimaryParentNodeRefProperty);
+        PropertyValue originalOwnerProperty = properties.get(ContentModel.PROP_OWNER);
+        PropertyValue originalCreatorProperty = properties.get(ContentModel.PROP_CREATOR);
+        if (originalOwnerProperty != null || originalCreatorProperty != null)
+        {
+            properties.put(
+                    ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER,
+                    originalOwnerProperty != null ? originalOwnerProperty : originalCreatorProperty);
+        }
+        
+        // change the node ownership
+        aspects.add(ContentModel.ASPECT_OWNABLE);
+        PropertyValue newOwnerProperty = makePropertyValue(
+                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER),
+                AuthenticationUtil.getCurrentUserName());
+        properties.put(ContentModel.PROP_OWNER, newOwnerProperty);
         
         // move the node
         NodeRef archiveStoreRootNodeRef = getRootNode(archiveStoreRef);
@@ -1557,11 +1565,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         ChildAssociationRef originalPrimaryParentAssocRef = (ChildAssociationRef) makeSerializableValue(
                 dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC),
                 properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC));
+        PropertyValue originalOwnerProperty = properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER);
         // remove the aspect archived aspect
         aspects.remove(ContentModel.ASPECT_ARCHIVED);
         properties.remove(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
         properties.remove(ContentModel.PROP_ARCHIVED_BY);
         properties.remove(ContentModel.PROP_ARCHIVED_DATE);
+        properties.remove(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER);
+        
+        // restore the original ownership
+        if (originalOwnerProperty != null)
+        {
+            aspects.add(ContentModel.ASPECT_OWNABLE);
+            properties.put(ContentModel.PROP_OWNER, originalOwnerProperty);
+        }
         
         if (destinationParentNodeRef == null)
         {

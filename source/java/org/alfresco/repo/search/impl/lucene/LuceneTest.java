@@ -46,6 +46,7 @@ import org.alfresco.repo.search.results.ChildAssocRefResultSet;
 import org.alfresco.repo.search.results.DetachedResultSet;
 import org.alfresco.repo.search.transaction.LuceneIndexLock;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -178,7 +179,7 @@ public class LuceneTest extends TestCase
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
         this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        this.authenticationComponent.setSystemUserAsCurrentUser();
+        
 
         queryRegisterComponent.loadQueryCollection("testQueryRegister.xml");
 
@@ -187,7 +188,8 @@ public class LuceneTest extends TestCase
 
         testTX = transactionService.getUserTransaction();
         testTX.begin();
-
+        this.authenticationComponent.setSystemUserAsCurrentUser();
+        
         // load in the test model
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
         InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/search/impl/lucene/LuceneTest_model.xml");
@@ -323,7 +325,7 @@ public class LuceneTest extends TestCase
         {
             testTX.rollback();
         }
-        authenticationComponent.clearCurrentSecurityContext();
+        AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
 
@@ -391,7 +393,7 @@ public class LuceneTest extends TestCase
 
     public void testMTDeleteIssue() throws Exception
     {
-
+        luceneFTS.pause();
         testTX.commit();
 
         UserTransaction tx = transactionService.getUserTransaction();
@@ -505,6 +507,7 @@ public class LuceneTest extends TestCase
 
     public void testDeltaIssue() throws Exception
     {
+        luceneFTS.pause();
         final NodeService pns = (NodeService) ctx.getBean("NodeService");
 
         testTX.commit();
@@ -2047,6 +2050,38 @@ public class LuceneTest extends TestCase
     public void testAddEscapedChild() throws Exception
     {
         String COMPLEX_LOCAL_NAME = " `¬¦!\"£$%^&*()-_=+\t\n\\\u0000[]{};'#:@~,./<>?\\|\u0123\u4567\u8900\uabcd\uefff_xT65A_";
+
+        luceneFTS.pause();
+        buildBaseIndex();
+        runBaseTests();
+
+        LuceneIndexerImpl indexer = LuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
+                + System.currentTimeMillis(), indexerAndSearcher);
+        indexer.setNodeService(nodeService);
+        indexer.setLuceneIndexLock(luceneIndexLock);
+        indexer.setDictionaryService(dictionaryService);
+        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setContentService(contentService);
+
+        ChildAssociationRef car = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName
+                .createQName("{namespace}" + COMPLEX_LOCAL_NAME), testSuperType);
+        indexer.createNode(car);
+
+        indexer.commit();
+
+        LuceneSearcherImpl searcher = LuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:"
+                + ISO9075.encode(COMPLEX_LOCAL_NAME) + "\"", null, null);
+        assertEquals(1, results.length());
+        results.close();
+    }
+    
+    public void testNumericInPath() throws Exception
+    {
+        String COMPLEX_LOCAL_NAME = "Woof12";
 
         luceneFTS.pause();
         buildBaseIndex();

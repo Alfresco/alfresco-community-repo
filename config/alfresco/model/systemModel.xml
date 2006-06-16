@@ -115,6 +115,10 @@
 					<type>d:text</type>
 					<mandatory enforced="true">true</mandatory>
 				</property>
+				<property name="sys:node-dbid">
+					<type>d:long</type>
+					<mandatory enforced="true">true</mandatory>
+				</property>
 			</properties>
 		</aspect>
 
@@ -137,6 +141,10 @@
             </property>
             <property name="sys:archivedDate">
                <type>d:datetime</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="sys:archivedOriginalOwner">
+               <type>d:text</type>
                <mandatory>true</mandatory>
             </property>
          </properties>

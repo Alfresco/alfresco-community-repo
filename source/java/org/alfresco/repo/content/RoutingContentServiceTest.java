@@ -25,6 +25,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -563,6 +564,8 @@ public class RoutingContentServiceTest extends BaseSpringTest
         txn.setRollbackOnly();
         
         writer.setMimetype("text/plain");
+        ContentTransformer transformer = contentService.getTransformer(reader.getMimetype(), writer.getMimetype());
+        assertNotNull("Expected a valid transformer", transformer);
         contentService.transform(reader, writer);
         // get the content from the writer
         reader = writer.getReader();

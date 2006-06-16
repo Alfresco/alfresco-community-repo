@@ -27,9 +27,17 @@
          <parameter name="expression"><value>[A-Z]*</value></parameter>
          <parameter name="requiresMatch"><value>false</value></parameter>
       </constraint>
+      <constraint name="test:regex2" type="REGEX">
+         <parameter name="expression"><value>[a-z]*</value></parameter>
+         <parameter name="requiresMatch"><value>false</value></parameter>
+      </constraint>
       <constraint name="test:stringLength1" type="LENGTH">
          <parameter name="minLength"><value>0</value></parameter>
          <parameter name="maxLength"><value>256</value></parameter>
+      </constraint>
+      <constraint name="test:stringLength2" type="LENGTH">
+         <parameter name="minLength"><value>0</value></parameter>
+         <parameter name="maxLength"><value>128</value></parameter>
       </constraint>
       <constraint name="test:minMax1" type="MINMAX">
          <parameter name="minValue"><value>0</value></parameter>
@@ -132,8 +140,12 @@
          </associations>
 
          <overrides>
-            <property name="test:prop">
+            <property name="test:prop1">
                <default>an overriden default value</default>
+               <constraints>
+                  <constraint ref="test:stringLength2"/>
+                  <constraint ref="test:regex2"/>
+               </constraints>
             </property>
          </overrides>
       </type>

@@ -16,11 +16,14 @@
  */
 package org.alfresco.repo.security.permissions.impl;
 
-import net.sf.acegisecurity.AccessDeniedException;
-
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 
+/**
+ * Interceptor to translate and possibly I18Nize exceptions thrown by service calls. 
+ */
 public class ExceptionTranslatorMethodInterceptor implements MethodInterceptor
 {
     private static final String MSG_ACCESS_DENIED = "permissions.err_access_denied";
@@ -36,10 +39,14 @@ public class ExceptionTranslatorMethodInterceptor implements MethodInterceptor
         {
             return mi.proceed();
         }
-        catch(AccessDeniedException ade)
+        catch (net.sf.acegisecurity.AccessDeniedException ade)
         {
-            throw new org.alfresco.repo.security.permissions.AccessDeniedException(MSG_ACCESS_DENIED, ade);
+            throw new AccessDeniedException(MSG_ACCESS_DENIED, ade);
+        }
+        catch (InvalidDataAccessApiUsageException e)
+        {
+            // this usually occurs when the server is in read-only mode
+            throw new AccessDeniedException(MSG_ACCESS_DENIED, e);
         }
     }
-
 }

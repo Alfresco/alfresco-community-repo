@@ -4,13 +4,7 @@
            xmlns:app="http://www.alfresco.org/model/application/1.0">
 
     <view:reference view:pathref="/">
-        <!-- Apply Read access to Everyone on root node of Spaces Store -->
-		<view:acl>
-		   <view:ace view:access="ALLOWED">
-		      <view:authority>GROUP_EVERYONE</view:authority>
-		      <view:permission>Read</view:permission>
-		   </view:ace>
-		</view:acl>
+        <!-- No permissions for root of archived store -->
     </view:reference>
 
 </view:view>

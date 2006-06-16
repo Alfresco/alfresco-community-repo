@@ -60,6 +60,7 @@ public abstract class AbstractContentStore implements ContentStore
         int month = calendar.get(Calendar.MONTH) + 1;  // 0-based
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
         // create the URL
         StringBuilder sb = new StringBuilder(20);
         sb.append(STORE_PROTOCOL)
@@ -67,6 +68,7 @@ public abstract class AbstractContentStore implements ContentStore
           .append(month).append('/')
           .append(day).append('/')
           .append(hour).append('/')
+          .append(minute).append('/')
           .append(GUID.generate()).append(".bin");
         String newContentUrl = sb.toString();
         // done

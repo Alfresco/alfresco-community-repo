@@ -551,7 +551,19 @@ public class ImporterComponent
                 DataTypeDefinition valueDataType = context.getPropertyDataType(property.getKey());
                 if (valueDataType != null && valueDataType.getName().equals(DataTypeDefinition.CONTENT))
                 {
-                    importContent(nodeRef, property.getKey(), (String)property.getValue());
+                    // the property may be a single value or a collection - handle both
+                    Object objVal = property.getValue();
+                    if (objVal instanceof String)
+                    {
+                       importContent(nodeRef, property.getKey(), (String)objVal);
+                    }
+                    else if (objVal instanceof List)
+                    {
+                       for (String value : (List<String>)objVal)
+                       {
+                          importContent(nodeRef, property.getKey(), value);
+                       }
+                    }
                 }
             }
             

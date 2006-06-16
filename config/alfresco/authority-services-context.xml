@@ -14,7 +14,7 @@
     
     <bean id="authorityService" class="org.alfresco.repo.security.authority.AuthorityServiceImpl">
         <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
+            <ref bean="authenticationComponentImpl" />
         </property>
         <property name="personService">
             <ref bean="personService" />

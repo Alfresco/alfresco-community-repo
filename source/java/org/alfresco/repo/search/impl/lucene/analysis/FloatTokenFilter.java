@@ -49,11 +49,18 @@ public class FloatTokenFilter extends Tokenizer
         Token candidate;
         while((candidate = baseTokeniser.next()) != null)
         {
-            Float floatValue = Float.valueOf(candidate.termText());
-            String valueString = NumericEncoder.encode(floatValue.floatValue());
-            Token floatToken = new Token(valueString, candidate.startOffset(), candidate.startOffset(),
-                    candidate.type());
-            return floatToken;
+            try
+            {
+                Float floatValue = Float.valueOf(candidate.termText());
+                String valueString = NumericEncoder.encode(floatValue.floatValue());
+                Token floatToken = new Token(valueString, candidate.startOffset(), candidate.startOffset(),
+                        candidate.type());
+                return floatToken;
+            }
+            catch (NumberFormatException e)
+            {
+                // just ignore and try the next one
+            }
         }
         return null;
     }

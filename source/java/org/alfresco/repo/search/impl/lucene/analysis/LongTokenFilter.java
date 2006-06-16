@@ -19,6 +19,7 @@ package org.alfresco.repo.search.impl.lucene.analysis;
 import java.io.IOException;
 import java.io.Reader;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
@@ -49,11 +50,18 @@ public class LongTokenFilter extends Tokenizer
         Token candidate;
         while((candidate = baseTokeniser.next()) != null)
         {
-            Long longValue = Long.valueOf(candidate.termText());
-            String valueString = NumericEncoder.encode(longValue.longValue());
-            Token longToken = new Token(valueString, candidate.startOffset(), candidate.startOffset(),
-                    candidate.type());
-            return longToken;
+            try
+            {
+                Long longValue = Long.valueOf(candidate.termText());
+                String valueString = NumericEncoder.encode(longValue.longValue());
+                Token longToken = new Token(valueString, candidate.startOffset(), candidate.startOffset(),
+                        candidate.type());
+                return longToken;
+            }
+            catch (NumberFormatException e)
+            {
+                // just ignore and try the next one
+            }
         }
         return null;
     }

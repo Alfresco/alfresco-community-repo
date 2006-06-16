@@ -49,11 +49,18 @@ public class DoubleTokenFilter extends Tokenizer
         Token candidate;
         while((candidate = baseTokeniser.next()) != null)
         {
-            Double d = Double.valueOf(candidate.termText());
-            String valueString = NumericEncoder.encode(d.doubleValue());
-            Token doubleToken = new Token(valueString, candidate.startOffset(), candidate.startOffset(),
-                    candidate.type());
-            return doubleToken;
+            try
+            {
+                Double d = Double.valueOf(candidate.termText());
+                String valueString = NumericEncoder.encode(d.doubleValue());
+                Token doubleToken = new Token(valueString, candidate.startOffset(), candidate.startOffset(),
+                        candidate.type());
+                return doubleToken;
+            }
+            catch (NumberFormatException e)
+            {
+                // just ignore and try the next one
+            }
         }
         return null;
     }

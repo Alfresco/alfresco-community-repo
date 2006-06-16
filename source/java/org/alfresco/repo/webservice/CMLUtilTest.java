@@ -192,8 +192,8 @@ public class CMLUtilTest extends BaseSpringTest
         update.setWhere(createPredicate(this.nodeRef));
         update.setProperty(new NamedValue[]
         {
-                new NamedValue(ContentModel.PROP_NAME.toString(), "updatedName"),
-                new NamedValue(ContentModel.PROP_CONTENT.toString(), CONTENT_DATA_HTML_UTF16.toString())
+                new NamedValue(ContentModel.PROP_NAME.toString(), false, "updatedName", null),
+                new NamedValue(ContentModel.PROP_CONTENT.toString(), false, CONTENT_DATA_HTML_UTF16.toString(), null)
         });
         
         CML cml = new CML();
@@ -441,8 +441,8 @@ public class CMLUtilTest extends BaseSpringTest
     {
         return new NamedValue[]
           {
-                new NamedValue(ContentModel.PROP_NAME.toString(), "name"),
-                new NamedValue(ContentModel.PROP_CONTENT.toString(), CONTENT_DATA_TEXT_UTF8.toString())
+                new NamedValue(ContentModel.PROP_NAME.toString(), false, "name", null),
+                new NamedValue(ContentModel.PROP_CONTENT.toString(), false, CONTENT_DATA_TEXT_UTF8.toString(), null)
           };
     }
 }

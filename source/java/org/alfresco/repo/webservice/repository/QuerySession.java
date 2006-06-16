@@ -18,6 +18,7 @@ package org.alfresco.repo.webservice.repository;
 
 import java.io.Serializable;
 
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -51,6 +52,9 @@ public interface QuerySession extends Serializable
     * @return QueryResult containing the next batch of results or null if there
     * are no more results
     */
-   public QueryResult getNextResultsBatch(SearchService searchService, NodeService nodeService, 
-                                          NamespaceService namespaceService);
+   public QueryResult getNextResultsBatch(
+           SearchService searchService, 
+           NodeService nodeService, 
+           NamespaceService namespaceService,
+           DictionaryService dictionaryService);
 }

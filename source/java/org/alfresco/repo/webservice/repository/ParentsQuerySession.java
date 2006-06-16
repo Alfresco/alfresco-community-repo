@@ -25,6 +25,7 @@ import org.alfresco.repo.webservice.types.NamedValue;
 import org.alfresco.repo.webservice.types.Reference;
 import org.alfresco.repo.webservice.types.ResultSetRow;
 import org.alfresco.repo.webservice.types.ResultSetRowNode;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -63,7 +64,7 @@ public class ParentsQuerySession extends AbstractQuerySession
    /**
     * @see org.alfresco.repo.webservice.repository.QuerySession#getNextResultsBatch(org.alfresco.service.cmr.search.SearchService, org.alfresco.service.cmr.repository.NodeService, org.alfresco.service.namespace.NamespaceService)
     */
-   public QueryResult getNextResultsBatch(SearchService searchService, NodeService nodeService, NamespaceService namespaceService)
+   public QueryResult getNextResultsBatch(SearchService searchService, NodeService nodeService, NamespaceService namespaceService, DictionaryService dictionaryService)
    {
       QueryResult queryResult = null;
       
@@ -100,13 +101,7 @@ public class ParentsQuerySession extends AbstractQuerySession
             int col = 0;
             for (QName propName : props.keySet())
             {
-               String value = null;
-               Serializable valueObj = props.get(propName);
-               if (valueObj != null)
-               {
-                  value = valueObj.toString();
-               }
-               columns[col] = new NamedValue(propName.toString(), value);
+               columns[col] = Utils.createNamedValue(dictionaryService, propName, props.get(propName));
                col++;
             }
             

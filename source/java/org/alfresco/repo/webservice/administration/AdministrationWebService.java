@@ -34,7 +34,6 @@ import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.repo.webservice.AbstractWebService;
 import org.alfresco.repo.webservice.Utils;
 import org.alfresco.repo.webservice.action.ActionFault;
-import org.alfresco.repo.webservice.repository.QuerySession;
 import org.alfresco.repo.webservice.types.NamedValue;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -305,7 +304,11 @@ public class AdministrationWebService extends AbstractWebService implements
                 {
                     value = entry.getValue().toString();
                 } 
-                namedValues.add(new NamedValue(entry.getKey().toString(), value));
+                NamedValue namedValue = new NamedValue();
+                namedValue.setName(entry.getKey().toString());
+                namedValue.setIsMultiValue(false);
+                namedValue.setValue(value);
+                namedValues.add(namedValue);
             }
         }
         userDetails.setProperties((NamedValue[])namedValues.toArray(new NamedValue[namedValues.size()]));

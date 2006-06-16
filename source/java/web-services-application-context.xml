@@ -46,6 +46,9 @@
       <property name="copyService">
          <ref bean="CopyService"/>
       </property>
+      <property name="dictionaryService">
+         <ref bean="DictionaryService"/>
+      </property>
    </bean>
    
    <!-- Implementations of each exposed web service -->

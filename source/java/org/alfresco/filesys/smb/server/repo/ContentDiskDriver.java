@@ -32,6 +32,7 @@ import org.alfresco.filesys.server.core.DeviceContextException;
 import org.alfresco.filesys.server.filesys.AccessDeniedException;
 import org.alfresco.filesys.server.filesys.AccessMode;
 import org.alfresco.filesys.server.filesys.DiskInterface;
+import org.alfresco.filesys.server.filesys.FileAttribute;
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.FileOpenParams;
@@ -467,7 +468,14 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
      */
     public boolean isReadOnly(SrvSession sess, DeviceContext ctx) throws IOException
     {
-        return false;
+        if (cifsHelper.isReadOnly())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     
     /**
@@ -505,9 +513,19 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 if ( pfile != null)
                 {
                     // DEBUG
-                    
                     if ( logger.isDebugEnabled())
                         logger.debug("getInfo using pseudo file info for " + path);
+                    
+                    FileInfo pseudoFileInfo = pfile.getFileInfo();
+                    if (cifsHelper.isReadOnly())
+                    {
+                        int attr = pseudoFileInfo.getFileAttributes();
+                        if (( attr & FileAttribute.ReadOnly) == 0)
+                        {
+                            attr += FileAttribute.ReadOnly;
+                            pseudoFileInfo.setFileAttributes(attr);
+                        }
+                    }
                     return pfile.getFileInfo();
                 }
             }

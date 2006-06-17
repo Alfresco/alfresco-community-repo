@@ -199,12 +199,36 @@
     	    ce.child = :child and ce.parent = :parent
     ]]>
     </query>
+    <query name="ChildEntry.DeleteByParent">
+    <![CDATA[
+    	delete ChildEntryImpl ce
+    	where ce.parent = :parent
+    ]]>
+    </query>
     <query name="AVMNode.ByNewInRepo">
     <![CDATA[
     	from AVMNodeImpl a 
     	where 
     		a.repository = :repo and a.isNew = true
     ]]>
+    </query>
+    <query name="AVMNode.GetDescendents">
+    <![CDATA[
+    	from AVMNodeImpl an
+    	where an.ancestor = :node
+    ]]>
+    </query>
+    <query name="AVMNode.GetMergedTo">
+    <![CDATA[
+    	from AVMNodeImpl an
+    	where an.mergedFrom = :merged
+    ]]>
+    </query>
+    <query name="AVMNode.GetByParent">
+    <![CDATA[
+    	from AVMNodeImpl an 
+    	where an.parent = :parent
+   	]]>
     </query>
     <query name="VersionRoot.GetVersionRoot">
     <![CDATA[
@@ -233,6 +257,12 @@
         from DeletedChildImpl dc
         where 
         	dc.parent = :parent
+    ]]>
+    </query>
+    <query name="DeletedChild.DeleteByParent">
+    <![CDATA[
+    	delete DeletedChildImpl dc
+    	where dc.parent = :parent
     ]]>
     </query>
     <query name="FindOrphans">

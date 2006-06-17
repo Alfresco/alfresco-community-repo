@@ -22,9 +22,11 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeMap;
+
+import org.alfresco.repo.avm.util.BulkLoad;
 
 /**
  * Big test of AVM behavior.
@@ -667,11 +669,11 @@ public class AVMServiceTest extends AVMServiceTestBase
             out.println("This is testfile2");
             out.close();
             fService.createSnapshot("main");
-            Set<Integer> versions = fService.getRepositoryVersions("main");
-            for (Integer version : versions)
+            List<VersionDescriptor> versions = fService.getRepositoryVersions("main");
+            for (VersionDescriptor version : versions)
             {
-                System.out.println("V:" + version);
-                System.out.println(recursiveList("main", version, true));
+                System.out.println("V:" + version.getVersionID());
+                System.out.println(recursiveList("main", version.getVersionID(), true));
             }
             BufferedReader reader = 
                 new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/testdir/testfile")));
@@ -700,11 +702,11 @@ public class AVMServiceTest extends AVMServiceTestBase
             setupBasicTree();
             fService.createBranch(-1, "main:/a", "main:/d/e", "abranch");
             fService.createSnapshot("main");
-            Set<Integer> versions = fService.getRepositoryVersions("main");
-            for (Integer version : versions)
+            List<VersionDescriptor> versions = fService.getRepositoryVersions("main");
+            for (VersionDescriptor version : versions)
             {
-                System.out.println("V:" + version);
-                System.out.println(recursiveList("main", version, true));
+                System.out.println("V:" + version.getVersionID());
+                System.out.println(recursiveList("main", version.getVersionID(), true));
             }
             String original = recursiveList("main:/a", -1, 0, true);
             original = original.substring(original.indexOf('\n'));
@@ -1800,20 +1802,27 @@ public class AVMServiceTest extends AVMServiceTestBase
     }
     
     /**
-     * Test purging.
+     * Test version by date lookup.
      */
-    public void testPurge()
+    public void testVersionByDate()
     {
         try
         {
-            setupBasicTree();
-            fService.purgeRepository("main");
-            OrphanReaper reaper = new OrphanReaper();
-            reaper.doBatch();
-            reaper.doBatch();
-            reaper.doBatch();
-            reaper.doBatch();
-            reaper.doBatch();
+            ArrayList<Long> times = new ArrayList<Long>();
+            BulkLoad loader = new BulkLoad(fService);
+            loader.recursiveLoad("source/java/org/alfresco/repo", "main:/");
+            times.add(System.currentTimeMillis());
+            fService.createSnapshot("main");
+            loader.recursiveLoad("source/java/org/alfresco/service", "main:/");
+            times.add(System.currentTimeMillis());
+            fService.createSnapshot("main");
+            loader.recursiveLoad("source/java/org/alfresco/filesys", "main:/");
+            times.add(System.currentTimeMillis());
+            fService.createSnapshot("main");
+            assertEquals(1, fService.getRepositoryVersions("main", null, new Date(times.get(0))).size());
+            assertEquals(3, fService.getRepositoryVersions("main", new Date(times.get(0)), null).size());
+            assertEquals(2, fService.getRepositoryVersions("main", new Date(times.get(1)),
+                                                           new Date(System.currentTimeMillis())).size());
         }
         catch (Exception e)
         {

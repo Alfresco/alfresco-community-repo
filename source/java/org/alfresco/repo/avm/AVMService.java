@@ -20,9 +20,9 @@ package org.alfresco.repo.avm;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * This is the service interface for the [Alfresco|Addled|Advanced|Apotheosed] Versioning
@@ -175,11 +175,21 @@ public interface AVMService
     public void createSnapshot(String repository);
     
     /**
-     * Get the set of version IDs in a Repository
+     * Get the set of versions in a Repository
      * @param name The name of the Repository.
      * @return A Set of version IDs
      */
-    public Set<Integer> getRepositoryVersions(String name);
+    public List<VersionDescriptor> getRepositoryVersions(String name);
+    
+    /**
+     * Get Repository version IDs by creation date. Either from or
+     * to can be null but not both.
+     * @param name The name of the repository.
+     * @param from Earliest date of version to include.
+     * @param to Latest date of version to include.
+     * @return The Set of version IDs that match.
+     */
+    public List<VersionDescriptor> getRepositoryVersions(String name, Date from, Date to);
     
     /**
      * Get the names of all repositories. 

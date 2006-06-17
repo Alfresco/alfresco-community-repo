@@ -20,9 +20,6 @@ package org.alfresco.repo.avm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.LockMode;
-import org.hibernate.Session;
-
 /**
  * This holds all the information necessary to perform operations
  * on AVMNodes, and is internall structured as a list of path components

@@ -24,7 +24,6 @@ import org.alfresco.repo.avm.hibernate.HibernateTxn;
 import org.alfresco.repo.avm.hibernate.HibernateTxnCallback;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.proxy.HibernateProxy;
 
 /**
  * This is the background thread for reaping no longer referenced nodes
@@ -200,7 +199,7 @@ class OrphanReaper implements Runnable
                     AVMNode ancestor = node.getAncestor();
                     AVMNode mergedFrom = node.getMergedFrom();
                     // Get all the nodes that have this node as ancestor.
-                    query = session.createQuery("from AVMNodeImpl an where an.ancestor = :node");
+                    query = session.getNamedQuery("AVMNode.GetDescendents");
                     query.setEntity("node", node);
                     List<AVMNode> descendents = (List<AVMNode>)query.list();
                     for (AVMNode desc : descendents)
@@ -212,28 +211,24 @@ class OrphanReaper implements Runnable
                         }
                     }
                     // Get all the nodes that have this node as mergedFrom
-                    query = session.createQuery("from AVMNodeImpl an where an.mergedFrom = :merged");
+                    query = session.getNamedQuery("AVMNode.GetMergedTo");
                     query.setEntity("merged", node);
                     List<AVMNode> merged = (List<AVMNode>)query.list();
                     for (AVMNode merge : merged)
                     {
                         merge.setMergedFrom(ancestor);
                     }
-                    // Work around Bitter Hibernate.
-                    if (node instanceof HibernateProxy)
-                    {
-                        node = (AVMNode)((HibernateProxy)node).getHibernateLazyInitializer().getImplementation();
-                    }
+                    node = AVMNodeUnwrapper.Unwrap(node);
                     // Extra work for directories.
                     if (node instanceof DirectoryNode)
                     {
                         // First get rid of all child entries for the node.
-                        Query delete = session.createQuery("delete ChildEntryImpl ce where ce.parent = :parent");
+                        Query delete = session.getNamedQuery("ChildEntry.DeleteByParent");
                         delete.setEntity("parent", node);
                         delete.executeUpdate();
                         // Now find all the nodes that point to this node as their
                         // canonical parent and null that reference out.
-                        query = session.createQuery("from AVMNodeImpl an where an.parent = :parent");
+                        query = session.getNamedQuery("AVMNode.GetByParent");
                         query.setEntity("parent", node);
                         List<AVMNode> children = (List<AVMNode>)query.list();
                         for (AVMNode child : children)
@@ -243,7 +238,7 @@ class OrphanReaper implements Runnable
                         if (node instanceof LayeredDirectoryNode)
                         {
                             // More special work for layered directories.
-                            delete = session.createQuery("delete DeletedChildImpl dc where dc.parent = :parent");
+                            delete = session.getNamedQuery("DeletedChild.DeleteByParent");
                             delete.setEntity("parent", node);
                             delete.executeUpdate();
                         } 

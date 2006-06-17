@@ -19,8 +19,8 @@ package org.alfresco.repo.avm;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 /**
  * The repository interface.  Methods for filesystem like, versioning,
@@ -131,10 +131,19 @@ interface Repository
     // provide methods for getting versions by date range, n most 
     // recent etc.
     /**
-     * Get all the version ids for this repository.
+     * Get all the version for this repository.
      * @return A Set of all versions.
      */
-    public Set<Integer> getVersions();
+    public List<VersionDescriptor> getVersions();
+    
+    /**
+     * Get the versions from between the given dates. From or to 
+     * may be null but not both.
+     * @param from The earliest date.
+     * @param to The latest date.
+     * @return The Set of matching version IDs.
+     */
+    public List<VersionDescriptor> getVersions(Date from, Date to);
 
     /**
      * Get the super repository.

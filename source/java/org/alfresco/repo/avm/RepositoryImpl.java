@@ -22,14 +22,11 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.hibernate.Query;
-import org.hibernate.proxy.HibernateProxy;
 
 /**
  * A Repository contains a current root directory and a list of
@@ -390,14 +387,74 @@ class RepositoryImpl implements Repository, Serializable
     // provide methods for getting versions by date range, n most 
     // recent etc.
     /**
-     * Get the set of all extant version ids for this Repository.
+     * Get the set of all extant versions for this Repository.
      * @return A Set of version ids.
      */
     @SuppressWarnings("unchecked")
-    public Set<Integer> getVersions()
+    public List<VersionDescriptor> getVersions()
     {
-        Query query = fSuper.getSession().createQuery("select v.versionID from VersionRootImpl v");
-        return new TreeSet<Integer>((List<Integer>)query.list());
+        Query query = fSuper.getSession().createQuery("from VersionRootImpl v order by v.versionID");
+        List<VersionRoot> versions = (List<VersionRoot>)query.list();
+        List<VersionDescriptor> descs = new ArrayList<VersionDescriptor>();
+        for (VersionRoot vr : versions)
+        {
+            VersionDescriptor desc = 
+                new VersionDescriptor(fName,
+                                      vr.getVersionID(),
+                                      vr.getCreator(),
+                                      vr.getCreateDate());
+            descs.add(desc);
+        }
+        return descs;
+    }
+
+    /**
+     * Get the versions between the given dates (inclusive). From or
+     * to may be null but not both.
+     * @param from The earliest date.
+     * @param to The latest date.
+     * @return The Set of matching version IDs.
+     */
+    @SuppressWarnings("unchecked")
+    public List<VersionDescriptor> getVersions(Date from, Date to)
+    {
+        Query query;
+        if (from == null)
+        {
+            query = 
+                fSuper.getSession().createQuery("from VersionRootImpl vr where vr.createDate <= :to " +
+                                                "order by vr.versionID");
+            query.setLong("to", to.getTime());
+        }
+        else if (to == null)
+        {
+            query =
+                fSuper.getSession().createQuery("from VersionRootImpl vr " +
+                                                "where vr.createDate >= :from " +
+                                                "order by vr.versionID");
+            query.setLong("from", from.getTime());
+        }
+        else
+        {
+            query =
+                fSuper.getSession().createQuery("from VersionRootImpl vr "+ 
+                                                "where vr.createDate between :from and :to " +
+                                                "order by vr.versionID");
+            query.setLong("from", from.getTime());
+            query.setLong("to", to.getTime());
+        }
+        List<VersionRoot> versions = (List<VersionRoot>)query.list();
+        List<VersionDescriptor> descs = new ArrayList<VersionDescriptor>();
+        for (VersionRoot vr : versions)
+        {
+            VersionDescriptor desc =
+                new VersionDescriptor(fName,
+                                      vr.getVersionID(),
+                                      vr.getCreator(),
+                                      vr.getCreateDate());
+            descs.add(desc);
+        }
+        return descs;
     }
 
     /**
@@ -433,14 +490,7 @@ class RepositoryImpl implements Repository, Serializable
         // Versions less than 0 mean get current.
         if (version < 0)
         {
-            if (fRoot instanceof HibernateProxy)
-            {
-                dir = (DirectoryNode)((HibernateProxy)fRoot).getHibernateLazyInitializer().getImplementation();
-            }
-            else
-            {
-                dir = fRoot;
-            }
+            dir = (DirectoryNode)AVMNodeUnwrapper.Unwrap(fRoot);
         }
         else
         {
@@ -448,11 +498,7 @@ class RepositoryImpl implements Repository, Serializable
                 fSuper.getSession().getNamedQuery("VersionRoot.GetVersionRoot");
             query.setEntity("rep", this);
             query.setInteger("version", version);
-            dir = (DirectoryNode)query.uniqueResult();
-            if (dir == null)
-            {
-                throw new AVMException("Invalid version: " + version);
-            }
+            dir = (DirectoryNode)AVMNodeUnwrapper.Unwrap((AVMNode)query.uniqueResult());
         }
 //        fSuper.getSession().lock(dir, LockMode.READ);
         // Add an entry for the root.

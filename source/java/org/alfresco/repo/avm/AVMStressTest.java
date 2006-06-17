@@ -39,7 +39,7 @@ public class AVMStressTest extends AVMServiceTestBase
             loader.recursiveLoad("source", "main:/");
             List<AVMTester> testers = new ArrayList<AVMTester>();
             List<Thread> threads = new ArrayList<Thread>();
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 8; i++)
             {
                 AVMTester tester
                     = new AVMTester(400,      // create file.
@@ -51,7 +51,7 @@ public class AVMStressTest extends AVMServiceTestBase
                                     20,        // modify file.
                                     3600,        // read file
                                     10,        // snapshot
-                                    80000,      // # ops
+                                    10000,      // # ops
                                     fService,
                                     "" + i);   
                 tester.Refresh();
@@ -64,12 +64,12 @@ public class AVMStressTest extends AVMServiceTestBase
                 thread.start();
             }
             int exited = 0;
-            while (exited != 1)
+            while (exited != 8)
             {
                 try
                 {
                     Thread.sleep(2000);
-                    for (int i = 0; i < 1; i++)
+                    for (int i = 0; i < 8; i++)
                     {
                         if (threads.get(i) == null)
                         {

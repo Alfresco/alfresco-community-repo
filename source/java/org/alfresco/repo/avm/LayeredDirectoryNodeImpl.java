@@ -23,10 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.proxy.HibernateProxy;
 
 /**
  * A layered directory node.  A layered directory node points at
@@ -441,13 +439,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         ChildEntry entry = getChild(name);
         if (entry != null)
         {
-            AVMNode child = entry.getChild();
-            if (child instanceof HibernateProxy)
-            {
-                HibernateProxy proxy = (HibernateProxy)child;
-                return (AVMNode)proxy.getHibernateLazyInitializer().getImplementation();
-            }
-            return child;
+            return AVMNodeUnwrapper.Unwrap(entry.getChild());
         }
         // Not here so check our indirection.
         try

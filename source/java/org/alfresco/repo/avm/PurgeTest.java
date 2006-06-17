@@ -26,9 +26,9 @@ import org.alfresco.repo.avm.util.BulkLoad;
 public class PurgeTest extends AVMServiceTestBase
 {
     /**
-     * Test purging an entire repository.
+     * Test purging a version.
      */
-    public void testPurgeRepository()
+    public void testPurgeVersion()
     {
         try
         {
@@ -36,9 +36,12 @@ public class PurgeTest extends AVMServiceTestBase
             reaper.init();
             setupBasicTree();
             BulkLoad loader = new BulkLoad(fService);
+            long start = System.currentTimeMillis();
             loader.recursiveLoad("source", "main:/");
+            System.err.println("Load time: " + (System.currentTimeMillis() - start) + "ms");
             fService.createSnapshot("main");
-            fService.purgeRepository("main");
+            System.err.println("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");
+            fService.purgeVersion(2, "main");
             reaper.activate();
             while (reaper.isActive())
             {
@@ -59,11 +62,11 @@ public class PurgeTest extends AVMServiceTestBase
             fail();
         }
     }
-    
+
     /**
-     * Test purging an entire repository.
+     * Test purging a version that's not the latest.
      */
-    public void testPurgeVersion()
+    public void testPurgeOlderVersion()
     {
         try
         {
@@ -71,9 +74,56 @@ public class PurgeTest extends AVMServiceTestBase
             reaper.init();
             setupBasicTree();
             BulkLoad loader = new BulkLoad(fService);
+            long start = System.currentTimeMillis();
             loader.recursiveLoad("source", "main:/");
+            System.err.println("Load time: " + (System.currentTimeMillis() - start) + "ms");
+            fService.createSnapshot("main");
+            System.err.println("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");
+            fService.removeNode("main:/source/java/org/alfresco", "repo");
             fService.createSnapshot("main");
             fService.purgeVersion(2, "main");
+            reaper.activate();
+            while (reaper.isActive())
+            {
+                try
+                {
+                    Thread.sleep(2000);
+                }
+                catch (InterruptedException e)
+                {
+                    // Do nothing.
+                }
+            }
+            reaper.shutDown();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }    
+
+    /**
+     * Test purging an entire repository.
+     */
+    public void testPurgeRepository()
+    {
+        try
+        {
+            OrphanReaper reaper = new OrphanReaper();
+            reaper.init();
+            setupBasicTree();
+            BulkLoad loader = new BulkLoad(fService);
+            long start = System.currentTimeMillis();
+            loader.recursiveLoad("source", "main:/");
+            System.err.println("Load time: " + (System.currentTimeMillis() - start) + "ms");
+            fService.createSnapshot("main");
+            System.err.println("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");
+            fService.createLayeredDirectory("main:/source", "main:/", "layer");
+            fService.removeNode("main:/layer/java/org/alfresco", "repo");
+            fService.createFile("main:/layer/java/org/alfresco", "goofy").close();
+            fService.createSnapshot("main");
+            fService.purgeRepository("main");
             reaper.activate();
             while (reaper.isActive())
             {

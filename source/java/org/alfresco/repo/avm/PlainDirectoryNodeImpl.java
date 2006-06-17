@@ -22,9 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.hibernate.LockMode;
 import org.hibernate.Session;
-import org.hibernate.proxy.HibernateProxy;
 
 /**
  * A plain directory.  No monkey tricks except for possiblyCopy.
@@ -35,18 +33,12 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     static final long serialVersionUID = 9423813734583003L;
 
     /**
-     * Whether this is a root node.
-     */
-    private boolean fIsRoot;
-    
-    /**
      * Make up a new directory with nothing in it.
      * @param repo
      */
     public PlainDirectoryNodeImpl(Repository repo)
     {
         super(repo.getSuperRepository().issueID(), repo);
-        fIsRoot = false;
         repo.getSuperRepository().getSession().save(this);
         SuperRepository.GetInstance().getSession().flush();
     }
@@ -168,13 +160,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         {
             return null;
         }
-        AVMNode child = entry.getChild();
-        if (child instanceof HibernateProxy)
-        {
-            HibernateProxy proxy = (HibernateProxy)child;
-            return (AVMNode)proxy.getHibernateLazyInitializer().getImplementation();
-        }
-        return child;
+        return AVMNodeUnwrapper.Unwrap(entry.getChild());
     }
 
     /**

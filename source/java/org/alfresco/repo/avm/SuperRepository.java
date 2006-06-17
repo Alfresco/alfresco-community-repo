@@ -20,10 +20,10 @@ package org.alfresco.repo.avm;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.hibernate.LockMode;
 import org.hibernate.Query;
@@ -553,17 +553,32 @@ class SuperRepository
     }
 
     /**
-     * Get all version ids for a given repository.
+     * Get all version for a given repository.
      * @param name The name of the repository.
      * @return A Set will all the version ids.
      */
-    public Set<Integer> getRepositoryVersions(String name)
+    public List<VersionDescriptor> getRepositoryVersions(String name)
     {
         Repository rep = getRepositoryByName(name);
         fSession.get().lock(rep, LockMode.READ);
         return rep.getVersions();
     }
 
+    /**
+     * Get the set of versions between (inclusive) of the given dates. 
+     * From or to may be null but not both.
+     * @param name The name of the repository.
+     * @param from The earliest date.
+     * @param to The latest date.
+     * @return The Set of version IDs.
+     */
+    public List<VersionDescriptor> getRepositoryVersions(String name, Date from, Date to)
+    {
+        Repository rep = getRepositoryByName(name);
+        fSession.get().lock(rep, LockMode.READ);
+        return rep.getVersions(from, to);
+    }
+    
     /**
      * Issue a node id.
      * @return The new id.

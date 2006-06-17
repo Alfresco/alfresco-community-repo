@@ -21,9 +21,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.repo.avm.SuperRepository;
 import org.alfresco.repo.avm.hibernate.HibernateHelper;
@@ -645,7 +645,7 @@ public class AVMServiceImpl implements AVMService
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMService#getRepositoryVersions(java.lang.String)
      */
-    public Set<Integer> getRepositoryVersions(final String name)
+    public List<VersionDescriptor> getRepositoryVersions(final String name)
     {
         if (name == null)
         {
@@ -653,12 +653,41 @@ public class AVMServiceImpl implements AVMService
         }
         class HTxnCallback implements HibernateTxnCallback
         {
-            public Set<Integer> versions;
+            public List<VersionDescriptor> versions;
             
             public void perform(Session session)
             {
                 fSuperRepository.setSession(session);
                 versions = fSuperRepository.getRepositoryVersions(name);
+            }
+        }
+        HTxnCallback doit = new HTxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.versions;
+    }
+
+    /**
+     * Get version IDs by creation date.  From or to may be null but not
+     * both.
+     * @param name The name of the repository to search.
+     * @param from The earliest versions to return.
+     * @param to The latest versions to return.
+     * @return The Set of matching version IDs.
+     */
+    public List<VersionDescriptor> getRepositoryVersions(final String name, final Date from, final Date to)
+    {
+        if (name == null || (from == null && to == null))
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        class HTxnCallback implements HibernateTxnCallback
+        {
+            public List<VersionDescriptor> versions;
+            
+            public void perform(Session session)
+            {
+                fSuperRepository.setSession(session);
+                versions = fSuperRepository.getRepositoryVersions(name, from, to);
             }
         }
         HTxnCallback doit = new HTxnCallback();

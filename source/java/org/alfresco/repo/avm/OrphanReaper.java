@@ -17,6 +17,15 @@
 
 package org.alfresco.repo.avm;
 
+import java.util.List;
+
+import org.alfresco.repo.avm.hibernate.HibernateHelper;
+import org.alfresco.repo.avm.hibernate.HibernateTxn;
+import org.alfresco.repo.avm.hibernate.HibernateTxnCallback;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.proxy.HibernateProxy;
+
 /**
  * This is the background thread for reaping no longer referenced nodes
  * in the AVM repository.  These orphans arise from purge operations.
@@ -24,6 +33,11 @@ package org.alfresco.repo.avm;
  */
 class OrphanReaper implements Runnable
 {
+    /**
+     * The HibernateTxn instance.
+     */
+    private HibernateTxn fTransaction;
+    
     /**
      * Inactive base sleep interval.
      */
@@ -40,6 +54,12 @@ class OrphanReaper implements Runnable
     private int fBatchSize;
     
     /**
+     * Whether we are currently active, ie have 
+     * work queued up.
+     */
+    private boolean fActive;
+    
+    /**
      * Flag for shutting down this.
      */
     private boolean fDone;
@@ -54,9 +74,11 @@ class OrphanReaper implements Runnable
      */
     public OrphanReaper()
     {
+        fTransaction = new HibernateTxn(HibernateHelper.GetSessionFactory());
         fInactiveBaseSleep = 30000;
-        fActiveBaseSleep = 2000;
+        fActiveBaseSleep = 1000;
         fBatchSize = 50;
+        fActive = false;
         fDone = false;
     }
     
@@ -121,5 +143,135 @@ class OrphanReaper implements Runnable
      */
     public void run()
     {
+        while (!fDone)
+        {
+            try
+            {
+                Thread.sleep(fActive ? fActiveBaseSleep : fInactiveBaseSleep);
+            }
+            catch (InterruptedException ie)
+            {
+                // Do nothing.
+            }
+            doBatch();
+        }
+    }
+    
+    /**
+     * This is really for debugging and testing. Allows another thread to 
+     * mark the orphan reaper busy so that it can monitor for it's being done.
+     */
+    public void activate()
+    {
+        fActive = true;
+    }
+    
+    /**
+     * See if the reaper is actively reaping.
+     * @return Whether this is actively reaping.
+     */
+    public boolean isActive()
+    {
+        return fActive;
+    }
+        
+    /**
+     * Do a batch of cleanup work.
+     */
+    @SuppressWarnings("unchecked")
+    public void doBatch()
+    {
+        long start = System.currentTimeMillis();
+        class HTxnCallback implements HibernateTxnCallback
+        {
+            public void perform(Session session)
+            {
+                Query query = session.getNamedQuery("FindOrphans");
+                query.setMaxResults(fBatchSize);
+                List<AVMNode> nodes = (List<AVMNode>)query.list();
+                if (nodes.size() == 0)
+                {
+                    fActive = false;
+                    return;
+                }
+                for (AVMNode node : nodes)
+                {
+                    // Save away the ancestor and merged from fields from this node.
+                    AVMNode ancestor = node.getAncestor();
+                    AVMNode mergedFrom = node.getMergedFrom();
+                    // Get all the nodes that have this node as ancestor.
+                    query = session.createQuery("from AVMNodeImpl an where an.ancestor = :node");
+                    query.setEntity("node", node);
+                    List<AVMNode> descendents = (List<AVMNode>)query.list();
+                    for (AVMNode desc : descendents)
+                    {
+                        desc.setAncestor(ancestor);
+                        if (desc.getMergedFrom() == null)
+                        {
+                            desc.setMergedFrom(mergedFrom);
+                        }
+                    }
+                    // Get all the nodes that have this node as mergedFrom
+                    query = session.createQuery("from AVMNodeImpl an where an.mergedFrom = :merged");
+                    query.setEntity("merged", node);
+                    List<AVMNode> merged = (List<AVMNode>)query.list();
+                    for (AVMNode merge : merged)
+                    {
+                        merge.setMergedFrom(ancestor);
+                    }
+                    // Work around Bitter Hibernate.
+                    if (node instanceof HibernateProxy)
+                    {
+                        node = (AVMNode)((HibernateProxy)node).getHibernateLazyInitializer().getImplementation();
+                    }
+                    // Extra work for directories.
+                    if (node instanceof DirectoryNode)
+                    {
+                        // First get rid of all child entries for the node.
+                        Query delete = session.createQuery("delete ChildEntryImpl ce where ce.parent = :parent");
+                        delete.setEntity("parent", node);
+                        delete.executeUpdate();
+                        // Now find all the nodes that point to this node as their
+                        // canonical parent and null that reference out.
+                        query = session.createQuery("from AVMNodeImpl an where an.parent = :parent");
+                        query.setEntity("parent", node);
+                        List<AVMNode> children = (List<AVMNode>)query.list();
+                        for (AVMNode child : children)
+                        {
+                            child.setParent(null);
+                        }
+                        if (node instanceof LayeredDirectoryNode)
+                        {
+                            // More special work for layered directories.
+                            delete = session.createQuery("delete DeletedChildImpl dc where dc.parent = :parent");
+                            delete.setEntity("parent", node);
+                            delete.executeUpdate();
+                        } 
+                    }
+                    else if (node instanceof PlainFileNode)
+                    {
+                        // FileContent should be purged if nobody else references it.
+                        FileContent content = ((PlainFileNode)node).getContent();
+                        if (content.getRefCount() == 1)
+                        {
+                            content.delete();
+                            session.delete(content);
+                        }
+                    }
+                    session.delete(node);
+                }
+            }
+        }
+        try
+        {
+            HTxnCallback doit = new HTxnCallback();
+            fTransaction.perform(doit, true);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            // TODO Log this properly.
+        }
+        System.err.println("Batch took: " + (System.currentTimeMillis() - start) + "ms");
     }
 }

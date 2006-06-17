@@ -721,12 +721,5 @@ class RepositoryImpl implements Repository, Serializable
             vRoot = (VersionRoot)query.uniqueResult();
             fRoot = vRoot.getRoot();
         }
-        query = fSuper.getSession().getNamedQuery("FindOrphans");
-        Iterator<AVMNode> iter = (Iterator<AVMNode>)query.iterate();
-        while (iter.hasNext())
-        {
-            AVMNode node = iter.next();
-            System.err.println(node.getId());
-        }
     }
 }

@@ -61,6 +61,11 @@ interface FileContent
     public RandomAccessFile getRandomAccess(SuperRepository superRepo, String access);
     
     /**
+     * Delete the contents of this from the backing store.
+     */
+    public void delete();
+    
+    /**
      * Get the length of the file.
      * @param superRepo
      * @return The length of the file.

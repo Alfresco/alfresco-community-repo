@@ -479,12 +479,6 @@ class SuperRepository
         }
         fSession.get().flush();
         fSession.get().delete(rep);
-        query = fSession.get().getNamedQuery("FindOrphans");
-        List<AVMNode> nodes = (List<AVMNode>)query.list();
-        for (AVMNode node : nodes)
-        {
-            System.err.println(node.getId());
-        }
     }
     
     /**

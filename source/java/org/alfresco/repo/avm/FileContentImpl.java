@@ -200,6 +200,15 @@ class FileContentImpl implements FileContent, Serializable
             throw new AVMException("Could not open for random access: " + getContentPath(superRepo), ie);
         }
     }
+    
+    /**
+     * Delete the contents of this file from the backing store.
+     */
+    public void delete()
+    {
+        File file = new File(getContentPath(SuperRepository.GetInstance()));
+        file.delete();
+    }
 
     /**
      * Get the length of this content.

@@ -1798,4 +1798,27 @@ public class AVMServiceTest extends AVMServiceTestBase
             fail();
         }
     }
+    
+    /**
+     * Test purging.
+     */
+    public void testPurge()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.purgeRepository("main");
+            OrphanReaper reaper = new OrphanReaper();
+            reaper.doBatch();
+            reaper.doBatch();
+            reaper.doBatch();
+            reaper.doBatch();
+            reaper.doBatch();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
 }

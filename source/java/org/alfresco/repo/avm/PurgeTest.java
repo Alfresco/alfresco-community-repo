@@ -37,7 +37,7 @@ public class PurgeTest extends AVMServiceTestBase
             setupBasicTree();
             BulkLoader loader = new BulkLoader(fService);
             long start = System.currentTimeMillis();
-            loader.recursiveLoad("source", "main:/");
+            loader.recursiveLoad("source/web", "main:/");
             System.err.println("Load time: " + (System.currentTimeMillis() - start) + "ms");
             fService.createSnapshot("main");
             System.err.println("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");

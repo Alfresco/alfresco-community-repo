@@ -24,14 +24,6 @@
 		<version column="vers" 
 				 name="vers" 
 				 type="long"/>
-		<!-- BasicAttributes are attributes that pretty much all AVMNodes will
-			 have. -->
-		<many-to-one name="ancestor" column="ancestor_id"
-			class="AVMNodeImpl"/>
-		<!-- Nothing does anything with this yet. We'll need it for
-			 complete versioning semantics. -->
-		<many-to-one name="mergedFrom" column="merged_from"
-			class="AVMNodeImpl"/>
 		<!-- This should really be not null, but I haven't figured out
 			 the right way to build the relation so that nullability constraints
 			 won't cause violations in the db during saves. -->
@@ -174,6 +166,18 @@
 				column="parent_id"/>
 		</composite-id>
 	</class>
+	<class name="HistoryLinkImpl" proxy="HistoryLink" table="history_links">
+		<composite-id>
+			<key-many-to-one name="ancestor" class="AVMNodeImpl" column="ancestor"/>
+			<key-many-to-one name="descendent" class="AVMNodeImpl" column="descendent"/>
+		</composite-id>
+	</class>
+	<class name="MergeLinkImpl" proxy="MergeLink" table="merge_links">
+		<composite-id>
+			<key-many-to-one name="mfrom" class="AVMNodeImpl" column="mfrom"/>
+			<key-many-to-one name="mto" class="AVMNodeImpl" column="mto"/>
+		</composite-id>
+	</class>
 	<query name="ChildEntry.ByNameParent">
 	<![CDATA[
 		from ChildEntryImpl ce
@@ -210,14 +214,28 @@
     </query>
     <query name="AVMNode.GetDescendents">
     <![CDATA[
-    	from AVMNodeImpl an
-    	where an.ancestor = :node
+    	select hl.descendent 
+    	from HistoryLinkImpl hl
+    	where hl.ancestor = :node
+    ]]>
+    </query>
+    <query name="HistoryLink.ByAncestor">
+    <![CDATA[
+    	from HistoryLinkImpl hl
+    	where hl.ancestor = :node
     ]]>
     </query>
     <query name="AVMNode.GetMergedTo">
     <![CDATA[
-    	from AVMNodeImpl an
-    	where an.mergedFrom = :merged
+    	select ml.mto
+    	from MergeLinkImpl ml
+    	where ml.mfrom = :merged
+    ]]>
+    </query>
+    <query name="MergeLink.ByFrom">
+    <![CDATA[
+    	from MergeLinkImpl ml
+    	where ml.mfrom = :merged
     ]]>
     </query>
     <query name="VersionRoot.GetVersionRoot">

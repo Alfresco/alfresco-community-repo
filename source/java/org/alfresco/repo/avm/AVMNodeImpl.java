@@ -19,6 +19,9 @@ package org.alfresco.repo.avm;
 
 import java.io.Serializable;
 
+import org.hibernate.Query;
+import org.hibernate.Session;
+
 /**
  * Base class for all repository file system like objects.
  * @author britt
@@ -34,16 +37,6 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
      * The Version ID.
      */
     private int fVersionID;
-    
-    /**
-     * The ancestor of this.
-     */
-    private AVMNode fAncestor;
-    
-    /**
-     * The node that was merged into this.
-     */
-    private AVMNode fMergedFrom;
     
     /**
      * The Repository that owns this.
@@ -87,8 +80,6 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
     {
         fID = id;
         fVersionID = -1;
-        fAncestor = null;
-        fMergedFrom = null;
         fRepository = repo;
         fIsRoot = false;
         long time = System.currentTimeMillis();
@@ -107,7 +98,14 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void setAncestor(AVMNode ancestor)
     {
-        fAncestor = ancestor;
+        if (ancestor == null)
+        {
+            return;
+        }
+        HistoryLinkImpl link = new HistoryLinkImpl();
+        link.setAncestor(ancestor);
+        link.setDescendent(this);
+        SuperRepository.GetInstance().getSession().save(link);
     }
 
     /**
@@ -116,7 +114,10 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public AVMNode getAncestor()
     {
-        return fAncestor;
+        Session sess = SuperRepository.GetInstance().getSession();
+        Query query = sess.createQuery("select hl.ancestor from HistoryLinkImpl hl where hl.descendent = :desc");
+        query.setEntity("desc", this);
+        return (AVMNode)query.uniqueResult();
     }
     
     /**
@@ -125,7 +126,14 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void setMergedFrom(AVMNode mergedFrom)
     {
-        fMergedFrom = mergedFrom;
+        if (mergedFrom == null)
+        {
+            return;
+        }
+        MergeLinkImpl link = new MergeLinkImpl();
+        link.setMfrom(mergedFrom);
+        link.setMto(this);
+        SuperRepository.GetInstance().getSession().save(link);
     }
     
     /**
@@ -134,7 +142,10 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public AVMNode getMergedFrom()
     {
-        return fMergedFrom;
+        Session sess = SuperRepository.GetInstance().getSession();
+        Query query = sess.createQuery("select ml.mfrom from MergeLinkImpl ml where ml.mto = :to");
+        query.setEntity("to", this);
+        return (AVMNode)query.uniqueResult();
     }
     
     /**

@@ -184,6 +184,7 @@ class OrphanReaper implements Runnable
         {
             public void perform(Session session)
             {
+                SuperRepository.GetInstance().setSession(session);
                 Query query = session.getNamedQuery("FindOrphans");
                 query.setMaxResults(fBatchSize);
                 List<AVMNode> nodes = (List<AVMNode>)query.list();
@@ -196,28 +197,48 @@ class OrphanReaper implements Runnable
                 for (AVMNode node : nodes)
                 {
                     // Save away the ancestor and merged from fields from this node.
-                    AVMNode ancestor = node.getAncestor();
-                    AVMNode mergedFrom = node.getMergedFrom();
-                    // Get all the nodes that have this node as ancestor.
-                    query = session.getNamedQuery("AVMNode.GetDescendents");
-                    query.setEntity("node", node);
-                    List<AVMNode> descendents = (List<AVMNode>)query.list();
-                    for (AVMNode desc : descendents)
+                    query = session.createQuery("from HistoryLinkImpl hl where hl.descendent = :desc");
+                    query.setEntity("desc", node);
+                    HistoryLink hlink = (HistoryLink)query.uniqueResult();
+                    AVMNode ancestor = null;
+                    if (hlink != null)
                     {
+                        ancestor = hlink.getAncestor();
+                        session.delete(hlink);
+                    }
+                    query = session.createQuery("from MergeLinkImpl ml where ml.mto = :to");
+                    query.setEntity("to", node);
+                    MergeLink mlink = (MergeLink)query.uniqueResult();
+                    AVMNode mergedFrom = null;
+                    if (mlink != null)
+                    {
+                        mergedFrom = mlink.getMfrom();
+                        session.delete(mlink);
+                    }
+                    // Get all the nodes that have this node as ancestor.
+                    query = session.getNamedQuery("HistoryLink.ByAncestor");
+                    query.setEntity("node", node);
+                    List<HistoryLink> links = (List<HistoryLink>)query.list();
+                    for (HistoryLink link : links)
+                    {
+                        AVMNode desc = link.getDescendent();
                         desc.setAncestor(ancestor);
                         if (desc.getMergedFrom() == null)
                         {
                             desc.setMergedFrom(mergedFrom);
                         }
+                        session.delete(link);
                     }
                     // Get all the nodes that have this node as mergedFrom
-                    query = session.getNamedQuery("AVMNode.GetMergedTo");
+                    query = session.getNamedQuery("MergeLink.ByFrom");
                     query.setEntity("merged", node);
-                    List<AVMNode> merged = (List<AVMNode>)query.list();
-                    for (AVMNode merge : merged)
+                    List<MergeLink> mlinks = (List<MergeLink>)query.list();
+                    for (MergeLink link : mlinks)
                     {
-                        merge.setMergedFrom(ancestor);
+                        link.getMto().setMergedFrom(ancestor);
+                        session.delete(link);
                     }
+                    session.flush();
                     node = AVMNodeUnwrapper.Unwrap(node);
                     // Extra work for directories.
                     if (node instanceof DirectoryNode)

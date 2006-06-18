@@ -59,18 +59,6 @@ interface AVMNode
     public void setVersionID(int version);
 
     /**
-     * Get the (possibly null) parent.
-     * @return The parent or null.
-     */
-    public DirectoryNode getParent();
-
-    /**
-     * Set the parent of this node.
-     * @param parent The DirectoryNode to set.
-     */
-    public void setParent(DirectoryNode parent);
-
-    /**
      * Perform a COW if required.
      * @param lPath The lookup path.
      * @return A 'copied' version of this node.

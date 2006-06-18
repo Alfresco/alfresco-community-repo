@@ -317,7 +317,6 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         DirectoryNode toModify = (DirectoryNode)copyOnWrite(lPath);
         toModify.putChild(name, child);
-        child.setParent(toModify);
         child.setRepository(lPath.getRepository());
         return true;
     }

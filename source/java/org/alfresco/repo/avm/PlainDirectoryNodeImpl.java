@@ -89,7 +89,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         }
         DirectoryNode toModify = (DirectoryNode)copyOnWrite(lPath);
         toModify.putChild(name, child);
-        child.setParent(toModify);
         child.setRepository(lPath.getRepository());
         return true;
     }

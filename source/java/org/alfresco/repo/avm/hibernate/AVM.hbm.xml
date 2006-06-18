@@ -32,10 +32,6 @@
 			 complete versioning semantics. -->
 		<many-to-one name="mergedFrom" column="merged_from"
 			class="AVMNodeImpl"/>
-		<!-- Parent is a very specific notion of containment. The parent
-		     of an AVMNode is the parent in which that node was created. -->
-		<many-to-one name="parent" column="parent_id"
-			class="DirectoryNodeImpl"/>
 		<!-- This should really be not null, but I haven't figured out
 			 the right way to build the relation so that nullability constraints
 			 won't cause violations in the db during saves. -->
@@ -223,12 +219,6 @@
     	from AVMNodeImpl an
     	where an.mergedFrom = :merged
     ]]>
-    </query>
-    <query name="AVMNode.GetByParent">
-    <![CDATA[
-    	from AVMNodeImpl an 
-    	where an.parent = :parent
-   	]]>
     </query>
     <query name="VersionRoot.GetVersionRoot">
     <![CDATA[

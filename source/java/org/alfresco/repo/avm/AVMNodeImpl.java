@@ -46,11 +46,6 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
     private AVMNode fMergedFrom;
     
     /**
-     * The parent of this.
-     */
-    private DirectoryNode fParent;
-    
-    /**
      * The Repository that owns this.
      */
     private Repository fRepository;
@@ -94,7 +89,6 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
         fVersionID = -1;
         fAncestor = null;
         fMergedFrom = null;
-        fParent = null;
         fRepository = repo;
         fIsRoot = false;
         long time = System.currentTimeMillis();
@@ -144,25 +138,6 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
     }
     
     /**
-     * Get the canonical parent of this node.  This parent
-     * is the one under which this node was created.
-     * @return The canonical parent.
-     */
-    public DirectoryNode getParent()
-    {
-        return fParent;
-    }
-
-    /**
-     * Set the canonical parent of this node.
-     * @param parent The canonical parent.
-     */
-    public void setParent(DirectoryNode parent)
-    {
-        fParent = parent;
-    }
-    
-    /**
      * Perform a copy on write on this node and recursively
      * up to the repository root.  This is a template method
      * which farms out work to possiblyCopy().
@@ -183,7 +158,7 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
         newMe.setVersionID(repos.getNextVersionID());
         // Get our parent directory if we have one.
         DirectoryNode parent = null;
-        if (getParent() != null)
+        if (!getIsRoot())
         {
             parent = (DirectoryNode)lPath.getCurrentNode();
         }
@@ -193,7 +168,6 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
             DirectoryNode newParent =
                 (DirectoryNode)parent.copyOnWrite(lPath);
             newParent.putChild(myName, newMe);
-            newMe.setParent(newParent);
         }
         else // Null parent means root of repository.
         {

@@ -226,15 +226,6 @@ class OrphanReaper implements Runnable
                         Query delete = session.getNamedQuery("ChildEntry.DeleteByParent");
                         delete.setEntity("parent", node);
                         delete.executeUpdate();
-                        // Now find all the nodes that point to this node as their
-                        // canonical parent and null that reference out.
-                        query = session.getNamedQuery("AVMNode.GetByParent");
-                        query.setEntity("parent", node);
-                        List<AVMNode> children = (List<AVMNode>)query.list();
-                        for (AVMNode child : children)
-                        {
-                            child.setParent(null);
-                        }
                         if (node instanceof LayeredDirectoryNode)
                         {
                             // More special work for layered directories.

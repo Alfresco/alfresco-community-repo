@@ -20,6 +20,7 @@ package org.alfresco.repo.avm;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -509,6 +510,28 @@ class SuperRepository
     }
 
     /**
+     * Get an InputStream from a given version of a file.
+     * @param desc The node descriptor.
+     * @return The InputStream.
+     */
+    public InputStream getInputStream(AVMNodeDescriptor desc)
+    {
+        fLookupCount.set(1);
+        AVMNode node = (AVMNode)fSession.get().get(AVMNodeImpl.class, desc.getId());
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Not found.");
+        }
+        if (node.getType() != AVMNodeType.PLAIN_FILE &&
+            node.getType() != AVMNodeType.LAYERED_FILE)
+        {
+            throw new AVMWrongTypeException("Not a file.");
+        }
+        FileNode file = (FileNode)node;
+        return file.getContentForRead().getInputStream(SuperRepository.GetInstance());
+    }
+    
+    /**
      * Get a listing of a directory.
      * @param version The version to look under.
      * @param path The path to the directory.
@@ -778,6 +801,36 @@ class SuperRepository
         Repository rep = getRepositoryByName(pathParts[0]);
         fSession.get().lock(rep, LockMode.UPGRADE);
         rep.retargetLayeredDirectory(pathParts[1], target);
+    }
+    
+    /**
+     * Get the history chain for a node.
+     * @param desc The node to get history of.
+     * @param count The maximum number of ancestors to traverse.  Negative means all.
+     * @return A List of ancestors.
+     */
+    public List<AVMNodeDescriptor> getHistory(AVMNodeDescriptor desc, int count)
+    {
+        AVMNode node = (AVMNode)fSession.get().get(AVMNodeImpl.class, desc.getId());
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Not found.");
+        }
+        if (count < 0)
+        {
+            count = Integer.MAX_VALUE;
+        }
+        List<AVMNodeDescriptor> history = new ArrayList<AVMNodeDescriptor>();
+        for (int i = 0; i < count; i++)
+        {
+            node = node.getAncestor();
+            if (node == null)
+            {
+                break;
+            }
+            history.add(node.getDescriptor("UNKNOWN", "UNKNOWN", "UNKNOWN"));
+        }
+        return history;
     }
     
     /**

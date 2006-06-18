@@ -24,10 +24,9 @@ interface FileNode extends AVMNode
 {
     /**
      * Get the content object associated with this node, for reading.
-     * @param version The version to get in.
      * @return A FileContent object.
      */
-    public FileContent getContentForRead(Repository repo);
+    public FileContent getContentForRead();
 
     /**
      * Get the content object for writing.  This will do COW

@@ -78,7 +78,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         }
         // This is a mildly dirty trick.  We use getContentForRead so as not to startle
         // the ultimate destination content into copying itself prematurely.
-        FileContent content = ((FileNode)indirect).getContentForRead(lPath.getRepository());
+        FileContent content = ((FileNode)indirect).getContentForRead();
         PlainFileNodeImpl newMe = new PlainFileNodeImpl(content, lPath.getRepository(), getBasicAttributes());
         newMe.setAncestor(this);
         return newMe;
@@ -98,9 +98,9 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      * @param repo The Repository.
      * @return A FileContent object.
      */
-    public FileContent getContentForRead(Repository repo)
+    public FileContent getContentForRead()
     {
-        Lookup lookup = repo.getSuperRepository().lookup(-1, fIndirection);
+        Lookup lookup = SuperRepository.GetInstance().lookup(-1, fIndirection);
         AVMNode node = lookup.getCurrentNode();
         if (node.getType() != AVMNodeType.LAYERED_FILE &&
             node.getType() != AVMNodeType.PLAIN_FILE)
@@ -108,7 +108,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
             throw new AVMException("Missing Link.");
         }
         FileNode file = (FileNode)node;
-        return file.getContentForRead(repo);
+        return file.getContentForRead();
     }
 
     /**

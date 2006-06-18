@@ -296,6 +296,48 @@ public class AVMInteractiveConsole
                     System.out.println("Owner: " + desc.getOwner());
                     System.out.println("Mod Time: " + new Date(desc.getModDate()));
                 }
+                else if (command[0].equals("history"))
+                {
+                    if (command.length != 4)
+                    {
+                        System.err.println("Syntax error.");
+                        continue;
+                    }
+                    AVMNodeDescriptor desc = fService.lookup(Integer.parseInt(command[2]), command[1]);
+                    List<AVMNodeDescriptor> history = fService.getHistory(desc, Integer.parseInt(command[3]));
+                    for (AVMNodeDescriptor node : history)
+                    {
+                        System.out.println(node);
+                        System.out.println("Version: " + desc.getVersionID());
+                        System.out.println("Owner: " + desc.getOwner());
+                        System.out.println("Mod Time: " + new Date(desc.getModDate()));
+                    }
+                }
+                else if (command[0].equals("catver"))
+                {
+                    if (command.length != 4)
+                    {
+                        System.err.println("Syntax error.");
+                        continue;
+                    }
+                    AVMNodeDescriptor desc = fService.lookup(Integer.parseInt(command[2]), command[1]);
+                    List<AVMNodeDescriptor> history = fService.getHistory(desc, Integer.parseInt(command[3]));
+                    if (history.size() == 0)
+                    {
+                        System.err.println("No history found.");
+                        continue;
+                    }
+                    BufferedReader reader =
+                        new BufferedReader(
+                            new InputStreamReader(
+                                fService.getFileInputStream(history.get(history.size() - 1))));
+                    String line;
+                    while ((line = reader.readLine()) != null)
+                    {
+                        System.out.println(line);
+                    }
+                    reader.close();
+                }
                 else if (command[0].equals("exit"))
                 {
                     done = true;

@@ -160,6 +160,32 @@ public class AVMServiceImpl implements AVMService
         return doit.in;
     }
 
+    /**
+     * Get an InputStream from a particular version of a file.
+     * @param desc The node descriptor.
+     * @return The InputStream.
+     */
+    public InputStream getFileInputStream(final AVMNodeDescriptor desc)
+    {
+        if (desc == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        class HTxnCallback implements HibernateTxnCallback
+        {
+            public InputStream in = null;
+            
+            public void perform(Session session)
+            {
+                fSuperRepository.setSession(session);
+                in = fSuperRepository.getInputStream(desc);
+            }
+        }
+        HTxnCallback doit = new HTxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.in;
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMService#getFileOutputStream(java.lang.String)
      */
@@ -780,5 +806,32 @@ public class AVMServiceImpl implements AVMService
         HTxnCallback doit = new HTxnCallback();
         fTransaction.perform(doit, false);
         return doit.root;
+    }
+
+    /**
+     * Get the history of a node.
+     * @param desc The node to get history from.
+     * @param count The number of ancestors to fallow back. -1 means all.
+     * @return A List of ancestors most recent first.
+     */
+    public List<AVMNodeDescriptor> getHistory(final AVMNodeDescriptor desc, final int count)
+    {
+        if (desc == null)
+        {
+            throw new AVMBadArgumentException("Null descriptor.");
+        }
+        class HTxnCallback implements HibernateTxnCallback
+        {
+            public List<AVMNodeDescriptor> history;
+            
+            public void perform(Session session)
+            {
+                fSuperRepository.setSession(session);
+                history = fSuperRepository.getHistory(desc, count);
+            }
+        }
+        HTxnCallback doit = new HTxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.history;
     }
  }

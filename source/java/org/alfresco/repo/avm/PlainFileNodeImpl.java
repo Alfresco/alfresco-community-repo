@@ -107,7 +107,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     /**
      * Get content for reading.
      */
-    public FileContent getContentForRead(Repository repo)
+    public FileContent getContentForRead()
     {
         return fContent;
     }
@@ -157,8 +157,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      null,
                                      false,
                                      -1,
-                                     getContentForRead(
-                                             lPath.getRepository())
+                                     getContentForRead()
                                              .getLength(lPath.getRepository().getSuperRepository()));
     }
 
@@ -186,8 +185,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      null,
                                      false,
                                      -1,
-                                     getContentForRead(
-                                             getRepository())
+                                     getContentForRead()
                                              .getLength(getRepository().getSuperRepository()));
     }
 

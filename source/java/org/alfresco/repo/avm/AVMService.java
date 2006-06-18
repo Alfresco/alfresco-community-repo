@@ -43,6 +43,13 @@ public interface AVMService
     public InputStream getFileInputStream(int version, String path);
     
     /**
+     * Get an input stream from a particular version of a file.
+     * @param desc The node descriptor pointing at the node.
+     * @return The InputStream.
+     */
+    public InputStream getFileInputStream(AVMNodeDescriptor desc);
+
+    /**
      * Get an output stream to a file node.  The file must already exist.
      * @param path The simple absolute path to the file node.
      */
@@ -248,4 +255,12 @@ public interface AVMService
      * @param path The full path.
      */
     public void makePrimary(String path);
+    
+    /**
+     * Get a list of all the ancestor versions of a node.
+     * @param desc The version of a node to find ancestors for.
+     * @param count How many. -1 means all.
+     * @return A List of ancestors starting with the most recent.
+     */
+    public List<AVMNodeDescriptor> getHistory(AVMNodeDescriptor desc, int count);
 }

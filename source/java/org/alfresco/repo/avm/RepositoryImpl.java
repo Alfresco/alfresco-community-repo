@@ -265,7 +265,7 @@ class RepositoryImpl implements Repository, Serializable
             throw new AVMExistsException("Not a file: " + path + " r " + version);
         }
         FileNode file = (FileNode)node;
-        FileContent content = file.getContentForRead(this);
+        FileContent content = file.getContentForRead();
         return content.getInputStream(fSuper);
     }
 
@@ -328,10 +328,10 @@ class RepositoryImpl implements Repository, Serializable
             throw new AVMException("Access denied: " + path);
         }
         Lookup lPath = lookup(version, path);
-        if (write)
-        {
+//        if (write)
+//        {
 //            lPath.acquireLocks();
-        }
+//        }
         AVMNode node = lPath.getCurrentNode();
         if (node.getType() != AVMNodeType.PLAIN_FILE &&
             node.getType() != AVMNodeType.LAYERED_FILE)
@@ -347,7 +347,7 @@ class RepositoryImpl implements Repository, Serializable
         }
         else
         {
-            content = file.getContentForRead(this);
+            content = file.getContentForRead();
         }
         return content.getRandomAccess(fSuper, access);
     }
@@ -759,6 +759,10 @@ class RepositoryImpl implements Repository, Serializable
         query.setInteger("version", version);
         VersionRoot vRoot = (VersionRoot)query.uniqueResult();
         AVMNode root = vRoot.getRoot();
+        if (root == null)
+        {
+            throw new AVMNotFoundException("Version not found.");
+        }
         root.setIsRoot(false);
         fSuper.getSession().delete(vRoot);
         if (root.equals(fRoot))

@@ -17,7 +17,7 @@
 
 package org.alfresco.repo.avm;
 
-import org.alfresco.repo.avm.util.BulkLoad;
+import org.alfresco.repo.avm.util.BulkLoader;
 
 /**
  * Test the purge thread.
@@ -35,7 +35,7 @@ public class PurgeTest extends AVMServiceTestBase
             OrphanReaper reaper = new OrphanReaper();
             reaper.init();
             setupBasicTree();
-            BulkLoad loader = new BulkLoad(fService);
+            BulkLoader loader = new BulkLoader(fService);
             long start = System.currentTimeMillis();
             loader.recursiveLoad("source", "main:/");
             System.err.println("Load time: " + (System.currentTimeMillis() - start) + "ms");
@@ -73,7 +73,7 @@ public class PurgeTest extends AVMServiceTestBase
             OrphanReaper reaper = new OrphanReaper();
             reaper.init();
             setupBasicTree();
-            BulkLoad loader = new BulkLoad(fService);
+            BulkLoader loader = new BulkLoader(fService);
             long start = System.currentTimeMillis();
             loader.recursiveLoad("source", "main:/");
             System.err.println("Load time: " + (System.currentTimeMillis() - start) + "ms");
@@ -113,7 +113,7 @@ public class PurgeTest extends AVMServiceTestBase
             OrphanReaper reaper = new OrphanReaper();
             reaper.init();
             setupBasicTree();
-            BulkLoad loader = new BulkLoad(fService);
+            BulkLoader loader = new BulkLoader(fService);
             long start = System.currentTimeMillis();
             loader.recursiveLoad("source", "main:/");
             System.err.println("Load time: " + (System.currentTimeMillis() - start) + "ms");

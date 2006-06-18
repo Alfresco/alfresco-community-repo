@@ -20,7 +20,7 @@ package org.alfresco.repo.avm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.repo.avm.util.BulkLoad;
+import org.alfresco.repo.avm.util.BulkLoader;
 
 /**
  * This is a stress test for the AVM repository.
@@ -35,7 +35,7 @@ public class AVMStressTest extends AVMServiceTestBase
     {
         try
         {
-            BulkLoad loader = new BulkLoad(fService);
+            BulkLoader loader = new BulkLoader(fService);
             loader.recursiveLoad("source", "main:/");
             List<AVMTester> testers = new ArrayList<AVMTester>();
             List<Thread> threads = new ArrayList<Thread>();

@@ -180,7 +180,6 @@ class OrphanReaper implements Runnable
     @SuppressWarnings("unchecked")
     public void doBatch()
     {
-        long start = System.currentTimeMillis();
         class HTxnCallback implements HibernateTxnCallback
         {
             public void perform(Session session)
@@ -193,6 +192,7 @@ class OrphanReaper implements Runnable
                     fActive = false;
                     return;
                 }
+                fActive = true;
                 for (AVMNode node : nodes)
                 {
                     // Save away the ancestor and merged from fields from this node.
@@ -267,6 +267,5 @@ class OrphanReaper implements Runnable
             e.printStackTrace(System.err);
             // TODO Log this properly.
         }
-        System.err.println("Batch took: " + (System.currentTimeMillis() - start) + "ms");
     }
 }

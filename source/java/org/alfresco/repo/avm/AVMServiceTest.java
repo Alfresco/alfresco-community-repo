@@ -26,7 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.alfresco.repo.avm.util.BulkLoad;
+import org.alfresco.repo.avm.util.BulkLoader;
 
 /**
  * Big test of AVM behavior.
@@ -1809,7 +1809,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             ArrayList<Long> times = new ArrayList<Long>();
-            BulkLoad loader = new BulkLoad(fService);
+            BulkLoader loader = new BulkLoader(fService);
             loader.recursiveLoad("source/java/org/alfresco/repo", "main:/");
             times.add(System.currentTimeMillis());
             fService.createSnapshot("main");

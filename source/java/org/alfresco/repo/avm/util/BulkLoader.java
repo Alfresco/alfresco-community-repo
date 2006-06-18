@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.alfresco.repo.avm.AVMException;
 import org.alfresco.repo.avm.AVMService;
 import org.alfresco.repo.avm.AVMServiceImpl;
 
@@ -31,7 +32,7 @@ import org.alfresco.repo.avm.AVMServiceImpl;
  * and bulk loads recursively from the filesystem.
  * @author britt
  */
-public class BulkLoad
+public class BulkLoader
 {
     private AVMService fService;
     
@@ -50,7 +51,7 @@ public class BulkLoad
         AVMServiceImpl service = new AVMServiceImpl();
         service.setStorage(args[0]);
         service.init(args[1].equals("new"));
-        BulkLoad loader = new BulkLoad(service);
+        BulkLoader loader = new BulkLoader(service);
         loader.recursiveLoad(args[2], args[3]);
         service.createSnapshot("main");
     }
@@ -59,7 +60,7 @@ public class BulkLoad
      * Create a new one.
      * @param service
      */
-    public BulkLoad(AVMService service)
+    public BulkLoader(AVMService service)
     {
         fService = service;
     }
@@ -102,7 +103,7 @@ public class BulkLoad
             catch (IOException e)
             {
                 e.printStackTrace(System.err);
-                System.exit(1);
+                throw new AVMException("I/O Error");
             }
         }
     }

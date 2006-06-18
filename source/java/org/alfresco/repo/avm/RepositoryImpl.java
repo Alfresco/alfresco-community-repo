@@ -91,10 +91,10 @@ class RepositoryImpl implements Repository, Serializable
         fRoot.setIsRoot(true);
         fSuper.getSession().save(fRoot);
         VersionRoot versionRoot = new VersionRootImpl(this,
-                                                              fRoot,
-                                                              fNextVersionID,
-                                                              time,
-                                                              "britt");
+                                                      fRoot,
+                                                      fNextVersionID,
+                                                      time,
+                                                      "britt");
         fNextVersionID++;
         fSuper.getSession().save(versionRoot);
     }
@@ -115,6 +115,11 @@ class RepositoryImpl implements Repository, Serializable
     @SuppressWarnings("unchecked")
     public void createSnapshot()
     {
+        // If the root isn't new, we can't take a snapshot since nothing has changed.
+        if (!fRoot.getIsNew())
+        {
+            // TODO Silently return for now.
+        }
         // Clear out the new nodes.
         Query query = 
             fSuper.getSession().getNamedQuery("AVMNode.ByNewInRepo");
@@ -393,7 +398,8 @@ class RepositoryImpl implements Repository, Serializable
     @SuppressWarnings("unchecked")
     public List<VersionDescriptor> getVersions()
     {
-        Query query = fSuper.getSession().createQuery("from VersionRootImpl v order by v.versionID");
+        Query query = fSuper.getSession().createQuery("from VersionRootImpl v where v.repository = :rep order by v.versionID");
+        query.setEntity("rep", this);
         List<VersionRoot> versions = (List<VersionRoot>)query.list();
         List<VersionDescriptor> descs = new ArrayList<VersionDescriptor>();
         for (VersionRoot vr : versions)

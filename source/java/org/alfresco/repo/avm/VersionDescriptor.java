@@ -17,6 +17,8 @@
 
 package org.alfresco.repo.avm;
 
+import java.util.Date;
+
 /**
  * All the information about a particular version.
  * @author britt
@@ -95,5 +97,20 @@ public class VersionDescriptor
     public long getCreateDate()
     {
         return fCreateDate;
+    }
+    
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+        builder.append(fRepositoryName);
+        builder.append(":");
+        builder.append("" + fVersionID);
+        builder.append(":");
+        builder.append(fCreator);
+        builder.append(":");
+        builder.append(new Date(fCreateDate).toString());
+        builder.append("]");
+        return builder.toString();
     }
 }

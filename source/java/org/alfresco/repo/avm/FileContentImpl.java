@@ -73,38 +73,37 @@ class FileContentImpl implements FileContent, Serializable
     
     /**
      * Make a brand new one.
-     * @param superRepo The SuperRepository.
-     * @param source A possibly null stream to get data from.
+     * @param id The id for this content.
      */
-    public FileContentImpl(SuperRepository superRepo)
+    public FileContentImpl(long id)
     {
-        fID = superRepo.issueContentID();
+        fID = id;
         fRefCount = 1;
         // Initialize the contents.
         try
         {
-            OutputStream out = getOutputStream(superRepo);
+            OutputStream out = getOutputStream();
             out.close();
         }
         catch (IOException ie)
         {
             throw new AVMException("File data error.", ie);
         }
-        superRepo.getSession().save(this);
+        SuperRepository.GetInstance().getSession().save(this);
     }
     
     /**
      * Copy constructor, sort of.
      * @param other The content to copy from.
-     * @param superRepo The SuperRepository.
+     * @param id The id for this content.
      */
-    public FileContentImpl(FileContent other, SuperRepository superRepo)
+    public FileContentImpl(FileContent other, long id)
     {
-        fID = superRepo.issueContentID();
+        fID = id;
         fRefCount = 1;
         // Copy the contents from other to this.
-        BufferedInputStream in = new BufferedInputStream(other.getInputStream(superRepo));
-        BufferedOutputStream out = new BufferedOutputStream(this.getOutputStream(superRepo));
+        BufferedInputStream in = new BufferedInputStream(other.getInputStream());
+        BufferedOutputStream out = new BufferedOutputStream(getOutputStream());
         try
         {
             byte [] buff = new byte[4096];  // Nyah, nyah.
@@ -121,7 +120,7 @@ class FileContentImpl implements FileContent, Serializable
         {
             throw new AVMException("I/O failure in Copy on Write.", ie);
         }
-        superRepo.getSession().save(this);
+        SuperRepository.GetInstance().getSession().save(this);
     }
 
     /**
@@ -144,40 +143,38 @@ class FileContentImpl implements FileContent, Serializable
 
     /**
      * Get an InputStream from this FileContent.
-     * @param superRepo The SuperRepository (to get backing store location from).
      * @return An InputStream.
      */
-    public InputStream getInputStream(SuperRepository superRepo)
+    public InputStream getInputStream()
     {
         try
         {
-            return new FileInputStream(getContentPath(superRepo));
+            return new FileInputStream(getContentPath());
         }
         catch (IOException ie)
         {
-            throw new AVMException("Could not open for reading: " + getContentPath(superRepo), ie);
+            throw new AVMException("Could not open for reading: " + getContentPath(), ie);
         }
     }
 
     /**
      * Gets an ouptut stream to this node.
-     * @param superRepo The SuperRepository.
      * @return An OutputStream.
      */
-    public OutputStream getOutputStream(SuperRepository superRepo)
+    public OutputStream getOutputStream()
     {
         try
         {
-            File dir = new File(getDirectoryPath(superRepo));
+            File dir = new File(getDirectoryPath());
             if (!dir.exists())
             {
                 dir.mkdirs();
             }
-            return new FileOutputStream(getContentPath(superRepo));
+            return new FileOutputStream(getContentPath());
         }
         catch (IOException ie)
         {
-            throw new AVMException("Could not open for writing: " + getContentPath(superRepo), ie);
+            throw new AVMException("Could not open for writing: " + getContentPath(), ie);
         }
     }
 
@@ -189,15 +186,15 @@ class FileContentImpl implements FileContent, Serializable
      * @param access The access more for RandomAccessFile.
      * @return A RandomAccessFile.
      */
-    public RandomAccessFile getRandomAccess(SuperRepository superRepo, String access)
+    public RandomAccessFile getRandomAccess(String access)
     {
         try
         {
-            return new RandomAccessFile(getContentPath(superRepo), access);
+            return new RandomAccessFile(getContentPath(), access);
         }
         catch (IOException ie)
         {
-            throw new AVMException("Could not open for random access: " + getContentPath(superRepo), ie);
+            throw new AVMException("Could not open for random access: " + getContentPath(), ie);
         }
     }
     
@@ -206,45 +203,42 @@ class FileContentImpl implements FileContent, Serializable
      */
     public void delete()
     {
-        File file = new File(getContentPath(SuperRepository.GetInstance()));
+        File file = new File(getContentPath());
         file.delete();
     }
 
     /**
      * Get the length of this content.
-     * @param superRepo The SuperRepository
      * @return The length of the content.
      */
-    public long getLength(SuperRepository superRepo)
+    public long getLength()
     {
-        File file = new File(getContentPath(superRepo));
+        File file = new File(getContentPath());
         return file.length();
     }
     
     /**
      * Retrieve the full path for this content. 
-     * @param superRepo
      * @return The full path for this content.
      */
-    private synchronized String getContentPath(SuperRepository superRepo)
+    private synchronized String getContentPath()
     {
         if (fName == null)
         {
-            calcPathData(superRepo);
+            calcPathData();
         }
         return fName;
     }
     
     /**
      * Get the directory path for this content.
-     * @param superRepo
      * @return The directory path.
      */
-    private synchronized String getDirectoryPath(SuperRepository superRepo)
+    private synchronized String getDirectoryPath()
     {
         if (fPath == null)
         {
-            calcPathData(superRepo);
+            calcPathData();
         }
         return fPath;
     }
@@ -252,7 +246,7 @@ class FileContentImpl implements FileContent, Serializable
     /**
      * Calculate the path data.
      */
-    private void calcPathData(SuperRepository superRepo)
+    private void calcPathData()
     {
         Formatter form = new Formatter(new StringBuilder());
         form.format("%016x", fID);
@@ -263,7 +257,7 @@ class FileContentImpl implements FileContent, Serializable
                     (fID & 0xff0000) >> 16,
                     (fID & 0xff00) >> 8);
         String dir = form.toString();
-        fPath = superRepo.getStorageRoot() + dir;
+        fPath = SuperRepository.GetInstance().getStorageRoot() + dir;
         fName = fPath + "/" + name;
     }
     

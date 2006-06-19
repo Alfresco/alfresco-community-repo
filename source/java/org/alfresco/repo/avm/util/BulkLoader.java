@@ -72,7 +72,6 @@ public class BulkLoader
      */
     public void recursiveLoad(String fsPath, String repPath)
     {
-        System.out.println(fsPath);
         File file = new File(fsPath);
         String name = file.getName();
         if (file.isDirectory())

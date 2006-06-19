@@ -40,25 +40,22 @@ interface FileContent
 
     /**
      * Get an input stream from the content.
-     * @param superRepo The SuperRepository.
      * @return An InputStream.
      */
-    public InputStream getInputStream(SuperRepository superRepo);
+    public InputStream getInputStream();
 
     /**
      * Get an output stream to the content.
-     * @param superRepo The SuperRepository.
      * @return an OutputStream.
      */
-    public OutputStream getOutputStream(SuperRepository superRepo);
+    public OutputStream getOutputStream();
     
     /**
      * Get a random access file to this content.
-     * @param superRepo The SuperRepository.
      * @param access The mode to open the file in.
      * @return A RandomAccessFile.
      */
-    public RandomAccessFile getRandomAccess(SuperRepository superRepo, String access);
+    public RandomAccessFile getRandomAccess(String access);
     
     /**
      * Delete the contents of this from the backing store.
@@ -70,7 +67,7 @@ interface FileContent
      * @param superRepo
      * @return The length of the file.
      */
-    public long getLength(SuperRepository superRepo);
+    public long getLength();
     
     /**
      * Get the object id.

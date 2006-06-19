@@ -47,7 +47,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     public PlainFileNodeImpl(Repository repos)
     {
         super(repos.getSuperRepository().issueID(), repos);
-        fContent = new FileContentImpl(repos.getSuperRepository());
+        fContent = new FileContentImpl(SuperRepository.GetInstance().issueContentID());
         repos.getSuperRepository().getSession().save(this);
     }
     
@@ -114,13 +114,12 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
 
     /**
      * Get content for writing.
-     * @param repo The Repository.
      */
-    public FileContent getContentForWrite(Repository repo)
+    public FileContent getContentForWrite()
     {
         if (fContent.getRefCount() > 1)
         {
-            fContent = new FileContentImpl(fContent, repo.getSuperRepository());
+            fContent = new FileContentImpl(fContent, SuperRepository.GetInstance().issueContentID());
         }
         return fContent;
     }
@@ -157,8 +156,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      null,
                                      false,
                                      -1,
-                                     getContentForRead()
-                                             .getLength(lPath.getRepository().getSuperRepository()));
+                                     getContentForRead().getLength());
     }
 
     /**
@@ -185,8 +183,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      null,
                                      false,
                                      -1,
-                                     getContentForRead()
-                                             .getLength(getRepository().getSuperRepository()));
+                                     getContentForRead().getLength());
     }
 
     /**

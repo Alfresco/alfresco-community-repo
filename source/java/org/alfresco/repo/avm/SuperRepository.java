@@ -528,7 +528,7 @@ class SuperRepository
             throw new AVMWrongTypeException("Not a file.");
         }
         FileNode file = (FileNode)node;
-        return file.getContentForRead().getInputStream(SuperRepository.GetInstance());
+        return file.getContentForRead().getInputStream();
     }
     
     /**

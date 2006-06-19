@@ -36,10 +36,17 @@ public class AVMStressTest extends AVMServiceTestBase
         try
         {
             BulkLoader loader = new BulkLoader(fService);
-            loader.recursiveLoad("source", "main:/");
+            long start = System.currentTimeMillis();
+            for (int i = 0; i < 1; i++)
+            {
+                fService.createDirectory("main:/", "" + i);
+                loader.recursiveLoad("source", "main:/" + i);
+                fService.createSnapshot("main");
+            }
+            System.out.println("Load time: " + (System.currentTimeMillis() - start));
             List<AVMTester> testers = new ArrayList<AVMTester>();
             List<Thread> threads = new ArrayList<Thread>();
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 1; i++)
             {
                 AVMTester tester
                     = new AVMTester(400,      // create file.
@@ -54,7 +61,10 @@ public class AVMStressTest extends AVMServiceTestBase
                                     10000,      // # ops
                                     fService,
                                     "" + i);   
-                tester.Refresh();
+                if (i == 0)
+                {
+                    tester.Refresh();
+                }
                 Thread thread = new Thread(tester);
                 testers.add(tester);
                 threads.add(thread);
@@ -64,12 +74,12 @@ public class AVMStressTest extends AVMServiceTestBase
                 thread.start();
             }
             int exited = 0;
-            while (exited != 8)
+            while (exited != 1)
             {
                 try
                 {
                     Thread.sleep(2000);
-                    for (int i = 0; i < 8; i++)
+                    for (int i = 0; i < 1; i++)
                     {
                         if (threads.get(i) == null)
                         {

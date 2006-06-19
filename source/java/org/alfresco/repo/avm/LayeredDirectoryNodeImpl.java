@@ -299,7 +299,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             try
             {
-                Lookup lookup = lPath.getRepository().getSuperRepository().lookupDirectory(-1, getUnderlying(lPath));
+                Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
                 DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
                 if (dir.lookupChild(lookup, name, -1) != null)
                 {
@@ -343,7 +343,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         Map<String, AVMNode> baseListing = null;
         try
         {
-            Lookup lookup = lPath.getRepository().getSuperRepository().lookupDirectory(-1, getUnderlying(lPath));
+            Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
             baseListing = dir.getListing(lookup);
         }
@@ -443,7 +443,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         // Not here so check our indirection.
         try
         {
-            Lookup lookup = lPath.getRepository().getSuperRepository().lookupDirectory(-1, getUnderlying(lPath));
+            Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
             return dir.lookupChild(lookup, name, -1);
         }
@@ -538,7 +538,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             // See if the name is seen via indirection.
             try
             {
-                Lookup lookup = lPath.getRepository().getSuperRepository().lookupDirectory(-1, getUnderlying(lPath));
+                Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
                 DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
                 if (dir.lookupChild(lookup, name, -1) == null)
                 {
@@ -621,7 +621,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         DeletedChild dc = toModify.getDeleted(name);
         if (dc != null)
         {
-            lPath.getRepository().getSuperRepository().getSession().delete(dc);
+            SuperRepository.GetInstance().getSession().delete(dc);
         }
     }
     

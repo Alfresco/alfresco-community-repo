@@ -1,0 +1,94 @@
+/*
+ * Copyright (C) 2006 Alfresco, Inc.
+ *
+ * Licensed under the Mozilla Public License version 1.1 
+ * with a permitted attribution clause. You may obtain a
+ * copy of the License at
+ *
+ *   http://www.alfresco.org/legal/license.txt
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License.
+ */
+
+package org.alfresco.repo.avm;
+
+import org.alfresco.repo.avm.util.BulkLoader;
+
+/**
+ * This tests loading content simultaneously.
+ * @author britt
+ */
+public class SimultaneousLoadTest extends AVMServiceTestBase
+{
+    /**
+     * Test loading content simultaneously.
+     */
+    public void testSimultaneousLoad()
+    {
+        try
+        {
+            int n = 16;
+            for (int i = 0; i < n; i++)
+            {
+                fService.createDirectory("main:/", "d" + i);
+            }
+            fService.createSnapshot("main");
+            Thread [] threads = new Thread[n];
+            for (int i = 0; i < n; i++)
+            {
+                Loader loader = new Loader("source", "main:/d" + i);
+                threads[i] = new Thread(loader);
+                threads[i].start();
+            }
+            for (int i = 0; i < n; i++)
+            {
+                threads[i].join();
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    private class Loader implements Runnable
+    {
+        /**
+         * The BulkLoader.
+         */
+        private BulkLoader fLoader;
+        
+        /**
+         * The source directory.
+         */
+        private String fSource;
+        
+        /**
+         * The destination path.
+         */
+        private String fDestination;
+        
+        /**
+         * Set up.
+         * @param source Source directory.
+         * @param destination Destination path.
+         */
+        public Loader(String source, String destination)
+        {
+            fLoader = new BulkLoader(fService);
+            fSource = source;
+            fDestination = destination;
+        }
+        
+        public void run()
+        {
+            fLoader.recursiveLoad(fSource, fDestination);
+        }
+    }
+}

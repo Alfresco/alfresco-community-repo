@@ -224,7 +224,7 @@ class RepositoryImpl implements Repository, Serializable
         PlainFileNodeImpl file = new PlainFileNodeImpl(this);
         file.setVersionID(getNextVersionID());
         dir.addChild(name, file, lPath);
-        return file.getContentForWrite(this).getOutputStream(fSuper);
+        return file.getContentForWrite().getOutputStream();
     }
 
     /**
@@ -266,7 +266,7 @@ class RepositoryImpl implements Repository, Serializable
         }
         FileNode file = (FileNode)node;
         FileContent content = file.getContentForRead();
-        return content.getInputStream(fSuper);
+        return content.getInputStream();
     }
 
     /**
@@ -309,8 +309,8 @@ class RepositoryImpl implements Repository, Serializable
         }
         FileNode file = (FileNode)node;
         file = (FileNode)file.copyOnWrite(lPath);
-        FileContent content = file.getContentForWrite(this); 
-        return content.getOutputStream(fSuper);    // TODO Do we really need fSuper?
+        FileContent content = file.getContentForWrite(); 
+        return content.getOutputStream();    // TODO Do we really need fSuper?
     }
 
     /**
@@ -343,13 +343,13 @@ class RepositoryImpl implements Repository, Serializable
         if (write)
         {
             file = (FileNode)file.copyOnWrite(lPath);
-            content = file.getContentForWrite(this);
+            content = file.getContentForWrite();
         }
         else
         {
             content = file.getContentForRead();
         }
-        return content.getRandomAccess(fSuper, access);
+        return content.getRandomAccess(access);
     }
 
     /**

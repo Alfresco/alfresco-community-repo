@@ -295,7 +295,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     public void turnPrimary(Lookup lPath)
     {
         LayeredDirectoryNode toModify = (LayeredDirectoryNode)copyOnWrite(lPath);
-        Lookup lookup = lPath.getRepository().getSuperRepository().lookup(-1, lPath.getRepresentedPath());
+        Lookup lookup = SuperRepository.GetInstance().lookup(-1, lPath.getRepresentedPath());
         toModify.rawSetPrimary(lookup.getCurrentIndirection());
     }
 

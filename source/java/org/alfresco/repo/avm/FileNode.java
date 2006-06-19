@@ -31,8 +31,7 @@ interface FileNode extends AVMNode
     /**
      * Get the content object for writing.  This will do COW
      * as needed.
-     * @param The repository.
      * @return A FileContent object.
      */
-    public FileContent getContentForWrite(Repository repo);
+    public FileContent getContentForWrite();
 }

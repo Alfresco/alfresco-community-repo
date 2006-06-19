@@ -69,7 +69,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     public AVMNode possiblyCopy(Lookup lPath)
     {
         // LayeredFileNodes are always copied.
-        Lookup lookup = lPath.getRepository().getSuperRepository().lookup(-1, fIndirection);
+        Lookup lookup = SuperRepository.GetInstance().lookup(-1, fIndirection);
         AVMNode indirect = lookup.getCurrentNode();
         if (indirect.getType() != AVMNodeType.LAYERED_FILE &&
             indirect.getType() != AVMNodeType.PLAIN_FILE)
@@ -113,10 +113,9 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
 
     /**
      * Get File Content for writing.  Should never be called.
-     * @param repo The Repository.
      * @return Always null.
      */
-    public FileContent getContentForWrite(Repository repo)
+    public FileContent getContentForWrite()
     {
         assert false : "Never happens";
         return null;

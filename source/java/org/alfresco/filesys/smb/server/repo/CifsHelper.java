@@ -276,8 +276,8 @@ public class CifsHelper
         
         // Read/write access
         
-        boolean hasPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED; 
-        if (isReadOnly || !hasPermission)
+        boolean deniedPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED; 
+        if (isReadOnly || deniedPermission)
         {
             int attr = fileInfo.getFileAttributes();
             if (( attr & FileAttribute.ReadOnly) == 0)

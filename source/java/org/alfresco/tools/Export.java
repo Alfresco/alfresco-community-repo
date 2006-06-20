@@ -60,7 +60,7 @@ public final class Export extends Tool
     /* (non-Javadoc)
      * @see org.alfresco.tools.Tool#getToolName()
      */
-    @Override
+    protected @Override
     String getToolName()
     {
         return "Alfresco Repository Exporter";
@@ -72,7 +72,7 @@ public final class Export extends Tool
      * @param args  the arguments
      * @return  the export context
      */
-    @Override
+    protected @Override
     /*package*/ ToolContext processArgs(String[] args)
     {
         context = new ExportContext();
@@ -91,7 +91,7 @@ public final class Export extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <store> for the parameter -store must be specified");
+                    throw new ToolArgumentException("The value <store> for the parameter -store must be specified");
                 }
                 context.storeRef = new StoreRef(args[i]);
             }
@@ -100,7 +100,7 @@ public final class Export extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <path> for the parameter -path must be specified");
+                    throw new ToolArgumentException("The value <path> for the parameter -path must be specified");
                 }
                 context.path = args[i];
             }
@@ -109,7 +109,7 @@ public final class Export extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <dir> for the parameter -dir must be specified");
+                    throw new ToolArgumentException("The value <dir> for the parameter -dir must be specified");
                 }
                 context.destDir = args[i];
             }
@@ -118,7 +118,7 @@ public final class Export extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <packagedir> for the parameter -packagedir must be specified");
+                    throw new ToolArgumentException("The value <packagedir> for the parameter -packagedir must be specified");
                 }
                 context.packageDir = args[i];
             }
@@ -127,7 +127,7 @@ public final class Export extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <user> for the option -user must be specified");
+                    throw new ToolArgumentException("The value <user> for the option -user must be specified");
                 }
                 context.setUsername(args[i]);
             }
@@ -136,7 +136,7 @@ public final class Export extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <password> for the option -pwd must be specified");
+                    throw new ToolArgumentException("The value <password> for the option -pwd must be specified");
                 }
                 context.setPassword(args[i]);
             }
@@ -170,7 +170,7 @@ public final class Export extends Tool
             }
             else
             {
-                throw new ToolException("Unknown option " + args[i]);
+                throw new ToolArgumentException("Unknown option " + args[i]);
             }
 
             // next argument
@@ -183,34 +183,35 @@ public final class Export extends Tool
     /* (non-Javadoc)
      * @see org.alfresco.tools.Tool#displayHelp()
      */
-    @Override
+    protected @Override
     /*package*/ void displayHelp()
     {
-        System.out.println("Usage: export -user username -s[tore] store [options] packagename");
-        System.out.println("");
-        System.out.println("username: username for login");
-        System.out.println("store: the store to extract from in the form of scheme://store_name");
-        System.out.println("packagename: the filename to export to (with or without extension)");
-        System.out.println("");
-        System.out.println("Options:");
-        System.out.println(" -h[elp] display this help");
-        System.out.println(" -p[ath] the path within the store to extract from (default: /)");
-        System.out.println(" -d[ir] the destination directory to export to (default: current directory)");
-        System.out.println(" -pwd password for login");
-        System.out.println(" -packagedir the directory to place extracted content (default: dir/<packagename>)");
-        System.out.println(" -root extract the item located at export path");
-        System.out.println(" -nochildren do not extract children of the item at export path");
-        System.out.println(" -overwrite force overwrite of existing export package if it already exists");
-        System.out.println(" -quiet do not display any messages during export");
-        System.out.println(" -verbose report export progress");
-        System.out.println(" -zip export in zip format");
+        logError("Usage: export -user username -s[tore] store [options] packagename");
+        logError("");
+        logError("username: username for login");
+        logError("store: the store to extract from in the form of scheme://store_name");
+        logError("packagename: the filename to export to (with or without extension)");
+        logError("");
+        logError("Options:");
+        logError(" -h[elp] display this help");
+        logError(" -p[ath] the path within the store to extract from (default: /)");
+        logError(" -d[ir] the destination directory to export to (default: current directory)");
+        logError(" -pwd password for login");
+        logError(" -packagedir the directory to place extracted content (default: dir/<packagename>)");
+        logError(" -root extract the item located at export path");
+        logError(" -nochildren do not extract children of the item at export path");
+        logError(" -overwrite force overwrite of existing export package if it already exists");
+        logError(" -quiet do not display any messages during export");
+        logError(" -verbose report export progress");
+        logError(" -zip export in zip format");
     }
         
     /* (non-Javadoc)
      * @see org.alfresco.tools.Tool#execute()
      */
-    @Override
-    void execute() throws ToolException
+    protected @Override
+    /*package*/ int execute()
+    	throws ToolException
     {
         ExporterService exporter = getServiceRegistry().getExporterService();
         MimetypeService mimetypeService = getServiceRegistry().getMimetypeService();
@@ -238,9 +239,10 @@ public final class Export extends Tool
         }
         catch(ExporterException e)
         {
-            e.printStackTrace();
             throw new ToolException("Failed to export", e);
         }
+        
+        return 0;
     }
 
     /**
@@ -270,7 +272,7 @@ public final class Export extends Tool
          */
         protected void log(String message)
         {
-            Export.this.log(message);
+            Export.this.logInfo(message);
         }
     }
     
@@ -301,7 +303,7 @@ public final class Export extends Tool
          */
         protected void log(String message)
         {
-            Export.this.log(message);
+            Export.this.logInfo(message);
         }
     }
 
@@ -341,18 +343,18 @@ public final class Export extends Tool
             
             if (storeRef == null)
             {
-                throw new ToolException("Store to export from has not been specified.");
+                throw new ToolArgumentException("Store to export from has not been specified.");
             }
             if (packageName == null)
             {
-                throw new ToolException("Package name has not been specified.");
+                throw new ToolArgumentException("Package name has not been specified.");
             }
             if (destDir != null)
             {
                 File fileDestDir = new File(destDir);
                 if (fileDestDir.exists() == false)
                 {
-                    throw new ToolException("Destination directory " + fileDestDir.getAbsolutePath() + " does not exist.");
+                    throw new ToolArgumentException("Destination directory " + fileDestDir.getAbsolutePath() + " does not exist.");
                 }
             }
         }
@@ -612,7 +614,7 @@ public final class Export extends Tool
          */
         public void warning(String warning)
         {
-            log("Warning: " + warning);            
+            logInfo("Warning: " + warning);            
         }
 
         /* (non-Javadoc)

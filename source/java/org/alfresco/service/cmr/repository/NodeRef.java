@@ -17,6 +17,8 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.Serializable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 
@@ -27,9 +29,9 @@ import org.alfresco.error.AlfrescoRuntimeException;
  */
 public final class NodeRef implements EntityRef, Serializable
 {
-   
     private static final long serialVersionUID = 3760844584074227768L;
     private static final String URI_FILLER = "/";
+    private static final Pattern nodeRefPattern = Pattern.compile(".+://.+/.+");
     
     private final StoreRef storeRef;
     private final String id;
@@ -44,8 +46,7 @@ public final class NodeRef implements EntityRef, Serializable
     {
         if (storeRef == null)
         {
-            throw new IllegalArgumentException(
-                    "Store reference may not be null");
+            throw new IllegalArgumentException("Store reference may not be null");
         }
         if (id == null)
         {
@@ -128,6 +129,18 @@ public final class NodeRef implements EntityRef, Serializable
         return id;
     }
 
+    /**
+     * Determine if passed string conforms to the pattern of a node reference
+     * 
+     * @param nodeRef  the node reference as a string
+     * @return  true => it matches the pattern of a node reference
+     */
+    public static boolean isNodeRef(String nodeRef)
+    {
+    	Matcher matcher = nodeRefPattern.matcher(nodeRef);
+    	return matcher.matches();
+    }
+    
     /**
      * Helper class to convey the status of a <b>node</b>.
      * 

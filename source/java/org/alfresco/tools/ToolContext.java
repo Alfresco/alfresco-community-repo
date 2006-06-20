@@ -162,7 +162,7 @@ package org.alfresco.tools;
      * Validate Tool Context
      */
     /*package*/ void validate()
-        throws ToolException
+        throws ToolArgumentException
     {
         if (login)
         {

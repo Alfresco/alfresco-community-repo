@@ -218,9 +218,9 @@ public class ExporterActionExecuter extends ActionExecuterAbstractBase
         String packageName = (String)ruleAction.getParameterValue(PARAM_PACKAGE_NAME);
 
         // add the default Alfresco content package extension if an extension hasn't been given
-        if (packageName.indexOf(".") == -1)
+        if (!packageName.endsWith("." + ACPExportPackageHandler.ACP_EXTENSION))
         {
-            packageName = packageName + "." + ACPExportPackageHandler.ACP_EXTENSION;
+            packageName += (packageName.charAt(packageName.length() -1) == '.') ? ACPExportPackageHandler.ACP_EXTENSION : "." + ACPExportPackageHandler.ACP_EXTENSION;
         }
         
         // set the name for the new node

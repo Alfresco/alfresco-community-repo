@@ -557,9 +557,9 @@ public class ImporterComponent
                     {
                        importContent(nodeRef, property.getKey(), (String)objVal);
                     }
-                    else if (objVal instanceof List)
+                    else if (objVal instanceof Collection)
                     {
-                       for (String value : (List<String>)objVal)
+                       for (String value : (Collection<String>)objVal)
                        {
                           importContent(nodeRef, property.getKey(), value);
                        }
@@ -716,12 +716,11 @@ public class ImporterComponent
                             if (unresolvedRef != null)
                             {
                                 NodeRef nodeRef = resolveImportedNodeRef(importedRef.context.getNodeRef(), unresolvedRef);
-                                if (nodeRef == null)
+                                // TODO: Provide a better mechanism for invalid references? e.g. report warning
+                                if (nodeRef != null)
                                 {
-                                    // TODO: Probably need an alternative mechanism here e.g. report warning
-                                    throw new ImporterException("Failed to find item referenced (in property " + importedRef.property + ") as " + importedRef.value);
+                                    resolvedRefs.add(nodeRef);
                                 }
-                                resolvedRefs.add(nodeRef);
                             }
                         }
                         refProperty = (Serializable)resolvedRefs;
@@ -729,11 +728,7 @@ public class ImporterComponent
                     else
                     {
                         refProperty = resolveImportedNodeRef(importedRef.context.getNodeRef(), (String)importedRef.value);
-                        if (refProperty == null)
-                        {
-                            // TODO: Probably need an alternative mechanism here e.g. report warning
-                            throw new ImporterException("Failed to find item referenced (in property " + importedRef.property + ") as " + importedRef.value);
-                        }
+                        // TODO: Provide a better mechanism for invalid references? e.g. report warning
                     }
                 }
                 
@@ -1024,23 +1019,31 @@ public class ImporterComponent
             }
             else
             {
-                // resolve relative path
-                try
-                {
-                    List<NodeRef> nodeRefs = searchService.selectNodes(sourceNodeRef, importedRef, null, namespaceService, false);
-                    if (nodeRefs.size() > 0)
-                    {
-                        nodeRef = nodeRefs.get(0);
-                    }
-                }
-                catch(XPathException e)
-                {
-                    nodeRef = new NodeRef(importedRef);
-                }
-                catch(AlfrescoRuntimeException e1)
-                {
-                    // Note: Invalid reference format - try path search instead
-                }
+            	// determine if node reference
+            	if (NodeRef.isNodeRef(importedRef))
+            	{
+            		nodeRef = new NodeRef(importedRef);
+            	}
+            	else
+            	{
+	                // resolve relative path
+	                try
+	                {
+	                    List<NodeRef> nodeRefs = searchService.selectNodes(sourceNodeRef, importedRef, null, namespaceService, false);
+	                    if (nodeRefs.size() > 0)
+	                    {
+	                        nodeRef = nodeRefs.get(0);
+	                    }
+	                }
+	                catch(XPathException e)
+	                {
+	                    nodeRef = new NodeRef(importedRef);
+	                }
+	                catch(AlfrescoRuntimeException e1)
+	                {
+	                    // Note: Invalid reference format - try path search instead
+	                }
+            	}
             }
             
             return nodeRef;
@@ -1235,7 +1238,7 @@ public class ImporterComponent
                 NodeRef nodeRef = assocRef.getChildRef();
 
                 // Note: non-admin authorities take ownership of new nodes
-                if (!authorityService.hasAdminAuthority())
+                if (!(authorityService.hasAdminAuthority() || authenticationService.isCurrentUserTheSystemUser()))
                 {
                     ownableService.takeOwnership(nodeRef);
                 }

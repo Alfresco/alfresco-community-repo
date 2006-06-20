@@ -49,4 +49,15 @@ public class NodeItemContext extends ElementContext
     {
         return nodeContext;
     }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        return "NodeItemContext[nodeContext=" + nodeContext.toString() + "]";
+    }
+ 
+
 }

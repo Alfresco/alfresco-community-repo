@@ -537,7 +537,7 @@ class SuperRepository
      * @param path The path to the directory.
      * @return A List of FolderEntries.
      */
-    public List<FolderEntry> getListing(int version, String path)
+    public Map<String, AVMNodeDescriptor> getListing(int version, String path)
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);

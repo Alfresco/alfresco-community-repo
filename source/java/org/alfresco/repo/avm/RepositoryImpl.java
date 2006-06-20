@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.hibernate.Query;
 
@@ -275,19 +276,17 @@ class RepositoryImpl implements Repository, Serializable
      * @param path The path to the directory.
      * @return A List of FolderEntries.
      */
-    public List<FolderEntry> getListing(int version, String path)
+    public Map<String, AVMNodeDescriptor> getListing(int version, String path)
     {
         Lookup lPath = lookupDirectory(version, path);
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         Map<String, AVMNode> listing = dir.getListing(lPath);
-        ArrayList<FolderEntry> results = new ArrayList<FolderEntry>();
+        Map<String, AVMNodeDescriptor> results = new TreeMap<String, AVMNodeDescriptor>();
         for (String name : listing.keySet())
         {
             AVMNode child = listing.get(name);
-            FolderEntry item = new FolderEntry();
-            item.setName(name);
-            item.setType(child.getType());
-            results.add(item);
+            AVMNodeDescriptor desc = child.getDescriptor(lPath);
+            results.put(name, desc);
         }
         return results;
     }

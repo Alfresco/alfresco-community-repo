@@ -241,7 +241,7 @@ public class AVMServiceImpl implements AVMService
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMService#getFolderListing(int, java.lang.String)
      */
-    public List<FolderEntry> getDirectoryListing(final int version, final String path)
+    public Map<String, AVMNodeDescriptor> getDirectoryListing(final int version, final String path)
     {
         if (path == null)
         {
@@ -249,7 +249,7 @@ public class AVMServiceImpl implements AVMService
         }
         class HTxnCallback implements HibernateTxnCallback
         {
-            public List<FolderEntry> listing;
+            public Map<String, AVMNodeDescriptor> listing;
             
             public void perform(Session session)
             {

@@ -67,6 +67,13 @@
     	   timeToIdleSeconds="300"
     	   timeToLiveSeconds="600"
     	   memoryStoreEvictionPolicy="LRU"/>
+	<cache name="org.alfresco.repo.avm.DeletedChildImpl"
+		   maxElementsInMemory="2000"
+		   eternal="true"
+		   overflowToDisk="false"
+		   timeToIdleSeconds="300"
+		   timeToLiveSeconds="600"
+		   memoryStoreEvictionPolicy="LRU"/>
     <cache name="DeletedChild.ByParent"
     	   maxElementsInMemory="1000"
     	   eternal="true"

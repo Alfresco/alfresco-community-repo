@@ -70,7 +70,7 @@ public interface AVMService
      * @param path The simple absolute path to the file node.
      * @return A List of FolderEntrys.
      */
-    public List<FolderEntry> getDirectoryListing(int version, String path);
+    public Map<String, AVMNodeDescriptor> getDirectoryListing(int version, String path);
     
     /**
      * Get a directory listing from a node descriptor.

@@ -72,4 +72,32 @@ class MergeLinkImpl implements MergeLink, Serializable
     {
         return fTo;
     }
+
+    /**
+     * @param obj
+     * @return
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (!(obj instanceof MergeLink))
+        {
+            return false;
+        }
+        MergeLink o = (MergeLink)obj;
+        return fFrom.equals(o.getMfrom()) && fTo.equals(o.getMto());
+    }
+
+    /**
+     * @return
+     */
+    @Override
+    public int hashCode()
+    {
+        return fFrom.hashCode() + fTo.hashCode();
+    }
 }

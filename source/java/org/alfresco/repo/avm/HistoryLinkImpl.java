@@ -72,4 +72,33 @@ class HistoryLinkImpl implements HistoryLink, Serializable
     {
         return fDescendent;
     }
+
+    /**
+     * @param obj
+     * @return
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (!(obj instanceof HistoryLink))
+        {
+            return false;
+        }
+        HistoryLink o = (HistoryLink)obj;
+        return fAncestor.equals(o.getAncestor()) && fDescendent.equals(o.getDescendent());
+        
+    }
+
+    /**
+     * @return
+     */
+    @Override
+    public int hashCode()
+    {
+        return fAncestor.hashCode() + fDescendent.hashCode();
+    }
 }

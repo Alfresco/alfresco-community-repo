@@ -20,7 +20,7 @@ package org.alfresco.repo.avm;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.alfresco.repo.avm.hibernate.HibernateHelper;
@@ -117,10 +117,10 @@ public class AVMServiceTestBase extends TestCase
             (desc.getType() == AVMNodeType.LAYERED_DIRECTORY && followLinks))
         {
             String basename = path.endsWith("/") ? path : path + "/";
-            List<FolderEntry> listing = fService.getDirectoryListing(version, path);
-            for (FolderEntry entry : listing)
+            Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(version, path);
+            for (String name : listing.keySet())
             {
-                builder.append(recursiveList(basename + entry.getName(), version, indent + 2, followLinks));
+                builder.append(recursiveList(basename + name, version, indent + 2, followLinks));
             }
         }
         return builder.toString();

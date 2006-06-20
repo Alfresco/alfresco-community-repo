@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The repository interface.  Methods for filesystem like, versioning,
@@ -94,7 +95,7 @@ interface Repository
      * @param path The path to the directory.
      * @return A listing.
      */
-    public List<FolderEntry> getListing(int version, String path);
+    public Map<String, AVMNodeDescriptor> getListing(int version, String path);
 
     /**
      * Get an output stream to a file.

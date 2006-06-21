@@ -147,7 +147,7 @@ class RepositoryImpl implements Repository, Serializable
      */
     public void createDirectory(String path, String name)
     {
-        Lookup lPath = lookupDirectory(-1, path);
+        Lookup lPath = lookupDirectory(-1, path, true);
 //        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1) != null)
@@ -168,7 +168,7 @@ class RepositoryImpl implements Repository, Serializable
             newDir = new PlainDirectoryNodeImpl(this);
         }
         newDir.setVersionID(getNextVersionID());
-        dir.addChild(name, newDir, lPath);
+        dir.putChild(name, newDir);
     }
 
     /**
@@ -180,7 +180,7 @@ class RepositoryImpl implements Repository, Serializable
     public void createLayeredDirectory(String srcPath, String dstPath,
                                        String name)
     {
-        Lookup lPath = lookupDirectory(-1, dstPath);
+        Lookup lPath = lookupDirectory(-1, dstPath, true);
 //        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1) != null)
@@ -202,7 +202,7 @@ class RepositoryImpl implements Repository, Serializable
             // Otherwise we issue a brand new layer id.
             newDir.setLayerID(fSuper.issueLayerID());
         }
-        dir.addChild(name, newDir, lPath);
+        dir.putChild(name, newDir);
         newDir.setVersionID(getNextVersionID());
     }
 
@@ -215,7 +215,7 @@ class RepositoryImpl implements Repository, Serializable
      */
     public OutputStream createFile(String path, String name)
     {
-        Lookup lPath = lookupDirectory(-1, path);
+        Lookup lPath = lookupDirectory(-1, path, true);
 //        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1) != null)
@@ -224,7 +224,7 @@ class RepositoryImpl implements Repository, Serializable
         }
         PlainFileNodeImpl file = new PlainFileNodeImpl(this);
         file.setVersionID(getNextVersionID());
-        dir.addChild(name, file, lPath);
+        dir.putChild(name, file);
         return file.getContentForWrite().getOutputStream();
     }
 
@@ -236,7 +236,7 @@ class RepositoryImpl implements Repository, Serializable
      */
     public void createLayeredFile(String srcPath, String dstPath, String name)
     {
-        Lookup lPath = lookupDirectory(-1, dstPath);
+        Lookup lPath = lookupDirectory(-1, dstPath, true);
 //        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1) != null)
@@ -246,7 +246,7 @@ class RepositoryImpl implements Repository, Serializable
         // TODO Reexamine decision to not check validity of srcPath.
         LayeredFileNodeImpl newFile =
             new LayeredFileNodeImpl(srcPath, this);
-        dir.addChild(name, newFile, lPath);
+        dir.putChild(name, newFile);
         newFile.setVersionID(getNextVersionID());
     }
 
@@ -258,7 +258,7 @@ class RepositoryImpl implements Repository, Serializable
      */
     public InputStream getInputStream(int version, String path)
     {
-        Lookup lPath = lookup(version, path);
+        Lookup lPath = lookup(version, path, false);
         AVMNode node = lPath.getCurrentNode();
         if (node.getType() != AVMNodeType.PLAIN_FILE &&
             node.getType() != AVMNodeType.LAYERED_FILE)
@@ -278,7 +278,7 @@ class RepositoryImpl implements Repository, Serializable
      */
     public Map<String, AVMNodeDescriptor> getListing(int version, String path)
     {
-        Lookup lPath = lookupDirectory(version, path);
+        Lookup lPath = lookupDirectory(version, path, false);
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         Map<String, AVMNode> listing = dir.getListing(lPath);
         Map<String, AVMNodeDescriptor> results = new TreeMap<String, AVMNodeDescriptor>();
@@ -298,7 +298,7 @@ class RepositoryImpl implements Repository, Serializable
      */
     public OutputStream getOutputStream(String path)
     {
-        Lookup lPath = lookup(-1, path);
+        Lookup lPath = lookup(-1, path, true);
 //        lPath.acquireLocks();
         AVMNode node = lPath.getCurrentNode();
         if (node.getType() != AVMNodeType.PLAIN_FILE &&
@@ -307,9 +307,8 @@ class RepositoryImpl implements Repository, Serializable
             throw new AVMWrongTypeException("Not a file: " + path);
         }
         FileNode file = (FileNode)node;
-        file = (FileNode)file.copyOnWrite(lPath);
         FileContent content = file.getContentForWrite(); 
-        return content.getOutputStream();    // TODO Do we really need fSuper?
+        return content.getOutputStream();
     }
 
     /**
@@ -326,7 +325,7 @@ class RepositoryImpl implements Repository, Serializable
         {
             throw new AVMException("Access denied: " + path);
         }
-        Lookup lPath = lookup(version, path);
+        Lookup lPath = lookup(version, path, write);
 //        if (write)
 //        {
 //            lPath.acquireLocks();
@@ -341,7 +340,6 @@ class RepositoryImpl implements Repository, Serializable
         FileContent content = null;
         if (write)
         {
-            file = (FileNode)file.copyOnWrite(lPath);
             content = file.getContentForWrite();
         }
         else
@@ -359,14 +357,14 @@ class RepositoryImpl implements Repository, Serializable
     public void removeNode(String path, String name)
     {
         // TODO Are we double checking for existence?
-        Lookup lPath = lookupDirectory(-1, path);
+        Lookup lPath = lookupDirectory(-1, path, true);
 //        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1) == null)
         {
             throw new AVMNotFoundException("Does not exist: " + name);
         }
-        dir.removeChild(name, lPath);
+        dir.removeChild(name);
     }
 
     /**
@@ -376,7 +374,7 @@ class RepositoryImpl implements Repository, Serializable
      */
     public void uncover(String dirPath, String name)
     {
-        Lookup lPath = lookup(-1, dirPath);
+        Lookup lPath = lookup(-1, dirPath, true);
 //        lPath.acquireLocks();
         AVMNode node = lPath.getCurrentNode();
         if (node.getType() != AVMNodeType.LAYERED_DIRECTORY)
@@ -475,9 +473,10 @@ class RepositoryImpl implements Repository, Serializable
      * Lookup up a path.
      * @param version The version to look in.
      * @param path The path to look up.
+     * @param write Whether this is in the context of a write.
      * @return A Lookup object.
      */
-    public Lookup lookup(int version, String path)
+    public Lookup lookup(int version, String path, boolean write)
     {
         // Make up a Lookup to hold the results.
         Lookup result = new Lookup(this, fName);
@@ -507,7 +506,8 @@ class RepositoryImpl implements Repository, Serializable
         }
 //        fSuper.getSession().lock(dir, LockMode.READ);
         // Add an entry for the root.
-        result.add(dir, "");
+        result.add(dir, "", write);
+        dir = (DirectoryNode)result.getCurrentNode();
         if (pathElements.length == 0)
         {
             return result;
@@ -527,9 +527,9 @@ class RepositoryImpl implements Repository, Serializable
             {
                 throw new AVMWrongTypeException("Not a directory: " + pathElements[i]);
             }
-            dir = (DirectoryNode)child;
 //            fSuper.getSession().lock(dir, LockMode.READ);
-            result.add(dir, pathElements[i]);
+            result.add(child, pathElements[i], write);
+            dir = (DirectoryNode)result.getCurrentNode();
         }
         // Now look up the last element.
         AVMNode child = dir.lookupChild(result, pathElements[pathElements.length - 1], version);
@@ -538,7 +538,7 @@ class RepositoryImpl implements Repository, Serializable
             throw new AVMNotFoundException("Not found: " + pathElements[pathElements.length - 1]);
         }
 //        fSuper.getSession().lock(child, LockMode.READ);
-        result.add(child, pathElements[pathElements.length - 1]);
+        result.add(child, pathElements[pathElements.length - 1], write);
         return result;
     }
 
@@ -573,13 +573,14 @@ class RepositoryImpl implements Repository, Serializable
      * Lookup a node and insist that it is a directory.
      * @param version The version to look under.
      * @param path The path to the directory.
+     * @param write Whether this is in a write context.
      * @return A Lookup object.
      */
-    public Lookup lookupDirectory(int version, String path)
+    public Lookup lookupDirectory(int version, String path, boolean write)
     {
         // Just do a regular lookup and assert that the last element
         // is a directory.
-        Lookup lPath = lookup(version, path);
+        Lookup lPath = lookup(version, path, write);
         if (lPath.getCurrentNode().getType() != AVMNodeType.PLAIN_DIRECTORY &&
             lPath.getCurrentNode().getType() != AVMNodeType.LAYERED_DIRECTORY)
         {
@@ -596,7 +597,7 @@ class RepositoryImpl implements Repository, Serializable
      */
     public String getIndirectionPath(int version, String path)
     {
-        Lookup lPath = lookup(version, path);
+        Lookup lPath = lookup(version, path, false);
         AVMNode node = lPath.getCurrentNode();
         if (node.getType() == AVMNodeType.LAYERED_DIRECTORY)
         {
@@ -615,7 +616,7 @@ class RepositoryImpl implements Repository, Serializable
      */
     public void makePrimary(String path)
     {
-        Lookup lPath = lookupDirectory(-1, path);
+        Lookup lPath = lookupDirectory(-1, path, true);
 //        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (!lPath.isLayered())
@@ -632,7 +633,7 @@ class RepositoryImpl implements Repository, Serializable
      */
     public void retargetLayeredDirectory(String path, String target)
     {
-        Lookup lPath = lookupDirectory(-1, path);
+        Lookup lPath = lookupDirectory(-1, path, true);
 //        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (!lPath.isLayered())

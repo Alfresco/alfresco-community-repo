@@ -92,6 +92,7 @@ public class AVMServiceTest extends AVMServiceTestBase
 //            assertEquals("foo", listing.get(1).getName());
             // /layer/b should contain foo, bar, and baz.
             listing = fService.getDirectoryListing(-1, "main:/layer/b");
+            System.out.println(recursiveList("main", -1, true));
             assertEquals(3, listing.size());
 //            assertEquals("bar", listing.get(0).getName());
 //            assertEquals("baz", listing.get(1).getName());
@@ -1114,6 +1115,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
+            fail();
         }
     }
     

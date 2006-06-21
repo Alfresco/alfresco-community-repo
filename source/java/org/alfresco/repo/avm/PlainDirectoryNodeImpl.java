@@ -73,27 +73,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     }
 
     /**
-     * Add a child to this directory, possibly doing a copy. 
-     * @param name The name of the child.
-     * @param child The child node.
-     * @param lPath The lookup path to this directory.
-     * @return Success or failure.
-     */   
-    public boolean addChild(String name, AVMNode child, Lookup lPath)
-    {
-        // No, if a child with the given name exists. Note that uniqueness
-        // of names is built into the AVM, as opposed to being configurable.
-        if (getChild(name) != null)
-        {
-            return false;
-        }
-        DirectoryNode toModify = (DirectoryNode)copyOnWrite(lPath);
-        toModify.putChild(name, child);
-        child.setRepository(lPath.getRepository());
-        return true;
-    }
-
-    /**
      * Does this directory directly contain the given node. 
      * @param node The node to check.
      * @return Whether it was found.
@@ -187,31 +166,13 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @param name The name of the child to remove.
      */
     @SuppressWarnings("unchecked")
-    public void rawRemoveChild(String name)
+    public void removeChild(String name)
     {
         ChildEntry entry = getChild(name);
         if (entry != null)
         {
             SuperRepository.GetInstance().getSession().delete(entry);
         }
-    }
-
-    /**
-     * Remove a child. Possibly copy.
-     * @param name The name of the child to remove.
-     * @param lPath The lookup path.
-     * @return Success or failure.
-     */
-    public boolean removeChild(String name, Lookup lPath)
-    {
-        // Can't remove it if it's not there.
-        if (getChild(name) == null)
-        {
-            return false;
-        }
-        DirectoryNode toModify = (DirectoryNode)copyOnWrite(lPath);
-        toModify.rawRemoveChild(name);
-        return true;
     }
 
     /**
@@ -294,9 +255,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      */
     public void turnPrimary(Lookup lPath)
     {
-        LayeredDirectoryNode toModify = (LayeredDirectoryNode)copyOnWrite(lPath);
-        Lookup lookup = SuperRepository.GetInstance().lookup(-1, lPath.getRepresentedPath());
-        toModify.rawSetPrimary(lookup.getCurrentIndirection());
+        assert false : "Should never happen.";
     }
 
     /**
@@ -306,8 +265,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      */
     public void retarget(Lookup lPath, String target)
     {
-        LayeredDirectoryNode toModify = (LayeredDirectoryNode)copyOnWrite(lPath);
-        toModify.rawSetPrimary(target);
+        assert false : "Should never happen.";
     }
 
     /**

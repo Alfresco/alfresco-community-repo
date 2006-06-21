@@ -57,27 +57,10 @@ interface DirectoryNode extends AVMNode
     public AVMNodeDescriptor lookupChild(AVMNodeDescriptor mine, String name);
 
     /**
-     * Add a child node.  Fails if child already exists.
-     * Copy is possible.
-     * @param name The name to give the child.
-     * @param child The child to add.
-     * @param The lookup path.
-     */
-    public boolean addChild(String name, AVMNode child, Lookup lPath);
-
-    /**
-     * Remove a child node. Fails if child does not exist.
-     * Copy is possible.
-     * @param name The name of the child to remove.
-     * @param lPath The lookup path.
-     */
-    public boolean removeChild(String name, Lookup lPath);
-
-    /**
      * Remove a child directly.  No copy is possible.
      * @param name The name of the child to remove.
      */
-    public void rawRemoveChild(String name);
+    public void removeChild(String name);
 
     /**
      * Get a directory listing.

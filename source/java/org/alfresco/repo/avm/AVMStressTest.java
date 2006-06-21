@@ -46,7 +46,7 @@ public class AVMStressTest extends AVMServiceTestBase
             System.out.println("Load time: " + (System.currentTimeMillis() - start));
             List<AVMTester> testers = new ArrayList<AVMTester>();
             List<Thread> threads = new ArrayList<Thread>();
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 8; i++)
             {
                 AVMTester tester
                     = new AVMTester(400,      // create file.
@@ -74,12 +74,12 @@ public class AVMStressTest extends AVMServiceTestBase
                 thread.start();
             }
             int exited = 0;
-            while (exited != 1)
+            while (exited != 8)
             {
                 try
                 {
                     Thread.sleep(2000);
-                    for (int i = 0; i < 1; i++)
+                    for (int i = 0; i < 8; i++)
                     {
                         if (threads.get(i) == null)
                         {

@@ -59,13 +59,6 @@ interface AVMNode
     public void setVersionID(int version);
 
     /**
-     * Perform a COW if required.
-     * @param lPath The lookup path.
-     * @return A 'copied' version of this node.
-     */
-    public AVMNode copyOnWrite(Lookup lPath);
-
-    /**
      * Possibly copy ourselves.
      * @param lPath The Lookup for this node.
      * @return A copy of ourself or null if no copy was necessary.

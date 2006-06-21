@@ -156,17 +156,19 @@ interface Repository
      * Lookup a node.
      * @param version The version to look under.
      * @param path The path to the node.
+     * @param write Whether this is in a write context.
      * @return A Lookup object.
      */
-    public Lookup lookup(int version, String path);
+    public Lookup lookup(int version, String path, boolean write);
 
     /**
      * Lookup a directory.
      * @param version The version to look under.
      * @param path The path to the directory.
+     * @param write Whether this is in a write context.
      * @return A Lookup object.
      */
-    public Lookup lookupDirectory(int version, String path);
+    public Lookup lookupDirectory(int version, String path, boolean write);
 
     /**
      * For a layered node, get its indirection.

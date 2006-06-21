@@ -96,8 +96,10 @@ class Lookup
      * Add a new node to the lookup.
      * @param node The node to add.
      * @param name The name of the node in the path.
+     * @param write Whether this is in the context of 
+     * a write operation.
      */
-    public void add(AVMNode node, String name)
+    public void add(AVMNode node, String name, boolean write)
     {
         LookupComponent comp = new LookupComponent();
         comp.setName(name);
@@ -109,6 +111,8 @@ class Lookup
         }
         else
         {
+            // TODO The isDirectlyContained should be eliminated in favor of 
+            // a cumulative state.
             if (fPosition >= 0 && (!((DirectoryNode)fComponents.get(fPosition).getNode()).directlyContains(node) ||
                                    !isDirectlyContained()))
             {
@@ -127,20 +131,7 @@ class Lookup
             }
             else
             {
-                String parentIndirection = fComponents.get(fPosition).getIndirection();
-                if (parentIndirection == null)
-                {
-                    System.out.println("Oink!");
-                }
-                if (parentIndirection.endsWith("/"))  // This currently is impossible because
-                                                      // root dirs are always plain.
-                {
-                    comp.setIndirection(parentIndirection + name);
-                }
-                else
-                {
-                    comp.setIndirection(parentIndirection + "/" + name);
-                }
+                comp.setIndirection(computeIndirection(name));
             }
             fLayeredYet = true;
             // Record the first layer seen.
@@ -151,10 +142,58 @@ class Lookup
             }
             fLowestLayerIndex = fPosition + 1;
         }
+        // In a write context a plain directory contained in a layer will
+        // be copied so we will need to compute an indirection path.
+        else if (fLayeredYet && write)
+        {
+            comp.setIndirection(computeIndirection(name));
+        }
         comp.setLowestLayerIndex(fLowestLayerIndex);
         comp.setLayered(fLayeredYet);
         fComponents.add(comp);
         fPosition++;
+        // If we are in a write context do copy on write.
+        if (write)
+        {
+            // Possibly copy.
+            node = node.possiblyCopy(this);
+            if (node == null)
+            {
+                return;
+            }
+            // Node was copied.
+            fComponents.get(fPosition).setNode(node);
+            if (fPosition == 0)
+            {
+                // Inform the repository of a new root.
+                fRepository.setNewRoot((DirectoryNode)node);
+                return;
+            }
+            // Not the root. Check if we are the top layer and insert this into it's parent.
+            if (fPosition == fTopLayerIndex)
+            {
+                fTopLayer = (LayeredDirectoryNode)node;
+            }
+            ((DirectoryNode)fComponents.get(fPosition - 1).getNode()).putChild(name, node);
+        }
+    }
+    
+    /**
+     * A helper for keeping track of indirection.
+     * @param name The name of the being added node.
+     * @return The indirection for the being added node.
+     */
+    private String computeIndirection(String name)
+    {
+        String parentIndirection = fComponents.get(fPosition).getIndirection();
+        if (parentIndirection.endsWith("/"))
+        {
+            return parentIndirection + name;
+        }
+        else
+        {
+            return parentIndirection + "/" + name;
+        }
     }
     
     /**

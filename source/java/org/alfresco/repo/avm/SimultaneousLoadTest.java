@@ -32,7 +32,7 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
     {
         try
         {
-            int n = 16;
+            int n = 4;
             for (int i = 0; i < n; i++)
             {
                 fService.createDirectory("main:/", "d" + i);

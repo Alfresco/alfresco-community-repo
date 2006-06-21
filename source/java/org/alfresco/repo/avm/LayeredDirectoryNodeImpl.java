@@ -282,44 +282,6 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
     }
 
-    /**
-     * Add a child to this directory and possibly COW.
-     * @param name The name of the child to add.
-     * @param child The child to add.
-     * @param lPath The Lookup.
-     * @return Whether the child was successfully added.
-     */
-    public boolean addChild(String name, AVMNode child, Lookup lPath)
-    {
-        if (getChild(name) != null)
-        {
-            return false;
-        }
-        if (getDeleted(name) == null)
-        {
-            try
-            {
-                Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
-                DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-                if (dir.lookupChild(lookup, name, -1) != null)
-                {
-                    return false;
-                }
-            }
-            catch (AVMException re)
-            {
-                if (re instanceof AVMCycleException)
-                {
-                    throw re;
-                }
-                // Do nothing.
-            }
-        }
-        DirectoryNode toModify = (DirectoryNode)copyOnWrite(lPath);
-        toModify.putChild(name, child);
-        child.setRepository(lPath.getRepository());
-        return true;
-    }
 
     /**
      * Does this node directly contain the indicated node.
@@ -506,7 +468,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param name The name of the child to remove.
      */
     @SuppressWarnings("unchecked")
-    public void rawRemoveChild(String name)
+    public void removeChild(String name)
     {
         ChildEntry entry = getChild(name);
         if (entry != null)
@@ -518,48 +480,6 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         SuperRepository.GetInstance().getSession().save(dc);
     }
     
-    /**
-     * Remove a child by name.  Possibly COW.
-     * @param name The name of the child to remove.
-     * @param lPath The Lookup.
-     * @return Whether the child was successfully removed.
-     */
-    @SuppressWarnings("unchecked")
-    public boolean removeChild(String name, Lookup lPath)
-    {
-        // Can't delete something that is already deleted.
-        if (getDeleted(name) != null)
-        {
-            return false;
-        }
-        ChildEntry entry = getChild(name);
-        if (entry == null)
-        {
-            // See if the name is seen via indirection.
-            try
-            {
-                Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
-                DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-                if (dir.lookupChild(lookup, name, -1) == null)
-                {
-                    return false;
-                }
-            }
-            catch (AVMException re)
-            {
-                if (re instanceof AVMCycleException)
-                {
-                    throw re;
-                }
-                return false;
-            }
-        }
-        LayeredDirectoryNode toModify =
-            (LayeredDirectoryNode)copyOnWrite(lPath);
-        toModify.rawRemoveChild(name);
-        return true;
-    }
-
     /**
      * Get the type of this node.
      * @return The type of this node.
@@ -596,8 +516,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     public void turnPrimary(Lookup lPath)
     {
         String path = lPath.getCurrentIndirection();
-        LayeredDirectoryNode toModify = (LayeredDirectoryNode)copyOnWrite(lPath);
-        toModify.rawSetPrimary(path);
+        rawSetPrimary(path);
     }
 
     /**
@@ -606,8 +525,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void retarget(Lookup lPath, String target)
     {
-        LayeredDirectoryNode toModify = (LayeredDirectoryNode)copyOnWrite(lPath);
-        toModify.rawSetPrimary(target);
+        rawSetPrimary(target);
     }
     
     /**
@@ -617,8 +535,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void uncover(Lookup lPath, String name)
     {
-        LayeredDirectoryNodeImpl toModify = (LayeredDirectoryNodeImpl)copyOnWrite(lPath);
-        DeletedChild dc = toModify.getDeleted(name);
+        DeletedChild dc = getDeleted(name);
         if (dc != null)
         {
             SuperRepository.GetInstance().getSession().delete(dc);

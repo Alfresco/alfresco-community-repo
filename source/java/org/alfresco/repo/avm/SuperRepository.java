@@ -201,13 +201,13 @@ class SuperRepository
         String [] pathParts = SplitPath(srcPath);
         Repository srcRepo = getRepositoryByName(pathParts[0], false);
 //        fSession.get().lock(srcRepo, LockMode.READ);
-        Lookup sPath = srcRepo.lookup(version, pathParts[1]);
+        Lookup sPath = srcRepo.lookup(version, pathParts[1], false);
         // Lookup the destination directory.
         fLookupCount.set(1);
         pathParts = SplitPath(dstPath);
         Repository dstRepo = getRepositoryByName(pathParts[0], true);
 //        fSession.get().lock(dstRepo, LockMode.UPGRADE);
-        Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1]);
+        Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1], true);
 //        dPath.acquireLocks();
         DirectoryNode dirNode = (DirectoryNode)dPath.getCurrentNode();
         AVMNode srcNode = sPath.getCurrentNode();
@@ -235,7 +235,7 @@ class SuperRepository
         }
         dstNode.setVersionID(dstRepo.getNextVersionID());
         dstNode.setAncestor(srcNode);
-        dirNode.addChild(name, dstNode, dPath);
+        dirNode.putChild(name, dstNode);
     }
     
     /**
@@ -287,7 +287,7 @@ class SuperRepository
         String [] pathParts = SplitPath(srcPath);
         Repository srcRepo = getRepositoryByName(pathParts[0], true);
 //        fSession.get().lock(srcRepo, LockMode.UPGRADE);
-        Lookup sPath = srcRepo.lookupDirectory(-1, pathParts[1]);
+        Lookup sPath = srcRepo.lookupDirectory(-1, pathParts[1], true);
 //        sPath.acquireLocks();
         DirectoryNode srcDir = (DirectoryNode)sPath.getCurrentNode();
         AVMNode srcNode = srcDir.lookupChild(sPath, srcName, -1);
@@ -299,7 +299,7 @@ class SuperRepository
         pathParts = SplitPath(dstPath);
         Repository dstRepo = getRepositoryByName(pathParts[0], true);
 //        fSession.get().lock(dstRepo, LockMode.UPGRADE);
-        Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1]);
+        Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1], true);
 //        dPath.acquireLocks();
         DirectoryNode dstDir = (DirectoryNode)dPath.getCurrentNode();
         AVMNode dstNode = dstDir.lookupChild(dPath, dstName, -1);
@@ -385,14 +385,9 @@ class SuperRepository
         {
             dstNode = new PlainFileNodeImpl((PlainFileNode)srcNode, dstRepo);
         }
-        srcDir.removeChild(srcName, sPath);
-        fLookupCount.set(1);
-        pathParts = SplitPath(dstPath);
-        dPath = dstRepo.lookup(-1, pathParts[1]);
-//        dPath.acquireLocks();
-        dstDir = (DirectoryNode)dPath.getCurrentNode();
+        srcDir.removeChild(srcName);
         dstNode.setVersionID(dstRepo.getNextVersionID());
-        dstDir.addChild(dstName, dstNode, dPath);
+        dstDir.putChild(dstName, dstNode);
         dstNode.setAncestor(srcNode);
     }
 
@@ -674,8 +669,8 @@ class SuperRepository
     private Repository getRepositoryByName(String name, boolean write)
     {
         return (Repository)fSession.get().get(RepositoryImpl.class, 
-                                              name,
-                                              write ? LockMode.UPGRADE : LockMode.READ);
+                                              name /* ,
+                                              write ? LockMode.UPGRADE : LockMode.READ */);
     }
 
     /**
@@ -711,7 +706,7 @@ class SuperRepository
         String [] pathParts = SplitPath(path);
         Repository rep = getRepositoryByName(pathParts[0], false);
 //        fSession.get().lock(rep, LockMode.READ);
-        return rep.lookup(version, pathParts[1]);
+        return rep.lookup(version, pathParts[1], false);
     }
     
     /**
@@ -746,14 +741,14 @@ class SuperRepository
     public Lookup lookupDirectory(int version, String path)
     {
         fLookupCount.set(fLookupCount.get() + 1);
-        if (fLookupCount.get() > 10)
+        if (fLookupCount.get() > 50)
         {
             throw new AVMCycleException("Cycle in lookup.");
         }
         String [] pathParts = SplitPath(path);
         Repository rep = getRepositoryByName(pathParts[0], false);
 //        fSession.get().lock(rep, LockMode.READ);
-        return rep.lookupDirectory(version, pathParts[1]);
+        return rep.lookupDirectory(version, pathParts[1], false);
     }
 
     /**

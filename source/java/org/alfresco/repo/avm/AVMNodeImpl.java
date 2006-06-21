@@ -149,47 +149,6 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
     }
     
     /**
-     * Perform a copy on write on this node and recursively
-     * up to the repository root.  This is a template method
-     * which farms out work to possiblyCopy().
-     * @param lPath The Lookup.
-     */
-    public AVMNode copyOnWrite(Lookup lPath)
-    {
-        // Call the subclass's copy on write logic.
-        AVMNode newMe = possiblyCopy(lPath);
-        // No copying needed, so short circuit.
-        if (newMe == null)
-        {
-            return this;
-        }
-        String myName = lPath.getName();
-        lPath.upCurrentNode();
-        Repository repos = lPath.getRepository();
-        newMe.setVersionID(repos.getNextVersionID());
-        // Get our parent directory if we have one.
-        DirectoryNode parent = null;
-        if (!getIsRoot())
-        {
-            parent = (DirectoryNode)lPath.getCurrentNode();
-        }
-        if (parent != null)  
-        {
-            // Recursive invocation.
-            DirectoryNode newParent =
-                (DirectoryNode)parent.copyOnWrite(lPath);
-            newParent.putChild(myName, newMe);
-        }
-        else // Null parent means root of repository.
-        {
-            repos.setNewRoot((DirectoryNode)newMe);
-        }
-        newMe.setRepository(repos);
-        newMe.setIsNew(true);
-        return newMe;
-    }
-
-    /**
      * Set the owning repository for this.
      * @param repo The owning repository.
      */

@@ -50,7 +50,7 @@ public class AVMServiceTestBase extends TestCase
     @Override
     protected void setUp() throws Exception
     {
-        HibernateHelper.GetSessionFactory().getStatistics().setStatisticsEnabled(true);
+//        HibernateHelper.GetSessionFactory().getStatistics().setStatisticsEnabled(true);
         AVMServiceImpl service = new AVMServiceImpl();
         service.setStorage("build/test-results/storage");
         service.init(true);
@@ -66,9 +66,9 @@ public class AVMServiceTestBase extends TestCase
     {
         long now = System.currentTimeMillis();
         System.out.println("Timing: " + (now - fStartTime) + "ms");
-        Statistics stats = HibernateHelper.GetSessionFactory().getStatistics();
-        stats.logSummary();
-        stats.clear();
+//        Statistics stats = HibernateHelper.GetSessionFactory().getStatistics();
+//        stats.logSummary();
+//        stats.clear();
         HibernateHelper.Reset();
     }
     

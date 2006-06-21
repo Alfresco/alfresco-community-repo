@@ -27,6 +27,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.StaleStateException;
 import org.hibernate.Transaction;
 import org.hibernate.exception.GenericJDBCException;
+import org.hibernate.exception.LockAcquisitionException;
 
 /**
  * Helper for DAOs.
@@ -106,26 +107,30 @@ public class HibernateTxn
                     }
                     // If we've lost a race or we've deadlocked, retry.
                     if (t instanceof StaleStateException ||
-                        t instanceof GenericJDBCException)
+                        t instanceof GenericJDBCException ||
+                        t instanceof LockAcquisitionException)
                     {
                         if (t instanceof StaleStateException)
                         {
                             System.err.println("Lost Race");
-                            continue;
                         }
-                        System.err.println("Deadlock");
-                        try
+                        else
                         {
-                            long interval;
-                            synchronized (fRandom)
+                            System.err.println("Deadlock");
+                            try
                             {
-                                interval = fRandom.nextInt(1000);
+                                long interval;
+                                synchronized (fRandom)
+                                {
+                                    interval = fRandom.nextInt(1000);
+                                }
+                                Thread.sleep(interval);
+                                continue;
                             }
-                            Thread.sleep(interval);
-                        }
-                        catch (InterruptedException ie)
-                        {
-                            // Do nothing.
+                            catch (InterruptedException ie)
+                            {
+                               // Do nothing.
+                            }
                         }
                         continue;
                     }

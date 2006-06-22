@@ -16,6 +16,7 @@
  */
 package org.alfresco.web.app;
 
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -35,7 +36,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
@@ -164,7 +164,8 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
     */
    public void sessionCreated(HttpSessionEvent event)
    {
-      if (logger.isDebugEnabled()) logger.debug("HTTP session created: " + event.getSession().getId());
+      if (logger.isDebugEnabled())
+         logger.debug("HTTP session created: " + event.getSession().getId());
    }
 
    /**
@@ -172,27 +173,42 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
     */
    public void sessionDestroyed(HttpSessionEvent event)
    {
-      if (logger.isDebugEnabled()) logger.debug("HTTP session destroyed: " + event.getSession().getId());
-
-      String userKey;
+      if (logger.isDebugEnabled())
+         logger.debug("HTTP session destroyed: " + event.getSession().getId());
+      
+      String userKey = null;
       if (Application.inPortalServer() == false)
       {
          userKey = AuthenticationHelper.AUTHENTICATION_USER;
       }
       else
       {
-         userKey = AlfrescoFacesPortlet.MANAGED_BEAN_PREFIX + AuthenticationHelper.AUTHENTICATION_USER;
+         // search for the user object in the portlet wrapped session keys
+         // each vendor uses a different naming scheme so we search by hand
+         String userKeyPostfix = "?" + AuthenticationHelper.AUTHENTICATION_USER; 
+         Enumeration enumNames = event.getSession().getAttributeNames();
+         while (enumNames.hasMoreElements())
+         {
+            String name = (String)enumNames.nextElement();
+            if (name.endsWith(userKeyPostfix))
+            {
+               userKey = name;
+               break;
+            }
+         }
       }
-      
-      User user = (User)event.getSession().getAttribute(userKey);
-      if (user != null)
+      if (userKey != null)
       {
-         // invalidate ticket and clear the Security context for this thread
-         WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-         AuthenticationService authService = (AuthenticationService)ctx.getBean("authenticationService");
-         authService.invalidateTicket(user.getTicket());
-         authService.clearCurrentSecurityContext();
-         event.getSession().removeAttribute(userKey);
+         User user = (User)event.getSession().getAttribute(userKey);
+         if (user != null)
+         {
+            // invalidate ticket and clear the Security context for this thread
+            WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+            AuthenticationService authService = (AuthenticationService)ctx.getBean("authenticationService");
+            authService.invalidateTicket(user.getTicket());
+            authService.clearCurrentSecurityContext();
+            event.getSession().removeAttribute(userKey);
+         }
       }
    }
 }

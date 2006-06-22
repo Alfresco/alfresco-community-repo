@@ -23,7 +23,7 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
-<%@ page import="org.alfresco.web.app.portlet.AlfrescoFacesPortlet" %>
+<%@ page import="org.alfresco.web.app.servlet.FacesHelper" %>
 <%@ page import="org.alfresco.web.bean.CheckinCheckoutBean" %>
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="javax.faces.context.FacesContext" %>
@@ -192,11 +192,7 @@
                                     </td>
                                  </tr>
                                  <%
-                                 CheckinCheckoutBean bean = (CheckinCheckoutBean)session.getAttribute(AlfrescoFacesPortlet.MANAGED_BEAN_PREFIX + "CheckinCheckoutBean");
-                                 if (bean == null)
-                                 {
-                                    bean = (CheckinCheckoutBean)session.getAttribute("CheckinCheckoutBean");
-                                 }
+                                 CheckinCheckoutBean bean = (CheckinCheckoutBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "CheckinCheckoutBean");
                                  if (bean != null && bean.getFileName() != null) {
                                  %>
                                     <tr><td class="paddingRow"></td></tr>

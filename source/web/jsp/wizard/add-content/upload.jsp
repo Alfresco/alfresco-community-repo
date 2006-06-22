@@ -24,8 +24,8 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 <%@ page import="org.alfresco.web.bean.wizard.AddContentWizard" %>
-<%@ page import="org.alfresco.web.app.portlet.AlfrescoFacesPortlet" %>
 <%@ page import="org.alfresco.web.app.Application" %>
+<%@ page import="org.alfresco.web.app.servlet.FacesHelper" %>
 <%@ page import="javax.faces.context.FacesContext" %>
 
 <r:page titleId="title_add_content_upload">
@@ -146,13 +146,9 @@
                                  </r:uploadForm>
                                  
                                  <h:form acceptCharset="UTF-8" id="add-content-upload-end">
-                                 <tr><td class="paddingRow"></td></tr>
+                                 <tr><td class="paddingRow">===TEST JSP===</td></tr>
                                  <%
-                                 AddContentWizard wiz = (AddContentWizard)session.getAttribute(AlfrescoFacesPortlet.MANAGED_BEAN_PREFIX + "AddContentWizard");
-                                 if (wiz == null)
-                                 {
-                                    wiz = (AddContentWizard)session.getAttribute("AddContentWizard");
-                                 }
+                                 AddContentWizard wiz = (AddContentWizard)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "AddContentWizard");
                                  if (wiz != null && wiz.getFileName() != null) {
                                  %>
                                     <tr>

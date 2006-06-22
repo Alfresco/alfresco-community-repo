@@ -63,8 +63,6 @@ import org.springframework.web.context.WebApplicationContext;
 public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
 {
    private static final String PREF_ALF_USERNAME = "_alfUserName";
-   public static final String INSTANCE_NAME = "AlfrescoClientInstance";
-   public static final String MANAGED_BEAN_PREFIX = "javax.portlet.p." + INSTANCE_NAME + "?";
    
    private static final String ERROR_PAGE_PARAM = "error-page";
    private static final String ERROR_OCCURRED = "error-occurred";
@@ -165,11 +163,9 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                   LoginBean loginBean = (LoginBean)request.getPortletSession().getAttribute(AuthenticationHelper.LOGIN_BEAN);
                   if (loginBean != null)
                   {
-                     //
-                     // TODO: Need to login to JBoss Portal to get a user here to store prefs against
+                     // TODO: Need to login to the Portal to get a user here to store prefs against
                      //       so not really a suitable solution as they get thrown away at present!
                      //       Also would need to store prefs PER user - so auto login for each...?
-                     //
                      String oldValue = request.getPreferences().getValue(PREF_ALF_USERNAME, null);
                      if (oldValue == null || oldValue.equals(loginBean.getUsernameInternal()) == false)
                      {

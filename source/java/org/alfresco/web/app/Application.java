@@ -62,7 +62,7 @@ public class Application
    
    public static final String MESSAGE_BUNDLE = "alfresco.messages.webclient";
    
-   private static ThreadLocal<Boolean> inPortalServer = new ThreadLocal<Boolean>();
+   private static boolean inPortalServer = false;
    private static StoreRef repoStoreRef;
    private static String rootPath;
    private static String companyRootId;
@@ -88,7 +88,7 @@ public class Application
     */
    public static void setInPortalServer(boolean inPortal)
    {
-      inPortalServer.set(inPortal);
+      inPortalServer = inPortal;
    }
    
    /**
@@ -98,7 +98,7 @@ public class Application
     */
    public static boolean inPortalServer()
    {
-      return (inPortalServer.get() != null ? inPortalServer.get() : false);
+      return inPortalServer;
    }
    
    /**

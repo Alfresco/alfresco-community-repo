@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<wsdl:definitions name="dictionary-service"
+   targetNamespace="http://www.alfresco.org/ws/service/dictionary/1.0" 
+   xmlns:apachesoap="http://xml.apache.org/xml-soap" 
+   xmlns:dict="http://www.alfresco.org/ws/service/dictionary/1.0" 
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+   xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" 
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+   xmlns:cms="http://www.alfresco.org/ws/model/content/1.0"
+   xmlns:headers="http://www.alfresco.org/ws/headers/1.0">
+   <!-- ************************************** -->
+   <!-- Copyright Alfresco Software, Inc. 2005 -->
+   <!-- ************************************** -->
+   <wsdl:import namespace="http://www.alfresco.org/ws/headers/1.0" location="headers.xsd" />
+   <wsdl:import namespace="http://www.alfresco.org/model/content/1.0" location="types.xsd" />
+   <wsdl:types>
+      <schema elementFormDefault="qualified" targetNamespace="http://www.alfresco.org/ws/service/dictionary/1.0" xmlns="http://www.w3.org/2001/XMLSchema">
+         
+         <complexType name="ClassPredicate">
+            <sequence>
+               <element name="names" type="xsd:string" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
+               <element name="followSubClass" type="xsd:boolean"/>
+               <element name="followSuperClass" type="xsd:boolean"/>
+            </sequence>
+         </complexType>
+         <element name="ClassPredicate" type="dict:ClassPredicate"/>
+         
+         <complexType name="DictionaryFault">
+            <sequence>
+               <element name="errorCode" type="xsd:int"/>
+               <element name="message" type="xsd:string"/>
+            </sequence>
+         </complexType>
+         <element name="DictionaryFault" type="dict:DictionaryFault"/>
+
+         <!-- Method Definitions -->
+
+         <element name="getClasses">
+         	<complexType>
+               <sequence>
+                  <element name="types" type="dict:ClassPredicate"/>
+                  <element name="aspects" type="dict:ClassPredicate"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="getClassesResponse">
+            <complexType>
+               <sequence>
+                  <element name="getClassesReturn" type="cms:ClassDefinition" minOccurs="0" maxOccurs="unbounded"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+      </schema>
+   </wsdl:types>
+
+   <wsdl:message name="getClassesRequest">
+      <wsdl:part element="dict:getClasses" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="getClassesResponse">
+      <wsdl:part element="dict:getClassesResponse" name="parameters"/>
+   </wsdl:message>
+   
+   <wsdl:message name="DictionaryFault">
+      <wsdl:part element="dict:DictionaryFault" name="fault"/>
+   </wsdl:message>
+   
+   <wsdl:portType name="DictionaryServiceSoapPort">
+      <wsdl:operation name="getClasses">
+         <wsdl:documentation>Retrieves the class definitions of types and aspects.</wsdl:documentation>
+         <wsdl:input message="dict:getClassesRequest" name="getClassesRequest"/>
+         <wsdl:output message="dict:getClassesResponse" name="getClassesResponse"/>
+         <wsdl:fault message="dict:DictionaryFault" name="DictionaryFault"/>
+      </wsdl:operation>
+   </wsdl:portType>
+   
+   <wsdl:binding name="DictionaryServiceSoapBinding" type="dict:DictionaryServiceSoapPort">
+      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+      <wsdl:operation name="getClasses">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/dictionary/1.0/getClasses"/>
+         <wsdl:input name="getClassesRequest">
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output name="getClassesResponse">
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="DictionaryFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/dictionary/1.0" use="literal" name="DictionaryFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:service name="DictionaryService">
+      <wsdl:documentation>Provides read access to the Repository Dictionary.</wsdl:documentation>
+      <wsdl:port binding="dict:DictionaryServiceSoapBinding" name="DictionaryService">
+         <wsdlsoap:address location="http://localhost:8080/alfresco/api/DictionaryService"/>
+      </wsdl:port>
+   </wsdl:service>
+   
+</wsdl:definitions>

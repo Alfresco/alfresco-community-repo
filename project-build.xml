@@ -48,7 +48,7 @@
         </delete>
     </target>
         
-    <target name="gen-all-service-servers" depends="gen-auth-service-server, gen-repo-service-server, gen-content-service-server, gen-authoring-service-server, gen-classification-service-server, gen-action-service-server, gen-access-control-service-server, gen-administration-service-server" />
+    <target name="gen-all-service-servers" depends="gen-auth-service-server, gen-repo-service-server, gen-content-service-server, gen-authoring-service-server, gen-classification-service-server, gen-action-service-server, gen-access-control-service-server, gen-administration-service-server, gen-dictionary-service-server" />
 
     <target name="gen-auth-service-server" depends="init">
         <mkdir dir="${dir.src.java.generated}/org/alfresco/repo/webservice/authentication" />
@@ -91,6 +91,20 @@
         </wsdl2java>
         <delete>
             <fileset dir="${dir.src.java.generated}/org/alfresco/repo/webservice/content" includes="${files.delete.include}" />
+        </delete>
+    </target>
+   
+    <target name="gen-dictionary-service-server" depends="init">
+        <mkdir dir="${dir.src.java.generated}/org/alfresco/repo/webservice/dictionary" />
+        <delete>
+            <fileset dir="${dir.src.java.generated}/org/alfresco/repo/webservice/dictionary" />
+        </delete>
+        <wsdl2java url="${dir.src}/wsdl/dictionary-service.wsdl" output="${dir.src.java.generated}" serverSide="true" skeletondeploy="false" all="true">
+            <mapping namespace="http://www.alfresco.org/ws/service/dictionary/1.0" package="org.alfresco.repo.webservice.dictionary" />
+            <mapping namespace="http://www.alfresco.org/ws/model/content/1.0" package="org.alfresco.repo.webservice.types" />
+        </wsdl2java>
+        <delete>
+            <fileset dir="${dir.src.java.generated}/org/alfresco/repo/webservice/dictionary" includes="${files.delete.include}" />
         </delete>
     </target>
    

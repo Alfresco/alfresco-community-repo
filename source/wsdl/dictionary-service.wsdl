@@ -7,12 +7,10 @@
    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
    xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" 
    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-   xmlns:cms="http://www.alfresco.org/ws/model/content/1.0"
-   xmlns:headers="http://www.alfresco.org/ws/headers/1.0">
+   xmlns:cms="http://www.alfresco.org/ws/model/content/1.0">
    <!-- ************************************** -->
    <!-- Copyright Alfresco Software, Inc. 2005 -->
    <!-- ************************************** -->
-   <wsdl:import namespace="http://www.alfresco.org/ws/headers/1.0" location="headers.xsd" />
    <wsdl:import namespace="http://www.alfresco.org/model/content/1.0" location="types.xsd" />
    <wsdl:types>
       <schema elementFormDefault="qualified" targetNamespace="http://www.alfresco.org/ws/service/dictionary/1.0" xmlns="http://www.w3.org/2001/XMLSchema">

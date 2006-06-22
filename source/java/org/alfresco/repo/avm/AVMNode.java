@@ -63,7 +63,7 @@ interface AVMNode
      * @param lPath The Lookup for this node.
      * @return A copy of ourself or null if no copy was necessary.
      */
-    public AVMNode possiblyCopy(Lookup lPath);
+    public AVMNode copy(Lookup lPath);
 
     /**
      * Set the repository for a node.

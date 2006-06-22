@@ -66,7 +66,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      * Copy on write logic.
      * @param lPath The path by which this was found.
      */
-    public AVMNode possiblyCopy(Lookup lPath)
+    public AVMNode copy(Lookup lPath)
     {
         // LayeredFileNodes are always copied.
         Lookup lookup = SuperRepository.GetInstance().lookup(-1, fIndirection);

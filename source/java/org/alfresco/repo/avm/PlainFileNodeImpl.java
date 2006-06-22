@@ -84,12 +84,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      * Copy on write logic.
      * @param lPath The lookup path. 
      */
-    public AVMNodeImpl possiblyCopy(Lookup lPath)
+    public AVMNode copy(Lookup lPath)
     {
-        if (!lPath.needsCopying())
-        {
-            return null;
-        }
         PlainFileNodeImpl newMe = new PlainFileNodeImpl(this, lPath.getRepository());
         newMe.setAncestor(this);
         return newMe;

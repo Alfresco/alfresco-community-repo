@@ -226,12 +226,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param lPath
      * @return The copy or null.
      */
-    public AVMNodeImpl possiblyCopy(Lookup lPath)
+    public AVMNode copy(Lookup lPath)
     {
-        if (!lPath.needsCopying())
-        {
-            return null;
-        }
         // Capture the repository.
         Repository repo = lPath.getRepository();
         // Otherwise we do an actual copy.

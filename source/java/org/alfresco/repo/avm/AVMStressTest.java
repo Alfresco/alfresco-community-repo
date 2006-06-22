@@ -35,9 +35,11 @@ public class AVMStressTest extends AVMServiceTestBase
     {
         try
         {
+            int nCopies = 1;
+            int nThreads = 16;
             BulkLoader loader = new BulkLoader(fService);
             long start = System.currentTimeMillis();
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < nCopies; i++)
             {
                 fService.createDirectory("main:/", "" + i);
                 loader.recursiveLoad("source", "main:/" + i);
@@ -46,17 +48,17 @@ public class AVMStressTest extends AVMServiceTestBase
             System.out.println("Load time: " + (System.currentTimeMillis() - start));
             List<AVMTester> testers = new ArrayList<AVMTester>();
             List<Thread> threads = new ArrayList<Thread>();
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < nThreads; i++)
             {
                 AVMTester tester
-                    = new AVMTester(400,      // create file.
-                                    10,        // create dir,
+                    = new AVMTester(800,      // create file.
+                                    20,        // create dir,
                                     0,        // rename
                                     2,         // create layered dir
                                     5,         // create layered file
                                     10,        // remove node
                                     20,        // modify file.
-                                    3600,        // read file
+                                    3200,        // read file
                                     10,        // snapshot
                                     10000,      // # ops
                                     fService,
@@ -74,12 +76,12 @@ public class AVMStressTest extends AVMServiceTestBase
                 thread.start();
             }
             int exited = 0;
-            while (exited != 8)
+            while (exited != nThreads)
             {
                 try
                 {
                     Thread.sleep(2000);
-                    for (int i = 0; i < 8; i++)
+                    for (int i = 0; i < nThreads; i++)
                     {
                         if (threads.get(i) == null)
                         {

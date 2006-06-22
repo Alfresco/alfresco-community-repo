@@ -153,20 +153,15 @@ class Lookup
         fComponents.add(comp);
         fPosition++;
         // If we are in a write context do copy on write.
-        if (write)
+        if (write && fNeedsCopying)
         {
-            // Possibly copy.
-            node = node.possiblyCopy(this);
-            if (node == null)
-            {
-                return;
-            }
-            // Node was copied.
+            node = node.copy(this);
             fComponents.get(fPosition).setNode(node);
             if (fPosition == 0)
             {
                 // Inform the repository of a new root.
                 fRepository.setNewRoot((DirectoryNode)node);
+                SuperRepository.GetInstance().getSession().flush();
                 return;
             }
             // Not the root. Check if we are the top layer and insert this into it's parent.
@@ -175,6 +170,7 @@ class Lookup
                 fTopLayer = (LayeredDirectoryNode)node;
             }
             ((DirectoryNode)fComponents.get(fPosition - 1).getNode()).putChild(name, node);
+            SuperRepository.GetInstance().getSession().flush();
         }
     }
     

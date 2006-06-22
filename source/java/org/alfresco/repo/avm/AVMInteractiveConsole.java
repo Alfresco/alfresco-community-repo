@@ -94,6 +94,7 @@ public class AVMInteractiveConsole
         while (!done)
         {
             String command[] = null;
+            System.out.print("> ");
             try
             {
                 String line = fIn.readLine();
@@ -113,6 +114,7 @@ public class AVMInteractiveConsole
             {
                 continue;
             }
+            long start = System.currentTimeMillis();
             try
             {
                 if (command[0].equals("ls"))
@@ -130,6 +132,17 @@ public class AVMInteractiveConsole
                     {
                         System.out.println(name + " " + listing.get(name));
                     }
+                }
+                else if (command[0].equals("lsr"))
+                {
+                    if (command.length != 3)
+                    {
+                        System.err.println("Syntax error.");
+                        continue;
+                    }
+                    AVMNodeDescriptor desc = fService.lookup(Integer.parseInt(command[2]),
+                                                             command[1]);
+                    recursiveList(desc, 0);
                 }
                 else if (command[0].equals("lsrep"))
                 {
@@ -179,6 +192,15 @@ public class AVMInteractiveConsole
                     }
                     fService.createDirectory(command[1], command[2]);
                 }
+                else if (command[0].equals("mkbr"))
+                {
+                    if (command.length != 5)
+                    {
+                        System.err.println("Syntax error.");
+                        continue;
+                    }
+                    fService.createBranch(Integer.parseInt(command[4]), command[1], command[2], command[3]);
+                }
                 else if (command[0].equals("mkldir"))
                 {
                     if (command.length != 4)
@@ -187,6 +209,24 @@ public class AVMInteractiveConsole
                         continue;
                     }
                     fService.createLayeredDirectory(command[1], command[2], command[3]);
+                }
+                else if (command[0].equals("retarget"))
+                {
+                    if (command.length != 3)
+                    {
+                        System.err.println("Syntax error.");
+                        continue;
+                    }
+                    fService.retargetLayeredDirectory(command[1], command[2]);
+                }
+                else if (command[0].equals("mkprimary"))
+                {
+                    if (command.length != 2)
+                    {
+                        System.err.println("Syntax error.");
+                        continue;
+                    }
+                    fService.makePrimary(command[1]);
                 }
                 else if (command[0].equals("mklfile"))
                 {
@@ -351,8 +391,27 @@ public class AVMInteractiveConsole
             {
                 e.printStackTrace(System.err);
             }
+            System.out.println("Time: " + (System.currentTimeMillis() - start));
         }
         fReaper.shutDown();
+    }
+    
+    private void recursiveList(AVMNodeDescriptor dir, int indent)
+    {
+        Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(dir);
+        for (String name : listing.keySet())
+        {
+            AVMNodeDescriptor child = listing.get(name);
+            for (int i = 0; i < indent; i++)
+            {
+                System.out.print(' ');
+            }
+            System.out.println(name + " " + child);
+            if (child.isDirectory())
+            {
+                recursiveList(child, indent + 2);
+            }
+        }
     }
 }
                     

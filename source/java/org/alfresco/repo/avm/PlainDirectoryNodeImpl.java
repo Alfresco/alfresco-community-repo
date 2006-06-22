@@ -202,13 +202,8 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @param lPath The lookup path.
      * @return
      */
-    public AVMNode possiblyCopy(Lookup lPath)
+    public AVMNode copy(Lookup lPath)
     {
-        if (!lPath.needsCopying())
-        {
-            return null;
-        }
-        // Otherwise do an actual copy.
         DirectoryNode newMe = null;
         // In a layered context a copy on write creates a new 
         // layered directory.

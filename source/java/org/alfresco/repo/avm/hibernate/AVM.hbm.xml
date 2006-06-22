@@ -120,6 +120,8 @@
 		<version name="vers" column="vers" type="long"/>
 		<property type="int" name="nextVersionID"
 			column="next_version_id" not-null="true"/>
+		<property type="string" name="creator" column="creator" not-null="true"/>
+		<property type="long" name="createDate" column="create_date" not-null="true"/>
 		<!-- Every Repository has a root directory that is the current root directory. -->
 		<!-- This should be not-null but hibernate (or my own idiocy) makes that difficult. -->
 		<many-to-one name="root" class="DirectoryNodeImpl"

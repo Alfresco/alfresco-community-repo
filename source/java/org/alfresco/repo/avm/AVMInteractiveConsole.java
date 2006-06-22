@@ -146,10 +146,10 @@ public class AVMInteractiveConsole
                 }
                 else if (command[0].equals("lsrep"))
                 {
-                    List<String> repos = fService.getRepositoryNames();
-                    for (String name : repos)
+                    List<RepositoryDescriptor> repos = fService.getRepositories();
+                    for (RepositoryDescriptor repo : repos)
                     {
-                        System.out.println(name);
+                        System.out.println(repo);
                     }
                 }
                 else if (command[0].equals("lsver"))

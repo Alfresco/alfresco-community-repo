@@ -32,7 +32,8 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
     {
         try
         {
-            int n = 4;
+            int n = 2;
+            int m = 1;
             for (int i = 0; i < n; i++)
             {
                 fService.createDirectory("main:/", "d" + i);
@@ -41,7 +42,7 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
             Thread [] threads = new Thread[n];
             for (int i = 0; i < n; i++)
             {
-                Loader loader = new Loader("source", "main:/d" + i);
+                Loader loader = new Loader("source", "main:/d" + i, m);
                 threads[i] = new Thread(loader);
                 threads[i].start();
             }
@@ -75,20 +76,30 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
         private String fDestination;
         
         /**
+         * The number of copies of stuff to make serially.
+         */
+        private int fCount;
+        
+        /**
          * Set up.
          * @param source Source directory.
          * @param destination Destination path.
          */
-        public Loader(String source, String destination)
+        public Loader(String source, String destination, int count)
         {
             fLoader = new BulkLoader(fService);
             fSource = source;
             fDestination = destination;
+            fCount = count;
         }
         
         public void run()
         {
-            fLoader.recursiveLoad(fSource, fDestination);
+            for (int i = 0; i < fCount; i++)
+            {
+                fService.createDirectory(fDestination, "" + i);
+                fLoader.recursiveLoad(fSource, fDestination + "/" + i);
+            }
         }
     }
 }

@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is the service interface for the [Alfresco|Addled|Advanced|Apotheosed] Versioning
- * Model.  It specifies methods that are close in functionality to the underlying
+ * This is the service interface for the [Alfresco|Addled|Advanced|Aleatoric|Apotheosed|Awful] 
+ * Versioning Model.  It specifies methods that are close in functionality to the underlying
  * implementation, and is intended as both a first class Alfresco service and an
  * aid in creating new implementations of existing services.
  * Paths are of the form repositoryname:/foo/bar/baz
@@ -199,10 +199,17 @@ public interface AVMService
     public List<VersionDescriptor> getRepositoryVersions(String name, Date from, Date to);
     
     /**
-     * Get the names of all repositories. 
-     * @return A List of all names.
+     * Get the descriptors of all repositories. 
+     * @return A List of all repositories.
      */
-    public List<String> getRepositoryNames();
+    public List<RepositoryDescriptor> getRepositories();
+
+    /**
+     * Get a descriptor for a repository.
+     * @param name The repository's name.
+     * @return A Descriptor.
+     */
+    public RepositoryDescriptor getRepository(String name);
     
     /**
      * Get the specified root of a repository.

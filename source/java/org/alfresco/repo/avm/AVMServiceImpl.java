@@ -764,21 +764,47 @@ public class AVMServiceImpl implements AVMService
         fTransaction.perform(doit, true);
     }
 
-    public List<String> getRepositoryNames()
+    /**
+     * Get a list of all Repositories.
+     * @return The repositories.
+     */
+    public List<RepositoryDescriptor> getRepositories()
     {
         class HTxnCallback implements HibernateTxnCallback
         {
-            public List<String> names;
+            public List<RepositoryDescriptor> reps;
             
             public void perform(Session session)
             {
                 fSuperRepository.setSession(session);
-                names = fSuperRepository.getRepositoryNames();
+                reps = fSuperRepository.getRepositories();
             }
         }
         HTxnCallback doit = new HTxnCallback();
         fTransaction.perform(doit, false);
-        return doit.names;
+        return doit.reps;
+    }
+
+    /**
+     * Get a reposotory.
+     * @param name The name of the repository to get.
+     * @return The repositories.
+     */
+    public RepositoryDescriptor getRepository(final String name)
+    {
+        class HTxnCallback implements HibernateTxnCallback
+        {
+            public RepositoryDescriptor desc;
+            
+            public void perform(Session session)
+            {
+                fSuperRepository.setSession(session);
+                desc = fSuperRepository.getRepository(name);
+            }
+        }
+        HTxnCallback doit = new HTxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.desc;
     }
 
     /**

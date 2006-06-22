@@ -65,6 +65,16 @@ class RepositoryImpl implements Repository, Serializable
     transient private SuperRepository fSuper;
     
     /**
+     * The creator.
+     */
+    private String fCreator;
+    
+    /**
+     * The create date.
+     */
+    private long fCreateDate;
+    
+    /**
      * Default constructor.
      */
     protected RepositoryImpl()
@@ -84,6 +94,8 @@ class RepositoryImpl implements Repository, Serializable
         fName = name;
         fNextVersionID = 0;
         fRoot = null;
+        fCreator = "britt";
+        fCreateDate = System.currentTimeMillis();
         fSuper.getSession().save(this);
         // Make up the initial version record and save.
         long time = System.currentTimeMillis();
@@ -777,5 +789,50 @@ class RepositoryImpl implements Repository, Serializable
             vRoot = (VersionRoot)query.uniqueResult();
             fRoot = vRoot.getRoot();
         }
+    }
+
+    /**
+     * Get the create date.
+     * @return The create date.
+     */
+    public long getCreateDate()
+    {
+        return fCreateDate;
+    }
+
+    /**
+     * Get the creator.
+     * @return The creator.
+     */
+    public String getCreator()
+    {
+        return fCreator;
+    }
+
+    /**
+     * Set the create date.
+     * @param date
+     */
+    public void setCreateDate(long date)
+    {
+        fCreateDate = date;
+    }
+
+    /**
+     * Set the creator.
+     * @param creator
+     */
+    public void setCreator(String creator)
+    {
+        fCreator = creator;
+    }
+
+    /**
+     * Get the descriptor for this.
+     * @return
+     */
+    public RepositoryDescriptor getDescriptor()
+    {
+        return new RepositoryDescriptor(fName, fCreator, fCreateDate);
     }
 }

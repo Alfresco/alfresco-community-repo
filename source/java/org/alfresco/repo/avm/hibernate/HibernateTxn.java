@@ -112,11 +112,11 @@ public class HibernateTxn
                     {
                         if (t instanceof StaleStateException)
                         {
-                            System.err.println("Lost Race");
+//                            System.err.println("Lost Race");
                         }
                         else
                         {
-                            System.err.println("Deadlock");
+//                            System.err.println("Deadlock");
                             try
                             {
                                 long interval;

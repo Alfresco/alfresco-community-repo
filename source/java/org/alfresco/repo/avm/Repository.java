@@ -215,4 +215,34 @@ interface Repository
      * @param version
      */
     public void purgeVersion(int version);
+    
+    /**
+     * Set the creator.
+     * @param creator
+     */
+    public void setCreator(String creator);
+    
+    /**
+     * Get the creator.
+     * @return The creator.
+     */
+    public String getCreator();
+    
+    /**
+     * Set the create date.
+     * @param date
+     */
+    public void setCreateDate(long date);
+    
+    /**
+     * Get the create date.
+     * @return The create date.
+     */
+    public long getCreateDate();
+    
+    /**
+     * Get the descriptor for this.
+     * @return The descriptor.
+     */
+    public RepositoryDescriptor getDescriptor();
 }

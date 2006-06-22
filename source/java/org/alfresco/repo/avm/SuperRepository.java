@@ -174,7 +174,15 @@ class SuperRepository
      */
     public void createRepository(String name)
     {
-        // TODO need to check for repository existence first.
+        try
+        {
+            getRepositoryByName(name, false);
+            throw new AVMExistsException("Repository exists: " + name);
+        }
+        catch (AVMNotFoundException anf)
+        {
+            // Do nothing.
+        }
         // Newing up the object causes it to be written to the db.
         @SuppressWarnings("unused") 
         Repository rep = new RepositoryImpl(this, name);
@@ -564,12 +572,29 @@ class SuperRepository
      * @return A list of names.
      */
     @SuppressWarnings("unchecked")
-    public List<String> getRepositoryNames()
+    public List<RepositoryDescriptor> getRepositories()
     {
-        Query query = fSession.get().createQuery("select r.name from RepositoryImpl r");
-        return (List<String>)query.list();
+        Query query = fSession.get().createQuery("from RepositoryImpl r");
+        List<Repository> l = (List<Repository>)query.list();
+        List<RepositoryDescriptor> result = new ArrayList<RepositoryDescriptor>();
+        for (Repository rep : l)
+        {
+            result.add(rep.getDescriptor());
+        }
+        return result;
     }
 
+    /**
+     * Get a descriptor for a repository.
+     * @param name The name to get.
+     * @return The descriptor.
+     */
+    public RepositoryDescriptor getRepository(String name)
+    {
+        Repository rep = getRepositoryByName(name, false);
+        return rep.getDescriptor();
+    }
+    
     /**
      * Get all version for a given repository.
      * @param name The name of the repository.
@@ -668,9 +693,14 @@ class SuperRepository
      */
     private Repository getRepositoryByName(String name, boolean write)
     {
-        return (Repository)fSession.get().get(RepositoryImpl.class, 
+        Repository rep = (Repository)fSession.get().get(RepositoryImpl.class, 
                                               name /* ,
                                               write ? LockMode.UPGRADE : LockMode.READ */);
+        if (rep == null)
+        {
+            throw new AVMNotFoundException("Repository not found: " + name);
+        }
+        return rep;
     }
 
     /**
@@ -830,6 +860,16 @@ class SuperRepository
             history.add(node.getDescriptor("UNKNOWN", "UNKNOWN", "UNKNOWN"));
         }
         return history;
+    }
+    
+    /**
+     * Get the RepositoryDescriptor for a Repository.
+     * @param name The name of the Repository.
+     * @return The descriptor.
+     */
+    public RepositoryDescriptor getRepositoryDescriptor(String name)
+    {
+        return getRepositoryByName(name, false).getDescriptor();
     }
     
     /**

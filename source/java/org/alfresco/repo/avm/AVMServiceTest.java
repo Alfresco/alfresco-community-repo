@@ -856,10 +856,10 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             fService.createRepository("second");
-            List<String> repoNames = fService.getRepositoryNames();
-            assertEquals(2, repoNames.size());
-            assertTrue(repoNames.contains("main"));
-            assertTrue(repoNames.contains("second"));
+            List<RepositoryDescriptor> repos = fService.getRepositories();
+            assertEquals(2, repos.size());
+            System.out.println(repos.get(0));
+            System.out.println(repos.get(1));
             fService.createBranch(-1, "main:/", "second:/", "main");
             fService.createSnapshot("second");
             System.out.println(recursiveList("second", -1, true));
@@ -1826,6 +1826,36 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals(3, fService.getRepositoryVersions("main", new Date(times.get(0)), null).size());
             assertEquals(2, fService.getRepositoryVersions("main", new Date(times.get(1)),
                                                            new Date(System.currentTimeMillis())).size());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
+     * Test repository functions.
+     */
+    public void testRepsitory()
+    {
+        try
+        {
+            // First check that we get the right error when we try to create a
+            // repository that exists.
+            try
+            {
+                fService.createRepository("main");
+                fail();
+            }
+            catch (AVMExistsException ae)
+            {
+                // Do nothing.
+            }
+            // Now make sure getRepository() works.
+            RepositoryDescriptor desc = fService.getRepository("main");
+            assertNotNull(desc);
+            System.out.println(desc);
         }
         catch (Exception e)
         {

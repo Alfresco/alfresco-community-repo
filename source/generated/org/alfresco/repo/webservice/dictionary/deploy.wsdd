@@ -25,7 +25,20 @@
         <parameter qname="pns:aspects" xmlns:pns="http://www.alfresco.org/ws/service/dictionary/1.0" type="tns:ClassPredicate" xmlns:tns="http://www.alfresco.org/ws/service/dictionary/1.0"/>
         <fault name="DictionaryFault" qname="fns:DictionaryFault" xmlns:fns="http://www.alfresco.org/ws/service/dictionary/1.0" class="org.alfresco.repo.webservice.dictionary.DictionaryFault" type="tns:DictionaryFault" xmlns:tns="http://www.alfresco.org/ws/service/dictionary/1.0"/>
       </operation>
-      <parameter name="allowedMethods" value="getClasses"/>
+      <operation name="getProperties" qname="operNS:getProperties" xmlns:operNS="http://www.alfresco.org/ws/service/dictionary/1.0" returnQName="retNS:getPropertiesReturn" xmlns:retNS="http://www.alfresco.org/ws/service/dictionary/1.0" returnType="rtns:PropertyDefinition" xmlns:rtns="http://www.alfresco.org/ws/model/content/1.0" soapAction="http://www.alfresco.org/ws/service/dictionary/1.0/getProperties" >
+        <parameter qname="pns:propertyNames" xmlns:pns="http://www.alfresco.org/ws/service/dictionary/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="DictionaryFault" qname="fns:DictionaryFault" xmlns:fns="http://www.alfresco.org/ws/service/dictionary/1.0" class="org.alfresco.repo.webservice.dictionary.DictionaryFault" type="tns:DictionaryFault" xmlns:tns="http://www.alfresco.org/ws/service/dictionary/1.0"/>
+      </operation>
+      <operation name="getAssociations" qname="operNS:getAssociations" xmlns:operNS="http://www.alfresco.org/ws/service/dictionary/1.0" returnQName="retNS:getAssociationsReturn" xmlns:retNS="http://www.alfresco.org/ws/service/dictionary/1.0" returnType="rtns:AssociationDefinition" xmlns:rtns="http://www.alfresco.org/ws/model/content/1.0" soapAction="http://www.alfresco.org/ws/service/dictionary/1.0/getAssociations" >
+        <parameter qname="pns:associationNames" xmlns:pns="http://www.alfresco.org/ws/service/dictionary/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="DictionaryFault" qname="fns:DictionaryFault" xmlns:fns="http://www.alfresco.org/ws/service/dictionary/1.0" class="org.alfresco.repo.webservice.dictionary.DictionaryFault" type="tns:DictionaryFault" xmlns:tns="http://www.alfresco.org/ws/service/dictionary/1.0"/>
+      </operation>
+      <operation name="isSubClass" qname="operNS:isSubClass" xmlns:operNS="http://www.alfresco.org/ws/service/dictionary/1.0" returnQName="retNS:isSubClassReturn" xmlns:retNS="http://www.alfresco.org/ws/service/dictionary/1.0" returnType="rtns:boolean" xmlns:rtns="http://www.w3.org/2001/XMLSchema" soapAction="http://www.alfresco.org/ws/service/dictionary/1.0/isSubClass" >
+        <parameter qname="pns:className" xmlns:pns="http://www.alfresco.org/ws/service/dictionary/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <parameter qname="pns:isSubClassOfName" xmlns:pns="http://www.alfresco.org/ws/service/dictionary/1.0" type="tns:string" xmlns:tns="http://www.w3.org/2001/XMLSchema"/>
+        <fault name="DictionaryFault" qname="fns:DictionaryFault" xmlns:fns="http://www.alfresco.org/ws/service/dictionary/1.0" class="org.alfresco.repo.webservice.dictionary.DictionaryFault" type="tns:DictionaryFault" xmlns:tns="http://www.alfresco.org/ws/service/dictionary/1.0"/>
+      </operation>
+      <parameter name="allowedMethods" value="getClasses getAssociations getProperties isSubClass"/>
 
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
@@ -77,16 +90,16 @@
       />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:Node"
-        type="java:org.alfresco.repo.webservice.types.Node"
+        qname="ns:Predicate"
+        type="java:org.alfresco.repo.webservice.types.Predicate"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""
       />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:Predicate"
-        type="java:org.alfresco.repo.webservice.types.Predicate"
+        qname="ns:Node"
+        type="java:org.alfresco.repo.webservice.types.Node"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""

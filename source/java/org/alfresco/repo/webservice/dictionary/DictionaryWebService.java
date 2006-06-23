@@ -23,12 +23,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.webservice.AbstractWebService;
 import org.alfresco.repo.webservice.Utils;
 import org.alfresco.repo.webservice.dictionary.ClassPredicate;
 import org.alfresco.repo.webservice.dictionary.DictionaryFault;
 import org.alfresco.repo.webservice.dictionary.DictionaryServiceSoapPort;
+import org.alfresco.repo.webservice.types.AssociationDefinition;
 import org.alfresco.repo.webservice.types.ClassDefinition;
+import org.alfresco.repo.webservice.types.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidClassException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -102,6 +106,99 @@ public class DictionaryWebService extends AbstractWebService implements Dictiona
     }
 
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.webservice.dictionary.DictionaryServiceSoapPort#getProperties(java.lang.String[])
+     */
+    public PropertyDefinition[] getProperties(String[] propertyNames) throws RemoteException, DictionaryFault
+    {
+        try
+        {
+            PropertyDefinition[] propDefs = new PropertyDefinition[propertyNames.length];
+    
+            int i = 0;
+            for (String propertyName : propertyNames)
+            {
+                QName propertyQName = QName.createQName(propertyName, namespaceService);
+                org.alfresco.service.cmr.dictionary.PropertyDefinition ddPropDef = dictionaryService.getProperty(propertyQName);
+                if (ddPropDef == null)
+                {
+                    throw new AlfrescoRuntimeException("Property propertyName does not exist.");
+                }
+                propDefs[i++] = Utils.setupPropertyDefObject(ddPropDef);
+            }
+            
+            return propDefs;
+        }
+        catch (Throwable e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", e);
+            }
+            throw new DictionaryFault(0, e.getMessage());
+        }
+    }
+
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.webservice.dictionary.DictionaryServiceSoapPort#getAssociations(java.lang.String[])
+     */
+    public AssociationDefinition[] getAssociations(String[] associationNames) throws RemoteException, DictionaryFault
+    {
+        try
+        {
+            AssociationDefinition[] assocDefs = new AssociationDefinition[associationNames.length];
+    
+            int i = 0;
+            for (String associationName : associationNames)
+            {
+                QName associationQName = QName.createQName(associationName, namespaceService);
+                org.alfresco.service.cmr.dictionary.AssociationDefinition ddAssocDef = dictionaryService.getAssociation(associationQName);
+                if (ddAssocDef == null)
+                {
+                    throw new AlfrescoRuntimeException("Property propertyName does not exist.");
+                }
+                assocDefs[i++] = Utils.setupAssociationDefObject(ddAssocDef);
+            }
+            
+            return assocDefs;
+        }
+        catch (Throwable e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", e);
+            }
+            throw new DictionaryFault(0, e.getMessage());
+        }
+    }
+
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.webservice.dictionary.DictionaryServiceSoapPort#isSubClass(java.lang.String, java.lang.String)
+     */
+    public boolean isSubClass(String className, String isSubClassOfName) throws RemoteException, DictionaryFault
+    {
+        try
+        {
+            QName classQName = QName.createQName(className, namespaceService);
+            QName isSubClassOfQName = QName.createQName(isSubClassOfName, namespaceService);
+            return dictionaryService.isSubClass(classQName, isSubClassOfQName);
+        }
+        catch (Throwable e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", e);
+            }
+            throw new DictionaryFault(0, e.getMessage());
+        }
+    }
+    
+    
     /**
      * Retrieve class definitions that match the provided class predicate
      * 
@@ -211,5 +308,5 @@ public class DictionaryWebService extends AbstractWebService implements Dictiona
             }
         }
     }
-    
+
 }

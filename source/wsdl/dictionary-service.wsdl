@@ -51,6 +51,55 @@
             </complexType>
          </element>
          
+         <element name="getProperties">
+            <complexType>
+               <sequence>
+                  <element name="propertyNames" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+               </sequence>
+            </complexType>
+         </element>
+
+         <element name="getPropertiesResponse">
+            <complexType>
+               <sequence>
+                  <element name="getPropertiesReturn" type="cms:PropertyDefinition" minOccurs="0" maxOccurs="unbounded"/>
+               </sequence>
+            </complexType>
+         </element>
+
+         <element name="getAssociations">
+            <complexType>
+               <sequence>
+                  <element name="associationNames" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+               </sequence>
+            </complexType>
+         </element>
+
+         <element name="getAssociationsResponse">
+            <complexType>
+               <sequence>
+                  <element name="getAssociationsReturn" type="cms:AssociationDefinition" minOccurs="0" maxOccurs="unbounded"/>
+               </sequence>
+            </complexType>
+         </element>
+         
+         <element name="isSubClass">
+            <complexType>
+               <sequence>
+                  <element name="className" type="xsd:string"/>
+                  <element name="isSubClassOfName" type="xsd:string"/>
+               </sequence>
+            </complexType>
+         </element>
+
+         <element name="isSubClassResponse">
+            <complexType>
+               <sequence>
+                  <element name="isSubClassReturn" type="xsd:boolean"/>
+               </sequence>
+            </complexType>
+         </element>
+         
       </schema>
    </wsdl:types>
 
@@ -62,6 +111,30 @@
       <wsdl:part element="dict:getClassesResponse" name="parameters"/>
    </wsdl:message>
    
+   <wsdl:message name="getPropertiesRequest">
+      <wsdl:part element="dict:getProperties" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="getPropertiesResponse">
+      <wsdl:part element="dict:getPropertiesResponse" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="getAssociationsRequest">
+      <wsdl:part element="dict:getAssociations" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="getAssociationsResponse">
+      <wsdl:part element="dict:getAssociationsResponse" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="isSubClassRequest">
+      <wsdl:part element="dict:isSubClass" name="parameters"/>
+   </wsdl:message>
+
+   <wsdl:message name="isSubClassResponse">
+      <wsdl:part element="dict:isSubClassResponse" name="parameters"/>
+   </wsdl:message>
+
    <wsdl:message name="DictionaryFault">
       <wsdl:part element="dict:DictionaryFault" name="fault"/>
    </wsdl:message>
@@ -71,6 +144,24 @@
          <wsdl:documentation>Retrieves the class definitions of types and aspects.</wsdl:documentation>
          <wsdl:input message="dict:getClassesRequest" name="getClassesRequest"/>
          <wsdl:output message="dict:getClassesResponse" name="getClassesResponse"/>
+         <wsdl:fault message="dict:DictionaryFault" name="DictionaryFault"/>
+      </wsdl:operation>
+      <wsdl:operation name="getProperties">
+         <wsdl:documentation>Retrieves property definitions.</wsdl:documentation>
+         <wsdl:input message="dict:getPropertiesRequest" name="getPropertiesRequest"/>
+         <wsdl:output message="dict:getPropertiesResponse" name="getPropertiesResponse"/>
+         <wsdl:fault message="dict:DictionaryFault" name="DictionaryFault"/>
+      </wsdl:operation>
+      <wsdl:operation name="getAssociations">
+         <wsdl:documentation>Retrieves association definitions.</wsdl:documentation>
+         <wsdl:input message="dict:getAssociationsRequest" name="getAssociationsRequest"/>
+         <wsdl:output message="dict:getAssociationsResponse" name="getAssociationsResponse"/>
+         <wsdl:fault message="dict:DictionaryFault" name="DictionaryFault"/>
+      </wsdl:operation>
+      <wsdl:operation name="isSubClass">
+         <wsdl:documentation>Determines whether a type (or aspect) is a sub class of another type (or aspect).</wsdl:documentation>
+         <wsdl:input message="dict:isSubClassRequest" name="isSubClassRequest"/>
+         <wsdl:output message="dict:isSubClassResponse" name="isSubClassResponse"/>
          <wsdl:fault message="dict:DictionaryFault" name="DictionaryFault"/>
       </wsdl:operation>
    </wsdl:portType>
@@ -83,6 +174,42 @@
             <wsdlsoap:body use="literal"/>
          </wsdl:input>
          <wsdl:output name="getClassesResponse">
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="DictionaryFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/dictionary/1.0" use="literal" name="DictionaryFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="getProperties">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/dictionary/1.0/getProperties"/>
+         <wsdl:input name="getPropertiesRequest">
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output name="getPropertiesResponse">
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="DictionaryFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/dictionary/1.0" use="literal" name="DictionaryFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="getAssociations">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/dictionary/1.0/getAssociations"/>
+         <wsdl:input name="getAssociationsRequest">
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output name="getAssociationsResponse">
+            <wsdlsoap:body use="literal"/>
+         </wsdl:output>
+         <wsdl:fault name="DictionaryFault">
+            <wsdlsoap:fault namespace="http://www.alfresco.org/ws/service/dictionary/1.0" use="literal" name="DictionaryFault"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="isSubClass">
+         <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/dictionary/1.0/isSubClass"/>
+         <wsdl:input name="isSubClassRequest">
+            <wsdlsoap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output name="isSubClassResponse">
             <wsdlsoap:body use="literal"/>
          </wsdl:output>
          <wsdl:fault name="DictionaryFault">

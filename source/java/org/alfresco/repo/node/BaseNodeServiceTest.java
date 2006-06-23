@@ -156,7 +156,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // create a first store directly
         StoreRef storeRef = nodeService.createStore(
                 StoreRef.PROTOCOL_WORKSPACE,
-                "Test_" + System.nanoTime());
+                "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
     }
     
@@ -622,6 +622,36 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 nodeService.hasAspect(nodeRef, ASPECT_QNAME_TEST_TITLED));
     }
     
+    public void testCascadeDelete() throws Exception
+    {
+        // build the node and commit the node graph
+        Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph(nodeService, rootNodeRef);
+        NodeRef n3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_p_n3")).getChildRef();
+        NodeRef n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n2_p_n4")).getChildRef();
+        NodeRef n6Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n3_p_n6")).getChildRef();
+        NodeRef n7Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n5_p_n7")).getChildRef();
+        NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
+
+        // control checks
+        assertEquals("n6 not present", 1, countNodesByReference(n6Ref));
+        assertEquals("n8 not present", 1, countNodesByReference(n8Ref));
+        assertEquals("n6 primary parent association not present on n3", 1, countChildrenOfNode(n3Ref));
+        assertEquals("n6 secondary parent association not present on n4", 1, countChildrenOfNode(n4Ref));
+        assertEquals("n8 secondary parent association not present on n7", 1, countChildrenOfNode(n7Ref));
+        
+        // delete n6
+        nodeService.deleteNode(n6Ref);
+        // commit to check
+        setComplete();
+        endTransaction();
+
+        assertEquals("n6 not directly deleted", 0, countNodesByReference(n6Ref));
+        assertEquals("n8 not cascade deleted", 0, countNodesByReference(n8Ref));
+        assertEquals("n6 primary parent association not removed from n3", 0, countChildrenOfNode(n3Ref));
+        assertEquals("n6 secondary parent association not removed from n4", 0, countChildrenOfNode(n4Ref));
+        assertEquals("n8 secondary parent association not removed from n7", 0, countChildrenOfNode(n7Ref));
+    }
+    
     public static class BadOnDeleteNodePolicy implements
             NodeServicePolicies.OnDeleteNodePolicy,
             NodeServicePolicies.BeforeDeleteNodePolicy
@@ -697,46 +727,18 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         endTransaction();
     }
     
-    public void testCascadeDelete() throws Exception
-    {
-        // build the node and commit the node graph
-        Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph(nodeService, rootNodeRef);
-        NodeRef n3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_p_n3")).getChildRef();
-        NodeRef n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n2_p_n4")).getChildRef();
-        NodeRef n6Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n3_p_n6")).getChildRef();
-        NodeRef n7Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n5_p_n7")).getChildRef();
-        NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
-
-        // control checks
-        assertEquals("n6 not present", 1, countNodesByReference(n6Ref));
-        assertEquals("n8 not present", 1, countNodesByReference(n8Ref));
-        assertEquals("n6 primary parent association not present on n3", 1, countChildrenOfNode(n3Ref));
-        assertEquals("n6 secondary parent association not present on n4", 1, countChildrenOfNode(n4Ref));
-        assertEquals("n8 secondary parent association not present on n7", 1, countChildrenOfNode(n7Ref));
-        
-        // delete n6
-        nodeService.deleteNode(n6Ref);
-        // commit to check
-        setComplete();
-        endTransaction();
-
-        assertEquals("n6 not directly deleted", 0, countNodesByReference(n6Ref));
-        assertEquals("n8 not cascade deleted", 0, countNodesByReference(n8Ref));
-        assertEquals("n6 primary parent association not removed from n3", 0, countChildrenOfNode(n3Ref));
-        assertEquals("n6 secondary parent association not removed from n4", 0, countChildrenOfNode(n4Ref));
-        assertEquals("n8 secondary parent association not removed from n7", 0, countChildrenOfNode(n7Ref));
-    }
-    
     private int countChildrenOfNode(NodeRef nodeRef)
     {
         String query =
                 "select node.childAssocs" +
                 " from " +
                 NodeImpl.class.getName() + " node" +
-                " where node.uuid = ?";
+                " where node.uuid = ? and node.store.key.protocol = ? and node.store.key.identifier = ?";
         Session session = getSession();
         List results = session.createQuery(query)
             .setString(0, nodeRef.getId())
+            .setString(1, nodeRef.getStoreRef().getProtocol())
+            .setString(2, nodeRef.getStoreRef().getIdentifier())
             .list();
         int count = results.size();
         return count;

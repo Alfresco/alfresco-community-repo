@@ -1813,13 +1813,13 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             ArrayList<Long> times = new ArrayList<Long>();
             BulkLoader loader = new BulkLoader(fService);
-            loader.recursiveLoad("source/java/org/alfresco/repo", "main:/");
+            loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
             times.add(System.currentTimeMillis());
             fService.createSnapshot("main");
-            loader.recursiveLoad("source/java/org/alfresco/service", "main:/");
+            loader.recursiveLoad("source/java/org/alfresco/repo/action", "main:/");
             times.add(System.currentTimeMillis());
             fService.createSnapshot("main");
-            loader.recursiveLoad("source/java/org/alfresco/filesys", "main:/");
+            loader.recursiveLoad("source/java/org/alfresco/repo/audit", "main:/");
             times.add(System.currentTimeMillis());
             fService.createSnapshot("main");
             assertEquals(1, fService.getRepositoryVersions("main", null, new Date(times.get(0))).size());

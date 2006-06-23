@@ -532,7 +532,14 @@ class AVMTester implements Runnable
     private void snapshot() 
     {
         System.out.println("snapshot");
-        fService.createSnapshot("main");
+        try
+        {
+            fService.createSnapshot("main");
+        }
+        catch (AVMExistsException aee)
+        {
+            // Do nothing. It's OK.
+        }
     }
     
     public boolean getError()

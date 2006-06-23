@@ -131,7 +131,7 @@ class RepositoryImpl implements Repository, Serializable
         // If the root isn't new, we can't take a snapshot since nothing has changed.
         if (!fRoot.getIsNew())
         {
-            // TODO Silently return for now.
+            throw new AVMExistsException("Already snapshotted.");
         }
         // Clear out the new nodes.
         Query query = 

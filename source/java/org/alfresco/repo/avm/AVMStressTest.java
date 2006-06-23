@@ -36,7 +36,7 @@ public class AVMStressTest extends AVMServiceTestBase
         try
         {
             int nCopies = 1;
-            int nThreads = 16;
+            int nThreads = 8;
             BulkLoader loader = new BulkLoader(fService);
             long start = System.currentTimeMillis();
             for (int i = 0; i < nCopies; i++)

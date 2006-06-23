@@ -89,7 +89,6 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fPrimaryIndirection = other.getPrimaryIndirection();
         fLayerID = -1;
         sess.save(this);
-        sess.flush();
         for (ChildEntry child : other.getChildren())
         {
             ChildEntryImpl newChild = new ChildEntryImpl(child.getName(),
@@ -126,7 +125,6 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         sess.save(this);
         if (copyContents)
         {
-            sess.flush();
             for (ChildEntry child : other.getChildren())
             {
                 ChildEntryImpl newChild = new ChildEntryImpl(child.getName(),

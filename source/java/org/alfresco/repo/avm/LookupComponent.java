@@ -39,21 +39,6 @@ class LookupComponent
     private String fIndirection;
     
     /**
-     * The lowest layer index.
-     */
-    private int fLowestLayerIndex;
-    
-    /**
-     * Whether this node is in a layer.
-     */
-    private boolean fLayered;
-    
-    /**
-     * Whether this needs copying.
-     */
-    private boolean fNeedsCopy;
-    
-    /**
      * Create a new empty lookup component.
      */
     public LookupComponent()
@@ -76,45 +61,6 @@ class LookupComponent
     public void setIndirection(String indirection)
     {
         fIndirection = indirection;
-    }
-
-    /**
-     * Is this component layered. I.e. has it seen a layer yet in
-     * its lookup.
-     * @return Whether this component is layered.
-     */
-    public boolean isLayered()
-    {
-        return fLayered;
-    }
-
-    /**
-     * Set whether this node is layered.
-     * @param layered
-     */
-    public void setLayered(boolean layered)
-    {
-        fLayered = layered;
-    }
-
-    /**
-     * Get the index of the lowest (in the path lookup sense) layer
-     * seen at this component's point in the lookup.
-     * @return the lowestLayerIndex
-     */
-    public int getLowestLayerIndex()
-    {
-        return fLowestLayerIndex;
-    }
-
-    /**
-     * Set the index of the lowest (in the path lookup sense) layer
-     * seen at this components's point in the lookup.
-     * @param lowestLayerIndex the lowestLayerIndex to set
-     */
-    public void setLowestLayerIndex(int lowestLayerIndex)
-    {
-        fLowestLayerIndex = lowestLayerIndex;
     }
 
     /**
@@ -151,23 +97,5 @@ class LookupComponent
     public void setNode(AVMNode node)
     {
         fNode = node;
-    }
-
-    /**
-     * Set the needs copy bit.
-     * @param needs Whether this component needs to be copied.
-     */
-    public void setNeedsCopy(boolean needs)
-    {
-        fNeedsCopy = needs;
-    }
-    
-    /**
-     * Does this component need a copy.
-     * @return Whether it does.
-     */
-    public boolean getNeedsCopy()
-    {
-        return fNeedsCopy;
     }
 }

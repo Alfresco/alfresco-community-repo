@@ -48,6 +48,11 @@ class Lookup
      * Used while building a Lookup.
      */
     private boolean fLayeredYet;
+    
+    /**
+     * Whether we are directly contained at this point.
+     */
+    private boolean fDirectlyContained;
  
     /**
      * The first LayeredDirectoryNode in the path.
@@ -90,6 +95,7 @@ class Lookup
         fTopLayerIndex = -1;
         fLowestLayerIndex = -1;
         fNeedsCopying = false;
+        fDirectlyContained = true;
     }
     
     /**
@@ -104,22 +110,41 @@ class Lookup
         LookupComponent comp = new LookupComponent();
         comp.setName(name);
         comp.setNode(node);
+        if (!write)
+        {
+            if (node.getType() == AVMNodeType.LAYERED_DIRECTORY)
+            {
+                LayeredDirectoryNode oNode = (LayeredDirectoryNode)node;
+                if (oNode.getPrimaryIndirection())
+                {
+                    comp.setIndirection(oNode.getUnderlying());
+                }
+                else
+                {
+                    comp.setIndirection(computeIndirection(name));
+                }
+            }
+            fComponents.add(comp);
+            fPosition++;
+            return;
+        }
 //        SuperRepository.GetInstance().getSession().lock(node, LockMode.READ);
+        if (fPosition >= 0 && fDirectlyContained && 
+            fComponents.get(fPosition).getNode().getType() == AVMNodeType.LAYERED_DIRECTORY)
+        {
+            fDirectlyContained = ((DirectoryNode)fComponents.get(fPosition).getNode()).directlyContains(node);
+        }
         if (!node.getIsNew())
         {
             fNeedsCopying = true;
         }
         else
         {
-            // TODO The isDirectlyContained should be eliminated in favor of 
-            // a cumulative state.
-            if (fPosition >= 0 && (!((DirectoryNode)fComponents.get(fPosition).getNode()).directlyContains(node) ||
-                                   !isDirectlyContained()))
+            if (fPosition >= 0 && !fDirectlyContained)
             {
                 fNeedsCopying = true;
             }
         }
-        comp.setNeedsCopy(fNeedsCopying);
         // Record various things if this is layered.
         if (node.getType() == AVMNodeType.LAYERED_DIRECTORY)
         {
@@ -144,24 +169,23 @@ class Lookup
         }
         // In a write context a plain directory contained in a layer will
         // be copied so we will need to compute an indirection path.
-        else if (fLayeredYet && write)
+        else if (fLayeredYet)
         {
             comp.setIndirection(computeIndirection(name));
         }
-        comp.setLowestLayerIndex(fLowestLayerIndex);
-        comp.setLayered(fLayeredYet);
         fComponents.add(comp);
         fPosition++;
         // If we are in a write context do copy on write.
-        if (write && fNeedsCopying)
+        if (fNeedsCopying)
         {
             node = node.copy(this);
+            node.setVersionID(fRepository.getNextVersionID());
             fComponents.get(fPosition).setNode(node);
             if (fPosition == 0)
             {
                 // Inform the repository of a new root.
                 fRepository.setNewRoot((DirectoryNode)node);
-                SuperRepository.GetInstance().getSession().flush();
+//                SuperRepository.GetInstance().getSession().flush();
                 return;
             }
             // Not the root. Check if we are the top layer and insert this into it's parent.
@@ -170,7 +194,6 @@ class Lookup
                 fTopLayer = (LayeredDirectoryNode)node;
             }
             ((DirectoryNode)fComponents.get(fPosition - 1).getNode()).putChild(name, node);
-            SuperRepository.GetInstance().getSession().flush();
         }
     }
     
@@ -202,87 +225,21 @@ class Lookup
     }
     
     /**
-     * Set the current node to one higher in the lookup.  This is used
-     * repeatedly during copy on write.
-     */
-    public void upCurrentNode()
-    {
-        fPosition--;
-    }
-    
-    /**
      * Is the current path layered.
      * @return Whether the current position in the path is layered.
      */
     public boolean isLayered()
     {
-        assert fPosition >= 0;
-        return fComponents.get(fPosition).isLayered();
+        return fLayeredYet;
     }
 
-    /**
-     * Determine if a node is directly contained.
-     */
-    private boolean isDirectlyContained()
-    {
-        if (!isLayered())
-        {
-            return true;
-        }
-        int pos = fPosition;
-        while (pos > 1)
-        {
-            DirectoryNode dir = (DirectoryNode)fComponents.get(pos - 1).getNode();
-            if (!dir.directlyContains(fComponents.get(pos).getNode()))
-            {
-                return false;
-            }
-            pos--;
-        }
-        return true;
-    }
-    
     /**
      * Determine if a node is directly in this layer.
      * @return Whether this node is directly in this layer.
      */
     public boolean isInThisLayer()
     {
-        if (!isLayered())
-        {
-            return false;
-        }
-        int pos = fPosition;
-        // Special case of the top layer.
-        if (fComponents.get(pos).getNode() == fTopLayer)
-        {
-            return true;
-        }
-        // Walk up the containment chain and determine if each parent-child
-        // relationship is one of direct containment.
-        while (pos > 1)
-        {
-            DirectoryNode dir = (DirectoryNode)fComponents.get(pos - 1).getNode();
-            if (!dir.directlyContains(fComponents.get(pos).getNode()))
-            {
-                return false;
-            }
-            if (dir.equals(fTopLayer))
-            {
-                return true;
-            }
-            pos--;
-        }
-        return false;
-    }
-    
-    /**
-     * Get the name of the current component.
-     * @return The name.
-     */
-    public String getName()
-    {
-        return fComponents.get(fPosition).getName();
+        return fLayeredYet && fDirectlyContained;
     }
     
     /**
@@ -295,24 +252,14 @@ class Lookup
     }
     
     /**
-     * Get the current position within the lookup.
-     * @return The current position.
-     */
-    public int getPosition()
-    {
-        return fPosition;
-    }
-    
-    /**
      * Calculate the indirection path at this node.
      * @return The indirection path all the way down to the current node.
      */
     public String getIndirectionPath()
     {
-        int lowestLayerIndex = fComponents.get(fPosition).getLowestLayerIndex();
         // The path is the underlying path of the lowest layer that is directly contained
         // by the top layer that is a primary indirection node.
-        for (int pos = lowestLayerIndex; pos >= fTopLayerIndex; pos--)
+        for (int pos = fLowestLayerIndex; pos >= fTopLayerIndex; pos--)
         {
             AVMNode node = fComponents.get(pos).getNode();
             if (node.getType() != AVMNodeType.LAYERED_DIRECTORY)
@@ -388,15 +335,6 @@ class Lookup
             builder.append(fComponents.get(i).getName());
         }
         return builder.toString();
-    }
-    
-    /**
-     * Get whether the current node needs copying.
-     * @return Whether the current node needs copying.
-     */
-    public boolean needsCopying()
-    {
-        return fComponents.get(fPosition).getNeedsCopy();
     }
     
     /**

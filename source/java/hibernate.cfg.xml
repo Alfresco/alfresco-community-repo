@@ -17,7 +17,7 @@
 	<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
 <!-- <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property> -->
   	<property name="show_sql">false</property>
-    <property name="order_updates">false</property>
+    <property name="order_updates">true</property>
   	<property name="connection.isolation">2</property>
 
 <!--

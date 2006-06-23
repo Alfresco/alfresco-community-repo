@@ -40,7 +40,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     {
         super(repo.getSuperRepository().issueID(), repo);
         repo.getSuperRepository().getSession().save(this);
-        SuperRepository.GetInstance().getSession().flush();
     }
     
     /**
@@ -62,7 +61,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         super(repos.getSuperRepository().issueID(), repos);
         Session sess = repos.getSuperRepository().getSession();
         sess.save(this);
-        sess.flush();
         for (ChildEntry child : other.getChildren())
         {
             ChildEntry newChild = new ChildEntryImpl(child.getName(),

@@ -99,13 +99,4 @@ public class NodeStatusImpl implements NodeStatus, Serializable
     {
         return (node == null);
     }
-
-    /**
-     * For Hibernate use
-     */
-    @SuppressWarnings("unused")
-    private void setDeleted(boolean deleted)
-    {
-        // this is a convenience, derived property
-    }
 }

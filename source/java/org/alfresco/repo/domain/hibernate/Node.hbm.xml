@@ -156,7 +156,6 @@
             unique="false"
             not-null="false" />
       <property name="changeTxnId" column="change_txn_id" type="string" length="56" not-null="true" />
-      <property name="deleted" column="deleted" type="boolean" not-null="true" />
    </class>
    
    <class
@@ -285,7 +284,7 @@
       where
          status.key.protocol = :storeProtocol and
          status.key.identifier = :storeIdentifier and
-         status.deleted = :deleted and
+         status.node.id is not null and
          status.changeTxnId = :changeTxnId
    </query>
 
@@ -297,7 +296,19 @@
       where
          status.key.protocol = :storeProtocol and
          status.key.identifier = :storeIdentifier and
-         status.deleted = :deleted and
+         status.node.id is not null and
+         status.changeTxnId = :changeTxnId
+   </query>
+
+   <query name="node.GetDeletedNodeStatuses">
+      select
+         status
+      from
+         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
+      where
+         status.key.protocol = :storeProtocol and
+         status.key.identifier = :storeIdentifier and
+         status.node.id is null and
          status.changeTxnId = :changeTxnId
    </query>
 

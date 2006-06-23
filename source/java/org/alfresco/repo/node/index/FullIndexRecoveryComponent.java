@@ -80,6 +80,7 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
 {
     public static final String QUERY_GET_NEXT_CHANGE_TXN_IDS = "node.GetNextChangeTxnIds";
     public static final String QUERY_GET_CHANGED_NODE_STATUSES = "node.GetChangedNodeStatuses";
+    public static final String QUERY_GET_DELETED_NODE_STATUSES = "node.GetDeletedNodeStatuses";
     public static final String QUERY_GET_CHANGED_NODE_STATUSES_COUNT = "node.GetChangedNodeStatusesCount";
     
     private static final String START_TXN_ID = "000";
@@ -705,8 +706,7 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
             public Object doInHibernate(Session session)
             {
                 Query query = session.getNamedQuery(QUERY_GET_CHANGED_NODE_STATUSES_COUNT);
-                query.setBoolean("deleted", false)
-                     .setString("storeProtocol", storeRef.getProtocol())
+                query.setString("storeProtocol", storeRef.getProtocol())
                      .setString("storeIdentifier", storeRef.getIdentifier())
                      .setString("changeTxnId", changeTxnId)
                      .setReadOnly(true);
@@ -726,8 +726,7 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
             public Object doInHibernate(Session session)
             {
                 Query query = session.getNamedQuery(QUERY_GET_CHANGED_NODE_STATUSES);
-                query.setBoolean("deleted", false)
-                     .setString("storeProtocol", storeRef.getProtocol())
+                query.setString("storeProtocol", storeRef.getProtocol())
                      .setString("storeIdentifier", storeRef.getIdentifier())
                      .setString("changeTxnId", changeTxnId)
                      .setReadOnly(true);
@@ -746,9 +745,8 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
         {
             public Object doInHibernate(Session session)
             {
-                Query query = session.getNamedQuery(QUERY_GET_CHANGED_NODE_STATUSES);
-                query.setBoolean("deleted", true)
-                     .setString("storeProtocol", storeRef.getProtocol())
+                Query query = session.getNamedQuery(QUERY_GET_DELETED_NODE_STATUSES);
+                query.setString("storeProtocol", storeRef.getProtocol())
                      .setString("storeIdentifier", storeRef.getIdentifier())
                      .setString("changeTxnId", changeTxnId)
                      .setReadOnly(true);

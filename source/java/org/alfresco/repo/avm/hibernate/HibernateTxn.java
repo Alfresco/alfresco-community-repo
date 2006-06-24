@@ -115,22 +115,22 @@ public class HibernateTxn
                         if (t instanceof StaleStateException)
                         {
                             System.err.println("Lost Race");
-//                            StackTraceElement [] stack = t.getStackTrace();
-//                            long threadID = Thread.currentThread().getId();
-//                            for (StackTraceElement frame : stack)
-//                            {
-//                                System.err.println(threadID + " " + frame);
-//                            }
+                            StackTraceElement [] stack = t.getStackTrace();
+                            long threadID = Thread.currentThread().getId();
+                            for (StackTraceElement frame : stack)
+                            {
+                                System.err.println(threadID + " " + frame);
+                            }
                         }
                         else
                         {
                             System.err.println("Deadlock");
-//                            StackTraceElement [] stack = t.getStackTrace();
-//                            long threadID = Thread.currentThread().getId();
-//                            for (StackTraceElement frame : stack)
-//                            {
-//                                System.err.println(threadID + " " + frame);
-//                            }
+                            StackTraceElement [] stack = t.getStackTrace();
+                            long threadID = Thread.currentThread().getId();
+                            for (StackTraceElement frame : stack)
+                            {
+                                System.err.println(threadID + " " + frame);
+                            }
                             try
                             {
                                 long interval;

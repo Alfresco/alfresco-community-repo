@@ -43,6 +43,11 @@ public class ChildEntryImpl implements ChildEntry, Serializable
     private AVMNode fChild;
     
     /**
+     * The Optimistic lock version
+     */
+    private long fVers;
+    
+    /**
      * Default constructor for Hibernate.
      */
     protected ChildEntryImpl()
@@ -144,5 +149,21 @@ public class ChildEntryImpl implements ChildEntry, Serializable
     public int hashCode()
     {
         return fName.hashCode() + fParent.hashCode();
+    }
+
+    /**
+     * @return the vers
+     */
+    protected long getVers()
+    {
+        return fVers;
+    }
+
+    /**
+     * @param vers the vers to set
+     */
+    protected void setVers(long vers)
+    {
+        fVers = vers;
     }
 }

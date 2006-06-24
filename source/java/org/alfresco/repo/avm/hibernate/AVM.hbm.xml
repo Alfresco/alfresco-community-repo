@@ -148,7 +148,7 @@
 			column="root_id" not-null="true">
 		</many-to-one>
 	</class>
-	<class name="ChildEntryImpl" proxy="ChildEntry" table="child_entries">
+	<class name="ChildEntryImpl" proxy="ChildEntry" table="child_entries" optimistic-lock="version">
 		<cache usage="read-write"/>
 		<composite-id>
 			<key-property name="name" type="string" column="name">
@@ -156,6 +156,7 @@
 			<key-many-to-one name="parent" column="parent_id" class="DirectoryNodeImpl">
 			</key-many-to-one>
 		</composite-id>
+		<version name="vers" column="vers" type="long"/>
 		<many-to-one name="child" column="child_id" class="AVMNodeImpl"
 			not-null="true">
 		</many-to-one>

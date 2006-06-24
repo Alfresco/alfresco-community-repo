@@ -195,6 +195,7 @@ class AVMTester implements Runnable
     {
         try
         {
+            long threadID = Thread.currentThread().getId();
             long startTime = System.currentTimeMillis();
             for (int i = 0; i < fOpCount; i++)
             {
@@ -206,7 +207,7 @@ class AVMTester implements Runnable
                 {
                     return;
                 }
-                System.out.print(fID + ":" + i + ":");
+                System.out.print(threadID + ":" + i + ":");
                 int which = fgRandom.nextInt(fOpTable.length);
                 switch (fOpTable[which])
                 {

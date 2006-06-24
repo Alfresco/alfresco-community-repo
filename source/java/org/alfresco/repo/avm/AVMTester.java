@@ -46,9 +46,9 @@ class AVMTester implements Runnable
     private static final int READ_FILE = 7;
     private static final int SNAPSHOT = 8;
     
-    private static List<String> fgAllPaths;
-    private static List<String> fgAllDirectories;
-    private static List<String> fgAllFiles;
+    private List<String> fAllPaths;
+    private List<String> fAllDirectories;
+    private List<String> fAllFiles;
     
     private static boolean fgFrozen = false;
     
@@ -240,7 +240,7 @@ class AVMTester implements Runnable
                         break;
                 }   
             }
-            System.out.println(fgAllPaths.size() + " fses in " + (System.currentTimeMillis() - startTime) +
+            System.out.println(fAllPaths.size() + " fses in " + (System.currentTimeMillis() - startTime) +
                                 "ms");
         }
         catch (Exception e)
@@ -254,14 +254,14 @@ class AVMTester implements Runnable
     private void createFile() 
     {
         String name = "PF" + fNames[fgRandom.nextInt(26 * 26)];
-        String path = RandomDirectory();
+        String path = randomDirectory();
         try
         {
             System.out.println("create " + path + " " + name);
             PrintStream out = new PrintStream(fService.createFile(path, name));
             out.println(path + "/" + name);
             out.close();
-            AddFile(appendPath(path, name));
+            addFile(appendPath(path, name));
         }
         catch (AVMException ae)
         {
@@ -279,12 +279,12 @@ class AVMTester implements Runnable
     private void createDirectory()
     {
         String name = "PD" + fNames[fgRandom.nextInt(26 * 26)];
-        String path = RandomDirectory();
+        String path = randomDirectory();
         try
         {
             System.out.println("mkdir " + path + " " + name);
             fService.createDirectory(path, name);
-            AddDirectory(appendPath(path, name));
+            addDirectory(appendPath(path, name));
         }
         catch (AVMException ae)
         {
@@ -302,7 +302,7 @@ class AVMTester implements Runnable
     private void rename()
     {
         String name = fNames[fgRandom.nextInt(26 * 26)];
-        String path = RandomPath();
+        String path = randomPath();
         AVMNodeDescriptor desc = fService.lookup(-1, path);
         if (path.equals("main:/"))
         {
@@ -315,19 +315,19 @@ class AVMTester implements Runnable
             srcPath = srcPath + "/";
         }
         String srcName = path.substring(lastSlash + 1);
-        String dstPath = RandomDirectory();
+        String dstPath = randomDirectory();
         try
         {
             System.out.println("rename " + srcPath + " " + srcName + " " + dstPath + " " + name);
             fService.rename(srcPath, srcName, dstPath, name);
-            RemovePath(path);
+            removePath(path);
             if (desc.isDirectory())
             {
-                AddDirectory(appendPath(dstPath, name));
+                addDirectory(appendPath(dstPath, name));
             }
             else
             {
-                AddFile(appendPath(dstPath, name));
+                addFile(appendPath(dstPath, name));
             }
         }
         catch (AVMException ae)
@@ -346,13 +346,13 @@ class AVMTester implements Runnable
     private void createLayeredDir() 
     {
         String name = "LD" + fNames[fgRandom.nextInt(26 * 26)];
-        String path = RandomDirectory();
-        String target = RandomDirectory();
+        String path = randomDirectory();
+        String target = randomDirectory();
         try
         {
             System.out.println("mklayereddir " + path + " " + name + " " + target);
             fService.createLayeredDirectory(target, path, name);
-            AddDirectory(appendPath(path, name));
+            addDirectory(appendPath(path, name));
         }
         catch (AVMException ae)
         {
@@ -370,13 +370,13 @@ class AVMTester implements Runnable
     private void createLayeredFile() 
     {
         String name = "LF" + fNames[fgRandom.nextInt(26 * 26)];
-        String path = RandomDirectory();
-        String target = RandomFile();
+        String path = randomDirectory();
+        String target = randomFile();
         try
         {
             System.out.println("createlayered " + path + " " + name + " " + target);
             fService.createLayeredFile(target, path, name);
-            AddFile(appendPath(path, name));
+            addFile(appendPath(path, name));
         }
         catch (AVMException ae)
         {
@@ -393,7 +393,7 @@ class AVMTester implements Runnable
     
     private void removeNode()
     {
-        String target = RandomPath();
+        String target = randomPath();
         int lastSlash = target.lastIndexOf('/');
         String path = target.substring(0, lastSlash);
         if (path.equals("main:"))
@@ -405,7 +405,7 @@ class AVMTester implements Runnable
         {
             System.out.println("remove " + target);
             fService.removeNode(path, name);
-            RemovePath(target);
+            removePath(target);
         }
         catch (AVMException e)
         {
@@ -421,7 +421,7 @@ class AVMTester implements Runnable
     
     private void modifyFile()
     {
-        String path = RandomFile();
+        String path = randomFile();
         try
         {
             System.out.println("modify " + path);
@@ -444,7 +444,7 @@ class AVMTester implements Runnable
     
     private void readFile()
     {
-        String path = RandomFile();
+        String path = randomFile();
         try
         {
             System.out.println("read " + path);
@@ -470,20 +470,20 @@ class AVMTester implements Runnable
         }
     }       
     
-    public void Refresh()
+    public void refresh()
     {
         System.out.println("refresh");
-        fgAllPaths = new ArrayList<String>();
-        fgAllDirectories = new ArrayList<String>();
-        fgAllFiles = new ArrayList<String>();
-        fgAllPaths.add("main:/");
-        fgAllDirectories.add("main:/");
+        fAllPaths = new ArrayList<String>();
+        fAllDirectories = new ArrayList<String>();
+        fAllFiles = new ArrayList<String>();
+        fAllPaths.add("main:/");
+        fAllDirectories.add("main:/");
         Set<Long> visited = new HashSet<Long>();
         AVMNodeDescriptor root = fService.getRepositoryRoot(-1, "main");
-        RecursiveRefresh(root, visited);
+        recursiveRefresh(root, visited);
     }
 
-    private void RecursiveRefresh(AVMNodeDescriptor dir, Set<Long> visited)
+    private void recursiveRefresh(AVMNodeDescriptor dir, Set<Long> visited)
     {
         try
         {
@@ -503,16 +503,16 @@ class AVMTester implements Runnable
                             continue;
                         }
                         visited.add(desc.getId());
-                        fgAllPaths.add(path);
-                        fgAllDirectories.add(path);
-                        RecursiveRefresh(desc, visited);
+                        fAllPaths.add(path);
+                        fAllDirectories.add(path);
+                        recursiveRefresh(desc, visited);
                         break;
                     }
                     case AVMNodeType.LAYERED_FILE :
                     case AVMNodeType.PLAIN_FILE :
                     {
-                        fgAllPaths.add(path);
-                        fgAllFiles.add(path);
+                        fAllPaths.add(path);
+                        fAllFiles.add(path);
                         break;
                     }
                 }
@@ -553,47 +553,47 @@ class AVMTester implements Runnable
         fExit = true;
     }
     
-    private static synchronized void AddDirectory(String path)
+    private void addDirectory(String path)
     {
-        fgAllDirectories.add(path);
-        fgAllPaths.add(path);
+        fAllDirectories.add(path);
+        fAllPaths.add(path);
     }
     
-    private static synchronized void AddFile(String path)
+    private void addFile(String path)
     {
-        fgAllFiles.add(path);
-        fgAllPaths.add(path);
+        fAllFiles.add(path);
+        fAllPaths.add(path);
     }
     
-    private static synchronized void RemovePath(String path)
+    private void removePath(String path)
     {
         List<String> allPaths = new ArrayList<String>();
         List<String> allDirectories = new ArrayList<String>();
         List<String> allFiles = new ArrayList<String>();
-        for (String p : fgAllPaths)
+        for (String p : fAllPaths)
         {
             if (p.indexOf(path) != 0)
             {
                 allPaths.add(p);
             }
         }
-        for (String p : fgAllDirectories)
+        for (String p : fAllDirectories)
         {
             if (p.indexOf(path) != 0)
             {
                 allDirectories.add(p);
             }
         }
-        for (String p : fgAllFiles)
+        for (String p : fAllFiles)
         {
             if (p.indexOf(path) != 0)
             {
                 allFiles.add(p);
             }
         }
-        fgAllPaths = allPaths;
-        fgAllDirectories = allDirectories;
-        fgAllFiles = allFiles;
+        fAllPaths = allPaths;
+        fAllDirectories = allDirectories;
+        fAllFiles = allFiles;
     }
     
     private String appendPath(String path, String name)
@@ -601,18 +601,18 @@ class AVMTester implements Runnable
         return path.endsWith("/") ? path + name : path + "/" + name;
     }
     
-    private static synchronized String RandomDirectory()
+    private String randomDirectory()
     {
-        return fgAllDirectories.get(fgRandom.nextInt(fgAllDirectories.size()));
+        return fAllDirectories.get(fgRandom.nextInt(fAllDirectories.size()));
     }
 
-    private static synchronized String RandomFile()
+    private String randomFile()
     {
-        return fgAllFiles.get(fgRandom.nextInt(fgAllFiles.size()));
+        return fAllFiles.get(fgRandom.nextInt(fAllFiles.size()));
     }
 
-    private static synchronized String RandomPath()
+    private String randomPath()
     {
-        return fgAllPaths.get(fgRandom.nextInt(fgAllPaths.size()));
+        return fAllPaths.get(fgRandom.nextInt(fAllPaths.size()));
     }
 }

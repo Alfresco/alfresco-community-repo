@@ -63,10 +63,7 @@ public class AVMStressTest extends AVMServiceTestBase
                                     10000,      // # ops
                                     fService,
                                     "" + i);   
-                if (i == 0)
-                {
-                    tester.Refresh();
-                }
+                tester.refresh();
                 Thread thread = new Thread(tester);
                 testers.add(tester);
                 threads.add(thread);

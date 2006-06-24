@@ -210,6 +210,15 @@ public class AVMInteractiveConsole
                     }
                     fService.createLayeredDirectory(command[1], command[2], command[3]);
                 }
+                else if (command[0].equals("rename"))
+                {
+                    if (command.length != 5)
+                    {
+                        System.err.println("Syntax error.");
+                        continue;
+                    }
+                    fService.rename(command[1], command[2], command[3], command[4]);
+                }
                 else if (command[0].equals("retarget"))
                 {
                     if (command.length != 3)

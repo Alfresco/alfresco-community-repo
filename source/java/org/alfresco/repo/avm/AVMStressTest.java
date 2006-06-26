@@ -35,7 +35,7 @@ public class AVMStressTest extends AVMServiceTestBase
     {
         try
         {
-            int nCopies = 1;
+            int nCopies = 4;
             int nThreads = 8;
             BulkLoader loader = new BulkLoader(fService);
             long start = System.currentTimeMillis();
@@ -60,7 +60,7 @@ public class AVMStressTest extends AVMServiceTestBase
                                     20,        // modify file.
                                     3200,        // read file
                                     10,        // snapshot
-                                    10000,      // # ops
+                                    1000,      // # ops
                                     fService,
                                     "" + i);   
                 tester.refresh();
@@ -73,6 +73,7 @@ public class AVMStressTest extends AVMServiceTestBase
                 thread.start();
             }
             int exited = 0;
+            long sampStart = System.currentTimeMillis();
             while (exited != nThreads)
             {
                 try
@@ -99,6 +100,22 @@ public class AVMStressTest extends AVMServiceTestBase
                             exited++;
                         }
                     }
+                    /*
+                    long now = System.currentTimeMillis();
+                    if (now - sampStart > 30000)
+                    {
+                        System.err.println("RATE: " + (((long)AVMTester.GetCount()) * 1000 / (now - sampStart)));
+                        for (AVMTester tester : testers)
+                        {
+                            tester.setExit();
+                        }
+                        for (Thread thread : threads)
+                        {
+                            thread.join();
+                        }
+                        fail();
+                    }
+                    */
                 }
                 catch (InterruptedException e)
                 {

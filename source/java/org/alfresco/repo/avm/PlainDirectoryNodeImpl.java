@@ -126,14 +126,15 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @param lPath The lookup path so far.
      * @param name The name to lookup.
      * @param version The version to look under.
+     * @param write Whether this is in a write context.
      * @return The child or null.
      */
     @SuppressWarnings("unchecked")
-    public AVMNode lookupChild(Lookup lPath, String name, int version)
+    public AVMNode lookupChild(Lookup lPath, String name, int version, boolean write)
     {
         // We're doing the hand unrolling of the proxy because
         // Hibernate/CGLIB proxies are broken.
-        ChildEntry entry = getChild(name);
+        ChildEntry entry = getChild(name, write);
         if (entry == null)
         {
             return null;
@@ -153,7 +154,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         {
             throw new AVMBadArgumentException("Path is null.");
         }
-        ChildEntry entry = getChild(name);
+        ChildEntry entry = getChild(name, false);
         if (entry == null)
         {
             return null;
@@ -168,7 +169,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     @SuppressWarnings("unchecked")
     public void removeChild(String name)
     {
-        ChildEntry entry = getChild(name);
+        ChildEntry entry = getChild(name, true);
         if (entry != null)
         {
             SuperRepository.GetInstance().getSession().delete(entry);

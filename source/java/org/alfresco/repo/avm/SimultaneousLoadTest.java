@@ -32,8 +32,8 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
     {
         try
         {
-            int n = 8;
-            int m = 1;
+            int n = 1;
+            int m = 8;
             for (int i = 0; i < n; i++)
             {
                 fService.createDirectory("main:/", "d" + i);
@@ -42,7 +42,7 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
             Thread [] threads = new Thread[n];
             for (int i = 0; i < n; i++)
             {
-                Loader loader = new Loader("/Users/britt/stuff/" + i, "main:/d" + i, m);
+                Loader loader = new Loader("source", "main:/d" + i, m);
                 threads[i] = new Thread(loader);
                 threads[i].start();
             }

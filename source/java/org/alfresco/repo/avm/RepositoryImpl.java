@@ -162,7 +162,7 @@ class RepositoryImpl implements Repository, Serializable
         Lookup lPath = lookupDirectory(-1, path, true);
 //        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, -1) != null)
+        if (dir.lookupChild(lPath, name, -1, true) != null)
         {
             throw new AVMExistsException("Child exists: " + name);
         }
@@ -195,7 +195,7 @@ class RepositoryImpl implements Repository, Serializable
         Lookup lPath = lookupDirectory(-1, dstPath, true);
 //        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, -1) != null)
+        if (dir.lookupChild(lPath, name, -1, true) != null)
         {
             throw new AVMExistsException("Child exists: " +  name);
         }
@@ -230,7 +230,7 @@ class RepositoryImpl implements Repository, Serializable
         Lookup lPath = lookupDirectory(-1, path, true);
 //        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, -1) != null)
+        if (dir.lookupChild(lPath, name, -1, true) != null)
         {
             throw new AVMExistsException("Child exists: " + name);
         }
@@ -251,7 +251,7 @@ class RepositoryImpl implements Repository, Serializable
         Lookup lPath = lookupDirectory(-1, dstPath, true);
 //        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, -1) != null)
+        if (dir.lookupChild(lPath, name, -1, true) != null)
         {
             throw new AVMExistsException("Child exists: " + name);
         }
@@ -372,7 +372,7 @@ class RepositoryImpl implements Repository, Serializable
         Lookup lPath = lookupDirectory(-1, path, true);
 //        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, -1) == null)
+        if (dir.lookupChild(lPath, name, -1, true) == null)
         {
             throw new AVMNotFoundException("Does not exist: " + name);
         }
@@ -528,7 +528,7 @@ class RepositoryImpl implements Repository, Serializable
         // before the end.
         for (int i = 0; i < pathElements.length - 1; i++)
         {
-            AVMNode child = dir.lookupChild(result, pathElements[i], version);
+            AVMNode child = dir.lookupChild(result, pathElements[i], version, write);
             if (child == null)
             {
                 throw new AVMNotFoundException("Not found: " + pathElements[i]);
@@ -544,7 +544,7 @@ class RepositoryImpl implements Repository, Serializable
             dir = (DirectoryNode)result.getCurrentNode();
         }
         // Now look up the last element.
-        AVMNode child = dir.lookupChild(result, pathElements[pathElements.length - 1], version);
+        AVMNode child = dir.lookupChild(result, pathElements[pathElements.length - 1], version, write);
         if (child == null)
         {
             throw new AVMNotFoundException("Not found: " + pathElements[pathElements.length - 1]);

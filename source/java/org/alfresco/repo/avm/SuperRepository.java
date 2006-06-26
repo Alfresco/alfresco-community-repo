@@ -298,7 +298,7 @@ class SuperRepository
         Lookup sPath = srcRepo.lookupDirectory(-1, pathParts[1], true);
 //        sPath.acquireLocks();
         DirectoryNode srcDir = (DirectoryNode)sPath.getCurrentNode();
-        AVMNode srcNode = srcDir.lookupChild(sPath, srcName, -1);
+        AVMNode srcNode = srcDir.lookupChild(sPath, srcName, -1, true);
         if (srcNode == null)
         {
             throw new AVMNotFoundException("Not found: " + srcName);
@@ -310,7 +310,7 @@ class SuperRepository
         Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1], true);
 //        dPath.acquireLocks();
         DirectoryNode dstDir = (DirectoryNode)dPath.getCurrentNode();
-        AVMNode dstNode = dstDir.lookupChild(dPath, dstName, -1);
+        AVMNode dstNode = dstDir.lookupChild(dPath, dstName, -1, true);
         if (dstNode != null)
         {
             throw new AVMExistsException("Node exists: " + dstName);
@@ -422,6 +422,7 @@ class SuperRepository
         for (String repName : repositories)
         {
             Repository repo = getRepositoryByName(repName, true);
+            fSession.get().lock(repo, LockMode.UPGRADE);
 //            fSession.get().lock(repo, LockMode.UPGRADE);
             repo.createSnapshot();
         }
@@ -434,6 +435,7 @@ class SuperRepository
     public void createSnapshot(String repository)
     {
         Repository repo = getRepositoryByName(repository, true);
+        fSession.get().lock(repo, LockMode.UPGRADE);
 //        fSession.get().lock(repo, LockMode.UPGRADE);
         repo.createSnapshot();
     }
@@ -694,11 +696,15 @@ class SuperRepository
     private Repository getRepositoryByName(String name, boolean write)
     {
         Repository rep = (Repository)fSession.get().get(RepositoryImpl.class, 
-                                              name /* ,
-                                              write ? LockMode.UPGRADE : LockMode.READ */);
+                                              name, LockMode.READ /*,
+                                              write ? LockMode.UPGRADE : LockMode.READ*/);
         if (rep == null)
         {
             throw new AVMNotFoundException("Repository not found: " + name);
+        }
+        if (write && !rep.getRoot().getIsNew())
+        {
+            fSession.get().lock(rep, LockMode.UPGRADE);
         }
         return rep;
     }

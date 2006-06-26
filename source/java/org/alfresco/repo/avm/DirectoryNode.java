@@ -44,9 +44,9 @@ interface DirectoryNode extends AVMNode
      * @param lPath The Lookup so far.
      * @param name The name of the child to lookup.
      * @param version The version to look under.
-     * @param visited A Set of full paths visited. Used for cycle checking.
+     * @param write Whether this is occuring in a write context.
      */
-    public AVMNode lookupChild(Lookup lPath, String name, int version);
+    public AVMNode lookupChild(Lookup lPath, String name, int version, boolean write);
     
     /**
      * Lookup a child node using an AVMNodeDescriptor as context.

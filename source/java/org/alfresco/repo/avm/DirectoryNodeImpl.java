@@ -19,6 +19,7 @@ package org.alfresco.repo.avm;
 
 import java.util.List;
 
+import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 
@@ -49,13 +50,16 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
     /**
      * Retrieves the ChildEntry in this directory with the given name.
      * @param name The name to look for.
+     * @param write Whether the child should be looked up for writing.
      * @return The ChildEntry or null if not found.
      */
     @SuppressWarnings("unchecked")
-    protected ChildEntry getChild(String name)
+    protected ChildEntry getChild(String name, boolean write)
     {
         Session sess = SuperRepository.GetInstance().getSession();
-        return (ChildEntry)sess.get(ChildEntryImpl.class, new ChildEntryImpl(name, this, null));
+        ChildEntry entry = (ChildEntry)sess.get(ChildEntryImpl.class, new ChildEntryImpl(name, this, null),
+                                                (write && getIsNew()) ? LockMode.UPGRADE : LockMode.READ);
+        return entry;
     }
     
     /**

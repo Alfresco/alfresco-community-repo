@@ -51,6 +51,7 @@ class AVMTester implements Runnable
     private List<String> fAllFiles;
     
     private static boolean fgFrozen = false;
+    private static int fgOpCount = 0;
     
     /**
      * The operation table.
@@ -239,6 +240,7 @@ class AVMTester implements Runnable
                         snapshot();
                         break;
                 }   
+                IncCount();
             }
             System.out.println(fAllPaths.size() + " fses in " + (System.currentTimeMillis() - startTime) +
                                 "ms");
@@ -614,5 +616,15 @@ class AVMTester implements Runnable
     private String randomPath()
     {
         return fAllPaths.get(fgRandom.nextInt(fAllPaths.size()));
+    }
+    
+    private static synchronized void IncCount()
+    {
+        ++fgOpCount;
+    }
+    
+    public static synchronized int GetCount()
+    {
+        return fgOpCount;
     }
 }

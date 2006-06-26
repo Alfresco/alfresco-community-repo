@@ -88,7 +88,7 @@ public class HibernateTxn
                 }
                 */
                 sess = fSessionFactory.openSession();
-                sess.setFlushMode(FlushMode.ALWAYS);
+//                sess.setFlushMode(FlushMode.ALWAYS);
                 txn = sess.beginTransaction();
                 callback.perform(sess);
                 txn.commit();

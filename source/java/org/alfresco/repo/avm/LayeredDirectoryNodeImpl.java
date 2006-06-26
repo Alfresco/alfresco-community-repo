@@ -381,17 +381,18 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param lPath The Lookup.
      * @param name The name we are looking.
      * @param version The version in which we are looking.
+     * @param write Whether this lookup is occurring in a write context.
      * @return The child or null if not found.
      */
     @SuppressWarnings("unchecked")
-    public AVMNode lookupChild(Lookup lPath, String name, int version)
+    public AVMNode lookupChild(Lookup lPath, String name, int version, boolean write)
     {
         // If the name has been deleted quickly return.
         if (getDeleted(name) != null)
         {
             return null;
         }
-        ChildEntry entry = getChild(name);
+        ChildEntry entry = getChild(name, write);
         if (entry != null)
         {
             return AVMNodeUnwrapper.Unwrap(entry.getChild());
@@ -401,7 +402,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-            return dir.lookupChild(lookup, name, -1);
+            return dir.lookupChild(lookup, name, -1, false);
         }
         catch (AVMException re)
         {
@@ -429,7 +430,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             return null;
         }
-        ChildEntry entry = getChild(name);
+        ChildEntry entry = getChild(name, false);
         if (entry != null)
         {
             return entry.getChild().getDescriptor(mine.getPath(),
@@ -440,7 +441,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, mine.getIndirection());
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-            AVMNode child = dir.lookupChild(lookup, name, -1);
+            AVMNode child = dir.lookupChild(lookup, name, -1, false);
             if (child == null)
             {
                 return null;
@@ -464,7 +465,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     @SuppressWarnings("unchecked")
     public void removeChild(String name)
     {
-        ChildEntry entry = getChild(name);
+        ChildEntry entry = getChild(name, true);
         if (entry != null)
         {
             SuperRepository.GetInstance().getSession().delete(entry);

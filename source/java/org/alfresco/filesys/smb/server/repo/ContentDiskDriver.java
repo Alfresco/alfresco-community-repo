@@ -331,7 +331,8 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 {
                     logger.warn("Failed to rollback transaction", ex);
                 }
-            }                
+            }
+            authComponent.clearCurrentSecurityContext();
         }
 
         // Check if the client side drag and drop appliction has been enabled

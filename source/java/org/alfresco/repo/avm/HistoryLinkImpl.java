@@ -74,8 +74,9 @@ class HistoryLinkImpl implements HistoryLink, Serializable
     }
 
     /**
+     * Equals override.
      * @param obj
-     * @return
+     * @return Equality.
      */
     @Override
     public boolean equals(Object obj)
@@ -94,7 +95,8 @@ class HistoryLinkImpl implements HistoryLink, Serializable
     }
 
     /**
-     * @return
+     * Get the hashcode.
+     * @return The hashcode.
      */
     @Override
     public int hashCode()

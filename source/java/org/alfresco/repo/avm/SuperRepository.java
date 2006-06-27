@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.SortedMap;
 
 import org.hibernate.LockMode;
 import org.hibernate.Query;
@@ -76,7 +76,6 @@ class SuperRepository
      * Create a new one.  It's given issuers and a storage directory.
      * @param nodeIssuer
      * @param contentIssuer
-     * @param branchIssuer
      * @param layerIssuer
      * @param storage
      */
@@ -108,7 +107,6 @@ class SuperRepository
      * Create a file.
      * @param path The path to the containing directory.
      * @param name The name for the new file.
-     * @param source A (possibly null) InputStream with content for the new file.
      */
     public OutputStream createFile(String path, String name)
     {
@@ -542,7 +540,7 @@ class SuperRepository
      * @param path The path to the directory.
      * @return A List of FolderEntries.
      */
-    public Map<String, AVMNodeDescriptor> getListing(int version, String path)
+    public SortedMap<String, AVMNodeDescriptor> getListing(int version, String path)
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
@@ -554,9 +552,9 @@ class SuperRepository
     /**
      * Get a directory listing from a directory node descriptor.
      * @param dir The directory node descriptor.
-     * @return
+     * @return A SortedMap listing.
      */
-    public Map<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir)
+    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir)
     {
         fLookupCount.set(1);
         AVMNode node = (AVMNode)fSession.get().get(AVMNodeImpl.class, dir.getId());
@@ -894,7 +892,7 @@ class SuperRepository
     
     /**
      * Get the single instance of SuperRepository.
-     * @return
+     * @return The single instance.
      */
     public static SuperRepository GetInstance()
     {

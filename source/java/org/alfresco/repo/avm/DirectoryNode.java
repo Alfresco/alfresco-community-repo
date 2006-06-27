@@ -18,6 +18,7 @@ package org.alfresco.repo.avm;
 
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
 /**
  * The interface for Directory Nodes.
@@ -65,8 +66,7 @@ interface DirectoryNode extends AVMNode
     /**
      * Get a directory listing.
      * @param lPath The lookup context.
-     * @param version The version to look under.
-     * @return A Map of names to DirectoryEntries.
+     * @return A SortedMap of names to DirectoryEntries.
      */
     public Map<String, AVMNode> getListing(Lookup lPath);
 
@@ -75,7 +75,7 @@ interface DirectoryNode extends AVMNode
      * @param dir The directory to list.
      * @return A Map of names to node descriptors
      */
-    public Map<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir);
+    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir);
     
     /**
      * Set the directory, which must be in a layer, into a primary

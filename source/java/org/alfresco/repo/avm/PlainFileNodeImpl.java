@@ -42,7 +42,6 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      * Make one from just a repository.
      * This is the constructor used when a brand new plain file is being made.
      * @param repos A Repository.
-     * @param source A possibly null stream from which to get data.
      */
     public PlainFileNodeImpl(Repository repos)
     {
@@ -133,7 +132,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
 
     /**
      * Get the descriptor for this node.
-     * @param The Lookup.
+     * @param lPath The Lookup.
      * @return A descriptor.
      */
     public AVMNodeDescriptor getDescriptor(Lookup lPath, String name)
@@ -168,7 +167,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
 
     /**
      * Get the descriptor for this node.
-     * @param The Lookup.
+     * @param lPath The Lookup.
      * @return A descriptor.
      */
     public AVMNodeDescriptor getDescriptor(Lookup lPath)

@@ -95,7 +95,7 @@ public class DeletedChildImpl implements DeletedChild, Serializable
     /**
      * Equality in the database entity sense.
      * @param obj
-     * @return
+     * @return Equality.
      */
     @Override
     public boolean equals(Object obj)
@@ -113,6 +113,7 @@ public class DeletedChildImpl implements DeletedChild, Serializable
     }
 
     /**
+     * Get a hash code.
      * @return A hash code.
      */
     @Override

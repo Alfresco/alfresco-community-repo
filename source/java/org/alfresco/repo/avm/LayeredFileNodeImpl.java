@@ -95,7 +95,6 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
 
     /**
      * Get the content of the specified version.
-     * @param repo The Repository.
      * @return A FileContent object.
      */
     public FileContent getContentForRead()
@@ -143,7 +142,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
 
     /**
      * Get the descriptor for this node.
-     * @param The Lookup.
+     * @param lPath The Lookup.
      * @return A descriptor.
      */
     public AVMNodeDescriptor getDescriptor(Lookup lPath, String name)
@@ -178,7 +177,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
 
     /**
      * Get the descriptor for this node.
-     * @param The Lookup.
+     * @param lPath The Lookup.
      * @return A descriptor.
      */
     public AVMNodeDescriptor getDescriptor(Lookup lPath)
@@ -208,7 +207,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      * @param parentPath The parent path.
      * @param name The name this was looked up with.
      * @param parentIndirection The parent indirection.
-     * @return
+     * @return The descriptor.
      */
     public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection)
     {

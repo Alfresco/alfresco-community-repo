@@ -21,7 +21,7 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
+import java.util.SortedMap;
 
 /**
  * The repository interface.  Methods for filesystem like, versioning,
@@ -69,7 +69,7 @@ interface Repository
      * Create a new file. The designated file cannot already exist.
      * @param path The path to the directory to contain the new file.
      * @param name The name to give the new file.
-     * @param source An InputStream of data to put in the file.  May be null.
+     * @return An OutputStream.
      */
     public OutputStream createFile(String path, String name);
 
@@ -95,7 +95,7 @@ interface Repository
      * @param path The path to the directory.
      * @return A listing.
      */
-    public Map<String, AVMNodeDescriptor> getListing(int version, String path);
+    public SortedMap<String, AVMNodeDescriptor> getListing(int version, String path);
 
     /**
      * Get an output stream to a file.

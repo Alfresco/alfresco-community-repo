@@ -290,7 +290,7 @@ public class AVMNodeDescriptor
 
     /**
      * Get the layer id of this node.
-     * @return
+     * @return The layer id if there is one or -1.
      */
     public long getLayerID()
     {

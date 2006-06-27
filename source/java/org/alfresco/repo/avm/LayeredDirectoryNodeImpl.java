@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.hibernate.Query;
@@ -68,7 +69,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     /**
      * Make a new one from a specified indirection path.
      * @param indirection The indirection path to set.
-     * @param repository The repository that owns this node.
+     * @param repos The repository that owns this node.
      */
     public LayeredDirectoryNodeImpl(String indirection, Repository repos)
     {
@@ -329,7 +330,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             }
         }
         // Filter the base listing by taking out anything in the deleted Set.
-        Map<String, AVMNode> listing = new TreeMap<String, AVMNode>();
+        Map<String, AVMNode> listing = new HashMap<String, AVMNode>();
         for (String name : baseListing.keySet())
         {
             if (getDeleted(name) != null)
@@ -350,13 +351,13 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param dir The directory node descriptor.
      * @return A Map of names to node descriptors.
      */
-    public Map<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir)
+    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir)
     {
         if (dir.getPath() == null || dir.getIndirection() == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        Map<String, AVMNodeDescriptor> baseListing = new TreeMap<String, AVMNodeDescriptor>();
+        SortedMap<String, AVMNodeDescriptor> baseListing = new TreeMap<String, AVMNodeDescriptor>();
         // If we are not opaque, get the underlying base listing.
         if (!fOpacity)
         {
@@ -570,7 +571,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     
     /**
      * Get the descriptor for this node.
-     * @param The Lookup.
+     * @param lPath The Lookup.
      * @return A descriptor.
      */
     public AVMNodeDescriptor getDescriptor(Lookup lPath, String name)
@@ -605,7 +606,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get the descriptor for this node.
-     * @param The Lookup.
+     * @param lPath The Lookup.
      * @return A descriptor.
      */
     public AVMNodeDescriptor getDescriptor(Lookup lPath)
@@ -636,7 +637,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param parentPath The parent path.
      * @param name The name this was looked up with.
      * @param parentIndirection The indirection of the parent.
-     * @return
+     * @return The descriptor.
      */
     public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection)
     {

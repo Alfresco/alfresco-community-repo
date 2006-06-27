@@ -10,7 +10,7 @@ interface LayeredDirectoryNode extends DirectoryNode, Layered
 {
     /**
      * Does this node have a primary indirection.
-     * @returns Whether this is a primary indirection.
+     * @return Whether this is a primary indirection.
      */
     public boolean getPrimaryIndirection();
 
@@ -28,7 +28,7 @@ interface LayeredDirectoryNode extends DirectoryNode, Layered
 
     /**
      * Set the layer id for this node.
-     * @param layerID The id to set.
+     * @param id The id to set.
      */
     public void setLayerID(long id);
 

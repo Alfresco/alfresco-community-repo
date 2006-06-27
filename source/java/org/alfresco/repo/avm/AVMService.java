@@ -22,7 +22,7 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
+import java.util.SortedMap;
 
 /**
  * This is the service interface for the [Alfresco|Addled|Advanced|Aleatoric|Apotheosed|Awful] 
@@ -70,26 +70,25 @@ public interface AVMService
      * @param path The simple absolute path to the file node.
      * @return A List of FolderEntrys.
      */
-    public Map<String, AVMNodeDescriptor> getDirectoryListing(int version, String path);
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(int version, String path);
     
     /**
      * Get a directory listing from a node descriptor.
      * @param dir The directory node descriptor.
      * @return A Map of names to node descriptors.
      */
-    public Map<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir);
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir);
     
     /**
      * Create a new File. Fails if the file already exists.
      * @param path The simple absolute path to the parent.
      * @param name The name to give the file.
-     * @param source A possibly null stream to draw initial contents from.
      */
     public OutputStream createFile(String path, String name);
     
     /**
      * Create a new directory.
-     * @param parent The simple absolute path to the parent.
+     * @param path The simple absolute path to the parent.
      * @param name The name to give the folder.
      */
     public void createDirectory(String path, String name);

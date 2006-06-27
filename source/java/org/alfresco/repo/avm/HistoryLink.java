@@ -43,7 +43,7 @@ interface HistoryLink
     
     /**
      * Get the descendent part of this.
-     * @return 
+     * @return The descendent of this link.
      */
     public AVMNode getDescendent();
 }

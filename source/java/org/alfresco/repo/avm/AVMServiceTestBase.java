@@ -76,7 +76,7 @@ public class AVMServiceTestBase extends TestCase
      * Get the recursive contents of the given path and version.
      * @param path 
      * @param version
-     * @return
+     * @return A string representation of the contents.
      */
     protected String recursiveContents(String path, int version, boolean followLinks)
     {

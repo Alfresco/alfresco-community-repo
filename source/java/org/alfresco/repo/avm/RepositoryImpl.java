@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.hibernate.Query;
@@ -222,7 +223,6 @@ class RepositoryImpl implements Repository, Serializable
      * Create a new file.
      * @param path The path to the directory to contain the new file.
      * @param name The name to give the new file.
-     * @param source A (possibly null) InputStream from which to get
      * initial content.
      */
     public OutputStream createFile(String path, String name)
@@ -288,12 +288,12 @@ class RepositoryImpl implements Repository, Serializable
      * @param path The path to the directory.
      * @return A List of FolderEntries.
      */
-    public Map<String, AVMNodeDescriptor> getListing(int version, String path)
+    public SortedMap<String, AVMNodeDescriptor> getListing(int version, String path)
     {
         Lookup lPath = lookupDirectory(version, path, false);
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         Map<String, AVMNode> listing = dir.getListing(lPath);
-        Map<String, AVMNodeDescriptor> results = new TreeMap<String, AVMNodeDescriptor>();
+        SortedMap<String, AVMNodeDescriptor> results = new TreeMap<String, AVMNodeDescriptor>();
         for (String name : listing.keySet())
         {
             AVMNode child = listing.get(name);
@@ -728,8 +728,9 @@ class RepositoryImpl implements Repository, Serializable
     }
 
     /**
+     * Equals override.
      * @param obj
-     * @return
+     * @return Equality.
      */
     @Override
     public boolean equals(Object obj)
@@ -746,13 +747,13 @@ class RepositoryImpl implements Repository, Serializable
     }
 
     /**
-     * @return
+     * Get a hash code.
+     * @return The hash code.
      */
     @Override
     public int hashCode()
     {
-        // TODO Auto-generated method stub
-        return super.hashCode();
+        return fName.hashCode();
     }
 
     /**
@@ -829,7 +830,7 @@ class RepositoryImpl implements Repository, Serializable
 
     /**
      * Get the descriptor for this.
-     * @return
+     * @return A RepositoryDescriptor
      */
     public RepositoryDescriptor getDescriptor()
     {

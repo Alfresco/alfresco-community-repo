@@ -67,7 +67,6 @@ public class HibernateTxn
      * Keep trying if the operation fails because of a concurrency issue.
      * @param callback The worker.
      * @param write Whether this is a write operation.
-     * @return Whether the operation finished with a commit.
      */
     public void perform(HibernateTxnCallback callback, boolean write)
     {

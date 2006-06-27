@@ -157,7 +157,7 @@ public class VersionRootImpl implements VersionRoot, Serializable
     /**
      * Check equality.  Based on Repository equality and version id equality.
      * @param obj
-     * @return
+     * @return Equality.
      */
     @Override
     public boolean equals(Object obj)

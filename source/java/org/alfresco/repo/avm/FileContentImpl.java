@@ -182,7 +182,6 @@ class FileContentImpl implements FileContent, Serializable
      * Get a random access file from this content. It's the responsibility of
      * the caller of this to insure that this object has been copied if the
      * access argument is a write mode.
-     * @param superRepo The SuperRepository.
      * @param access The access more for RandomAccessFile.
      * @return A RandomAccessFile.
      */
@@ -300,7 +299,7 @@ class FileContentImpl implements FileContent, Serializable
     /**
      * Equals predicate.  Based on object ID.
      * @param obj The obect to compare against.
-     * @return
+     * @return Equality.
      */
     @Override
     public boolean equals(Object obj)

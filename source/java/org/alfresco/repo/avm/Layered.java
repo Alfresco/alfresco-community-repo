@@ -4,7 +4,7 @@
 package org.alfresco.repo.avm;
 
 /**
- * Layered nodes share this method.
+ * Layered nodes share these methods.
  * @author britt
  */
 interface Layered
@@ -14,7 +14,7 @@ interface Layered
      * node points to.
      * @param lookup The lookup path.  Needed for most nodes to determine
      * underlying path.
-     * @return
+     * @return The underlying indirection.
      */
     public String getUnderlying(Lookup lookup);
 

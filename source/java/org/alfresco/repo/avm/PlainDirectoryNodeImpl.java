@@ -20,6 +20,7 @@ package org.alfresco.repo.avm;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.hibernate.Session;
@@ -85,7 +86,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     /**
      * Get a directory listing.
      * @param lPath The lookup path.
-     * @param version Which version.
      * @return The listing.
      */
     @SuppressWarnings("unchecked")
@@ -105,13 +105,13 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @param dir The directory node descriptor.
      * @return A Map of names to node descriptors.
      */
-    public Map<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir)
+    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir)
     {
         if (dir.getPath() == null)
         {
             throw new AVMBadArgumentException("Path is null.");
         }
-        TreeMap<String, AVMNodeDescriptor> result = new TreeMap<String, AVMNodeDescriptor>();
+        SortedMap<String, AVMNodeDescriptor> result = new TreeMap<String, AVMNodeDescriptor>();
         List<ChildEntry> children = getChildren();
         for (ChildEntry child : children)
         {
@@ -200,7 +200,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     /**
      * Copy on write logic.
      * @param lPath The lookup path.
-     * @return
+     * @return A brand new copied version.
      */
     public AVMNode copy(Lookup lPath)
     {
@@ -265,7 +265,8 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
 
     /**
      * Get the descriptor for this node.
-     * @param The Lookup.
+     * @param lPath The Lookup.
+     * @param name The name of this node in this context.
      * @return A descriptor.
      */
     public AVMNodeDescriptor getDescriptor(Lookup lPath, String name)
@@ -300,7 +301,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
 
     /**
      * Get the descriptor for this node.
-     * @param The Lookup.
+     * @param lPath The Lookup.
      * @return A descriptor.
      */
     public AVMNodeDescriptor getDescriptor(Lookup lPath)

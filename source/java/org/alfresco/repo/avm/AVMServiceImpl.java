@@ -23,7 +23,7 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
+import java.util.SortedMap;
 
 import org.alfresco.repo.avm.SuperRepository;
 import org.alfresco.repo.avm.hibernate.HibernateHelper;
@@ -76,7 +76,6 @@ public class AVMServiceImpl implements AVMService
     
     /**
      * Basic constructor for the service.
-     * @param createTables Flag for whether tables should be created.
      */
     public AVMServiceImpl()
     {
@@ -241,7 +240,7 @@ public class AVMServiceImpl implements AVMService
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMService#getFolderListing(int, java.lang.String)
      */
-    public Map<String, AVMNodeDescriptor> getDirectoryListing(final int version, final String path)
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(final int version, final String path)
     {
         if (path == null)
         {
@@ -249,7 +248,7 @@ public class AVMServiceImpl implements AVMService
         }
         class HTxnCallback implements HibernateTxnCallback
         {
-            public Map<String, AVMNodeDescriptor> listing;
+            public SortedMap<String, AVMNodeDescriptor> listing;
             
             public void perform(Session session)
             {
@@ -267,7 +266,7 @@ public class AVMServiceImpl implements AVMService
      * @param dir The directory node descriptor.
      * @return A Map of names to node descriptors.
      */
-    public Map<String, AVMNodeDescriptor> getDirectoryListing(final AVMNodeDescriptor dir)
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(final AVMNodeDescriptor dir)
     {
         if (dir == null)
         {
@@ -275,7 +274,7 @@ public class AVMServiceImpl implements AVMService
         }
         class HTxnCallback implements HibernateTxnCallback
         {
-            public Map<String, AVMNodeDescriptor> listing;
+            public SortedMap<String, AVMNodeDescriptor> listing;
             
             public void perform(Session session)
             {

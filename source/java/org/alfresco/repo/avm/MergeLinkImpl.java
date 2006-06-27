@@ -74,8 +74,9 @@ class MergeLinkImpl implements MergeLink, Serializable
     }
 
     /**
+     * Override of equals.
      * @param obj
-     * @return
+     * @return Equality.
      */
     @Override
     public boolean equals(Object obj)
@@ -93,7 +94,8 @@ class MergeLinkImpl implements MergeLink, Serializable
     }
 
     /**
-     * @return
+     * Get the hash code.
+     * @return The hash code.
      */
     @Override
     public int hashCode()

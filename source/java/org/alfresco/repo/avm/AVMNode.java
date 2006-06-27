@@ -79,14 +79,15 @@ interface AVMNode
 
     /**
      * Get the descriptor for this node.
-     * @param The Lookup.
+     * @param lPath The Lookup.
+     * @param name The name of this in the current context.
      * @return The descriptor for this node.
      */
     public AVMNodeDescriptor getDescriptor(Lookup lPath, String name);
 
     /**
      * Get the descriptor for this node.
-     * @param The Lookup.
+     * @param lPath The Lookup.
      * @return The descriptor for this node.
      */
     public AVMNodeDescriptor getDescriptor(Lookup lPath);

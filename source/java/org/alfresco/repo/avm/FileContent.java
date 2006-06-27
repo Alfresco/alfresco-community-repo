@@ -64,7 +64,6 @@ interface FileContent
     
     /**
      * Get the length of the file.
-     * @param superRepo
      * @return The length of the file.
      */
     public long getLength();

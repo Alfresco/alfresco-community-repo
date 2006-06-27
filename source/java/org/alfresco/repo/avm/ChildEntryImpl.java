@@ -80,7 +80,7 @@ public class ChildEntryImpl implements ChildEntry, Serializable
 
     /**
      * Get the name of this entry.
-     * @return
+     * @return The name of this entry.
      */
     public String getName()
     {
@@ -98,7 +98,7 @@ public class ChildEntryImpl implements ChildEntry, Serializable
 
     /**
      * Get the parent in this entry.
-     * @return 
+     * @return  The parent.
      */
     public DirectoryNode getParent()
     {
@@ -116,7 +116,7 @@ public class ChildEntryImpl implements ChildEntry, Serializable
 
     /**
      * Get the child in this entry.
-     * @return
+     * @return The child.
      */
     public AVMNode getChild()
     {
@@ -124,8 +124,9 @@ public class ChildEntryImpl implements ChildEntry, Serializable
     }
 
     /**
+     * Equals override.
      * @param obj
-     * @return
+     * @return Equality.
      */
     @Override
     public boolean equals(Object obj)
@@ -143,7 +144,8 @@ public class ChildEntryImpl implements ChildEntry, Serializable
     }
 
     /**
-     * @return
+     * Get the hash code.
+     * @return The hash code.
      */
     @Override
     public int hashCode()
@@ -152,7 +154,8 @@ public class ChildEntryImpl implements ChildEntry, Serializable
     }
 
     /**
-     * @return the vers
+     * Get the version for optimistic locking.
+     * @return The version for optimistic locking.
      */
     protected long getVers()
     {
@@ -160,6 +163,7 @@ public class ChildEntryImpl implements ChildEntry, Serializable
     }
 
     /**
+     * Set the version for optimistic locking.
      * @param vers the vers to set
      */
     protected void setVers(long vers)

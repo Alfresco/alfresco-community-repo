@@ -73,7 +73,7 @@ public class AVMStressTest extends AVMServiceTestBase
                 thread.start();
             }
             int exited = 0;
-            long sampStart = System.currentTimeMillis();
+            // long sampStart = System.currentTimeMillis();
             while (exited != nThreads)
             {
                 try

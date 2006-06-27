@@ -94,7 +94,7 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
     
     /**
      * Set the ancestor of this node.
-     * @param ancector The ancestor to set.
+     * @param ancestor The ancestor to set.
      */
     public void setAncestor(AVMNode ancestor)
     {
@@ -279,7 +279,7 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
     
     /**
      * Get the version for concurrency control.
-     * @return
+     * @return The version for optimistic locks.
      */
     protected long getVers()
     {
@@ -287,7 +287,8 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
     }
 
     /**
-     * @return
+     * Get whether this is a root node.
+     * @return Whether this is a root node.
      */
     public boolean getIsRoot()
     {

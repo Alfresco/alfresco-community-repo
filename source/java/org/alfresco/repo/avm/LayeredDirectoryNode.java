@@ -77,4 +77,17 @@ interface LayeredDirectoryNode extends DirectoryNode, Layered
      * @return All deleted children.
      */
     public List<DeletedChild> getDeleted();
+    
+    /**
+     * Set the opacity of this.
+     * @param opacity Whether this should be opaque, i.e. not see the things it
+     * in its indirection.
+     */
+    public void setOpacity(boolean opacity);
+    
+    /**
+     * Get the opacity of this.
+     * @return The opacity.
+     */
+    public boolean getOpacity();
 }

@@ -162,6 +162,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      null,
                                      false,
                                      -1,
+                                     false,
                                      getContentForRead().getLength());
     }
 
@@ -188,6 +189,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      null,
                                      false,
                                      -1,
+                                     false,
                                      getContentForRead().getLength());
     }
 
@@ -216,6 +218,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      null,
                                      false,
                                      -1,
+                                     false,
                                      getContentForRead().getLength());
     }
 

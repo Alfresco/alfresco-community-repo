@@ -270,4 +270,11 @@ public interface AVMService
      * @return A List of ancestors starting with the most recent.
      */
     public List<AVMNodeDescriptor> getHistory(AVMNodeDescriptor desc, int count);
+    
+    /**
+     * Set the opacity of a layered directory.  An opaque layered directory
+     * hides the contents of its indirection.
+     * @param path The path to the layered directory.
+     */
+    public void setOpacity(String path, boolean opacity);
 }

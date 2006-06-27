@@ -294,6 +294,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                      null,
                                      false,
                                      -1,
+                                     false,
                                      -1);
     }
 
@@ -320,6 +321,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                      null,
                                      false,
                                      -1,
+                                     false,
                                      -1);
     }
 
@@ -348,6 +350,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                      null,
                                      false,
                                      -1,
+                                     false,
                                      -1);
     }
 }

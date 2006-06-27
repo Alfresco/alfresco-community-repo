@@ -70,16 +70,19 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer/b should contain fao and bar
             listing = fService.getDirectoryListing(-1, "main:/layer/b");
             assertEquals(2, listing.size());
-//            assertEquals("bar", listing.get(0).getName());
-//            assertEquals("foo", listing.get(1).getName());
+            List<String> list = new ArrayList<String>(listing.keySet());
+            assertEquals("bar", list.get(0));
+            assertEquals("foo", list.get(1));
             // /a/b should contain foo.
             listing = fService.getDirectoryListing(-1, "main:/a/b");
             assertEquals(1, listing.size());
-//            assertEquals("foo", listing.get(0).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("foo", list.get(0));
             // /a/c should contain bar.
             listing = fService.getDirectoryListing(-1, "main:/a/c");
-//            assertEquals(1, listing.size());
-//            assertEquals("bar", listing.get(0).getName());
+            assertEquals(1, listing.size());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("bar", list.get(0));
             // Now make a file in /a/b
             fService.createFile("main:/a/b", "baz").close();
             fService.createSnapshot("main");
@@ -88,15 +91,17 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /a/b should contain baz and foo.
             listing = fService.getDirectoryListing(-1, "main:/a/b");
             assertEquals(2, listing.size());
-//            assertEquals("baz", listing.get(0).getName());
-//            assertEquals("foo", listing.get(1).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("baz", list.get(0));
+            assertEquals("foo", list.get(1));
             // /layer/b should contain foo, bar, and baz.
             listing = fService.getDirectoryListing(-1, "main:/layer/b");
             System.out.println(recursiveList("main", -1, true));
             assertEquals(3, listing.size());
-//            assertEquals("bar", listing.get(0).getName());
-//            assertEquals("baz", listing.get(1).getName());
-//            assertEquals("foo", listing.get(2).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("bar", list.get(0));
+            assertEquals("baz", list.get(1));
+            assertEquals("foo", list.get(2));
             // Remove baz from /layer/b
             fService.removeNode("main:/layer/b", "baz");
             fService.createSnapshot("main");
@@ -106,13 +111,15 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer/b should have bar and foo.
             listing = fService.getDirectoryListing(-1, "main:/layer/b");
             assertEquals(2, listing.size());
-//            assertEquals("bar", listing.get(0).getName());
-//            assertEquals("foo", listing.get(1).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("bar", list.get(0));
+            assertEquals("foo", list.get(1));
             // /a/b should contain baz and foo as before.
             listing = fService.getDirectoryListing(-1, "main:/a/b");
             assertEquals(2, listing.size());
-//            assertEquals("baz", listing.get(0).getName());
-//            assertEquals("foo", listing.get(1).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("baz", list.get(0));
+            assertEquals("foo", list.get(1));
         }
         catch (Exception e)
         {
@@ -163,8 +170,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer/d should no contain baz and figs.
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/layer/d");
             assertEquals(2, listing.size());
-//            assertEquals("baz", listing.get(0).getName());
-//            assertEquals("figs", listing.get(1).getName());
+            List<String> list = new ArrayList<String>(listing.keySet());
+            assertEquals("baz", list.get(0));
+            assertEquals("figs", list.get(1));
             for (String val : history.values())
             {
                 System.out.println(val);
@@ -219,8 +227,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer/d should now contain baz and figs.
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/layer/d");
             assertEquals(2, listing.size());
-//            assertEquals("baz", listing.get(0).getName());
-//            assertEquals("figs", listing.get(1).getName());
+            List<String> list = new ArrayList<String>(listing.keySet());
+            assertEquals("baz", list.get(0));
+            assertEquals("figs", list.get(1));
             // Rename /layer/d to /layer/e and uncover /layer/d
             fService.rename("main:/layer", "d", "main:/layer", "e");
             fService.uncover("main:/layer", "d");
@@ -230,11 +239,13 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer/d contains figs.
             listing = fService.getDirectoryListing(-1, "main:/layer/d");
             assertEquals(1, listing.size());
-//            assertEquals("figs", listing.get(0).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("figs", list.get(0));
             // /layer/e contains baz.
             listing = fService.getDirectoryListing(-1, "main:/layer/e");
             assertEquals(1, listing.size());
-//            assertEquals("baz", listing.get(0).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("baz", list.get(0));
             for (String val : history.values())
             {
                 System.out.println(val);
@@ -283,9 +294,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /b should have foo and bar and baz.
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/b");
             assertEquals(3, listing.size());
-//            assertEquals("bar", listing.get(0).getName());
-//            assertEquals("baz", listing.get(1).getName());
-//            assertEquals("foo", listing.get(2).getName());
+            List<String> list = new ArrayList<String>(listing.keySet());
+            assertEquals("bar", list.get(0));
+            assertEquals("baz", list.get(1));
+            assertEquals("foo", list.get(2));
             // Add something to /a and it will show up in /layer.
             fService.createFile("main:/a", "figs").close();
             fService.createSnapshot("main");
@@ -293,8 +305,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             checkHistory(history, "main");
             // /layer should have figs in it.
             listing = fService.getDirectoryListing(-1, "main:/layer");
-//            assertEquals(1, listing.size());
-//            assertEquals("figs", listing.get(0).getName());
+            assertEquals(1, listing.size());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("figs", list.get(0));
             for (String val : history.values())
             {
                 System.out.println(val);
@@ -403,8 +416,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer/under/e should contain bow and f.
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/layer/under/e");
             assertEquals(2, listing.size());
-//            assertEquals("bow", listing.get(0).getName());
-//            assertEquals("f", listing.get(1).getName());
+            List<String> list = new ArrayList<String>(listing.keySet());
+            assertEquals("bow", list.get(0));
+            assertEquals("f", list.get(1));
             // Put a new set of dirs in to be made into a layering under d.
             fService.createDirectory("main:/", "g");
             fService.createDirectory("main:/g", "h");
@@ -444,8 +458,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer/under/gover/h/i shows both moo and cow.
             listing = fService.getDirectoryListing(-1, "main:/layer/under/gover/h/i");
             assertEquals(2, listing.size());
-//            assertEquals("cow", listing.get(0).getName());
-//            assertEquals("moo", listing.get(1).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("cow", list.get(0));
+            assertEquals("moo", list.get(1));
             // Rename /layer/under/gover to /layer/b/gover and see what happens.
             fService.rename("main:/layer/under", "gover", "main:/layer/b", "gover");
             fService.createSnapshot("main");
@@ -454,7 +469,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             // moo  should be in /layer/b/gover/h/i
             listing = fService.getDirectoryListing(-1, "main:/layer/b/gover/h/i");
             assertEquals(1, listing.size());
-//            assertEquals("moo", listing.get(0).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("moo", list.get(0));
             // Add a new file to /layer/b/gover/h/i
             fService.createFile("main:/layer/b/gover/h/i", "oink").close();
             fService.createSnapshot("main");
@@ -463,8 +479,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer/b/gover/h/i should contain moo, oink.
             listing = fService.getDirectoryListing(-1, "main:/layer/b/gover/h/i");
             assertEquals(2, listing.size());
-//            assertEquals("moo", listing.get(0).getName());
-//            assertEquals("oink", listing.get(1).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("moo", list.get(0));
+            assertEquals("oink", list.get(1));
             for (String val : history.values())
             {
                 System.out.println(val);
@@ -969,7 +986,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createSnapshot("main");
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/a");
             assertEquals(1, listing.size());
-//            assertEquals("b", listing.get(0).getName());
+            List<String> list = new ArrayList<String>(listing.keySet());
+            assertEquals("b", list.get(0));
             fService.createLayeredDirectory("main:/a", "main:/", "c");
             fService.createLayeredDirectory("main:/c", "main:/", "d");
             fService.createFile("main:/d/b", "foo.txt").close();
@@ -977,23 +995,27 @@ public class AVMServiceTest extends AVMServiceTestBase
             System.out.println(recursiveList("main", -1, true));
             listing = fService.getDirectoryListing(-1, "main:/d/b");
             assertEquals(1, listing.size());
-//            assertEquals("foo.txt", listing.get(0).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("foo.txt", list.get(0));
             fService.createFile("main:/c/b", "bar.txt").close();
             fService.createSnapshot("main");
             System.out.println(recursiveList("main", -1, true));
             listing = fService.getDirectoryListing(-1, "main:/c/b");
             assertEquals(1, listing.size());
-//            assertEquals("bar.txt", listing.get(0).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("bar.txt", list.get(0));
             listing = fService.getDirectoryListing(-1, "main:/d/b");
             assertEquals(2, listing.size());
-//            assertEquals("bar.txt", listing.get(0).getName());
-//            assertEquals("foo.txt", listing.get(1).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("bar.txt", list.get(0));
+            assertEquals("foo.txt", list.get(1));
             fService.rename("main:/", "c", "main:/", "e");
             fService.createSnapshot("main");
             System.out.println(recursiveList("main", -1, true));
             listing = fService.getDirectoryListing(-1, "main:/d/b");
-//            assertEquals(1, listing.size());
-//            assertEquals("foo.txt", listing.get(0).getName());
+            assertEquals(1, listing.size());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("foo.txt", list.get(0));
         }
         catch (Exception e)
         {
@@ -1088,28 +1110,32 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /g/b/c/d should contain foo and bar.
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/g/b/c/d");
             assertEquals(2, listing.size());
-//            assertEquals("bar", listing.get(0).getName());
-//            assertEquals("foo", listing.get(1).getName());
+            List<String> list = new ArrayList<String>(listing.keySet());
+            assertEquals("bar", list.get(0));
+            assertEquals("foo", list.get(1));
             // /f/b/c/d should contain just bar.
             listing = fService.getDirectoryListing(-1, "main:/f/b/c/d");
             assertEquals(1, listing.size());
-//            assertEquals("bar", listing.get(0).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("bar", list.get(0));
             // Now do something in the bottom layer.
             fService.createFile("main:/a/b/c", "baz").close();
             fService.createSnapshot("main");
             // /e/b/c should contain baz and d
             listing = fService.getDirectoryListing(-1, "main:/e/b/c");
             assertEquals(2, listing.size());
-//            assertEquals("baz", listing.get(0).getName());
-//            assertEquals("d", listing.get(1).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("baz", list.get(0));
+            assertEquals("d", list.get(1));
             // Now add something in the e layer.
             fService.createFile("main:/e/b/c/d", "bing").close();
             fService.createSnapshot("main");
             // /f/b/c/d should now contain bar and bing.
             listing = fService.getDirectoryListing(-1, "main:/f/b/c/d");
             assertEquals(2, listing.size());
-//            assertEquals("bar", listing.get(0).getName());
-//            assertEquals("bing", listing.get(1).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("bar", list.get(0));
+            assertEquals("bing", list.get(1));
             System.out.println(recursiveList("main", -1, true));
         }
         catch (Exception e)
@@ -1144,16 +1170,18 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer should contain b and moved
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/layer");
             assertEquals(2, listing.size());
-//            assertEquals("b", listing.get(0).getName());
-//            assertEquals("moved", listing.get(1).getName());
+            List<String> list = new ArrayList<String>(listing.keySet());
+            assertEquals("b", list.get(0));
+            assertEquals("moved", list.get(1));
             // Now rename moved back to d.
             fService.rename("main:/layer", "moved", "main:/layer", "d");
             fService.createSnapshot("main");
             // /layer should contain b and d.
             listing = fService.getDirectoryListing(-1, "main:/layer");
             assertEquals(2, listing.size());
-//            assertEquals("b", listing.get(0).getName());
-//            assertEquals("d", listing.get(1).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("b", list.get(0));
+            assertEquals("d", list.get(1));
         }
         catch (Exception e)
         {
@@ -1252,9 +1280,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer2/c should contain foo bar and baz.
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/layer2/c");
             assertEquals(3, listing.size());
-//            assertEquals("bar", listing.get(0).getName());
-//            assertEquals("baz", listing.get(1).getName());
-//            assertEquals("foo", listing.get(2).getName());
+            List<String> list = new ArrayList<String>(listing.keySet());
+            assertEquals("bar", list.get(0));
+            assertEquals("baz", list.get(1));
+            assertEquals("foo", list.get(2));
             for (String val : history.values())
             {
                 System.out.println(val);
@@ -1291,7 +1320,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer/b/c should contain e.
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/layer/b/c");
             assertEquals(1, listing.size());
-//            assertEquals("e", listing.get(0).getName());
+            List<String> list = new ArrayList<String>(listing.keySet());
+            assertEquals("e", list.get(0));
             // Rename /layer/b/c to /layer/c
             fService.rename("main:/layer/b", "c", "main:/layer", "c");
             fService.createSnapshot("main");
@@ -1314,8 +1344,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer2/c should have baz and e in it.
             listing = fService.getDirectoryListing(-1, "main:/layer2/c");
             assertEquals(2, listing.size());
-//            assertEquals("baz", listing.get(0).getName());
-//            assertEquals("e", listing.get(1).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("baz", list.get(0));
+            assertEquals("e", list.get(1));
             for (String val : history.values())
             {
                 System.out.println(val);
@@ -1431,8 +1462,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer/b/branch/e/f should contain moo and cow.
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/layer/b/branch/e/f");
             assertEquals(2, listing.size());
-//            assertEquals("cow", listing.get(0).getName());
-//            assertEquals("moo", listing.get(1).getName());
+            List<String> list = new ArrayList<String>(listing.keySet());
+            assertEquals("cow", list.get(0));
+            assertEquals("moo", list.get(1));
             for (String val : history.values())
             {
                 System.out.println(val);
@@ -1487,8 +1519,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer/b/branch/e/f should contain moo and cow.
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/layer/b/d/e/f");
             assertEquals(2, listing.size());
-//            assertEquals("cow", listing.get(0).getName());
-//            assertEquals("moo", listing.get(1).getName());
+            List<String> list = new ArrayList<String>(listing.keySet());
+            assertEquals("cow", list.get(0));
+            assertEquals("moo", list.get(1));
             for (String val : history.values())
             {
                 System.out.println(val);
@@ -1546,8 +1579,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer/b/c/fover/g/h/iover/j/k should contain pismo and foo.
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/layer/b/c/fover/g/h/iover/j/k");
             assertEquals(2, listing.size());
-//            assertEquals("foo", listing.get(0).getName());
-//            assertEquals("pismo", listing.get(1).getName());
+            List<String> list = new ArrayList<String>(listing.keySet());
+            assertEquals("foo", list.get(0));
+            assertEquals("pismo", list.get(1));
             // Make a file in /flayer/g/h/iover/j/k
             fService.createFile("main:/flayer/g/h/iover/j/k", "zuma").close();
             fService.createSnapshot("main");
@@ -1556,9 +1590,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             // /layer/b/c/fover/g/h/iover/j/k should contain foo, pismo, and zuma.
             listing = fService.getDirectoryListing(-1, "main:/layer/b/c/fover/g/h/iover/j/k");
             assertEquals(3, listing.size());
-//            assertEquals("foo", listing.get(0).getName());
-//            assertEquals("pismo", listing.get(1).getName());
-//            assertEquals("zuma", listing.get(2).getName());
+            list = new ArrayList<String>(listing.keySet());
+            assertEquals("foo", list.get(0));
+            assertEquals("pismo", list.get(1));
+            assertEquals("zuma", list.get(2));
             for (String val : history.values())
             {
                 System.out.println(val);
@@ -1837,7 +1872,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     /**
      * Test repository functions.
      */
-    public void testRepsitory()
+    public void testRepository()
     {
         try
         {
@@ -1856,6 +1891,55 @@ public class AVMServiceTest extends AVMServiceTestBase
             RepositoryDescriptor desc = fService.getRepository("main");
             assertNotNull(desc);
             System.out.println(desc);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
+     * Test opacity and manipulations.
+     */
+    public void testOpacity()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createLayeredDirectory("main:/a", "main:/", "layer");
+            fService.createSnapshot("main");
+            fService.createFile("main:/layer/b/c", "baz").close();
+            fService.createFile("main:/layer/b/c", "fig").close();
+            fService.createSnapshot("main");
+            Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/layer/b/c");
+            assertEquals(4, listing.size());
+            System.out.println(recursiveList("main", -1, true));
+            // Setting the opacity of layer to true will make no difference to what we see through 
+            // main:/layer/b/c.
+            fService.setOpacity("main:/layer", true);
+            fService.createSnapshot("main");
+            assertTrue(fService.lookup(-1, "main:/layer").getOpacity());
+            assertEquals(4, fService.getDirectoryListing(-1, "main:/layer/b/c").size());
+            System.out.println(recursiveList("main", -1, true));
+            // If main:/layer/b/c is opaque, however, we'll only see two items in it.
+            fService.setOpacity("main:/layer", false);
+            fService.setOpacity("main:/layer/b/c", true);
+            fService.createSnapshot("main");
+            assertFalse(fService.lookup(-1, "main:/layer").getOpacity());
+            assertTrue(fService.lookup(-1, "main:/layer/b/c").getOpacity());
+            assertEquals(2, fService.getDirectoryListing(-1, "main:/layer/b/c").size());
+            System.out.println(recursiveList("main", -1, true));
+            // Gratuitous test of retarget.
+            fService.retargetLayeredDirectory("main:/layer", "main:/d");
+            fService.setOpacity("main:/layer/b/c", false);
+            fService.createSnapshot("main");
+            assertFalse(fService.lookup(-1, "main:/layer/b/c").getOpacity());
+            assertEquals(2, fService.getDirectoryListing(-1, "main:/layer/b/c").size());
+            // This is just testing that opacity setting works on latent
+            // layered directories.
+            fService.setOpacity("main:/layer/e/f", true);
+            System.out.println(recursiveList("main", -1, true));
         }
         catch (Exception e)
         {

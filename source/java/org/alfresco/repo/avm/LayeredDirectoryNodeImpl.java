@@ -52,7 +52,12 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * Whether this is a primary indirection node.
      */
     private boolean fPrimaryIndirection;
-
+    
+    /**
+     * Whether this is opaque.
+     */
+    private boolean fOpacity;
+    
     /**
      * Default constructor. Called by Hibernate.
      */
@@ -71,6 +76,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fLayerID = -1;
         fIndirection = indirection;
         fPrimaryIndirection = true;
+        fOpacity = false;
         repos.getSuperRepository().getSession().save(this);
     }
     
@@ -88,6 +94,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fIndirection = other.getUnderlying();
         fPrimaryIndirection = other.getPrimaryIndirection();
         fLayerID = -1;
+        fOpacity = false;
         sess.save(this);
         for (ChildEntry child : other.getChildren())
         {
@@ -121,6 +128,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fIndirection = null;
         fPrimaryIndirection = false;
         fLayerID = -1;
+        fOpacity = false;
         Session sess = repos.getSuperRepository().getSession();
         sess.save(this);
         if (copyContents)
@@ -152,6 +160,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fIndirection = srcLookup.getIndirectionPath() + "/" + name;
         fPrimaryIndirection = true;
         fLayerID = -1;
+        fOpacity = false;
         repo.getSuperRepository().getSession().save(this);
     }   
     
@@ -297,20 +306,27 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     {
         // Get the base listing from the thing we indirect to.
         Map<String, AVMNode> baseListing = null;
-        try
+        if (fOpacity)
         {
-            Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
-            DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-            baseListing = dir.getListing(lookup);
-        }
-        catch (AVMException re)
-        {
-            if (re instanceof AVMCycleException)
-            {
-                throw re;
-            }
-            // It's OK for an indirection to dangle.
             baseListing = new HashMap<String, AVMNode>();
+        }
+        else
+        {
+            try
+            {
+                Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
+                DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
+                baseListing = dir.getListing(lookup);
+            }
+            catch (AVMException re)
+            {
+                if (re instanceof AVMCycleException)
+                {
+                    throw re;
+                }
+                // It's OK for an indirection to dangle.
+                baseListing = new HashMap<String, AVMNode>();
+            }
         }
         // Filter the base listing by taking out anything in the deleted Set.
         Map<String, AVMNode> listing = new TreeMap<String, AVMNode>();
@@ -341,25 +357,30 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             throw new AVMBadArgumentException("Illegal null argument.");
         }
         Map<String, AVMNodeDescriptor> baseListing = new TreeMap<String, AVMNodeDescriptor>();
-        try
+        // If we are not opaque, get the underlying base listing.
+        if (!fOpacity)
         {
-            Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, dir.getIndirection());
-            DirectoryNode dirNode = (DirectoryNode)lookup.getCurrentNode();
-            Map<String, AVMNode> listing = dirNode.getListing(lookup);
-            for (String name : listing.keySet())
+            try
             {
-                baseListing.put(name,
-                                listing.get(name).getDescriptor(dir.getPath(), name,
-                                                                lookup.getCurrentIndirection()));
+                Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, dir.getIndirection());
+                DirectoryNode dirNode = (DirectoryNode)lookup.getCurrentNode();
+                Map<String, AVMNode> listing = dirNode.getListing(lookup);
+                for (String name : listing.keySet())
+                {
+                    baseListing.put(name,
+                                    listing.get(name).getDescriptor(dir.getPath(), name,
+                                                                    lookup.getCurrentIndirection()));
+                }
+            }
+            catch (AVMException e)
+            {
+                if (e instanceof AVMCycleException)
+                {   
+                    throw e;
+                }
             }
         }
-        catch (AVMException e)
-        {
-            if (e instanceof AVMCycleException)
-            {
-                throw e;
-            }
-        }
+        // Remove anything deleted in this layer.
         List<DeletedChild> deleted = getDeleted();
         for (DeletedChild child : deleted)
         {
@@ -396,6 +417,11 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         if (entry != null)
         {
             return AVMNodeUnwrapper.Unwrap(entry.getChild());
+        }
+        // Don't check our underlying directory if we are opaque.
+        if (fOpacity)
+        {
+            return null;
         }
         // Not here so check our indirection.
         try
@@ -436,6 +462,11 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             return entry.getChild().getDescriptor(mine.getPath(),
                                                   name,
                                                   mine.getIndirection());
+        }
+        // If we are opaque don't check underneath.
+        if (fOpacity)
+        {
+            return null;
         }
         try
         {
@@ -568,6 +599,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                      getUnderlying(lPath),
                                      fPrimaryIndirection,
                                      fLayerID,
+                                     fOpacity,
                                      -1);
     }
 
@@ -595,6 +627,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                      getUnderlying(lPath),
                                      fPrimaryIndirection,
                                      fLayerID,
+                                     fOpacity,
                                      -1);
     }
 
@@ -633,6 +666,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                      indirection,
                                      fPrimaryIndirection,
                                      fLayerID,
+                                     fOpacity,
                                      -1);
     }
 
@@ -686,5 +720,24 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void setIsRoot(boolean isRoot)
     {
+    }
+
+    /**
+     * Get the opacity of this.
+     * @return The opacity.
+     */
+    public boolean getOpacity()
+    {
+        return fOpacity;
+    }
+
+    /**
+     * Set the opacity of this, ie, whether it blocks things normally
+     * seen through its indirection.
+     * @param opacity
+     */
+    public void setOpacity(boolean opacity)
+    {
+        fOpacity = opacity;
     }
 }

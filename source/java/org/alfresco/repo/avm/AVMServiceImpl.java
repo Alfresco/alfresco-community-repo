@@ -860,4 +860,28 @@ public class AVMServiceImpl implements AVMService
         fTransaction.perform(doit, false);
         return doit.history;
     }
+
+    /**
+     * Set the opacity of a layered directory.  An opaque layer hides what
+     * its indirection points to.
+     * @param path The path to the layered directory.
+     * @param opacity True is opaque false is not.
+     */
+    public void setOpacity(final String path, final boolean opacity)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null path.");
+        }
+        class HTxnCallback implements HibernateTxnCallback
+        {
+            public void perform(Session session)
+            {
+                fSuperRepository.setSession(session);
+                fSuperRepository.setOpacity(path, opacity);
+            }
+        }
+        HTxnCallback doit = new HTxnCallback();
+        fTransaction.perform(doit, false);
+    }
  }

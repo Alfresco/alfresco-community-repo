@@ -835,4 +835,21 @@ class RepositoryImpl implements Repository, Serializable
     {
         return new RepositoryDescriptor(fName, fCreator, fCreateDate);
     }
+
+    /**
+     * Set the opacity of a layered directory. An opaque directory hides
+     * what is pointed at by its indirection.
+     * @param path The path to the layered directory.
+     * @param opacity True is opaque; false is not.
+     */
+    public void setOpacity(String path, boolean opacity)
+    {
+        Lookup lPath = lookup(-1, path, true);
+        AVMNode node = lPath.getCurrentNode();
+        if (!(node instanceof LayeredDirectoryNode))
+        {
+            throw new AVMWrongTypeException("Not a LayeredDirectoryNode.");
+        }
+        ((LayeredDirectoryNode)node).setOpacity(opacity);
+    }
 }

@@ -62,18 +62,12 @@
 		    		container (false). -->
 		    	<property name="primaryIndirection"
 		    		column="primary_indirection" type="boolean"/>
+		    	<property name="opacity" column="opacity" type="boolean"/>
 		    	<!-- Map of names to DirectoryEntries. -->
 		    </subclass>
 		    <!-- Just plain directories. -->
 			<subclass name="PlainDirectoryNodeImpl"
 				discriminator-value="plaindirectory" proxy="PlainDirectoryNode" lazy="true">
-				<!-- For reference count based garbage collection of purged nodes 
-					to work we need to specially mark the root directory of
-					a Repository as special so that its absence of parents will
-					not cause it to be vacuumed away.  TODO: for ease of queries, 
-					this probably wants to be in the base class. -->
-				<!-- A map of names to DirectoryEntries.  In the AVM world, it makes sense
-					that nodes don't know there own names, only their containers do. -->
 			</subclass>
 		</subclass>
 		<!-- There are two kinds of files, plain and symlinky. -->

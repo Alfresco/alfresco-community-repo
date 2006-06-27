@@ -245,4 +245,12 @@ interface Repository
      * @return The descriptor.
      */
     public RepositoryDescriptor getDescriptor();
+    
+    /**
+     * Set the opacity of a layered directory. An opaque directory hides
+     * what is pointed at by its indirection.
+     * @param path The path to the layered directory.
+     * @param opacity True is opaque; false is not.
+     */
+    public void setOpacity(String path, boolean opacity);
 }

@@ -869,6 +869,20 @@ class SuperRepository
     }
     
     /**
+     * Set the opacity of a layered directory. An opaque directory hides
+     * the things it points to via indirection.
+     * @param path The path to the layered directory.
+     * @param opacity True is opaque; false is not.
+     */
+    public void setOpacity(String path, boolean opacity)
+    {
+        fLookupCount.set(1);
+        String[] pathParts = SplitPath(path);
+        Repository rep = getRepositoryByName(pathParts[0], true);
+        rep.setOpacity(pathParts[1], opacity);
+    }
+        
+    /**
      * Get the RepositoryDescriptor for a Repository.
      * @param name The name of the Repository.
      * @return The descriptor.

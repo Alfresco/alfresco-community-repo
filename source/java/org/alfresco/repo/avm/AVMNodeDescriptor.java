@@ -100,6 +100,11 @@ public class AVMNodeDescriptor
      * The length, if this is a file or -1 otherwise.
      */
     private long fLength;
+    
+    /**
+     * The opacity for layered directories.
+     */
+    private boolean fOpacity;
 
     /**
      * Make one up.
@@ -132,6 +137,7 @@ public class AVMNodeDescriptor
                              String indirection,
                              boolean isPrimary,
                              long layerID,
+                             boolean opacity,
                              long length)
     {
         fPath = path;
@@ -149,6 +155,7 @@ public class AVMNodeDescriptor
         fIsPrimary = isPrimary;
         fLayerID = layerID;
         fLength = length;
+        fOpacity = opacity;
     }
     
     /**
@@ -356,7 +363,15 @@ public class AVMNodeDescriptor
     {
         return fName;
     }
-    
+
+    /**
+     * @return the opacity
+     */
+    public boolean getOpacity()
+    {
+        return fOpacity;
+    }
+
     /**
      * Get a debuggable string representation of this.
      * @return A string representation of this.

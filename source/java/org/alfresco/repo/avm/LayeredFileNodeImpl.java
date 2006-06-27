@@ -172,6 +172,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
                                      getUnderlying(lPath),
                                      false,
                                      -1,
+                                     false,
                                      0);
     }
 
@@ -198,6 +199,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
                                      getUnderlying(lPath),
                                      false,
                                      -1,
+                                     false,
                                      0);
     }
 
@@ -226,6 +228,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
                                      fIndirection,
                                      false,
                                      -1,
+                                     false,
                                      0);
     }
 

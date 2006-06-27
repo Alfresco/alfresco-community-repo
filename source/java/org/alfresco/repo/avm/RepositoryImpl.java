@@ -297,7 +297,7 @@ class RepositoryImpl implements Repository, Serializable
         for (String name : listing.keySet())
         {
             AVMNode child = listing.get(name);
-            AVMNodeDescriptor desc = child.getDescriptor(lPath);
+            AVMNodeDescriptor desc = child.getDescriptor(lPath, name);
             results.put(name, desc);
         }
         return results;

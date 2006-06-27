@@ -338,6 +338,11 @@ class Lookup
         return builder.toString();
     }
     
+    public String getBaseName()
+    {
+        return fComponents.get(fPosition).getName();
+    }
+    
     /**
      * Acquire locks for writing, in path lookup order.
      */

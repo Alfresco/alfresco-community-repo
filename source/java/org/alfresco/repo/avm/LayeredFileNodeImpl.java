@@ -146,10 +146,46 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      * @param The Lookup.
      * @return A descriptor.
      */
+    public AVMNodeDescriptor getDescriptor(Lookup lPath, String name)
+    {
+        BasicAttributes attrs = getBasicAttributes();
+        String path = lPath.getRepresentedPath();
+        if (path.endsWith("/"))
+        {
+            path = path + name;
+        }
+        else
+        {
+            path = path + "/" + name;
+        }
+        return new AVMNodeDescriptor(path,
+                                     name,
+                                     AVMNodeType.LAYERED_FILE,
+                                     attrs.getCreator(),
+                                     attrs.getOwner(),
+                                     attrs.getLastModifier(),
+                                     attrs.getCreateDate(),
+                                     attrs.getModDate(),
+                                     attrs.getAccessDate(),
+                                     getId(),
+                                     getVersionID(),
+                                     getUnderlying(lPath),
+                                     false,
+                                     -1,
+                                     0);
+    }
+
+    /**
+     * Get the descriptor for this node.
+     * @param The Lookup.
+     * @return A descriptor.
+     */
     public AVMNodeDescriptor getDescriptor(Lookup lPath)
     {
         BasicAttributes attrs = getBasicAttributes();
-        return new AVMNodeDescriptor(lPath.getRepresentedPath(),
+        String path = lPath.getRepresentedPath();
+        return new AVMNodeDescriptor(path,
+                                     path.substring(path.lastIndexOf("/") + 1),
                                      AVMNodeType.LAYERED_FILE,
                                      attrs.getCreator(),
                                      attrs.getOwner(),
@@ -177,6 +213,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         BasicAttributes attrs = getBasicAttributes();
         String path = parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
         return new AVMNodeDescriptor(path,
+                                     name,
                                      AVMNodeType.LAYERED_FILE,
                                      attrs.getCreator(),
                                      attrs.getOwner(),

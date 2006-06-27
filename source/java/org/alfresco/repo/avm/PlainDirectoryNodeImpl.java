@@ -268,10 +268,46 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @param The Lookup.
      * @return A descriptor.
      */
+    public AVMNodeDescriptor getDescriptor(Lookup lPath, String name)
+    {
+        BasicAttributes attrs = getBasicAttributes();
+        String path = lPath.getRepresentedPath();
+        if (path.endsWith("/"))
+        {
+            path = path + name;
+        }
+        else
+        {
+            path = path + "/" + name;
+        }
+        return new AVMNodeDescriptor(path,
+                                     name,
+                                     AVMNodeType.PLAIN_DIRECTORY,
+                                     attrs.getCreator(),
+                                     attrs.getOwner(),
+                                     attrs.getLastModifier(),
+                                     attrs.getCreateDate(),
+                                     attrs.getModDate(),
+                                     attrs.getAccessDate(),
+                                     getId(),
+                                     getVersionID(),
+                                     null,
+                                     false,
+                                     -1,
+                                     -1);
+    }
+
+    /**
+     * Get the descriptor for this node.
+     * @param The Lookup.
+     * @return A descriptor.
+     */
     public AVMNodeDescriptor getDescriptor(Lookup lPath)
     {
         BasicAttributes attrs = getBasicAttributes();
-        return new AVMNodeDescriptor(lPath.getRepresentedPath(),
+        String path = lPath.getRepresentedPath();
+        return new AVMNodeDescriptor(path,
+                                     path.substring(path.lastIndexOf("/") + 1),
                                      AVMNodeType.PLAIN_DIRECTORY,
                                      attrs.getCreator(),
                                      attrs.getOwner(),
@@ -299,6 +335,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         BasicAttributes attrs = getBasicAttributes();
         String path = parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
         return new AVMNodeDescriptor(path,
+                                     name,
                                      AVMNodeType.PLAIN_DIRECTORY,
                                      attrs.getCreator(),
                                      attrs.getOwner(),

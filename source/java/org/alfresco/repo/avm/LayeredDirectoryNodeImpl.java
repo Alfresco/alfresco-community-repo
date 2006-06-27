@@ -542,10 +542,47 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param The Lookup.
      * @return A descriptor.
      */
+    public AVMNodeDescriptor getDescriptor(Lookup lPath, String name)
+    {
+        BasicAttributes attrs = getBasicAttributes();
+        String path = lPath.getRepresentedPath();
+        if (path.endsWith("/"))
+        {
+            path = path + name;
+        }
+        else
+        {
+            path = path + "/" + name;
+        }
+        return new AVMNodeDescriptor(path,
+                                     name,
+                                     AVMNodeType.LAYERED_DIRECTORY,
+                                     attrs.getCreator(),
+                                     attrs.getOwner(),
+                                     attrs.getLastModifier(),
+                                     attrs.getCreateDate(),
+                                     attrs.getModDate(),
+                                     attrs.getAccessDate(),
+                                     getId(),
+                                     getVersionID(),
+                                     getUnderlying(lPath),
+                                     fPrimaryIndirection,
+                                     fLayerID,
+                                     -1);
+    }
+
+    /**
+     * Get the descriptor for this node.
+     * @param The Lookup.
+     * @return A descriptor.
+     */
     public AVMNodeDescriptor getDescriptor(Lookup lPath)
     {
         BasicAttributes attrs = getBasicAttributes();
-        return new AVMNodeDescriptor(lPath.getRepresentedPath(),
+        String path = lPath.getRepresentedPath();
+        String name = path.substring(path.lastIndexOf("/") + 1);
+        return new AVMNodeDescriptor(path,
+                                     name,
                                      AVMNodeType.LAYERED_DIRECTORY,
                                      attrs.getCreator(),
                                      attrs.getOwner(),
@@ -583,6 +620,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                 parentIndirection + "/" + name;
         }
         return new AVMNodeDescriptor(path,
+                                     name,
                                      AVMNodeType.LAYERED_DIRECTORY,
                                      attrs.getCreator(),
                                      attrs.getOwner(),

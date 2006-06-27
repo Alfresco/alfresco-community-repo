@@ -32,6 +32,11 @@ public class AVMNodeDescriptor
     private String fPath;
     
     /**
+     * The base name of the path.
+     */
+    private String fName;
+    
+    /**
      * The type of this node.  AVMNodeType constants.
      */
     private int fType;
@@ -113,22 +118,24 @@ public class AVMNodeDescriptor
      * @param layerID The layer id.
      * @param length The file length.
      */
-    public AVMNodeDescriptor(String  path,
-                             int     type,
-                             String  creator,
-                             String  owner,
-                             String  lastModifier,
-                             long    createDate,
-                             long    modDate,
-                             long    accessDate,
-                             long    id,
-                             int     versionID,
-                             String  indirection,
+    public AVMNodeDescriptor(String path,
+                             String name,
+                             int type,
+                             String creator,
+                             String owner,
+                             String lastModifier,
+                             long createDate,
+                             long modDate,
+                             long accessDate,
+                             long id,
+                             int versionID,
+                             String indirection,
                              boolean isPrimary,
-                             long    layerID,
-                             long    length)
+                             long layerID,
+                             long length)
     {
         fPath = path;
+        fName = name;
         fType = type;
         fCreator = creator;
         fOwner = owner;
@@ -340,6 +347,14 @@ public class AVMNodeDescriptor
     public long getLength()
     {
         return fLength;
+    }
+    
+    /**
+     * Get the name of the node.
+     */
+    public String getName()
+    {
+        return fName;
     }
     
     /**

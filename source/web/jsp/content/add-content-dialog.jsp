@@ -23,19 +23,14 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="javax.faces.context.FacesContext" %>
 <%@ page import="org.alfresco.web.app.Application" %>
-<%@ page import="org.alfresco.web.app.portlet.AlfrescoFacesPortlet" %>
 <%@ page import="org.alfresco.web.bean.content.AddContentDialog" %>
+<%@ page import="org.alfresco.web.app.servlet.FacesHelper" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
 <%
 boolean fileUploaded = false;
 
-AddContentDialog dialog = (AddContentDialog)session.getAttribute(AlfrescoFacesPortlet.MANAGED_BEAN_PREFIX + "AddContentDialog");
-if (dialog == null)
-{
-   dialog = (AddContentDialog)session.getAttribute("AddContentDialog");
-}
-
+AddContentDialog dialog = (AddContentDialog)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "AddContentDialog");
 if (dialog != null && dialog.getFileName() != null) 
 {
    fileUploaded = true;

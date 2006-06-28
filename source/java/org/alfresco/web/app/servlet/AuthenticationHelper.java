@@ -17,6 +17,7 @@
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
+import java.util.Enumeration;
 
 import javax.portlet.PortletSession;
 import javax.servlet.ServletContext;
@@ -39,7 +40,6 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.repository.User;
 import org.apache.commons.logging.Log;
@@ -78,6 +78,9 @@ public final class AuthenticationHelper
    /** cookie names */
    private static final String COOKIE_ALFUSER = "alfUser";
    
+   /** portal mode key name */
+   private static ThreadLocal<String> portalUserKeyName = new ThreadLocal<String>();
+   
    private static Log logger = LogFactory.getLog(AuthenticationHelper.class);
    
    
@@ -98,7 +101,7 @@ public final class AuthenticationHelper
       HttpSession session = httpRequest.getSession();
       
       // examine the appropriate session for our User object
-      User user;
+      User user = null;
       LoginBean loginBean = null;
       if (Application.inPortalServer() == false)
       {
@@ -107,9 +110,28 @@ public final class AuthenticationHelper
       }
       else
       {
-         // TODO: this prefix is not consistent between JSR-168 vendors!
-         //       we need a solution for each vendor?
-         user = (User)session.getAttribute(AlfrescoFacesPortlet.MANAGED_BEAN_PREFIX + AUTHENTICATION_USER);
+         // naff solution as we need to enumerate all session keys until we find the one that
+         // should match our User objects - this is weak but we don't know how the underlying
+         // Portal vendor has decided to encode the objects in the session
+         if (portalUserKeyName.get() == null)
+         {
+            String userKeyPostfix = "?" + AUTHENTICATION_USER; 
+            Enumeration enumNames = session.getAttributeNames();
+            while (enumNames.hasMoreElements())
+            {
+               String name = (String)enumNames.nextElement();
+               if (name.endsWith(userKeyPostfix))
+               {
+                  // cache the key value once found!
+                  portalUserKeyName.set(name);
+                  break;
+               }
+            }
+         }
+         if (portalUserKeyName.get() != null)
+         {
+            user = (User)session.getAttribute(portalUserKeyName.get());
+         }
       }
       
       // setup the authentication context

@@ -81,7 +81,9 @@ public class UIMenu extends SelfRenderingComponent
       // output the hidden DIV section to contain the menu item table
       out.write("<br><div id='");
       out.write(menuId);
-      out.write("' style=\"position:absolute;display:none;padding-left:2px;\">");
+      // NOTE: the use of "*width:0px" is an IE6/7 specific hack to ensure that the CSS is processed
+      //       only by IE (which needs the width value) and _not_ FireFox which doesn't...!
+      out.write("' style=\"position:absolute;display:none;padding-left:2px;*width:0px\">");
       out.write("<table border=0 cellpadding=0");
       outputAttribute(out, getAttributes().get("itemSpacing"), "cellspacing");
       outputAttribute(out, getAttributes().get("menuStyle"), "style");

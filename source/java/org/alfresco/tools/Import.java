@@ -61,8 +61,9 @@ public class Import extends Tool
     /* (non-Javadoc)
      * @see org.alfresco.tools.Tool#processArgs(java.lang.String[])
      */
-    @Override
+    protected @Override
     /*package*/ ToolContext processArgs(String[] args)
+    	throws ToolArgumentException
     {
         context = new ImportContext();
         context.setLogin(true);
@@ -80,7 +81,7 @@ public class Import extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <store> for the option -store must be specified");
+                    throw new ToolArgumentException("The value <store> for the option -store must be specified");
                 }
                 context.storeRef = new StoreRef(args[i]);
             }
@@ -89,7 +90,7 @@ public class Import extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <path> for the option -path must be specified");
+                    throw new ToolArgumentException("The value <path> for the option -path must be specified");
                 }
                 context.path = args[i];
             }
@@ -98,7 +99,7 @@ public class Import extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <dir> for the option -dir must be specified");
+                    throw new ToolArgumentException("The value <dir> for the option -dir must be specified");
                 }
                 context.sourceDir = args[i];
             }
@@ -107,7 +108,7 @@ public class Import extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <user> for the option -user must be specified");
+                    throw new ToolArgumentException("The value <user> for the option -user must be specified");
                 }
                 context.setUsername(args[i]);
             }
@@ -116,7 +117,7 @@ public class Import extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <password> for the option -pwd must be specified");
+                    throw new ToolArgumentException("The value <password> for the option -pwd must be specified");
                 }
                 context.setPassword(args[i]);
             }
@@ -125,7 +126,7 @@ public class Import extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <encoding> for the option -encoding must be specified");
+                    throw new ToolArgumentException("The value <encoding> for the option -encoding must be specified");
                 }
                 context.encoding = args[i];
             }
@@ -138,7 +139,7 @@ public class Import extends Tool
                 }
                 catch(IllegalArgumentException e)
                 {
-                    throw new ToolException("The value " + args[i] + " is an invalid uuidBinding");
+                    throw new ToolArgumentException("The value " + args[i] + " is an invalid uuidBinding");
                 }
             }
             else if (args[i].equals("-quiet"))
@@ -155,7 +156,7 @@ public class Import extends Tool
             }
             else
             {
-                throw new ToolException("Unknown option " + args[i]);
+                throw new ToolArgumentException("Unknown option " + args[i]);
             }
 
             // next argument
@@ -168,30 +169,30 @@ public class Import extends Tool
     /* (non-Javadoc)
      * @see org.alfresco.tools.Tool#displayHelp()
      */
-    @Override
+    protected @Override
     /*package*/ void displayHelp()
     {
-        System.out.println("Usage: import -user username -s[tore] store [options] packagename");
-        System.out.println("");
-        System.out.println("username: username for login");
-        System.out.println("store: the store to import into the form of scheme://store_name");
-        System.out.println("packagename: the filename to import from (with or without extension)");
-        System.out.println("");
-        System.out.println("Options:");
-        System.out.println(" -h[elp] display this help");
-        System.out.println(" -p[ath] the path within the store to extract into (default: /)");
-        System.out.println(" -d[ir] the source directory to import from (default: current directory)");
-        System.out.println(" -pwd password for login");
-        System.out.println(" -encoding package file encoding (default: " + Charset.defaultCharset() + ")");
-        System.out.println(" -uuidBinding CREATE_NEW, REMOVE_EXISTING, REPLACE_EXISTING, UPDATE_EXISTING, THROW_ON_COLLISION (default: CREATE_NEW)");
-        System.out.println(" -quiet do not display any messages during import");
-        System.out.println(" -verbose report import progress");
+    	logError("Usage: import -user username -s[tore] store [options] packagename");
+    	logError("");
+    	logError("username: username for login");
+        logError("store: the store to import into the form of scheme://store_name");
+        logError("packagename: the filename to import from (with or without extension)");
+        logError("");
+        logError("Options:");
+        logError(" -h[elp] display this help");
+        logError(" -p[ath] the path within the store to extract into (default: /)");
+        logError(" -d[ir] the source directory to import from (default: current directory)");
+        logError(" -pwd password for login");
+        logError(" -encoding package file encoding (default: " + Charset.defaultCharset() + ")");
+        logError(" -uuidBinding CREATE_NEW, REMOVE_EXISTING, REPLACE_EXISTING, UPDATE_EXISTING, THROW_ON_COLLISION (default: CREATE_NEW)");
+        logError(" -quiet do not display any messages during import");
+        logError(" -verbose report import progress");
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.tools.Tool#getToolName()
      */
-    @Override
+    protected @Override
     /*package*/ String getToolName()
     {
         return "Alfresco Repository Importer";
@@ -200,8 +201,8 @@ public class Import extends Tool
     /* (non-Javadoc)
      * @see org.alfresco.tools.Tool#execute()
      */
-    @Override
-    /*package*/ void execute() throws ToolException
+    protected @Override
+    /*package*/ int execute() throws ToolException
     {
         ImporterService importer = getServiceRegistry().getImporterService();
         
@@ -225,6 +226,8 @@ public class Import extends Tool
         {
             throw new ToolException("Failed to import package due to " + e.getMessage(), e);
         }
+        
+        return 0;
     }
 
     /**
@@ -253,7 +256,7 @@ public class Import extends Tool
          */
         protected void log(String message)
         {
-            Import.this.log(message);
+            Import.this.logInfo(message);
         }
     }
     
@@ -283,7 +286,7 @@ public class Import extends Tool
          */
         protected void log(String message)
         {
-            Import.this.log(message);
+            Import.this.logInfo(message);
         }
     }
     
@@ -392,18 +395,18 @@ public class Import extends Tool
             
             if (storeRef == null)
             {
-                throw new ToolException("Store to import into has not been specified.");
+                throw new ToolArgumentException("Store to import into has not been specified.");
             }
             if (packageName == null)
             {
-                throw new ToolException("Package name has not been specified.");
+                throw new ToolArgumentException("Package name has not been specified.");
             }
             if (sourceDir != null)
             {
                 File fileSourceDir = getSourceDir();
                 if (fileSourceDir.exists() == false)
                 {
-                    throw new ToolException("Source directory " + fileSourceDir.getAbsolutePath() + " does not exist.");
+                    throw new ToolArgumentException("Source directory " + fileSourceDir.getAbsolutePath() + " does not exist.");
                 }
             }
             if (packageName.endsWith(".acp"))
@@ -411,7 +414,7 @@ public class Import extends Tool
                 File packageFile = new File(getSourceDir(), packageName);
                 if (!packageFile.exists())
                 {
-                    throw new ToolException("Package zip file " + packageFile.getAbsolutePath() + " does not exist.");
+                    throw new ToolArgumentException("Package zip file " + packageFile.getAbsolutePath() + " does not exist.");
                 }
                 zipFile = true;
             }
@@ -420,7 +423,7 @@ public class Import extends Tool
                 File packageFile = new File(getSourceDir(), getDataFile().getPath());
                 if (!packageFile.exists())
                 {
-                    throw new ToolException("Package file " + packageFile.getAbsolutePath() + " does not exist.");
+                    throw new ToolArgumentException("Package file " + packageFile.getAbsolutePath() + " does not exist.");
                 }
             }
         }

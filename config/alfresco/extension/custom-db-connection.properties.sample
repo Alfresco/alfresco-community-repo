@@ -29,4 +29,12 @@
 # SQLServer connection (requires jdts-1.2.jar or equivalent - http://jtds.sourceforge.net/)
 #
 #db.driver=net.sourceforge.jtds.jdbc.Driver
-#db.url=jdbc:jtds:sqlserver://your-server-name/alfresco
+#db.url=jdbc:jtds:sqlserver://localhost/alfresco
+
+#
+# SQLServer connection using Microsoft JDDB driver
+#
+#db.username=sa
+#db.password=sa
+#db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
+#db.url=jdbc:sqlserver://localhost;DatabaseName=alfresco

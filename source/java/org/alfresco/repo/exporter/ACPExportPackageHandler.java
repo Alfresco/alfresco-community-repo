@@ -23,8 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -32,6 +30,8 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.view.ExportPackageHandler;
 import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.util.TempFileProvider;
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipOutputStream;
 
 
 /**
@@ -54,7 +54,7 @@ public class ACPExportPackageHandler
     protected ZipOutputStream zipStream;
     protected int iFileCnt = 0;
 
-    
+        
     /**
      * Construct
      * 
@@ -71,7 +71,7 @@ public class ACPExportPackageHandler
             String zipFilePath = zipFile.getPath();
             if (!zipFilePath.endsWith("." + ACP_EXTENSION))
             {
-                zipFilePath += "." + ACP_EXTENSION;
+                zipFilePath += (zipFilePath.charAt(zipFilePath.length() -1) == '.') ? ACP_EXTENSION : "." + ACP_EXTENSION;
             }
 
             File absZipFile = new File(destDir, zipFilePath);
@@ -118,6 +118,9 @@ public class ACPExportPackageHandler
     public void startExport()
     {
         zipStream = new ZipOutputStream(outputStream);
+        // NOTE: This encoding allows us to workaround bug...
+        //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
+        zipStream.setEncoding("Cp437");
     }
 
     /* (non-Javadoc)
@@ -150,9 +153,9 @@ public class ACPExportPackageHandler
         
         // create zip entry for stream to export
         String contentDirPath = contentDir.getPath();
-        if (contentDirPath.indexOf(".") != -1)
+        if (contentDirPath.charAt(contentDirPath.length() -1) != '.' && contentDirPath.lastIndexOf('.') != -1)
         {
-            contentDirPath = contentDirPath.substring(0, contentDirPath.indexOf("."));
+            contentDirPath = contentDirPath.substring(0, contentDirPath.lastIndexOf("."));
         }
         String extension = "bin";
         if (mimetypeService != null)
@@ -197,7 +200,7 @@ public class ACPExportPackageHandler
         String dataFilePath = dataFile.getPath();
         if (!dataFilePath.endsWith(".xml"))
         {
-            dataFilePath += ".xml";
+        	dataFilePath  += (dataFilePath .charAt(dataFilePath .length() -1) == '.') ? "xml" : ".xml";
         }
         
         // add data file to zip stream

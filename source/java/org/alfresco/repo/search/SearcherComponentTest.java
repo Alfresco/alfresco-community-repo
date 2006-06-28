@@ -289,7 +289,7 @@ public class SearcherComponentTest extends TestCase
     /**
      * Tests the <b>like</b> and <b>contains</b> functions (FTS functions) within a currently executing transaction
      */
-    public void testLikeAndContains() throws Exception
+    public void xtestLikeAndContains() throws Exception
     {
         Map<QName, ChildAssociationRef> assocRefs = BaseNodeServiceTest.buildNodeGraph(nodeService, rootNodeRef);
 

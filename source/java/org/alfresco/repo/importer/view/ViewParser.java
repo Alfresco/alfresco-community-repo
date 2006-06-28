@@ -197,7 +197,11 @@ public class ViewParser implements Parser
         // Handle special view directives
         if (defName.equals(VIEW_METADATA))
         {
-            parserContext.elementStack.push(new MetaDataContext(defName, (ElementContext)element));
+        	MetaDataContext metaDataContext = new MetaDataContext(defName, (ElementContext)element); 
+            parserContext.elementStack.push(metaDataContext);
+            
+            if (logger.isDebugEnabled())
+                logger.debug(indentLog("Pushed " + metaDataContext, parserContext.elementStack.size() -1));
         }
         else if (defName.equals(VIEW_ASPECTS) || defName.equals(VIEW_PROPERTIES) || defName.equals(VIEW_ASSOCIATIONS) || defName.equals(VIEW_ACL))
         {
@@ -210,7 +214,11 @@ public class ViewParser implements Parser
                 throw new ImporterException("Element " + defName + " can only be declared within a node");
             }
             NodeContext node = (NodeContext)element;
-            parserContext.elementStack.push(new NodeItemContext(defName, node));
+            NodeItemContext nodeItemContext = new NodeItemContext(defName, node);
+            parserContext.elementStack.push(nodeItemContext);
+
+            if (logger.isDebugEnabled())
+                logger.debug(indentLog("Pushed " + nodeItemContext, parserContext.elementStack.size() -1));
 
             // process ACL specific attributes
             if (defName.equals(VIEW_ACL))

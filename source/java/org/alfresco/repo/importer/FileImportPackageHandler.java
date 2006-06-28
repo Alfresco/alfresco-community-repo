@@ -37,6 +37,8 @@ import org.alfresco.service.cmr.view.ImporterException;
 public class FileImportPackageHandler
     implements ImportPackageHandler
 {
+	public final static String DEFAULT_ENCODING = "UTF-8";
+	
     protected File sourceDir;
     protected File dataFile;
     protected String dataFileEncoding;
@@ -71,7 +73,7 @@ public class FileImportPackageHandler
         try
         {
             InputStream inputStream = new FileInputStream(dataFile);
-            Reader inputReader = (dataFileEncoding == null) ? new InputStreamReader(inputStream) : new InputStreamReader(inputStream, dataFileEncoding);
+            Reader inputReader = (dataFileEncoding == null) ? new InputStreamReader(inputStream, DEFAULT_ENCODING) : new InputStreamReader(inputStream, dataFileEncoding);
             return new BufferedReader(inputReader);
         }
         catch(UnsupportedEncodingException e)

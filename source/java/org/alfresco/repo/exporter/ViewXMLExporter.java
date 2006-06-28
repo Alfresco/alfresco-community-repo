@@ -532,7 +532,7 @@ import org.xml.sax.helpers.AttributesImpl;
             }
 
             // convert node references to paths
-            if (value instanceof NodeRef)
+            if (value instanceof NodeRef && referenceType.equals(ReferenceType.PATHREF))
             {
                 NodeRef valueNodeRef = (NodeRef)value;
                 if (nodeRef.getStoreRef().equals(valueNodeRef.getStoreRef()))

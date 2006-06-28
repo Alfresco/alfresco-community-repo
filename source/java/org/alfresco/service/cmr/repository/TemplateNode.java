@@ -503,6 +503,14 @@ public final class TemplateNode implements Serializable
     }
     
     /**
+     * @return true if this node inherits permissions from its parent node, false otherwise.
+     */
+    public boolean getInheritsPermissions()
+    {
+        return this.services.getPermissionService().getInheritParentPermissions(this.nodeRef);
+    }
+    
+    /**
      * @return the parent node
      */
     public TemplateNode getParent()

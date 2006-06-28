@@ -280,6 +280,23 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                 ContentModel.TYPE_AUTHORITY_CONTAINER.getLocalName(), ContentModel.TYPE_AUTHORITY_CONTAINER
                         .toPrefixString(namespaceService), attrs);
 
+        if ((authorityDAO != null ) && authorityDAO.authorityExists(group.gid))
+        {
+            NodeRef authNodeRef = authorityDAO.getAuthorityNodeRefOrNull(group.gid);
+            if (authNodeRef != null)
+            {
+                String uguid = authorityDAO.getAuthorityNodeRefOrNull(group.gid).getId();
+
+                writer.startElement(nodeUUID.getNamespaceURI(), nodeUUID.getLocalName(), nodeUUID
+                        .toPrefixString(namespaceService), new AttributesImpl());
+
+                writer.characters(uguid.toCharArray(), 0, uguid.length());
+
+                writer.endElement(nodeUUID.getNamespaceURI(), nodeUUID.getLocalName(), nodeUUID
+                        .toPrefixString(namespaceService));
+            }
+        }
+        
         writer.startElement(ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI(), ContentModel.PROP_AUTHORITY_NAME
                 .getLocalName(), ContentModel.PROP_AUTHORITY_NAME.toPrefixString(namespaceService),
                 new AttributesImpl());

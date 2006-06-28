@@ -16,6 +16,9 @@
  */
 package org.alfresco.tools;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -44,8 +47,8 @@ public abstract class Tool
      * @return  the tool context
      * @throws ToolException
      */
-    /*package*/ ToolContext processArgs(String[] args)
-        throws ToolException
+    protected ToolContext processArgs(String[] args)
+        throws ToolArgumentException
     {
         return new ToolContext();
     }
@@ -53,9 +56,9 @@ public abstract class Tool
     /**
      * Display Tool Help
      */
-    /*package*/ void displayHelp()
+    protected void displayHelp()
     {
-        System.out.println("Sorry.  Help is not available.");
+        logError("Sorry.  Help is not available.");
     }
 
     /**
@@ -63,7 +66,7 @@ public abstract class Tool
      * 
      * @throws ToolException
      */
-    /*package*/ abstract void execute()
+    protected abstract int execute()
         throws ToolException;
 
     /**
@@ -71,34 +74,14 @@ public abstract class Tool
      * 
      * @return the tool name
      */
-    /*package*/ abstract String getToolName();
+    protected abstract String getToolName();
 
-    /**
-     * Get the Application Context
-     * 
-     * @return  the application context
-     */
-    /*package*/ final ApplicationContext getApplicationContext()
-    {
-        return appContext;
-    }
-    
-    /**
-     * Get the Repository Service Registry
-     * 
-     * @return the service registry
-     */    
-    /*package*/ final ServiceRegistry getServiceRegistry()
-    {
-        return serviceRegistry;
-    }
-    
     /**
      * Log  message
      * 
      * @param msg  message to log
      */
-    /*package*/ final void log(String msg)
+    protected void logInfo(String msg)
     {
         if (toolContext.isQuiet() == false)
         {
@@ -111,12 +94,86 @@ public abstract class Tool
      * 
      * @param msg  message to log
      */
-    /*package*/ final void logVerbose(String msg)
+    protected void logVerbose(String msg)
     {
         if (toolContext.isVerbose())
         {
-            log(msg);
+            logInfo(msg);
         }
+    }
+    
+    /**
+     * Log Error message
+     * 
+     * @param msg  message to log
+     */
+    protected void logError(String msg)
+    {
+    	System.out.println(msg);
+    }
+    
+    /**
+     * Handle Error Message
+     * 
+     * @param e  exception
+     */
+    protected int handleError(Throwable e)
+    {
+    	if (e instanceof ToolArgumentException)
+    	{
+            logError(e.getMessage());
+            logError("");
+            displayHelp();
+    	}
+    	else if (e instanceof ToolException)
+    	{
+    		logError(e.getMessage());
+    	}
+    	else
+    	{
+            logError("The following error has occurred:");
+            logError(e.getMessage());
+            if (toolContext != null && toolContext.isVerbose())
+            {
+            	StringWriter stringWriter = new StringWriter();
+            	PrintWriter printWriter = new PrintWriter(stringWriter);
+                e.printStackTrace(printWriter);
+                logError(stringWriter.toString());
+            }
+    	}
+    	
+        // return generic error code
+    	return -1;
+    }
+
+    /**
+     * Exit Tool
+     * 
+     * @param status  status code
+     */
+    protected void exit(int status)
+    {
+    	System.exit(status);
+    }
+
+    /**
+     * Get the Application Context
+     * 
+     * @return  the application context
+     */
+    protected final ApplicationContext getApplicationContext()
+    {
+        return appContext;
+    }
+    
+    /**
+     * Get the Repository Service Registry
+     * 
+     * @return the service registry
+     */    
+    protected final ServiceRegistry getServiceRegistry()
+    {
+        return serviceRegistry;
     }
     
     /**
@@ -124,52 +181,37 @@ public abstract class Tool
      * 
      * @param args  the tool arguments
      */
-    /*package*/ final void start(String[] args)
+    public final void start(String[] args)
     {
+    	int status = -1;
+    	
         try
         {
             // Process tool arguments
             toolContext = processArgs(args);
             toolContext.validate();
     
-            try
+            if (toolContext.isHelp())
             {
-                if (toolContext.isHelp())
-                {
-                    // Display help, if requested
-                    displayHelp();
-                }
-                else
-                {
-                    // Perform Tool behaviour
-                    log(getToolName());
-                    initialiseRepository();
-                    login();
-                    execute();
-                    log(getToolName() + " successfully completed.");
-                }
-                System.exit(0);
+                // Display help, if requested
+                displayHelp();
             }
-            catch (ToolException e)
+            else
             {
-                displayError(e);
-                System.exit(-1);
+                // Perform Tool behaviour
+                logInfo(getToolName());
+                initialiseRepository();
+                login();
+                status = execute();
+                logInfo(getToolName() + " successfully completed.");
             }
-        }
-        catch(ToolException e)
-        {
-            System.out.println(e.getMessage());
-            System.out.println();
-            displayHelp();
-            System.exit(-1);
         }
         catch (Throwable e)
         {
-            System.out.println("The following error has occurred:");
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-            System.exit(-1);
+        	status = handleError(e);
         }
+        
+        exit(status);
     }
 
     /**
@@ -180,7 +222,7 @@ public abstract class Tool
         // TODO: Replace with call to ServiceRegistry
         AuthenticationService auth = (AuthenticationService) serviceRegistry.getAuthenticationService();
         auth.authenticate(toolContext.getUsername(), toolContext.getPassword().toCharArray());
-        log("Connected as " + toolContext.getUsername());
+        logInfo("Connected as " + toolContext.getUsername());
     }
     
     /**
@@ -192,18 +234,4 @@ public abstract class Tool
         serviceRegistry = (ServiceRegistry) appContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
     }
     
-    /**
-     * Display Error Message
-     * 
-     * @param e  exception
-     */
-    private void displayError(Throwable e)
-    {
-        System.out.println(e.getMessage());
-        if (toolContext != null && toolContext.isVerbose())
-        {
-            e.printStackTrace();
-        }
-    }    
-
 }

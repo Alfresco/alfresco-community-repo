@@ -174,7 +174,7 @@ public class ISO9075
             if (matchesEncodedPattern(toDecode, i))
             {
                 decoded.append(((char) Integer.parseInt(toDecode.substring(i + 2, i + 6), 16)));
-                i += 6;
+                i += 6;// then one added for the loop to mkae the length of 7
             }
             else
             {

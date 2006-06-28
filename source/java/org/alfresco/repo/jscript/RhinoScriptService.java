@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
@@ -197,8 +198,11 @@ public class RhinoScriptService implements ScriptService
         {
             // The easiest way to embed Rhino is just to create a new scope this way whenever
             // you need one. However, initStandardObjects is an expensive method to call and it
-            // allocates a fair amount of memory.
+            // allocates a fair amount of memory.  ImporterTopLevel provides a scope allowing 
+            // the import of java classes and packages.
+            Scriptable topLevelScope = new ImporterTopLevel(cx);
             Scriptable scope = cx.initStandardObjects();
+            scope.setParentScope(topLevelScope);
             
             // insert supplied object model into root of the default scope
             if (model != null)

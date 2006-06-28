@@ -26,13 +26,13 @@ import java.io.IOException;
  */
 public class Repository extends Tool
 {
-    @Override
+    protected @Override
     String getToolName()
     {
         return "Repository";
     }
 
-    @Override
+    protected @Override
     ToolContext processArgs(String[] args) throws ToolException
     {
         ToolContext context = new ToolContext();
@@ -51,7 +51,7 @@ public class Repository extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <user> for the option -user must be specified");
+                    throw new ToolArgumentException("The value <user> for the option -user must be specified");
                 }
                 context.setUsername(args[i]);
             }
@@ -60,13 +60,13 @@ public class Repository extends Tool
                 i++;
                 if (i == args.length || args[i].length() == 0)
                 {
-                    throw new ToolException("The value <password> for the option -pwd must be specified");
+                    throw new ToolArgumentException("The value <password> for the option -pwd must be specified");
                 }
                 context.setPassword(args[i]);
             }
             else
             {
-                throw new ToolException("Unknown option " + args[i] + ".  Use -help for options.");
+                throw new ToolArgumentException("Unknown option " + args[i] + ".  Use -help for options.");
             }
 
             // next argument
@@ -76,10 +76,10 @@ public class Repository extends Tool
         return context;
     }
 
-    @Override
+    protected @Override
     void displayHelp()
     {
-        System.out.println(
+        logError(
                 "usage: repository [OPTIONS] \n" +
                 "\n" +
                 "Initialize the Alfresco application context, initiating any \n" +
@@ -92,7 +92,7 @@ public class Repository extends Tool
     }
 
     @Override
-    synchronized void execute() throws ToolException
+    protected synchronized int execute() throws ToolException
     {
         try
         {
@@ -107,6 +107,8 @@ public class Repository extends Tool
         {
             // just ignore
         }
+        
+        return 0;
     }
     
     /**

@@ -24,11 +24,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterException;
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipFile;
 
 
 /**
@@ -39,7 +39,8 @@ import org.alfresco.service.cmr.view.ImporterException;
 public class ACPImportPackageHandler
     implements ImportPackageHandler
 {
-    
+	public final static String DEFAULT_ENCODING = "UTF-8";
+	
     protected File file;
     protected ZipFile zipFile;
     protected String dataFileEncoding;
@@ -65,7 +66,9 @@ public class ACPImportPackageHandler
         log("Importing from zip file " + file.getAbsolutePath());
         try
         {
-            zipFile = new ZipFile(file);
+            // NOTE: This encoding allows us to workaround bug...
+            //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
+            zipFile = new ZipFile(file, "Cp437");
         }
         catch(IOException e)
         {
@@ -86,7 +89,7 @@ public class ACPImportPackageHandler
             // TODO: First, locate xml meta-data file by name
             
             // Scan the zip entries one by one (the slow approach)
-            Enumeration entries = zipFile.entries();
+            Enumeration entries = zipFile.getEntries();
             while(entries.hasMoreElements())
             {
                 ZipEntry entry = (ZipEntry)entries.nextElement();
@@ -113,7 +116,7 @@ public class ACPImportPackageHandler
             
             // open the meta-data xml file
             InputStream dataStream = zipFile.getInputStream(xmlMetaDataEntry);
-            Reader inputReader = (dataFileEncoding == null) ? new InputStreamReader(dataStream) : new InputStreamReader(dataStream, dataFileEncoding);
+            Reader inputReader = (dataFileEncoding == null) ? new InputStreamReader(dataStream, DEFAULT_ENCODING) : new InputStreamReader(dataStream, dataFileEncoding);
             return new BufferedReader(inputReader);
         }
         catch(UnsupportedEncodingException e)

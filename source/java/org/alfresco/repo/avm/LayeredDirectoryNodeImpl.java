@@ -238,7 +238,6 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     {
         // Capture the repository.
         Repository repo = lPath.getRepository();
-        // Otherwise we do an actual copy.
         LayeredDirectoryNodeImpl newMe = null;
         if (!lPath.isInThisLayer())
         {

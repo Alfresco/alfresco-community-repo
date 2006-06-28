@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * This holds all the information necessary to perform operations
- * on AVMNodes, and is internall structured as a list of path components
+ * on AVMNodes, and is structured internally as a list of path components
  * from the root directory of a repository.
  * @author britt
  */
@@ -258,33 +258,28 @@ class Lookup
      */
     public String getIndirectionPath()
     {
-        // The path is the underlying path of the lowest layer that is directly contained
-        // by the top layer that is a primary indirection node.
-        for (int pos = fLowestLayerIndex; pos >= fTopLayerIndex; pos--)
+        // The path is the underlying path of the lowest layer (in the path sense) 
+        // that is directly contained by the top layer and is a primary indirection node.
+        int pos = fLowestLayerIndex;
+        AVMNode node = fComponents.get(pos).getNode();
+        LayeredDirectoryNode oNode = null;
+        while (pos >= fTopLayerIndex && node.getType() != AVMNodeType.LAYERED_DIRECTORY &&
+               ((oNode = (LayeredDirectoryNode)node).getLayerID() != fTopLayer.getLayerID() ||
+                !oNode.getPrimaryIndirection()))
         {
-            AVMNode node = fComponents.get(pos).getNode();
-            if (node.getType() != AVMNodeType.LAYERED_DIRECTORY)
-            {
-                continue;
-            }
-            LayeredDirectoryNode oNode =
-                (LayeredDirectoryNode)node;
-            if (oNode.getLayerID() == fTopLayer.getLayerID() &&
-                oNode.getPrimaryIndirection())
-            {
-                StringBuilder builder = new StringBuilder();
-                builder.append(oNode.getUnderlying());
-                for (int i = pos + 1; i <= fPosition; i++)
-                {
-                    builder.append("/");
-                    builder.append(fComponents.get(i).getName());
-                }
-                return builder.toString();
-            }
+            pos--;
+            node = fComponents.get(pos).getNode();
         }
-        // TODO This is gross.  There has to be a neater way to do this.
-        assert false : "Not reached.";
-        return "bogus";
+        oNode = (LayeredDirectoryNode)node;
+        // We've found it.
+        StringBuilder builder = new StringBuilder();
+        builder.append(oNode.getUnderlying());
+        for (int i = pos + 1; i <= fPosition; i++)
+        {
+            builder.append("/");
+            builder.append(fComponents.get(i).getName());
+        }
+        return builder.toString();
     }
     
     /**

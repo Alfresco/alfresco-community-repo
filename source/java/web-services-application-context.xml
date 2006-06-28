@@ -83,6 +83,15 @@
       </property>
    </bean>
    
+   <bean id="dictionaryWebService" class="org.alfresco.repo.webservice.dictionary.DictionaryWebService">
+      <property name="namespaceService">
+         <ref bean="NamespaceService"/>
+      </property>
+      <property name="dictionaryService">
+         <ref bean="DictionaryService"/>
+      </property>
+   </bean>
+
    <bean id="contentWebService" class="org.alfresco.repo.webservice.content.ContentWebService">
       <property name="nodeService">
          <ref bean="NodeService"/>

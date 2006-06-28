@@ -615,25 +615,7 @@ public class Utils
           int pos = 0;
           for (org.alfresco.service.cmr.dictionary.PropertyDefinition ddPropDef : props.values())
           {
-             PropertyDefinition propDef = new PropertyDefinition();
-             propDef.setName(ddPropDef.getName().toString());
-             propDef.setDataType(ddPropDef.getDataType().getName().toString());
-             propDef.setMandatory(ddPropDef.isMandatory()); 
-             propDef.setReadOnly(ddPropDef.isProtected());
-             if (ddPropDef.getDefaultValue() != null)
-             {
-                propDef.setDefaultValue(ddPropDef.getDefaultValue());
-             }
-             if (ddPropDef.getTitle() != null)
-             {
-                propDef.setTitle(ddPropDef.getTitle());
-             }
-             if (ddPropDef.getDescription() != null)
-             {
-                propDef.setDescription(ddPropDef.getDescription());
-             }
-             
-             // add it to the array
+             PropertyDefinition propDef = setupPropertyDefObject(ddPropDef);
              propDefs[pos] = propDef;
              pos++;
           }
@@ -641,8 +623,6 @@ public class Utils
           // add properties to the overall ClassDefinition
           classDef.setProperties(propDefs);
        }
-       
-       // TODO need to get the child associations as well !!
        
        // represent the associations
        Map<QName, org.alfresco.service.cmr.dictionary.AssociationDefinition> assocs = ddClassDef.getAssociations();
@@ -652,35 +632,7 @@ public class Utils
           int pos = 0;
           for (org.alfresco.service.cmr.dictionary.AssociationDefinition ddAssocDef : assocs.values())
           {
-             AssociationDefinition assocDef = new AssociationDefinition();
-             assocDef.setName(ddAssocDef.getName().toString());
-             assocDef.setIsChild(ddAssocDef.isChild());
-             if (ddAssocDef.getTitle() != null)
-             {
-                assocDef.setTitle(ddAssocDef.getTitle());
-             }
-             if (ddAssocDef.getDescription() != null)
-             {
-                assocDef.setDescription(ddAssocDef.getDescription());
-             }
-             
-             RoleDefinition sourceRole = new RoleDefinition();
-             if (ddAssocDef.getSourceRoleName() != null)
-             {
-                sourceRole.setName(ddAssocDef.getSourceRoleName().toString());
-             }
-             sourceRole.setCardinality(setupSourceCardinalityObject(ddAssocDef));
-             assocDef.setSourceRole(sourceRole);
-             
-             RoleDefinition targetRole = new RoleDefinition();
-             if (ddAssocDef.getTargetRoleName() != null)
-             {
-                targetRole.setName(ddAssocDef.getTargetRoleName().toString());
-             }
-             targetRole.setCardinality(setupTargetCardinalityObject(ddAssocDef));;
-             assocDef.setTargetRole(targetRole);
-             assocDef.setTargetClass(ddAssocDef.getTargetClass().getName().toString());
-             
+             AssociationDefinition assocDef = setupAssociationDefObject(ddAssocDef);
              assocDefs[pos] = assocDef;
              pos++;
           }
@@ -689,6 +641,76 @@ public class Utils
        }
        
        return classDef;
+    }
+    
+    /**
+     * Creates a PropertyDefinition web service type object for the given
+     * repository PropertyDefinition
+     * 
+     * @param ddPropertyDef The repository PropertyDefinition to generate
+     * @return The web service PropertyDefinition representation
+     */
+    public static PropertyDefinition setupPropertyDefObject(org.alfresco.service.cmr.dictionary.PropertyDefinition ddPropDef)
+    {
+        PropertyDefinition propDef = new PropertyDefinition();
+        propDef.setName(ddPropDef.getName().toString());
+        propDef.setDataType(ddPropDef.getDataType().getName().toString());
+        propDef.setMandatory(ddPropDef.isMandatory()); 
+        propDef.setReadOnly(ddPropDef.isProtected());
+        if (ddPropDef.getDefaultValue() != null)
+        {
+           propDef.setDefaultValue(ddPropDef.getDefaultValue());
+        }
+        if (ddPropDef.getTitle() != null)
+        {
+           propDef.setTitle(ddPropDef.getTitle());
+        }
+        if (ddPropDef.getDescription() != null)
+        {
+           propDef.setDescription(ddPropDef.getDescription());
+        }
+        return propDef;
+    }
+
+    /**
+     * Creates an AssociationDefinition web service type object for the given
+     * repository AssociationDefinition
+     * 
+     * @param ddAssociationDef The repository AssociationDefinition to generate
+     * @return The web service AssociationDefinition representation
+     */
+    public static AssociationDefinition setupAssociationDefObject(org.alfresco.service.cmr.dictionary.AssociationDefinition ddAssocDef)
+    {
+        AssociationDefinition assocDef = new AssociationDefinition();
+        assocDef.setName(ddAssocDef.getName().toString());
+        assocDef.setIsChild(ddAssocDef.isChild());
+        if (ddAssocDef.getTitle() != null)
+        {
+           assocDef.setTitle(ddAssocDef.getTitle());
+        }
+        if (ddAssocDef.getDescription() != null)
+        {
+           assocDef.setDescription(ddAssocDef.getDescription());
+        }
+        
+        RoleDefinition sourceRole = new RoleDefinition();
+        if (ddAssocDef.getSourceRoleName() != null)
+        {
+           sourceRole.setName(ddAssocDef.getSourceRoleName().toString());
+        }
+        sourceRole.setCardinality(setupSourceCardinalityObject(ddAssocDef));
+        assocDef.setSourceRole(sourceRole);
+        
+        RoleDefinition targetRole = new RoleDefinition();
+        if (ddAssocDef.getTargetRoleName() != null)
+        {
+           targetRole.setName(ddAssocDef.getTargetRoleName().toString());
+        }
+        targetRole.setCardinality(setupTargetCardinalityObject(ddAssocDef));;
+        assocDef.setTargetRole(targetRole);
+        assocDef.setTargetClass(ddAssocDef.getTargetClass().getName().toString());
+        
+        return assocDef;
     }
     
     /**

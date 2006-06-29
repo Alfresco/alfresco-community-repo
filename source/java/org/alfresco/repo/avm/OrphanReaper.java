@@ -30,7 +30,7 @@ import org.hibernate.Session;
  * in the AVM repository.  These orphans arise from purge operations.
  * @author britt
  */
-class OrphanReaper implements Runnable
+public class OrphanReaper implements Runnable
 {
     /**
      * The HibernateTxn instance.
@@ -69,11 +69,15 @@ class OrphanReaper implements Runnable
     private Thread fThread;
     
     /**
+     * The Hibernate helper to use.
+     */
+    private HibernateHelper fHibernateHelper;
+    
+    /**
      * Create one with default parameters.
      */
     public OrphanReaper()
     {
-        fTransaction = new HibernateTxn(HibernateHelper.GetSessionFactory());
         fInactiveBaseSleep = 30000;
         fActiveBaseSleep = 1000;
         fBatchSize = 50;
@@ -111,10 +115,20 @@ class OrphanReaper implements Runnable
     }
     
     /**
+     * Set the HibernateHelper to use.
+     * @param helper The helper to use.
+     */
+    public void setHibernateHelper(HibernateHelper helper)
+    {
+        fHibernateHelper = helper;
+    }
+    
+    /**
      * Start things up after configuration is complete.
      */
     public void init()
     {
+        fTransaction = new HibernateTxn(fHibernateHelper.getSessionFactory());
         fThread = new Thread(this);
         fThread.start();
     }

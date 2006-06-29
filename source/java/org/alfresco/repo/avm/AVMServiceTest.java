@@ -1847,7 +1847,8 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             ArrayList<Long> times = new ArrayList<Long>();
-            BulkLoader loader = new BulkLoader(fService);
+            BulkLoader loader = new BulkLoader();
+            loader.setAvmService(fService);
             loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
             times.add(System.currentTimeMillis());
             fService.createSnapshot("main");

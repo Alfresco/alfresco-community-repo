@@ -30,7 +30,6 @@ import org.alfresco.repo.avm.hibernate.HibernateHelper;
 import org.alfresco.repo.avm.hibernate.HibernateTxn;
 import org.alfresco.repo.avm.hibernate.HibernateTxnCallback;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 
 /**
@@ -39,11 +38,6 @@ import org.hibernate.tool.hbm2ddl.SchemaExport;
  */
 public class AVMServiceImpl implements AVMService
 {
-    /**
-     * The Hibernate SessionFactory.
-     */
-    private SessionFactory fSessionFactory;
-    
     /**
      * The HibernateTxn.
      */
@@ -75,25 +69,32 @@ public class AVMServiceImpl implements AVMService
     private Issuer fLayerIssuer;
     
     /**
+     * Whether the tables should be dropped and created.
+     */
+    private boolean fCreateTables;
+    
+    /**
+     * The HibernateHelper.
+     */
+    private HibernateHelper fHibernateHelper;
+    
+    /**
      * Basic constructor for the service.
      */
     public AVMServiceImpl()
     {
-        fSessionFactory = HibernateHelper.GetSessionFactory();
-        fTransaction = new HibernateTxn(fSessionFactory);
     }
     
     /**
      * Final initialization of the service.  Must be called only on a 
      * fully initialized instance.
-     * @param createTables Whether we should create tables, and a default
-     * repository.
      */
-    public void init(boolean createTables)
+    public void init()
     {
-        if (createTables)
+        fTransaction = new HibernateTxn(fHibernateHelper.getSessionFactory());
+        if (fCreateTables)
         {
-            SchemaExport se = new SchemaExport(HibernateHelper.GetConfiguration());
+            SchemaExport se = new SchemaExport(fHibernateHelper.getConfiguration());
             se.drop(false, true);
             se.create(false, true);
             File storage = new File(fStorage);
@@ -135,8 +136,30 @@ public class AVMServiceImpl implements AVMService
         fStorage = storage;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#getFileInputStream(int, java.lang.String)
+    /**
+     * Set whether we should drop and create tables.
+     * @param createTables 
+     */
+    public void setCreateTables(boolean createTables)
+    {
+        fCreateTables = createTables;
+    }
+
+    /**
+     * Set the HibernateHelper.
+     * @param helper
+     */
+    public void setHibernateHelper(HibernateHelper helper)
+    {
+        fHibernateHelper = helper;
+    }
+    
+    /**
+     * Get an InputStream from a file.
+     * @param version The version to look under.
+     * @param path The absolute path.
+     * @return An InputStream
+     * @throws AVMNotFoundException When the path is invalid.
      */
     public InputStream getFileInputStream(final int version, final String path)
     {

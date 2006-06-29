@@ -35,9 +35,11 @@ public class AVMStressTest extends AVMServiceTestBase
     {
         try
         {
+            fReaper.setInactiveBaseSleep(30000);
             int nCopies = 4;
             int nThreads = 8;
-            BulkLoader loader = new BulkLoader(fService);
+            BulkLoader loader = new BulkLoader();
+            loader.setAvmService(fService);
             long start = System.currentTimeMillis();
             for (int i = 0; i < nCopies; i++)
             {

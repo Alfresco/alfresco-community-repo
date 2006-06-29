@@ -18,6 +18,8 @@
 package org.alfresco.repo.avm;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -25,7 +27,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.avm.hibernate.HibernateHelper;
 import org.alfresco.repo.avm.util.BulkLoader;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.core.io.InputStreamResource;
 
 /**
  * An interactive console for the AVM repository.
@@ -37,11 +46,6 @@ public class AVMInteractiveConsole
      * The service interface.
      */
     private AVMService fService;
-
-    /**
-     * The Orphan Cleaner Upper.
-     */
-    private OrphanReaper fReaper;
 
     /**
      * The reader for interaction.
@@ -59,30 +63,37 @@ public class AVMInteractiveConsole
      */
     public static void main(String[] args)
     {
-        if (args.length != 2)
-        {
-            System.err.println("Usage: AVMInteractiveConsole storage (new|old)");
-            System.exit(1);
-        }
-        AVMInteractiveConsole console = new AVMInteractiveConsole(args[0], args[1].equals("new"));
+        FileSystemXmlApplicationContext context = 
+            new FileSystemXmlApplicationContext("config/alfresco/avm-console-context.xml");
+        AVMInteractiveConsole console = (AVMInteractiveConsole)context.getBean("interactiveConsole");
         console.rep();
+        context.close();
     }
 
     /**
      * Make up a new console.
-     * @param storage Where The backing store goes.
-     * @param createNew Whether to create a new SuperRepository.
      */
-    public AVMInteractiveConsole(String storage, boolean createNew)
+    public AVMInteractiveConsole()
     {
-        AVMServiceImpl service = new AVMServiceImpl();
-        service.setStorage(storage);
-        service.init(createNew);
-        fService = service;
-        fReaper = new OrphanReaper();
-        fReaper.init();
-        fLoader = new BulkLoader(fService);
         fIn = new BufferedReader(new InputStreamReader(System.in));
+    }
+
+    /**
+     * Set the AVMService.
+     * @param service The AVMService instance.
+     */
+    public void setAvmService(AVMService service)
+    {
+        fService = service;
+    }
+    
+    /**
+     * Set the bulk loader.
+     * @param loader
+     */
+    public void setBulkLoader(BulkLoader loader)
+    {
+        fLoader = loader;
     }
     
     /**
@@ -402,7 +413,6 @@ public class AVMInteractiveConsole
             }
             System.out.println("Time: " + (System.currentTimeMillis() - start));
         }
-        fReaper.shutDown();
     }
     
     private void recursiveList(AVMNodeDescriptor dir, int indent)

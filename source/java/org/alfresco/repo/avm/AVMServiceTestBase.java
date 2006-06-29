@@ -25,6 +25,7 @@ import java.util.TreeMap;
 
 import org.alfresco.repo.avm.hibernate.HibernateHelper;
 import org.hibernate.stat.Statistics;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import junit.framework.TestCase;
 
@@ -38,6 +39,16 @@ public class AVMServiceTestBase extends TestCase
      * The AVMService we are testing.
      */
     protected AVMService fService;
+
+    /**
+     * The reaper thread.
+     */
+    protected OrphanReaper fReaper;
+    
+    /**
+     * The application context.
+     */
+    protected FileSystemXmlApplicationContext fContext;
     
     /**
      * The start time of actual work for a test.
@@ -51,11 +62,10 @@ public class AVMServiceTestBase extends TestCase
     protected void setUp() throws Exception
     {
 //        HibernateHelper.GetSessionFactory().getStatistics().setStatisticsEnabled(true);
-        AVMServiceImpl service = new AVMServiceImpl();
-        service.setStorage("build/test-results/storage");
-        service.init(true);
+        fContext = new FileSystemXmlApplicationContext("config/alfresco/avm-test-context.xml");
+        fService = (AVMService)fContext.getBean("avmService");
+        fReaper = (OrphanReaper)fContext.getBean("orphanReaper");
         fStartTime = System.currentTimeMillis();
-        fService = service;
     }
 
     /* (non-Javadoc)
@@ -69,7 +79,7 @@ public class AVMServiceTestBase extends TestCase
 //        Statistics stats = HibernateHelper.GetSessionFactory().getStatistics();
 //        stats.logSummary();
 //        stats.clear();
-        HibernateHelper.Reset();
+        fContext.close();
     }
     
     /**

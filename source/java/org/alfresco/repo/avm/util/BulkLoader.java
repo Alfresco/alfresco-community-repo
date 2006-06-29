@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import org.alfresco.repo.avm.AVMException;
 import org.alfresco.repo.avm.AVMService;
 import org.alfresco.repo.avm.AVMServiceImpl;
+import org.alfresco.repo.avm.hibernate.HibernateHelper;
 
 /**
  * This takes a filesystem directory path and a repository path and name
@@ -37,30 +38,17 @@ public class BulkLoader
     private AVMService fService;
     
     /**
-     * Bulk load from a filesystem directory.
-     * Syntax : BulkLoad storagepath (new|old) fspath reppath name
-     * @param args
-     */
-    public static void main(String[] args)
-    {
-        if (args.length != 4)
-        {
-            System.err.println("Syntax: BulkLoad storagepath (new|old) fspath reppath");
-            System.exit(1);
-        }
-        AVMServiceImpl service = new AVMServiceImpl();
-        service.setStorage(args[0]);
-        service.init(args[1].equals("new"));
-        BulkLoader loader = new BulkLoader(service);
-        loader.recursiveLoad(args[2], args[3]);
-        service.createSnapshot("main");
-    }
-    
-    /**
      * Create a new one.
+     */
+    public BulkLoader()
+    {
+    }
+
+    /**
+     * Set the AVMService.
      * @param service
      */
-    public BulkLoader(AVMService service)
+    public void setAvmService(AVMService service)
     {
         fService = service;
     }

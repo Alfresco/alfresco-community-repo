@@ -32,8 +32,9 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
     {
         try
         {
-            int n = 1;
-            int m = 8;
+            int n = 8;
+            int m = 1;
+            fReaper.setInactiveBaseSleep(30000);
             for (int i = 0; i < n; i++)
             {
                 fService.createDirectory("main:/", "d" + i);
@@ -87,7 +88,8 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
          */
         public Loader(String source, String destination, int count)
         {
-            fLoader = new BulkLoader(fService);
+            fLoader = new BulkLoader();
+            fLoader.setAvmService(fService);
             fSource = source;
             fDestination = destination;
             fCount = count;

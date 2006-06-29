@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+	"http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+	<bean id="hibernateHelper" class="org.alfresco.repo.avm.hibernate.HibernateHelper"
+		destroy-method="shutdown">
+	</bean>
+	<bean id="orphanReaper" class="org.alfresco.repo.avm.OrphanReaper"
+		init-method="init" destroy-method="shutDown" depends-on="avmService">
+		<property name="inactiveBaseSleep">
+			<value>4000</value>
+		</property>
+		<property name="activeBaseSleep">
+			<value>1000</value>
+		</property>
+		<property name="batchSize">
+		    <value>50</value>
+		</property>
+		<property name="hibernateHelper">
+			<ref bean="hibernateHelper"/>
+		</property>
+	</bean>
+	<bean id="avmService" class="org.alfresco.repo.avm.AVMServiceImpl"
+		init-method="init">
+		<property name="storage">
+			<value>build/test-results/storage</value>
+		</property>
+		<property name="createTables">
+			<value>true</value>
+		</property>
+		<property name="hibernateHelper">
+			<ref bean="hibernateHelper"/>
+		</property>
+	</bean>
+</beans>

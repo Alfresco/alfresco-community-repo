@@ -21,44 +21,66 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 /**
+ * Like 83.7 gazillion others, a HibernateHelper. This will go away.
  * @author britt
  */
 public class HibernateHelper
 {
-    private static Configuration fgCfg = null;
-    private static SessionFactory fgFactory = null;
+    /**
+     * The single instance of this.
+     */
+    private static HibernateHelper fgInstance = null;
     
-    static 
+    /**
+     * The Hibernate Configuration object.
+     */
+    private Configuration fCfg;
+    
+    /**
+     * The Hibernate SessionFactory;
+     */
+    private SessionFactory fFactory;
+
+    public HibernateHelper()
     {
-        Reset();
+        fCfg = null;
+        fFactory = null;
+        setup();
+        fgInstance = this;
     }
     
-    public static SessionFactory GetSessionFactory()
+    public SessionFactory getSessionFactory()
     {
-        return fgFactory;
+        return fFactory;
     }
     
-    public static Configuration GetConfiguration()
+    public Configuration getConfiguration()
     {
-        return fgCfg;
+        return fCfg;
     }
     
-    public static void Reset()
+    public void setup()
     {
-        if (fgFactory != null)
-        {
-            fgFactory.close();
-        }
         try
         {
-            fgCfg = new Configuration();
-            fgCfg.configure();
-            fgFactory = fgCfg.buildSessionFactory();
+            fCfg = new Configuration();
+            fCfg.configure();
+            fFactory = fCfg.buildSessionFactory();
         }
         catch (Throwable t)
         {
             t.printStackTrace(System.err);
             System.exit(1);
         }
+    }
+    
+    public void shutdown()
+    {
+        fFactory.close();
+    }
+    
+    public static HibernateHelper GetInstance()
+    {
+        return fgInstance;
     }
 }

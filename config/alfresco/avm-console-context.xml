@@ -31,7 +31,7 @@
 			<value>build/storage</value>
 		</property>
 		<property name="createTables">
-			<value>true</value>
+			<value>false</value>
 		</property>
 		<property name="hibernateHelper">
 			<ref bean="hibernateHelper"/>

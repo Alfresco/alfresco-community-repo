@@ -398,6 +398,17 @@ public class AVMInteractiveConsole
                     }
                     reader.close();
                 }
+                else if (command[0].equals("ca"))
+                {
+                    if (command.length != 5)
+                    {
+                        System.err.println("Syntax error.");
+                    }
+                    AVMNodeDescriptor left = fService.lookup(Integer.parseInt(command[2]), command[1]);
+                    AVMNodeDescriptor right = fService.lookup(Integer.parseInt(command[4]), command[3]);
+                    AVMNodeDescriptor ca = fService.getCommonAncestor(left, right);
+                    System.out.println(ca);
+                }
                 else if (command[0].equals("exit"))
                 {
                     done = true;

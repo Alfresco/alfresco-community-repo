@@ -533,7 +533,7 @@ public class AVMServiceImpl implements AVMService
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMService#createSnapshot(java.util.List)
      */
-    public void createSnapshot(final List<String> repositories)
+    public List<Integer> createSnapshot(final List<String> repositories)
     {
         if (repositories == null)
         {
@@ -541,20 +541,23 @@ public class AVMServiceImpl implements AVMService
         }
         class HTxnCallback implements HibernateTxnCallback
         {
+            public List<Integer> versionIDs;
+            
             public void perform(Session session)
             {
                 fSuperRepository.setSession(session);
-                fSuperRepository.createSnapshot(repositories);
+                versionIDs = fSuperRepository.createSnapshot(repositories);
             }
         }
         HTxnCallback doit = new HTxnCallback();
         fTransaction.perform(doit, true);
+        return doit.versionIDs;
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMService#createSnapshot(java.lang.String)
      */
-    public void createSnapshot(final String repository)
+    public int createSnapshot(final String repository)
     {
         if (repository == null)
         {
@@ -562,14 +565,17 @@ public class AVMServiceImpl implements AVMService
         }
         class HTxnCallback implements HibernateTxnCallback
         {
+            public int versionID;
+            
             public void perform(Session session)
             {
                 fSuperRepository.setSession(session);
-                fSuperRepository.createSnapshot(repository);
+                versionID = fSuperRepository.createSnapshot(repository);
             }
         }
         HTxnCallback doit = new HTxnCallback();
         fTransaction.perform(doit, true);
+        return doit.versionID;
     }
 
     /* (non-Javadoc)
@@ -906,4 +912,36 @@ public class AVMServiceImpl implements AVMService
         HTxnCallback doit = new HTxnCallback();
         fTransaction.perform(doit, false);
     }
- }
+
+    /**
+     * Get the common ancestor of two nodes if one exists.
+     * @param left The first node.
+     * @param right The second node.
+     * @return The common ancestor. There are four possible results. Null means
+     * that there is no common ancestor.  Left returned means that left is strictly
+     * an ancestor of right.  Right returned means that right is strictly an
+     * ancestor of left.  Any other non null return is the common ancestor and
+     * indicates that left and right are in conflict.
+     */
+    public AVMNodeDescriptor getCommonAncestor(final AVMNodeDescriptor left,
+                                               final AVMNodeDescriptor right)
+    {
+        if (left == null || right == null)
+        {
+            throw new AVMBadArgumentException("Null node descriptor.");
+        }
+        class HTxnCallback implements HibernateTxnCallback
+        {
+            public AVMNodeDescriptor ancestor;
+            
+            public void perform(Session session)
+            {
+                fSuperRepository.setSession(session);
+                ancestor = fSuperRepository.getCommonAncestor(left, right);
+            }
+        }
+        HTxnCallback doit = new HTxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.ancestor;
+    }
+}

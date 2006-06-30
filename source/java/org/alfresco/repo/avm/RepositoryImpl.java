@@ -125,9 +125,10 @@ class RepositoryImpl implements Repository, Serializable
 
     /**
      * Snapshot this repository.  This creates a new version record.
+     * @return The version id of the new snapshot.
      */
     @SuppressWarnings("unchecked")
-    public void createSnapshot()
+    public int createSnapshot()
     {
         // If the root isn't new, we can't take a snapshot since nothing has changed.
         if (!fRoot.getIsNew())
@@ -151,6 +152,7 @@ class RepositoryImpl implements Repository, Serializable
         fSuper.getSession().save(versionRoot);
         // Increment the version id.
         fNextVersionID++;
+        return fNextVersionID - 1;
     }
 
     /**

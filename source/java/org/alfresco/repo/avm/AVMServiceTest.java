@@ -1851,13 +1851,13 @@ public class AVMServiceTest extends AVMServiceTestBase
             loader.setAvmService(fService);
             loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
             times.add(System.currentTimeMillis());
-            fService.createSnapshot("main");
+            assertEquals(1, fService.createSnapshot("main"));
             loader.recursiveLoad("source/java/org/alfresco/repo/action", "main:/");
             times.add(System.currentTimeMillis());
-            fService.createSnapshot("main");
+            assertEquals(2, fService.createSnapshot("main"));
             loader.recursiveLoad("source/java/org/alfresco/repo/audit", "main:/");
             times.add(System.currentTimeMillis());
-            fService.createSnapshot("main");
+            assertEquals(3, fService.createSnapshot("main"));
             assertEquals(1, fService.getRepositoryVersions("main", null, new Date(times.get(0))).size());
             assertEquals(3, fService.getRepositoryVersions("main", new Date(times.get(0)), null).size());
             assertEquals(2, fService.getRepositoryVersions("main", new Date(times.get(1)),
@@ -1941,6 +1941,32 @@ public class AVMServiceTest extends AVMServiceTestBase
             // layered directories.
             fService.setOpacity("main:/layer/e/f", true);
             System.out.println(recursiveList("main", -1, true));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
+     * Test common ancestor.
+     */
+    public void testCommonAncestor()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createBranch(-1, "main:/a", "main:/", "branch");
+            fService.createSnapshot("main");
+            AVMNodeDescriptor ancestor = fService.lookup(-1, "main:/a/b/c/foo");
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.getFileOutputStream("main:/branch/b/c/foo").close();
+            fService.createSnapshot("main");
+            AVMNodeDescriptor main = fService.lookup(-1, "main:/a/b/c/foo");
+            AVMNodeDescriptor branch = fService.lookup(-1, "main:/branch/b/c/foo");
+            AVMNodeDescriptor ca = fService.getCommonAncestor(main, branch);
+            assertEquals(ancestor, ca);
         }
         catch (Exception e)
         {

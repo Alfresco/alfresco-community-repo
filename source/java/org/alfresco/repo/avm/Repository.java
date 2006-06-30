@@ -46,8 +46,9 @@ interface Repository
      * Snapshots this repository.  This sets all nodes in the
      * the repository to the should be copied state, and creates
      * a new version root.
+     * @return The version id of the newly created snapshot.
      */
-    public void createSnapshot();
+    public int createSnapshot();
 
     /**
      * Create a new directory.

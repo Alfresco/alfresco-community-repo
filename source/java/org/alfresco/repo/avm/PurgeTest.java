@@ -17,7 +17,6 @@
 
 package org.alfresco.repo.avm;
 
-import org.alfresco.repo.avm.hibernate.HibernateHelper;
 import org.alfresco.repo.avm.util.BulkLoader;
 
 /**

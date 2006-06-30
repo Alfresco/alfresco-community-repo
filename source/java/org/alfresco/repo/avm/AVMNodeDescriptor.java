@@ -393,4 +393,33 @@ public class AVMNodeDescriptor
                 throw new AVMException("Internal Error.");
         }
     }
+
+    /**
+     * Equals override.
+     * @param obj
+     * @return Equality.
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (!(obj instanceof AVMNodeDescriptor))
+        {
+            return false;
+        }
+        return fID == ((AVMNodeDescriptor)obj).fID;
+    }
+
+    /**
+     * Hashcode override.
+     * @return The objid as hashcode.
+     */
+    @Override
+    public int hashCode()
+    {
+        return (int)fID;
+    }
 }

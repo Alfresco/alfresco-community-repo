@@ -414,28 +414,32 @@ class SuperRepository
     /**
      * Snapshot the given repositories.
      * @param repositories The list of repository name to snapshot.
+     * @return A List of version ids for each newly snapshotted repository.
      */
-    public void createSnapshot(List<String> repositories)
+    public List<Integer> createSnapshot(List<String> repositories)
     {
+        List<Integer> result = new ArrayList<Integer>();
         for (String repName : repositories)
         {
             Repository repo = getRepositoryByName(repName, true);
             fSession.get().lock(repo, LockMode.UPGRADE);
 //            fSession.get().lock(repo, LockMode.UPGRADE);
-            repo.createSnapshot();
+            result.add(repo.createSnapshot());
         }
+        return result;
     }
 
     /**
      * Create a snapshot of a single repository.
      * @param repository The name of the repository.
+     * @return The version id of the newly snapshotted repository.
      */
-    public void createSnapshot(String repository)
+    public int createSnapshot(String repository)
     {
         Repository repo = getRepositoryByName(repository, true);
         fSession.get().lock(repo, LockMode.UPGRADE);
 //        fSession.get().lock(repo, LockMode.UPGRADE);
-        repo.createSnapshot();
+        return repo.createSnapshot();
     }
 
     /**
@@ -890,6 +894,52 @@ class SuperRepository
         return getRepositoryByName(name, false).getDescriptor();
     }
     
+    /**
+     * Get the common ancestor of two nodes if one exists. Unfortunately
+     * this is a quadratic problem, taking time proportional to the product
+     * of the lengths of the left and right history chains.
+     * @param left The first node.
+     * @param right The second node.
+     * @return The common ancestor. There are four possible results. Null means
+     * that there is no common ancestor.  Left returned means that left is strictly
+     * an ancestor of right.  Right returned means that right is strictly an
+     * ancestor of left.  Any other non null return is the common ancestor and
+     * indicates that left and right are in conflict.
+     */
+    public AVMNodeDescriptor getCommonAncestor(AVMNodeDescriptor left,
+                                               AVMNodeDescriptor right)
+    {
+        AVMNode lNode = (AVMNode)fSession.get().get(AVMNodeImpl.class, left.getId());
+        AVMNode rNode = (AVMNode)fSession.get().get(AVMNodeImpl.class, right.getId());
+        if (lNode == null || rNode == null)
+        {
+            throw new AVMNotFoundException("Node not found.");
+        }
+        List<AVMNode> leftHistory = new ArrayList<AVMNode>();
+        while (lNode != null)
+        {
+            leftHistory.add(lNode);
+            lNode = lNode.getAncestor();
+        }
+        List<AVMNode> rightHistory = new ArrayList<AVMNode>();
+        while (rNode != null)
+        {
+            rightHistory.add(rNode);
+            rNode = rNode.getAncestor();
+        }
+        for (AVMNode l : leftHistory)
+        {
+            for (AVMNode r : rightHistory)
+            {
+                if (l.equals(r))
+                {
+                    return l.getDescriptor("", "", "");
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Get the single instance of SuperRepository.
      * @return The single instance.

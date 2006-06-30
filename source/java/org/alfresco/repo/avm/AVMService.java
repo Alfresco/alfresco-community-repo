@@ -172,13 +172,13 @@ public interface AVMService
      * semantics.
      * @param repositories The names of the repositories to snapshot.
      */
-    public void createSnapshot(List<String> repositories);
+    public List<Integer> createSnapshot(List<String> repositories);
     
     /**
      * Snapshot the given repository.
      * @param repository The name of the repository to snapshot.
      */
-    public void createSnapshot(String repository);
+    public int createSnapshot(String repository);
     
     /**
      * Get the set of versions in a Repository
@@ -276,4 +276,17 @@ public interface AVMService
      * @param path The path to the layered directory.
      */
     public void setOpacity(String path, boolean opacity);
+    
+    /**
+     * Get the common ancestor of two nodes if one exists.
+     * @param left The first node.
+     * @param right The second node.
+     * @return The common ancestor. There are four possible results. Null means
+     * that there is no common ancestor.  Left returned means that left is strictly
+     * an ancestor of right.  Right returned means that right is strictly an
+     * ancestor of left.  Any other non null return is the common ancestor and
+     * indicates that left and right are in conflict.
+     */
+    public AVMNodeDescriptor getCommonAncestor(AVMNodeDescriptor left,
+                                               AVMNodeDescriptor right);
 }

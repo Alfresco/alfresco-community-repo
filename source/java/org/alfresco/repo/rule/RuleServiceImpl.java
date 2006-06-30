@@ -67,7 +67,8 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     private static final String KEY_RULES_EXECUTED = "RuleServiceImpl.ExecutedRules";
     
     /** qname of assoc to rules */
-    private QName ASSOC_NAME_RULES = QName.createQName(RuleModel.RULE_MODEL_URI, "rules");
+    private String ASSOC_NAME_RULES_PREFIX = "rules";
+    private RegexQNamePattern ASSOC_NAME_RULES_REGEX = new RegexQNamePattern(RuleModel.RULE_MODEL_URI, "^" + ASSOC_NAME_RULES_PREFIX + ".*");
     
     /**
      * The logger
@@ -325,7 +326,7 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
                     
                     // Get the rules for this node
                     List<ChildAssociationRef> ruleChildAssocRefs = 
-                        this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES);
+                        this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
                     for (ChildAssociationRef ruleChildAssocRef : ruleChildAssocRefs)
                     {
                         // Create the rule and add to the list
@@ -366,7 +367,7 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
                 {
                     // Get the rules for this node
                     List<ChildAssociationRef> ruleChildAssocRefs = 
-                        this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES);
+                        this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
                     
                     ruleCount = ruleChildAssocRefs.size();
                 }
@@ -531,7 +532,7 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     private Rule createRule(NodeRef owningNodeRef, NodeRef ruleNodeRef)
 	{
     	// Get the rule properties
-		Map<QName, Serializable> props = this.nodeService.getProperties(ruleNodeRef);
+		Map<QName, Serializable> props = this.runtimeNodeService.getProperties(ruleNodeRef);
 		
     	// Create the rule
     	String ruleTypeName = (String)props.get(RuleModel.PROP_RULE_TYPE);    	
@@ -590,7 +591,7 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
 			ruleNodeRef = this.nodeService.createNode(
 					getSavedRuleFolderRef(nodeRef),
 					ContentModel.ASSOC_CONTAINS,
-					ASSOC_NAME_RULES,
+					QName.createQName(RuleModel.RULE_MODEL_URI, ASSOC_NAME_RULES_PREFIX + GUID.generate()),
 					RuleModel.TYPE_RULE,
 					props).getChildRef();
 			
@@ -643,7 +644,7 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
             {
         		List<ChildAssociationRef> ruleChildAssocs = this.nodeService.getChildAssocs(
                                                                             folder, 
-                                                                            RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES);
+                                                                            RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
         		for (ChildAssociationRef ruleChildAssoc : ruleChildAssocs)
     			{
     				this.nodeService.removeChild(folder, ruleChildAssoc.getChildRef());
@@ -666,30 +667,25 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
             this.disabledRules.contains(rule) == false)
         {
     		PendingRuleData pendingRuleData = new PendingRuleData(actionableNodeRef, actionedUponNodeRef, rule, executeAtEnd);
-            Set<ExecutedRuleData> executedRules =
-                    (Set<ExecutedRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_EXECUTED);
-    		
-    		if (executedRules == null || executedRules.contains(new ExecutedRuleData(actionableNodeRef, rule)) == false)
-    		{
-                Set<PendingRuleData> pendingRules =
-                    (Set<PendingRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_PENDING);
-    			if (pendingRules == null)
-    			{
-                    // bind pending rules to the current transaction
-    				pendingRules = new HashSet<PendingRuleData>();
-                    AlfrescoTransactionSupport.bindResource(KEY_RULES_PENDING, pendingRules);
-                    // bind the rule transaction listener
-                    AlfrescoTransactionSupport.bindListener(this.ruleTransactionListener);
-                    
-                    if (logger.isDebugEnabled() == true)
-                    {
-                        logger.debug("Rule '" + rule.getTitle() + "' has been added pending execution to action upon node '" + actionedUponNodeRef.getId() + "'");
-                    }
-    			}
-    			
-                // Prevent hte same rule being executed more than one in the same transaction                
-    			pendingRules.add(pendingRuleData);		
-    		}
+
+            Set<PendingRuleData> pendingRules =
+                (Set<PendingRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_PENDING);
+			if (pendingRules == null)
+			{
+                // bind pending rules to the current transaction
+				pendingRules = new HashSet<PendingRuleData>();
+                AlfrescoTransactionSupport.bindResource(KEY_RULES_PENDING, pendingRules);
+                // bind the rule transaction listener
+                AlfrescoTransactionSupport.bindListener(this.ruleTransactionListener);
+                
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Rule '" + rule.getTitle() + "' has been added pending execution to action upon node '" + actionedUponNodeRef.getId() + "'");
+                }
+			}
+			
+            // Prevent hte same rule being executed more than one in the same transaction                
+			pendingRules.add(pendingRuleData);		
         }
         else
         {
@@ -699,12 +695,18 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
             }
         }
 	}
-
+	
+	
+	
 	/**
 	 * @see org.alfresco.repo.rule.RuleService#executePendingRules()
 	 */
 	public void executePendingRules() 
 	{
+		if (logger.isDebugEnabled() == true)
+		{
+			logger.debug("Creating the executed rules list");
+		}
         AlfrescoTransactionSupport.bindResource(KEY_RULES_EXECUTED, new HashSet<ExecutedRuleData>());
         try
         {
@@ -718,6 +720,10 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
         finally
         {
             AlfrescoTransactionSupport.unbindResource(KEY_RULES_EXECUTED);
+            if (logger.isDebugEnabled() == true)
+			{
+				logger.debug("Unbinding resource");
+			}
         }
 	}     
     
@@ -762,22 +768,121 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
 	@SuppressWarnings("unchecked")
     private void executePendingRule(PendingRuleData pendingRule) 
 	{
-		NodeRef actionableNodeRef = pendingRule.getActionableNodeRef();
+		Set<ExecutedRuleData> executedRules =
+               (Set<ExecutedRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_EXECUTED);
+    
 		NodeRef actionedUponNodeRef = pendingRule.getActionedUponNodeRef();
 		Rule rule = pendingRule.getRule();
-	      
-		// Evaluate the condition
-	    if (this.actionService.evaluateAction(rule, actionedUponNodeRef) == true)
-	    {
-            // Add the rule to the executed rule list
-            // (do this before this is executed to prevent rules being added to the pending list) 
-            Set<ExecutedRuleData> executedRules =
-                    (Set<ExecutedRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_EXECUTED);
-            executedRules.add(new ExecutedRuleData(actionableNodeRef, rule));
-            
-			// Execute the rule
-            this.actionService.executeAction(rule, actionedUponNodeRef);
-	    }
+		
+		if (executedRules == null || canExecuteRule(executedRules, actionedUponNodeRef, rule) == true) 
+		{
+			// Evaluate the condition
+		    if (this.actionService.evaluateAction(rule, actionedUponNodeRef) == true)
+		    {
+	            // Add the rule to the executed rule list
+	            // (do this before this is executed to prevent rules being added to the pending list) 
+	            executedRules.add(new ExecutedRuleData(actionedUponNodeRef, rule));
+	            if (logger.isDebugEnabled() == true)
+				{
+					logger.debug(" ... Adding rule (" + rule.getTitle() + ") and nodeRef (" + actionedUponNodeRef.getId() + ") to executed list");
+				}
+	            
+				// Execute the rule
+	            this.actionService.executeAction(rule, actionedUponNodeRef);
+		    }
+		}
+	}
+	
+	/**
+	 * Determines whether the rule can be executed
+	 * 
+	 * @param executedRules
+	 * @param actionedUponNodeRef
+	 * @param rule
+	 * @return
+	 */
+	private boolean canExecuteRule(Set<ExecutedRuleData> executedRules, NodeRef actionedUponNodeRef, Rule rule)
+	{
+		boolean result = true;
+		
+		if (logger.isDebugEnabled() == true)
+		{
+			logger.debug(" >> Current executed items count = " + executedRules.size());
+		}
+		
+		if (executedRules != null)
+		{
+			if (executedRules.contains(new ExecutedRuleData(actionedUponNodeRef, rule)) == true)
+			{
+				if (logger.isDebugEnabled() == true)
+				{
+					logger.debug(" >> Already executed this rule (" + rule.getTitle()+ ") on this nodeRef (" + actionedUponNodeRef.getId() + ")");
+				}
+				result = false;
+			}
+			else
+			{
+				result = checkForCopy(executedRules, actionedUponNodeRef, rule);				
+			}
+		}
+		else
+		{
+			if (logger.isDebugEnabled() == true)
+			{
+				logger.debug(" >> Executed this rule (" + rule.getTitle()+ ") on (" + actionedUponNodeRef.getId() + ") executed rule is null");
+			}
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Checks to see if a copy exists in the executed rules list
+	 * 
+	 * @param executedRules
+	 * @param actionedUponNodeRef
+	 * @param rule
+	 * @return
+	 */
+	private boolean checkForCopy(Set<ExecutedRuleData> executedRules, NodeRef actionedUponNodeRef, Rule rule)
+	{
+		boolean result = true;
+		if (this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_COPIEDFROM) == true)
+		{
+			if (logger.isDebugEnabled() == true)
+			{
+				logger.debug(" >> Has the copied from aspect (" + actionedUponNodeRef.getId() + ")");
+			}
+			NodeRef copiedFrom = (NodeRef)this.nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_COPY_REFERENCE);
+			
+			if (logger.isDebugEnabled() == true && copiedFrom != null) {logger.debug(" >> Got the copedFrom nodeRef (" + copiedFrom.getId() + ")");};
+			
+			if (copiedFrom != null && executedRules.contains(new ExecutedRuleData(copiedFrom, rule)) == true)
+			{
+				if (logger.isDebugEnabled() == true)
+				{
+					logger.debug(" >> Already executed this rule (" + rule.getTitle()+ ") on this the copied from nodeRef (" + copiedFrom.getId() + ")");
+				}
+				return false;
+			}
+			else
+			{
+				if (logger.isDebugEnabled() == true)
+				{
+					logger.debug(" >> Executed this rule (" + rule.getTitle()+ ") on (" + actionedUponNodeRef.getId() + ") copiedFrom is not is list");
+					logger.debug("  > Checking copy");
+				}
+				result = checkForCopy(executedRules, copiedFrom, rule);
+			}
+		}
+		else
+		{
+			if (logger.isDebugEnabled() == true)
+			{
+				logger.debug(" >> Executed this rule (" + rule.getTitle()+ ") on (" + actionedUponNodeRef.getId() + ") no copied from aspect");
+			}
+		}
+		return result;
 	}
     
 	/**

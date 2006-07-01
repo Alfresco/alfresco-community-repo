@@ -28,7 +28,7 @@
 	<bean id="avmService" class="org.alfresco.repo.avm.AVMServiceImpl"
 		init-method="init">
 		<property name="storage">
-			<value>build/storage</value>
+			<value>/Users/britt/tomcat/alfresco/store</value>
 		</property>
 		<property name="createTables">
 			<value>false</value>
@@ -37,7 +37,7 @@
 			<ref bean="hibernateHelper"/>
 		</property>
 	</bean>
-	<bean id="interactiveConsole" class="org.alfresco.repo.avm.AVMInteractiveConsole">
+	<bean id="interactiveConsole" class="org.alfresco.repo.avm.AVMInterpreter">
 		<property name="avmService">
 			<ref bean="avmService"/>
 		</property>

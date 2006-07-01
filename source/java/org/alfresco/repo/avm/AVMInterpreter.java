@@ -1,0 +1,450 @@
+/*
+ * Copyright (C) 2006 Alfresco, Inc.
+ *
+ * Licensed under the Mozilla Public License version 1.1 
+ * with a permitted attribution clause. You may obtain a
+ * copy of the License at
+ *
+ *   http://www.alfresco.org/legal/license.txt
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License.
+ */
+
+package org.alfresco.repo.avm;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import org.alfresco.repo.avm.hibernate.HibernateHelper;
+import org.alfresco.repo.avm.util.BulkLoader;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.core.io.InputStreamResource;
+
+/**
+ * An interactive console for the AVM repository.
+ * @author britt
+ */
+public class AVMInterpreter
+{
+    /**
+     * The service interface.
+     */
+    private AVMService fService;
+
+    /**
+     * The reader for interaction.
+     */
+    private BufferedReader fIn;
+
+    /**
+     * The Bulk Loader.
+     */
+    private BulkLoader fLoader;
+
+    /**
+     * Main entry point.  
+     * Syntax: AVMInteractiveConsole storage (new|old).
+     */
+    public static void main(String[] args)
+    {
+        FileSystemXmlApplicationContext context = 
+            new FileSystemXmlApplicationContext("config/alfresco/avm-console-context.xml");
+        AVMInterpreter console = (AVMInterpreter)context.getBean("interactiveConsole");
+        console.rep();
+        context.close();
+    }
+
+    /**
+     * Make up a new console.
+     */
+    public AVMInterpreter()
+    {
+        fIn = new BufferedReader(new InputStreamReader(System.in));
+    }
+
+    /**
+     * Set the AVMService.
+     * @param service The AVMService instance.
+     */
+    public void setAvmService(AVMService service)
+    {
+        fService = service;
+    }
+    
+    /**
+     * Set the bulk loader.
+     * @param loader
+     */
+    public void setBulkLoader(BulkLoader loader)
+    {
+        fLoader = loader;
+    }
+    
+    /**
+     * A Read-Eval-Print loop.
+     */
+    public void rep()
+    {
+        while (true)
+        {
+            System.out.print("> ");
+            try
+            {
+                String line = fIn.readLine();
+                if (line.equals("exit"))
+                {
+                    return;
+                }
+                System.out.println(interpretCommand(line, fIn));
+            }
+            catch (IOException ie)
+            {
+                ie.printStackTrace(System.err);
+                System.exit(2);
+            }
+        }
+    }
+
+    public String interpretCommand(String line, BufferedReader in)
+    {
+        String[] command = line.split("\\s+");
+        if (command.length == 0)
+        {
+            command = new String[1];
+            command[0] = line;
+        }
+        try
+        {
+            ByteArrayOutputStream bout = new ByteArrayOutputStream();
+            PrintStream out = new PrintStream(bout);
+            if (command[0].equals("ls"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                AVMNodeDescriptor desc = fService.lookup(Integer.parseInt(command[2]),
+                                                         command[1]);
+                Map<String, AVMNodeDescriptor> listing =
+                    fService.getDirectoryListing(desc);
+                for (String name : listing.keySet())
+                {
+                    out.println(name + " " + listing.get(name));
+                }
+            }
+            else if (command[0].equals("lsr"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                AVMNodeDescriptor desc = fService.lookup(Integer.parseInt(command[2]),
+                                                         command[1]);
+                recursiveList(out, desc, 0);
+            }
+            else if (command[0].equals("lsrep"))
+            {
+                List<RepositoryDescriptor> repos = fService.getRepositories();
+                for (RepositoryDescriptor repo : repos)
+                {
+                    out.println(repo);
+                }
+            }
+            else if (command[0].equals("lsver"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                List<VersionDescriptor> listing = fService.getRepositoryVersions(command[1]);
+                for (VersionDescriptor desc : listing)
+                {
+                    out.println(desc);
+                }
+            }
+            else if (command[0].equals("mkrep"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                fService.createRepository(command[1]);
+            }
+            else if (command[0].equals("load"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                fLoader.recursiveLoad(command[1], command[2]);
+            }
+            else if (command[0].equals("mkdir"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                fService.createDirectory(command[1], command[2]);
+            }
+            else if (command[0].equals("mkbr"))
+            {
+                if (command.length != 5)
+                {
+                    return "Syntax Error.";
+                }
+                fService.createBranch(Integer.parseInt(command[4]), command[1], command[2], command[3]);
+            }
+            else if (command[0].equals("mkldir"))
+            {
+                if (command.length != 4)
+                {
+                    return "Syntax Error.";
+                }
+                fService.createLayeredDirectory(command[1], command[2], command[3]);
+            }
+            else if (command[0].equals("rename"))
+            {
+                if (command.length != 5)
+                {
+                    return "Syntax Error.";
+                }
+                fService.rename(command[1], command[2], command[3], command[4]);
+            }
+            else if (command[0].equals("cp"))
+            {
+                if (command.length != 5)
+                {
+                    return "Syntax Error.";
+                }
+                InputStream fin = fService.getFileInputStream(Integer.parseInt(command[2]), command[1]);
+                OutputStream fout = fService.createFile(command[3], command[4]);
+                byte [] buff = new byte[8192];
+                int read;
+                while ((read = fin.read(buff)) != -1)
+                {
+                    fout.write(buff, 0, read);
+                }
+                fin.close();
+                fout.close();
+            }
+            else if (command[0].equals("retarget"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                fService.retargetLayeredDirectory(command[1], command[2]);
+            }
+            else if (command[0].equals("mkprimary"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                fService.makePrimary(command[1]);
+            }
+            else if (command[0].equals("mklfile"))
+            {
+                if (command.length != 4)
+                {
+                    return "Syntax Error.";
+                }
+                fService.createLayeredFile(command[1], command[2], command[3]);
+            }
+            else if (command[0].equals("snap"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                fService.createSnapshot(command[1]);
+            }
+            else if (command[0].equals("cat"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                BufferedReader reader = 
+                    new BufferedReader(
+                        new InputStreamReader(fService.getFileInputStream(Integer.parseInt(command[2]), 
+                                                                          command[1])));
+                String l;
+                while ((l = reader.readLine()) != null)
+                {
+                    out.println(l);
+                }
+                reader.close();
+            }
+            else if (command[0].equals("rm"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                fService.removeNode(command[1], command[2]);
+            }
+            else if (command[0].equals("rmrep"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                fService.purgeRepository(command[1]);
+            }
+            else if (command[0].equals("rmver"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                fService.purgeVersion(Integer.parseInt(command[2]), command[1]);
+            }
+            else if (command[0].equals("write"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                PrintStream ps = 
+                    new PrintStream(fService.getFileOutputStream(command[1]));
+                String l;
+                while (!(l = in.readLine()).equals(""))
+                {
+                    ps.println(l);
+                }
+                ps.close();
+            }
+            else if (command[0].equals("create"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                PrintStream ps = 
+                    new PrintStream(fService.createFile(command[1], command[2]));
+                String l;
+                while (!(l = in.readLine()).equals(""))
+                {
+                    ps.println(l);
+                }
+                ps.close();
+            }
+            else if (command[0].equals("stat"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                AVMNodeDescriptor desc = fService.lookup(Integer.parseInt(command[2]), command[1]);
+                out.println(desc);
+                out.println("Version: " + desc.getVersionID());
+                out.println("Owner: " + desc.getOwner());
+                out.println("Mod Time: " + new Date(desc.getModDate()));
+            }
+            else if (command[0].equals("history"))
+            {
+                if (command.length != 4)
+                {
+                    return "Syntax Error.";
+                }
+                AVMNodeDescriptor desc = fService.lookup(Integer.parseInt(command[2]), command[1]);
+                List<AVMNodeDescriptor> history = fService.getHistory(desc, Integer.parseInt(command[3]));
+                for (AVMNodeDescriptor node : history)
+                {
+                    out.println(node);
+                    out.println("Version: " + desc.getVersionID());
+                    out.println("Owner: " + desc.getOwner());
+                    out.println("Mod Time: " + new Date(desc.getModDate()));
+                }
+            }
+            else if (command[0].equals("catver"))
+            {
+                if (command.length != 4)
+                {
+                    return "Syntax Error.";
+                }
+                AVMNodeDescriptor desc = fService.lookup(Integer.parseInt(command[2]), command[1]);
+                List<AVMNodeDescriptor> history = fService.getHistory(desc, Integer.parseInt(command[3]));
+                if (history.size() == 0)
+                {
+                    return "No History.";
+                }
+                BufferedReader reader =
+                    new BufferedReader(
+                        new InputStreamReader(
+                            fService.getFileInputStream(history.get(history.size() - 1))));
+                String l;
+                while ((l = reader.readLine()) != null)
+                {
+                    out.println(l);
+                }
+                reader.close();
+            }
+            else if (command[0].equals("ca"))
+            {
+                if (command.length != 5)
+                {
+                    return "Syntax Error.";
+                }
+                AVMNodeDescriptor left = fService.lookup(Integer.parseInt(command[2]), command[1]);
+                AVMNodeDescriptor right = fService.lookup(Integer.parseInt(command[4]), command[3]);
+                AVMNodeDescriptor ca = fService.getCommonAncestor(left, right);
+                out.println(ca);
+            }
+            else
+            {
+                return "Syntax Error.";
+            }
+            out.flush();
+            String retVal = new String(bout.toByteArray());
+            out.close();
+            return retVal;
+        }
+        catch (Exception e)
+        {
+            return e.toString();
+        }
+    }
+
+    private void recursiveList(PrintStream out, AVMNodeDescriptor dir, int indent)
+    {
+        Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(dir);
+        for (String name : listing.keySet())
+        {
+            AVMNodeDescriptor child = listing.get(name);
+            for (int i = 0; i < indent; i++)
+            {
+                out.print(' ');
+            }
+            out.println(name + " " + child);
+            if (child.isDirectory())
+            {
+                recursiveList(out, child, indent + 2);
+            }
+        }
+    }
+}
+                    
+
+
+                

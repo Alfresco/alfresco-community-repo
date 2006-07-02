@@ -19,8 +19,6 @@ package org.alfresco.repo.avm;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -30,14 +28,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.avm.hibernate.HibernateHelper;
 import org.alfresco.repo.avm.util.BulkLoader;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.xml.XmlBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
-import org.springframework.core.io.InputStreamResource;
 
 /**
  * An interactive console for the AVM repository.
@@ -124,6 +116,12 @@ public class AVMInterpreter
         }
     }
 
+    /**
+     * Interpret a single command using the BufferedReader passed in for any data needed.
+     * @param line The unparsed command
+     * @param in A Reader to be used for commands that need input data.
+     * @return The textual output of the command.
+     */
     public String interpretCommand(String line, BufferedReader in)
     {
         String[] command = line.split("\\s+");
@@ -422,6 +420,7 @@ public class AVMInterpreter
         }
         catch (Exception e)
         {
+            e.printStackTrace(System.err);
             return e.toString();
         }
     }

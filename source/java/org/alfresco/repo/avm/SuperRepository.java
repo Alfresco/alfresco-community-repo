@@ -242,6 +242,7 @@ class SuperRepository
         dstNode.setVersionID(dstRepo.getNextVersionID());
         dstNode.setAncestor(srcNode);
         dirNode.putChild(name, dstNode);
+        dirNode.updateModTime();
     }
     
     /**
@@ -392,8 +393,10 @@ class SuperRepository
             dstNode = new PlainFileNodeImpl((PlainFileNode)srcNode, dstRepo);
         }
         srcDir.removeChild(srcName);
+        srcDir.updateModTime();
         dstNode.setVersionID(dstRepo.getNextVersionID());
         dstDir.putChild(dstName, dstNode);
+        dstDir.updateModTime();
         dstNode.setAncestor(srcNode);
     }
 

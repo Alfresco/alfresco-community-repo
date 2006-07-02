@@ -29,6 +29,7 @@ import org.alfresco.repo.avm.SuperRepository;
 import org.alfresco.repo.avm.hibernate.HibernateHelper;
 import org.alfresco.repo.avm.hibernate.HibernateTxn;
 import org.alfresco.repo.avm.hibernate.HibernateTxnCallback;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 
@@ -99,29 +100,50 @@ public class AVMServiceImpl implements AVMService
             se.create(false, true);
             File storage = new File(fStorage);
             storage.mkdirs();
-            fNodeIssuer = new Issuer(fStorage + File.separator + "node", 0L);
-            fContentIssuer = new Issuer(fStorage + File.separator + "content", 0L);
-            fLayerIssuer = new Issuer(fStorage + File.separator + "layer", 0L);
+            fNodeIssuer = new Issuer(0L);
+            fContentIssuer = new Issuer(0L);
+            fLayerIssuer = new Issuer(0L);
             fSuperRepository = new SuperRepository(fNodeIssuer,
-                                                       fContentIssuer,
-                                                       fLayerIssuer,
-                                                       fStorage);
-            createRepository("main");
+                                                   fContentIssuer,
+                                                   fLayerIssuer,
+                                                   fStorage);
+            try
+            {
+                createRepository("main");
+            }
+            catch (Exception e)
+            {
+                // TODO Log this and abort in some useful way.
+            }
         }       
         else
         {
             try
             {
-                fNodeIssuer = new Issuer(fStorage + File.separator + "node");
-                fContentIssuer = new Issuer(fStorage + File.separator + "content");
-                fLayerIssuer = new Issuer(fStorage + File.separator + "layer");
+                fTransaction.perform(
+                new HibernateTxnCallback()
+                {
+                    public void perform(Session sess)
+                    {
+                        Query query = sess.createQuery("select max(an.id) from AVMNodeImpl an");
+                        Long val = (Long)query.uniqueResult();
+                        fNodeIssuer = new Issuer(val == null ? 0L : val + 1L);
+                        query = sess.createQuery("select max(fc.id) from FileContentImpl fc");
+                        val = (Long)query.uniqueResult();
+                        fContentIssuer = new Issuer(val == null ? 0L : val + 1L);
+                        query = sess.createQuery("select max(an.layerID) from AVMNodeImpl an");
+                        val = (Long)query.uniqueResult();
+                        fLayerIssuer = new Issuer(val == null ? 0L : val + 1L);
+                    }
+                }, false);
                 fSuperRepository = new SuperRepository(fNodeIssuer,
-                                                           fContentIssuer,
-                                                           fLayerIssuer,
-                                                           fStorage);
+                                                       fContentIssuer,
+                                                       fLayerIssuer,
+                                                       fStorage);
             }
             catch (Exception e)
             {
+                e.printStackTrace(System.err);
                 // TODO Log this and abort in some useful way.
             }
         }

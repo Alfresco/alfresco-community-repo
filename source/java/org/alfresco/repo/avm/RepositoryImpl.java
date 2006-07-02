@@ -184,6 +184,7 @@ class RepositoryImpl implements Repository, Serializable
         }
         newDir.setVersionID(getNextVersionID());
         dir.putChild(name, newDir);
+        dir.updateModTime();
     }
 
     /**
@@ -218,6 +219,7 @@ class RepositoryImpl implements Repository, Serializable
             newDir.setLayerID(fSuper.issueLayerID());
         }
         dir.putChild(name, newDir);
+        dir.updateModTime();
         newDir.setVersionID(getNextVersionID());
     }
 
@@ -239,6 +241,7 @@ class RepositoryImpl implements Repository, Serializable
         PlainFileNodeImpl file = new PlainFileNodeImpl(this);
         file.setVersionID(getNextVersionID());
         dir.putChild(name, file);
+        file.updateModTime();
         return file.getContentForWrite().getOutputStream();
     }
 
@@ -261,6 +264,7 @@ class RepositoryImpl implements Repository, Serializable
         LayeredFileNodeImpl newFile =
             new LayeredFileNodeImpl(srcPath, this);
         dir.putChild(name, newFile);
+        dir.updateModTime();
         newFile.setVersionID(getNextVersionID());
     }
 
@@ -321,7 +325,8 @@ class RepositoryImpl implements Repository, Serializable
             throw new AVMWrongTypeException("Not a file: " + path);
         }
         FileNode file = (FileNode)node;
-        FileContent content = file.getContentForWrite(); 
+        FileContent content = file.getContentForWrite();
+        file.updateModTime();
         return content.getOutputStream();
     }
 
@@ -355,6 +360,7 @@ class RepositoryImpl implements Repository, Serializable
         if (write)
         {
             content = file.getContentForWrite();
+            file.updateModTime();
         }
         else
         {
@@ -379,6 +385,7 @@ class RepositoryImpl implements Repository, Serializable
             throw new AVMNotFoundException("Does not exist: " + name);
         }
         dir.removeChild(name);
+        dir.updateModTime();
     }
 
     /**
@@ -396,6 +403,7 @@ class RepositoryImpl implements Repository, Serializable
             throw new AVMWrongTypeException("Not a layered directory: " + dirPath);
         }
         ((LayeredDirectoryNode)node).uncover(lPath, name);
+        node.updateModTime();
     }
 
     // TODO This is problematic.  As time goes on this returns
@@ -638,6 +646,7 @@ class RepositoryImpl implements Repository, Serializable
             throw new AVMException("Not in a layered context: " + path);
         }
         dir.turnPrimary(lPath);
+        dir.updateModTime();
     }
 
     /**
@@ -655,6 +664,7 @@ class RepositoryImpl implements Repository, Serializable
             throw new AVMException("Not in a layered context: " + path);
         }
         dir.retarget(lPath, target);
+        dir.updateModTime();
     }
     
     /**
@@ -854,5 +864,6 @@ class RepositoryImpl implements Repository, Serializable
             throw new AVMWrongTypeException("Not a LayeredDirectoryNode.");
         }
         ((LayeredDirectoryNode)node).setOpacity(opacity);
+        node.updateModTime();
     }
 }

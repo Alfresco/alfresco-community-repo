@@ -106,7 +106,6 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     {
         return fContent;
     }
-
     /**
      * Get content for writing.
      */

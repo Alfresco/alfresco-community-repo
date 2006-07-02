@@ -137,4 +137,9 @@ interface AVMNode
      * @return Whether this node is a root.
      */
     public boolean getIsRoot();
+    
+    /**
+     * Update the modification time of this node.
+     */
+    public void updateModTime();
 }

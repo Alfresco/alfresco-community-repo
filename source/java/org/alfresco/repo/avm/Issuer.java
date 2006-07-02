@@ -17,13 +17,6 @@
 
 package org.alfresco.repo.avm;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 /**
  * This is a helper class that knows how to issue identifiers.
  * @author britt
@@ -31,75 +24,17 @@ import java.io.IOException;
 class Issuer
 {
     /**
-     * The path to this issuers persistent storage.
-     */
-    private String fPath;
-    
-    /**
      * The next number to issue.
      */
     private long fNext;
     
     /**
-     * Constructor for an already existing Issuer.
-     * @param path The path to this issuers persistent store.
-     */
-    public Issuer(String path)
-    {
-        fPath = path;
-        try
-        {
-            DataInputStream in = new DataInputStream(new FileInputStream(fPath + ".new"));
-            fNext = in.readLong();
-            fNext += 257;
-            in.close();
-            save();
-            return;
-        }
-        catch (IOException ie)
-        {
-            // Do nothing.
-        }
-        try
-        {
-            DataInputStream in = new DataInputStream(new FileInputStream(fPath));
-            fNext = in.readLong();
-            fNext += 257;
-            in.close();
-            save();
-            return;
-        }
-        catch (IOException ie)
-        {
-            // Do nothing.
-        }
-        // Last resort.
-        try
-        {
-            DataInputStream in = new DataInputStream(new FileInputStream(fPath + ".old"));
-            fNext = in.readLong();
-            fNext += 513;
-            in.close();
-            save();
-            return;
-        }
-        catch (IOException ie)
-        {
-            // TODO Log this situation.
-            throw new AVMException("Could not restore issuer" + fPath, ie);
-        }
-    }
-            
-    /**
      * Rich constructor.
-     * @param path The path to this issuers persistent store.
      * @param next The next number to issue.
      */
-    public Issuer(String path, long next)
+    public Issuer(long next)
     {
-        fPath = path;
         fNext = next;
-        save();
     }
     
     /**
@@ -108,42 +43,6 @@ class Issuer
      */
     public synchronized long issue()
     {
-        long val = fNext++;
-        if (fNext % 128 == 0)
-        {
-            save();
-        }
-        return val;
+        return fNext++;
     }
-    
-    /**
-     * Persist this issuer.
-     */
-    public void save()
-    {
-        while (true)
-        {
-            try
-            {
-                FileOutputStream fileOut = new FileOutputStream(fPath + ".new");
-                DataOutputStream out = new DataOutputStream(fileOut);
-                out.writeLong(fNext);
-                out.flush();
-                // Force data to physical storage.
-                fileOut.getChannel().force(true);
-                out.close();
-                File from = new File(fPath);
-                File to = new File(fPath + ".old");
-                from.renameTo(to);
-                from = new File(fPath + ".new");
-                to = new File(fPath);
-                from.renameTo(to);
-                break;
-            }
-            catch (IOException ie)
-            {
-                // TODO Log this situation.
-            }
-        }
-    }                
 }

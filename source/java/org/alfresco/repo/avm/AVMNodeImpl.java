@@ -302,4 +302,12 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
     {
         fIsRoot = isRoot;
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNode#updateModTime()
+     */
+    public void updateModTime()
+    {
+        fBasicAttributes.setModDate(System.currentTimeMillis());
+    }
 }

@@ -28,7 +28,7 @@
 	<bean id="avmService" class="org.alfresco.repo.avm.AVMServiceImpl"
 		init-method="init">
 		<property name="storage">
-			<value>/Users/britt/tomcat/alfresco/store</value>
+			<value>build/test-results/storage</value>
 		</property>
 		<property name="createTables">
 			<value>false</value>

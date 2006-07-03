@@ -17,6 +17,7 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -241,8 +242,28 @@ class RepositoryImpl implements Repository, Serializable
         PlainFileNodeImpl file = new PlainFileNodeImpl(this);
         file.setVersionID(getNextVersionID());
         dir.putChild(name, file);
-        file.updateModTime();
+        dir.updateModTime();
         return file.getContentForWrite().getOutputStream();
+    }
+
+    /**
+     * Create a file with the given contents.
+     * @param path The path to the containing directory.
+     * @param name The name to give the new file.
+     * @param data The contents.
+     */
+    public void createFile(String path, String name, File data)
+    {
+        Lookup lPath = lookupDirectory(-1, path, true);
+        DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
+        if (dir.lookupChild(lPath, name, -1, true) != null)
+        {
+            throw new AVMExistsException("Child exists: " + name);
+        }
+        PlainFileNodeImpl file = new PlainFileNodeImpl(this, data);
+        file.setVersionID(getNextVersionID());
+        dir.putChild(name, file);
+        dir.updateModTime();
     }
 
     /**

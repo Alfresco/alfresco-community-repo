@@ -18,6 +18,7 @@
 package org.alfresco.repo.avm;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -171,10 +172,13 @@ class AVMCrawler implements Runnable
                 for (int i = 0; i < 1; i++)
                 {
                     String name = randomName();
-                    PrintStream out = new PrintStream(fService.createFile(dir.getPath(), name));
+                    fService.createFile(dir.getPath(), name, 
+                            new ByteArrayInputStream(("I am " + name).getBytes()));
                     fOpCount++;
-                    out.println("I am " + name);
-                    out.close();
+//                    PrintStream out = new PrintStream(fService.createFile(dir.getPath(), name));
+//                    fOpCount++;
+//                    out.println("I am " + name);
+//                    out.close();
                 }
                 // 1 in 100 times create a directory.
                 if (fRandom.nextInt(100) == 0)

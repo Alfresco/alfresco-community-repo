@@ -18,6 +18,7 @@
 package org.alfresco.repo.avm;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
@@ -47,8 +48,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/", "a");
             fService.createDirectory("main:/a", "b");
             fService.createDirectory("main:/a", "c");
-            fService.createFile("main:/a/b", "foo").close();
-            fService.createFile("main:/a/c", "bar").close();
+            fService.createFile("main:/a/b", "foo", new ByteArrayInputStream("I am foo.".getBytes()));
+            fService.createFile("main:/a/c", "bar", new ByteArrayInputStream("I am bar.".getBytes()));
             fService.createSnapshot("main");
             // History is unchanged.
             checkHistory(history, "main");

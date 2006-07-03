@@ -17,6 +17,8 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.File;
+
 
 /**
  * A plain old file. Contains a Content object.
@@ -47,6 +49,18 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     {
         super(repos.getSuperRepository().issueID(), repos);
         fContent = new FileContentImpl(SuperRepository.GetInstance().issueContentID());
+        repos.getSuperRepository().getSession().save(this);
+    }
+    
+    /**
+     * Create a new plain file with given content.
+     * @param repos The repository.
+     * @param content The content to set.
+     */
+    public PlainFileNodeImpl(Repository repos, File content)
+    {
+        super(repos.getSuperRepository().issueID(), repos);
+        fContent = new FileContentImpl(SuperRepository.GetInstance().issueContentID(), content);
         repos.getSuperRepository().getSession().save(this);
     }
     

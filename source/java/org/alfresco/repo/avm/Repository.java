@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.avm;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -73,6 +74,14 @@ interface Repository
      * @return An OutputStream.
      */
     public OutputStream createFile(String path, String name);
+    
+    /**
+     * Create a file with the given contents.
+     * @param path The path to the containing directory.
+     * @param name The name to give the file.
+     * @param data The contents of the file.
+     */
+    public void createFile(String path, String name, File data);
 
     /**
      * Create a new layered file.

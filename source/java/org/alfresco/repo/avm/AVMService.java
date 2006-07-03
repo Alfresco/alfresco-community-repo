@@ -87,6 +87,15 @@ public interface AVMService
     public OutputStream createFile(String path, String name);
     
     /**
+     * Create a new File. Guarantees that the entire contents of the
+     * input stream will be loaded atomically.
+     * @param path The path to the parent directory.
+     * @param name The name for the new file. 
+     * @param in An input stream with data for the file.
+     */
+    public void createFile(String path, String name, InputStream in);
+    
+    /**
      * Create a new directory.
      * @param path The simple absolute path to the parent.
      * @param name The name to give the folder.

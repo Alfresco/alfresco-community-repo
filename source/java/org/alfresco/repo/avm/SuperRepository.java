@@ -17,6 +17,7 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -117,6 +118,20 @@ class SuperRepository
         return rep.createFile(pathParts[1], name);
     }
 
+    /**
+     * Create a file with the given File as content.
+     * @param path The path to the containing directory.
+     * @param name The name to give the file.
+     * @param data The file contents.
+     */
+    public void createFile(String path, String name, File data)
+    {
+        fLookupCount.set(1);
+        String[] pathParts = SplitPath(path);
+        Repository rep = getRepositoryByName(pathParts[0], true);
+        rep.createFile(pathParts[1], name, data);
+    }
+    
     /**
      * Create a new directory.
      * @param path The path to the containing directory.

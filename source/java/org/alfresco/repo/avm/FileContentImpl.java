@@ -93,6 +93,36 @@ class FileContentImpl implements FileContent, Serializable
     }
     
     /**
+     * Initialize with the given content.
+     * @param id
+     * @param content
+     */
+    public FileContentImpl(long id, File content)
+    {
+        fID = id;
+        fRefCount = 1;
+        // Initialize the contents.
+        try
+        {
+            OutputStream out = getOutputStream();
+            InputStream in = new FileInputStream(content);
+            byte [] buff = new byte[8192];
+            int count;
+            while ((count = in.read(buff)) != -1)
+            {
+                out.write(buff, 0, count);
+            }
+            out.close();
+            in.close();
+        }
+        catch (IOException ie)
+        {
+            throw new AVMException("I/O Error.", ie);
+        }
+        SuperRepository.GetInstance().getSession().save(this);
+    }
+    
+    /**
      * Copy constructor, sort of.
      * @param other The content to copy from.
      * @param id The id for this content.

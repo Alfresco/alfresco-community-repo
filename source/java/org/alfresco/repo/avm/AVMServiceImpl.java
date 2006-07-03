@@ -18,6 +18,8 @@
 package org.alfresco.repo.avm;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -354,6 +356,58 @@ public class AVMServiceImpl implements AVMService
         HTxnCallback doit = new HTxnCallback();
         fTransaction.perform(doit, true);
         return doit.out;
+    }
+
+    /**
+     * Create a file with content specified by the InputStream.
+     * Guaranteed to be created atomically.
+     * @param path The path to the containing directory.
+     * @param name The name to give the file.
+     * @param in An InputStream containing data for file.
+     */
+    public void createFile(final String path, final String name, InputStream in)
+    {
+        if (path == null || name == null || in == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        // Save the contents to temp space.
+        File dir = new File(fStorage);
+        final File temp;
+        try
+        {
+            temp = File.createTempFile("alf", "tmp", dir);
+            OutputStream out = new FileOutputStream(temp);
+            byte [] buff = new byte[8192];
+            int read;
+            while ((read = in.read(buff)) != -1)
+            {
+                out.write(buff, 0, read);
+            }
+            out.close();
+            in.close();
+        }
+        catch (IOException ie)
+        {
+            throw new AVMException("I/O Error.");
+        }
+        class HTxnCallback implements HibernateTxnCallback
+        {
+            public void perform(Session session)
+            {
+                fSuperRepository.setSession(session);
+                fSuperRepository.createFile(path, name, temp);
+            }
+        }
+        HTxnCallback doit = new HTxnCallback();
+        try
+        {
+            fTransaction.perform(doit, true);
+        }
+        finally
+        {
+            temp.delete();
+        }
     }
 
     /* (non-Javadoc)

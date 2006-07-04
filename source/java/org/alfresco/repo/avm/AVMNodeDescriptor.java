@@ -351,6 +351,10 @@ public class AVMNodeDescriptor
         return fID;
     }
     
+    /**
+     * Get the file length if applicable.
+     * @return The file length.
+     */
     public long getLength()
     {
         return fLength;

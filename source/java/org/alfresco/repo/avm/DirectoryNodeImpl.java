@@ -19,7 +19,6 @@ package org.alfresco.repo.avm;
 
 import java.util.List;
 
-import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 

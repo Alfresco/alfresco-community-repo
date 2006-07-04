@@ -63,8 +63,7 @@ public class AVMStressTest extends AVMServiceTestBase
                                     3200,        // read file
                                     10,        // snapshot
                                     1000,      // # ops
-                                    fService,
-                                    "" + i);   
+                                    fService);   
                 tester.refresh();
                 Thread thread = new Thread(tester);
                 testers.add(tester);

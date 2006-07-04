@@ -79,11 +79,6 @@ class AVMTester implements Runnable
     private String[] fNames;
     
     /**
-     * The id of this thread.
-     */
-    private String fID;
-    
-    /**
      * Flag for whether this thread errored out.
      */
     private boolean fError;
@@ -117,12 +112,10 @@ class AVMTester implements Runnable
                      int readFile,
                      int snapshot,
                      int opCount,
-                     AVMService service,
-                     String id)
+                     AVMService service)
     {
         fError = false;
         fExit = false;
-        fID = id;
         fService = service;
         fOpCount = opCount;
         int count = createFile + createDir + rename + createLayeredDir +

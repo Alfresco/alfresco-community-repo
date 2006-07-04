@@ -23,13 +23,9 @@ import org.alfresco.repo.avm.AVMException;
 import org.alfresco.repo.avm.AVMNotFoundException;
 import org.hibernate.HibernateException;
 import org.hibernate.JDBCException;
-import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.StaleStateException;
 import org.hibernate.Transaction;
-import org.hibernate.exception.GenericJDBCException;
-import org.hibernate.exception.LockAcquisitionException;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -103,38 +99,38 @@ public class HibernateTxn extends HibernateTemplate
                     {
                         // Do nothing.
                     }
-                    // Translate the exception.
-                    if (t instanceof JDBCException)
+                }
+                // Translate the exception.
+                if (t instanceof JDBCException)
+                {
+                    t = convertJdbcAccessException((JDBCException)t);
+                }
+                else if (t instanceof HibernateException)
+                {
+                    t = convertHibernateAccessException((HibernateException)t);
+                }
+                // If we've lost a race or we've deadlocked, retry.
+                if (t instanceof DeadlockLoserDataAccessException)
+                {
+                    try
                     {
-                        t = convertJdbcAccessException((JDBCException)t);
-                    }
-                    else if (t instanceof HibernateException)
-                    {
-                        t = convertHibernateAccessException((HibernateException)t);
-                    }
-                    // If we've lost a race or we've deadlocked, retry.
-                    if (t instanceof DeadlockLoserDataAccessException)
-                    {
-                        try
+                        long interval;
+                        synchronized (fRandom)
                         {
-                            long interval;
-                            synchronized (fRandom)
-                            {
-                                interval = fRandom.nextInt(1000);
-                            }
-                            Thread.sleep(interval);
-                            continue;
+                            interval = fRandom.nextInt(1000);
                         }
-                        catch (InterruptedException ie)
-                        {
-                           // Do nothing.
-                        }
+                        Thread.sleep(interval);
                         continue;
                     }
-                    if (t instanceof OptimisticLockingFailureException)
+                    catch (InterruptedException ie)
                     {
-                        continue;
+                        // Do nothing.
                     }
+                    continue;
+                }
+                if (t instanceof OptimisticLockingFailureException)
+                {
+                    continue;
                 }
                 if (t instanceof AVMException)
                 {

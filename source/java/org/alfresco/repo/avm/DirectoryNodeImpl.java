@@ -58,8 +58,8 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
     {
         // TODO This may be very Dangerous!
         Session sess = SuperRepository.GetInstance().getSession();
-        ChildEntry entry = (ChildEntry)sess.get(ChildEntryImpl.class, new ChildEntryImpl(name, this, null),
-                                                (write && getIsNew()) ? LockMode.UPGRADE : LockMode.READ);
+        ChildEntry entry = (ChildEntry)sess.get(ChildEntryImpl.class, new ChildEntryImpl(name, this, null));
+                                               // (write && getIsNew()) ? LockMode.UPGRADE : LockMode.READ);
         return entry;
     }
     

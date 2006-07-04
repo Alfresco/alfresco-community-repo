@@ -22,6 +22,7 @@ import java.util.Random;
 import org.alfresco.repo.avm.AVMException;
 import org.alfresco.repo.avm.AVMNotFoundException;
 import org.hibernate.HibernateException;
+import org.hibernate.JDBCException;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -29,12 +30,16 @@ import org.hibernate.StaleStateException;
 import org.hibernate.Transaction;
 import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.exception.LockAcquisitionException;
+import org.springframework.dao.DataRetrievalFailureException;
+import org.springframework.dao.DeadlockLoserDataAccessException;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.orm.hibernate3.HibernateTemplate;
 
 /**
  * Helper for DAOs.
  * @author britt
  */
-public class HibernateTxn
+public class HibernateTxn extends HibernateTemplate
 {
     /**
      * The SessionFactory.
@@ -61,6 +66,7 @@ public class HibernateTxn
      */
     public void setSessionFactory(SessionFactory factory)
     {
+        super.setSessionFactory(factory);
         fSessionFactory = factory;
     }
     
@@ -97,45 +103,36 @@ public class HibernateTxn
                     {
                         // Do nothing.
                     }
-                    // If we've lost a race or we've deadlocked, retry.
-                    if (t instanceof StaleStateException ||
-                        t instanceof GenericJDBCException ||
-                        t instanceof LockAcquisitionException)
+                    // Translate the exception.
+                    if (t instanceof JDBCException)
                     {
-                        if (t instanceof StaleStateException)
+                        t = convertJdbcAccessException((JDBCException)t);
+                    }
+                    else if (t instanceof HibernateException)
+                    {
+                        t = convertHibernateAccessException((HibernateException)t);
+                    }
+                    // If we've lost a race or we've deadlocked, retry.
+                    if (t instanceof DeadlockLoserDataAccessException)
+                    {
+                        try
                         {
-//                            System.err.println("Lost Race");
-//                            StackTraceElement [] stack = t.getStackTrace();
-//                            long threadID = Thread.currentThread().getId();
-//                            for (StackTraceElement frame : stack)
-//                            {
-//                                System.err.println(threadID + " " + frame);
-//                            }
+                            long interval;
+                            synchronized (fRandom)
+                            {
+                                interval = fRandom.nextInt(1000);
+                            }
+                            Thread.sleep(interval);
+                            continue;
                         }
-                        else
+                        catch (InterruptedException ie)
                         {
-//                            System.err.println("Deadlock");
-//                            StackTraceElement [] stack = t.getStackTrace();
-//                            long threadID = Thread.currentThread().getId();
-//                            for (StackTraceElement frame : stack)
-//                            {
-//                                System.err.println(threadID + " " + frame);
-//                            }
-                            try
-                            {
-                                long interval;
-                                synchronized (fRandom)
-                                {
-                                    interval = fRandom.nextInt(1000);
-                                }
-                                Thread.sleep(interval);
-                                continue;
-                            }
-                            catch (InterruptedException ie)
-                            {
-                               // Do nothing.
-                            }
+                           // Do nothing.
                         }
+                        continue;
+                    }
+                    if (t instanceof OptimisticLockingFailureException)
+                    {
                         continue;
                     }
                 }
@@ -143,13 +140,11 @@ public class HibernateTxn
                 {
                     throw (AVMException)t;
                 }
-                // TODO Crack t into more useful exception types.
-                // Otherwise nothing we can do except throw.
-                if (t instanceof ObjectNotFoundException)
+                if (t instanceof DataRetrievalFailureException)
                 {
                     throw new AVMNotFoundException("Object not found.", t);
                 }
-                throw new AVMException("Unrecoverable error.");
+                throw new AVMException("Unrecoverable error.", t);
             }
             finally
             {

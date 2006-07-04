@@ -440,7 +440,6 @@ class SuperRepository
         for (String repName : repositories)
         {
             Repository repo = getRepositoryByName(repName, true);
-            fSession.get().lock(repo, LockMode.UPGRADE);
 //            fSession.get().lock(repo, LockMode.UPGRADE);
             result.add(repo.createSnapshot());
         }
@@ -455,7 +454,7 @@ class SuperRepository
     public int createSnapshot(String repository)
     {
         Repository repo = getRepositoryByName(repository, true);
-        fSession.get().lock(repo, LockMode.UPGRADE);
+//        fSession.get().lock(repo, LockMode.UPGRADE);
 //        fSession.get().lock(repo, LockMode.UPGRADE);
         return repo.createSnapshot();
     }
@@ -716,8 +715,8 @@ class SuperRepository
     private Repository getRepositoryByName(String name, boolean write)
     {
         Repository rep = (Repository)fSession.get().get(RepositoryImpl.class, 
-                                              name, LockMode.READ /*,
-                                              write ? LockMode.UPGRADE : LockMode.READ*/);
+                                              name); /* LockMode.READ ,
+                                              write ? LockMode.UPGRADE : LockMode.READ); */
         if (rep == null)
         {
             throw new AVMNotFoundException("Repository not found: " + name);

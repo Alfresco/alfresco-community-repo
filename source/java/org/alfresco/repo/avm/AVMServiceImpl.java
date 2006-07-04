@@ -28,12 +28,10 @@ import java.util.List;
 import java.util.SortedMap;
 
 import org.alfresco.repo.avm.SuperRepository;
-import org.alfresco.repo.avm.hibernate.HibernateHelper;
 import org.alfresco.repo.avm.hibernate.HibernateTxn;
 import org.alfresco.repo.avm.hibernate.HibernateTxnCallback;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
 
 /**
  * Implements the AVMService.  Stub.
@@ -74,12 +72,7 @@ public class AVMServiceImpl implements AVMService
     /**
      * Whether the tables should be dropped and created.
      */
-    private boolean fCreateTables;
-    
-    /**
-     * The HibernateHelper.
-     */
-    private HibernateHelper fHibernateHelper;
+    private boolean fInitialize;
     
     /**
      * Basic constructor for the service.
@@ -94,61 +87,47 @@ public class AVMServiceImpl implements AVMService
      */
     public void init()
     {
-        fTransaction = new HibernateTxn(fHibernateHelper.getSessionFactory());
-        if (fCreateTables)
+        try
         {
-            SchemaExport se = new SchemaExport(fHibernateHelper.getConfiguration());
-            se.drop(false, true);
-            se.create(false, true);
-            File storage = new File(fStorage);
-            storage.mkdirs();
-            fNodeIssuer = new Issuer(0L);
-            fContentIssuer = new Issuer(0L);
-            fLayerIssuer = new Issuer(0L);
+            fTransaction.perform(
+            new HibernateTxnCallback()
+            {
+                public void perform(Session sess)
+                {
+                    Query query = sess.createQuery("select max(an.id) from AVMNodeImpl an");
+                    Long val = (Long)query.uniqueResult();
+                    fNodeIssuer = new Issuer(val == null ? 0L : val + 1L);
+                    query = sess.createQuery("select max(fc.id) from FileContentImpl fc");
+                    val = (Long)query.uniqueResult();
+                    fContentIssuer = new Issuer(val == null ? 0L : val + 1L);
+                    query = sess.createQuery("select max(an.layerID) from AVMNodeImpl an");
+                    val = (Long)query.uniqueResult();
+                    fLayerIssuer = new Issuer(val == null ? 0L : val + 1L);
+                }
+            }, false);
             fSuperRepository = new SuperRepository(fNodeIssuer,
                                                    fContentIssuer,
                                                    fLayerIssuer,
                                                    fStorage);
-            try
-            {
-                createRepository("main");
-            }
-            catch (Exception e)
-            {
-                // TODO Log this and abort in some useful way.
-            }
-        }       
-        else
-        {
-            try
-            {
-                fTransaction.perform(
-                new HibernateTxnCallback()
-                {
-                    public void perform(Session sess)
-                    {
-                        Query query = sess.createQuery("select max(an.id) from AVMNodeImpl an");
-                        Long val = (Long)query.uniqueResult();
-                        fNodeIssuer = new Issuer(val == null ? 0L : val + 1L);
-                        query = sess.createQuery("select max(fc.id) from FileContentImpl fc");
-                        val = (Long)query.uniqueResult();
-                        fContentIssuer = new Issuer(val == null ? 0L : val + 1L);
-                        query = sess.createQuery("select max(an.layerID) from AVMNodeImpl an");
-                        val = (Long)query.uniqueResult();
-                        fLayerIssuer = new Issuer(val == null ? 0L : val + 1L);
-                    }
-                }, false);
-                fSuperRepository = new SuperRepository(fNodeIssuer,
-                                                       fContentIssuer,
-                                                       fLayerIssuer,
-                                                       fStorage);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace(System.err);
-                // TODO Log this and abort in some useful way.
-            }
         }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            // TODO Log this and abort in some useful way.
+        }
+        if (fInitialize)
+        {
+            createRepository("main");
+        }
+    }
+    
+    /**
+     * Set the Hibernate Transaction wrapper.
+     * @param txn
+     */
+    public void setHibernateTxn(HibernateTxn txn)
+    {
+        fTransaction = txn;
     }
     
     /**
@@ -161,23 +140,14 @@ public class AVMServiceImpl implements AVMService
     }
     
     /**
-     * Set whether we should drop and create tables.
-     * @param createTables 
+     * Set whether we should create an initial repository.
+     * @param initialize
      */
-    public void setCreateTables(boolean createTables)
+    public void setInitialize(boolean initialize)
     {
-        fCreateTables = createTables;
+        fInitialize = initialize;
     }
 
-    /**
-     * Set the HibernateHelper.
-     * @param helper
-     */
-    public void setHibernateHelper(HibernateHelper helper)
-    {
-        fHibernateHelper = helper;
-    }
-    
     /**
      * Get an InputStream from a file.
      * @param version The version to look under.

@@ -25,8 +25,6 @@ import java.io.OutputStream;
 
 import org.alfresco.repo.avm.AVMException;
 import org.alfresco.repo.avm.AVMService;
-import org.alfresco.repo.avm.AVMServiceImpl;
-import org.alfresco.repo.avm.hibernate.HibernateHelper;
 
 /**
  * This takes a filesystem directory path and a repository path and name

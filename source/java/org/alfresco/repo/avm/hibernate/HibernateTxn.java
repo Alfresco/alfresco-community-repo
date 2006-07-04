@@ -18,11 +18,11 @@ package org.alfresco.repo.avm.hibernate;
  */
 
 import java.util.Random;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.repo.avm.AVMException;
-import org.hibernate.FlushMode;
+import org.alfresco.repo.avm.AVMNotFoundException;
 import org.hibernate.HibernateException;
+import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StaleStateException;
@@ -47,19 +47,21 @@ public class HibernateTxn
     private Random fRandom;
     
     /**
-     * The BFL.
-     */
-    private ReentrantReadWriteLock fLock;
-    
-    /**
      * Make one up.
      * @param sessionFactory The SessionFactory.
      */
-    public HibernateTxn(SessionFactory sessionFactory)
+    public HibernateTxn()
     {
-        fSessionFactory = sessionFactory;
         fRandom = new Random();
-        fLock = new ReentrantReadWriteLock(true);  // Make the lock fair.
+    }
+
+    /**
+     * Set the Hibernate Session factory.
+     * @param factory
+     */
+    public void setSessionFactory(SessionFactory factory)
+    {
+        fSessionFactory = factory;
     }
     
     /**
@@ -76,18 +78,7 @@ public class HibernateTxn
         {
             try
             {
-                /*
-                if (write)
-                {
-                    fLock.writeLock().lock();
-                }
-                else
-                {
-                    fLock.readLock().lock();
-                }
-                */
                 sess = fSessionFactory.openSession();
-//                sess.setFlushMode(FlushMode.ALWAYS);
                 txn = sess.beginTransaction();
                 callback.perform(sess);
                 txn.commit();
@@ -113,23 +104,23 @@ public class HibernateTxn
                     {
                         if (t instanceof StaleStateException)
                         {
-                            System.err.println("Lost Race");
-                            StackTraceElement [] stack = t.getStackTrace();
-                            long threadID = Thread.currentThread().getId();
-                            for (StackTraceElement frame : stack)
-                            {
-                                System.err.println(threadID + " " + frame);
-                            }
+//                            System.err.println("Lost Race");
+//                            StackTraceElement [] stack = t.getStackTrace();
+//                            long threadID = Thread.currentThread().getId();
+//                            for (StackTraceElement frame : stack)
+//                            {
+//                                System.err.println(threadID + " " + frame);
+//                            }
                         }
                         else
                         {
-                            System.err.println("Deadlock");
-                            StackTraceElement [] stack = t.getStackTrace();
-                            long threadID = Thread.currentThread().getId();
-                            for (StackTraceElement frame : stack)
-                            {
-                                System.err.println(threadID + " " + frame);
-                            }
+//                            System.err.println("Deadlock");
+//                            StackTraceElement [] stack = t.getStackTrace();
+//                            long threadID = Thread.currentThread().getId();
+//                            for (StackTraceElement frame : stack)
+//                            {
+//                                System.err.println(threadID + " " + frame);
+//                            }
                             try
                             {
                                 long interval;
@@ -154,20 +145,14 @@ public class HibernateTxn
                 }
                 // TODO Crack t into more useful exception types.
                 // Otherwise nothing we can do except throw.
-                throw new AVMException("Unrecoverable error", t);
+                if (t instanceof ObjectNotFoundException)
+                {
+                    throw new AVMNotFoundException("Object not found.", t);
+                }
+                throw new AVMException("Unrecoverable error.");
             }
             finally
             {
-                /*
-                if (write)
-                {
-                    fLock.writeLock().unlock();
-                }
-                else
-                {
-                    fLock.readLock().unlock();
-                }
-                */
                 if (sess != null)
                 {
                     try

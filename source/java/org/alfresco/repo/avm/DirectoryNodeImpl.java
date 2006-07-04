@@ -56,6 +56,7 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
     @SuppressWarnings("unchecked")
     protected ChildEntry getChild(String name, boolean write)
     {
+        // TODO This may be very Dangerous!
         Session sess = SuperRepository.GetInstance().getSession();
         ChildEntry entry = (ChildEntry)sess.get(ChildEntryImpl.class, new ChildEntryImpl(name, this, null),
                                                 (write && getIsNew()) ? LockMode.UPGRADE : LockMode.READ);

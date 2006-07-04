@@ -35,7 +35,7 @@ public class AVMCrawlTest extends AVMServiceTestBase
      */
     public void testCrawl()
     {
-        int n = 4;              // Number of Threads.
+        int n = 8;               // Number of Threads.
         int m = 16;              // How many multiples of content to start with.
         long runTime = 1200000;  // Ten minutes
         fService.purgeRepository("main");

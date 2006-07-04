@@ -43,7 +43,7 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
             Thread [] threads = new Thread[n];
             for (int i = 0; i < n; i++)
             {
-                Loader loader = new Loader("source", "main:/d" + i, m);
+                Loader loader = new Loader("/Users/britt/stuff/" + i, "main:/d" + i, m);
                 threads[i] = new Thread(loader);
                 threads[i].start();
             }

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.alfresco.repo.avm.hibernate.HibernateHelper;
 import org.hibernate.stat.Statistics;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 

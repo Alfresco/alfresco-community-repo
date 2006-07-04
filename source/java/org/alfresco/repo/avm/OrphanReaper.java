@@ -19,7 +19,6 @@ package org.alfresco.repo.avm;
 
 import java.util.List;
 
-import org.alfresco.repo.avm.hibernate.HibernateHelper;
 import org.alfresco.repo.avm.hibernate.HibernateTxn;
 import org.alfresco.repo.avm.hibernate.HibernateTxnCallback;
 import org.hibernate.Query;
@@ -69,11 +68,6 @@ public class OrphanReaper implements Runnable
     private Thread fThread;
     
     /**
-     * The Hibernate helper to use.
-     */
-    private HibernateHelper fHibernateHelper;
-    
-    /**
      * Create one with default parameters.
      */
     public OrphanReaper()
@@ -113,14 +107,14 @@ public class OrphanReaper implements Runnable
     {
         fBatchSize = size;
     }
-    
+
     /**
-     * Set the HibernateHelper to use.
-     * @param helper The helper to use.
+     * Set the Hibernate Transaction Wrapper.
+     * @param transaction
      */
-    public void setHibernateHelper(HibernateHelper helper)
+    public void setHibernateTxn(HibernateTxn transaction)
     {
-        fHibernateHelper = helper;
+        fTransaction = transaction;
     }
     
     /**
@@ -128,7 +122,6 @@ public class OrphanReaper implements Runnable
      */
     public void init()
     {
-        fTransaction = new HibernateTxn(fHibernateHelper.getSessionFactory());
         fThread = new Thread(this);
         fThread.start();
     }

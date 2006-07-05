@@ -12,6 +12,34 @@
 			</list>
 		</property>
 	</bean>
+	
+	<!-- A read only DefaultTransactionDefinition -->
+	<bean id="readOnlyTransactionDefinition" 
+		class="org.springframework.transaction.support.DefaultTransactionDefinition">
+		<property name="propagationBehaviorName">
+			<value>PROPAGATION_REQUIRES_NEW</value>
+		</property>
+		<property name="isolationLevelName">
+			<value>ISOLATION_READ_COMMITTED</value>
+		</property>
+		<property name="readOnly">
+			<value>true</value>
+		</property>
+	</bean>
+
+	<!-- A write DefaultTransactionDefinition -->
+	<bean id="writeTransactionDefinition" 
+		class="org.springframework.transaction.support.DefaultTransactionDefinition">
+		<property name="propagationBehaviorName">
+			<value>PROPAGATION_REQUIRES_NEW</value>
+		</property>
+		<property name="isolationLevelName">
+			<value>ISOLATION_READ_COMMITTED</value>
+		</property>
+		<property name="readOnly">
+			<value>false</value>
+		</property>
+	</bean>
 
 	<!-- Datasource -->
     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
@@ -35,6 +63,9 @@
         </property>
         <property name="numHelperThreads" >
             <value>1</value>
+        </property>
+        <property name="idleConnectionTestPeriod">
+        	<value>60</value>
         </property>
     </bean>
 

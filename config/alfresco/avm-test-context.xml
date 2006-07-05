@@ -36,6 +36,9 @@
         <property name="numHelperThreads">
             <value>1</value>
         </property>
+        <property name="idleConnectionTestPeriod">
+        	<value>60</value>
+        </property>
     </bean>
 
 	<!-- The SessionFactory for hibernate. -->

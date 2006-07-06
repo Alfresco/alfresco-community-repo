@@ -63,11 +63,59 @@
 			</list>
 		</property>
 	</bean>
+	
+	<!-- The HibernateTransactionManager -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="dataSource">
+			<ref bean="dataSource"/>
+		</property>
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+
+	<!-- A read only DefaultTransactionDefinition -->
+	<bean id="readTransactionDefinition" 
+		class="org.springframework.transaction.support.DefaultTransactionDefinition">
+		<property name="propagationBehaviorName">
+			<value>PROPAGATION_REQUIRES_NEW</value>
+		</property>
+		<property name="isolationLevelName">
+			<value>ISOLATION_READ_COMMITTED</value>
+		</property>
+		<property name="readOnly">
+			<value>true</value>
+		</property>
+	</bean>
+
+	<!-- A write DefaultTransactionDefinition -->
+	<bean id="writeTransactionDefinition" 
+		class="org.springframework.transaction.support.DefaultTransactionDefinition">
+		<property name="propagationBehaviorName">
+			<value>PROPAGATION_REQUIRES_NEW</value>
+		</property>
+		<property name="isolationLevelName">
+			<value>ISOLATION_READ_COMMITTED</value>
+		</property>
+		<property name="readOnly">
+			<value>false</value>
+		</property>
+	</bean>
 
 	<!-- The Hibernate Transaction wrapper. -->
 	<bean id="hibernateTxn" class="org.alfresco.repo.avm.hibernate.HibernateTxn">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
+		</property>
+		<property name="transactionManager">
+			<ref bean="transactionManager"/>
+		</property>
+		<property name="readTransactionDefinition">
+			<ref bean="readTransactionDefinition"/>
+		</property>
+		<property name="writeTransactionDefinition">
+			<ref bean="writeTransactionDefinition"/>
 		</property>
 	</bean>
 

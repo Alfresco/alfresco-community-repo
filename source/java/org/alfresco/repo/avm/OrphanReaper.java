@@ -261,9 +261,11 @@ public class OrphanReaper implements Runnable
                             delete.setEntity("parent", node);
                             delete.executeUpdate();
                         } 
+                        session.delete(node);
                     }
                     else if (node instanceof PlainFileNode)
                     {
+                        session.delete(node);
                         // FileContent should be purged if nobody else references it.
                         FileContent content = ((PlainFileNode)node).getContent();
                         if (content.getRefCount() == 1)
@@ -272,7 +274,10 @@ public class OrphanReaper implements Runnable
                             session.delete(content);
                         }
                     }
-                    session.delete(node);
+                    else
+                    {
+                        session.delete(node);
+                    }
                 }
             }
         }

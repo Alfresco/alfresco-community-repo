@@ -14,7 +14,7 @@
 	</bean>
 	
 	<!-- A read only DefaultTransactionDefinition -->
-	<bean id="readOnlyTransactionDefinition" 
+	<bean id="readTransactionDefinition" 
 		class="org.springframework.transaction.support.DefaultTransactionDefinition">
 		<property name="propagationBehaviorName">
 			<value>PROPAGATION_REQUIRES_NEW</value>
@@ -92,13 +92,33 @@
 		</property>
 	</bean>
 
-	<!-- The Hibernate Transaction wrapper. -->
-	<bean id="hibernateTxn" class="org.alfresco.repo.avm.hibernate.HibernateTxn">
+	<!-- The HibernateTransactionManager -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="dataSource">
+			<ref bean="dataSource"/>
+		</property>
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 
+	<!-- The Hibernate Transaction wrapper. -->
+    <bean id="hibernateTxn" class="org.alfresco.repo.avm.hibernate.HibernateTxn">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+		<property name="transactionManager">
+			<ref bean="transactionManager"/>
+		</property>
+		<property name="readTransactionDefinition">
+			<ref bean="readTransactionDefinition"/>
+		</property>
+		<property name="writeTransactionDefinition">
+			<ref bean="writeTransactionDefinition"/>
+		</property>
+	</bean>
+	
 	<bean id="orphanReaper" class="org.alfresco.repo.avm.OrphanReaper"
 		init-method="init" destroy-method="shutDown" depends-on="avmService">
 		<property name="inactiveBaseSleep">

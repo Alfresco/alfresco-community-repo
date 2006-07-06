@@ -21,15 +21,14 @@ import java.util.Random;
 
 import org.alfresco.repo.avm.AVMException;
 import org.alfresco.repo.avm.AVMNotFoundException;
-import org.hibernate.HibernateException;
-import org.hibernate.JDBCException;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.TransactionStatus;
 
 /**
  * Helper for DAOs.
@@ -38,9 +37,19 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 public class HibernateTxn extends HibernateTemplate
 {
     /**
-     * The SessionFactory.
+     * The transaction manager.
      */
-    private SessionFactory fSessionFactory;
+    private PlatformTransactionManager fTransactionManager;
+    
+    /**
+     * The read transaction definition.
+     */
+    private TransactionDefinition fReadDefinition;
+    
+    /**
+     * The write transaction definition.
+     */
+    private TransactionDefinition fWriteDefinition;
     
     /**
      * The random number generator for inter-retry sleep.
@@ -57,16 +66,6 @@ public class HibernateTxn extends HibernateTemplate
     }
 
     /**
-     * Set the Hibernate Session factory.
-     * @param factory
-     */
-    public void setSessionFactory(SessionFactory factory)
-    {
-        super.setSessionFactory(factory);
-        fSessionFactory = factory;
-    }
-    
-    /**
      * Perform a set of operations under a single Hibernate transaction.
      * Keep trying if the operation fails because of a concurrency issue.
      * @param callback The worker.
@@ -74,44 +73,34 @@ public class HibernateTxn extends HibernateTemplate
      */
     public void perform(HibernateTxnCallback callback, boolean write)
     {
-        Session sess = null;
-        Transaction txn = null;
         while (true)
         {
+            TransactionStatus status = null;
             try
             {
-                sess = fSessionFactory.openSession();
-                txn = sess.beginTransaction();
-                callback.perform(sess);
-                txn.commit();
+                status = 
+                    fTransactionManager.getTransaction(write ? fWriteDefinition : fReadDefinition);
+                execute(new HibernateCallbackWrapper(callback));
+                try
+                {
+                    fTransactionManager.commit(status);
+                }
+                catch (TransactionException te)
+                {
+                    throw new AVMException("Transaction Exception.", te);
+                }
                 return;
             }
             catch (Throwable t)
             {
-                // TODO Add appropriate logging.
-                if (txn != null)
+                if (!status.isCompleted())
                 {
-                    try
-                    {
-                        txn.rollback();
-                    }
-                    catch (HibernateException he)
-                    {
-                        // Do nothing.
-                    }
-                }
-                // Translate the exception.
-                if (t instanceof JDBCException)
-                {
-                    t = convertJdbcAccessException((JDBCException)t);
-                }
-                else if (t instanceof HibernateException)
-                {
-                    t = convertHibernateAccessException((HibernateException)t);
+                    fTransactionManager.rollback(status);
                 }
                 // If we've lost a race or we've deadlocked, retry.
                 if (t instanceof DeadlockLoserDataAccessException)
                 {
+                    System.err.println("Deadlock.");
                     try
                     {
                         long interval;
@@ -120,7 +109,6 @@ public class HibernateTxn extends HibernateTemplate
                             interval = fRandom.nextInt(1000);
                         }
                         Thread.sleep(interval);
-                        continue;
                     }
                     catch (InterruptedException ie)
                     {
@@ -130,6 +118,7 @@ public class HibernateTxn extends HibernateTemplate
                 }
                 if (t instanceof OptimisticLockingFailureException)
                 {
+                    System.err.println("Lost Race.");
                     continue;
                 }
                 if (t instanceof AVMException)
@@ -138,24 +127,38 @@ public class HibernateTxn extends HibernateTemplate
                 }
                 if (t instanceof DataRetrievalFailureException)
                 {
+                    System.err.println("Data Retrieval Error.");
                     throw new AVMNotFoundException("Object not found.", t);
                 }
                 throw new AVMException("Unrecoverable error.", t);
             }
-            finally
-            {
-                if (sess != null)
-                {
-                    try
-                    {
-                        sess.close();
-                    }
-                    catch (HibernateException he)
-                    {
-                        // Do nothing.
-                    }
-                }
-            }
         }
+    }
+    
+    /**
+     * Set the transaction manager we are operating under.
+     * @param manager
+     */
+    public void setTransactionManager(PlatformTransactionManager manager)
+    {
+        fTransactionManager = manager;
+    }
+    
+    /**
+     * Set the read Transaction Definition.
+     * @param def
+     */
+    public void setReadTransactionDefinition(TransactionDefinition def)
+    {
+        fReadDefinition = def;
+    }
+    
+    /**
+     * Set the write Transaction Definition.
+     * @param def
+     */
+    public void setWriteTransactionDefinition(TransactionDefinition def)
+    {
+        fWriteDefinition = def;
     }
 }

@@ -956,7 +956,7 @@ public class AVMServiceImpl implements AVMService
             }
         }
         HTxnCallback doit = new HTxnCallback();
-        fTransaction.perform(doit, false);
+        fTransaction.perform(doit, true);
     }
 
     /**

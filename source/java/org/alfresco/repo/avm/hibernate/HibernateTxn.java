@@ -66,7 +66,7 @@ public class HibernateTxn extends HibernateTemplate
     }
 
     /**
-     * Perform a set of operations under a single Hibernate transaction.
+     * Perform a set of operations under a single transaction.
      * Keep trying if the operation fails because of a concurrency issue.
      * @param callback The worker.
      * @param write Whether this is a write operation.

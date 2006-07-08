@@ -721,10 +721,10 @@ class SuperRepository
         {
             throw new AVMNotFoundException("Repository not found: " + name);
         }
-        if (write && !rep.getRoot().getIsNew())
-        {
-            fSession.get().lock(rep, LockMode.UPGRADE);
-        }
+//        if (write && !rep.getRoot().getIsNew())
+//        {
+//            fSession.get().lock(rep, LockMode.UPGRADE);
+//        }
         return rep;
     }
 

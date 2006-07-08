@@ -127,6 +127,7 @@ class AVMCrawler implements Runnable
                 }
             }
             AVMNodeDescriptor dir = dirs.get(fRandom.nextInt(dirs.size()));
+            int depth = 1;
             while (dir != null)
             {
                 Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, dir.getPath());
@@ -168,17 +169,16 @@ class AVMCrawler implements Runnable
                         fOpCount++;
                     }
                 }
-                // Create some files.
-                for (int i = 0; i < 1; i++)
+                if (fRandom.nextInt(depth) < depth - 1)
                 {
-                    String name = randomName();
-                    fService.createFile(dir.getPath(), name, 
+                    // Create some files.
+                    for (int i = 0; i < 1; i++)
+                    {
+                        String name = randomName();
+                        fService.createFile(dir.getPath(), name, 
                             new ByteArrayInputStream(("I am " + name).getBytes()));
-                    fOpCount++;
-//                    PrintStream out = new PrintStream(fService.createFile(dir.getPath(), name));
-//                    fOpCount++;
-//                    out.println("I am " + name);
-//                    out.close();
+                        fOpCount++;
+                    }
                 }
                 // 1 in 100 times create a directory.
                 if (fRandom.nextInt(100) == 0)
@@ -206,6 +206,7 @@ class AVMCrawler implements Runnable
                 {
                     dir = null;
                 }
+                depth++;
             }
             if (fRandom.nextInt(16) == 0)
             {
@@ -221,7 +222,8 @@ class AVMCrawler implements Runnable
                 return;
             }
             e.printStackTrace(System.err);
-            throw new AVMException("Failure", e);
+            return;
+//            throw new AVMException("Failure", e);
         }
     }
     

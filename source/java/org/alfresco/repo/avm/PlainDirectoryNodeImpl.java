@@ -190,6 +190,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         if (existing != null)
         {
             existing.setChild(node);
+            sess.flush();  // TODO Should we or shouldn't we?
         }
         else
         {

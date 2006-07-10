@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.alfresco.org/model/audit/1.0" elementFormDefault="qualified" xml:lang="EN" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:a="http://www.alfresco.org/model/audit/1.0">
+    
+    <xs:annotation>
+        <xs:documentation xml:lang="EN"> Schema to define audit configuration. </xs:documentation>
+    </xs:annotation>
+    
+    <!-- Root element is the Audit element -->
+    
+    <xs:element name="Audit" type="a:Audit"/>
+    
+    <!--                  -->
+    <!-- Type definitions -->
+    <!--                  -->
+    
+    <!-- Options for what to record -->
+    <!-- By default these are not recorded. Behaviour is "inherited" from containing elements for unspecified entries --> 
+    
+    <xs:complexType name="RecordOptions">
+        <xs:sequence>
+            <xs:element name="recordPath" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="recordFilters" type="xs:boolean"  minOccurs="0" maxOccurs="1" />
+            <xs:element name="recordSerializedReturnValue" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="recordSerializedExceptions" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="recordSerializedMethodArguments" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="recordSerializedKeyPropertiesBeforeInvocation" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="recordSerializedKeyPropertiesAferInvocation" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+    
+    <!-- Abstract Filter entry -->
+    
+    <xs:complexType name="Filter" abstract="true"/>
+    
+    <!-- Simple Filter entry -->
+    <!--
+    
+    Supports:
+        Simple path
+        Type (and sub-types)
+        Aspect (and sub-aspects)
+        NodeRef
+        All (do not filter)
+        XPATH simple xpath expressions in the context of the key node 
+        A simple value (intended for use with non node arguments)
+    
+    -->
+    <xs:simpleType name="SimpleFilterType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="path"/>
+            <xs:enumeration value="type"/>
+            <xs:enumeration value="aspect"/>
+            <xs:enumeration value="id"/>
+            <xs:enumeration value="all"/>
+            <xs:enumeration value="xpath"/>
+            <xs:enumeration value="value"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <!-- Audit Mode -->
+    
+    <xs:simpleType name="AuditMode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="all"/>
+            <xs:enumeration value="success"/>
+            <xs:enumeration value="fail"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <!-- Defintion for how to combine elements in a compound filter -->
+    
+    <xs:simpleType name="FilterSetMode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="and"/>
+            <xs:enumeration value="or"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <!-- Define a set of filters -->
+    
+    <xs:complexType name="FilterSet">
+        <xs:complexContent>
+            <xs:extension base="a:Filter">
+                <xs:sequence>
+                    <xs:element name="Filter" type="a:Filter" minOccurs="1" maxOccurs="unbounded"/>
+                </xs:sequence>
+                <xs:attribute name="mode" type="a:FilterSetMode" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <!-- A filter that applies to the key node -->
+    
+    <xs:complexType name="KeyFilter">
+        <xs:complexContent>
+            <xs:extension base="a:Filter">
+                <xs:sequence>
+                    <xs:element name="Expression" type="xs:string"/>
+                </xs:sequence>
+                <xs:attribute name="type" type="a:SimpleFilterType" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <!-- A filter that applies to a named parameter -->
+    
+    <xs:complexType name="ParameterFilter">
+        <xs:complexContent>
+            <xs:extension base="a:KeyFilter">
+                <xs:sequence>
+                    <xs:element name="ParameterName" type="xs:string"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <!-- An abstract audit entry -->
+    
+    <xs:complexType name="AuditEntry" abstract="true">
+        <xs:sequence>
+            <xs:element name="RecordOptions" type="a:RecordOptions" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="Filter" type="a:Filter" minOccurs="0" maxOccurs="1"  />
+        </xs:sequence>
+        <!-- The inner most specification over-rides -->
+        <xs:attribute name="mode" type="a:AuditMode" />
+        <!-- The outer most specification set this -->
+        <xs:attribute name="enabled" type="xs:boolean" />
+        <!--  The inner most specification over-rides -->
+        <xs:attribute name="auditInternal" type="xs:boolean" />
+    </xs:complexType>
+    
+    <!-- Force default behaviour to be specified on the root Audit node -->
+    
+    <xs:complexType name="MandatoryAuditEntry" abstract="true">
+        <xs:complexContent>
+            <xs:restriction base="a:AuditEntry">
+                <xs:sequence>
+                    <xs:element name="RecordOptions" type="a:RecordOptions" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="Filter" type="a:Filter" minOccurs="0" maxOccurs="1"/>
+                </xs:sequence>
+                <xs:attribute name="mode" type="a:AuditMode" use="required"/>
+                <xs:attribute name="enabled" type="xs:boolean" use="required"/>
+                <xs:attribute name="auditInternal" type="xs:boolean" use="required"/>
+            </xs:restriction>
+        </xs:complexContent>
+        
+    </xs:complexType>
+    
+    <!-- An abstract audit entry with a name -->
+    
+    <xs:complexType name="NamedAuditEntry" abstract="true">
+        <xs:complexContent>
+            <xs:extension base="a:AuditEntry">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <!-- Method level audit control -->
+    
+    <xs:complexType name="Method">
+        <xs:complexContent>
+            <xs:extension base="a:NamedAuditEntry"/>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <!-- Application level audit control -->
+    
+    <xs:complexType name="Application">
+        <xs:complexContent>
+            <xs:extension base="a:NamedAuditEntry"/>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <!-- Service level audit control -->
+    
+    <xs:complexType name="Service">
+        <xs:complexContent>
+            <xs:extension base="a:NamedAuditEntry">
+                <xs:sequence>
+                    <xs:element name="Method" type="a:Method" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <!-- Global audit level control -->
+    
+    <xs:complexType name="Audit">
+        <xs:complexContent>
+            <xs:extension base="a:MandatoryAuditEntry">
+                <xs:sequence>
+                    <xs:element name="Service" type="a:Service" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+</xs:schema>

@@ -17,9 +17,10 @@
 package org.alfresco.web.app.servlet.command;
 
 import java.io.PrintWriter;
+import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.alfresco.service.ServiceRegistry;
 
@@ -45,13 +46,15 @@ public interface CommandProcessor
     * convert the supplied arguments to the objects it expects, and also check any permissions
     * that are required by the current user to execute the command.
     * 
-    * @param serviceRegistry  ServiceRegistry instance
+    * @param sc               ServletContext, can be used to retrieve ServiceRegistry instance
+    *                         from the Repository bean.
     * @param command          Name of the command the arguments are for
-    * @param args             String[] of the remaining URL arguments to the command servlet.
+    * @param args             Map of URL args passed to the command servlet
+    * @param urlElements      String[] of the remaining URL arguments to the command servlet
     * 
     * @return true if the command can be executed by the current user given the supplied args.
     */
-   public boolean validateArguments(ServiceRegistry serviceRegistry, String command, String[] args);
+   public boolean validateArguments(ServletContext sc, String command, Map<String, String> args, String[] urlElements);
    
    /**
     * Process the supplied command name. It is the responsibility of the Command Processor

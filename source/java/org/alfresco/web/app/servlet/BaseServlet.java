@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
@@ -140,9 +141,10 @@ public abstract class BaseServlet extends HttpServlet
       throws IOException
    {
       // authentication failed - so end servlet execution and redirect to login page
-      // also save the requested URL so the login page knows where to redirect too later
+      // also save the full requested URL so the login page knows where to redirect too later
       res.sendRedirect(req.getContextPath() + FACES_SERVLET + Application.getLoginPage(sc));
       String uri = req.getRequestURI();
+      String url = uri + (req.getQueryString() != null ? ("?" + req.getQueryString()) : "");
       if (uri.indexOf(req.getContextPath() + FACES_SERVLET) != -1)
       {
          // if we find a JSF servlet reference in the URI then we need to check if the rest of the
@@ -150,12 +152,12 @@ public abstract class BaseServlet extends HttpServlet
          int jspIndex = uri.indexOf(BaseServlet.FACES_SERVLET) + BaseServlet.FACES_SERVLET.length();
          if (uri.length() > jspIndex && BaseServlet.validRedirectJSP(uri.substring(jspIndex)))
          {
-            req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, uri);
+            req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, url);
          }
       }
       else
       {
-         req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, uri);
+         req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, url);
       }
    }
    
@@ -179,9 +181,47 @@ public abstract class BaseServlet extends HttpServlet
     * Resolves the given path elements to a NodeRef in the current repository
     * 
     * @param context Faces context
-    * @param args The elements of the path to lookup
+    * @param args    The elements of the path to lookup
     */
    public static NodeRef resolveWebDAVPath(FacesContext context, String[] args)
+   {
+      WebApplicationContext wc = FacesContextUtils.getRequiredWebApplicationContext(context);
+      return resolveWebDAVPath(wc, args, true);
+   }
+   
+   /**
+    * Resolves the given path elements to a NodeRef in the current repository
+    * 
+    * @param context ServletContext context
+    * @param args    The elements of the path to lookup
+    */
+   public static NodeRef resolveWebDAVPath(ServletContext context, String[] args)
+   {
+      WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
+      return resolveWebDAVPath(wc, args, true);
+   }
+   
+   /**
+    * Resolves the given path elements to a NodeRef in the current repository
+    * 
+    * @param context ServletContext context
+    * @param args    The elements of the path to lookup
+    * @param decode  True to decode the arg from UTF-8 format, false for no decoding
+    */
+   public static NodeRef resolveWebDAVPath(ServletContext context, String[] args, boolean decode)
+   {
+      WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
+      return resolveWebDAVPath(wc, args, decode);
+   }
+   
+   /**
+    * Resolves the given path elements to a NodeRef in the current repository
+    * 
+    * @param WebApplicationContext Context
+    * @param args    The elements of the path to lookup
+    * @param decode  True to decode the arg from UTF-8 format, false for no decoding
+    */
+   private static NodeRef resolveWebDAVPath(WebApplicationContext wc, String[] args, boolean decode)
    {
       NodeRef nodeRef = null;
 
@@ -193,7 +233,7 @@ public abstract class BaseServlet extends HttpServlet
          // create a list of path elements (decode the URL as we go)
          for (int x = 1; x < args.length; x++)
          {
-            paths.add(URLDecoder.decode(args[x], "UTF-8"));
+            paths.add(decode ? URLDecoder.decode(args[x], "UTF-8") : args[x]);
          }
          
          if (logger.isDebugEnabled())
@@ -203,7 +243,6 @@ public abstract class BaseServlet extends HttpServlet
          NodeRef companyHome = new NodeRef(Repository.getStoreRef(), 
                Application.getCompanyRootId());
          
-         WebApplicationContext wc = FacesContextUtils.getRequiredWebApplicationContext(context);
          FileFolderService ffs = (FileFolderService)wc.getBean("FileFolderService");
          file = ffs.resolveNamePath(companyHome, paths);
          nodeRef = file.getNodeRef();
@@ -227,5 +266,51 @@ public abstract class BaseServlet extends HttpServlet
       }
       
       return nodeRef;
+   }
+   
+   /**
+    * Resolve a name based into a NodeRef and Filename string
+    *  
+    * @param sc      ServletContext
+    * @param path    'cm:name' based path using the '/' character as a separator
+    *  
+    * @return PathRefInfo structure containing the resolved NodeRef and filename
+    * 
+    * @throws IllegalArgumentException
+    */
+   public final static PathRefInfo resolveNamePath(ServletContext sc, String path)
+   {
+      StringTokenizer t = new StringTokenizer(path, "/");
+      int tokenCount = t.countTokens();
+      String[] elements = new String[tokenCount];
+      for (int i=0; i<tokenCount; i++)
+      {
+         elements[i] = t.nextToken();
+      }
+      
+      // process name based path tokens using the webdav path resolving helper 
+      NodeRef nodeRef = resolveWebDAVPath(sc, elements, false);
+      if (nodeRef == null)
+      {
+         // unable to resolve path - output helpful error to the user
+         throw new IllegalArgumentException("Unable to resolve item Path: " + path);
+      }
+      
+      return new PathRefInfo(nodeRef, elements[tokenCount - 1]);
+   }
+   
+   /**
+    * Simple structure class for returning both a NodeRef and Filename String
+    * @author Kevin Roast
+    */
+   public static class PathRefInfo
+   {
+      PathRefInfo(NodeRef ref, String filename)
+      {
+         this.NodeRef = ref;
+         this.Filename = filename;
+      }
+      public NodeRef NodeRef;
+      public String Filename;
    }
 }

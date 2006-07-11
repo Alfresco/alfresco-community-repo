@@ -21,6 +21,8 @@ import java.util.Random;
 
 import org.alfresco.repo.avm.AVMException;
 import org.alfresco.repo.avm.AVMNotFoundException;
+import org.alfresco.repo.avm.RetryingTransactionCallback;
+import org.alfresco.repo.avm.RetryingTransaction;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -34,7 +36,7 @@ import org.springframework.transaction.TransactionStatus;
  * Helper for DAOs.
  * @author britt
  */
-public class HibernateTxn extends HibernateTemplate
+public class HibernateTxn extends HibernateTemplate implements RetryingTransaction
 {
     /**
      * The transaction manager.
@@ -65,13 +67,10 @@ public class HibernateTxn extends HibernateTemplate
         fRandom = new Random();
     }
 
-    /**
-     * Perform a set of operations under a single transaction.
-     * Keep trying if the operation fails because of a concurrency issue.
-     * @param callback The worker.
-     * @param write Whether this is a write operation.
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.hibernate.RetryingTransaction#perform(org.alfresco.repo.avm.hibernate.HibernateTxnCallback, boolean)
      */
-    public void perform(HibernateTxnCallback callback, boolean write)
+    public void perform(RetryingTransactionCallback callback, boolean write)
     {
         while (true)
         {

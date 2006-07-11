@@ -17,15 +17,11 @@
 
 package org.alfresco.repo.avm;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import org.hibernate.Query;
-import org.hibernate.Session;
 
 /**
  * A layered directory node.  A layered directory node points at
@@ -78,7 +74,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fIndirection = indirection;
         fPrimaryIndirection = true;
         fOpacity = false;
-        repos.getSuperRepository().getSession().save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.save(this);
     }
     
     /**
@@ -91,24 +87,23 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                     Repository repos)
     {
         super(repos.getSuperRepository().issueID(), repos);
-        Session sess = repos.getSuperRepository().getSession();
         fIndirection = other.getUnderlying();
         fPrimaryIndirection = other.getPrimaryIndirection();
         fLayerID = -1;
         fOpacity = false;
-        sess.save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.save(this);
         for (ChildEntry child : other.getChildren())
         {
             ChildEntryImpl newChild = new ChildEntryImpl(child.getName(),
                                                          this,
                                                          child.getChild());
-            repos.getSuperRepository().getSession().save(newChild);
+            AVMContext.fgInstance.fChildEntryDAO.save(newChild);
         }
         for (DeletedChild dc : other.getDeleted())
         {
             DeletedChild newDel = new DeletedChildImpl(dc.getName(),
                                                        this);
-            sess.save(newDel);
+            AVMContext.fgInstance.fDeletedChildDAO.save(newDel);
         }
     }
     
@@ -130,8 +125,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fPrimaryIndirection = false;
         fLayerID = -1;
         fOpacity = false;
-        Session sess = repos.getSuperRepository().getSession();
-        sess.save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.save(this);
         if (copyContents)
         {
             for (ChildEntry child : other.getChildren())
@@ -139,7 +133,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                 ChildEntryImpl newChild = new ChildEntryImpl(child.getName(),
                                                              this,
                                                              child.getChild());
-                sess.save(newChild);
+                AVMContext.fgInstance.fChildEntryDAO.save(newChild);
             }
         }
     }
@@ -162,7 +156,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fPrimaryIndirection = true;
         fLayerID = -1;
         fOpacity = false;
-        repo.getSuperRepository().getSession().save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.save(this);
     }   
     
     /**
@@ -266,22 +260,21 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void putChild(String name, AVMNode node)
     {
-        Session sess = SuperRepository.GetInstance().getSession();
-//        sess.lock(this, LockMode.UPGRADE);
-        ChildEntry entry = new ChildEntryImpl(name, this, node);
-        ChildEntry existing = (ChildEntry)sess.get(ChildEntryImpl.class, (Serializable)entry);
+        ChildEntry existing = getChild(name, true);
         if (existing != null)
         {
             existing.setChild(node);
+            AVMContext.fgInstance.fChildEntryDAO.update(existing);
         }
         else
         {
-            sess.save(entry);
+            ChildEntry entry = new ChildEntryImpl(name, this, node);
+            AVMContext.fgInstance.fChildEntryDAO.save(entry);
         }
-        DeletedChild dc = getDeleted("name");
+        DeletedChild dc = getDeleted(name);
         if (dc != null)
         {
-            sess.delete(dc);
+            AVMContext.fgInstance.fDeletedChildDAO.delete(dc);
         }
     }
 
@@ -499,11 +492,11 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         ChildEntry entry = getChild(name, true);
         if (entry != null)
         {
-            SuperRepository.GetInstance().getSession().delete(entry);
+            AVMContext.fgInstance.fChildEntryDAO.delete(entry);
         }
         DeletedChild dc = new DeletedChildImpl(name,
                                                this);
-        SuperRepository.GetInstance().getSession().save(dc);
+        AVMContext.fgInstance.fDeletedChildDAO.save(dc);
     }
     
     /**
@@ -564,7 +557,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         DeletedChild dc = getDeleted(name);
         if (dc != null)
         {
-            SuperRepository.GetInstance().getSession().delete(dc);
+            AVMContext.fgInstance.fDeletedChildDAO.delete(dc);
         }
     }
     
@@ -687,31 +680,16 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     @SuppressWarnings("unchecked")
     private DeletedChild getDeleted(String name)
     {
-        Query query = SuperRepository.GetInstance().getSession().getNamedQuery("DeletedChild.ByNameParent");
-        query.setString("name", name);
-        query.setEntity("parent", this);
-        query.setCacheable(true);
-        query.setCacheRegion("DeletedChild.ByNameParent");
-        List<DeletedChild> dc = (List<DeletedChild>)query.list();
-        if (dc.size() == 0)
-        {
-            return null;
-        }
-        return dc.get(0);
+        return AVMContext.fgInstance.fDeletedChildDAO.getByNameParent(name, this);
     }
     
     /**
      * Get all the deleted entries in this directory.
      * @return A List of DeletedEntry objects.
      */
-    @SuppressWarnings("unchecked")
     public List<DeletedChild> getDeleted()
     {
-        Query query = SuperRepository.GetInstance().getSession().getNamedQuery("DeletedChild.ByParent");
-        query.setEntity("parent", this);
-        query.setCacheable(true);
-        query.setCacheRegion("DeletedChild.ByParent");
-        return (List<DeletedChild>)query.list();
+        return AVMContext.fgInstance.fDeletedChildDAO.getByParent(this);
     }
 
     /**

@@ -29,7 +29,7 @@ import java.util.SortedMap;
  * and layering operations.
  * @author britt
  */
-interface Repository
+public interface Repository
 {
     /**
      * This returns the next version in this repository that will be snapshotted.

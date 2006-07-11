@@ -37,7 +37,7 @@ import org.hibernate.Query;
  * operation.
  * @author britt
  */
-class RepositoryImpl implements Repository, Serializable
+public class RepositoryImpl implements Repository, Serializable
 {
     static final long serialVersionUID = -1485972568675732904L;
 
@@ -98,20 +98,20 @@ class RepositoryImpl implements Repository, Serializable
         fRoot = null;
         fCreator = "britt";
         fCreateDate = System.currentTimeMillis();
-        fSuper.getSession().save(this);
+        AVMContext.fgInstance.fRepositoryDAO.save(this);
         // Make up the initial version record and save.
         long time = System.currentTimeMillis();
         fRoot = new PlainDirectoryNodeImpl(this);
         fRoot.setIsNew(false);
         fRoot.setIsRoot(true);
-        fSuper.getSession().save(fRoot);
+        AVMContext.fgInstance.fAVMNodeDAO.save(fRoot);
         VersionRoot versionRoot = new VersionRootImpl(this,
                                                       fRoot,
                                                       fNextVersionID,
                                                       time,
                                                       "britt");
         fNextVersionID++;
-        fSuper.getSession().save(versionRoot);
+        AVMContext.fgInstance.fVersionRootDAO.save(versionRoot);
     }
     
     /**
@@ -137,20 +137,21 @@ class RepositoryImpl implements Repository, Serializable
             throw new AVMExistsException("Already snapshotted.");
         }
         // Clear out the new nodes.
-        Query query = 
-            fSuper.getSession().getNamedQuery("AVMNode.ByNewInRepo");
-        query.setEntity("repo", this);
-        for (AVMNode newNode : (List<AVMNode>)query.list())
+        AVMNodeDAO anDAO = AVMContext.fgInstance.fAVMNodeDAO;
+        for (AVMNode newNode : anDAO.getNewInRepo(this))
         {
             newNode.setIsNew(false);
+//            anDAO.update(newNode);
         }
+        // TODO: This is a grotesque hack to deal with hibernate.
+        anDAO.flush();
         // Make up a new version record.
         VersionRoot versionRoot = new VersionRootImpl(this,
                                                       fRoot,
                                                       fNextVersionID,
                                                       System.currentTimeMillis(),
                                                       "britt");
-        fSuper.getSession().save(versionRoot);
+        AVMContext.fgInstance.fVersionRootDAO.save(versionRoot);
         // Increment the version id.
         fNextVersionID++;
         return fNextVersionID - 1;
@@ -438,9 +439,7 @@ class RepositoryImpl implements Repository, Serializable
     @SuppressWarnings("unchecked")
     public List<VersionDescriptor> getVersions()
     {
-        Query query = fSuper.getSession().createQuery("from VersionRootImpl v where v.repository = :rep order by v.versionID");
-        query.setEntity("rep", this);
-        List<VersionRoot> versions = (List<VersionRoot>)query.list();
+        List<VersionRoot> versions = AVMContext.fgInstance.fVersionRootDAO.getAllInRepository(this);
         List<VersionDescriptor> descs = new ArrayList<VersionDescriptor>();
         for (VersionRoot vr : versions)
         {
@@ -464,32 +463,7 @@ class RepositoryImpl implements Repository, Serializable
     @SuppressWarnings("unchecked")
     public List<VersionDescriptor> getVersions(Date from, Date to)
     {
-        Query query;
-        if (from == null)
-        {
-            query = 
-                fSuper.getSession().createQuery("from VersionRootImpl vr where vr.createDate <= :to " +
-                                                "order by vr.versionID");
-            query.setLong("to", to.getTime());
-        }
-        else if (to == null)
-        {
-            query =
-                fSuper.getSession().createQuery("from VersionRootImpl vr " +
-                                                "where vr.createDate >= :from " +
-                                                "order by vr.versionID");
-            query.setLong("from", from.getTime());
-        }
-        else
-        {
-            query =
-                fSuper.getSession().createQuery("from VersionRootImpl vr "+ 
-                                                "where vr.createDate between :from and :to " +
-                                                "order by vr.versionID");
-            query.setLong("from", from.getTime());
-            query.setLong("to", to.getTime());
-        }
-        List<VersionRoot> versions = (List<VersionRoot>)query.list();
+        List<VersionRoot> versions = AVMContext.fgInstance.fVersionRootDAO.getByDates(this, from, to);
         List<VersionDescriptor> descs = new ArrayList<VersionDescriptor>();
         for (VersionRoot vr : versions)
         {
@@ -537,17 +511,13 @@ class RepositoryImpl implements Repository, Serializable
         // Versions less than 0 mean get current.
         if (version < 0)
         {
-            dir = (DirectoryNode)AVMNodeUnwrapper.Unwrap(fRoot);
+            dir = fRoot; // TODO How to factor out this kind of Hibernate goofiness.
+                         // (DirectoryNode)AVMNodeUnwrapper.Unwrap(fRoot);
         }
         else
         {
-            Query query = 
-                fSuper.getSession().getNamedQuery("VersionRoot.GetVersionRoot");
-            query.setEntity("rep", this);
-            query.setInteger("version", version);
-            dir = (DirectoryNode)AVMNodeUnwrapper.Unwrap((AVMNode)query.uniqueResult());
+            dir = AVMContext.fgInstance.fAVMNodeDAO.getRepositoryRoot(this, version);
         }
-//        fSuper.getSession().lock(dir, LockMode.READ);
         // Add an entry for the root.
         result.add(dir, "", write);
         dir = (DirectoryNode)result.getCurrentNode();
@@ -599,15 +569,7 @@ class RepositoryImpl implements Repository, Serializable
         }
         else
         {
-            Query query = 
-                fSuper.getSession().getNamedQuery("VersionRoot.GetVersionRoot");
-            query.setEntity("rep", this);
-            query.setInteger("version", version);
-            root = (AVMNode)query.uniqueResult();
-            if (root == null)
-            {
-                throw new AVMException("Invalid version: " + version);
-            }
+            root = AVMContext.fgInstance.fAVMNodeDAO.getRepositoryRoot(this, version);
         }            
         return root.getDescriptor("main:", "", null);
     }
@@ -800,28 +762,22 @@ class RepositoryImpl implements Repository, Serializable
         {
             throw new AVMBadArgumentException("Cannot purge initial version");
         }
-        Query query = fSuper.getSession().getNamedQuery("VersionRoot.VersionByID");
-        query.setEntity("rep", this);
-        query.setInteger("version", version);
-        VersionRoot vRoot = (VersionRoot)query.uniqueResult();
-        AVMNode root = vRoot.getRoot();
-        if (root == null)
+        VersionRoot vRoot = AVMContext.fgInstance.fVersionRootDAO.getByVersionID(this, version);
+        if (vRoot == null)
         {
             throw new AVMNotFoundException("Version not found.");
         }
+        AVMNode root = vRoot.getRoot();
         root.setIsRoot(false);
-        fSuper.getSession().delete(vRoot);
+        AVMContext.fgInstance.fAVMNodeDAO.update(root);
+        AVMContext.fgInstance.fVersionRootDAO.delete(vRoot);
         if (root.equals(fRoot))
         {
             // We have to set a new current root.
-            fSuper.getSession().flush();
-            query = fSuper.getSession().createQuery("select max(vr.versionID) from VersionRootImpl vr");
-            int latest = (Integer)query.uniqueResult();
-            query = fSuper.getSession().getNamedQuery("VersionRoot.VersionByID");
-            query.setEntity("rep", this);
-            query.setInteger("version", latest);
-            vRoot = (VersionRoot)query.uniqueResult();
+            // TODO More hibernate goofiness to compensate for: fSuper.getSession().flush();
+            vRoot = AVMContext.fgInstance.fVersionRootDAO.getMaxVersion(this);
             fRoot = vRoot.getRoot();
+            AVMContext.fgInstance.fRepositoryDAO.update(this);
         }
     }
 

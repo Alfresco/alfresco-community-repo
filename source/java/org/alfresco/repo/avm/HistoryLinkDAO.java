@@ -17,33 +17,37 @@
 
 package org.alfresco.repo.avm;
 
+import java.util.List;
+
 /**
- * This is the interface for the merged from - to relationship.
+ * DAO for history links.
  * @author britt
  */
-public interface MergeLink
+public interface HistoryLinkDAO
 {
     /**
-     * Set the from part.
-     * @param from
+     * Save and unsaved HistoryLink.
+     * @param link
      */
-    public void setMfrom(AVMNode from);
+    public void save(HistoryLink link);
     
     /**
-     * Get the from part.
-     * @return The from part.
+     * Get the history link with the given descendent.
+     * @param descendent The descendent.
+     * @return The HistoryLink or null if not found.
      */
-    public AVMNode getMfrom();
+    public HistoryLink getByDescendent(AVMNode descendent);
+    
+    /**
+     * Get all the descendents of a node.
+     * @param ancestor The ancestor node.
+     * @return A List of AVMNode descendents.
+     */
+    public List<HistoryLink> getByAncestor(AVMNode ancestor);
 
     /**
-     * Set the to part.
-     * @param to
+     * Delete a HistoryLink
+     * @param link The link to delete.
      */
-    public void setMto(AVMNode to);
-    
-    /**
-     * Get the to part.
-     * @return The to part.
-     */
-    public AVMNode getMto();
+    public void delete(HistoryLink link);
 }

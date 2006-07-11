@@ -185,7 +185,8 @@ class Lookup
             {
                 // Inform the repository of a new root.
                 fRepository.setNewRoot((DirectoryNode)node);
-                SuperRepository.GetInstance().getSession().flush();
+                AVMContext.fgInstance.fRepositoryDAO.update(fRepository);
+                // TODO More Hibernate weirdness to figure out: SuperRepository.GetInstance().getSession().flush();
                 return;
             }
             // Not the root. Check if we are the top layer and insert this into it's parent.
@@ -194,7 +195,7 @@ class Lookup
                 fTopLayer = (LayeredDirectoryNode)node;
             }
             ((DirectoryNode)fComponents.get(fPosition - 1).getNode()).putChild(name, node);
-            SuperRepository.GetInstance().getSession().flush();
+            // TODO More Hibernate hijinx: SuperRepository.GetInstance().getSession().flush();
         }
     }
     

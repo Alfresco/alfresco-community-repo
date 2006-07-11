@@ -19,11 +19,6 @@ package org.alfresco.repo.avm;
 
 import java.util.List;
 
-import org.alfresco.repo.avm.hibernate.HibernateTxn;
-import org.alfresco.repo.avm.hibernate.HibernateTxnCallback;
-import org.hibernate.Query;
-import org.hibernate.Session;
-
 /**
  * This is the background thread for reaping no longer referenced nodes
  * in the AVM repository.  These orphans arise from purge operations.
@@ -34,7 +29,7 @@ public class OrphanReaper implements Runnable
     /**
      * The HibernateTxn instance.
      */
-    private HibernateTxn fTransaction;
+    private RetryingTransaction fTransaction;
     
     /**
      * Inactive base sleep interval.
@@ -112,7 +107,7 @@ public class OrphanReaper implements Runnable
      * Set the Hibernate Transaction Wrapper.
      * @param transaction
      */
-    public void setHibernateTxn(HibernateTxn transaction)
+    public void setRetryingTransaction(RetryingTransaction transaction)
     {
         fTransaction = transaction;
     }
@@ -184,17 +179,13 @@ public class OrphanReaper implements Runnable
     /**
      * Do a batch of cleanup work.
      */
-    @SuppressWarnings("unchecked")
     public void doBatch()
     {
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                SuperRepository.GetInstance().setSession(session);
-                Query query = session.getNamedQuery("FindOrphans");
-                query.setMaxResults(fBatchSize);
-                List<AVMNode> nodes = (List<AVMNode>)query.list();
+                List<AVMNode> nodes = AVMContext.fgInstance.fAVMNodeDAO.getOrphans(fBatchSize);
                 if (nodes.size() == 0)
                 {
                     fActive = false;
@@ -204,28 +195,22 @@ public class OrphanReaper implements Runnable
                 for (AVMNode node : nodes)
                 {
                     // Save away the ancestor and merged from fields from this node.
-                    query = session.createQuery("from HistoryLinkImpl hl where hl.descendent = :desc");
-                    query.setEntity("desc", node);
-                    HistoryLink hlink = (HistoryLink)query.uniqueResult();
+                    HistoryLink hlink = AVMContext.fgInstance.fHistoryLinkDAO.getByDescendent(node);
                     AVMNode ancestor = null;
                     if (hlink != null)
                     {
                         ancestor = hlink.getAncestor();
-                        session.delete(hlink);
+                        AVMContext.fgInstance.fHistoryLinkDAO.delete(hlink);
                     }
-                    query = session.createQuery("from MergeLinkImpl ml where ml.mto = :to");
-                    query.setEntity("to", node);
-                    MergeLink mlink = (MergeLink)query.uniqueResult();
+                    MergeLink mlink = AVMContext.fgInstance.fMergeLinkDAO.getByTo(node);
                     AVMNode mergedFrom = null;
                     if (mlink != null)
                     {
                         mergedFrom = mlink.getMfrom();
-                        session.delete(mlink);
+                        AVMContext.fgInstance.fMergeLinkDAO.delete(mlink);
                     }
                     // Get all the nodes that have this node as ancestor.
-                    query = session.getNamedQuery("HistoryLink.ByAncestor");
-                    query.setEntity("node", node);
-                    List<HistoryLink> links = (List<HistoryLink>)query.list();
+                    List<HistoryLink> links = AVMContext.fgInstance.fHistoryLinkDAO.getByAncestor(node);
                     for (HistoryLink link : links)
                     {
                         AVMNode desc = link.getDescendent();
@@ -234,56 +219,51 @@ public class OrphanReaper implements Runnable
                         {
                             desc.setMergedFrom(mergedFrom);
                         }
-                        session.delete(link);
+                        AVMContext.fgInstance.fHistoryLinkDAO.delete(link);
                     }
                     // Get all the nodes that have this node as mergedFrom
-                    query = session.getNamedQuery("MergeLink.ByFrom");
-                    query.setEntity("merged", node);
-                    List<MergeLink> mlinks = (List<MergeLink>)query.list();
+                    List<MergeLink> mlinks = AVMContext.fgInstance.fMergeLinkDAO.getByFrom(node);
                     for (MergeLink link : mlinks)
                     {
                         link.getMto().setMergedFrom(ancestor);
-                        session.delete(link);
+                        AVMContext.fgInstance.fMergeLinkDAO.delete(link);
                     }
-                    session.flush();
-                    node = AVMNodeUnwrapper.Unwrap(node);
+                    // TODO What to do about such Hibernate wackiness: session.flush();
+                    // TODO More of the same: node = AVMNodeUnwrapper.Unwrap(node);
                     // Extra work for directories.
-                    if (node instanceof DirectoryNode)
+                    if (node.getType() == AVMNodeType.PLAIN_DIRECTORY ||
+                        node.getType() == AVMNodeType.LAYERED_DIRECTORY)
                     {
                         // First get rid of all child entries for the node.
-                        Query delete = session.getNamedQuery("ChildEntry.DeleteByParent");
-                        delete.setEntity("parent", node);
-                        delete.executeUpdate();
-                        if (node instanceof LayeredDirectoryNode)
+                        AVMContext.fgInstance.fChildEntryDAO.deleteByParent(node);
+                        if (node.getType() == AVMNodeType.LAYERED_DIRECTORY)
                         {
                             // More special work for layered directories.
-                            delete = session.getNamedQuery("DeletedChild.DeleteByParent");
-                            delete.setEntity("parent", node);
-                            delete.executeUpdate();
+                            AVMContext.fgInstance.fDeletedChildDAO.deleteByParent(node);
                         } 
-                        session.delete(node);
+                        AVMContext.fgInstance.fAVMNodeDAO.delete(node);
                     }
                     else if (node instanceof PlainFileNode)
                     {
-                        session.delete(node);
+                        AVMContext.fgInstance.fAVMNodeDAO.delete(node);
                         // FileContent should be purged if nobody else references it.
                         FileContent content = ((PlainFileNode)node).getContent();
                         if (content.getRefCount() == 1)
                         {
                             content.delete();
-                            session.delete(content);
+                            AVMContext.fgInstance.fFileContentDAO.delete(content);
                         }
                     }
                     else
                     {
-                        session.delete(node);
+                        AVMContext.fgInstance.fAVMNodeDAO.delete(node);
                     }
                 }
             }
         }
         try
         {
-            HTxnCallback doit = new HTxnCallback();
+            TxnCallback doit = new TxnCallback();
             fTransaction.perform(doit, true);
         }
         catch (Exception e)

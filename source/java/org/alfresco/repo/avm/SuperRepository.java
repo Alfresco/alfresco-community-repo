@@ -27,10 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
 
-import org.hibernate.LockMode;
-import org.hibernate.Query;
-import org.hibernate.Session;
-
 /**
  * This or Repository are
  * the implementors of the operations specified by AVMService.
@@ -42,11 +38,6 @@ class SuperRepository
      * The single instance of SuperRepository.
      */
     private static SuperRepository fgInstance;
-    
-    /**
-     * The Hibernate Session associated with the current operation.
-     */
-    private ThreadLocal<Session> fSession;
     
     /**
      * The current lookup count.
@@ -89,19 +80,8 @@ class SuperRepository
         fNodeIssuer = nodeIssuer;
         fContentIssuer = contentIssuer;
         fLayerIssuer = layerIssuer;
-        fSession = new ThreadLocal<Session>();
         fLookupCount = new ThreadLocal<Integer>();
         fgInstance = this;
-    }
-
-    /**
-     * Set the (thread local) Hibernate session.
-     * @param session The Session to set.
-     */
-    public void setSession(Session session)
-    {
-        fSession.set(session);
-        fLookupCount.set(0);
     }
 
     /**
@@ -485,25 +465,24 @@ class SuperRepository
 //        fSession.get().lock(rep, LockMode.UPGRADE);
         AVMNode root = rep.getRoot();
         root.setIsRoot(false);
-        Query query = fSession.get().createQuery("from VersionRootImpl vr where vr.repository = :rep");
-        query.setEntity("rep", rep);
-        List<VersionRoot> vRoots = (List<VersionRoot>)query.list();
+//        AVMContext.fgInstance.fAVMNodeDAO.update(root);
+        VersionRootDAO vrDAO = AVMContext.fgInstance.fVersionRootDAO;
+        List<VersionRoot> vRoots = vrDAO.getAllInRepository(rep);
         for (VersionRoot vr : vRoots)
         {
             AVMNode node = vr.getRoot();
             node.setIsRoot(false);
-            fSession.get().delete(vr);
+//            AVMContext.fgInstance.fAVMNodeDAO.update(node);
+            vrDAO.delete(vr);
         }
-        query = fSession.get().createQuery("from AVMNodeImpl an where an.repository = :rep");
-        query.setEntity("rep", rep);
-        Iterator<AVMNode> iter = (Iterator<AVMNode>)query.iterate();
+        Iterator<AVMNode> iter = AVMContext.fgInstance.fAVMNodeDAO.getByRepository(rep);
         while (iter.hasNext())
         {
             AVMNode node = iter.next();
             node.setRepository(null);
+            AVMContext.fgInstance.fAVMNodeDAO.update(node);
         }
-        fSession.get().flush();
-        fSession.get().delete(rep);
+        AVMContext.fgInstance.fRepositoryDAO.delete(rep);
     }
     
     /**
@@ -541,7 +520,7 @@ class SuperRepository
     public InputStream getInputStream(AVMNodeDescriptor desc)
     {
         fLookupCount.set(1);
-        AVMNode node = (AVMNode)fSession.get().get(AVMNodeImpl.class, desc.getId());
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(desc.getId());
         if (node == null)
         {
             throw new AVMNotFoundException("Not found.");
@@ -578,7 +557,7 @@ class SuperRepository
     public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir)
     {
         fLookupCount.set(1);
-        AVMNode node = (AVMNode)fSession.get().get(AVMNodeImpl.class, dir.getId());
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(dir.getId());
         if (node.getType() != AVMNodeType.LAYERED_DIRECTORY &&
             node.getType() != AVMNodeType.PLAIN_DIRECTORY)
         {
@@ -595,8 +574,7 @@ class SuperRepository
     @SuppressWarnings("unchecked")
     public List<RepositoryDescriptor> getRepositories()
     {
-        Query query = fSession.get().createQuery("from RepositoryImpl r");
-        List<Repository> l = (List<Repository>)query.list();
+        List<Repository> l = AVMContext.fgInstance.fRepositoryDAO.getAll();
         List<RepositoryDescriptor> result = new ArrayList<RepositoryDescriptor>();
         for (Repository rep : l)
         {
@@ -671,15 +649,6 @@ class SuperRepository
     }
     
     /**
-     * Get the (thread local) Hibernate session.
-     * @return The Session.
-     */
-    public Session getSession()
-    {
-        return fSession.get();
-    }
-
-    /**
      * Get the indirection path for a layered node.
      * @param version The version to look under.
      * @param path The path to the node.
@@ -714,17 +683,11 @@ class SuperRepository
      */
     private Repository getRepositoryByName(String name, boolean write)
     {
-        Repository rep = (Repository)fSession.get().get(RepositoryImpl.class, 
-                                              name); /* LockMode.READ ,
-                                              write ? LockMode.UPGRADE : LockMode.READ); */
+        Repository rep = AVMContext.fgInstance.fRepositoryDAO.getByName(name);
         if (rep == null)
         {
             throw new AVMNotFoundException("Repository not found: " + name);
         }
-//        if (write && !rep.getRoot().getIsNew())
-//        {
-//            fSession.get().lock(rep, LockMode.UPGRADE);
-//        }
         return rep;
     }
 
@@ -744,7 +707,8 @@ class SuperRepository
 //        fSession.get().lock(rep, LockMode.READ);
         return rep.getRoot(version);
     }
-    
+ 
+    // TODO Fix this awful mess regarding cycle detection.
     /**
      * Lookup a node.
      * @param version The version to look under.
@@ -753,15 +717,27 @@ class SuperRepository
      */
     public Lookup lookup(int version, String path)
     {
-        fLookupCount.set(fLookupCount.get() + 1);
-        if (fLookupCount.get() > 10)
+        Integer count = fLookupCount.get();
+        if (count == null)
+        {
+            fLookupCount.set(1);
+        }
+        else
+        {
+            fLookupCount.set(count + 1);
+        }
+        if (fLookupCount.get() > 50)
         {
             throw new AVMCycleException("Cycle in lookup.");
         }
         String [] pathParts = SplitPath(path);
         Repository rep = getRepositoryByName(pathParts[0], false);
-//        fSession.get().lock(rep, LockMode.READ);
-        return rep.lookup(version, pathParts[1], false);
+        Lookup result = rep.lookup(version, pathParts[1], false);
+        if (count == null)
+        {
+            fLookupCount.set(null);
+        }
+        return result;
     }
     
     /**
@@ -773,7 +749,7 @@ class SuperRepository
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name)
     {
         fLookupCount.set(0);
-        AVMNode node = (AVMNode)fSession.get().get(AVMNodeImpl.class, dir.getId());
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(dir.getId());
         if (node == null)
         {
             throw new AVMNotFoundException("Not found: " + dir.getId());
@@ -865,7 +841,7 @@ class SuperRepository
      */
     public List<AVMNodeDescriptor> getHistory(AVMNodeDescriptor desc, int count)
     {
-        AVMNode node = (AVMNode)fSession.get().get(AVMNodeImpl.class, desc.getId());
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(desc.getId());
         if (node == null)
         {
             throw new AVMNotFoundException("Not found.");
@@ -926,8 +902,8 @@ class SuperRepository
     public AVMNodeDescriptor getCommonAncestor(AVMNodeDescriptor left,
                                                AVMNodeDescriptor right)
     {
-        AVMNode lNode = (AVMNode)fSession.get().get(AVMNodeImpl.class, left.getId());
-        AVMNode rNode = (AVMNode)fSession.get().get(AVMNodeImpl.class, right.getId());
+        AVMNode lNode = AVMContext.fgInstance.fAVMNodeDAO.getByID(left.getId());
+        AVMNode rNode = AVMContext.fgInstance.fAVMNodeDAO.getByID(right.getId());
         if (lNode == null || rNode == null)
         {
             throw new AVMNotFoundException("Node not found.");

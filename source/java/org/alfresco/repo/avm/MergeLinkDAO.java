@@ -17,33 +17,37 @@
 
 package org.alfresco.repo.avm;
 
+import java.util.List;
+
 /**
- * This is the interface for the merged from - to relationship.
+ * DAO for MergeLinks.
  * @author britt
  */
-public interface MergeLink
+public interface MergeLinkDAO
 {
     /**
-     * Set the from part.
-     * @param from
+     * Save an unsaved MergeLink.
+     * @param link The link to save.
      */
-    public void setMfrom(AVMNode from);
+    public void save(MergeLink link);
     
     /**
-     * Get the from part.
-     * @return The from part.
+     * Get a link from the merged to node.
+     * @param to The node merged to.
+     * @return An AVMNode or null if not found.
      */
-    public AVMNode getMfrom();
-
-    /**
-     * Set the to part.
-     * @param to
-     */
-    public void setMto(AVMNode to);
+    public MergeLink getByTo(AVMNode to);
     
     /**
-     * Get the to part.
-     * @return The to part.
+     * Get all the link that the given node was merged to.
+     * @param from The node that was merged from
+     * @return A List of MergeLinks.
      */
-    public AVMNode getMto();
+    public List<MergeLink> getByFrom(AVMNode from);
+    
+    /**
+     * Delete a link.
+     * @param link The link to delete.
+     */
+    public void delete(MergeLink link);
 }

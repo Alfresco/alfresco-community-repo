@@ -17,13 +17,10 @@
 
 package org.alfresco.repo.avm;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import org.hibernate.Session;
 
 /**
  * A plain directory.  No monkey tricks except for possiblyCopy.
@@ -40,7 +37,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     public PlainDirectoryNodeImpl(Repository repo)
     {
         super(repo.getSuperRepository().issueID(), repo);
-        repo.getSuperRepository().getSession().save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.save(this);
     }
     
     /**
@@ -60,16 +57,15 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                   Repository repos)
     {
         super(repos.getSuperRepository().issueID(), repos);
-        Session sess = repos.getSuperRepository().getSession();
-        sess.save(this);
-        sess.flush();
+        AVMContext.fgInstance.fAVMNodeDAO.save(this);
+        // TODO Something about this. sess.flush();
         for (ChildEntry child : other.getChildren())
         {
             ChildEntry newChild = new ChildEntryImpl(child.getName(),
                                                      this,
                                                      child.getChild());
-            sess.save(newChild);
-            sess.flush();
+            AVMContext.fgInstance.fChildEntryDAO.save(newChild);
+            // TODO Something about this: sess.flush();
         }
     }
 
@@ -172,7 +168,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         ChildEntry entry = getChild(name, true);
         if (entry != null)
         {
-            SuperRepository.GetInstance().getSession().delete(entry);
+            AVMContext.fgInstance.fChildEntryDAO.delete(entry);
         }
     }
 
@@ -183,18 +179,16 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      */
     public void putChild(String name, AVMNode node)
     {
-        Session sess = SuperRepository.GetInstance().getSession();
-//        sess.lock(this, LockMode.UPGRADE);
-        ChildEntry entry = new ChildEntryImpl(name, this, node);
-        ChildEntry existing = (ChildEntry)sess.get(ChildEntryImpl.class, (Serializable)entry);
+        ChildEntry existing = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
         if (existing != null)
         {
             existing.setChild(node);
-            sess.flush();  // TODO Should we or shouldn't we?
+            AVMContext.fgInstance.fChildEntryDAO.update(existing);
         }
         else
         {
-            sess.save(entry);
+            ChildEntry entry = new ChildEntryImpl(name, this, node);
+            AVMContext.fgInstance.fChildEntryDAO.save(entry);
         }
     }
 

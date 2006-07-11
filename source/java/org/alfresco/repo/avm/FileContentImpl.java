@@ -89,7 +89,7 @@ class FileContentImpl implements FileContent, Serializable
         {
             throw new AVMException("File data error.", ie);
         }
-        SuperRepository.GetInstance().getSession().save(this);
+        AVMContext.fgInstance.fFileContentDAO.save(this);
     }
     
     /**
@@ -119,7 +119,7 @@ class FileContentImpl implements FileContent, Serializable
         {
             throw new AVMException("I/O Error.", ie);
         }
-        SuperRepository.GetInstance().getSession().save(this);
+        AVMContext.fgInstance.fFileContentDAO.save(this);
     }
     
     /**
@@ -150,7 +150,7 @@ class FileContentImpl implements FileContent, Serializable
         {
             throw new AVMException("I/O failure in Copy on Write.", ie);
         }
-        SuperRepository.GetInstance().getSession().save(this);
+        AVMContext.fgInstance.fFileContentDAO.save(this);
     }
 
     /**

@@ -17,23 +17,21 @@
 
 package org.alfresco.repo.avm;
 
-import org.hibernate.proxy.HibernateProxy;
-
 /**
- * Utility for unwrapping (getting the actual instance of) an AVMNode from what
- * may be a HibernateProxy.  Bitter Hibernate note: Hibernate proxies for polymorphic
- * types are fundamentally broken.  The Hibernate schmucks claim its a CGLIB problem.
- * The CGLIB villains dither unintelligibly.
+ * DAO for FileContent objects.
  * @author britt
  */
-public class AVMNodeUnwrapper
+public interface FileContentDAO
 {
-    public static AVMNode Unwrap(AVMNode node)
-    {
-        if (node instanceof HibernateProxy)
-        {
-            return (AVMNode)((HibernateProxy)node).getHibernateLazyInitializer().getImplementation();
-        }
-        return node;
-    }
+    /**
+     * Save one.
+     * @param content To be saved. 
+     */
+    public void save(FileContent content);
+    
+    /**
+     * Delete one.
+     * @param content To be deleted.
+     */
+    public void delete(FileContent content);
 }

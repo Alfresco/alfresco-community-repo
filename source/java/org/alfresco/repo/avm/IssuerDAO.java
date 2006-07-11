@@ -15,19 +15,26 @@
  * License.
  */
 
-package org.alfresco.repo.avm.hibernate;
-
-import org.hibernate.Session;
+package org.alfresco.repo.avm;
 
 /**
- * Worker object for Hibernate Transactions.
+ * DAO for Issuers.
  * @author britt
  */
-public interface HibernateTxnCallback
+public interface IssuerDAO
 {
     /**
-     * Do our work.
-     * @param sess The Hibernate session.
+     * Get the node Issuer value.
      */
-    public void perform(Session sess);
+    public Long getNodeIssuerValue();
+    
+    /**
+     * Get the content Issuer value.
+     */
+    public Long getContentIssuerValue();
+    
+    /**
+     * Get the layer Issuer value.
+     */
+    public Long getLayerIssuerValue();
 }

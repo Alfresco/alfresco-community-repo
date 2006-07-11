@@ -26,7 +26,7 @@ import org.hibernate.Session;
  * Base class for all repository file system like objects.
  * @author britt
  */
-abstract class AVMNodeImpl implements AVMNode, Serializable
+public abstract class AVMNodeImpl implements AVMNode, Serializable
 {
     /**
      * The Object ID.
@@ -105,7 +105,7 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
         HistoryLinkImpl link = new HistoryLinkImpl();
         link.setAncestor(ancestor);
         link.setDescendent(this);
-        SuperRepository.GetInstance().getSession().save(link);
+        AVMContext.fgInstance.fHistoryLinkDAO.save(link);
     }
 
     /**
@@ -114,10 +114,7 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public AVMNode getAncestor()
     {
-        Session sess = SuperRepository.GetInstance().getSession();
-        Query query = sess.createQuery("select hl.ancestor from HistoryLinkImpl hl where hl.descendent = :desc");
-        query.setEntity("desc", this);
-        return (AVMNode)query.uniqueResult();
+        return AVMContext.fgInstance.fAVMNodeDAO.getAncestor(this);
     }
     
     /**
@@ -133,7 +130,7 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
         MergeLinkImpl link = new MergeLinkImpl();
         link.setMfrom(mergedFrom);
         link.setMto(this);
-        SuperRepository.GetInstance().getSession().save(link);
+        AVMContext.fgInstance.fMergeLinkDAO.save(link);
     }
     
     /**
@@ -142,10 +139,7 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public AVMNode getMergedFrom()
     {
-        Session sess = SuperRepository.GetInstance().getSession();
-        Query query = sess.createQuery("select ml.mfrom from MergeLinkImpl ml where ml.mto = :to");
-        query.setEntity("to", this);
-        return (AVMNode)query.uniqueResult();
+        return AVMContext.fgInstance.fAVMNodeDAO.getMergedFrom(this);
     }
     
     /**

@@ -19,9 +19,6 @@ package org.alfresco.repo.avm;
 
 import java.util.List;
 
-import org.hibernate.Query;
-import org.hibernate.Session;
-
 /**
  * Base class for Directories.
  * @author britt
@@ -52,14 +49,9 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
      * @param write Whether the child should be looked up for writing.
      * @return The ChildEntry or null if not found.
      */
-    @SuppressWarnings("unchecked")
     protected ChildEntry getChild(String name, boolean write)
     {
-        // TODO This may be very Dangerous!
-        Session sess = SuperRepository.GetInstance().getSession();
-        ChildEntry entry = (ChildEntry)sess.get(ChildEntryImpl.class, new ChildEntryImpl(name, this, null));
-                                               // (write && getIsNew()) ? LockMode.UPGRADE : LockMode.READ);
-        return entry;
+        return AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
     }
     
     /**
@@ -68,16 +60,9 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
      * exposed through the interface.
      * @return A List of ChildEntries.
      */
-    @SuppressWarnings("unchecked")
     public List<ChildEntry> getChildren()
     {
-        Session sess = SuperRepository.GetInstance().getSession();
-        Query query = sess.getNamedQuery("ChildEntry.ByParent");
-        query.setEntity("parent", this);
-        query.setCacheable(true);
-        query.setCacheRegion("ChildEntry.ByParent");
-        List<ChildEntry> found = (List<ChildEntry>)query.list();
-        return found;
+        return AVMContext.fgInstance.fChildEntryDAO.getByParent(this);
     }
     
     /**
@@ -85,20 +70,8 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
      * @param child The child node to look for.
      * @return The ChildEntry or null if not found.
      */
-    @SuppressWarnings("unchecked")
     protected ChildEntry getChild(AVMNode child)
     {
-        Session sess = SuperRepository.GetInstance().getSession();
-        Query query = sess.getNamedQuery("ChildEntry.ByParentChild");
-        query.setEntity("parent", this);
-        query.setEntity("child", child);
-        query.setCacheable(true);
-        query.setCacheRegion("ChildEntry.ByParentChild");
-        List<ChildEntry> found = (List<ChildEntry>)query.list();
-        if (found.size() == 0)
-        {
-            return null;
-        }
-        return found.get(0);
+        return AVMContext.fgInstance.fChildEntryDAO.getByParentChild(this, child);
     }
 }

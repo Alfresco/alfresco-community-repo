@@ -20,7 +20,7 @@ package org.alfresco.repo.avm;
  * The Interface for versionable objects.
  * @author britt
  */
-interface AVMNode
+public interface AVMNode
 {
     /**
      * Set the ancestor of this node.

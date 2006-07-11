@@ -5,6 +5,7 @@ package org.alfresco.repo.avm.hibernate;
 
 import java.sql.SQLException;
 
+import org.alfresco.repo.avm.RetryingTransactionCallback;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.springframework.orm.hibernate3.HibernateCallback;
@@ -18,13 +19,13 @@ public class HibernateCallbackWrapper implements HibernateCallback
     /**
      * The HibernateTxnCallback to execute.
      */
-    private HibernateTxnCallback fCallback;
+    private RetryingTransactionCallback fCallback;
     
     /**
      * Make one up.
      * @param callback
      */
-    public HibernateCallbackWrapper(HibernateTxnCallback callback)
+    public HibernateCallbackWrapper(RetryingTransactionCallback callback)
     {
         fCallback = callback;
     }
@@ -36,7 +37,7 @@ public class HibernateCallbackWrapper implements HibernateCallback
     public Object doInHibernate(Session session) throws HibernateException,
             SQLException
     {
-        fCallback.perform(session);
+        fCallback.perform();
         return null;
     }
 }

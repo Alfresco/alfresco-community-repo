@@ -28,10 +28,6 @@ import java.util.List;
 import java.util.SortedMap;
 
 import org.alfresco.repo.avm.SuperRepository;
-import org.alfresco.repo.avm.hibernate.HibernateTxn;
-import org.alfresco.repo.avm.hibernate.HibernateTxnCallback;
-import org.hibernate.Query;
-import org.hibernate.Session;
 
 /**
  * Implements the AVMService.  Stub.
@@ -40,9 +36,9 @@ import org.hibernate.Session;
 public class AVMServiceImpl implements AVMService
 {
     /**
-     * The HibernateTxn.
+     * The RetryingTransaction.
      */
-    private HibernateTxn fTransaction;
+    private RetryingTransaction fTransaction;
     
     /**
      * The SuperRepository for each service thread.
@@ -90,18 +86,16 @@ public class AVMServiceImpl implements AVMService
         try
         {
             fTransaction.perform(
-            new HibernateTxnCallback()
+            new RetryingTransactionCallback()
             {
-                public void perform(Session sess)
+                public void perform()
                 {
-                    Query query = sess.createQuery("select max(an.id) from AVMNodeImpl an");
-                    Long val = (Long)query.uniqueResult();
+                    IssuerDAO dao = AVMContext.fgInstance.fIssuerDAO;
+                    Long val = dao.getNodeIssuerValue();
                     fNodeIssuer = new Issuer(val == null ? 0L : val + 1L);
-                    query = sess.createQuery("select max(fc.id) from FileContentImpl fc");
-                    val = (Long)query.uniqueResult();
+                    val = dao.getContentIssuerValue();
                     fContentIssuer = new Issuer(val == null ? 0L : val + 1L);
-                    query = sess.createQuery("select max(an.layerID) from AVMNodeImpl an");
-                    val = (Long)query.uniqueResult();
+                    val = dao.getLayerIssuerValue();
                     fLayerIssuer = new Issuer(val == null ? 0L : val + 1L);
                 }
             }, false);
@@ -122,10 +116,10 @@ public class AVMServiceImpl implements AVMService
     }
     
     /**
-     * Set the Hibernate Transaction wrapper.
+     * Set the Retrying Transaction wrapper.
      * @param txn
      */
-    public void setHibernateTxn(HibernateTxn txn)
+    public void setRetryingTransaction(RetryingTransaction txn)
     {
         fTransaction = txn;
     }
@@ -161,17 +155,16 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public InputStream in = null;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 in = fSuperRepository.getInputStream(version, path);
             }
         };
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.in;
     }
@@ -187,23 +180,22 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public InputStream in = null;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 in = fSuperRepository.getInputStream(desc);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.in;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#getFileOutputStream(java.lang.String)
+    /**
+     * Get an output stream to a file. Triggers versioning.
      */
     public OutputStream getFileOutputStream(final String path)
     {
@@ -211,17 +203,16 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public OutputStream out = null;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 out = fSuperRepository.getOutputStream(path);
             }
         };
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
         return doit.out;
     }
@@ -239,23 +230,25 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public RandomAccessFile file;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 file = fSuperRepository.getRandomAccess(version, path, access);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
         return doit.file;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#getFolderListing(int, java.lang.String)
+    
+    /**
+     * Get a directory listing.
+     * @param version The version id to lookup.
+     * @param path The path to lookup.
      */
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(final int version, final String path)
     {
@@ -263,17 +256,16 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public SortedMap<String, AVMNodeDescriptor> listing;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 listing = fSuperRepository.getListing(version, path);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.listing;
     }
@@ -289,23 +281,25 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null descriptor.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public SortedMap<String, AVMNodeDescriptor> listing;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 listing = fSuperRepository.getListing(dir);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.listing;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#createFile(java.lang.String, java.lang.String)
+    /**
+     * Create a new file. The file must not exist.
+     * @param path The path to the containing directory.
+     * @param name The name of the file.
+     * @return An output stream to the file.
      */
     public OutputStream createFile(final String path, final String name)
     {
@@ -313,17 +307,16 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public OutputStream out;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 out = fSuperRepository.createFile(path, name);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
         return doit.out;
     }
@@ -361,15 +354,14 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMException("I/O Error.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.createFile(path, name, temp);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         try
         {
             fTransaction.perform(doit, true);
@@ -380,8 +372,10 @@ public class AVMServiceImpl implements AVMService
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#createFolder(java.lang.String, java.lang.String)
+    /**
+     * Create a directory. The directory must not exist.
+     * @param path The path to the containing directory.
+     * @param name The name of the new directory.
      */
     public void createDirectory(final String path, final String name)
     {
@@ -389,20 +383,22 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.createDirectory(path, name);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#createLayeredFile(java.lang.String, java.lang.String, java.lang.String)
+    /**
+     * Create a new layered file.  It must not exist.
+     * @param srcPath The src path.  Ie the target for the layering.
+     * @param parent The path to the parent directory.
+     * @param name The name to give the new file.
      */
     public void createLayeredFile(final String srcPath, final String parent, final String name)
     {
@@ -410,20 +406,22 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.createLayeredFile(srcPath, parent, name);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#createLayeredFolder(java.lang.String, java.lang.String, java.lang.String)
+    /**
+     * Create a new layered directory.  It must not exist.
+     * @param srcPath The src path. Ie the target for layering.
+     * @param parent The path to the parent directory.
+     * @param name The name for the new directory.
      */
     public void createLayeredDirectory(final String srcPath, final String parent, final String name)
     {
@@ -431,20 +429,20 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.createLayeredDirectory(srcPath, parent, name);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#createRepository(java.lang.String)
+    /**
+     * Create a repository with the given name.  It must not exist.
+     * @param name The name to give the repository.   
      */
     public void createRepository(final String name)
     {
@@ -452,20 +450,23 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Name is null.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.createRepository(name);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#createBranch(int, java.lang.String, java.lang.String, java.lang.String)
+    /**
+     * Create a branch.
+     * @param version The version to branch from.
+     * @param srcPath The path to the thing to branch from.
+     * @param dstPath The path to the destination containing directory.
+     * @param name The name of the new branch.
      */
     public void createBranch(final int version, final String srcPath, final String dstPath,
             final String name)
@@ -474,20 +475,22 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.createBranch(version, srcPath, dstPath, name);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#removeNode(java.lang.String, java.lang.String)
+    /**
+     * Remove a node. Beware, the node can be a directory and 
+     * this acts recursively.
+     * @param parent The path to the parent.
+     * @param name The name of the node to remove.
      */
     public void removeNode(final String parent, final String name)
     {
@@ -495,20 +498,23 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.remove(parent, name);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#rename(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+    /**
+     * Rename a node.
+     * @param srcParent The path to the source parent.
+     * @param srcName The name of the source node.
+     * @param dstParent The path to the destination parent.
+     * @param dstName The name to give the renamed node.
      */
     public void rename(final String srcParent, final String srcName, final String dstParent,
             final String dstName)
@@ -517,15 +523,14 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.rename(srcParent, srcName, dstParent, dstName);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
 
@@ -540,20 +545,21 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.uncover(dirPath, name);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#getLatestVersionID(java.lang.String)
+    /**
+     * Get the Latest Version ID for a repository.
+     * @param repName The name of the repository.
+     * @return The Latest Version ID.
      */
     public int getLatestVersionID(final String repName)
     {
@@ -561,23 +567,24 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public int latestVersionID;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 latestVersionID = fSuperRepository.getLatestVersionID(repName);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.latestVersionID;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#createSnapshot(java.util.List)
+    /**
+     * Create snapshots of a group of repositories.
+     * @param repositories A List of repository name.
+     * @return A List of the new version ids.
      */
     public List<Integer> createSnapshot(final List<String> repositories)
     {
@@ -585,23 +592,24 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Repositories is null.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public List<Integer> versionIDs;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 versionIDs = fSuperRepository.createSnapshot(repositories);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
         return doit.versionIDs;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#createSnapshot(java.lang.String)
+    /**
+     * Snapshot a repository.
+     * @param repository The name of the repository.
+     * @return The id of the new version.
      */
     public int createSnapshot(final String repository)
     {
@@ -609,23 +617,25 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Repository is null.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public int versionID;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 versionID = fSuperRepository.createSnapshot(repository);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
         return doit.versionID;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#lookup(int, java.lang.String)
+    /**
+     * Look up information about a node.
+     * @param version The version to look up.
+     * @param path The path to look up.
+     * @return A Descriptor.
      */
     public AVMNodeDescriptor lookup(final int version, final String path)
     {
@@ -633,18 +643,17 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Path is null.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public AVMNodeDescriptor descriptor;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 Lookup lookup = fSuperRepository.lookup(version, path);
                 descriptor = lookup.getCurrentNode().getDescriptor(lookup);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.descriptor;
     }
@@ -661,23 +670,24 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public AVMNodeDescriptor child;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 child = fSuperRepository.lookup(dir, name);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.child;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#destroyRepository(java.lang.String)
+    /**
+     * Purge a repository.  Permanently delete everything that 
+     * is only referenced in that repository.
+     * @param name The name of the repository to purge.
      */
     public void purgeRepository(final String name)
     {
@@ -685,20 +695,21 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Name is null.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.purgeRepository(name);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#purgeVersion(int, java.lang.String)
+    /**
+     * Purge a particular version from a repository.
+     * @param version The id of the version to purge.
+     * @param name The name of the repository.
      */
     public void purgeVersion(final int version, final String name)
     {
@@ -706,20 +717,22 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Name is null.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.purgeVersion(name, version);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#getIndirectionPath(java.lang.String)
+    /**
+     * Get the indirection path of a layered node.
+     * @param version The version to lookup.
+     * @param path The path to lookup.
+     * @return The indirection path (target) of the layered node.
      */
     public String getIndirectionPath(final int version, final String path)
     {
@@ -727,23 +740,24 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Path is null.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public String indirectionPath;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 indirectionPath = fSuperRepository.getIndirectionPath(version, path);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.indirectionPath;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMService#getRepositoryVersions(java.lang.String)
+    /**
+     * Get the extant version ids for a repository.
+     * @param name The name of the repository.
+     * @return A List of VersionDescriptors.
      */
     public List<VersionDescriptor> getRepositoryVersions(final String name)
     {
@@ -751,17 +765,16 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Name is null.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public List<VersionDescriptor> versions;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 versions = fSuperRepository.getRepositoryVersions(name);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.versions;
     }
@@ -780,23 +793,23 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public List<VersionDescriptor> versions;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 versions = fSuperRepository.getRepositoryVersions(name, from, to);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.versions;
     }
 
     /**
      * Change what a layered directory points to.
+     * @param path The path to the layered directory.
      */
     public void retargetLayeredDirectory(final String path, final String target)
     {
@@ -804,15 +817,14 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.retargetLayeredDirectory(path, target);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
 
@@ -826,15 +838,14 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Path is null.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.makePrimary(path);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
 
@@ -844,17 +855,16 @@ public class AVMServiceImpl implements AVMService
      */
     public List<RepositoryDescriptor> getRepositories()
     {
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public List<RepositoryDescriptor> reps;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 reps = fSuperRepository.getRepositories();
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.reps;
     }
@@ -866,17 +876,16 @@ public class AVMServiceImpl implements AVMService
      */
     public RepositoryDescriptor getRepository(final String name)
     {
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public RepositoryDescriptor desc;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 desc = fSuperRepository.getRepository(name);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.desc;
     }
@@ -893,17 +902,16 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Name is null.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public AVMNodeDescriptor root;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 root = fSuperRepository.getRepositoryRoot(version, name);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.root;
     }
@@ -920,17 +928,16 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null descriptor.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public List<AVMNodeDescriptor> history;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 history = fSuperRepository.getHistory(desc, count);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.history;
     }
@@ -947,15 +954,14 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 fSuperRepository.setOpacity(path, opacity);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
 
@@ -976,17 +982,16 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null node descriptor.");
         }
-        class HTxnCallback implements HibernateTxnCallback
+        class TxnCallback implements RetryingTransactionCallback
         {
             public AVMNodeDescriptor ancestor;
             
-            public void perform(Session session)
+            public void perform()
             {
-                fSuperRepository.setSession(session);
                 ancestor = fSuperRepository.getCommonAncestor(left, right);
             }
         }
-        HTxnCallback doit = new HTxnCallback();
+        TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.ancestor;
     }

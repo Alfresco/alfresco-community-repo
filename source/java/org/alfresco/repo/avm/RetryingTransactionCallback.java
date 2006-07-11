@@ -17,23 +17,14 @@
 
 package org.alfresco.repo.avm;
 
-import org.hibernate.proxy.HibernateProxy;
-
 /**
- * Utility for unwrapping (getting the actual instance of) an AVMNode from what
- * may be a HibernateProxy.  Bitter Hibernate note: Hibernate proxies for polymorphic
- * types are fundamentally broken.  The Hibernate schmucks claim its a CGLIB problem.
- * The CGLIB villains dither unintelligibly.
+ * Worker object for AVM Retrying Transactions.
  * @author britt
  */
-public class AVMNodeUnwrapper
+public interface RetryingTransactionCallback
 {
-    public static AVMNode Unwrap(AVMNode node)
-    {
-        if (node instanceof HibernateProxy)
-        {
-            return (AVMNode)((HibernateProxy)node).getHibernateLazyInitializer().getImplementation();
-        }
-        return node;
-    }
+    /**
+     * Do our work.
+     */
+    public void perform();
 }

@@ -63,6 +63,90 @@
 			</list>
 		</property>
 	</bean>
+
+	<bean id="issuerDAO" class="org.alfresco.repo.avm.hibernate.IssuerDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="nodeDAO" class="org.alfresco.repo.avm.hibernate.AVMNodeDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="repositoryDAO" class="org.alfresco.repo.avm.hibernate.RepositoryDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+
+	<bean id="versionRootDAO" class="org.alfresco.repo.avm.hibernate.VersionRootDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="fileContentDAO" class="org.alfresco.repo.avm.hibernate.FileContentDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="childEntryDAO" class="org.alfresco.repo.avm.hibernate.ChildEntryDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="historyLinkDAO" class="org.alfresco.repo.avm.hibernate.HistoryLinkDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+
+	<bean id="mergeLinkDAO" class="org.alfresco.repo.avm.hibernate.MergeLinkDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+
+	<bean id="deletedChildDAO" class="org.alfresco.repo.avm.hibernate.DeletedChildDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="avmContext" class="org.alfresco.repo.avm.AVMContext">
+		<property name="issuerDAO">
+			<ref bean="issuerDAO"/>
+		</property>
+		<property name="nodeDAO">
+			<ref bean="nodeDAO"/>
+		</property>
+		<property name="repositoryDAO">
+			<ref bean="repositoryDAO"/>
+		</property>
+		<property name="versionRootDAO">
+			<ref bean="versionRootDAO"/>
+		</property>
+		<property name="fileContentDAO">
+			<ref bean="fileContentDAO"/>
+		</property>
+		<property name="childEntryDAO">
+			<ref bean="childEntryDAO"/>
+		</property>
+		<property name="historyLinkDAO">
+			<ref bean="historyLinkDAO"/>
+		</property>
+		<property name="mergeLinkDAO">
+			<ref bean="mergeLinkDAO"/>
+		</property>
+		<property name="deletedChildDAO">
+			<ref bean="deletedChildDAO"/>
+		</property>
+	</bean>
 	
 	<!-- The HibernateTransactionManager -->
 	<bean id="transactionManager"
@@ -104,7 +188,7 @@
 	</bean>
 
 	<!-- The Hibernate Transaction wrapper. -->
-	<bean id="hibernateTxn" class="org.alfresco.repo.avm.hibernate.HibernateTxn">
+	<bean id="retryingTransaction" class="org.alfresco.repo.avm.hibernate.HibernateTxn">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
@@ -130,8 +214,8 @@
 		<property name="batchSize">
 		    <value>50</value>
 		</property>
-		<property name="hibernateTxn">
-			<ref bean="hibernateTxn"/>
+		<property name="retryingTransaction">
+			<ref bean="retryingTransaction"/>
 		</property>
 	</bean>
 	
@@ -143,8 +227,8 @@
 		<property name="initialize">
 			<value>${avm.initialize}</value>
 		</property>
-		<property name="hibernateTxn">
-			<ref bean="hibernateTxn"/>
+		<property name="retryingTransaction">
+			<ref bean="retryingTransaction"/>
 		</property>
 	</bean>
 </beans>

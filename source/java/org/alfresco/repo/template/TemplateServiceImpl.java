@@ -127,6 +127,9 @@ public class TemplateServiceImpl implements TemplateService, ApplicationContextA
         return out.toString();
     }
 
+    /**
+     * @see org.alfresco.service.cmr.repository.TemplateService#processTemplateString(java.lang.String, java.lang.String, java.lang.Object, java.io.Writer)
+     */
     public void processTemplateString(String engine, String template, Object model, Writer out)
         throws TemplateException
     {
@@ -146,6 +149,9 @@ public class TemplateServiceImpl implements TemplateService, ApplicationContextA
         }
     }
     
+    /**
+     * @see org.alfresco.service.cmr.repository.TemplateService#processTemplateString(java.lang.String, java.lang.String, java.lang.Object)
+     */
     public String processTemplateString(String engine, String template, Object model)
         throws TemplateException
     {
@@ -153,7 +159,6 @@ public class TemplateServiceImpl implements TemplateService, ApplicationContextA
         processTemplateString(engine, template, model, out);
         return out.toString();
     }
-    
     
     /**
      * Return the TemplateProcessor implementation for the named template engine
@@ -169,7 +174,7 @@ public class TemplateServiceImpl implements TemplateService, ApplicationContextA
         Map<String, TemplateProcessor> procMap = processors.get();
         if (procMap == null)
         {
-            procMap = new HashMap<String, TemplateProcessor>(7, 1.0f);
+            procMap = new HashMap<String, TemplateProcessor>(2, 1.0f);
             processors.set(procMap);
         }
         

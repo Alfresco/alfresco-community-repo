@@ -23,7 +23,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
-import org.alfresco.util.ISO9075;
 import org.apache.log4j.Logger;
 
 import freemarker.cache.MruCacheStorage;
@@ -43,7 +42,10 @@ public class FreeMarkerProcessor implements TemplateProcessor
     private final static String MSG_ERROR_TEMPLATE_FAIL = "error_template_fail";
     private final static String MSG_ERROR_TEMPLATE_IO   = "error_template_io";
     
-    private static Logger logger = Logger.getLogger(FreeMarkerProcessor.class);
+    private static final Logger logger = Logger.getLogger(FreeMarkerProcessor.class);
+    
+    /** Pseudo path to String based template */
+    private static final String PATH = "string://fixed";
     
     /** FreeMarker processor configuration */
     private Configuration config = null;
@@ -75,7 +77,9 @@ public class FreeMarkerProcessor implements TemplateProcessor
     }
     
     /**
-     * @return The FreeMarker config instance for this processor
+     * Get the FreeMarker configuration for this instance
+     * 
+     * @return FreeMarker configuration
      */
     private Configuration getConfig()
     {
@@ -100,26 +104,30 @@ public class FreeMarkerProcessor implements TemplateProcessor
         return this.config;
     }
     
+    /**
+     * FreeMarker configuration for loading the specified template directly from a String
+     * 
+     * @param path      Pseudo Path to the template
+     * @param template  Template content
+     * 
+     * @return FreeMarker configuration
+     */
     private Configuration getStringConfig(String path, String template)
     {
+        Configuration config = new Configuration();
         
-            Configuration config = new Configuration();
-            
-            // setup template cache
-            config.setCacheStorage(new MruCacheStorage(20, 0));
-            
-            // use our custom loader to find templates on the ClassPath
-            StringTemplateLoader stringTemplateLoader = new StringTemplateLoader();
-            stringTemplateLoader.putTemplate(path, template);
-            config.setTemplateLoader(stringTemplateLoader);
-            
-            // use our custom object wrapper that can deal with QNameMap objects directly
-            config.setObjectWrapper(new QNameAwareObjectWrapper());
-            
-            // rethrow any exception so we can deal with them
-            config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-            
-            return config;
+        // use our custom loader to load a template directly from a String
+        StringTemplateLoader stringTemplateLoader = new StringTemplateLoader();
+        stringTemplateLoader.putTemplate(path, template);
+        config.setTemplateLoader(stringTemplateLoader);
+        
+        // use our custom object wrapper that can deal with QNameMap objects directly
+        config.setObjectWrapper(new QNameAwareObjectWrapper());
+        
+        // rethrow any exception so we can deal with them
+        config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+        
+        return config;
     }
     
     /**
@@ -142,8 +150,12 @@ public class FreeMarkerProcessor implements TemplateProcessor
         
         try
         {
+            long startTime = 0;
             if (logger.isDebugEnabled())
-                logger.debug("Executing template: " + template + " on model: " + model);
+            {
+                logger.debug("Executing template: " + template);// + " on model: " + model);
+                startTime = System.currentTimeMillis();
+            }
             
             Template t = getConfig().getTemplate(template);
             if (t != null)
@@ -162,6 +174,12 @@ public class FreeMarkerProcessor implements TemplateProcessor
             {
                 throw new TemplateException(MSG_ERROR_NO_TEMPLATE, new Object[] {template});
             }
+            
+            if (logger.isDebugEnabled())
+            {
+                long endTime = System.currentTimeMillis();
+                logger.debug("Time to execute template: " + (endTime - startTime) + "ms");
+            }
         }
         catch (IOException ioerr)
         {
@@ -169,8 +187,9 @@ public class FreeMarkerProcessor implements TemplateProcessor
         }
     }
     
-    private static final String PATH = "string://fixed";
-    
+    /**
+     * @see org.alfresco.service.cmr.repository.TemplateProcessor#processString(java.lang.String, java.lang.Object, java.io.Writer)
+     */
     public void processString(String template, Object model, Writer out)
     {
         if (template == null || template.length() == 0)
@@ -188,8 +207,12 @@ public class FreeMarkerProcessor implements TemplateProcessor
         
         try
         {
+            long startTime = 0;
             if (logger.isDebugEnabled())
-                logger.debug("Executing template: " + template + " on model: " + model);
+            {
+                logger.debug("Executing template: " + template);// + " on model: " + model);
+                startTime = System.currentTimeMillis();
+            }
             
             Template t = getStringConfig(PATH, template).getTemplate(PATH);
             if (t != null)
@@ -198,6 +221,12 @@ public class FreeMarkerProcessor implements TemplateProcessor
                 {
                     // perform the template processing against supplied data model
                     t.process(model, out);
+                    
+                    if (logger.isDebugEnabled())
+                    {
+                        long endTime = System.currentTimeMillis();
+                        logger.debug("Time to execute template: " + (endTime - startTime) + "ms");
+                    }
                 }
                 catch (Throwable err)
                 {

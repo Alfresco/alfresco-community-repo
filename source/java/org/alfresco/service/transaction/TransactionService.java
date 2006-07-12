@@ -18,6 +18,8 @@ package org.alfresco.service.transaction;
 
 import javax.transaction.UserTransaction;
 
+import org.alfresco.service.NotAuditable;
+
 /**
  * Contract for retrieving access to a user transaction.
  * <p>
@@ -34,6 +36,7 @@ public interface TransactionService
      * 
      * @return Returns true if all transactions are read-only.
      */
+    @NotAuditable
     public boolean isReadOnly();
     
     /**
@@ -42,6 +45,7 @@ public interface TransactionService
      * 
      * @return the user transaction
      */
+    @NotAuditable
     UserTransaction getUserTransaction();
     
     /**
@@ -53,6 +57,7 @@ public interface TransactionService
      *      system is in read-only mode.
      * @return the user transaction
      */
+    @NotAuditable
     UserTransaction getUserTransaction(boolean readOnly);
     
     /**
@@ -64,6 +69,7 @@ public interface TransactionService
      * 
      * @return Returns a non-propagating user transaction
      */
+    @NotAuditable
     UserTransaction getNonPropagatingUserTransaction();
     
     /**
@@ -78,5 +84,6 @@ public interface TransactionService
      *      system is in read-only mode.
      * @return Returns a non-gating user transaction
      */
+    @NotAuditable
     UserTransaction getNonPropagatingUserTransaction(boolean readOnly);
 }

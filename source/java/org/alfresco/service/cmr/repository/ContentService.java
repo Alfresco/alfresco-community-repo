@@ -17,6 +17,7 @@
 package org.alfresco.service.cmr.repository;
 
 import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
 
@@ -59,6 +60,7 @@ public interface ContentService
      * 
      * @see org.alfresco.repo.content.filestore.FileContentReader#getSafeContentReader(ContentReader, String, Object[])
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "propertyQName"})
     public ContentReader getReader(NodeRef nodeRef, QName propertyQName)
             throws InvalidNodeRefException, InvalidTypeException;
 
@@ -80,6 +82,7 @@ public interface ContentService
      * @throws InvalidNodeRefException if the node doesn't exist
      * @throws InvalidTypeException if the node property is not of type <b>content</b>
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "propertyQName", "update"})
     public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update)
                 throws InvalidNodeRefException, InvalidTypeException;
 
@@ -89,6 +92,7 @@ public interface ContentService
      * 
      * @return Returns a writer onto a temporary location
      */
+    @Auditable
     public ContentWriter getTempWriter();
     
     /**
@@ -105,6 +109,7 @@ public interface ContentService
      *      given source and target mimetypes of the reader and writer
      * @throws ContentIOException if the transformation fails
      */
+    @Auditable(parameters = {"reader", "writer"})
     public void transform(ContentReader reader, ContentWriter writer)
             throws NoTransformerException, ContentIOException;
     
@@ -118,6 +123,7 @@ public interface ContentService
      * 
      * @see ContentAccessor#getMimetype()
      */
+    @Auditable(parameters = {"sourceMimetype", "targetMimetype"})
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype);
     
     /**
@@ -133,5 +139,6 @@ public interface ContentService
      * 
      * @return true if a transformer exists, false otherwise
      */
+    @Auditable(parameters = {"reader", "writer"})
     public boolean isTransformable(ContentReader reader, ContentWriter writer);
 }

@@ -18,6 +18,7 @@ package org.alfresco.service.cmr.model;
 
 import java.util.List;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -39,6 +40,7 @@ public interface FileFolderService
      * @param contextNodeRef the node to start searching in
      * @return Returns a list of matching files and folders
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef"})
     public List<FileInfo> list(NodeRef contextNodeRef);
     
     /**
@@ -47,6 +49,7 @@ public interface FileFolderService
      * @param folderNodeRef the folder to start searching in
      * @return Returns a list of matching files
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"folderNodeRef"})
     public List<FileInfo> listFiles(NodeRef folderNodeRef);
     
     /**
@@ -55,6 +58,7 @@ public interface FileFolderService
      * @param contextNodeRef the node to start searching in
      * @return Returns a list of matching folders
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef"})
     public List<FileInfo> listFolders(NodeRef contextNodeRef);
 
     /**
@@ -71,6 +75,7 @@ public interface FileFolderService
      *
      * @see #search(NodeRef, String, boolean, boolean, boolean)
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "namePattern", "includeSubFolders"})
     public List<FileInfo> search(
             NodeRef contextNodeRef,
             String namePattern,
@@ -90,6 +95,7 @@ public interface FileFolderService
      * @param includeSubFolders true to search the entire hierarchy below the search context
      * @return Returns a list of file or folder matches
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "namePattern", "fileSearch", "folderSearch", "includeSubFolders"})
     public List<FileInfo> search(
             NodeRef contextNodeRef,
             String namePattern,
@@ -106,6 +112,7 @@ public interface FileFolderService
      * @throws FileExistsException if a file or folder with the new name already exists
      * @throws FileNotFoundException the file or folder reference doesn't exist
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"fileFolderRef", "newName"})
     public FileInfo rename(NodeRef fileFolderRef, String newName) throws FileExistsException, FileNotFoundException;
     
     /**
@@ -120,6 +127,7 @@ public interface FileFolderService
      * @throws FileExistsException
      * @throws FileNotFoundException
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "targetParentRef", "newName"})
     public FileInfo move(NodeRef sourceNodeRef, NodeRef targetParentRef, String newName)
             throws FileExistsException, FileNotFoundException;
 
@@ -136,6 +144,7 @@ public interface FileFolderService
      * @throws FileExistsException
      * @throws FileNotFoundException
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "targetParentRef", "newName"})
     public FileInfo copy(NodeRef sourceNodeRef, NodeRef targetParentRef, String newName)
             throws FileExistsException, FileNotFoundException;
 
@@ -149,6 +158,7 @@ public interface FileFolderService
      * @return Returns the new node's file information
      * @throws FileExistsException
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"parentNodeRef", "name", "typeQName"})
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName) throws FileExistsException;
     
     /**
@@ -156,6 +166,7 @@ public interface FileFolderService
      * 
      * @param nodeRef the node to delete
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public void delete(NodeRef nodeRef);
     
     /**
@@ -170,15 +181,16 @@ public interface FileFolderService
      *      {@link org.alfresco.model.ContentModel#TYPE_FOLDER they folder type}.
      * @return Returns the info of the last folder in the path.
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"parentNodeRef", "pathElements", "folderTypeQName"})
     public FileInfo makeFolders(NodeRef parentNodeRef, List<String> pathElements, QName folderTypeQName);
     
     /**
      * Get the file or folder names from the root down to and including the node provided.
      * <ul>
      *   <li>The root node can be of any type and is not included in the path list.</li>
-     *   <li>Only the primary path is considered.  If the target node is not a descendent of the
+     *   <li>Only the primary path is considered.  If the target node is not a descendant of the
      *       root along purely primary associations, then an exception is generated.</li>
-     *   <li>If an invalid type is encoutered along the path, then an exception is generated.</li>
+     *   <li>If an invalid type is encountered along the path, then an exception is generated.</li>
      * </ul>
      * 
      * @param rootNodeRef the start of the returned path, or null if the <b>store</b> root
@@ -188,6 +200,7 @@ public interface FileFolderService
      *      including the destination file or folder
      * @throws FileNotFoundException if the node could not be found
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"rootNodeRef", "nodeRef"})
     public List<FileInfo> getNamePath(NodeRef rootNodeRef, NodeRef nodeRef) throws FileNotFoundException;
     
     /**
@@ -198,6 +211,7 @@ public interface FileFolderService
      * @return Returns the info of the file or folder
      * @throws FileNotFoundException if no file or folder exists along the path
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"rootNodeRef", "pathElements"})
     public FileInfo resolveNamePath(NodeRef rootNodeRef, List<String> pathElements) throws FileNotFoundException;
     
     /**
@@ -206,9 +220,26 @@ public interface FileFolderService
      * @param nodeRef the node to get info for
      * @return Returns the file info or null if the node does not represent a file or folder
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public FileInfo getFileInfo(NodeRef nodeRef);
     
+    /**
+     * Get the reader to the file represented by the node according to the File/Folder model.
+     * (This is not the same as the method on the ContentService)
+     * 
+     * @param nodeRef
+     * @return
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public ContentReader getReader(NodeRef nodeRef);
     
+    /**
+     * Get the writer to the file represented by the node according to the File/Folder model.
+     * (This is not the same as the method on the ContentService)
+     * 
+     * @param nodeRef
+     * @return
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public ContentWriter getWriter(NodeRef nodeRef);
 }

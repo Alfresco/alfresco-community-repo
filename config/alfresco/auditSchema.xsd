@@ -8,6 +8,7 @@
     
     <!-- Root element is the Audit element -->
     
+    
     <xs:element name="Audit" type="a:Audit"/>
     
     <!--                  -->
@@ -46,7 +47,7 @@
         A simple value (intended for use with non node arguments)
     
     -->
-    <xs:simpleType name="SimpleFilterType">
+    <xs:simpleType name="KeyFilterType">
         <xs:restriction base="xs:string">
             <xs:enumeration value="path"/>
             <xs:enumeration value="type"/>
@@ -55,6 +56,8 @@
             <xs:enumeration value="all"/>
             <xs:enumeration value="xpath"/>
             <xs:enumeration value="value"/>
+            <xs:enumeration value="protocol"/>
+            <xs:enumeration value="store"/>
         </xs:restriction>
     </xs:simpleType>
     
@@ -65,6 +68,7 @@
             <xs:enumeration value="all"/>
             <xs:enumeration value="success"/>
             <xs:enumeration value="fail"/>
+            <xs:enumeration value="none"/>
         </xs:restriction>
     </xs:simpleType>
     
@@ -98,7 +102,7 @@
                 <xs:sequence>
                     <xs:element name="Expression" type="xs:string"/>
                 </xs:sequence>
-                <xs:attribute name="type" type="a:SimpleFilterType" use="required"/>
+                <xs:attribute name="type" type="a:KeyFilterType" use="required"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

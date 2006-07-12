@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
@@ -38,6 +39,7 @@ public interface NodeService
      * 
      * @return Returns a list of store references
      */
+    @Auditable
     public List<StoreRef> getStores();
     
     /**
@@ -50,18 +52,21 @@ public interface NodeService
      * @return Returns a reference to the store
      * @throws StoreExistsException
      */
+    @Auditable(parameters = {"protocol", "identifier"})
     public StoreRef createStore(String protocol, String identifier) throws StoreExistsException;
     
     /**
      * @param storeRef a reference to the store to look for
      * @return Returns true if the store exists, otherwise false
      */
+    @Auditable(parameters = {"storeRef"})
     public boolean exists(StoreRef storeRef);
     
     /**
      * @param nodeRef a reference to the node to look for
      * @return Returns true if the node exists, otherwise false
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef"})
     public boolean exists(NodeRef nodeRef);
     
     /**
@@ -72,6 +77,7 @@ public interface NodeService
      * @param nodeRef a reference to a current or previously existing node
      * @return Returns the status of the node, or null if the node never existed 
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef"})
     public NodeRef.Status getNodeStatus(NodeRef nodeRef);
     
     /**
@@ -79,11 +85,13 @@ public interface NodeService
      * @return Returns a reference to the root node of the store
      * @throws InvalidStoreRefException if the store could not be found
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"storeRef"})
     public NodeRef getRootNode(StoreRef storeRef) throws InvalidStoreRefException;
 
     /**
      * @see #createNode(NodeRef, QName, QName, QName, Map)
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"parentRef", "assocTypeQName", "assocQName", "nodeTypeQName"})
     public ChildAssociationRef createNode(
             NodeRef parentRef,
             QName assocTypeQName,
@@ -106,6 +114,7 @@ public interface NodeService
      * 
      * @see org.alfresco.service.cmr.dictionary.DictionaryService
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"parentRef", "assocTypeQName", "assocQName", "nodeTypeQName", "properties"})
     public ChildAssociationRef createNode(
             NodeRef parentRef,
             QName assocTypeQName,
@@ -135,6 +144,7 @@ public interface NodeService
      * 
      * @see #getPrimaryParent(NodeRef)
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeToMoveRef", "newParentRef", "assocTypeQName", "assocQName"})
     public ChildAssociationRef moveNode(
             NodeRef nodeToMoveRef,
             NodeRef newParentRef,
@@ -148,12 +158,13 @@ public interface NodeService
      * associations.
      * 
      * @param childAssocRef the child association that must be moved in the order 
-     * @param index an arbibrary index that will affect the return order
+     * @param index an arbitrary index that will affect the return order
      * 
      * @see #getChildAssocs(NodeRef)
      * @see #getChildAssocs(NodeRef, QNamePattern, QNamePattern)
      * @see ChildAssociationRef#getNthSibling()
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"childAssocRef", "index"})
     public void setChildAssociationIndex(
             ChildAssociationRef childAssocRef,
             int index)
@@ -166,6 +177,7 @@ public interface NodeService
      * 
      * @see org.alfresco.service.cmr.dictionary.DictionaryService
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef"})
     public QName getType(NodeRef nodeRef) throws InvalidNodeRefException;
     
     /**
@@ -180,6 +192,7 @@ public interface NodeService
      * 
      * @since 1.1
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "typeQName"})
     public void setType(NodeRef nodeRef, QName typeQName) throws InvalidNodeRefException;
     
     /**
@@ -196,6 +209,7 @@ public interface NodeService
      * @see org.alfresco.service.cmr.dictionary.DictionaryService#getAspect(QName)
      * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getProperties()
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "aspectTypeQName", "aspectProperties"})
     public void addAspect(
             NodeRef nodeRef,
             QName aspectTypeQName,
@@ -211,6 +225,7 @@ public interface NodeService
      * @throws InvalidAspectException if the the aspect is unknown or if the
      *      aspect is mandatory for the <b>class</b> of the <b>node</b>
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "aspectTypeQName"})
     public void removeAspect(NodeRef nodeRef, QName aspectTypeQName)
             throws InvalidNodeRefException, InvalidAspectException;
     
@@ -219,13 +234,14 @@ public interface NodeService
      * removed if they are <b>NOT</b> mandatory.
      * 
      * @param nodeRef
-     * @param aspectRef
+     * @param aspectTypeQName
      * @return Returns true if the aspect has been applied to the given node,
      *      otherwise false
      * @throws InvalidNodeRefException if the node could not be found
      * @throws InvalidAspectException if the aspect reference is invalid
      */
-    public boolean hasAspect(NodeRef nodeRef, QName aspectRef)
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "aspectTypeQName"})
+    public boolean hasAspect(NodeRef nodeRef, QName aspectTypeQName)
             throws InvalidNodeRefException, InvalidAspectException;
     
     /**
@@ -234,6 +250,7 @@ public interface NodeService
      *      aspects
      * @throws InvalidNodeRefException if the node could not be found
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef"})
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException;
     
     /**
@@ -246,6 +263,7 @@ public interface NodeService
      * @param nodeRef reference to a node within a store
      * @throws InvalidNodeRefException if the reference given is invalid
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef"})
     public void deleteNode(NodeRef nodeRef) throws InvalidNodeRefException;
     
     /**
@@ -261,6 +279,7 @@ public interface NodeService
      * @throws InvalidNodeRefException if the parent or child nodes could not be found
      * @throws CyclicChildRelationshipException if the child partakes in a cyclic relationship after the add
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"parentRef", "childRef", "assocTypeQName", "qname"})
     public ChildAssociationRef addChild(
             NodeRef parentRef,
             NodeRef childRef,
@@ -278,6 +297,7 @@ public interface NodeService
      * @return Returns a collection of deleted entities - both associations and node references.
      * @throws InvalidNodeRefException if the parent or child nodes could not be found
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"parentRef", "childRef"})
     public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException;
 
     /**
@@ -285,6 +305,7 @@ public interface NodeService
      * @return Returns all properties keyed by their qualified name
      * @throws InvalidNodeRefException if the node could not be found
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef"})
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException;
     
     /**
@@ -293,6 +314,7 @@ public interface NodeService
      * @return Returns the value of the property, or null if not yet set
      * @throws InvalidNodeRefException if the node could not be found
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "qname"})
     public Serializable getProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException;
     
     /**
@@ -306,6 +328,7 @@ public interface NodeService
      * @param properties all the properties of the node keyed by their qualified names
      * @throws InvalidNodeRefException if the node could not be found
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "properties"})
     public void setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException;
     
     /**
@@ -320,6 +343,7 @@ public interface NodeService
      * @param propertyValue the value of the property - never null
      * @throws InvalidNodeRefException if the node could not be found
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "qname", "value"})
     public void setProperty(NodeRef nodeRef, QName qname, Serializable value) throws InvalidNodeRefException;
     
     /**
@@ -330,6 +354,7 @@ public interface NodeService
      * 
      * @see #getParentAssocs(NodeRef, QNamePattern, QNamePattern)
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef"})
     public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef) throws InvalidNodeRefException;
     
     /**
@@ -350,6 +375,7 @@ public interface NodeService
      * @see QName
      * @see org.alfresco.service.namespace.RegexQNamePattern#MATCH_ALL
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "typeQNamePattern", "qnamePattern"})
     public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern)
             throws InvalidNodeRefException;
     
@@ -367,6 +393,7 @@ public interface NodeService
      * @see #setChildAssociationIndex(ChildAssociationRef, int)
      * @see ChildAssociationRef#getNthSibling()
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef"})
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef) throws InvalidNodeRefException;
     
     /**
@@ -383,6 +410,7 @@ public interface NodeService
      * @see QName
      * @see org.alfresco.service.namespace.RegexQNamePattern#MATCH_ALL
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "typeQNamePattern", "qnamePattern"})
     public List<ChildAssociationRef> getChildAssocs(
             NodeRef nodeRef,
             QNamePattern typeQNamePattern,
@@ -398,6 +426,7 @@ public interface NodeService
      * @return Returns the primary parent-child association of the node
      * @throws InvalidNodeRefException if the node could not be found
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef"})
     public ChildAssociationRef getPrimaryParent(NodeRef nodeRef) throws InvalidNodeRefException;
     
     /**
@@ -409,6 +438,7 @@ public interface NodeService
      * @throws InvalidNodeRefException if either of the nodes could not be found
      * @throws AssociationExistsException
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"sourceRef", "targetRef", "assocTypeQName"})
     public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException, AssociationExistsException;
     
@@ -419,6 +449,7 @@ public interface NodeService
      * @param assocTypeQName the qualified name of the association type
      * @throws InvalidNodeRefException if either of the nodes could not be found
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"sourceRef", "targetRef", "assocTypeQName"})
     public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException;
     
@@ -435,6 +466,7 @@ public interface NodeService
      * @see QName
      * @see org.alfresco.service.namespace.RegexQNamePattern#MATCH_ALL
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"sourceRef", "qnamePattern"})
     public List<AssociationRef> getTargetAssocs(NodeRef sourceRef, QNamePattern qnamePattern)
             throws InvalidNodeRefException;
     
@@ -451,6 +483,7 @@ public interface NodeService
      * @see QName
      * @see org.alfresco.service.namespace.RegexQNamePattern#MATCH_ALL
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"targetRef", "qnamePattern"})
     public List<AssociationRef> getSourceAssocs(NodeRef targetRef, QNamePattern qnamePattern)
             throws InvalidNodeRefException;
     
@@ -465,6 +498,7 @@ public interface NodeService
      * 
      * @see #getPaths(NodeRef, boolean)
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef"})
     public Path getPath(NodeRef nodeRef) throws InvalidNodeRefException;
     
     /**
@@ -478,6 +512,7 @@ public interface NodeService
      * @return Returns a List of all possible paths to the given node
      * @throws InvalidNodeRefException if the node could not be found
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "primaryOnly"})
     public List<Path> getPaths(NodeRef nodeRef, boolean primaryOnly) throws InvalidNodeRefException;
     
     /**
@@ -486,6 +521,7 @@ public interface NodeService
      * @param storeRef the store that items were deleted from
      * @return Returns the archive node parent
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"storeRef"})
     public NodeRef getStoreArchiveNode(StoreRef storeRef);
 
     /**
@@ -502,6 +538,7 @@ public interface NodeService
      *      or <tt>null</tt> to use the original
      * @return Returns the reference to the newly created node 
      */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"archivedNodeRef", "destinationParentNodeRef", "assocTypeQName", "assocQName"})
     public NodeRef restoreNode(
             NodeRef archivedNodeRef,
             NodeRef destinationParentNodeRef,

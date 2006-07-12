@@ -35,12 +35,17 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Auditable
 {
+    enum Key 
+    {
+        NO_KEY, RETURN, ARG_0, ARG_1, ARG_2, ARG_3, ARG_4, ARG_5, ARG_6, ARG_7, ARG_8, ARG_9 
+    }
+    
     /**
      * The position of the key argument in the method list.
      * 
      * @return -1 indicates there is no key
      */
-    int key() default -1;
+    Auditable.Key key() default Key.NO_KEY;
 
     /**
      * The names of the parameters
@@ -48,4 +53,31 @@ public @interface Auditable
      * @return a String[] of parameter names, the default is an empty array.
      */
     String[] parameters() default {};
+    
+    /**
+     * If a method as marked as warn, it is potentially an audit hole.
+     * Typically a method returns an object which allows unaudited access.
+     * 
+     * This is intended to mark things that appear to expose unsafe API calls. 
+     * 
+     * @return
+     */
+    boolean warn() default false;
+    
+    /**
+     * All method parameters are recorded by default.
+     * This can be used to stop a parameter being written to the audit log.
+     * It will be entered as "******".
+     * 
+     * @return
+     */
+    boolean[] recordable() default {};
+    
+    /**
+     * Return object are recorded by default.
+     * Setting this means they can never be recorded in the audit.
+     * 
+     * @return
+     */
+    boolean recordReturnedObject() default true;
 }

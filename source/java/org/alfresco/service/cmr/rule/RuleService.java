@@ -18,6 +18,7 @@ package org.alfresco.service.cmr.rule;
 
 import java.util.List;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -32,6 +33,7 @@ public interface RuleService
      * 
      * @return a list of rule types
      */
+    @Auditable
     public List<RuleType> getRuleTypes();
 
     /**
@@ -40,6 +42,7 @@ public interface RuleService
      * @param name 	the name of the rule type
      * @return 		the rule type, null if not found
      */
+    @Auditable(parameters = {"name"})
     public RuleType getRuleType(String name);
     
     /**
@@ -49,6 +52,7 @@ public interface RuleService
      * @param nodeRef       the node reference
      * @return              true if the rules are enabled, false otherwise
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public boolean rulesEnabled(NodeRef nodeRef);
     
     /**
@@ -57,6 +61,7 @@ public interface RuleService
      * 
      * @param nodeRef  the node reference
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public void disableRules(NodeRef nodeRef);
     
     /**
@@ -65,6 +70,7 @@ public interface RuleService
      * 
      * @param nodeRef   the node reference
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public void enableRules(NodeRef nodeRef);
     
     /**
@@ -72,6 +78,7 @@ public interface RuleService
      * 
      * @param rule  the rule to disable
      */
+    @Auditable(parameters = {"rule"})
     public void disableRule(Rule rule);
     
     /**
@@ -79,6 +86,7 @@ public interface RuleService
      * 
      * @param rule  the rule to enable
      */
+    @Auditable(parameters = {"rule"})
     public void enableRule(Rule rule);
 
     /**
@@ -87,6 +95,7 @@ public interface RuleService
      * @param nodeRef 	the node reference
      * @return 			true if the node has rules associated, false otherwise
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public boolean hasRules(NodeRef nodeRef);
 
     /**
@@ -99,6 +108,7 @@ public interface RuleService
      * @param nodeRef 	the node reference
      * @return 			a list of the rules associated with the node
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public List<Rule> getRules(NodeRef nodeRef);
 
     /**
@@ -114,6 +124,7 @@ public interface RuleService
      *            				the result list or not
      * @return 					a list of the rules associated with the node
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "includeInhertied"})
     public List<Rule> getRules(NodeRef nodeRef, boolean includeInhertied);
     
     /**
@@ -126,6 +137,7 @@ public interface RuleService
      * 									are returned
      * @return							a list of the rules associated with the node
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "includeInhertiedRuleType", "ruleTypeName"})
     public List<Rule> getRules(NodeRef nodeRef, boolean includeInhertiedRuleType, String ruleTypeName);
 
     /**
@@ -134,6 +146,7 @@ public interface RuleService
      * @param nodeRef                   the node reference
      * @return                          a list of the rules associated with the node
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public int countRules(NodeRef nodeRef);
     
     /**
@@ -143,6 +156,7 @@ public interface RuleService
      * @param ruleId the rule id
      * @return the rule corresponding ot the id
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "ruleId"})
     public Rule getRule(NodeRef nodeRef, String ruleId);
 	
 	/**
@@ -154,6 +168,7 @@ public interface RuleService
      * @param ruleTypeName	the name of the rule type
      * @return 				the created rule
      */
+    @Auditable(parameters = {"ruleTypeName"})
     public Rule createRule(String ruleTypeName);
 
     /**
@@ -165,6 +180,7 @@ public interface RuleService
      * @param nodeRef
      * @param rule
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "rule"})
     public void saveRule(NodeRef nodeRef, Rule rule);
         
     /**
@@ -172,6 +188,7 @@ public interface RuleService
      * 
      * @param nodeRef  the actionable node reference
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "rule"})
     public void removeRule(NodeRef nodeRef, Rule rule);
     
     /**
@@ -179,5 +196,6 @@ public interface RuleService
      * 
      * @param nodeRef   the actionable node reference
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public void removeAllRules(NodeRef nodeRef);
 }

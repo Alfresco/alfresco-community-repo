@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.search;
 import java.io.Serializable;
 import java.util.List;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
@@ -62,6 +63,7 @@ public interface SearchService
      *            the value.
      * @return Returns the query results
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"store", "language", "query", "attributePaths", "queryParameterDefinitions"})
     public ResultSet query(StoreRef store, String language, String query, Path[] attributePaths,
             QueryParameterDefinition[] queryParameterDefinitions);
 
@@ -77,6 +79,7 @@ public interface SearchService
      *            the query string - which may include parameters
      * @return Returns the query results
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"store", "language", "query"})
     public ResultSet query(StoreRef store, String language, String query);
 
     /**
@@ -93,6 +96,7 @@ public interface SearchService
      *            the value.
      * @return Returns the query results
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"store", "language", "query", "queryParameterDefinitions"})
     public ResultSet query(StoreRef store, String language, String query,
             QueryParameterDefinition[] queryParameterDefintions);
 
@@ -110,6 +114,7 @@ public interface SearchService
      *            selected nodes in xpath style syntax
      * @return Returns the query results
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"store", "language", "query", "attributePaths"})
     public ResultSet query(StoreRef store, String language, String query, Path[] attributePaths);
 
     /**
@@ -123,12 +128,14 @@ public interface SearchService
      *            parameterisation for the canned query
      * @return Returns the query results
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"store", "queryId", "queryParameters"})
     public ResultSet query(StoreRef store, QName queryId, QueryParameter[] queryParameters);
 
     /**
      * Search using the given SearchParameters
      */
 
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"searchParameters"})
     public ResultSet query(SearchParameters searchParameters);
 
     /**
@@ -147,6 +154,7 @@ public interface SearchService
      *            it follows all
      * @return a list of all the child assoc relationships to the selected nodes
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks"})
     public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
             NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks)
             throws InvalidNodeRefException, XPathException;
@@ -169,6 +177,7 @@ public interface SearchService
      *            the xpath variant
      * @return a list of all the child assoc relationships to the selected nodes
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks", "language"})
     public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
             NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks, String language)
             throws InvalidNodeRefException, XPathException;
@@ -189,6 +198,7 @@ public interface SearchService
      *            it follows all
      * @return a list of property values
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks"})
     public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath,
             QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
             boolean followAllParentLinks) throws InvalidNodeRefException, XPathException;
@@ -211,6 +221,7 @@ public interface SearchService
      *            the xpath variant
      * @return a list of property values
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "xpath", "parameters", "namespacePrefixResolver", "followAllParentLinks", "language"})
     public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath,
             QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
             boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException;
@@ -227,6 +238,7 @@ public interface SearchService
      *            a Google-like pattern to search for in the property value
      * @return Returns true if the pattern could be found - uses the default OR operator
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "propertyQName", "googleLikePattern"})
     public boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern)
             throws InvalidNodeRefException;
     
@@ -242,6 +254,7 @@ public interface SearchService
      *            a Google-like pattern to search for in the property value
      * @return Returns true if the pattern could be found
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "propertyQName", "googleLikePattern", "defaultOperator"})
     public boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern, SearchParameters.Operator defaultOperator)
             throws InvalidNodeRefException;
 
@@ -259,6 +272,7 @@ public interface SearchService
      *            include full text search matches in the like test
      * @return Returns true if the pattern could be found
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "propertyQName", "sqlLikePattern", "includeFTS"})
     public boolean like(NodeRef nodeRef, QName propertyQName, String sqlLikePattern, boolean includeFTS)
             throws InvalidNodeRefException;
 }

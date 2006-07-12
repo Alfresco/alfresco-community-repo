@@ -18,6 +18,7 @@ package org.alfresco.service.cmr.dictionary;
 
 import java.util.Collection;
 
+import org.alfresco.service.NotAuditable;
 import org.alfresco.service.namespace.QName;
 
 
@@ -40,52 +41,61 @@ public interface DictionaryService
     /**
      * @return the names of all models that have been registered with the Repository
      */
+    @NotAuditable
     public Collection<QName> getAllModels();
     
     /**
      * @param model the model name to retrieve
      * @return the specified model (or null, if it doesn't exist)
      */
+    @NotAuditable
     public ModelDefinition getModel(QName model);
 
     /**
      * @return the names of all data types that have been registered with the Repository
      */
+    @NotAuditable
     Collection<QName> getAllDataTypes();
 
     /**
      * @param model the model to retrieve data types for
      * @return the names of all data types defined within the specified model
      */
+    @NotAuditable
     Collection<QName> getDataTypes(QName model);
     
     /**
      * @param name the name of the data type to retrieve
      * @return the data type definition (or null, if it doesn't exist)
      */
+    @NotAuditable
     DataTypeDefinition getDataType(QName name);
     
     /**
      * @param javaClass  java class to find datatype for
      * @return  the data type definition (or null, if a mapping does not exist) 
      */
+    @NotAuditable
     DataTypeDefinition getDataType(Class javaClass);
 
     /**
      * @return the names of all types that have been registered with the Repository
      */
+    @NotAuditable
     Collection<QName> getAllTypes();
     
     /**
      * @param model the model to retrieve types for
      * @return the names of all types defined within the specified model
      */
+    @NotAuditable
     Collection<QName> getTypes(QName model);
 
     /**
      * @param name the name of the type to retrieve
      * @return the type definition (or null, if it doesn't exist)
      */
+    @NotAuditable
     TypeDefinition getType(QName name);
 
     /**
@@ -96,29 +106,34 @@ public interface DictionaryService
      * @param aspects the aspects to combine with the type
      * @return the anonymous type definition
      */
+    @NotAuditable
     TypeDefinition getAnonymousType(QName type, Collection<QName> aspects);
 
     /**
      * @return the names of all aspects that have been registered with the Repository
      */
+    @NotAuditable
     Collection<QName> getAllAspects();
     
     /**
      * @param model the model to retrieve aspects for
      * @return the names of all aspects defined within the specified model
      */
+    @NotAuditable
     Collection<QName> getAspects(QName model);
 
     /**
      * @param name the name of the aspect to retrieve
      * @return the aspect definition (or null, if it doesn't exist)
      */
+    @NotAuditable
     AspectDefinition getAspect(QName name);
 
     /**
      * @param name the name of the class (type or aspect) to retrieve
      * @return the class definition (or null, if it doesn't exist)
      */
+    @NotAuditable
     ClassDefinition getClass(QName name);
     
     /**
@@ -128,6 +143,7 @@ public interface DictionaryService
      * @param ofClassName the class to test against
      * @return true => the class is a sub-class (or itself)
      */
+    @NotAuditable
     boolean isSubClass(QName className, QName ofClassName);
 
     /**
@@ -140,6 +156,7 @@ public interface DictionaryService
      * @param propertyName the property name
      * @return the property definition (or null, if it doesn't exist)
      */
+    @NotAuditable
     PropertyDefinition getProperty(QName className, QName propertyName);
 
     /**
@@ -148,6 +165,7 @@ public interface DictionaryService
      * @param propertyName the property name
      * @return the property definition (or null, if it doesn't exist)
      */
+    @NotAuditable
     PropertyDefinition getProperty(QName propertyName);
 
     /**
@@ -156,6 +174,7 @@ public interface DictionaryService
      * @param associationName the property name
      * @return the association definition (or null, if it doesn't exist)
      */
+    @NotAuditable
     AssociationDefinition getAssociation(QName associationName);
     
     // TODO: Behaviour definitions

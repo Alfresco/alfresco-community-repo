@@ -18,6 +18,7 @@ package org.alfresco.service.cmr.security;
 
 import java.util.Set;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -119,6 +120,7 @@ public interface PermissionService
      * 
      * @return the owner authority
      */
+    @Auditable
     public String getOwnerAuthority();
 
     /**
@@ -126,6 +128,7 @@ public interface PermissionService
      * 
      * @return the All authorities
      */
+    @Auditable
     public String getAllAuthorities();
 
     /**
@@ -133,6 +136,7 @@ public interface PermissionService
      * 
      * @return the All permission
      */
+    @Auditable
     public String getAllPermission();
 
     /**
@@ -143,6 +147,7 @@ public interface PermissionService
      *            the reference to the node
      * @return the set of allowed permissions
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public Set<AccessPermission> getPermissions(NodeRef nodeRef);
 
     /**
@@ -153,6 +158,7 @@ public interface PermissionService
      *            the reference to the node
      * @return the set of allowed permissions
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public Set<AccessPermission> getAllSetPermissions(NodeRef nodeRef);
 
     /**
@@ -161,6 +167,7 @@ public interface PermissionService
      * @param nodeRef
      * @return
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public Set<String> getSettablePermissions(NodeRef nodeRef);
 
     /**
@@ -169,6 +176,7 @@ public interface PermissionService
      * @param nodeRef
      * @return
      */
+    @Auditable(parameters = {"type"})
     public Set<String> getSettablePermissions(QName type);
 
     /**
@@ -176,16 +184,18 @@ public interface PermissionService
      * given node. (The default behaviour is to inherit permissions)
      * 
      * @param nodeRef
-     * @param perm
+     * @param permission
      * @return
      */
-    public AccessStatus hasPermission(NodeRef nodeRef, String perm);
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "permission"})
+    public AccessStatus hasPermission(NodeRef nodeRef, String permission);
 
     /**
      * Delete all the permission assigned to the node
      * 
      * @param nodeRef
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public void deletePermissions(NodeRef nodeRef);
 
     /**
@@ -194,6 +204,7 @@ public interface PermissionService
      * @param nodeRef
      * @param authority
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "authority"})
     public void clearPermission(NodeRef nodeRef, String authority);
     
     /**
@@ -203,6 +214,7 @@ public interface PermissionService
      * @param authority the authority recipient
      * @param permission the entry permission
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "authority", "permission"})
     public void deletePermission(NodeRef nodeRef, String authority, String permission);
 
     /**
@@ -210,10 +222,11 @@ public interface PermissionService
      * 
      * @param nodeRef
      * @param authority
-     * @param perm
+     * @param permission
      * @param allow
      */
-    public void setPermission(NodeRef nodeRef, String authority, String perm, boolean allow);
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "authority", "permission", "allow"})
+    public void setPermission(NodeRef nodeRef, String authority, String permission, boolean allow);
 
     /**
      * Set the global inheritance behaviour for permissions on a node.
@@ -221,6 +234,7 @@ public interface PermissionService
      * @param nodeRef
      * @param inheritParentPermissions
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "inheritParentPermissions"})
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions);
     
     /**
@@ -229,5 +243,6 @@ public interface PermissionService
      * @param nodeRef
      * @return inheritParentPermissions
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public boolean getInheritParentPermissions(NodeRef nodeRef);
 }

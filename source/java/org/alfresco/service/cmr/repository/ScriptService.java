@@ -16,9 +16,9 @@
  */
 package org.alfresco.service.cmr.repository;
 
-import java.io.Writer;
 import java.util.Map;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -32,7 +32,7 @@ import org.alfresco.service.namespace.QName;
  * Java objects are passed into the scripting engine and methods can be accessed directly from the script. 
  * <p>
  * A script is executed within a single transaction, any modifications to nodes or properties that fail
- * and cause a rollback which will rollback all repoistory modifications made by the script.
+ * and cause a rollback which will rollback all repository modifications made by the script.
  * 
  * @author Kevin Roast
  */
@@ -48,6 +48,7 @@ public interface ScriptService
      * 
      * @throws ScriptException
      */
+    @Auditable(parameters = {"scriptClasspath", "model"})
     public Object executeScript(String scriptClasspath, Map<String, Object> model)
         throws ScriptException;
     
@@ -63,6 +64,7 @@ public interface ScriptService
      * 
      * @throws ScriptException
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"scriptRef", "contentProp", "model"})
     public Object executeScript(NodeRef scriptRef, QName contentProp, Map<String, Object> model)
         throws ScriptException;
     
@@ -76,6 +78,7 @@ public interface ScriptService
      * 
      * @throws ScriptException
      */
+    @Auditable(parameters = {"script", "model"})
     public Object executeScriptString(String script, Map<String, Object> model)
         throws ScriptException;
 }

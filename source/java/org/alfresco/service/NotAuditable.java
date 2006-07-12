@@ -16,19 +16,20 @@
  */
 package org.alfresco.service;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
- * An interface to test the use of the auditable annotation.
+ * Specifically indicate that a method is not to be audited.
+ * This is a marker annotation.
  * 
  * @author Andy Hind
  */
-public interface AnnotationTestInterface
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface NotAuditable
 {
-    @Auditable()
-    public void noArgs();
-    
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"one", "two"})
-    public String getString(String one, String two); 
-    
-    @Auditable(key =  Auditable.Key.ARG_0, parameters = {"one"})
-    public String getAnotherString(String one); 
+
 }

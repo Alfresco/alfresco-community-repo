@@ -16,6 +16,7 @@
  */
 package org.alfresco.service.cmr.security;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -31,6 +32,7 @@ public interface OwnableService
      * @param nodeRef
      * @return the username or null if the object has no owner
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public String getOwner(NodeRef nodeRef);
     
     /**
@@ -39,6 +41,7 @@ public interface OwnableService
      * @param nodeRef
      * @param userName
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "userName"})
     public void setOwner(NodeRef nodeRef, String userName);
     
     /**
@@ -46,6 +49,7 @@ public interface OwnableService
      * 
      * @param nodeRef
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public void takeOwnership(NodeRef nodeRef);
     
     /**
@@ -54,5 +58,6 @@ public interface OwnableService
      * @param nodeRef
      * @return
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public boolean hasOwner(NodeRef nodeRef);
 }

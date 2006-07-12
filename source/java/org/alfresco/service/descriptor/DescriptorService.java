@@ -16,6 +16,7 @@
  */
 package org.alfresco.service.descriptor;
 
+import org.alfresco.service.NotAuditable;
 import org.alfresco.service.license.LicenseDescriptor;
 
 
@@ -32,6 +33,7 @@ public interface DescriptorService
      * 
      * @return  server descriptor
      */
+    @NotAuditable
     public Descriptor getServerDescriptor();
     
     /**
@@ -41,6 +43,7 @@ public interface DescriptorService
      * 
      * @return  repository descriptor
      */
+    @NotAuditable
     public Descriptor getInstalledRepositoryDescriptor();
     
     /**
@@ -48,6 +51,7 @@ public interface DescriptorService
      * 
      * @return  the license descriptor
      */
+    @NotAuditable
     public LicenseDescriptor getLicenseDescriptor();
     
 }

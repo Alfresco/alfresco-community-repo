@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.NotAuditable;
 
 
 /**
@@ -37,6 +38,7 @@ public interface MimetypeService
      * @return Returns the default extension for the mimetype
      * @throws AlfrescoRuntimeException if the mimetype doesn't exist
      */
+    @NotAuditable
     public String getExtension(String mimetype);
 
     /**
@@ -44,6 +46,7 @@ public interface MimetypeService
      * 
      * @return the map of displays indexed by extension
      */
+    @NotAuditable
     public Map<String, String> getDisplaysByExtension();
 
     /**
@@ -51,6 +54,7 @@ public interface MimetypeService
      *
      * @return the map of displays indexed by mimetype
      */
+    @NotAuditable
     public Map<String, String> getDisplaysByMimetype();
 
     /**
@@ -58,6 +62,7 @@ public interface MimetypeService
      * 
      * @return the map of extension indexed by mimetype
      */
+    @NotAuditable
     public Map<String, String> getExtensionsByMimetype();
 
     /**
@@ -65,6 +70,7 @@ public interface MimetypeService
      * 
      * @return the map of mimetypes indexed by extension
      */
+    @NotAuditable
     public Map<String, String> getMimetypesByExtension();
 
     /**
@@ -72,6 +78,7 @@ public interface MimetypeService
      * 
      * @return all mimetypes
      */
+    @NotAuditable
     public List<String> getMimetypes();
 
     /**
@@ -82,5 +89,6 @@ public interface MimetypeService
      * @return Returns the best guess mimetype or the mimetype for
      *      straight binary files if no extension could be found.
      */
+    @NotAuditable
     public String guessMimetype(String filename);
 }

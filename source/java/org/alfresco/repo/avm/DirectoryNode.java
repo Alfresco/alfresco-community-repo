@@ -16,7 +16,6 @@
  */
 package org.alfresco.repo.avm;
 
-import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
@@ -91,12 +90,6 @@ public interface DirectoryNode extends AVMNode
      */
     public void retarget(Lookup lPath, String target);
     
-    /**
-     * Get all the directly contained children of a node.
-     * @return A List of Child entries.
-     */
-    public List<ChildEntry> getChildren();
-
     /**
      * Set whether this node is a root node.
      * @param isRoot

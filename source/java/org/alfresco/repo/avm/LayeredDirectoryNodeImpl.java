@@ -92,7 +92,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fLayerID = -1;
         fOpacity = false;
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
-        for (ChildEntry child : other.getChildren())
+        for (ChildEntry child : AVMContext.fgInstance.fChildEntryDAO.getByParent(other))
         {
             ChildEntryImpl newChild = new ChildEntryImpl(child.getName(),
                                                          this,
@@ -128,7 +128,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         if (copyContents)
         {
-            for (ChildEntry child : other.getChildren())
+            for (ChildEntry child : AVMContext.fgInstance.fChildEntryDAO.getByParent(other))
             {
                 ChildEntryImpl newChild = new ChildEntryImpl(child.getName(),
                                                              this,
@@ -260,7 +260,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void putChild(String name, AVMNode node)
     {
-        ChildEntry existing = getChild(name, true);
+        ChildEntry existing = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
         if (existing != null)
         {
             existing.setChild(node);
@@ -286,7 +286,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public boolean directlyContains(AVMNode node)
     {
-        return getChild(node) != null;
+        return AVMContext.fgInstance.fChildEntryDAO.getByParentChild(this, node) != null;
     }
 
     /**
@@ -331,7 +331,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             }
             listing.put(name, baseListing.get(name));
         }
-        for (ChildEntry entry : getChildren())
+        for (ChildEntry entry : AVMContext.fgInstance.fChildEntryDAO.getByParent(this))
         {
             listing.put(entry.getName(), entry.getChild());
         }
@@ -379,7 +379,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             baseListing.remove(child.getName());
         }
-        List<ChildEntry> children = getChildren();
+        List<ChildEntry> children = AVMContext.fgInstance.fChildEntryDAO.getByParent(this);
         for (ChildEntry child : children)
         {
             baseListing.put(child.getName(),
@@ -406,7 +406,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             return null;
         }
-        ChildEntry entry = getChild(name, write);
+        ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
         if (entry != null)
         {
             return AVMNodeUnwrapper.Unwrap(entry.getChild());
@@ -449,7 +449,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             return null;
         }
-        ChildEntry entry = getChild(name, false);
+        ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
         if (entry != null)
         {
             return entry.getChild().getDescriptor(mine.getPath(),
@@ -489,7 +489,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     @SuppressWarnings("unchecked")
     public void removeChild(String name)
     {
-        ChildEntry entry = getChild(name, true);
+        ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
         if (entry != null)
         {
             AVMContext.fgInstance.fChildEntryDAO.delete(entry);

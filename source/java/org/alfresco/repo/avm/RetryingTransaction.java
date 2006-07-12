@@ -11,5 +11,4 @@ public interface RetryingTransaction
      * @param write Whether this is a write operation.
      */
     public void perform(RetryingTransactionCallback callback, boolean write);
-
 }

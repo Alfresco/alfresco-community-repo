@@ -76,7 +76,6 @@ public interface AVMNode
      */
     public int getType();
 
-
     /**
      * Get the descriptor for this node.
      * @param lPath The Lookup.

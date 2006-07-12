@@ -59,7 +59,7 @@ public class AVMNodeDAOHibernate extends HibernateDaoSupport implements
      * @param rep The Repository.
      */
     @SuppressWarnings("unchecked")
-    public void dereferenceNodesInRepository(Repository rep)
+    public void unreferenceRepository(Repository rep)
     {
         Session sess = getSession();
         Query query = sess.createQuery("from AVMNodeImpl an where an.repository = :rep");

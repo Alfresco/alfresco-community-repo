@@ -17,8 +17,6 @@
 
 package org.alfresco.repo.avm;
 
-import java.util.List;
-
 /**
  * Base class for Directories.
  * @author britt
@@ -41,37 +39,5 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
     protected DirectoryNodeImpl(long id, Repository repo)
     {
         super(id, repo);
-    }
-    
-    /**
-     * Retrieves the ChildEntry in this directory with the given name.
-     * @param name The name to look for.
-     * @param write Whether the child should be looked up for writing.
-     * @return The ChildEntry or null if not found.
-     */
-    protected ChildEntry getChild(String name, boolean write)
-    {
-        return AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
-    }
-    
-    /**
-     * Get all the children of this directory. NB, this should
-     * really be considered an internal method but it needs to be
-     * exposed through the interface.
-     * @return A List of ChildEntries.
-     */
-    public List<ChildEntry> getChildren()
-    {
-        return AVMContext.fgInstance.fChildEntryDAO.getByParent(this);
-    }
-    
-    /**
-     * Get the ChildEntry that has the given child.
-     * @param child The child node to look for.
-     * @return The ChildEntry or null if not found.
-     */
-    protected ChildEntry getChild(AVMNode child)
-    {
-        return AVMContext.fgInstance.fChildEntryDAO.getByParentChild(this, child);
     }
 }

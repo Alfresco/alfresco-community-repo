@@ -91,7 +91,6 @@ class HistoryLinkImpl implements HistoryLink, Serializable
         }
         HistoryLink o = (HistoryLink)obj;
         return fAncestor.equals(o.getAncestor()) && fDescendent.equals(o.getDescendent());
-        
     }
 
     /**

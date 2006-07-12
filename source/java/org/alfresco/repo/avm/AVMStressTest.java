@@ -101,22 +101,6 @@ public class AVMStressTest extends AVMServiceTestBase
                             exited++;
                         }
                     }
-                    /*
-                    long now = System.currentTimeMillis();
-                    if (now - sampStart > 30000)
-                    {
-                        System.err.println("RATE: " + (((long)AVMTester.GetCount()) * 1000 / (now - sampStart)));
-                        for (AVMTester tester : testers)
-                        {
-                            tester.setExit();
-                        }
-                        for (Thread thread : threads)
-                        {
-                            thread.join();
-                        }
-                        fail();
-                    }
-                    */
                 }
                 catch (InterruptedException e)
                 {

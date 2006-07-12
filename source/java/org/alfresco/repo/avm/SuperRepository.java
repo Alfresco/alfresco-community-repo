@@ -122,7 +122,6 @@ class SuperRepository
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
         Repository rep = getRepositoryByName(pathParts[0], true);
-//        fSession.get().lock(rep, LockMode.UPGRADE);
         rep.createDirectory(pathParts[1], name);
     }
 
@@ -157,7 +156,6 @@ class SuperRepository
         fLookupCount.set(1);
         String[] pathParts = SplitPath(dstPath);
         Repository rep = getRepositoryByName(pathParts[0], true);
-//        fSession.get().lock(rep, LockMode.UPGRADE);
         rep.createLayeredFile(srcPath, pathParts[1], name);
     }
 
@@ -201,15 +199,12 @@ class SuperRepository
         fLookupCount.set(1);
         String [] pathParts = SplitPath(srcPath);
         Repository srcRepo = getRepositoryByName(pathParts[0], false);
-//        fSession.get().lock(srcRepo, LockMode.READ);
         Lookup sPath = srcRepo.lookup(version, pathParts[1], false);
         // Lookup the destination directory.
         fLookupCount.set(1);
         pathParts = SplitPath(dstPath);
         Repository dstRepo = getRepositoryByName(pathParts[0], true);
-//        fSession.get().lock(dstRepo, LockMode.UPGRADE);
         Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1], true);
-//        dPath.acquireLocks();
         DirectoryNode dirNode = (DirectoryNode)dPath.getCurrentNode();
         AVMNode srcNode = sPath.getCurrentNode();
         AVMNode dstNode = null;
@@ -250,7 +245,6 @@ class SuperRepository
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         Repository rep = getRepositoryByName(pathParts[0], true);
-//        fSession.get().lock(rep, LockMode.UPGRADE);
         return rep.getOutputStream(pathParts[1]);
     }
     
@@ -266,7 +260,6 @@ class SuperRepository
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
         Repository rep = getRepositoryByName(pathParts[0], true);
-//        fSession.get().lock(rep, LockMode.UPGRADE);
         return rep.getRandomAccess(version, pathParts[1], access);
     }
 
@@ -288,9 +281,7 @@ class SuperRepository
         fLookupCount.set(1);
         String [] pathParts = SplitPath(srcPath);
         Repository srcRepo = getRepositoryByName(pathParts[0], true);
-//        fSession.get().lock(srcRepo, LockMode.UPGRADE);
         Lookup sPath = srcRepo.lookupDirectory(-1, pathParts[1], true);
-//        sPath.acquireLocks();
         DirectoryNode srcDir = (DirectoryNode)sPath.getCurrentNode();
         AVMNode srcNode = srcDir.lookupChild(sPath, srcName, -1, true);
         if (srcNode == null)
@@ -300,9 +291,7 @@ class SuperRepository
         fLookupCount.set(1);
         pathParts = SplitPath(dstPath);
         Repository dstRepo = getRepositoryByName(pathParts[0], true);
-//        fSession.get().lock(dstRepo, LockMode.UPGRADE);
         Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1], true);
-//        dPath.acquireLocks();
         DirectoryNode dstDir = (DirectoryNode)dPath.getCurrentNode();
         AVMNode dstNode = dstDir.lookupChild(dPath, dstName, -1, true);
         if (dstNode != null)
@@ -405,7 +394,6 @@ class SuperRepository
         fLookupCount.set(1);
         String [] pathParts = SplitPath(dirPath);
         Repository repo = getRepositoryByName(pathParts[0], true);
-//        fSession.get().lock(repo, LockMode.UPGRADE);
         repo.uncover(pathParts[1], name);
     }
 
@@ -420,7 +408,6 @@ class SuperRepository
         for (String repName : repositories)
         {
             Repository repo = getRepositoryByName(repName, true);
-//            fSession.get().lock(repo, LockMode.UPGRADE);
             result.add(repo.createSnapshot());
         }
         return result;
@@ -434,8 +421,6 @@ class SuperRepository
     public int createSnapshot(String repository)
     {
         Repository repo = getRepositoryByName(repository, true);
-//        fSession.get().lock(repo, LockMode.UPGRADE);
-//        fSession.get().lock(repo, LockMode.UPGRADE);
         return repo.createSnapshot();
     }
 
@@ -449,7 +434,6 @@ class SuperRepository
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         Repository repo = getRepositoryByName(pathParts[0], true);
-//        fSession.get().lock(repo, LockMode.UPGRADE);
         repo.removeNode(pathParts[1], name);
     }
 
@@ -462,17 +446,14 @@ class SuperRepository
     public void purgeRepository(String name)
     {
         Repository rep = getRepositoryByName(name, true);
-//        fSession.get().lock(rep, LockMode.UPGRADE);
         AVMNode root = rep.getRoot();
         root.setIsRoot(false);
-//        AVMContext.fgInstance.fAVMNodeDAO.update(root);
         VersionRootDAO vrDAO = AVMContext.fgInstance.fVersionRootDAO;
         List<VersionRoot> vRoots = vrDAO.getAllInRepository(rep);
         for (VersionRoot vr : vRoots)
         {
             AVMNode node = vr.getRoot();
             node.setIsRoot(false);
-//            AVMContext.fgInstance.fAVMNodeDAO.update(node);
             vrDAO.delete(vr);
         }
         Iterator<AVMNode> iter = AVMContext.fgInstance.fAVMNodeDAO.getByRepository(rep);
@@ -493,7 +474,6 @@ class SuperRepository
     public void purgeVersion(String name, int version)
     {
         Repository rep = getRepositoryByName(name, true);
-//        fSession.get().lock(rep, LockMode.UPGRADE);
         rep.purgeVersion(version);
     }
 
@@ -508,7 +488,6 @@ class SuperRepository
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         Repository repo = getRepositoryByName(pathParts[0], false);
-//        fSession.get().lock(repo, LockMode.READ);
         return repo.getInputStream(version, pathParts[1]);
     }
 
@@ -545,7 +524,6 @@ class SuperRepository
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         Repository repo = getRepositoryByName(pathParts[0], false);
-//        fSession.get().lock(repo, LockMode.READ);
         return repo.getListing(version, pathParts[1]);
     }
 
@@ -602,7 +580,6 @@ class SuperRepository
     public List<VersionDescriptor> getRepositoryVersions(String name)
     {
         Repository rep = getRepositoryByName(name, false);
-//        fSession.get().lock(rep, LockMode.READ);
         return rep.getVersions();
     }
 
@@ -617,7 +594,6 @@ class SuperRepository
     public List<VersionDescriptor> getRepositoryVersions(String name, Date from, Date to)
     {
         Repository rep = getRepositoryByName(name, false);
-//        fSession.get().lock(rep, LockMode.READ);
         return rep.getVersions(from, to);
     }
     
@@ -659,7 +635,6 @@ class SuperRepository
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         Repository rep = getRepositoryByName(pathParts[0], false);
-//        fSession.get().lock(rep, LockMode.READ);
         return rep.getIndirectionPath(version, pathParts[1]);
     }
 
@@ -671,7 +646,6 @@ class SuperRepository
     public int getLatestVersionID(String name)
     {
         Repository rep = getRepositoryByName(name, false);
-//        fSession.get().lock(rep, LockMode.READ);
         return rep.getNextVersionID();
     }
     
@@ -704,7 +678,6 @@ class SuperRepository
         {
             throw new AVMNotFoundException("Not found: " + name);
         }
-//        fSession.get().lock(rep, LockMode.READ);
         return rep.getRoot(version);
     }
  
@@ -778,7 +751,6 @@ class SuperRepository
         }
         String [] pathParts = SplitPath(path);
         Repository rep = getRepositoryByName(pathParts[0], false);
-//        fSession.get().lock(rep, LockMode.READ);
         return rep.lookupDirectory(version, pathParts[1], false);
     }
 
@@ -815,7 +787,6 @@ class SuperRepository
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
         Repository rep = getRepositoryByName(pathParts[0], true);
-//        fSession.get().lock(rep, LockMode.UPGRADE);
         rep.makePrimary(pathParts[1]);
     }
 
@@ -829,7 +800,6 @@ class SuperRepository
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
         Repository rep = getRepositoryByName(pathParts[0], true);
-//        fSession.get().lock(rep, LockMode.UPGRADE);
         rep.retargetLayeredDirectory(pathParts[1], target);
     }
     

@@ -19,9 +19,6 @@ package org.alfresco.repo.avm;
 
 import java.io.Serializable;
 
-import org.hibernate.Query;
-import org.hibernate.Session;
-
 /**
  * Base class for all repository file system like objects.
  * @author britt

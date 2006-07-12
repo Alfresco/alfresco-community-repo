@@ -22,8 +22,7 @@ import org.hibernate.proxy.HibernateProxy;
 /**
  * Utility for unwrapping (getting the actual instance of) an AVMNode from what
  * may be a HibernateProxy.  Bitter Hibernate note: Hibernate proxies for polymorphic
- * types are fundamentally broken.  The Hibernate schmucks claim its a CGLIB problem.
- * The CGLIB villains dither unintelligibly.
+ * types are fundamentally broken.
  * @author britt
  */
 public class AVMNodeUnwrapper

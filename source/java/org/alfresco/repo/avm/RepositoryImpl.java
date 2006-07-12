@@ -29,8 +29,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.hibernate.Query;
-
 /**
  * A Repository contains a current root directory and a list of
  * root versions.  Each root version corresponds to a separate snapshot
@@ -141,7 +139,6 @@ public class RepositoryImpl implements Repository, Serializable
         for (AVMNode newNode : anDAO.getNewInRepo(this))
         {
             newNode.setIsNew(false);
-//            anDAO.update(newNode);
         }
         // TODO: This is a grotesque hack to deal with hibernate.
         anDAO.flush();
@@ -165,7 +162,6 @@ public class RepositoryImpl implements Repository, Serializable
     public void createDirectory(String path, String name)
     {
         Lookup lPath = lookupDirectory(-1, path, true);
-//        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1, true) != null)
         {
@@ -199,7 +195,6 @@ public class RepositoryImpl implements Repository, Serializable
                                        String name)
     {
         Lookup lPath = lookupDirectory(-1, dstPath, true);
-//        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1, true) != null)
         {
@@ -234,7 +229,6 @@ public class RepositoryImpl implements Repository, Serializable
     public OutputStream createFile(String path, String name)
     {
         Lookup lPath = lookupDirectory(-1, path, true);
-//        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1, true) != null)
         {
@@ -276,7 +270,6 @@ public class RepositoryImpl implements Repository, Serializable
     public void createLayeredFile(String srcPath, String dstPath, String name)
     {
         Lookup lPath = lookupDirectory(-1, dstPath, true);
-//        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1, true) != null)
         {
@@ -339,7 +332,6 @@ public class RepositoryImpl implements Repository, Serializable
     public OutputStream getOutputStream(String path)
     {
         Lookup lPath = lookup(-1, path, true);
-//        lPath.acquireLocks();
         AVMNode node = lPath.getCurrentNode();
         if (node.getType() != AVMNodeType.PLAIN_FILE &&
             node.getType() != AVMNodeType.LAYERED_FILE)
@@ -367,10 +359,6 @@ public class RepositoryImpl implements Repository, Serializable
             throw new AVMException("Access denied: " + path);
         }
         Lookup lPath = lookup(version, path, write);
-//        if (write)
-//        {
-//            lPath.acquireLocks();
-//        }
         AVMNode node = lPath.getCurrentNode();
         if (node.getType() != AVMNodeType.PLAIN_FILE &&
             node.getType() != AVMNodeType.LAYERED_FILE)
@@ -398,9 +386,7 @@ public class RepositoryImpl implements Repository, Serializable
      */
     public void removeNode(String path, String name)
     {
-        // TODO Are we double checking for existence?
         Lookup lPath = lookupDirectory(-1, path, true);
-//        lPath.acquireLocks();
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1, true) == null)
         {
@@ -418,7 +404,6 @@ public class RepositoryImpl implements Repository, Serializable
     public void uncover(String dirPath, String name)
     {
         Lookup lPath = lookup(-1, dirPath, true);
-//        lPath.acquireLocks();
         AVMNode node = lPath.getCurrentNode();
         if (node.getType() != AVMNodeType.LAYERED_DIRECTORY)
         {
@@ -540,7 +525,6 @@ public class RepositoryImpl implements Repository, Serializable
             {
                 throw new AVMWrongTypeException("Not a directory: " + pathElements[i]);
             }
-//            fSuper.getSession().lock(dir, LockMode.READ);
             result.add(child, pathElements[i], write);
             dir = (DirectoryNode)result.getCurrentNode();
         }
@@ -550,7 +534,6 @@ public class RepositoryImpl implements Repository, Serializable
         {
             throw new AVMNotFoundException("Not found: " + pathElements[pathElements.length - 1]);
         }
-//        fSuper.getSession().lock(child, LockMode.READ);
         result.add(child, pathElements[pathElements.length - 1], write);
         return result;
     }

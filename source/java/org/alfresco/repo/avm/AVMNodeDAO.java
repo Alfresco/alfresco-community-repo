@@ -35,7 +35,7 @@ public interface AVMNodeDAO
      * point to that repository.
      * @param rep The Repository.
      */
-    public void dereferenceNodesInRepository(Repository rep);
+    public void unreferenceRepository(Repository rep);
     
     /**
      * Delete a single node.

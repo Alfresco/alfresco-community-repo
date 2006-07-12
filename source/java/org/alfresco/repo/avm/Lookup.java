@@ -128,7 +128,6 @@ class Lookup
             fPosition++;
             return;
         }
-//        SuperRepository.GetInstance().getSession().lock(node, LockMode.READ);
         if (fPosition >= 0 && fDirectlyContained && 
             fComponents.get(fPosition).getNode().getType() == AVMNodeType.LAYERED_DIRECTORY)
         {
@@ -195,7 +194,6 @@ class Lookup
                 fTopLayer = (LayeredDirectoryNode)node;
             }
             ((DirectoryNode)fComponents.get(fPosition - 1).getNode()).putChild(name, node);
-            // TODO More Hibernate hijinx: SuperRepository.GetInstance().getSession().flush();
         }
     }
     
@@ -338,16 +336,4 @@ class Lookup
     {
         return fComponents.get(fPosition).getName();
     }
-    
-    /**
-     * Acquire locks for writing, in path lookup order.
-     */
-//    public void acquireLocks()
-//    {
-//        Session sess = SuperRepository.GetInstance().getSession();
-//        for (LookupComponent comp : fComponents)
-//        {
-//            sess.lock(comp.getNode(), LockMode.UPGRADE);
-//        }
-//    }
 }

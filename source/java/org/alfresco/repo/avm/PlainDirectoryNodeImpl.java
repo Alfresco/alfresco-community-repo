@@ -59,7 +59,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         super(repos.getSuperRepository().issueID(), repos);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         // TODO Something about this. sess.flush();
-        for (ChildEntry child : other.getChildren())
+        for (ChildEntry child : AVMContext.fgInstance.fChildEntryDAO.getByParent(other))
         {
             ChildEntry newChild = new ChildEntryImpl(child.getName(),
                                                      this,
@@ -76,7 +76,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      */
     public boolean directlyContains(AVMNode node)
     {
-        return getChild(node) != null;
+        return AVMContext.fgInstance.fChildEntryDAO.getByParentChild(this, node) != null;
     }
 
     /**
@@ -88,7 +88,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     public Map<String, AVMNode> getListing(Lookup lPath)
     {
         TreeMap<String, AVMNode> result = new TreeMap<String, AVMNode>();
-        List<ChildEntry> children = getChildren();
+        List<ChildEntry> children = AVMContext.fgInstance.fChildEntryDAO.getByParent(this);
         for (ChildEntry child : children)
         {
             result.put(child.getName(), child.getChild());
@@ -108,7 +108,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             throw new AVMBadArgumentException("Path is null.");
         }
         SortedMap<String, AVMNodeDescriptor> result = new TreeMap<String, AVMNodeDescriptor>();
-        List<ChildEntry> children = getChildren();
+        List<ChildEntry> children = AVMContext.fgInstance.fChildEntryDAO.getByParent(this);
         for (ChildEntry child : children)
         {
             result.put(child.getName(), 
@@ -130,7 +130,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     {
         // We're doing the hand unrolling of the proxy because
         // Hibernate/CGLIB proxies are broken.
-        ChildEntry entry = getChild(name, write);
+        ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
         if (entry == null)
         {
             return null;
@@ -150,7 +150,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         {
             throw new AVMBadArgumentException("Path is null.");
         }
-        ChildEntry entry = getChild(name, false);
+        ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
         if (entry == null)
         {
             return null;
@@ -165,7 +165,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     @SuppressWarnings("unchecked")
     public void removeChild(String name)
     {
-        ChildEntry entry = getChild(name, true);
+        ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
         if (entry != null)
         {
             AVMContext.fgInstance.fChildEntryDAO.delete(entry);

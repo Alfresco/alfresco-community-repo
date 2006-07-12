@@ -41,14 +41,14 @@ public class AnnotationTest extends TestCase
         Method method = clazz.getMethod("noArgs", new Class[]{});
         assertTrue(method.isAnnotationPresent(Auditable.class));
         Auditable auditable = method.getAnnotation(Auditable.class);
-        assertEquals(auditable.key(), -1);
+        assertEquals(auditable.key(), Auditable.Key.NO_KEY);
         assertEquals(auditable.parameters().length, 0);
         
         
         method = clazz.getMethod("getString", new Class[]{String.class, String.class});
         assertTrue(method.isAnnotationPresent(Auditable.class));
         auditable = method.getAnnotation(Auditable.class);
-        assertEquals(auditable.key(), 0);
+        assertEquals(auditable.key(), Auditable.Key.ARG_0);
         assertEquals(auditable.parameters().length, 2);
         assertEquals(auditable.parameters()[0], "one");
         assertEquals(auditable.parameters()[1], "two");
@@ -57,7 +57,7 @@ public class AnnotationTest extends TestCase
         method = clazz.getMethod("getAnotherString", new Class[]{String.class});
         assertTrue(method.isAnnotationPresent(Auditable.class));
         auditable = method.getAnnotation(Auditable.class);
-        assertEquals(auditable.key(), 0);
+        assertEquals(auditable.key(), Auditable.Key.ARG_0);
         assertEquals(auditable.parameters().length, 1);
         assertEquals(auditable.parameters()[0], "one");
       

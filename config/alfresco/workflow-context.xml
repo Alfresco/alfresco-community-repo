@@ -4,14 +4,16 @@
 <beans>
 
    <!-- jBPM configuration -->
-   <bean id="jbpmConfiguration" class="org.springmodules.workflow.jbpm31.LocalJbpmConfigurationFactoryBean">
+   <bean id="jbpm.configuration" class="org.springmodules.workflow.jbpm31.LocalJbpmConfigurationFactoryBean">
       <property name="sessionFactory" ref="sessionFactory"/>
       <property name="configuration" value="classpath:org/jbpm/default.jbpm.cfg.xml"/>
    </bean>
 
    <!-- jBPM template -->
-   <bean id="jbpmTemplate" class="org.springmodules.workflow.jbpm31.JbpmTemplate">
-      <constructor-arg index="0" ref="jbpmConfiguration"/>
+   <bean id="jbpm.template" class="org.springmodules.workflow.jbpm31.JbpmTemplate">
+      <constructor-arg index="0" ref="jbpm.configuration"/>
    </bean>
-	
+
+   
+
 </beans>

@@ -18,6 +18,7 @@ package org.alfresco.repo.workflow.jbpm;
 
 import java.util.List;
 
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.BaseSpringTest;
 import org.jbpm.JbpmContext;
 import org.jbpm.db.GraphSession;
@@ -35,13 +36,15 @@ import org.springmodules.workflow.jbpm31.JbpmTemplate;
  */
 public class JBPMSpringTest extends BaseSpringTest
 {
-    private JbpmTemplate jbpmTemplate;
+    JbpmTemplate jbpmTemplate;
+    DescriptorService descriptorService;
 
         
     @Override
     protected void onSetUpInTransaction() throws Exception
     {
-        jbpmTemplate = (JbpmTemplate)applicationContext.getBean("jbpmTemplate");
+        jbpmTemplate = (JbpmTemplate)applicationContext.getBean("jbpm.template");
+        descriptorService = (DescriptorService)applicationContext.getBean("DescriptorService");
     }
     
         
@@ -100,13 +103,17 @@ public class JBPMSpringTest extends BaseSpringTest
           "  <start-state name='start'>" +
           "    <transition to='s' />" +
           "  </start-state>" +
-          "  <state name='s'>" +
+          "  <node name='s'>" +
+          "    <action class='org.alfresco.repo.workflow.jbpm.JBPMTestSpringActionHandler' config-type='bean'>" +
+          "       <value>a test value</value>" +
+          "    </action>" +
           "    <transition to='end' />" +
-          "  </state>" +
+          "  </node>" +
           "  <end-state name='end' />" +
           "</process-definition>"
         );
 
+        
         jbpmTemplate.execute(new JbpmCallback()
         {
             public Object doInJbpm(JbpmContext context)
@@ -137,6 +144,10 @@ public class JBPMSpringTest extends BaseSpringTest
                 token.signal();
                 // Now the process is in the state 's'.
                 assertEquals("s", token.getNode().getName());
+                // Spring based action has been called, check the result by looking at the 
+                // process variable set by the action
+                String result = "Repo: " + descriptorService.getServerDescriptor().getVersion() + ", Value: a test value, Node: s, Token: /";
+                assertEquals(result, processInstance.getContextInstance().getVariable("jbpm.test.action.result"));
                 
                 context.save(processInstance);
                 return null;

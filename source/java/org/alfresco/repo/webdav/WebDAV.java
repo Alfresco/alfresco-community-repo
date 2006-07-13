@@ -21,8 +21,10 @@ import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -217,8 +219,10 @@ public class WebDAV
     private static SimpleDateFormat _creationDateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     
     //  HTTP header date/time formatter
+    //  NOTE: According to RFC2616 dates should always be in English and in
+    //        the GMT timezone see http://rfc.net/rfc2616.html#p20 for details
     
-    private static SimpleDateFormat _httpDateFormatter = new SimpleDateFormat(HEADER_IF_DATE_FORMAT);
+    private static SimpleDateFormat _httpDateFormatter = new SimpleDateFormat(HEADER_IF_DATE_FORMAT, Locale.ENGLISH);
     
     /**
      * Formats the given date so that it conforms with the Last-Modified HTTP header
@@ -564,6 +568,9 @@ public class WebDAV
      */
     static
     {
+        // ensure http dates are in GMT time zone (see note above)
+        _httpDateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+        
         // Create the WebDAV to Alfresco property mapping table
         
         _propertyNameMap = new Hashtable<String, QName>();

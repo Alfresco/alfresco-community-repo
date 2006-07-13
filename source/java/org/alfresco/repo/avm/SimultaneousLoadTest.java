@@ -33,7 +33,7 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
         try
         {
             int n = 8;
-            int m = 2;
+            int m = 1;
             fReaper.setInactiveBaseSleep(60000);
             for (int i = 0; i < n; i++)
             {

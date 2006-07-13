@@ -75,6 +75,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fPrimaryIndirection = true;
         fOpacity = false;
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
     }
     
     /**
@@ -105,6 +107,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                                        this);
             AVMContext.fgInstance.fDeletedChildDAO.save(newDel);
         }
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
     }
     
     /**
@@ -136,6 +140,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                 AVMContext.fgInstance.fChildEntryDAO.save(newChild);
             }
         }
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
     }
 
     /**
@@ -157,6 +163,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fLayerID = -1;
         fOpacity = false;
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repo, this));
     }   
     
     /**

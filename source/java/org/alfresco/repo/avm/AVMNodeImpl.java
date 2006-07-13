@@ -36,19 +36,9 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     private int fVersionID;
     
     /**
-     * The Repository that owns this.
-     */
-    private Repository fRepository;
-    
-    /**
      * The basic attributes of this.  Owner, creator, mod time, etc.
      */
     private BasicAttributes fBasicAttributes;
-    
-    /**
-     * Whether this node is new (and should therefore not be COWed).
-     */
-    private boolean fIsNew;
     
     /**
      * The version number (for concurrency control).
@@ -77,16 +67,14 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     {
         fID = id;
         fVersionID = -1;
-        fRepository = repo;
         fIsRoot = false;
         long time = System.currentTimeMillis();
         fBasicAttributes = new BasicAttributesImpl("britt",
-                                                       "britt",
-                                                       "britt",
-                                                       time,
-                                                       time,
-                                                       time);
-        fIsNew = true;
+                                                   "britt",
+                                                   "britt",
+                                                   time,
+                                                   time,
+                                                   time);
     }
     
     /**
@@ -137,24 +125,6 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     public AVMNode getMergedFrom()
     {
         return AVMContext.fgInstance.fAVMNodeDAO.getMergedFrom(this);
-    }
-    
-    /**
-     * Set the owning repository for this.
-     * @param repo The owning repository.
-     */
-    public void setRepository(Repository repo)
-    {
-        fRepository = repo;
-    }
-
-    /**
-     * Get the repository that owns this.
-     * @return The repository.
-     */
-    public Repository getRepository()
-    {
-        return fRepository;
     }
     
     /**
@@ -242,21 +212,12 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     }
     
     /**
-     * Set whether this is new.
-     * @param isNew Whether this is new.
-     */
-    public void setIsNew(boolean isNew)
-    {
-        fIsNew = isNew;
-    }
-
-    /**
      * Get whether this is a new node.
      * @return Whether this is new.
      */
     public boolean getIsNew()
     {
-        return fIsNew;
+        return AVMContext.fgInstance.fNewInRepositoryDAO.getByNode(this) != null;
     }
  
     /**

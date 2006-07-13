@@ -38,6 +38,8 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     {
         super(repo.getSuperRepository().issueID(), repo);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repo, this));
     }
     
     /**
@@ -58,15 +60,15 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     {
         super(repos.getSuperRepository().issueID(), repos);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
-        // TODO Something about this. sess.flush();
         for (ChildEntry child : AVMContext.fgInstance.fChildEntryDAO.getByParent(other))
         {
             ChildEntry newChild = new ChildEntryImpl(child.getName(),
                                                      this,
                                                      child.getChild());
             AVMContext.fgInstance.fChildEntryDAO.save(newChild);
-            // TODO Something about this: sess.flush();
         }
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
     }
 
     /**

@@ -66,12 +66,6 @@ public interface AVMNode
     public AVMNode copy(Lookup lPath);
 
     /**
-     * Set the repository for a node.
-     * @param repo The Repository to set.
-     */
-    public void setRepository(Repository repo);
-
-    /**
      * Get the type of this node.
      */
     public int getType();
@@ -105,12 +99,6 @@ public interface AVMNode
      * @return The object id.
      */
     public long getId();
-    
-    /**
-     * Set this node's newness.
-     * @param isNew The newness.
-     */
-    public void setIsNew(boolean isNew);
     
     /**
      * Get the newnews.

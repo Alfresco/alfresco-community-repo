@@ -31,13 +31,6 @@ public interface AVMNodeDAO
     public void save(AVMNode node);
     
     /**
-     * Make all the nodes owned by a repository no longer
-     * point to that repository.
-     * @param rep The Repository.
-     */
-    public void unreferenceRepository(Repository rep);
-    
-    /**
      * Delete a single node.
      * @param node The node to delete.
      */
@@ -57,13 +50,6 @@ public interface AVMNodeDAO
      */
     public DirectoryNode getRepositoryRoot(Repository rep, int version);
 
-    /**
-     * Get those nodes which are new in the given repository.
-     * @param repo The repository.
-     * @return A List of AVMNodes.
-     */
-    public List<AVMNode> getNewInRepo(Repository repo);
-    
     /**
      * Update a node that has been dirtied.
      * @param node The node.

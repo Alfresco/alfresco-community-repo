@@ -100,7 +100,6 @@ public class RepositoryImpl implements Repository, Serializable
         // Make up the initial version record and save.
         long time = System.currentTimeMillis();
         fRoot = new PlainDirectoryNodeImpl(this);
-        fRoot.setIsNew(false);
         fRoot.setIsRoot(true);
         AVMContext.fgInstance.fAVMNodeDAO.save(fRoot);
         VersionRoot versionRoot = new VersionRootImpl(this,
@@ -135,13 +134,11 @@ public class RepositoryImpl implements Repository, Serializable
             throw new AVMExistsException("Already snapshotted.");
         }
         // Clear out the new nodes.
-        AVMNodeDAO anDAO = AVMContext.fgInstance.fAVMNodeDAO;
-        for (AVMNode newNode : anDAO.getNewInRepo(this))
+        List<NewInRepository> newInRep = AVMContext.fgInstance.fNewInRepositoryDAO.getByRepository(this);
+        for (NewInRepository newGuy : newInRep)
         {
-            newNode.setIsNew(false);
+            AVMContext.fgInstance.fNewInRepositoryDAO.delete(newGuy);
         }
-        // TODO: This is a grotesque hack to deal with hibernate.
-        anDAO.flush();
         // Make up a new version record.
         VersionRoot versionRoot = new VersionRootImpl(this,
                                                       fRoot,

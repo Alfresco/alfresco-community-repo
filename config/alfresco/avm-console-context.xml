@@ -146,6 +146,12 @@
 		</property>
 	</bean>
 	
+	<bean id="newInRepositoryDAO" class="org.alfresco.repo.avm.hibernate.NewInRepositoryDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
 	<bean id="avmContext" class="org.alfresco.repo.avm.AVMContext">
 		<property name="issuerDAO">
 			<ref bean="issuerDAO"/>
@@ -173,6 +179,9 @@
 		</property>
 		<property name="deletedChildDAO">
 			<ref bean="deletedChildDAO"/>
+		</property>
+		<property name="newInRepositoryDAO">
+			<ref bean="newInRepositoryDAO"/>
 		</property>
 	</bean>
 

@@ -50,6 +50,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         super(repos.getSuperRepository().issueID(), repos);
         fContent = new FileContentImpl(SuperRepository.GetInstance().issueContentID());
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
     }
     
     /**
@@ -62,6 +64,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         super(repos.getSuperRepository().issueID(), repos);
         fContent = new FileContentImpl(SuperRepository.GetInstance().issueContentID(), content);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
     }
     
     /**
@@ -76,6 +80,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         fContent = other.getContent();
         fContent.setRefCount(fContent.getRefCount() + 1);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
     }
 
     /**
@@ -91,6 +97,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         fContent = content;
         fContent.setRefCount(fContent.getRefCount() + 1);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
     }
 
     /**

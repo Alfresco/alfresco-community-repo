@@ -66,6 +66,11 @@ public class AVMContext
     public DeletedChildDAO fDeletedChildDAO;
 
     /**
+     * The NewInRepositoryDAO
+     */
+    public NewInRepositoryDAO fNewInRepositoryDAO;
+    
+    /**
      * @param nodeDAO the fAVMNodeDAO to set
      */
     public void setNodeDAO(AVMNodeDAO nodeDAO)
@@ -135,5 +140,13 @@ public class AVMContext
     public void setIssuerDAO(IssuerDAO issuerDAO)
     {
         fIssuerDAO = issuerDAO;
+    }
+    
+    /**
+     * @param newInRepositoryDAO The DAO to set.
+     */
+    public void setNewInRepositoryDAO(NewInRepositoryDAO newInRepositoryDAO)
+    {
+        fNewInRepositoryDAO = newInRepositoryDAO;
     }
 }

@@ -54,26 +54,6 @@ public class AVMNodeDAOHibernate extends HibernateDaoSupport implements
     }
 
     /**
-     * Get all the nodes owned by a Repository and make
-     * them no longer point at that Repository.
-     * @param rep The Repository.
-     */
-    @SuppressWarnings("unchecked")
-    public void unreferenceRepository(Repository rep)
-    {
-        Session sess = getSession();
-        Query query = sess.createQuery("from AVMNodeImpl an where an.repository = :rep");
-        query.setEntity("rep", rep);
-        Iterator<AVMNode> iter = (Iterator<AVMNode>)query.iterate();
-        while (iter.hasNext())
-        {
-            AVMNode node = iter.next();
-            node.setRepository(null);
-        }
-        sess.flush();
-    }
-
-    /**
      * Delete a single node.
      * @param node The node to delete.
      */
@@ -91,20 +71,6 @@ public class AVMNodeDAOHibernate extends HibernateDaoSupport implements
         return AVMNodeUnwrapper.Unwrap((AVMNode)getSession().get(AVMNodeImpl.class, id));
     }
 
-    /**
-     * Get those nodes which are new in the given repository.
-     * @param repo The repository.
-     * @return A List of AVMNodes.
-     */
-    @SuppressWarnings("unchecked")
-    public List<AVMNode> getNewInRepo(Repository repo)
-    {
-        Query query = 
-            getSession().getNamedQuery("AVMNode.ByNewInRepo");
-        query.setEntity("repo", repo);
-        return (List<AVMNode>)query.list();
-    }
-    
     /**
      * Update a node that has been dirtied.
      * @param node The node.

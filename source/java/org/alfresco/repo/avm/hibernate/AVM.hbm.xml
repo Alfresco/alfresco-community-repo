@@ -27,11 +27,7 @@
 		<!-- This should really be not null, but I haven't figured out
 			 the right way to build the relation so that nullability constraints
 			 won't cause violations in the db during saves. -->
-		<many-to-one name="repository" column="repository"
-			class="RepositoryImpl"/>
 		<property name="versionID" type="int" column="version_id"
-			not-null="true"/>
-		<property name="isNew" column="is_new" type="boolean"
 			not-null="true"/>
 		<component name="basicAttributes" class="BasicAttributesImpl">
 			<property name="creator" type="string" not-null="true"/>
@@ -175,6 +171,12 @@
 			<key-many-to-one name="mto" class="AVMNodeImpl" column="mto"/>
 		</composite-id>
 	</class>
+	<class name="NewInRepositoryImpl" proxy="NewInRepository" table="new_in_repository_nodes">
+		<composite-id>
+			<key-many-to-one name="repository" class="RepositoryImpl" column="repository_id"/>
+			<key-many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
+		</composite-id>
+	</class>
 	<query name="ChildEntry.ByNameParent">
 	<![CDATA[
 		from ChildEntryImpl ce
@@ -204,9 +206,8 @@
     </query>
     <query name="AVMNode.ByNewInRepo">
     <![CDATA[
-    	from AVMNodeImpl a 
-    	where 
-    		a.repository = :repo and a.isNew = true
+    	from NewInRepositoryImpl nie
+    	where nie.repository = :rep
     ]]>
     </query>
     <query name="AVMNode.GetDescendents">

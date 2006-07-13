@@ -48,6 +48,8 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         super(repo.getSuperRepository().issueID(), repo);
         fIndirection = other.getIndirection();
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repo, this));
     }
 
     /**
@@ -60,6 +62,8 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         super(repo.getSuperRepository().issueID(), repo);
         fIndirection = indirection;
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repo, this));
     }
     
     /**

@@ -23,7 +23,6 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
 
@@ -178,8 +177,8 @@ class SuperRepository
         @SuppressWarnings("unused") 
         Repository rep = new RepositoryImpl(this, name);
         // Special handling for repository creation.
-        // TODO is this needed.
-        rep.getRoot().setIsNew(false);
+        NewInRepository newInRep = AVMContext.fgInstance.fNewInRepositoryDAO.getByNode(rep.getRoot());
+        AVMContext.fgInstance.fNewInRepositoryDAO.delete(newInRep);
     }
 
     /**
@@ -456,12 +455,10 @@ class SuperRepository
             node.setIsRoot(false);
             vrDAO.delete(vr);
         }
-        Iterator<AVMNode> iter = AVMContext.fgInstance.fAVMNodeDAO.getByRepository(rep);
-        while (iter.hasNext())
+        List<NewInRepository> newGuys = AVMContext.fgInstance.fNewInRepositoryDAO.getByRepository(rep);
+        for (NewInRepository newGuy : newGuys)
         {
-            AVMNode node = iter.next();
-            node.setRepository(null);
-            AVMContext.fgInstance.fAVMNodeDAO.update(node);
+            AVMContext.fgInstance.fNewInRepositoryDAO.delete(newGuy);
         }
         AVMContext.fgInstance.fRepositoryDAO.delete(rep);
     }

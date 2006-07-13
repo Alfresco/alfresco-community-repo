@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- jBPM configuration -->
+   <bean id="jbpmConfiguration" class="org.springmodules.workflow.jbpm31.LocalJbpmConfigurationFactoryBean">
+      <property name="sessionFactory" ref="sessionFactory"/>
+      <property name="configuration" value="classpath:org/jbpm/default.jbpm.cfg.xml"/>
+   </bean>
+
+   <!-- jBPM template -->
+   <bean id="jbpmTemplate" class="org.springmodules.workflow.jbpm31.JbpmTemplate">
+      <constructor-arg index="0" ref="jbpmConfiguration"/>
+   </bean>
+	
+</beans>

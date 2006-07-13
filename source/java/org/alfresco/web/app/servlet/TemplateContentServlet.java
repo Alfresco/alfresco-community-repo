@@ -27,7 +27,6 @@ import java.util.StringTokenizer;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -56,10 +55,15 @@ import org.apache.commons.logging.LogFactory;
  * <pre>/alfresco/template/workspace/SpacesStore/0000-0000-0000-0000</pre>
  * or
  * <pre>/alfresco/template/workspace/SpacesStore/0000-0000-0000-0000/workspace/SpacesStore/0000-0000-0000-0000</pre>
+ * or
+ * <pre>/alfresco/template?templatePath=/Company%20Home/Data%20Dictionary/Presentation%20Templates/doc_info.ftl&contextPath=/Company%20Home/mydoc.txt</pre>
  * <p>
  * The store protocol, followed by the store ID, followed by the content Node Id used to
  * identify the node to execute the default template for. The second set of elements encode
- * the store and node Id of the template to used if a default is not set or not requested.
+ * the store and node Id of the template to used if a default is not set or not requested. Instead
+ * of using NodeRef references to the template and context, path arguments can be used. The URL args
+ * of 'templatePath' and 'contextPath' can be used instead to specify name based encoded Paths to the
+ * template and its context.
  * <p>
  * The URL may be followed by a 'mimetype' argument specifying the mimetype to return the result as
  * on the stream. Otherwise it is assumed that HTML is the default response mimetype.
@@ -85,6 +89,8 @@ public class TemplateContentServlet extends BaseServlet
    private static final String MSG_ERROR_CONTENT_MISSING = "error_content_missing";
    
    private static final String ARG_MIMETYPE = "mimetype";
+   private static final String ARG_TEMPLATE_PATH = "templatePath";
+   private static final String ARG_CONTEXT_PATH  = "contextPath";
    
    /**
     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -106,23 +112,52 @@ public class TemplateContentServlet extends BaseServlet
       uri = uri.substring(req.getContextPath().length());
       StringTokenizer t = new StringTokenizer(uri, "/");
       int tokenCount = t.countTokens();
-      if (tokenCount < 4)
-      {
-         throw new IllegalArgumentException("Template Servlet URL did not contain all required args: " + uri); 
-      }
       
       t.nextToken();    // skip servlet name
       
-      // get NodeRef to the content
-      StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
-      NodeRef nodeRef = new NodeRef(storeRef, t.nextToken());
+      NodeRef nodeRef = null;
+      NodeRef templateRef = null;
+      
+      String contentPath = req.getParameter(ARG_CONTEXT_PATH);
+      if (contentPath != null && contentPath.length() != 0)
+      {
+         // process the name based path to resolve the NodeRef
+         PathRefInfo pathInfo = resolveNamePath(getServletContext(), contentPath); 
+         
+         nodeRef = pathInfo.NodeRef;
+      }
+      else if (tokenCount > 3)
+      {
+         // get NodeRef to the content from the URL elements
+         StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
+         nodeRef = new NodeRef(storeRef, t.nextToken());
+      }
       
       // get NodeRef to the template if supplied
-      NodeRef templateRef = null;
-      if (tokenCount >= 7)
+      String templatePath = req.getParameter(ARG_TEMPLATE_PATH);
+      if (templatePath != null && templatePath.length() != 0)
       {
-         storeRef = new StoreRef(t.nextToken(), t.nextToken());
+         // process the name based path to resolve the NodeRef
+         PathRefInfo pathInfo = resolveNamePath(getServletContext(), templatePath); 
+         
+         templateRef = pathInfo.NodeRef;
+      }
+      else if (tokenCount == 7)
+      {
+         StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
          templateRef = new NodeRef(storeRef, t.nextToken());
+      }
+      
+      // if no context is specified, use the template itself
+      // TODO: should this default to something else?
+      if (nodeRef == null && templateRef != null)
+      {
+         nodeRef = templateRef;
+      }
+      
+      if (nodeRef == null)
+      {
+         throw new TemplateException("Not enough arguments supplied in URL.");
       }
       
       // get the services we need to retrieve the content

@@ -18,6 +18,9 @@ package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
@@ -101,10 +104,19 @@ public class CommandServlet extends BaseServlet
       String command = t.nextToken();
       
       // get any remaining uri elements to pass to the processor
-      String[] args = new String[tokenCount - 3];
+      String[] urlElements = new String[tokenCount - 3];
       for (int i=0; i<tokenCount-3; i++)
       {
-         args[i] = t.nextToken();
+         urlElements[i] = t.nextToken();
+      }
+      
+      // retrieve the URL arguments to pass to the processor
+      Map<String, String> args = new HashMap<String, String>(8, 1.0f);
+      Enumeration names = req.getParameterNames();
+      while (names.hasMoreElements())
+      {
+         String name = (String)names.nextElement();
+         args.put(name, req.getParameter(name));
       }
       
       try
@@ -113,13 +125,13 @@ public class CommandServlet extends BaseServlet
          CommandProcessor processor = createCommandProcessor(procName);
          
          // validate that the processor has everything it needs to run the command
-         ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
-         if (processor.validateArguments(serviceRegistry, command, args) == false)
+         if (processor.validateArguments(getServletContext(), command, args, urlElements) == false)
          {
             redirectToLoginPage(req, res, getServletContext());
             return;
          }
          
+         ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
          UserTransaction txn = null;
          try
          {

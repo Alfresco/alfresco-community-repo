@@ -21,6 +21,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -31,6 +32,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.BaseServlet;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 
 /**
@@ -42,6 +45,9 @@ import org.alfresco.web.bean.repository.User;
  */
 public final class ScriptCommandProcessor implements CommandProcessor
 {
+   private static final String ARG_SCRIPT_PATH  = "scriptPath";
+   private static final String ARG_CONTEXT_PATH = "contextPath";
+   
    private NodeRef scriptRef;
    private NodeRef docRef;
    private Object result;
@@ -52,29 +58,47 @@ public final class ScriptCommandProcessor implements CommandProcessor
       CommandFactory.getInstance().registerCommand("execute", ExecuteScriptCommand.class);
    }
    
+   
    /**
-    * @see org.alfresco.web.app.servlet.command.CommandProcessor#validateArguments(org.alfresco.service.ServiceRegistry, java.lang.String, java.lang.String[])
+    * @see org.alfresco.web.app.servlet.command.CommandProcessor#validateArguments(javax.servlet.ServletContext, java.lang.String, java.util.Map, java.lang.String[])
     */
-   public boolean validateArguments(ServiceRegistry serviceRegistry, String command, String[] args)
+   public boolean validateArguments(ServletContext sc, String command, Map<String, String> args, String[] urlElements)
    {
-      if (args.length < 3)
+      boolean allowed = false;
+      String scriptPath = args.get(ARG_SCRIPT_PATH);
+      if (scriptPath != null)
       {
-         throw new IllegalArgumentException("Not enough URL arguments passed to command servlet.");
+         // resolve path to a node
+         this.scriptRef = BaseServlet.resolveNamePath(sc, scriptPath).NodeRef;
+         
+         // same for the document context path if specified
+         String docPath = args.get(ARG_CONTEXT_PATH);
+         if (docPath != null)
+         {
+            this.docRef = BaseServlet.resolveNamePath(sc, docPath).NodeRef;
+         }
       }
-      
-      // get NodeRef to the node script to execute
-      StoreRef storeRef = new StoreRef(args[0], args[1]);
-      this.scriptRef = new NodeRef(storeRef, args[2]);
-      
-      if (args.length >= 6)
+      else
       {
-         storeRef = new StoreRef(args[3], args[4]);
-         this.docRef = new NodeRef(storeRef, args[5]);
+         if (urlElements.length < 3)
+         {
+            throw new IllegalArgumentException("Not enough URL arguments passed to command servlet.");
+         }
+         
+         // get NodeRef to the node script to execute
+         StoreRef storeRef = new StoreRef(urlElements[0], urlElements[1]);
+         this.scriptRef = new NodeRef(storeRef, urlElements[2]);
+         
+         if (urlElements.length >= 6)
+         {
+            storeRef = new StoreRef(urlElements[3], urlElements[4]);
+            this.docRef = new NodeRef(storeRef, urlElements[5]);
+         }
       }
       
       // check we can access the nodes specified
-      PermissionService ps = serviceRegistry.getPermissionService();
-      boolean allowed = (ps.hasPermission(this.scriptRef, PermissionService.READ) == AccessStatus.ALLOWED);
+      PermissionService ps = Repository.getServiceRegistry(sc).getPermissionService();
+      allowed = (ps.hasPermission(this.scriptRef, PermissionService.READ) == AccessStatus.ALLOWED);
       if (this.docRef != null)
       {
          allowed &= (ps.hasPermission(this.docRef, PermissionService.READ) == AccessStatus.ALLOWED);

@@ -52,9 +52,11 @@ import org.apache.commons.logging.LogFactory;
  * <pre>/alfresco/download/attach/workspace/SpacesStore/0000-0000-0000-0000/myfile.pdf</pre>
  * or
  * <pre>/alfresco/download/direct/workspace/SpacesStore/0000-0000-0000-0000/myfile.pdf</pre>
- * <p>
- * The store protocol, followed by the store ID, followed by the content Node Id
- * the last element is used for mimetype calculation and browser default filename.
+ * or
+ * <pre>/alfresco/download/[direct|attach]?path=/Company%20Home/MyFolder/myfile.pdf</pre>
+ * The protocol, followed by either the store and Id (NodeRef) or instead specify a name based
+ * encoded Path to the content, note that the filename element is used for mimetype lookup and
+ * as the returning filename for the response stream.
  * <p>
  * The 'attach' or 'direct' element is used to indicate whether to display the stream directly
  * in the browser or download it as a file attachment.
@@ -86,6 +88,7 @@ public class DownloadContentServlet extends BaseServlet
    
    private static final String ARG_PROPERTY = "property";
    private static final String ARG_ATTACH   = "attach";
+   private static final String ARG_PATH     = "path";
    
    /**
     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -93,11 +96,6 @@ public class DownloadContentServlet extends BaseServlet
    protected void doGet(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException
    {
-      // The URL contains multiple parts
-      // /alfresco/download/attach/workspace/SpacesStore/0000-0000-0000-0000/myfile.pdf
-      // the protocol, followed by the store, followed by the Id
-      // the last part is only used for mimetype and browser use
-      // may be followed by valid ticket for pre-authenticated usage: ?ticket=1234567890 
       String uri = req.getRequestURI();
       
       if (logger.isDebugEnabled())
@@ -114,34 +112,53 @@ public class DownloadContentServlet extends BaseServlet
       //       only really needed if we don't use the built in compression of the servlet container
       uri = uri.substring(req.getContextPath().length());
       StringTokenizer t = new StringTokenizer(uri, "/");
-      if (t.countTokens() < 6)
-      {
-         throw new IllegalArgumentException("Download URL did not contain all required args: " + uri); 
-      }
+      int tokenCount = t.countTokens();
       
       t.nextToken();    // skip servlet name
       
+      // attachment mode (either 'attach' or 'direct')
       String attachToken = t.nextToken();
       boolean attachment = attachToken.equals(ARG_ATTACH);
       
-      StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
-      String id = t.nextToken();
-      String filename = t.nextToken();
+      // get or calculate the noderef and filename to download as
+      NodeRef nodeRef;
+      String filename;
       
-      // get property qualified name
-      QName propertyQName = null;
-      String property = req.getParameter(ARG_PROPERTY);
-      if (property == null || property.length() == 0)
+      // do we have a path parameter instead of a NodeRef?
+      String path = req.getParameter(ARG_PATH);
+      if (path != null && path.length() != 0)
       {
-          propertyQName = ContentModel.PROP_CONTENT;
+         // process the name based path to resolve the NodeRef and the Filename element
+         PathRefInfo pathInfo = resolveNamePath(getServletContext(), path); 
+         
+         nodeRef = pathInfo.NodeRef;
+         filename = pathInfo.Filename;
       }
       else
       {
-          propertyQName = QName.createQName(property);
+         // a NodeRef must have been specified if no path has been found
+         if (tokenCount < 6)
+         {
+            throw new IllegalArgumentException("Download URL did not contain all required args: " + uri); 
+         }
+         
+         // assume 'workspace' or other NodeRef based protocol for remaining URL elements
+         StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
+         String id = t.nextToken();
+         // build noderef from the appropriate URL elements
+         nodeRef = new NodeRef(storeRef, id);
+         
+         // filename is last remaining token
+         filename = t.nextToken();
       }
       
-      // build noderef from the appropriate URL elements
-      NodeRef nodeRef = new NodeRef(storeRef, id);
+      // get qualified of the property to get content from - default to ContentModel.PROP_CONTENT
+      QName propertyQName = ContentModel.PROP_CONTENT;
+      String property = req.getParameter(ARG_PROPERTY);
+      if (property != null && property.length() != 0)
+      {
+          propertyQName = QName.createQName(property);
+      }
       
       if (logger.isDebugEnabled())
       {
@@ -199,7 +216,9 @@ public class DownloadContentServlet extends BaseServlet
                }
             }
          }
+         // set mimetype for the content and the character encoding for the stream
          res.setContentType(mimetype);
+         res.setCharacterEncoding(reader.getEncoding());
          
          // get the content and stream directly to the response output stream
          // assuming the repo is capable of streaming in chunks, this should allow large files

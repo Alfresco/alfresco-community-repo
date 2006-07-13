@@ -137,11 +137,6 @@
                                  <%-- More actions menu --%>
                                  <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
                                     <r:actions id="acts_browse" value="browse_actions_menu" context="#{NavigationBean.currentNode}" />
-                                    
-                                    <%-- admin user only actions --%>
-                                    <a:booleanEvaluator value="#{NavigationBean.currentUser.admin == true}" id="eval8">
-                                       <a:actionLink value="#{msg.admin_console}" image="/images/icons/admin_console.gif" action="adminConsole" id="link11" />
-                                    </a:booleanEvaluator>
                                  </a:menu>
                               </td>
                            </a:panel>

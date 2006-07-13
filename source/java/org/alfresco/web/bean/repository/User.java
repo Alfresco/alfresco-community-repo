@@ -45,8 +45,7 @@ public final class User
    private String fullName = null;
    private Boolean administrator = null;
    
-   /** cached ref to our user preferences node */
-   private NodeRef preferencesFolderRef = null;
+   private Preferences preferences = null;
    
    /**
     * Constructor
@@ -140,62 +139,69 @@ public final class User
    }
    
    /**
+    * @return The Preferences for the User
+    */
+   Preferences getPreferences()
+   {
+      if (this.preferences == null)
+      {
+         this.preferences = new Preferences(getUserPreferencesRef());
+      }
+      return this.preferences;
+   }
+   
+   /**
     * Get or create the node used to store user preferences.
     * Utilises the 'configurable' aspect on the Person linked to this user.
     */
-   public synchronized NodeRef getUserPreferencesRef()
+   synchronized NodeRef getUserPreferencesRef()
    {
-      if (this.preferencesFolderRef == null)
+      FacesContext fc = FacesContext.getCurrentInstance();
+      ServiceRegistry registry = Repository.getServiceRegistry(fc);
+      NodeService nodeService = registry.getNodeService();
+      SearchService searchService = registry.getSearchService();
+      NamespaceService namespaceService = registry.getNamespaceService();
+      ConfigurableService configurableService = Repository.getConfigurableService(fc);
+      
+      NodeRef person = Application.getCurrentUser(fc).getPerson();
+      if (nodeService.hasAspect(person, ContentModel.ASPECT_CONFIGURABLE) == false)
       {
-         FacesContext fc = FacesContext.getCurrentInstance();
-         ServiceRegistry registry = Repository.getServiceRegistry(fc);
-         NodeService nodeService = registry.getNodeService();
-         SearchService searchService = registry.getSearchService();
-         NamespaceService namespaceService = registry.getNamespaceService();
-         ConfigurableService configurableService = Repository.getConfigurableService(fc);
-         
-         NodeRef person = Application.getCurrentUser(fc).getPerson();
-         if (nodeService.hasAspect(person, ContentModel.ASPECT_CONFIGURABLE) == false)
-         {
-            // create the configuration folder for this Person node
-        	   configurableService.makeConfigurable(person);
-         }
-         
-         // target of the assoc is the configurations folder ref
-         NodeRef configRef = configurableService.getConfigurationFolder(person);
-         if (configRef == null)
-         {
-            throw new IllegalStateException("Unable to find associated 'configurations' folder for node: " + person);
-         }
-         
-         String xpath = NamespaceService.APP_MODEL_PREFIX + ":" + "preferences";
-         List<NodeRef> nodes = searchService.selectNodes(
-               configRef,
-               xpath,
-               null,
-               namespaceService,
-               false);
-         
-         NodeRef prefRef;
-         if (nodes.size() == 1)
-         {
-            prefRef = nodes.get(0);
-         }
-         else
-         {
-            // create the preferences Node for this user
-            ChildAssociationRef childRef = nodeService.createNode(
-                  configRef,
-                  ContentModel.ASSOC_CONTAINS,
-                  QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "preferences"),
-                  ContentModel.TYPE_CMOBJECT);
-            
-            prefRef = childRef.getChildRef();
-         }
-         
-         this.preferencesFolderRef = prefRef;
+         // create the configuration folder for this Person node
+     	   configurableService.makeConfigurable(person);
       }
       
-      return this.preferencesFolderRef;
+      // target of the assoc is the configurations folder ref
+      NodeRef configRef = configurableService.getConfigurationFolder(person);
+      if (configRef == null)
+      {
+         throw new IllegalStateException("Unable to find associated 'configurations' folder for node: " + person);
+      }
+      
+      String xpath = NamespaceService.APP_MODEL_PREFIX + ":" + "preferences";
+      List<NodeRef> nodes = searchService.selectNodes(
+            configRef,
+            xpath,
+            null,
+            namespaceService,
+            false);
+      
+      NodeRef prefRef;
+      if (nodes.size() == 1)
+      {
+         prefRef = nodes.get(0);
+      }
+      else
+      {
+         // create the preferences Node for this user
+         ChildAssociationRef childRef = nodeService.createNode(
+               configRef,
+               ContentModel.ASSOC_CONTAINS,
+               QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "preferences"),
+               ContentModel.TYPE_CMOBJECT);
+         
+         prefRef = childRef.getChildRef();
+      }
+      
+      return prefRef;
    }
 }

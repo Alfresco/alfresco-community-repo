@@ -31,6 +31,7 @@
                      <a:listItem value="company" label="#{msg.company_home}" rendered="#{NavigationBean.companyHomeVisible}" />
                      <a:listItem value="home" label="#{msg.my_home}" />
                      <a:listItem value="guest" label="#{msg.guest_home}" rendered="#{NavigationBean.isGuest == false && NavigationBean.guestHomeVisible}" />
+                     <a:listItem value="myalfresco" label="#{msg.my_alfresco}" />
                   </a:modeList>
                </td>
                <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_end.gif" width=8 height=30></td>
@@ -42,10 +43,23 @@
       <td>
          <table cellspacing=2 cellpadding=0 width=100%>
             <tr>
-               <td><a:actionLink value="#{msg.toggle_shelf}" image="/images/icons/shelf.gif" actionListener="#{NavigationBean.toggleShelf}" showLink="false" /></td>
+               <td>
+                  <%-- admin user only actions --%>
+                  <a:booleanEvaluator value="#{NavigationBean.currentUser.admin == true}" id="evalA">
+                     <a:actionLink value="#{msg.admin_console}" image="/images/icons/admin_console.gif" showLink="false" action="dialog:adminConsole" id="link11_1" />
+                  </a:booleanEvaluator>
+               </td>
                <td width=8>&nbsp;</td>
-               <td><img src="<%=request.getContextPath()%>/images/icons/Help_icon.gif" width=15 height=15></td>
-               <td><nobr><h:outputLink value="#{NavigationBean.helpUrl}" target="help"><h:outputText value="#{msg.help}" /></h:outputLink></nobr></td>
+               <td>
+                  <%-- user preferences --%>
+                  <a:actionLink value="#{msg.user_console}" image="/images/icons/user_console.gif" showLink="false" action="dialog:userConsole" actionListener="#{UsersBean.setupUserAction}" id="link11_2">
+                     <f:param name="id" value="#{NavigationBean.currentUser.person.id}" />
+                  </a:actionLink>
+               </td>
+               <td width=8>&nbsp;</td>
+               <td><a:actionLink value="#{msg.toggle_shelf}" image="/images/icons/shelf.gif" showLink="false" actionListener="#{NavigationBean.toggleShelf}" /></td>
+               <td width=8>&nbsp;</td>
+               <td><a:actionLink value="#{msg.help}" image="/images/icons/Help_icon.gif" showLink="false" href="#{NavigationBean.helpUrl}" target="help" /></td>
                <td width=8>&nbsp;</td>
                <td><nobr><a href="http://www.alfresco.com/services/support/issues/" target="new"><h:outputText value="#{msg.raise_issue}" /></a></nobr></td>
                <td width=8>&nbsp;</td>

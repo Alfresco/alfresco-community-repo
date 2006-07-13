@@ -59,6 +59,7 @@ public class UsersBean implements IContextListener
    private static final String ERROR_USER_DELETE = "error_delete_user_object";
    
    private static final String DEFAULT_OUTCOME = "manageUsers";
+   private static final String DIALOG_CLOSE = "dialog:close";
 
    /** NodeService bean reference */
    protected NodeService nodeService;
@@ -81,6 +82,7 @@ public class UsersBean implements IContextListener
    private List<Node> users = Collections.<Node>emptyList();
    
    private String password = null;
+   private String oldPassword = null;
    private String confirm = null;
    private String searchCriteria = null;
    
@@ -208,6 +210,22 @@ public class UsersBean implements IContextListener
    {
       this.password = password;
    }
+   
+   /**
+    * @return Returns the old password.
+    */
+   public String getOldPassword()
+   {
+      return this.oldPassword;
+   }
+
+   /**
+    * @param oldPassword The old password to set.
+    */
+   public void setOldPassword(String oldPassword)
+   {
+      this.oldPassword = oldPassword;
+   }
 
    /**
     * @return Returns the person context.
@@ -313,7 +331,7 @@ public class UsersBean implements IContextListener
                .getCurrentInstance(), ERROR_DELETE), e.getMessage()), e);
       }
       
-      return DEFAULT_OUTCOME;
+      return DIALOG_CLOSE;
    }
    
    /**
@@ -321,7 +339,7 @@ public class UsersBean implements IContextListener
     */
    public String changePasswordOK()
    {
-      String outcome = DEFAULT_OUTCOME;
+      String outcome = DIALOG_CLOSE;
       
       if (this.password != null && this.confirm != null && this.password.equals(this.confirm))
       {
@@ -346,6 +364,39 @@ public class UsersBean implements IContextListener
       
       return outcome;
    }
+   
+   /**
+    * Action handler called for OK button press on Change My Password screen
+    * For this screen the user is required to enter their old password - effectively login.
+    */
+   public String changeMyPasswordOK()
+   {
+      String outcome = DIALOG_CLOSE;
+      
+      if (this.password != null && this.confirm != null && this.password.equals(this.confirm))
+      {
+         try
+         {
+            String userName = (String)this.person.getProperties().get(ContentModel.PROP_USERNAME);
+            this.authenticationService.updateAuthentication(userName, this.oldPassword.toCharArray(), this.password.toCharArray());
+         }
+         catch (Exception e)
+         {
+            outcome = null;
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext
+                  .getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
+         }
+      }
+      else
+      {
+         outcome = null;
+         Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(),
+               ERROR_PASSWORD_MATCH));
+      }
+      
+      return outcome;
+   }
+
 
    /**
     * Event handler called when the user wishes to search for a user

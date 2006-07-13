@@ -42,9 +42,8 @@
          <!-- set this value to true to enable AND text terms for simple/advanced search by default -->
          <search-and-terms>false</search-and-terms>
           
-          <!-- Limit search results. -1 for unlimited. -->
-          <search-max-results>-1</search-max-results>
-          
+         <!-- Limit search results. -1 for unlimited. -->
+         <search-max-results>-1</search-max-results>
          
          <!-- The default permissions to apply to a new users Home Space when first created -->
          <!-- this permission is for other users attempting to access that Home Space -->

@@ -77,12 +77,16 @@
       </navigation-case>
    </navigation-rule>
    
-   <!-- rule to get back to the Admin Console from anywhere -->
+   <!-- rule to get back to the Admin/User Console from anywhere -->
    <navigation-rule>
       <from-view-id>/jsp/*</from-view-id>
-         <navigation-case>
+      <navigation-case>
          <from-outcome>adminConsole</from-outcome>
          <to-view-id>/jsp/admin/admin-console.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>userConsole</from-outcome>
+         <to-view-id>/jsp/users/user-console.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -597,6 +601,15 @@
       <navigation-case>
          <from-outcome>changePassword</from-outcome>
          <to-view-id>/jsp/users/change-password.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <!-- User Details and preferences action outcomes -->
+   <navigation-rule>
+      <from-view-id>/jsp/users/user-console.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>changePassword</from-outcome>
+         <to-view-id>/jsp/users/change-my-password.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

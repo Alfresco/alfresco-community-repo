@@ -94,5 +94,29 @@ public class SessionImplTest extends BaseJCRTest
         assertFalse(isLive);
     }
 
+    
+    public void testSessionThread()
+    {
+        SimpleCredentials superuser = new SimpleCredentials("superuser", "".toCharArray());
+        try
+        {
+            Session anotherSession = repository.login(superuser, getWorkspace());
+            fail("Exception not thrown when establishing two sessions on same thread");
+        }
+        catch(RepositoryException e)
+        {
+            // successful - multiple sessions on one thread caught
+        }
+        superuserSession.logout();
+        try
+        {
+            Session anotherSession = repository.login(superuser, getWorkspace());
+            anotherSession.logout();
+        }
+        catch(RepositoryException e)
+        {
+            fail("Exception thrown when it shouldn't of been.");
+        }
+    }
+    
 }
-

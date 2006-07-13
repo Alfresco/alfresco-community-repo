@@ -47,7 +47,6 @@ import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.IndexerException;
-import org.alfresco.repo.search.impl.lucene.FilterIndexReaderByNodeRefs;
 import org.alfresco.repo.search.impl.lucene.FilterIndexReaderByNodeRefs2;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -61,12 +60,14 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.InputStream;
+import org.apache.lucene.store.OutputStream;
 import org.apache.lucene.store.RAMDirectory;
 
 /**
@@ -205,6 +206,11 @@ public class IndexInfo
 
     private static HashMap<File, IndexInfo> indexInfos = new HashMap<File, IndexInfo>();
 
+    static
+    {
+        System.setProperty("disableLuceneLocks", "true");
+    }
+
     public static synchronized IndexInfo getIndexInfo(File file)
     {
         IndexInfo indexInfo = indexInfos.get(file);
@@ -249,7 +255,6 @@ public class IndexInfo
             // a spanking new index
             version = 0;
 
-           
         }
 
         // Open the files and channels
@@ -364,7 +369,7 @@ public class IndexInfo
                             }
                             for (String id : deletable)
                             {
-                                IndexEntry entry = indexEntries.remove(id);
+                                indexEntries.remove(id);
                                 deleteQueue.add(id);
                             }
                             synchronized (cleaner)
@@ -2008,7 +2013,6 @@ public class IndexInfo
                             }
                         }
                         // Check it is not deleting
-                        boolean foundDelta;
                         for (IndexEntry entry : indexEntries.values())
                         {
                             if (entry.getType() == IndexType.DELTA)
@@ -2095,16 +2099,20 @@ public class IndexInfo
                             {
                                 Searcher searcher = new IndexSearcher(reader);
 
-                                BooleanQuery query = new BooleanQuery();
-                                query.add(new TermQuery(new Term("ID", nodeRef.toString())), true, false);
-                                query.add(new TermQuery(new Term("ISNODE", "T")), false, false);
+                                TermQuery query = new TermQuery(new Term("ID", nodeRef.toString()));
                                 Hits hits = searcher.search(query);
                                 if (hits.length() > 0)
                                 {
                                     for (int i = 0; i < hits.length(); i++)
                                     {
-                                        reader.delete(hits.id(i));
-                                        invalidIndexes.add(key);
+                                        Document doc = hits.doc(i);
+                                        if (doc.getField("ISCONTAINER") == null)
+                                        {
+                                            reader.delete(hits.id(i));
+                                            invalidIndexes.add(key);
+                                            // There should only be one thing to delete
+                                            // break;
+                                        }
                                     }
                                 }
                                 searcher.close();
@@ -2332,7 +2340,10 @@ public class IndexInfo
                 {
                     int count = 0;
                     IndexReader[] readers = new IndexReader[toMerge.size() - 1];
+                    RAMDirectory ramDirectory = null;
                     IndexWriter writer = null;
+                    long docCount = 0;
+                    File outputLocation = null;
                     for (IndexEntry entry : toMerge.values())
                     {
                         File location = new File(indexDirectory, entry.getName());
@@ -2348,10 +2359,20 @@ public class IndexInfo
                                 reader = IndexReader.open(emptyIndex);
                             }
                             readers[count++] = reader;
+                            docCount += entry.getDocumentCount();
                         }
                         else if (entry.getStatus() == TransactionStatus.MERGE_TARGET)
                         {
-                            writer = new IndexWriter(location, new StandardAnalyzer(), true);
+                            outputLocation = location;
+                            if (docCount < 10000)
+                            {
+                                ramDirectory = new RAMDirectory();
+                                writer = new IndexWriter(ramDirectory, new StandardAnalyzer(), true);
+                            }
+                            else
+                            {
+                                writer = new IndexWriter(location, new StandardAnalyzer(), true);
+                            }
                             writer.setUseCompoundFile(true);
                             writer.minMergeDocs = 1000;
                             writer.mergeFactor = 5;
@@ -2360,6 +2381,30 @@ public class IndexInfo
                     }
                     writer.addIndexes(readers);
                     writer.close();
+
+                    if (ramDirectory != null)
+                    {
+                        String[] files = ramDirectory.list();
+                        Directory directory = FSDirectory.getDirectory(outputLocation, true);
+                        for (int i = 0; i < files.length; i++)
+                        {
+                            // make place on ram disk
+                            OutputStream os = directory.createFile(files[i]);
+                            // read current file
+                            InputStream is = ramDirectory.openFile(files[i]);
+                            // and copy to ram disk
+                            int len = (int) is.length();
+                            byte[] buf = new byte[len];
+                            is.readBytes(buf, 0, len);
+                            os.writeBytes(buf, len);
+                            // graceful cleanup
+                            is.close();
+                            os.close();
+                        }
+                        ramDirectory.close();
+                        directory.close();
+                    }
+
                     for (IndexReader reader : readers)
                     {
                         reader.close();

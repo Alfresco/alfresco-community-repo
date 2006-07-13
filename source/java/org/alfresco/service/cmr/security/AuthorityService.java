@@ -18,6 +18,8 @@ package org.alfresco.service.cmr.security;
 
 import java.util.Set;
 
+import org.alfresco.service.Auditable;
+
 /**
  * The service that encapsulates authorities granted to users.
  * 
@@ -43,6 +45,7 @@ public interface AuthorityService
      * 
      * @return true if the currently authenticated user has the admin authority
      */
+    @Auditable
     public boolean hasAdminAuthority();
 
     /**
@@ -50,6 +53,7 @@ public interface AuthorityService
      * 
      * @return
      */
+    @Auditable
     public Set<String> getAuthorities();
 
     /**
@@ -59,6 +63,7 @@ public interface AuthorityService
      *            the type of authorities.
      * @return
      */
+    @Auditable(parameters = {"type"})
     public Set<String> getAllAuthorities(AuthorityType type);
 
     /**
@@ -69,7 +74,7 @@ public interface AuthorityService
      *            the type of the authority
      * @return
      */
-
+    @Auditable(parameters = {"type"})
     public Set<String> getAllRootAuthorities(AuthorityType type);
 
     /**
@@ -87,6 +92,7 @@ public interface AuthorityService
      * @return the name of the authority (this will be the prefix, if any
      *         associated with the type appended with the short name)
      */
+    @Auditable(parameters = {"type", "parentName", "shortName"})
     public String createAuthority(AuthorityType type, String parentName, String shortName);
 
     /**
@@ -98,6 +104,7 @@ public interface AuthorityService
      * @param childName -
      *            the string identifier for the child.
      */
+    @Auditable(parameters = {"parentName", "childName"})
     public void addAuthority(String parentName, String childName);
 
     /**
@@ -111,6 +118,7 @@ public interface AuthorityService
      * @param childName -
      *            the string identifier for the child.
      */
+    @Auditable(parameters = {"parentName", "childName"})
     public void removeAuthority(String parentName, String childName);
 
     /**
@@ -118,6 +126,7 @@ public interface AuthorityService
      * 
      * @param name
      */
+    @Auditable(parameters = {"name"})
     public void deleteAuthority(String name);
 
     /**
@@ -135,6 +144,7 @@ public interface AuthorityService
      *            find authorities at any depth
      * @return
      */
+    @Auditable(parameters = {"type", "name", "immediate"})
     public Set<String> getContainedAuthorities(AuthorityType type, String name, boolean immediate);
 
     /**
@@ -152,6 +162,7 @@ public interface AuthorityService
      *            limit to immediate parents or any ancestor.
      * @return
      */
+    @Auditable(parameters = {"type", "name", "immediate"})
     public Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate);
 
     /**
@@ -160,6 +171,7 @@ public interface AuthorityService
      * @param name
      * @return
      */
+    @Auditable(parameters = {"name"})
     public String getShortName(String name);
 
     /**
@@ -170,6 +182,7 @@ public interface AuthorityService
      * @param shortName
      * @return
      */
+    @Auditable(parameters = {"type", "shortName"})
     public String getName(AuthorityType type, String shortName);
     
     /**
@@ -178,6 +191,7 @@ public interface AuthorityService
      * @param name (the long name). 
      * @return
      */
+    @Auditable(parameters = {"name"})
     public boolean authorityExists(String name);
 
 }

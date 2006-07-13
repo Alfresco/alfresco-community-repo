@@ -16,6 +16,8 @@
  */
 package org.alfresco.service.license;
 
+import org.alfresco.service.NotAuditable;
+
 
 /**
  * Contract for managing licenses
@@ -30,6 +32,7 @@ public interface LicenseService
      * 
      * @throws LicenseException
      */
+    @NotAuditable
     public void verifyLicense() throws LicenseException;
     
     /**
@@ -38,6 +41,7 @@ public interface LicenseService
      * @return  license descriptor (or null, if one is not installed)
      * @throws LicenseException
      */
+    @NotAuditable
     public LicenseDescriptor getLicense() throws LicenseException;
     
 }

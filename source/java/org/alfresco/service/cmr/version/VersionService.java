@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -42,6 +43,7 @@ public interface VersionService
      * 
      * @return  reference to the version store
      */
+    @Auditable
     public StoreRef getVersionStoreReference();
     
     /**
@@ -53,7 +55,7 @@ public interface VersionService
      * If the node referenced does not or can not have the version aspect
      * applied to it then an exception will be raised.
      * <p>
-     * The version properties are sotred as version meta-data against the newly
+     * The version properties are stored as version meta-data against the newly
      * created version.
      * 
      * @param  nodeRef              a node reference
@@ -66,6 +68,7 @@ public interface VersionService
      * @throws AspectMissingException
      *                              thrown if the version aspect is missing                              
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "versionProperties"})
     public Version createVersion(
             NodeRef nodeRef, 
             Map<String, Serializable> versionProperties)
@@ -80,7 +83,7 @@ public interface VersionService
      * If the node referenced does not or can not have the version aspect
      * applied to it then an exception will be raised.
      * <p>
-     * The version properties are sotred as version meta-data against the newly
+     * The version properties are stored as version meta-data against the newly
      * created version.
      * 
      * @param nodeRef               a node reference
@@ -95,6 +98,7 @@ public interface VersionService
      * @throws AspectMissingException
      *                              thrown if the version aspect is missing
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "versionProperties", "versionChildren"})
     public Collection<Version> createVersion(
             NodeRef nodeRef, 
             Map<String, Serializable> versionProperties,
@@ -113,6 +117,7 @@ public interface VersionService
      * @throws AspectMissingException
      *                              thrown if the version aspect is missing
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "versionProperties"})
     public Collection<Version> createVersion(
             Collection<NodeRef> nodeRefs, 
             Map<String, Serializable> versionProperties)
@@ -131,6 +136,7 @@ public interface VersionService
      * @throws AspectMissingException
      *                  thrown if the version aspect is missing
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public VersionHistory getVersionHistory(NodeRef nodeRef)
         throws AspectMissingException;     
 	
@@ -142,6 +148,7 @@ public interface VersionService
 	 * @param nodeRef   the node reference
 	 * @return			the version object for the current version
 	 */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
 	public Version getCurrentVersion(NodeRef nodeRef);
 	
 	/**
@@ -153,6 +160,7 @@ public interface VersionService
 	 * 
 	 * @param 	nodeRef					the node reference
 	 */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
 	public void revert(NodeRef nodeRef);
     
     /**
@@ -163,6 +171,7 @@ public interface VersionService
      * @param nodeRef                       the node reference
      * @param deep                          true if a deep revert is to be performed, flase otherwise
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "deep"})
     public void revert(NodeRef nodeRef, boolean deep);
     
     /**
@@ -173,6 +182,7 @@ public interface VersionService
      * @param nodeRef   the node reference
      * @param version   the version to revert to
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "version"})
     public void revert(NodeRef nodeRef, Version version);
 	
 	/**
@@ -194,6 +204,7 @@ public interface VersionService
 	 * @param 	version			the version to revert to
      * @param   deep            true is a deep revert is to be performed, false otherwise.
 	 */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "version", "deep"})
 	public void revert(NodeRef nodeRef, Version version, boolean deep);
     
     /**
@@ -207,6 +218,7 @@ public interface VersionService
      * @param assocQName        the assoc qname
      * @return                  the newly restored node reference
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "parentNodeRef", "assocTypeQName", "assocQName"})
     public NodeRef restore(
             NodeRef nodeRef,
             NodeRef parentNodeRef, 
@@ -214,12 +226,12 @@ public interface VersionService
             QName assocQName);
     
     /**
-     * Restores a node not currenlty present in the store, but that has a version
+     * Restores a node not currently present in the store, but that has a version
      * history.
      * <p>
      * The restored node will be at the head (most resent version).
      * <p>
-     * Resoration will fail if there is no version history for the specified node id in
+     * Restoration will fail if there is no version history for the specified node id in
      * the specified store.
      * <p>
      * If the node already exists in the store then an exception will be raised.
@@ -230,13 +242,14 @@ public interface VersionService
      * 
      * @param nodeRef           the node reference to a node that no longer exists in 
      *                          the store
-     * @param parentNodeRef     the new parent of the resotred node
+     * @param parentNodeRef     the new parent of the restored node
      * @param assocTypeQName    the assoc type qname
      * @param assocQName        the assoc qname  
-     * @param deep              true is a deep revert shoudl be performed once the node has been 
+     * @param deep              true is a deep revert should be performed once the node has been 
      *                          restored, false otherwise
      * @return                  the newly restored node reference                            
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "parentNodeRef", "assocTypeQName", "assocQName", "deep"})
     public NodeRef restore(
             NodeRef nodeRef,
             NodeRef parentNodeRef, 
@@ -247,7 +260,7 @@ public interface VersionService
 	/**
 	 * Delete the version history associated with a node reference.
 	 * <p>
-	 * This operation is perminant, all versions in the version history are
+	 * This operation is permanent, all versions in the version history are
 	 * deleted and cannot be retrieved.
 	 * <p>
 	 * The current version label for the node reference is reset and any subsequent versions
@@ -256,6 +269,7 @@ public interface VersionService
 	 * @param 	nodeRef					the node reference
 	 * @throws	AspectMissingException	thrown if the version aspect is missing
 	 */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
 	public void deleteVersionHistory(NodeRef nodeRef)
 		throws AspectMissingException;
 }

@@ -22,16 +22,15 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.TermPositions;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MultiSearcher;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TermQuery;
 
@@ -63,19 +62,23 @@ public class FilterIndexReaderByNodeRefs2 extends FilterIndexReader
                 Searcher searcher = new IndexSearcher(reader);
                 for (NodeRef nodeRef : deletions)
                 {
-                    BooleanQuery query = new BooleanQuery();
-                    query.add(new TermQuery(new Term("ID", nodeRef.toString())), true, false);
-                    query.add(new TermQuery(new Term("ISNODE", "T")), false, false);
+                    TermQuery query = new TermQuery(new Term("ID", nodeRef.toString()));
                     Hits hits = searcher.search(query);
                     if (hits.length() > 0)
                     {
                         for (int i = 0; i < hits.length(); i++)
                         {
-                            deletedDocuments.set(hits.id(i), true);
+                            Document doc = hits.doc(i);
+                            if (doc.getField("ISCONTAINER") == null)
+                            {
+                                deletedDocuments.set(hits.id(i), true);
+                                // There should only be one thing to delete
+                                //break;
+                            }
                         }
                     }
+                    
                 }
-
             }
         }
         catch (IOException e)

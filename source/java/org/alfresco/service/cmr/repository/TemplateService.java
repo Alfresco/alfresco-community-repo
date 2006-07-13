@@ -18,6 +18,8 @@ package org.alfresco.service.cmr.repository;
 
 import java.io.Writer;
 
+import org.alfresco.service.Auditable;
+
 /**
  * Template Service.
  * <p>
@@ -43,6 +45,7 @@ public interface TemplateService
      * 
      * @return output of the template process as a String
      */
+    @Auditable(parameters = {"engine", "template", "model"})
     public String processTemplate(String engine, String template, Object model)
         throws TemplateException;
     
@@ -54,6 +57,7 @@ public interface TemplateService
      * @param model        Object model to process template against
      * @param out          Writer object to send output too
      */
+    @Auditable(parameters = {"engine", "template", "model", "out"})
     public void processTemplate(String engine, String template, Object model, Writer out)
         throws TemplateException;
     
@@ -68,6 +72,7 @@ public interface TemplateService
      *      
      * @throws TemplateException
      */
+    @Auditable(parameters = {"engine", "template", "model"})
     public String processTemplateString(String engine, String template, Object model)
         throws TemplateException;
     
@@ -82,6 +87,7 @@ public interface TemplateService
      * 
      * @throws TemplateException
      */
+    @Auditable(parameters = {"engine", "template", "model", "out"})
     public void processTemplateString(String engine, String template, Object model, Writer out)
         throws TemplateException;
     
@@ -93,5 +99,6 @@ public interface TemplateService
      * 
      * @return TemplateProcessor
      */
+    @Auditable(warn = true, parameters = {"engine"})
     public TemplateProcessor getTemplateProcessor(String engine);
 }

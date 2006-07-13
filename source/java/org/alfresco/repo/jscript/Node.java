@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -486,6 +487,66 @@ public final class Node implements Serializable
         }
         
         return allowed;
+    }
+    
+    /**
+     * @return true if the node inherits permissions from the parent node, false otherwise
+     */
+    public boolean inheritsPermissions()
+    {
+       return this.services.getPermissionService().getInheritParentPermissions(this.nodeRef);
+    }
+    
+    /**
+     * Set whether this node should inherit permissions from the parent node.
+     * 
+     * @param inherit   True to inherit parent permissions, false otherwise.
+     */
+    public void setInheritsPermissions(boolean inherit)
+    {
+       this.services.getPermissionService().setInheritParentPermissions(this.nodeRef, inherit);
+    }
+    
+    /**
+     * Apply a permission for ALL users to the node.
+     * 
+     * @param permission   Permission to apply @see org.alfresco.service.cmr.security.PermissionService
+     */
+    public void setPermission(String permission)
+    {
+       this.services.getPermissionService().setPermission(this.nodeRef, PermissionService.ALL_AUTHORITIES, permission, true);
+    }
+    
+    /**
+     * Apply a permission for the specified authority (e.g. username or group) to the node.
+     *  
+     * @param permission   Permission to apply @see org.alfresco.service.cmr.security.PermissionService
+     * @param authority    Authority (generally a username or group name) to apply the permission for
+     */
+    public void setPermission(String permission, String authority)
+    {
+       this.services.getPermissionService().setPermission(this.nodeRef, authority, permission, true);
+    }
+    
+    /**
+     * Remove a permission for ALL user from the node.
+     * 
+     * @param permission   Permission to remove @see org.alfresco.service.cmr.security.PermissionService
+     */
+    public void removePermission(String permission)
+    {
+       this.services.getPermissionService().deletePermission(this.nodeRef, PermissionService.ALL_AUTHORITIES, permission);
+    }
+    
+    /**
+     * Remove a permission for the specified authority (e.g. username or group) from the node.
+     * 
+     * @param permission   Permission to remove @see org.alfresco.service.cmr.security.PermissionService
+     * @param authority    Authority (generally a username or group name) to apply the permission for
+     */
+    public void removePermission(String permission, String authority)
+    {
+       this.services.getPermissionService().deletePermission(this.nodeRef, authority, permission);
     }
     
     /**

@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.security;
 import java.util.Set;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.service.Auditable;
 
 /**
  * The authentication service defines the API for managing authentication information 
@@ -36,6 +37,7 @@ public interface AuthenticationService
      * @param password
      * @throws AuthenticationException
      */
+    @Auditable(parameters = {"userName", "password"}, recordable = {true, false})
     public void createAuthentication(String userName, char[] password) throws AuthenticationException;
     
     /**
@@ -46,6 +48,7 @@ public interface AuthenticationService
      * @param newPassword
      * @throws AuthenticationException
      */
+    @Auditable(parameters = {"userName", "oldPassword", "newPassword"}, recordable = {true, false, false})
     public void updateAuthentication(String userName, char[] oldPassword, char[] newPassword) throws AuthenticationException;
     
     /**
@@ -55,6 +58,7 @@ public interface AuthenticationService
      * @param newPassword
      * @throws AuthenticationException
      */
+    @Auditable(parameters = {"userName", "newPassword"}, recordable = {true, false})
     public void setAuthentication(String userName, char[] newPassword) throws AuthenticationException;
     
 
@@ -64,6 +68,7 @@ public interface AuthenticationService
      * @param userName
      * @throws AuthenticationException
      */
+    @Auditable(parameters = {"userName"})
     public void deleteAuthentication(String userName) throws AuthenticationException;
     
     /**
@@ -72,6 +77,7 @@ public interface AuthenticationService
      * @param userName
      * @param enabled
      */
+    @Auditable(parameters = {"userName", "enabled"})
     public void setAuthenticationEnabled(String userName, boolean enabled) throws AuthenticationException;
     
     /**
@@ -80,6 +86,7 @@ public interface AuthenticationService
      * @param userName
      * @return
      */
+    @Auditable(parameters = {"userName"})
     public boolean getAuthenticationEnabled(String userName) throws AuthenticationException;
     
     /**
@@ -90,6 +97,7 @@ public interface AuthenticationService
      * @param password the passowrd
      * @throws AuthenticationException
      */
+    @Auditable(parameters = {"userName", "password"}, recordable = {true, false})
     public void authenticate(String userName, char[] password) throws AuthenticationException;
     
     /**
@@ -97,6 +105,7 @@ public interface AuthenticationService
      * 
      * @throws AuthenticationException
      */
+    @Auditable
     public void authenticateAsGuest() throws AuthenticationException;
     
     /**
@@ -105,6 +114,7 @@ public interface AuthenticationService
      * @param userName the username
      * @return Returns <tt>true</tt> if the authentication exists
      */
+    @Auditable(parameters = {"userName"})
     public boolean authenticationExists(String userName);
     
     /**
@@ -113,6 +123,7 @@ public interface AuthenticationService
      * @return
      * @throws AuthenticationException
      */
+    @Auditable
     public String getCurrentUserName() throws AuthenticationException;
     
     /**
@@ -121,6 +132,7 @@ public interface AuthenticationService
      * @param userName
      * @throws AuthenticationException
      */
+    @Auditable(parameters = {"userName"})
     public void invalidateUserSession(String userName) throws AuthenticationException;
     
    /**
@@ -129,6 +141,7 @@ public interface AuthenticationService
     * @param ticket
     * @throws AuthenticationException
     */
+    @Auditable(parameters = {"ticket"}, recordable = {false})
     public void invalidateTicket(String ticket) throws AuthenticationException;
     
    /**
@@ -137,18 +150,21 @@ public interface AuthenticationService
     * @param ticket
     * @throws AuthenticationException
     */
+    @Auditable(parameters = {"ticket"}, recordable = {false})
     public void validate(String ticket) throws AuthenticationException;
     
     /**
      * Get the current ticket as a string
      * @return
      */
+    @Auditable
     public String getCurrentTicket();
     
     /**
      * Remove the current security information
      *
      */
+    @Auditable
     public void clearCurrentSecurityContext();
     
     /**
@@ -156,7 +172,7 @@ public interface AuthenticationService
      * 
      * @return
      */
-    
+    @Auditable
     public boolean isCurrentUserTheSystemUser();
  
     /**
@@ -164,7 +180,7 @@ public interface AuthenticationService
      * 
      * @return The domain name
      */
-    
+    @Auditable
     public Set<String> getDomains();
     
     /**
@@ -172,6 +188,7 @@ public interface AuthenticationService
      * 
      * @return
      */
+    @Auditable
     public Set<String> getDomainsThatAllowUserCreation();
     
     /**
@@ -179,6 +196,7 @@ public interface AuthenticationService
      * 
      * @return
      */
+    @Auditable
     public Set<String>  getDomainsThatAllowUserDeletion();
     
     /**
@@ -186,6 +204,7 @@ public interface AuthenticationService
      * 
      * @return
      */
+    @Auditable
     public Set<String> getDomiansThatAllowUserPasswordChanges();
 }
 

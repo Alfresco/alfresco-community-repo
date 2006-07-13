@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- Default Audit Configuration -->
+
+
+<Audit xmlns="http://www.alfresco.org/model/audit/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" enabled="true" auditInternal="false" mode="all">
+    
+    <!--                -->
+    <!-- Global options -->
+    <!--                -->
+    
+    <!-- Do not record any additional information -->
+    
+    <RecordOptions>
+        <recordPath>false</recordPath>
+        <recordFilters>false</recordFilters>
+        <recordSerializedReturnValue>false</recordSerializedReturnValue>
+        <recordSerializedExceptions>false</recordSerializedExceptions>
+        <recordSerializedMethodArguments>false</recordSerializedMethodArguments>
+        <recordSerializedKeyPropertiesBeforeInvocation>false</recordSerializedKeyPropertiesBeforeInvocation>
+        <recordSerializedKeyPropertiesAferInvocation>false</recordSerializedKeyPropertiesAferInvocation>
+    </RecordOptions>
+    
+    <!--                          -->
+    <!-- Specific service options -->
+    <!--                          -->
+    
+    <Service name="ServiceRegistry" mode="none" enabled="false"/>
+    
+    <!-- The action service -->
+    
+    <Service name="ActionService" mode="none">
+        <Method name="executeAction" mode="all" auditInternal="true"/>
+        <Method name="saveAction" mode="all"/>
+        <Method name="removeAction" mode="all"/>
+        <Method name="removeAllActions" mode="all"/>
+    </Service>
+    
+    <!-- The COCI Service -->
+    
+    <Service name="CheckOutCheckInService"/>
+    
+    <!-- The DictionaryService -->
+    <!-- There are no audtiable methods in the data dictionary service -->
+    <Service name="DictionaryService" mode="none" enabled="false"/>
+    
+    <!-- The Lock Service -->
+    
+    <Service name="LockService"/>
+    
+    <!-- The File/Folder Service -->
+    
+    <Service name="FileFolderService" mode="none">
+        <Method name="rename" mode="all"/>
+        <Method name="move" mode="all"/>
+        <Method name="copy" mode="all"/>
+        <Method name="create" mode="all"/>
+        <Method name="delete" mode="all"/>
+        <Method name="makeFolders" mode="all"/>
+        <Method name="getWriter" mode="all"/>
+    </Service>
+    
+    <Service name="ContentService" mode="none">
+        <Method name="getWriter" mode="all"/>
+    </Service>
+    
+    <Service name="CopyService" mode="none">
+        <Method name="copy" mode="all"/>
+    </Service>
+    
+    <!-- The MimetypeService -->
+    <!-- There are no audtiable methods in the mime type service -->
+    <Service name="MimetypeService" mode="none" enabled="false"/>
+    
+    <Service name="NodeService" mode="none">
+        <Method name="createStore" mode="all"/>
+        <Method name="createNode" mode="all"/>
+        <Method name="moveNode" mode="all"/>
+        <Method name="setChildAssociationIndex" mode="all"/>
+        <Method name="setType" mode="all"/>
+        <Method name="addAspect" mode="all"/>
+        <Method name="removeAspect" mode="all"/>
+        <Method name="deleteNode" mode="all"/>
+        <Method name="addChild" mode="all"/>
+        <Method name="removeChild" mode="all"/>
+        <Method name="setProperties" mode="all"/>
+        <Method name="setProperty" mode="all"/>
+        <Method name="createAssociation" mode="all"/>
+        <Method name="removeAssociation" mode="all"/>
+        <Method name="restoreNode" mode="all"/>
+    </Service>
+    
+    <Service name="ScriptService"/>
+    
+    <Service name="TemplateService"/>
+    
+    <Service name="RuleService" mode="none">
+        <Method name="disableRules" mode="all"/>
+        <Method name="enableRules" mode="all"/>
+        <Method name="disableRule" mode="all"/>
+        <Method name="enableRule" mode="all"/>
+        <Method name="createRule" mode="all"/>
+        <Method name="saveRule" mode="all"/>
+        <Method name="removeRule" mode="all"/>
+        <Method name="removeAllRules" mode="all"/>
+    </Service>
+    
+    <Service name="CategoryService" mode="none">
+        <Method name="createClassifiction" mode="all"/>
+        <Method name="createRootCategory" mode="all"/>
+        <Method name="createCategory" mode="all"/>
+        <Method name="deleteClassification" mode="all"/>
+        <Method name="deleteCategory" mode="all"/>
+    </Service>
+    
+    <Service name="SearchService" mode="none" enabled="false"/>
+    
+    <Service name="AuthenticationService" mode="none">
+        <Method name="createAuthentication" mode="all"/>
+        <Method name="updateAuthentication" mode="all"/>
+        <Method name="setAuthentication" mode="all"/>
+        <Method name="deleteAuthentication" mode="all"/>
+        <Method name="setAuthenticationEnabled" mode="all"/>
+        <Method name="authenticate" mode="all"/>
+        <Method name="authenticateAsGuest" mode="all"/>
+        <Method name="authenticationExists" mode="all"/>
+        <Method name="invalidateUserSession" mode="all"/>
+        <Method name="invalidateTicket" mode="all"/>
+        <Method name="validate" mode="all"/>
+        <Method name="clearCurrentSecurityContext" mode="all"/>
+    </Service>
+    
+    <Service name="AuthorityService" mode="none">
+        <Method name="createAuthority" mode="all"/>
+        <Method name="addAuthority" mode="all"/>
+        <Method name="removeAuthority" mode="all"/>
+        <Method name="deleteAuthority" mode="all"/>
+    </Service>
+    
+    <Service name="OwnableService" mode="none">
+        <Method name="setOwner" mode="all"/>
+        <Method name="takeOwnership" mode="all"/>
+    </Service>
+    
+    <Service name="PermissionService" mode="none">
+        <Method name="deletePermissions" mode="all"/>
+        <Method name="clearPermission" mode="all"/>
+        <Method name="deletePermission" mode="all"/>
+        <Method name="setPermission" mode="all"/>
+        <Method name="setInheritParentPermissions" mode="all"/>
+    </Service>
+    
+    <Service name="PersonService" mode="none">
+        <Method name="setCreateMissingPeople" mode="all"/>
+        <Method name="setPersonProperties" mode="all"/>
+        <Method name="createPerson" mode="all"/>
+        <Method name="deletePerson" mode="all"/>
+    </Service>
+    
+    <Service name="VersionService" mode="none">
+        <Method name="createVersion" mode="all"/>
+        <Method name="revert" mode="all"/>
+        <Method name="restore" mode="all"/>
+        <Method name="deleteVersionHistory" mode="all"/>
+    </Service>
+    
+    <Service name="ExporterService"/>
+    
+    <Service name="ImporterService"/>
+    
+    <Service name="RepositoryExporterService"/>
+    
+    <Service name="DescriptorService" mode="none" enabled="false"/>
+    
+    <Service name="LicenseService" mode="none" enabled="false"/>
+    
+    <Service name="NamespaceService"/>
+    
+    <Service name="TransactionService" mode="none" enabled="false"/>
+    
+</Audit>

@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -49,6 +50,7 @@ public interface PersonService
      * @see #setCreateMissingPeople(boolean)
      * @see #createMissingPeople()
      */
+    @Auditable(parameters = {"userName"})
     public NodeRef getPerson(String userName);
 
     /**
@@ -57,6 +59,7 @@ public interface PersonService
      * @param userName the user name
      * @return Returns true if the user exists, otherwise false
      */
+    @Auditable(parameters = {"userName"})
     public boolean personExists(String userName);
     
     /**
@@ -65,6 +68,7 @@ public interface PersonService
      * 
      * @return true if people are created on demand and false otherwise.
      */
+    @Auditable
     public boolean createMissingPeople();
 
     /**
@@ -74,6 +78,7 @@ public interface PersonService
      * 
      * @see #getPerson(String)
      */
+    @Auditable(parameters = {"createMissing"})
     public void setCreateMissingPeople(boolean createMissing);
     
     /**
@@ -84,6 +89,7 @@ public interface PersonService
      * 
      * @return A set of QNames that identify properties that can be changed
      */
+    @Auditable
     public Set<QName> getMutableProperties();
 
     /**
@@ -93,6 +99,7 @@ public interface PersonService
      * @param userName - the user for which the properties should be set.
      * @param properties - the map of properties to set (as the NodeService)
      */
+    @Auditable(parameters = {"userName", "properties"})
     public void setPersonProperties(String userName, Map<QName, Serializable> properties);
 
     /**
@@ -100,6 +107,7 @@ public interface PersonService
      * 
      * @return true if this service allows mutation to people.
      */
+    @Auditable
     public boolean isMutable();
 
     /**
@@ -110,6 +118,7 @@ public interface PersonService
      * @param properties
      * @return
      */
+    @Auditable(parameters = {"properties"})
     public NodeRef createPerson(Map<QName, Serializable> properties);
 
     /**
@@ -117,6 +126,7 @@ public interface PersonService
      * 
      * @param userName
      */
+    @Auditable(parameters = {"userName"})
     public void deletePerson(String userName);
     
     /**
@@ -124,6 +134,7 @@ public interface PersonService
      * 
      * @return a set of people in no specific order. 
      */
+    @Auditable
     public Set<NodeRef> getAllPeople();
     
     /**
@@ -131,6 +142,7 @@ public interface PersonService
      * 
      * @return
      */
+    @Auditable
     public NodeRef getPeopleContainer();
     
     /**
@@ -138,5 +150,6 @@ public interface PersonService
      * 
      * @return
      */
+    @Auditable
     public boolean getUserNamesAreCaseSensitive();
 }

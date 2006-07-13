@@ -16,6 +16,8 @@
  */
 package org.alfresco.service.namespace;
 
+import org.alfresco.service.Auditable;
+
 
 
 /**
@@ -83,6 +85,7 @@ public interface NamespaceService extends NamespacePrefixResolver
      * @param prefix
      * @param uri
      */
+    @Auditable(parameters = {"prefix", "uri"})
     public void registerNamespace(String prefix, String uri);
     
 
@@ -91,6 +94,7 @@ public interface NamespaceService extends NamespacePrefixResolver
      * 
      * @param prefix
      */
+    @Auditable(parameters = {"prefix"})
     public void unregisterNamespace(String prefix);
     
 }

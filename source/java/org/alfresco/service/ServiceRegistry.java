@@ -87,6 +87,7 @@ public interface ServiceRegistry
      *
      * @return  list of provided Services
      */
+    @NotAuditable
     Collection<QName> getServices();
 
     /**
@@ -95,6 +96,7 @@ public interface ServiceRegistry
      * @param service  name of service to test provision of
      * @return true => provided, false => not provided
      */
+    @NotAuditable
     boolean isServiceProvided(QName service);
 
     /**
@@ -103,6 +105,7 @@ public interface ServiceRegistry
      * @param service  name of service to retrieve meta data for
      * @return the service meta data
      */
+    @NotAuditable
     ServiceDescriptor getServiceDescriptor(QName service);
 
     /** 
@@ -110,121 +113,145 @@ public interface ServiceRegistry
      *
      * @param service  name of service to retrieve
      * @return the service interface (must cast to interface as described in service meta-data)
-     */  
+     */
+    @NotAuditable
     Object getService(QName service);
     
     /**
      * @return the descriptor service
      */
+    @NotAuditable
     DescriptorService getDescriptorService();
     
     /**
      * @return the transaction service
      */
+    @NotAuditable
     TransactionService getTransactionService();
 
     /**
      * @return the namespace service (or null, if one is not provided)
      */
+    @NotAuditable
     NamespaceService getNamespaceService();
     
     /**
      * @return the authentication service (or null, if one is not provided)
      */
+    @NotAuditable
     AuthenticationService getAuthenticationService();
     
     /**
      * @return the node service (or null, if one is not provided)
      */
+    @NotAuditable
     NodeService getNodeService();
 
     /**
      * @return the content service (or null, if one is not provided)
      */
+    @NotAuditable
     ContentService getContentService();
     
     /**
      * @return the mimetype service (or null, if one is not provided)
      */
+    @NotAuditable
     MimetypeService getMimetypeService();
 
     /**
      * @return the search service (or null, if one is not provided)
      */
+    @NotAuditable
     SearchService getSearchService();
     
     /**
      * @return the version service (or null, if one is not provided)
      */
+    @NotAuditable
     VersionService getVersionService();
     
     /**
      * @return the lock service (or null, if one is not provided)
      */
+    @NotAuditable
     LockService getLockService();
 
     /**
      * @return the dictionary service (or null, if one is not provided)
      */
+    @NotAuditable
     DictionaryService getDictionaryService();
  
     /**
      * @return the copy service (or null, if one is not provided)
      */
+    @NotAuditable
     CopyService getCopyService();
     
     /**
      * @return the checkout / checkin service (or null, if one is not provided)
      */
+    @NotAuditable
     CheckOutCheckInService getCheckOutCheckInService();   
     
     /**
      * @return the category service (or null, if one is not provided)
      */
+    @NotAuditable
     CategoryService getCategoryService();
     
     /**
      * @return the importer service or null if not present
      */
+    @NotAuditable
     ImporterService getImporterService();
     
     /**
      * @return the exporter service or null if not present
      */
+    @NotAuditable
     ExporterService getExporterService();
     
     /**
      * @return the rule service (or null, if one is not provided)
      */
+    @NotAuditable
     RuleService getRuleService();
     
     /**
      * @return the action service (or null if one is not provided)
      */
+    @NotAuditable
     ActionService getActionService();
     
     /**
      * @return the permission service (or null if one is not provided)
      */
+    @NotAuditable
     PermissionService getPermissionService();
     
     /**
      * @return the authority service (or null if one is not provided)
      */
+    @NotAuditable
     AuthorityService getAuthorityService();
     
     /**
      * @return the template service (or null if one is not provided)
      */
+    @NotAuditable
     TemplateService getTemplateService();
     
     /**
      * @return the file-folder manipulation service (or null if one is not provided)
      */
+    @NotAuditable
     FileFolderService getFileFolderService();
     
     /**
      * @return the script execution service (or null if one is not provided)
      */
+    @NotAuditable
     ScriptService getScriptService();
 }

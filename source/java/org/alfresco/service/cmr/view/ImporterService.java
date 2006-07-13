@@ -18,6 +18,8 @@ package org.alfresco.service.cmr.view;
 
 import java.io.Reader;
 
+import org.alfresco.service.Auditable;
+
 
 /**
  * Importer Service.  Entry point for importing xml data sources into the Repository.
@@ -36,6 +38,7 @@ public interface ImporterService
      * @param binding  property values used for binding property place holders in import stream
      * @param progress  progress monitor (optional)
      */
+    @Auditable(parameters = {"viewReader", "location", "binding", "progress"})
     public void importView(Reader viewReader, Location location, ImporterBinding binding, ImporterProgress progress)
         throws ImporterException;
 
@@ -50,6 +53,7 @@ public interface ImporterService
      * @param binding  property values used for binding property place holders in import stream
      * @param progress  progress monitor (optional)
      */
+    @Auditable(parameters = {"importHandler", "location", "binding", "progress"})
     public void importView(ImportPackageHandler importHandler, Location location, ImporterBinding binding, ImporterProgress progress)
         throws ImporterException;
     

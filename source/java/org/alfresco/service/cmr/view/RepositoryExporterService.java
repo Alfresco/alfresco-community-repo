@@ -18,6 +18,7 @@ package org.alfresco.service.cmr.view;
 
 import java.io.File;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
@@ -38,6 +39,7 @@ public interface RepositoryExporterService
      * @param packageName package name prefix for export .acp files
      * @return list of temporary export files
      */
+    @Auditable(parameters = {"packageName"})
     public FileExportHandle[] export(String packageName);
 
     /**
@@ -49,6 +51,7 @@ public interface RepositoryExporterService
      * @param packageName package name prefix for export .acp files
      * @return  list of repository held export files
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"repositoryDestination", "packageName"})
     public RepositoryExportHandle[] export(NodeRef repositoryDestination, String packageName);
     
     /**
@@ -58,6 +61,7 @@ public interface RepositoryExporterService
      * @param packageName package name prefix for export .acp files
      * @return  list of export files
      */
+    @Auditable(parameters = {"directoryDestination", "packageName"})
     public FileExportHandle[] export(File directoryDestination, String packageName);
 
 

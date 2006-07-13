@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
+import org.apache.log4j.Logger;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;
@@ -47,6 +48,8 @@ import org.mozilla.javascript.ScriptableObject;
  */
 public class RhinoScriptService implements ScriptService
 {
+    private static final Logger logger = Logger.getLogger(RhinoScriptService.class);
+    
     /** The permission-safe node service */
     private NodeService nodeService;
     
@@ -191,7 +194,13 @@ public class RhinoScriptService implements ScriptService
      */
     private Object executeScriptImpl(Reader reader, Map<String, Object> model)
         throws AlfrescoRuntimeException
-    {        
+    {
+        long startTime = 0;
+        if (logger.isDebugEnabled())
+        {
+            startTime = System.currentTimeMillis();
+        }
+        
         // check that rhino script engine is available
         Context cx = Context.enter();
         try
@@ -226,6 +235,12 @@ public class RhinoScriptService implements ScriptService
         finally
         {
             cx.exit();
+            
+            if (logger.isDebugEnabled())
+            {
+                long endTime = System.currentTimeMillis();
+                logger.debug("Time to execute script: " + (endTime - startTime) + "ms");
+            }
         }
     }
     

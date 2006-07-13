@@ -18,6 +18,8 @@ package org.alfresco.service.cmr.view;
 
 import java.io.OutputStream;
 
+import org.alfresco.service.Auditable;
+
 
 /**
  * Exporter Service
@@ -36,6 +38,7 @@ public interface ExporterService
      * @param parameters  export parameters
      * @param progress  exporter callback for tracking progress of export
      */
+    @Auditable(parameters = {"viewWriter", "parameters", "progress"})
     public void exportView(OutputStream viewWriter, ExporterCrawlerParameters parameters, Exporter progress)
         throws ExporterException;
 
@@ -48,6 +51,7 @@ public interface ExporterService
      * @param parameters  export parameters
      * @param progress  exporter callback for tracking progress of export
      */
+    @Auditable(parameters = {"exportHandler", "parameters", "progress"})
     public void exportView(ExportPackageHandler exportHandler, ExporterCrawlerParameters parameters, Exporter progress)
         throws ExporterException;
 
@@ -59,6 +63,7 @@ public interface ExporterService
      * @param parameters  export parameters
      * @param progress  exporter callback for tracking progress of export
      */
+    @Auditable(parameters = {"exporter", "parameters", "progress"})
     public void exportView(Exporter exporter, ExporterCrawlerParameters parameters, Exporter progress);
     
 }

@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.lock;
 import java.util.Collection;
 import java.util.List;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
@@ -46,6 +47,7 @@ public interface LockService
     * @throws UnableToAquireLockException
     *                  thrown if the lock could not be obtained
     */
+   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "lockType"})
    public void lock(NodeRef nodeRef, LockType lockType)
        throws UnableToAquireLockException;
    
@@ -71,6 +73,7 @@ public interface LockService
     * @throws UnableToAquireLockException
     *                       thrown if the lock could not be obtained
     */
+   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "lockType", "timeToExpire"})
    public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire)
        throws UnableToAquireLockException;
    
@@ -102,6 +105,7 @@ public interface LockService
     * @throws UnableToAquireLockException
     *                           thrown if the lock could not be obtained
     */
+   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "lockType", "timeToExpire", "lockChildren"})
    public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, boolean lockChildren)
        throws UnableToAquireLockException;
    
@@ -129,6 +133,7 @@ public interface LockService
     * @throws UnableToAquireLockException
     *                           thrown if the lock could not be obtained
     */
+   @Auditable(parameters = {"nodeRefs", "lockType", "timeToExpire"})
    public void lock(Collection<NodeRef> nodeRefs, LockType lockType, int timeToExpire)
        throws UnableToAquireLockException;
    
@@ -143,6 +148,7 @@ public interface LockService
     * @throws UnableToReleaseLockException
     *                  thrown if the lock could not be released             
     */
+   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"}) 
    public void unlock(NodeRef nodeRef)
        throws UnableToReleaseLockException;
    
@@ -166,6 +172,7 @@ public interface LockService
     * @throws UnableToReleaseLockException
     *                  thrown if the lock could not be released
     */
+   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "lockChildren"}) 
    public void unlock(NodeRef nodeRef, boolean lockChildren)
        throws UnableToReleaseLockException;
    
@@ -187,6 +194,7 @@ public interface LockService
     * @throws UnableToReleaseLockException
     *                  thrown if the lock could not be released
     */
+   @Auditable(parameters = {"nodeRefs"}) 
    public void unlock(Collection<NodeRef> nodeRefs)
        throws UnableToReleaseLockException;
    
@@ -198,6 +206,7 @@ public interface LockService
     * @param nodeRef    the node reference
     * @return           the lock status
     */
+   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
    public LockStatus getLockStatus(NodeRef nodeRef);
    
    /**
@@ -211,6 +220,7 @@ public interface LockService
     * @return          the lock type, null is returned if the object in question has no
     *                  lock
     */
+   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
    public LockType getLockType(NodeRef nodeRef);
    
    /**
@@ -222,6 +232,7 @@ public interface LockService
     * 
     * @param nodeRef   the node reference
     */
+   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
    public void checkForLock(NodeRef nodeRef);   
    
    /**
@@ -230,6 +241,7 @@ public interface LockService
     * @param    storeRef    the store reference
     * @return               a list of nodes that the current user has locked.
     */
+   @Auditable(key = Auditable.Key.ARG_0,parameters = {"storeRef"})
    public List<NodeRef> getLocks(StoreRef storeRef);
    
    /**
@@ -240,5 +252,6 @@ public interface LockService
     * 
     * @return           a list of nodes that the current user has locked filtered by the lock type provided
     */
+   @Auditable(key = Auditable.Key.ARG_0,parameters = {"storeRef", "lockType"})
    public List<NodeRef> getLocks(StoreRef storeRef, LockType lockType);
 }

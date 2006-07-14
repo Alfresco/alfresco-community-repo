@@ -156,6 +156,11 @@
    </servlet>
    
    <servlet>
+      <servlet-name>ajaxServlet</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.ajax.AjaxServlet</servlet-class>
+   </servlet>
+   
+   <servlet>
       <servlet-name>axis</servlet-name>
       <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
       <load-on-startup>5</load-on-startup>
@@ -203,6 +208,11 @@
    <servlet-mapping>
       <servlet-name>commandServlet</servlet-name>
       <url-pattern>/command/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>ajaxServlet</servlet-name>
+      <url-pattern>/ajax/*</url-pattern>
    </servlet-mapping>
    
    <servlet-mapping>

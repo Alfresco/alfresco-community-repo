@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.SortedMap;
 
 import org.alfresco.repo.avm.SuperRepository;
+import org.apache.log4j.Logger;
 
 /**
  * Implements the AVMService.  Stub.
@@ -35,6 +36,8 @@ import org.alfresco.repo.avm.SuperRepository;
  */
 public class AVMServiceImpl implements AVMService
 {
+    private static Logger fgLogger = Logger.getLogger(AVMServiceImpl.class);
+    
     /**
      * The RetryingTransaction.
      */
@@ -103,15 +106,19 @@ public class AVMServiceImpl implements AVMService
                                                    fContentIssuer,
                                                    fLayerIssuer,
                                                    fStorage);
+            fgLogger.info("Initialized AVMService and SuperRepository");
         }
         catch (Exception e)
         {
-            e.printStackTrace(System.err);
-            // TODO Log this and abort in some useful way.
+            fgLogger.fatal("Failed to initialize AVMService", e);
+            // TODO Abort in some useful way.
         }
         if (fInitialize)
         {
+            File storageDir = new File(fStorage);
+            storageDir.mkdirs();
             createRepository("main");
+            fgLogger.info("Created new main repository");
         }
     }
     

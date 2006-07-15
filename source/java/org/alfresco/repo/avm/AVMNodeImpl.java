@@ -141,7 +141,6 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         }
         if (!(obj instanceof AVMNode))
         {
-            System.err.println("Failing AVMNodeImpl.equals");
             return false;
         }
         return fID == ((AVMNode)obj).getId();

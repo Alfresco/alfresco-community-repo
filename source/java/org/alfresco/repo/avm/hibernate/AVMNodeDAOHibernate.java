@@ -27,7 +27,6 @@ import org.alfresco.repo.avm.AVMNodeUnwrapper;
 import org.alfresco.repo.avm.DirectoryNode;
 import org.alfresco.repo.avm.Repository;
 import org.hibernate.Query;
-import org.hibernate.Session;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**

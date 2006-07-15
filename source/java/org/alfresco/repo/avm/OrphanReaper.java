@@ -19,6 +19,9 @@ package org.alfresco.repo.avm;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * This is the background thread for reaping no longer referenced nodes
  * in the AVM repository.  These orphans arise from purge operations.
@@ -26,6 +29,7 @@ import java.util.List;
  */
 public class OrphanReaper implements Runnable
 {
+    private Log fgLogger = LogFactory.getLog(OrphanReaper.class);
     /**
      * The HibernateTxn instance.
      */
@@ -274,8 +278,7 @@ public class OrphanReaper implements Runnable
         }
         catch (Exception e)
         {
-            e.printStackTrace(System.err);
-            // TODO Log this properly.
+            fgLogger.error("Garbage collector error", e);
         }
     }
 }

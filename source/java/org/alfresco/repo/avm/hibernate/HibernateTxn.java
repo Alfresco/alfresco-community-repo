@@ -23,6 +23,7 @@ import org.alfresco.repo.avm.AVMException;
 import org.alfresco.repo.avm.AVMNotFoundException;
 import org.alfresco.repo.avm.RetryingTransactionCallback;
 import org.alfresco.repo.avm.RetryingTransaction;
+import org.apache.log4j.Logger;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -38,6 +39,7 @@ import org.springframework.transaction.TransactionStatus;
  */
 public class HibernateTxn extends HibernateTemplate implements RetryingTransaction
 {
+    private static Logger fgLogger = Logger.getLogger(HibernateTxn.class);
     /**
      * The transaction manager.
      */
@@ -99,7 +101,7 @@ public class HibernateTxn extends HibernateTemplate implements RetryingTransacti
                 // If we've lost a race or we've deadlocked, retry.
                 if (t instanceof DeadlockLoserDataAccessException)
                 {
-                    System.err.println("Deadlock.");
+                    fgLogger.info("Deadlock");
                     try
                     {
                         long interval;
@@ -117,7 +119,7 @@ public class HibernateTxn extends HibernateTemplate implements RetryingTransacti
                 }
                 if (t instanceof OptimisticLockingFailureException)
                 {
-                    System.err.println("Lost Race.");
+                    fgLogger.info("Lost Race");
                     continue;
                 }
                 if (t instanceof AVMException)

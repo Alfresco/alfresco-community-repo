@@ -20,17 +20,17 @@ package org.alfresco.repo.avm;
 import java.io.Serializable;
 
 /**
- * A record of a node that is new and in which repository it resides.
+ * A record of a node that is new and in which store it resides.
  * @author britt
  */
-public class NewInRepositoryImpl implements NewInRepository, Serializable
+public class NewInAVMStoreImpl implements NewInAVMStore, Serializable
 {
     private static final long serialVersionUID = 1905996612150732182L;
 
     /**
-     * The Repository.
+     * The AVMStore.
      */
-    private Repository fRepository;
+    private AVMStore fAVMStore;
     
     /**
      * The Node.
@@ -40,18 +40,18 @@ public class NewInRepositoryImpl implements NewInRepository, Serializable
     /**
      * Default constructor.
      */
-    public NewInRepositoryImpl()
+    public NewInAVMStoreImpl()
     {
     }
 
     /**
      * Make a new one.
-     * @param repository The repository.
+     * @param store The store.
      * @param node The AVMNode that is new.
      */
-    public NewInRepositoryImpl(Repository repository, AVMNode node)
+    public NewInAVMStoreImpl(AVMStore store, AVMNode node)
     {
-        fRepository = repository;
+        fAVMStore = store;
         fNode = node;
     }
 
@@ -72,19 +72,19 @@ public class NewInRepositoryImpl implements NewInRepository, Serializable
     }
 
     /**
-     * @return the fRepository
+     * @return the store
      */
-    public Repository getRepository()
+    public AVMStore getAvmStore()
     {
-        return fRepository;
+        return fAVMStore;
     }
 
     /**
-     * @param repository the fRepository to set
+     * @param store the AVMStore to set
      */
-    public void setRepository(Repository repository)
+    public void setAvmStore(AVMStore store)
     {
-        fRepository = repository;
+        fAVMStore = store;
     }
 }
 

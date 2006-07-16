@@ -114,13 +114,13 @@ public interface AVMNode
     public String toString(Lookup lPath);
     
     /**
-     * Set whether this node to be a root of a Repository.
+     * Set whether this node to be a root of a AVMStore
      * @param isRoot
      */
     public void setIsRoot(boolean isRoot);
 
     /**
-     * Get whether this node is a root of a Repository.
+     * Get whether this node is a root of a AVMStore.
      * @return Whether this node is a root.
      */
     public boolean getIsRoot();

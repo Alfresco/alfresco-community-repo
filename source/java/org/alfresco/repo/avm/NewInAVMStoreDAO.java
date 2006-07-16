@@ -20,34 +20,34 @@ package org.alfresco.repo.avm;
 import java.util.List;
 
 /**
- * DAO for NewInRepository markers.
+ * DAO for NewInAVMStore markers.
  * @author britt
  */
-public interface NewInRepositoryDAO
+public interface NewInAVMStoreDAO
 {
     /**
      * Save one.
      * @param newEntry The item to save.
      */
-    public void save(NewInRepository newEntry);
+    public void save(NewInAVMStore newEntry);
     
     /**
      * Get one by Node.
      * @param node The node to lookup with.
      * @return The Entry or null if not found.
      */
-    public NewInRepository getByNode(AVMNode node);
+    public NewInAVMStore getByNode(AVMNode node);
 
     /**
-     * Get all that are in the given repository.
-     * @param repository The Repository.
-     * @return A List of NewInRepositorys.
+     * Get all that are in the given store.
+     * @param store The AVMStore.
+     * @return A List of NewInAVMStores.
      */
-    public List<NewInRepository> getByRepository(Repository repository);
+    public List<NewInAVMStore> getByAVMStore(AVMStore store);
     
     /**
      * Delete the given entry.
      * @param newEntry The entry to delete.
      */
-    public void delete(NewInRepository newEntry);
+    public void delete(NewInAVMStore newEntry);
 }

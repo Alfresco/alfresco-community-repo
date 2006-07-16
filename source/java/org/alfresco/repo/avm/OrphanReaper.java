@@ -233,10 +233,10 @@ public class OrphanReaper implements Runnable
                         link.getMto().setMergedFrom(ancestor);
                         AVMContext.fgInstance.fMergeLinkDAO.delete(link);
                     }
-                    NewInRepository newInRep = AVMContext.fgInstance.fNewInRepositoryDAO.getByNode(node);
+                    NewInAVMStore newInRep = AVMContext.fgInstance.fNewInAVMStoreDAO.getByNode(node);
                     if (newInRep != null)
                     {
-                        AVMContext.fgInstance.fNewInRepositoryDAO.delete(newInRep);
+                        AVMContext.fgInstance.fNewInAVMStoreDAO.delete(newInRep);
                     }
                     // TODO What to do about such Hibernate wackiness: session.flush();
                     // TODO More of the same: node = AVMNodeUnwrapper.Unwrap(node);

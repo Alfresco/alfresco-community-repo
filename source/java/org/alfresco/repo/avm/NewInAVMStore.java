@@ -18,16 +18,16 @@
 package org.alfresco.repo.avm;
 
 /**
- * Eensy-weensy interface for tracking nodes that are new in a repository. 
+ * Eensy-weensy interface for tracking nodes that are new in a store. 
  * @author britt
  */
-public interface NewInRepository
+public interface NewInAVMStore
 {
     /**
-     * Get the Repository part.
-     * @return The Repository
+     * Get the AVMStore part.
+     * @return The AVMStore
      */
-    public Repository getRepository();
+    public AVMStore getAvmStore();
     
     /**
      * Get the node part.

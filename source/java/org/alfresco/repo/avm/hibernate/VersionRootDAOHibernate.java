@@ -20,7 +20,7 @@ package org.alfresco.repo.avm.hibernate;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.repo.avm.Repository;
+import org.alfresco.repo.avm.AVMStore;
 import org.alfresco.repo.avm.VersionRoot;
 import org.alfresco.repo.avm.VersionRootDAO;
 import org.hibernate.Query;
@@ -61,73 +61,70 @@ public class VersionRootDAOHibernate extends HibernateDaoSupport implements
     }
     
     /**
-     * Get all the version roots in a given repository.
-     * @param rep The repository.
+     * Get all the version roots in a given store.
+     * @param store The store.
      * @return A List of VersionRoots.  In id order.
      */
     @SuppressWarnings("unchecked")
-    public List<VersionRoot> getAllInRepository(Repository rep)
+    public List<VersionRoot> getAllInAVMStore(AVMStore store)
     {
-        Query query = getSession().createQuery("from VersionRootImpl v where v.repository = :rep order by v.versionID");
-        query.setEntity("rep", rep);
+        Query query = getSession().createQuery("from VersionRootImpl v where v.avmStore = :store order by v.versionID");
+        query.setEntity("store", store);
         return (List<VersionRoot>)query.list();
     }
     
     /**
-     * Get the version of a repository by dates.
-     * @param rep The repository.
+     * Get the version of a store by dates.
+     * @param store The store.
      * @param from The starting date.  May be null but not with to null also.
      * @param to The ending date.  May be null but not with from null also.
      * @return A List of VersionRoots.
      */
     @SuppressWarnings("unchecked")
-    public List<VersionRoot> getByDates(Repository rep, Date from, Date to)
+    public List<VersionRoot> getByDates(AVMStore store, Date from, Date to)
     {
         Query query;
         if (from == null)
         {
             query = 
                 getSession().createQuery("from VersionRootImpl vr where vr.createDate <= :to " +
-                                         "and vr.repository = :rep " +
+                                         "and vr.avmStore = :store " +
                                          "order by vr.versionID");
             query.setLong("to", to.getTime());
-            query.setEntity("rep", rep);
         }
         else if (to == null)
         {
             query =
                 getSession().createQuery("from VersionRootImpl vr " +
                                          "where vr.createDate >= :from " +
-                                         "and vr.repository = :rep " +
+                                         "and vr.avmStore = :store " +
                                          "order by vr.versionID");
             query.setLong("from", from.getTime());
-            query.setEntity("rep", rep);
         }
         else
         {
             query =
                 getSession().createQuery("from VersionRootImpl vr "+ 
                                          "where vr.createDate between :from and :to " +
-                                         "and vr.repository = :rep " +
+                                         "and vr.avmStore = :store " +
                                          "order by vr.versionID");
             query.setLong("from", from.getTime());
             query.setLong("to", to.getTime());
-            query.setEntity("rep", rep);
         }
-        query.setEntity("rep", rep);
+        query.setEntity("store", store);
         return (List<VersionRoot>)query.list();
     }
     
     /**
      * Get the VersionRoot corresponding to the given id.
-     * @param rep The repository
+     * @param store The store
      * @param id The version id.
      * @return The VersionRoot or null if not found.
      */
-    public VersionRoot getByVersionID(Repository rep, int id)
+    public VersionRoot getByVersionID(AVMStore store, int id)
     {
         Query query = getSession().getNamedQuery("VersionRoot.VersionByID");
-        query.setEntity("rep", rep);
+        query.setEntity("store", store);
         query.setInteger("version", id);
         return (VersionRoot)query.uniqueResult();
     }
@@ -137,7 +134,7 @@ public class VersionRootDAOHibernate extends HibernateDaoSupport implements
      * @param rep The repository.
      * @return The highest numbered version.
      */
-    public VersionRoot getMaxVersion(Repository rep)
+    public VersionRoot getMaxVersion(AVMStore rep)
     {
         Query query = getSession().createQuery("from VersionRootImpl vr " +
                                                "where vr.versionID = " +

@@ -53,14 +53,14 @@ public interface VersionRoot
     public void setId(long id);
 
     /**
-     * @return the repository
+     * @return the AVMStore
      */
-    public Repository getRepository();
+    public AVMStore getAvmStore();
 
     /**
-     * @param repository the repository to set
+     * @param store the store to set
      */
-    public void setRepository(Repository repository);
+    public void setAvmStore(AVMStore store);
 
     /**
      * @return the root

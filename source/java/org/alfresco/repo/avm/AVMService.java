@@ -29,7 +29,7 @@ import java.util.SortedMap;
  * Versioning Model.  It specifies methods that are close in functionality to the underlying
  * implementation, and is intended as both a first class Alfresco service and an
  * aid in creating new implementations of existing services.
- * Paths are of the form repositoryname:/foo/bar/baz
+ * Paths are of the form storename:/foo/bar/baz
  * @author britt
  */
 public interface AVMService
@@ -126,11 +126,11 @@ public interface AVMService
     public void retargetLayeredDirectory(String path, String target);
     
     /**
-     * Create a new Repository.  All Repositories are top level in a hierarchical
+     * Create a new AVMStore.  All AVMStores are top level in a hierarchical
      * sense.
-     * @param name The name to give the virtual repository.
+     * @param name The name to give the AVMStore.
      */
-    public void createRepository(String name);
+    public void createAVMStore(String name);
     
     /**
      * Create a branch from a given version and path.
@@ -168,64 +168,64 @@ public interface AVMService
     public void uncover(String dirPath, String name);
 
     /**
-     * Get the latest version id of the repository.
-     * @param repName The name of the repository.
-     * @return The latest version id of the repository.
+     * Get the latest version id of the AVMStore.
+     * @param storeName The name of the AVMStore.
+     * @return The latest version id of the AVMStore.
      */
-    public int getLatestVersionID(String repName);
+    public int getLatestVersionID(String storeName);
     
     /**
-     * Snapshot the given repositories.  When this is called everything that has been added,
+     * Snapshot the given AVMStores.  When this is called everything that has been added,
      * deleted, or modified since the last time this function was called, is marked 
      * as needing to be copied, so that further modifications will trigger copy on write
      * semantics.
-     * @param repositories The names of the repositories to snapshot.
+     * @param stores The names of the AVMStores to snapshot.
      */
     public List<Integer> createSnapshot(List<String> repositories);
     
     /**
-     * Snapshot the given repository.
-     * @param repository The name of the repository to snapshot.
+     * Snapshot the given AVMStore.
+     * @param store The name of the AVMStore to snapshot.
      */
-    public int createSnapshot(String repository);
+    public int createSnapshot(String store);
     
     /**
-     * Get the set of versions in a Repository
-     * @param name The name of the Repository.
+     * Get the set of versions in an AVMStore
+     * @param name The name of the AVMStore.
      * @return A Set of version IDs
      */
-    public List<VersionDescriptor> getRepositoryVersions(String name);
+    public List<VersionDescriptor> getAVMStoreVersions(String name);
     
     /**
-     * Get Repository version IDs by creation date. Either from or
+     * Get AVMStore version descriptors by creation date. Either from or
      * to can be null but not both.
-     * @param name The name of the repository.
+     * @param name The name of the AVMStore.
      * @param from Earliest date of version to include.
      * @param to Latest date of version to include.
      * @return The Set of version IDs that match.
      */
-    public List<VersionDescriptor> getRepositoryVersions(String name, Date from, Date to);
+    public List<VersionDescriptor> getAVMStoreVersions(String name, Date from, Date to);
     
     /**
-     * Get the descriptors of all repositories. 
-     * @return A List of all repositories.
+     * Get the descriptors of all AVMStores. 
+     * @return A List of all AVMStores.
      */
-    public List<RepositoryDescriptor> getRepositories();
+    public List<AVMStoreDescriptor> getAVMStores();
 
     /**
-     * Get a descriptor for a repository.
-     * @param name The repository's name.
+     * Get a descriptor for an AVMStore.
+     * @param name The AVMStore's name.
      * @return A Descriptor.
      */
-    public RepositoryDescriptor getRepository(String name);
+    public AVMStoreDescriptor getAVMStore(String name);
     
     /**
-     * Get the specified root of a repository.
+     * Get the specified root of an AVMStore.
      * @param version The version to look up.
-     * @param name The name of the repository.
+     * @param name The name of the AVMStore.
      * @return A descriptor for the specified root.
      */
-    public AVMNodeDescriptor getRepositoryRoot(int version, String name);
+    public AVMNodeDescriptor getAVMStoreRoot(int version, String name);
         
     /**
      * Lookup a node by version ids and path.
@@ -252,16 +252,16 @@ public interface AVMService
     public String getIndirectionPath(int version, String path);
     
     /**
-     * Purge a repository.  This is a complete wipe of a Repository.
-     * @param name The name of the Repository.
+     * Purge an AVMStore.  This is a complete wipe of an AVMStore.
+     * @param name The name of the AVMStore.
      */
-    public void purgeRepository(String name);
+    public void purgeAVMStore(String name);
     
     /**
-     * Purge a version from a repository.  Deletes everything that lives in
+     * Purge a version from an AVMStore.  Deletes everything that lives in
      * the given version only.
      * @param version The version to purge.
-     * @param name The name of the Repository from which to purge it.
+     * @param name The name of the AVMStore from which to purge it.
      */
     public void purgeVersion(int version, String name);
     

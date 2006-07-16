@@ -49,9 +49,9 @@ public class VersionRootImpl implements VersionRoot, Serializable
     private String fCreator;
     
     /**
-     * The Repository.
+     * The AVMStore.
      */
-    private Repository fRepository;
+    private AVMStore fAVMStore;
     
     /**
      * The root node.
@@ -67,19 +67,19 @@ public class VersionRootImpl implements VersionRoot, Serializable
     
     /**
      * Rich constructor.
-     * @param repository
+     * @param store
      * @param root
      * @param versionID
      * @param createDate
      * @param creator
      */
-    public VersionRootImpl(Repository repository,
-                               DirectoryNode root,
-                               int versionID,
-                               long createDate,
-                               String creator)
+    public VersionRootImpl(AVMStore store,
+                           DirectoryNode root,
+                           int versionID,
+                           long createDate,
+                           String creator)
     {
-        fRepository = repository;
+        fAVMStore = store;
         fRoot = root;
         fVersionID = versionID;
         fCreateDate = createDate;
@@ -116,14 +116,14 @@ public class VersionRootImpl implements VersionRoot, Serializable
         fID = id;
     }
 
-    public Repository getRepository()
+    public AVMStore getAvmStore()
     {
-        return fRepository;
+        return fAVMStore;
     }
 
-    public void setRepository(Repository repository)
+    public void setAvmStore(AVMStore store)
     {
-        fRepository = repository;
+        fAVMStore = store;
     }
 
     public DirectoryNode getRoot()
@@ -155,7 +155,7 @@ public class VersionRootImpl implements VersionRoot, Serializable
     }
 
     /**
-     * Check equality.  Based on Repository equality and version id equality.
+     * Check equality.  Based on AVMStore equality and version id equality.
      * @param obj
      * @return Equality.
      */
@@ -171,7 +171,7 @@ public class VersionRootImpl implements VersionRoot, Serializable
             return false;
         }
         VersionRoot other = (VersionRoot)obj;
-        return fRepository.equals(other.getRepository())
+        return fAVMStore.equals(other.getAvmStore())
             && fVersionID == other.getVersionID();
     }
 
@@ -182,7 +182,7 @@ public class VersionRootImpl implements VersionRoot, Serializable
     @Override
     public int hashCode()
     {
-        return fRepository.hashCode() + fVersionID;
+        return fAVMStore.hashCode() + fVersionID;
     }
 }
 

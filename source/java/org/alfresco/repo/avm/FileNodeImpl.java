@@ -33,10 +33,10 @@ abstract class FileNodeImpl extends AVMNodeImpl implements FileNode
     /**
      * Pass through constructor.
      * @param id The newly assigned object id.
-     * @param repo The repository we belong to.
+     * @param store The AVMStore we belong to.
      */
-    public FileNodeImpl(long id, Repository repo)
+    public FileNodeImpl(long id, AVMStore store)
     {
-        super(id, repo);
+        super(id, store);
     }
 }

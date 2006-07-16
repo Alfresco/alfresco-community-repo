@@ -29,14 +29,14 @@ import java.util.List;
 class Lookup
 {
     /**
-     * The Repository.
+     * The AVMStore.
      */
-    private RepositoryImpl fRepository;
+    private AVMStore fAVMStore;
 
     /**
-     * The name of the Repository.
+     * The name of the AVMStore.
      */
-    private String fRepName;
+    private String fStoreName;
     
     /**
      * The components that make up this path.
@@ -81,13 +81,13 @@ class Lookup
     
     /**
      * Create a new one.
-     * @param repository The Repository that's being looked in.
-     * @param repName The name of that Repsository.
+     * @param store The AVMStore that's being looked in.
+     * @param storeName The name of that AVMStore.
      */
-    public Lookup(RepositoryImpl repository, String repName)
+    public Lookup(AVMStore store, String storeName)
     {
-        fRepository = repository;
-        fRepName = repName;
+        fAVMStore = store;
+        fStoreName = storeName;
         fComponents = new ArrayList<LookupComponent>();
         fLayeredYet = false;
         fTopLayer = null;
@@ -178,14 +178,13 @@ class Lookup
         if (fNeedsCopying)
         {
             node = node.copy(this);
-            node.setVersionID(fRepository.getNextVersionID());
+            node.setVersionID(fAVMStore.getNextVersionID());
             fComponents.get(fPosition).setNode(node);
             if (fPosition == 0)
             {
-                // Inform the repository of a new root.
-                fRepository.setNewRoot((DirectoryNode)node);
-                AVMContext.fgInstance.fRepositoryDAO.update(fRepository);
-                // TODO More Hibernate weirdness to figure out: SuperRepository.GetInstance().getSession().flush();
+                // Inform the store of a new root.
+                fAVMStore.setNewRoot((DirectoryNode)node);
+                AVMContext.fgInstance.fAVMStoreDAO.update(fAVMStore);
                 return;
             }
             // Not the root. Check if we are the top layer and insert this into it's parent.
@@ -302,12 +301,12 @@ class Lookup
     }
     
     /**
-     * Get the repository that this path is in.
-     * @return The repository.
+     * Get the store that this path is in.
+     * @return The store.
      */
-    public Repository getRepository()
+    public AVMStore getAVMStore()
     {
-        return fRepository;
+        return fAVMStore;
     }
     
     /**
@@ -318,10 +317,10 @@ class Lookup
     {
         if (fComponents.size() == 1)
         {
-            return fRepName + ":/";
+            return fStoreName + ":/";
         }
         StringBuilder builder = new StringBuilder();
-        builder.append(fRepName);
+        builder.append(fStoreName);
         builder.append(':');
         int count = fComponents.size();
         for (int i = 1; i < count; i++)

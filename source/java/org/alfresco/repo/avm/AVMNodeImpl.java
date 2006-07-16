@@ -60,10 +60,10 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     /**
      * Constructor used when creating a new concrete subclass instance.
      * @param id The object id.
-     * @param repo The Repository that owns this.
+     * @param store The AVMStore that owns this.
      */
     protected AVMNodeImpl(long id,
-                          Repository repo)
+                          AVMStore store)
     {
         fID = id;
         fVersionID = -1;
@@ -216,7 +216,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public boolean getIsNew()
     {
-        return AVMContext.fgInstance.fNewInRepositoryDAO.getByNode(this) != null;
+        return AVMContext.fgInstance.fNewInAVMStoreDAO.getByNode(this) != null;
     }
  
     /**

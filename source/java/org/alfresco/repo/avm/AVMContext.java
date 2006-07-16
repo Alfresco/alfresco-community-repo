@@ -31,9 +31,9 @@ public class AVMContext
     public AVMNodeDAO fAVMNodeDAO;
     
     /**
-     *  The Repository DAO.
+     *  The AVMStore DAO.
      */
-    public RepositoryDAO fRepositoryDAO;
+    public AVMStoreDAO fAVMStoreDAO;
     
     /**
      * The VersionRootDAO.
@@ -66,9 +66,9 @@ public class AVMContext
     public DeletedChildDAO fDeletedChildDAO;
 
     /**
-     * The NewInRepositoryDAO
+     * The NewInAVMStoreDAO
      */
-    public NewInRepositoryDAO fNewInRepositoryDAO;
+    public NewInAVMStoreDAO fNewInAVMStoreDAO;
     
     /**
      * @param nodeDAO the fAVMNodeDAO to set
@@ -119,11 +119,11 @@ public class AVMContext
     }
 
     /**
-     * @param repositoryDAO the fRepositoryDAO to set
+     * @param aVMStore the fAVMStoreDAO to set
      */
-    public void setRepositoryDAO(RepositoryDAO repositoryDAO)
+    public void setAvmStoreDAO(AVMStoreDAO aVMStoreDAO)
     {
-        fRepositoryDAO = repositoryDAO;
+        fAVMStoreDAO = aVMStoreDAO;
     }
 
     /**
@@ -143,10 +143,10 @@ public class AVMContext
     }
     
     /**
-     * @param newInRepositoryDAO The DAO to set.
+     * @param newInAVMStoreDAO The DAO to set.
      */
-    public void setNewInRepositoryDAO(NewInRepositoryDAO newInRepositoryDAO)
+    public void setNewInAVMStoreDAO(NewInAVMStoreDAO newInAVMStoreDAO)
     {
-        fNewInRepositoryDAO = newInRepositoryDAO;
+        fNewInAVMStoreDAO = newInAVMStoreDAO;
     }
 }

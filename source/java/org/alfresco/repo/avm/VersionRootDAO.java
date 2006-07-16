@@ -39,33 +39,33 @@ public interface VersionRootDAO
     public void delete(VersionRoot vr);
     
     /**
-     * Get all the version roots in a given repository.
-     * @param rep The repository.
+     * Get all the version roots in a given store.
+     * @param store The store.
      * @return A List of VersionRoots.  In id order.
      */
-    public List<VersionRoot> getAllInRepository(Repository rep);
+    public List<VersionRoot> getAllInAVMStore(AVMStore store);
 
     /**
      * Get the VersionRoot corresponding to the given id.
-     * @param rep The repository
+     * @param store The store
      * @param id The version id.
      * @return The VersionRoot or null if not found.
      */
-    public VersionRoot getByVersionID(Repository rep, int id);
+    public VersionRoot getByVersionID(AVMStore store, int id);
     
     /**
-     * Get the version of a repository by dates.
-     * @param rep The repository.
+     * Get the version of a store by dates.
+     * @param store The store.
      * @param from The starting date.  May be null but not with to null also.
      * @param to The ending date.  May be null but not with from null also.
      * @return A List of VersionRoots.
      */
-    public List<VersionRoot> getByDates(Repository rep, Date from, Date to);
+    public List<VersionRoot> getByDates(AVMStore store, Date from, Date to);
     
     /**
-     * Get the highest numbered version in a repository.
-     * @param rep The repository.
+     * Get the highest numbered version in a store.
+     * @param stor The store.
      * @return The highest numbered version.
      */
-    public VersionRoot getMaxVersion(Repository rep);
+    public VersionRoot getMaxVersion(AVMStore store);
 }

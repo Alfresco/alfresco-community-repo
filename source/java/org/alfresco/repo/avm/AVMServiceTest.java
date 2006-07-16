@@ -689,7 +689,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             out.println("This is testfile2");
             out.close();
             fService.createSnapshot("main");
-            List<VersionDescriptor> versions = fService.getRepositoryVersions("main");
+            List<VersionDescriptor> versions = fService.getAVMStoreVersions("main");
             for (VersionDescriptor version : versions)
             {
                 System.out.println("V:" + version.getVersionID());
@@ -722,7 +722,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             setupBasicTree();
             fService.createBranch(-1, "main:/a", "main:/d/e", "abranch");
             fService.createSnapshot("main");
-            List<VersionDescriptor> versions = fService.getRepositoryVersions("main");
+            List<VersionDescriptor> versions = fService.getAVMStoreVersions("main");
             for (VersionDescriptor version : versions)
             {
                 System.out.println("V:" + version.getVersionID());
@@ -866,15 +866,15 @@ public class AVMServiceTest extends AVMServiceTestBase
     }
    
     /**
-     * Test branching from one repository to another.
+     * Test branching from one AVMStore to another.
      */
     public void testBranchAcross()
     {
         try
         {
             setupBasicTree();
-            fService.createRepository("second");
-            List<RepositoryDescriptor> repos = fService.getRepositories();
+            fService.createAVMStore("second");
+            List<AVMStoreDescriptor> repos = fService.getAVMStores();
             assertEquals(2, repos.size());
             System.out.println(repos.get(0));
             System.out.println(repos.get(1));
@@ -905,14 +905,14 @@ public class AVMServiceTest extends AVMServiceTestBase
     }
     
     /**
-     * Test creating a layer across repositories.
+     * Test creating a layer across AVMStores.
      */
     public void testLayerAcross()
     {
         try
         {
             setupBasicTree();
-            fService.createRepository("second");
+            fService.createAVMStore("second");
             fService.createLayeredDirectory("main:/", "second:/", "main");
             fService.createSnapshot("second");
             System.out.println(recursiveList("second", -1, true));
@@ -935,7 +935,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             line = reader.readLine();
             reader.close();
             assertEquals("I am main:/a/b/c/foo", line);
-            fService.purgeRepository("second");
+            fService.purgeAVMStore("second");
             fService.purgeVersion(1, "main");
         }
         catch (Exception e)
@@ -946,14 +946,14 @@ public class AVMServiceTest extends AVMServiceTestBase
     }
     
     /**
-     * Test rename across repositories.
+     * Test rename across AVMStores.
      */
     public void testRenameAcross()
     {
         try
         {
             setupBasicTree();
-            fService.createRepository("second");
+            fService.createAVMStore("second");
             fService.rename("main:/a/b", "c", "second:/", "cmoved");
             ArrayList<String> toSnapshot = new ArrayList<String>();
             toSnapshot.add("main");
@@ -1823,7 +1823,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            AVMNodeDescriptor desc = fService.getRepositoryRoot(-1, "main");
+            AVMNodeDescriptor desc = fService.getAVMStoreRoot(-1, "main");
             assertNotNull(desc);
             System.out.println(desc.toString());
             AVMNodeDescriptor child = fService.lookup(desc, "a");
@@ -1859,9 +1859,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             loader.recursiveLoad("source/java/org/alfresco/repo/audit", "main:/");
             times.add(System.currentTimeMillis());
             assertEquals(3, fService.createSnapshot("main"));
-            assertEquals(1, fService.getRepositoryVersions("main", null, new Date(times.get(0))).size());
-            assertEquals(3, fService.getRepositoryVersions("main", new Date(times.get(0)), null).size());
-            assertEquals(2, fService.getRepositoryVersions("main", new Date(times.get(1)),
+            assertEquals(1, fService.getAVMStoreVersions("main", null, new Date(times.get(0))).size());
+            assertEquals(3, fService.getAVMStoreVersions("main", new Date(times.get(0)), null).size());
+            assertEquals(2, fService.getAVMStoreVersions("main", new Date(times.get(1)),
                                                            new Date(System.currentTimeMillis())).size());
         }
         catch (Exception e)
@@ -1872,17 +1872,17 @@ public class AVMServiceTest extends AVMServiceTestBase
     }
     
     /**
-     * Test repository functions.
+     * Test AVMStore functions.
      */
-    public void testRepository()
+    public void testAVMStore()
     {
         try
         {
-            // First check that we get the right error when we try to create a
-            // repository that exists.
+            // First check that we get the right error when we try to create an
+            // AVMStore that exists.
             try
             {
-                fService.createRepository("main");
+                fService.createAVMStore("main");
                 fail();
             }
             catch (AVMExistsException ae)
@@ -1890,7 +1890,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                 // Do nothing.
             }
             // Now make sure getRepository() works.
-            RepositoryDescriptor desc = fService.getRepository("main");
+            AVMStoreDescriptor desc = fService.getAVMStore("main");
             assertNotNull(desc);
             System.out.println(desc);
         }

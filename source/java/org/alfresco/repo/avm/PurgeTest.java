@@ -100,9 +100,9 @@ public class PurgeTest extends AVMServiceTestBase
     }    
 
     /**
-     * Test purging an entire repository.
+     * Test purging an entire store.
      */
-    public void testPurgeRepository()
+    public void testPurgeStore()
     {
         try
         {
@@ -118,7 +118,7 @@ public class PurgeTest extends AVMServiceTestBase
             fService.removeNode("main:/layer/java/org/alfresco", "repo");
             fService.createFile("main:/layer/java/org/alfresco", "goofy").close();
             fService.createSnapshot("main");
-            fService.purgeRepository("main");
+            fService.purgeAVMStore("main");
             fReaper.activate();
             while (fReaper.isActive())
             {

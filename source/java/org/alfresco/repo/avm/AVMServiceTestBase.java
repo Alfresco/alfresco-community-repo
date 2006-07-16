@@ -94,8 +94,8 @@ public class AVMServiceTestBase extends TestCase
 
     
     /**
-     * Helper to write a recursive listing of a repository at a given version.
-     * @param repoName The name of the repository.
+     * Helper to write a recursive listing of an AVMStore at a given version.
+     * @param repoName The name of the AVMStore.
      * @param version The version to look under.
      */
     protected String recursiveList(String repoName, int version, boolean followLinks)

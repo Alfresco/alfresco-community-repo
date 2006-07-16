@@ -41,64 +41,64 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     }
 
     /**
-     * Make one from just a repository.
+     * Make one from just an AVMStore.
      * This is the constructor used when a brand new plain file is being made.
-     * @param repos A Repository.
+     * @param store An AVMStore.
      */
-    public PlainFileNodeImpl(Repository repos)
+    public PlainFileNodeImpl(AVMStore store)
     {
-        super(repos.getSuperRepository().issueID(), repos);
-        fContent = new FileContentImpl(SuperRepository.GetInstance().issueContentID());
+        super(store.getAVMRepository().issueID(), store);
+        fContent = new FileContentImpl(AVMRepository.GetInstance().issueContentID());
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
+        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
     
     /**
      * Create a new plain file with given content.
-     * @param repos The repository.
+     * @param store The store.
      * @param content The content to set.
      */
-    public PlainFileNodeImpl(Repository repos, File content)
+    public PlainFileNodeImpl(AVMStore store, File content)
     {
-        super(repos.getSuperRepository().issueID(), repos);
-        fContent = new FileContentImpl(SuperRepository.GetInstance().issueContentID(), content);
+        super(store.getAVMRepository().issueID(), store);
+        fContent = new FileContentImpl(AVMRepository.GetInstance().issueContentID(), content);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
+        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
     
     /**
      * Copy on write constructor.
      * @param other The node we are being copied from.
-     * @param repos The Repository.
+     * @param store The AVMStore.
      */
     public PlainFileNodeImpl(PlainFileNode other,
-                             Repository repos)
+                             AVMStore store)
     {
-        super(repos.getSuperRepository().issueID(), repos);
+        super(store.getAVMRepository().issueID(), store);
         fContent = other.getContent();
         fContent.setRefCount(fContent.getRefCount() + 1);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
+        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
 
     /**
      * Constructor that takes a FileContent to share.
      * @param content The FileContent to share.
-     * @param repos The Repository.
+     * @param store The AVMStore.
      */
     public PlainFileNodeImpl(FileContent content,
-                             Repository repos,
+                             AVMStore store,
                              BasicAttributes oAttrs)
     {
-        super(repos.getSuperRepository().issueID(), repos);
+        super(store.getAVMRepository().issueID(), store);
         fContent = content;
         fContent.setRefCount(fContent.getRefCount() + 1);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
+        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
 
     /**
@@ -107,7 +107,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      */
     public AVMNode copy(Lookup lPath)
     {
-        PlainFileNodeImpl newMe = new PlainFileNodeImpl(this, lPath.getRepository());
+        PlainFileNodeImpl newMe = new PlainFileNodeImpl(this, lPath.getAVMStore());
         newMe.setAncestor(this);
         return newMe;
     }
@@ -135,7 +135,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     {
         if (fContent.getRefCount() > 1)
         {
-            fContent = new FileContentImpl(fContent, SuperRepository.GetInstance().issueContentID());
+            fContent = new FileContentImpl(fContent, AVMRepository.GetInstance().issueContentID());
         }
         return fContent;
     }

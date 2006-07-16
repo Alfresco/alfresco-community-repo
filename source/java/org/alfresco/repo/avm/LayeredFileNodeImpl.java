@@ -41,29 +41,29 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      * Basically a copy constructor. Used when a branch is created
      * from a layered file.
      * @param other The file to make a copy of.
-     * @param repo The repository that contains us.
+     * @param store The store that contains us.
      */
-    public LayeredFileNodeImpl(LayeredFileNode other, Repository repo)
+    public LayeredFileNodeImpl(LayeredFileNode other, AVMStore store)
     {
-        super(repo.getSuperRepository().issueID(), repo);
+        super(store.getAVMRepository().issueID(), store);
         fIndirection = other.getIndirection();
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repo, this));
+        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
 
     /**
      * Make a brand new layered file node.
      * @param indirection The thing we point to.
-     * @param repo The repository we belong to.
+     * @param store The store we belong to.
      */
-    public LayeredFileNodeImpl(String indirection, Repository repo)
+    public LayeredFileNodeImpl(String indirection, AVMStore store)
     {
-        super(repo.getSuperRepository().issueID(), repo);
+        super(store.getAVMRepository().issueID(), store);
         fIndirection = indirection;
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repo, this));
+        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
     
     /**
@@ -73,7 +73,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     public AVMNode copy(Lookup lPath)
     {
         // LayeredFileNodes are always copied.
-        Lookup lookup = SuperRepository.GetInstance().lookup(-1, fIndirection);
+        Lookup lookup = AVMRepository.GetInstance().lookup(-1, fIndirection);
         AVMNode indirect = lookup.getCurrentNode();
         if (indirect.getType() != AVMNodeType.LAYERED_FILE &&
             indirect.getType() != AVMNodeType.PLAIN_FILE)
@@ -83,7 +83,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         // This is a mildly dirty trick.  We use getContentForRead so as not to startle
         // the ultimate destination content into copying itself prematurely.
         FileContent content = ((FileNode)indirect).getContentForRead();
-        PlainFileNodeImpl newMe = new PlainFileNodeImpl(content, lPath.getRepository(), getBasicAttributes());
+        PlainFileNodeImpl newMe = new PlainFileNodeImpl(content, lPath.getAVMStore(), getBasicAttributes());
         newMe.setAncestor(this);
         return newMe;
     }
@@ -103,7 +103,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      */
     public FileContent getContentForRead()
     {
-        Lookup lookup = SuperRepository.GetInstance().lookup(-1, fIndirection);
+        Lookup lookup = AVMRepository.GetInstance().lookup(-1, fIndirection);
         AVMNode node = lookup.getCurrentNode();
         if (node.getType() != AVMNodeType.LAYERED_FILE &&
             node.getType() != AVMNodeType.PLAIN_FILE)

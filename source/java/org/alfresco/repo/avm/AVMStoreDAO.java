@@ -23,36 +23,36 @@ import java.util.List;
  * DAO for Repositories.
  * @author britt
  */
-public interface RepositoryDAO
+public interface AVMStoreDAO
 {
     /**
-     * Save a repository, never before saved.
-     * @param rep The repository
+     * Save an AVMStore, never before saved.
+     * @param store The AVMStore
      */
-    public void save(Repository rep);
+    public void save(AVMStore store);
     
     /**
-     * Delete the given Repository.
-     * @param rep The Repository.
+     * Delete the given AVMStore.
+     * @param store The AVMStore.
      */
-    public void delete(Repository rep);
+    public void delete(AVMStore store);
     
     /**
-     * Get all repositories.
-     * @return A List of all the Repositories.
+     * Get all AVMStores.
+     * @return A List of all the AVMStores.
      */
-    public List<Repository> getAll();
+    public List<AVMStore> getAll();
 
     /**
-     * Get a repository by name.
-     * @param name The name of the repository.
-     * @return The repository or null if not found.
+     * Get an AVMStore by name.
+     * @param name The name of the AVMStore.
+     * @return The AVMStore or null if not found.
      */
-    public Repository getByName(String name);
+    public AVMStore getByName(String name);
     
     /**
-     * Update the given Repository record.
-     * @param rep The dirty Repository.
+     * Update the given AVMStore record.
+     * @param rep The dirty AVMStore.
      */
-    public void update(Repository rep);
+    public void update(AVMStore rep);
 }

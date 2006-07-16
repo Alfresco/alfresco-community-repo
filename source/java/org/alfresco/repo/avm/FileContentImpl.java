@@ -286,7 +286,7 @@ class FileContentImpl implements FileContent, Serializable
                     (fID & 0xff0000) >> 16,
                     (fID & 0xff00) >> 8);
         String dir = form.toString();
-        fPath = SuperRepository.GetInstance().getStorageRoot() + dir;
+        fPath = AVMRepository.GetInstance().getStorageRoot() + dir;
         fName = fPath + "/" + name;
     }
     

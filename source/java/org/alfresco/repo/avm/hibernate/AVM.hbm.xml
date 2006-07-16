@@ -99,12 +99,12 @@
 		<property name="refCount" column="ref_count" type="int"
 			not-null="true"/>
 	</class>
-	<!-- A Repository is the what we used to call a virtual repository. 
-		 Each Repository has it's own branch ids and layer ids but shares node ids
+	<!-- A store is the what we used to call a virtual repository. 
+		 Each store has it's own branch ids and layer ids but shares node ids
 		 with other repositories.  The physical repository is structured this way
 		 for better scaling. -->
-	<class table="repositories" name="RepositoryImpl"
-		proxy="Repository" optimistic-lock="version">
+	<class table="avm_repositories" name="AVMStoreImpl"
+		proxy="AVMStore" optimistic-lock="version">
 		<cache usage="read-write"/>
 		<id name="name" column="name" type="string"/>
 		<version name="vers" column="vers" type="long"/>
@@ -112,7 +112,7 @@
 			column="next_version_id" not-null="true"/>
 		<property type="string" name="creator" column="creator" not-null="true"/>
 		<property type="long" name="createDate" column="create_date" not-null="true"/>
-		<!-- Every Repository has a root directory that is the current root directory. -->
+		<!-- Every AVMStore has a root directory that is the current root directory. -->
 		<!-- This should be not-null but hibernate (or my own idiocy) makes that difficult. -->
 		<many-to-one name="root" class="DirectoryNodeImpl"
 			column="current_root_id" unique="true" cascade="save-update">
@@ -131,8 +131,8 @@
 		<property name="creator" type="string" column="creator"
 			not-null="true">
 		</property>
-		<many-to-one name="repository" column="repository_id"
-			class="RepositoryImpl" not-null="true">
+		<many-to-one name="avmStore" column="avm_store_id"
+			class="AVMStoreImpl" not-null="true">
 		</many-to-one>
 		<many-to-one name="root" class="DirectoryNodeImpl"
 			column="root_id" not-null="true">
@@ -171,9 +171,9 @@
 			<key-many-to-one name="mto" class="AVMNodeImpl" column="mto"/>
 		</composite-id>
 	</class>
-	<class name="NewInRepositoryImpl" proxy="NewInRepository" table="new_in_repository_nodes">
+	<class name="NewInAVMStoreImpl" proxy="NewInAVMStore" table="new_in_avm_store_nodes">
 		<composite-id>
-			<key-many-to-one name="repository" class="RepositoryImpl" column="repository_id"/>
+			<key-many-to-one name="avmStore" class="AVMStoreImpl" column="avm_store_id"/>
 			<key-many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
 		</composite-id>
 	</class>
@@ -204,10 +204,10 @@
     	where ce.parent = :parent
     ]]>
     </query>
-    <query name="AVMNode.ByNewInRepo">
+    <query name="AVMNode.ByNewInAVMStore">
     <![CDATA[
-    	from NewInRepositoryImpl nie
-    	where nie.repository = :rep
+    	from NewInAVMStoreImpl nie
+    	where nie.avmStore = :store
     ]]>
     </query>
     <query name="AVMNode.GetDescendents">
@@ -241,14 +241,14 @@
     	select v.root
     	from VersionRootImpl v
     	where
-    		v.repository = :rep and v.versionID = :version
+    		v.avmStore = :store and v.versionID = :version
     ]]>
     </query>
     <query name="VersionRoot.VersionByID">
     <![CDATA[
     	from VersionRootImpl v
     	where
-    		v.repository = :rep and v.versionID = :version
+    		v.avmStore = :store and v.versionID = :version
     ]]>
     </query>
     <query name="DeletedChild.ByNameParent">

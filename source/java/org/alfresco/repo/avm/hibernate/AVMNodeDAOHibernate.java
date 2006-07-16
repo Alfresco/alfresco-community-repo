@@ -25,7 +25,7 @@ import org.alfresco.repo.avm.AVMNodeDAO;
 import org.alfresco.repo.avm.AVMNodeImpl;
 import org.alfresco.repo.avm.AVMNodeUnwrapper;
 import org.alfresco.repo.avm.DirectoryNode;
-import org.alfresco.repo.avm.Repository;
+import org.alfresco.repo.avm.AVMStore;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -81,15 +81,15 @@ public class AVMNodeDAOHibernate extends HibernateDaoSupport implements
     
     /**
      * Get the root of a particular version.
-     * @param rep The repository we're querying.
+     * @param store The store we're querying.
      * @param version The version.
      * @return The VersionRoot or null.
      */
-    public DirectoryNode getRepositoryRoot(Repository rep, int version)
+    public DirectoryNode getAVMStoreRoot(AVMStore store, int version)
     {
         Query query = 
             getSession().getNamedQuery("VersionRoot.GetVersionRoot");
-        query.setEntity("rep", rep);
+        query.setEntity("store", store);
         query.setInteger("version", version);
         AVMNode root = (AVMNode)query.uniqueResult();
         if (root == null)
@@ -134,19 +134,6 @@ public class AVMNodeDAOHibernate extends HibernateDaoSupport implements
         Query query = getSession().getNamedQuery("FindOrphans");
         query.setMaxResults(batchSize);
         return (List<AVMNode>)query.list();
-    }
-
-    /**
-     * Get all nodes that have the given repository as their owning repository.
-     * @param rep The Repository.
-     * @return An Iterator over the matching nodes.
-     */
-    @SuppressWarnings("unchecked")
-    public Iterator<AVMNode> getByRepository(Repository rep)
-    {
-        Query query = getSession().createQuery("from AVMNodeImpl an where an.repository = :rep");
-        query.setEntity("rep", rep);
-        return (Iterator<AVMNode>)query.iterate();
     }
 
     /**

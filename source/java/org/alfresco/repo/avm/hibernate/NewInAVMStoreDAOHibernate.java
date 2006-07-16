@@ -20,24 +20,24 @@ package org.alfresco.repo.avm.hibernate;
 import java.util.List;
 
 import org.alfresco.repo.avm.AVMNode;
-import org.alfresco.repo.avm.NewInRepository;
-import org.alfresco.repo.avm.NewInRepositoryDAO;
-import org.alfresco.repo.avm.Repository;
+import org.alfresco.repo.avm.NewInAVMStore;
+import org.alfresco.repo.avm.NewInAVMStoreDAO;
+import org.alfresco.repo.avm.AVMStore;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
- * Hibernate implementation of NewInRepository DAO.
+ * Hibernate implementation of NewInAVMStore DAO.
  * @author britt
  */
-public class NewInRepositoryDAOHibernate extends HibernateDaoSupport implements
-        NewInRepositoryDAO
+public class NewInAVMStoreDAOHibernate extends HibernateDaoSupport implements
+        NewInAVMStoreDAO
 {
     /**
      * Save one.
      * @param newEntry The item to save.
      */
-    public void save(NewInRepository newEntry)
+    public void save(NewInAVMStore newEntry)
     {
         getSession().save(newEntry);
     }
@@ -47,31 +47,31 @@ public class NewInRepositoryDAOHibernate extends HibernateDaoSupport implements
      * @param node The node to lookup with.
      * @return The Entry or null if not found.
      */
-    public NewInRepository getByNode(AVMNode node)
+    public NewInAVMStore getByNode(AVMNode node)
     {
-        Query query = getSession().createQuery("from NewInRepositoryImpl nie where nie.node = :node");
+        Query query = getSession().createQuery("from NewInAVMStoreImpl nie where nie.node = :node");
         query.setEntity("node", node);
-        return (NewInRepository)query.uniqueResult();
+        return (NewInAVMStore)query.uniqueResult();
     }
 
     /**
-     * Get all that are in the given repository.
-     * @param repository The Repository.
-     * @return A List of NewInRepositorys.
+     * Get all that are in the given store.
+     * @param store The AVMStore.
+     * @return A List of NewInAVMStores.
      */
     @SuppressWarnings("unchecked")
-    public List<NewInRepository> getByRepository(Repository repository)
+    public List<NewInAVMStore> getByAVMStore(AVMStore store)
     {
-        Query query = getSession().createQuery("from NewInRepositoryImpl nie where nie.repository = :rep");
-        query.setEntity("rep", repository);
-        return (List<NewInRepository>)query.list();
+        Query query = getSession().createQuery("from NewInAVMStoreImpl nie where nie.avmStore = :store");
+        query.setEntity("store", store);
+        return (List<NewInAVMStore>)query.list();
     }
     
     /**
      * Delete the given entry.
      * @param newEntry The entry to delete.
      */
-    public void delete(NewInRepository newEntry)
+    public void delete(NewInAVMStore newEntry)
     {
         getSession().delete(newEntry);
     }

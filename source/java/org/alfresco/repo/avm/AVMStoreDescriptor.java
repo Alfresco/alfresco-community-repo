@@ -20,10 +20,10 @@ package org.alfresco.repo.avm;
 import java.util.Date;
 
 /**
- * A value class for Data about a repository.
+ * A value class for Data about an AVMStore.
  * @author britt
  */
-public class RepositoryDescriptor
+public class AVMStoreDescriptor
 {
     /**
      * The name.
@@ -40,7 +40,7 @@ public class RepositoryDescriptor
      */
     private long fCreateDate;
     
-    public RepositoryDescriptor(String name,
+    public AVMStoreDescriptor(String name,
                                 String creator,
                                 long createDate)
     {

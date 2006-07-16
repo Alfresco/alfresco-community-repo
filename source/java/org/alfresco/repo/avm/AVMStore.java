@@ -25,27 +25,27 @@ import java.util.List;
 import java.util.SortedMap;
 
 /**
- * The repository interface.  Methods for filesystem like, versioning,
+ * The store interface.  Methods for filesystem like, versioning,
  * and layering operations.
  * @author britt
  */
-public interface Repository
+public interface AVMStore
 {
     /**
-     * This returns the next version in this repository that will be snapshotted.
+     * This returns the next version in this store that will be snapshotted.
      * @return The next version to be snapshotted.
      */
     public int getNextVersionID();
 
     /**
-     * Set a new root for this repository.
+     * Set a new root for this store.
      * @param root The root to set.
      */
     public void setNewRoot(DirectoryNode root);
 
     /**
-     * Snapshots this repository.  This sets all nodes in the
-     * the repository to the should be copied state, and creates
+     * Snapshots this store.  This sets all nodes in the
+     * the store to the should be copied state, and creates
      * a new version root.
      * @return The version id of the newly created snapshot.
      */
@@ -142,7 +142,7 @@ public interface Repository
     // provide methods for getting versions by date range, n most 
     // recent etc.
     /**
-     * Get all the version for this repository.
+     * Get all the version for this AVMStore.
      * @return A Set of all versions.
      */
     public List<VersionDescriptor> getVersions();
@@ -157,10 +157,10 @@ public interface Repository
     public List<VersionDescriptor> getVersions(Date from, Date to);
 
     /**
-     * Get the super repository.
-     * @return The SuperRepository.
+     * Get the AVMRepository.
+     * @return The AVMRepository.
      */
-    public SuperRepository getSuperRepository();
+    public AVMRepository getAVMRepository();
 
     /**
      * Lookup a node.
@@ -190,7 +190,7 @@ public interface Repository
 
     /**
      * Make the indicated directory a primary indirection.
-     * @param path The Repository relative path.
+     * @param path The AVMRepository relative path.
      */
     public void makePrimary(String path);
 
@@ -202,7 +202,7 @@ public interface Repository
     public void retargetLayeredDirectory(String path, String target);
     
     /**
-     * Get the root directory of this Repository.
+     * Get the root directory of this AVMStore.
      * @return The root directory.
      */
     public DirectoryNode getRoot();
@@ -215,7 +215,7 @@ public interface Repository
     public AVMNodeDescriptor getRoot(int version);
     
     /**
-     * Get the name of this repository.
+     * Get the name of this store.
      * @return The name.
      */
     public String getName();
@@ -254,7 +254,7 @@ public interface Repository
      * Get the descriptor for this.
      * @return The descriptor.
      */
-    public RepositoryDescriptor getDescriptor();
+    public AVMStoreDescriptor getDescriptor();
     
     /**
      * Set the opacity of a layered directory. An opaque directory hides

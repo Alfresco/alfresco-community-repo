@@ -32,14 +32,14 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
 
     /**
      * Make up a new directory with nothing in it.
-     * @param repo
+     * @param store
      */
-    public PlainDirectoryNodeImpl(Repository repo)
+    public PlainDirectoryNodeImpl(AVMStore store)
     {
-        super(repo.getSuperRepository().issueID(), repo);
+        super(store.getAVMRepository().issueID(), store);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repo, this));
+        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
     
     /**
@@ -52,13 +52,13 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     /**
      * Copy like constructor.
      * @param other The other directory.
-     * @param repos The Repository Object that will own us.
+     * @param repos The AVMStore Object that will own us.
      */
     @SuppressWarnings("unchecked")
     public PlainDirectoryNodeImpl(PlainDirectoryNode other,
-                                  Repository repos)
+                                  AVMStore store)
     {
-        super(repos.getSuperRepository().issueID(), repos);
+        super(store.getAVMRepository().issueID(), store);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         for (ChildEntry child : AVMContext.fgInstance.fChildEntryDAO.getByParent(other))
         {
@@ -68,7 +68,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             AVMContext.fgInstance.fChildEntryDAO.save(newChild);
         }
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
+        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
 
     /**
@@ -209,13 +209,13 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             // Subtlety warning: This distinguishes the case of a 
             // Directory that was branched into the layer and one
             // that is indirectly seen in this layer.
-            newMe = new LayeredDirectoryNodeImpl(this, lPath.getRepository(), lPath,
+            newMe = new LayeredDirectoryNodeImpl(this, lPath.getAVMStore(), lPath,
                                                  lPath.isInThisLayer());
             ((LayeredDirectoryNodeImpl)newMe).setLayerID(lPath.getTopLayer().getLayerID());
         }
         else
         {
-            newMe = new PlainDirectoryNodeImpl(this, lPath.getRepository());
+            newMe = new PlainDirectoryNodeImpl(this, lPath.getAVMStore());
         }
         newMe.setAncestor(this);
         return newMe;

@@ -35,12 +35,12 @@ import java.util.TreeMap;
  * operation.
  * @author britt
  */
-public class RepositoryImpl implements Repository, Serializable
+public class AVMStoreImpl implements AVMStore, Serializable
 {
     static final long serialVersionUID = -1485972568675732904L;
 
     /**
-     * The name of this repository.
+     * The name of this AVMStore.
      */
     private String fName;
     
@@ -60,9 +60,9 @@ public class RepositoryImpl implements Repository, Serializable
     private long fVers;
     
     /**
-     * The super repository.
+     * The AVMRepository.
      */
-    transient private SuperRepository fSuper;
+    transient private AVMRepository fAVMRepository;
     
     /**
      * The creator.
@@ -77,26 +77,26 @@ public class RepositoryImpl implements Repository, Serializable
     /**
      * Default constructor.
      */
-    protected RepositoryImpl()
+    protected AVMStoreImpl()
     {
-        fSuper = SuperRepository.GetInstance();
+        fAVMRepository = AVMRepository.GetInstance();
     }
     
     /**
-     * Make a brand new repository.
-     * @param superRepo The SuperRepository.
-     * @param name The name of the Repository.
+     * Make a brand new AVMStore.
+     * @param repo The AVMRepository.
+     * @param name The name of the AVMStore.
      */
-    public RepositoryImpl(SuperRepository superRepo, String name)
+    public AVMStoreImpl(AVMRepository repo, String name)
     {
         // Make ourselves up and save.
-        fSuper = superRepo;
+        fAVMRepository = repo;
         fName = name;
         fNextVersionID = 0;
         fRoot = null;
         fCreator = "britt";
         fCreateDate = System.currentTimeMillis();
-        AVMContext.fgInstance.fRepositoryDAO.save(this);
+        AVMContext.fgInstance.fAVMStoreDAO.save(this);
         // Make up the initial version record and save.
         long time = System.currentTimeMillis();
         fRoot = new PlainDirectoryNodeImpl(this);
@@ -122,7 +122,7 @@ public class RepositoryImpl implements Repository, Serializable
     }
 
     /**
-     * Snapshot this repository.  This creates a new version record.
+     * Snapshot this store.  This creates a new version record.
      * @return The version id of the new snapshot.
      */
     @SuppressWarnings("unchecked")
@@ -134,10 +134,10 @@ public class RepositoryImpl implements Repository, Serializable
             throw new AVMExistsException("Already snapshotted.");
         }
         // Clear out the new nodes.
-        List<NewInRepository> newInRep = AVMContext.fgInstance.fNewInRepositoryDAO.getByRepository(this);
-        for (NewInRepository newGuy : newInRep)
+        List<NewInAVMStore> newInRep = AVMContext.fgInstance.fNewInAVMStoreDAO.getByAVMStore(this);
+        for (NewInAVMStore newGuy : newInRep)
         {
-            AVMContext.fgInstance.fNewInRepositoryDAO.delete(newGuy);
+            AVMContext.fgInstance.fNewInAVMStoreDAO.delete(newGuy);
         }
         // Make up a new version record.
         VersionRoot versionRoot = new VersionRootImpl(this,
@@ -210,7 +210,7 @@ public class RepositoryImpl implements Repository, Serializable
         else
         {
             // Otherwise we issue a brand new layer id.
-            newDir.setLayerID(fSuper.issueLayerID());
+            newDir.setLayerID(fAVMRepository.issueLayerID());
         }
         dir.putChild(name, newDir);
         dir.updateModTime();
@@ -415,13 +415,13 @@ public class RepositoryImpl implements Repository, Serializable
     // provide methods for getting versions by date range, n most 
     // recent etc.
     /**
-     * Get the set of all extant versions for this Repository.
+     * Get the set of all extant versions for this AVMStore.
      * @return A Set of version ids.
      */
     @SuppressWarnings("unchecked")
     public List<VersionDescriptor> getVersions()
     {
-        List<VersionRoot> versions = AVMContext.fgInstance.fVersionRootDAO.getAllInRepository(this);
+        List<VersionRoot> versions = AVMContext.fgInstance.fVersionRootDAO.getAllInAVMStore(this);
         List<VersionDescriptor> descs = new ArrayList<VersionDescriptor>();
         for (VersionRoot vr : versions)
         {
@@ -460,12 +460,12 @@ public class RepositoryImpl implements Repository, Serializable
     }
 
     /**
-     * Get the SuperRepository.
-     * @return The SuperRepository
+     * Get the AVMRepository.
+     * @return The AVMRepository
      */
-    public SuperRepository getSuperRepository()
+    public AVMRepository getAVMRepository()
     {
-        return fSuper;
+        return fAVMRepository;
     }
 
     /**
@@ -498,7 +498,7 @@ public class RepositoryImpl implements Repository, Serializable
         }
         else
         {
-            dir = AVMContext.fgInstance.fAVMNodeDAO.getRepositoryRoot(this, version);
+            dir = AVMContext.fgInstance.fAVMNodeDAO.getAVMStoreRoot(this, version);
         }
         // Add an entry for the root.
         result.add(dir, "", write);
@@ -549,7 +549,7 @@ public class RepositoryImpl implements Repository, Serializable
         }
         else
         {
-            root = AVMContext.fgInstance.fAVMNodeDAO.getRepositoryRoot(this, version);
+            root = AVMContext.fgInstance.fAVMNodeDAO.getAVMStoreRoot(this, version);
         }            
         return root.getDescriptor("main:", "", null);
     }
@@ -631,7 +631,7 @@ public class RepositoryImpl implements Repository, Serializable
     }
     
     /**
-     * Set the name of this repository.  Hibernate.
+     * Set the name of this AVMStore.  Hibernate.
      * @param name
      */
     protected void setName(String name)
@@ -640,7 +640,7 @@ public class RepositoryImpl implements Repository, Serializable
     }
     
     /**
-     * Get the name of this Repository.
+     * Get the name of this AVMStore.
      * @return The name.
      */
     public String getName()
@@ -714,11 +714,11 @@ public class RepositoryImpl implements Repository, Serializable
         {
             return true;
         }
-        if (!(obj instanceof Repository))
+        if (!(obj instanceof AVMStore))
         {
             return false;
         }
-        return fName.equals(((Repository)obj).getName());
+        return fName.equals(((AVMStore)obj).getName());
     }
 
     /**
@@ -757,7 +757,7 @@ public class RepositoryImpl implements Repository, Serializable
             // TODO More hibernate goofiness to compensate for: fSuper.getSession().flush();
             vRoot = AVMContext.fgInstance.fVersionRootDAO.getMaxVersion(this);
             fRoot = vRoot.getRoot();
-            AVMContext.fgInstance.fRepositoryDAO.update(this);
+            AVMContext.fgInstance.fAVMStoreDAO.update(this);
         }
     }
 
@@ -799,11 +799,11 @@ public class RepositoryImpl implements Repository, Serializable
 
     /**
      * Get the descriptor for this.
-     * @return A RepositoryDescriptor
+     * @return An AVMStoreDescriptor
      */
-    public RepositoryDescriptor getDescriptor()
+    public AVMStoreDescriptor getDescriptor()
     {
-        return new RepositoryDescriptor(fName, fCreator, fCreateDate);
+        return new AVMStoreDescriptor(fName, fCreator, fCreateDate);
     }
 
     /**

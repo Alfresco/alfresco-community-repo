@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.SortedMap;
 
-import org.alfresco.repo.avm.SuperRepository;
+import org.alfresco.repo.avm.AVMRepository;
 import org.apache.log4j.Logger;
 
 /**
@@ -44,9 +44,9 @@ public class AVMServiceImpl implements AVMService
     private RetryingTransaction fTransaction;
     
     /**
-     * The SuperRepository for each service thread.
+     * The AVMRepository for each service thread.
      */
-    private SuperRepository fSuperRepository;
+    private AVMRepository fAVMRepository;
     
     /**
      * The storage directory.
@@ -102,11 +102,11 @@ public class AVMServiceImpl implements AVMService
                     fLayerIssuer = new Issuer(val == null ? 0L : val + 1L);
                 }
             }, false);
-            fSuperRepository = new SuperRepository(fNodeIssuer,
+            fAVMRepository = new AVMRepository(fNodeIssuer,
                                                    fContentIssuer,
                                                    fLayerIssuer,
                                                    fStorage);
-            fgLogger.info("Initialized AVMService and SuperRepository");
+            fgLogger.info("Initialized AVMService and AVMRepository");
         }
         catch (Exception e)
         {
@@ -117,8 +117,8 @@ public class AVMServiceImpl implements AVMService
         {
             File storageDir = new File(fStorage);
             storageDir.mkdirs();
-            createRepository("main");
-            fgLogger.info("Created new main repository");
+            createAVMStore("main");
+            fgLogger.info("Created new main AVMStore");
         }
     }
     
@@ -141,7 +141,7 @@ public class AVMServiceImpl implements AVMService
     }
     
     /**
-     * Set whether we should create an initial repository.
+     * Set whether we should create an initial AVMStore.
      * @param initialize
      */
     public void setInitialize(boolean initialize)
@@ -168,7 +168,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                in = fSuperRepository.getInputStream(version, path);
+                in = fAVMRepository.getInputStream(version, path);
             }
         };
         TxnCallback doit = new TxnCallback();
@@ -193,7 +193,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                in = fSuperRepository.getInputStream(desc);
+                in = fAVMRepository.getInputStream(desc);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -216,7 +216,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                out = fSuperRepository.getOutputStream(path);
+                out = fAVMRepository.getOutputStream(path);
             }
         };
         TxnCallback doit = new TxnCallback();
@@ -243,7 +243,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                file = fSuperRepository.getRandomAccess(version, path, access);
+                file = fAVMRepository.getRandomAccess(version, path, access);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -269,7 +269,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                listing = fSuperRepository.getListing(version, path);
+                listing = fAVMRepository.getListing(version, path);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -294,7 +294,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                listing = fSuperRepository.getListing(dir);
+                listing = fAVMRepository.getListing(dir);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -320,7 +320,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                out = fSuperRepository.createFile(path, name);
+                out = fAVMRepository.createFile(path, name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -365,7 +365,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.createFile(path, name, temp);
+                fAVMRepository.createFile(path, name, temp);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -394,7 +394,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.createDirectory(path, name);
+                fAVMRepository.createDirectory(path, name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -417,7 +417,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.createLayeredFile(srcPath, parent, name);
+                fAVMRepository.createLayeredFile(srcPath, parent, name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -440,7 +440,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.createLayeredDirectory(srcPath, parent, name);
+                fAVMRepository.createLayeredDirectory(srcPath, parent, name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -448,10 +448,10 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
-     * Create a repository with the given name.  It must not exist.
-     * @param name The name to give the repository.   
+     * Create an AVMStore with the given name.  It must not exist.
+     * @param name The name to give the AVMStore.   
      */
-    public void createRepository(final String name)
+    public void createAVMStore(final String name)
     {
         if (name == null)
         {
@@ -461,7 +461,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.createRepository(name);
+                fAVMRepository.createAVMStore(name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -486,7 +486,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.createBranch(version, srcPath, dstPath, name);
+                fAVMRepository.createBranch(version, srcPath, dstPath, name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -509,7 +509,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.remove(parent, name);
+                fAVMRepository.remove(parent, name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -534,7 +534,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.rename(srcParent, srcName, dstParent, dstName);
+                fAVMRepository.rename(srcParent, srcName, dstParent, dstName);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -556,7 +556,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.uncover(dirPath, name);
+                fAVMRepository.uncover(dirPath, name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -564,8 +564,8 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
-     * Get the Latest Version ID for a repository.
-     * @param repName The name of the repository.
+     * Get the Latest Version ID for an AVMStore.
+     * @param repName The name of the AVMStore.
      * @return The Latest Version ID.
      */
     public int getLatestVersionID(final String repName)
@@ -580,7 +580,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                latestVersionID = fSuperRepository.getLatestVersionID(repName);
+                latestVersionID = fAVMRepository.getLatestVersionID(repName);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -589,15 +589,15 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
-     * Create snapshots of a group of repositories.
-     * @param repositories A List of repository name.
+     * Create snapshots of a group of AVMStores.
+     * @param stores A List of AVMStore names.
      * @return A List of the new version ids.
      */
-    public List<Integer> createSnapshot(final List<String> repositories)
+    public List<Integer> createSnapshot(final List<String> stores)
     {
-        if (repositories == null)
+        if (stores == null)
         {
-            throw new AVMBadArgumentException("Repositories is null.");
+            throw new AVMBadArgumentException("Stores is null.");
         }
         class TxnCallback implements RetryingTransactionCallback
         {
@@ -605,7 +605,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                versionIDs = fSuperRepository.createSnapshot(repositories);
+                versionIDs = fAVMRepository.createSnapshot(stores);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -614,15 +614,15 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
-     * Snapshot a repository.
-     * @param repository The name of the repository.
+     * Snapshot an AVMRepository.
+     * @param store The name of the AVMStore.
      * @return The id of the new version.
      */
-    public int createSnapshot(final String repository)
+    public int createSnapshot(final String store)
     {
-        if (repository == null)
+        if (store == null)
         {
-            throw new AVMBadArgumentException("Repository is null.");
+            throw new AVMBadArgumentException("Store is null.");
         }
         class TxnCallback implements RetryingTransactionCallback
         {
@@ -630,7 +630,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                versionID = fSuperRepository.createSnapshot(repository);
+                versionID = fAVMRepository.createSnapshot(store);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -656,7 +656,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                Lookup lookup = fSuperRepository.lookup(version, path);
+                Lookup lookup = fAVMRepository.lookup(version, path);
                 descriptor = lookup.getCurrentNode().getDescriptor(lookup);
             }
         }
@@ -683,7 +683,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                child = fSuperRepository.lookup(dir, name);
+                child = fAVMRepository.lookup(dir, name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -692,11 +692,11 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
-     * Purge a repository.  Permanently delete everything that 
-     * is only referenced in that repository.
-     * @param name The name of the repository to purge.
+     * Purge an AVMStore.  Permanently delete everything that 
+     * is only referenced in that AVMStore.
+     * @param name The name of the AVMStore to purge.
      */
-    public void purgeRepository(final String name)
+    public void purgeAVMStore(final String name)
     {
         if (name == null)
         {
@@ -706,7 +706,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.purgeRepository(name);
+                fAVMRepository.purgeAVMStore(name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -728,7 +728,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.purgeVersion(name, version);
+                fAVMRepository.purgeVersion(name, version);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -753,7 +753,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                indirectionPath = fSuperRepository.getIndirectionPath(version, path);
+                indirectionPath = fAVMRepository.getIndirectionPath(version, path);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -762,11 +762,11 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
-     * Get the extant version ids for a repository.
-     * @param name The name of the repository.
+     * Get the extant version ids for an AVMStore.
+     * @param name The name of the AVMStore.
      * @return A List of VersionDescriptors.
      */
-    public List<VersionDescriptor> getRepositoryVersions(final String name)
+    public List<VersionDescriptor> getAVMStoreVersions(final String name)
     {
         if (name == null)
         {
@@ -778,7 +778,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                versions = fSuperRepository.getRepositoryVersions(name);
+                versions = fAVMRepository.getAVMStoreVersions(name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -789,12 +789,12 @@ public class AVMServiceImpl implements AVMService
     /**
      * Get version IDs by creation date.  From or to may be null but not
      * both.
-     * @param name The name of the repository to search.
+     * @param name The name of the AVMStore to search.
      * @param from The earliest versions to return.
      * @param to The latest versions to return.
      * @return The Set of matching version IDs.
      */
-    public List<VersionDescriptor> getRepositoryVersions(final String name, final Date from, final Date to)
+    public List<VersionDescriptor> getAVMStoreVersions(final String name, final Date from, final Date to)
     {
         if (name == null || (from == null && to == null))
         {
@@ -806,7 +806,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                versions = fSuperRepository.getRepositoryVersions(name, from, to);
+                versions = fAVMRepository.getAVMStoreVersions(name, from, to);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -828,7 +828,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.retargetLayeredDirectory(path, target);
+                fAVMRepository.retargetLayeredDirectory(path, target);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -849,7 +849,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.makePrimary(path);
+                fAVMRepository.makePrimary(path);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -857,18 +857,18 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
-     * Get a list of all Repositories.
-     * @return The repositories.
+     * Get a list of all AVMStores.
+     * @return The AVMStores.
      */
-    public List<RepositoryDescriptor> getRepositories()
+    public List<AVMStoreDescriptor> getAVMStores()
     {
         class TxnCallback implements RetryingTransactionCallback
         {
-            public List<RepositoryDescriptor> reps;
+            public List<AVMStoreDescriptor> reps;
             
             public void perform()
             {
-                reps = fSuperRepository.getRepositories();
+                reps = fAVMRepository.getAVMStores();
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -878,18 +878,18 @@ public class AVMServiceImpl implements AVMService
 
     /**
      * Get a reposotory.
-     * @param name The name of the repository to get.
-     * @return The repositories.
+     * @param name The name of the AVMStore to get.
+     * @return The AVMStore.
      */
-    public RepositoryDescriptor getRepository(final String name)
+    public AVMStoreDescriptor getAVMStore(final String name)
     {
         class TxnCallback implements RetryingTransactionCallback
         {
-            public RepositoryDescriptor desc;
+            public AVMStoreDescriptor desc;
             
             public void perform()
             {
-                desc = fSuperRepository.getRepository(name);
+                desc = fAVMRepository.getAVMStore(name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -898,12 +898,12 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
-     * Get a descriptor for the specified repository root.
+     * Get a descriptor for the specified AVMStore root.
      * @param version The version to get.
-     * @param name The name of the repository.
+     * @param name The name of the AVMStore.
      * @return The root descriptor.
      */
-    public AVMNodeDescriptor getRepositoryRoot(final int version, final String name)
+    public AVMNodeDescriptor getAVMStoreRoot(final int version, final String name)
     {
         if (name == null)
         {
@@ -915,7 +915,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                root = fSuperRepository.getRepositoryRoot(version, name);
+                root = fAVMRepository.getAVMStoreRoot(version, name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -941,7 +941,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                history = fSuperRepository.getHistory(desc, count);
+                history = fAVMRepository.getHistory(desc, count);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -965,7 +965,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fSuperRepository.setOpacity(path, opacity);
+                fAVMRepository.setOpacity(path, opacity);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -995,7 +995,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                ancestor = fSuperRepository.getCommonAncestor(left, right);
+                ancestor = fAVMRepository.getCommonAncestor(left, right);
             }
         }
         TxnCallback doit = new TxnCallback();

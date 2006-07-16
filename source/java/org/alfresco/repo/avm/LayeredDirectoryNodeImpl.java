@@ -65,30 +65,30 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     /**
      * Make a new one from a specified indirection path.
      * @param indirection The indirection path to set.
-     * @param repos The repository that owns this node.
+     * @param store The store that owns this node.
      */
-    public LayeredDirectoryNodeImpl(String indirection, Repository repos)
+    public LayeredDirectoryNodeImpl(String indirection, AVMStore store)
     {
-        super(repos.getSuperRepository().issueID(), repos);
+        super(store.getAVMRepository().issueID(), store);
         fLayerID = -1;
         fIndirection = indirection;
         fPrimaryIndirection = true;
         fOpacity = false;
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
+        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
     
     /**
      * Kind of copy constructor, sort of.
      * @param other The LayeredDirectoryNode we are copied from.
-     * @param repos The Repository object we use.
+     * @param repos The AVMStore object we use.
      */
     @SuppressWarnings("unchecked")
     public LayeredDirectoryNodeImpl(LayeredDirectoryNode other,
-                                    Repository repos)
+                                    AVMStore repos)
     {
-        super(repos.getSuperRepository().issueID(), repos);
+        super(repos.getAVMRepository().issueID(), repos);
         fIndirection = other.getUnderlying();
         fPrimaryIndirection = other.getPrimaryIndirection();
         fLayerID = -1;
@@ -108,23 +108,23 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             AVMContext.fgInstance.fDeletedChildDAO.save(newDel);
         }
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
+        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(repos, this));
     }
     
     /**
      * Construct one from a PlainDirectoryNode.  Called when a COW is performed in a layered
      * context.
      * @param other The PlainDirectoryNode.
-     * @param repos The Repository we should belong to.
+     * @param store The AVMStore we should belong to.
      * @param lPath The Lookup object.
      */
     @SuppressWarnings("unchecked")
     public LayeredDirectoryNodeImpl(PlainDirectoryNode other,
-                                    Repository repos,
+                                    AVMStore store,
                                     Lookup lPath,
                                     boolean copyContents)
     {
-        super(repos.getSuperRepository().issueID(), repos);
+        super(store.getAVMRepository().issueID(), store);
         fIndirection = null;
         fPrimaryIndirection = false;
         fLayerID = -1;
@@ -141,30 +141,30 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             }
         }
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repos, this));
+        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
 
     /**
      * Create a new layered directory based on a directory we are being named from
      * that is in not in the layer of the source lookup.
      * @param dir The directory
-     * @param repo The repository
+     * @param store The store
      * @param srcLookup The source lookup.
      * @param name The name of the target.
      */
     public LayeredDirectoryNodeImpl(DirectoryNode dir,
-                                    Repository repo,
+                                    AVMStore store,
                                     Lookup srcLookup,
                                     String name)
     {
-        super(repo.getSuperRepository().issueID(), repo);
+        super(store.getAVMRepository().issueID(), store);
         fIndirection = srcLookup.getIndirectionPath() + "/" + name;
         fPrimaryIndirection = true;
         fLayerID = -1;
         fOpacity = false;
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInRepositoryDAO.save(new NewInRepositoryImpl(repo, this));
+        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }   
     
     /**
@@ -238,8 +238,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public AVMNode copy(Lookup lPath)
     {
-        // Capture the repository.
-        Repository repo = lPath.getRepository();
+        // Capture the store.
+        AVMStore store = lPath.getAVMStore();
         LayeredDirectoryNodeImpl newMe = null;
         if (!lPath.isInThisLayer())
         {
@@ -247,7 +247,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             // layer.  The following creates a node that will inherit its
             // indirection from its parent.
             newMe = new LayeredDirectoryNodeImpl((String)null, 
-                                                 repo);
+                                                 store);
             newMe.setPrimaryIndirection(false);
             newMe.setLayerID(lPath.getTopLayer().getLayerID());
         }
@@ -255,7 +255,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             // A simple copy is made.
             newMe = new LayeredDirectoryNodeImpl(this,
-                                                 repo);
+                                                 store);
             newMe.setLayerID(getLayerID());
         }
         newMe.setAncestor(this);
@@ -315,7 +315,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             try
             {
-                Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
+                Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
                 DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
                 baseListing = dir.getListing(lookup);
             }
@@ -363,7 +363,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             try
             {
-                Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, dir.getIndirection());
+                Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, dir.getIndirection());
                 DirectoryNode dirNode = (DirectoryNode)lookup.getCurrentNode();
                 Map<String, AVMNode> listing = dirNode.getListing(lookup);
                 for (String name : listing.keySet())
@@ -427,7 +427,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         // Not here so check our indirection.
         try
         {
-            Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
+            Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
             return dir.lookupChild(lookup, name, -1, false);
         }
@@ -471,7 +471,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         try
         {
-            Lookup lookup = SuperRepository.GetInstance().lookupDirectory(-1, mine.getIndirection());
+            Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, mine.getIndirection());
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
             AVMNode child = dir.lookupChild(lookup, name, -1, false);
             if (child == null)

@@ -26,9 +26,9 @@ import java.util.Date;
 public class VersionDescriptor
 {
     /**
-     * The name of the repository this version belongs to.
+     * The name of the store this version belongs to.
      */
-    private String fRepositoryName;
+    private String fAVMStoreName;
     
     /**
      * The version id.
@@ -47,29 +47,29 @@ public class VersionDescriptor
     
     /**
      * New one up.
-     * @param repName The repository name.
+     * @param storeName The store name.
      * @param versionID The version id.
      * @param creator The creator.
      * @param createDate The create date.
      */
-    public VersionDescriptor(String repName,
+    public VersionDescriptor(String storeName,
                              int versionID,
                              String creator,
                              long createDate)
     {
-        fRepositoryName = repName;
+        fAVMStoreName = storeName;
         fVersionID = versionID;
         fCreator = creator;
         fCreateDate = createDate;
     }
     
     /**
-     * Get the repository name.
-     * @return The repository name.
+     * Get the store name.
+     * @return The store name.
      */
-    public String getRepositoryName()
+    public String getAVMStoreName()
     {
-        return fRepositoryName;
+        return fAVMStoreName;
     }
     
     /**
@@ -103,7 +103,7 @@ public class VersionDescriptor
     {
         StringBuilder builder = new StringBuilder();
         builder.append("[");
-        builder.append(fRepositoryName);
+        builder.append(fAVMStoreName);
         builder.append(":");
         builder.append("" + fVersionID);
         builder.append(":");

@@ -36,7 +36,7 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
      * @param id
      * @param repo
      */
-    protected DirectoryNodeImpl(long id, Repository repo)
+    protected DirectoryNodeImpl(long id, AVMStore repo)
     {
         super(id, repo);
     }

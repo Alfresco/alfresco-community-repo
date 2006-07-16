@@ -44,11 +44,11 @@ public interface AVMNodeDAO
 
     /**
      * Get the root of a particular version.
-     * @param rep The repository we're querying.
+     * @param store The store we're querying.
      * @param version The version.
      * @return The VersionRoot or null.
      */
-    public DirectoryNode getRepositoryRoot(Repository rep, int version);
+    public DirectoryNode getAVMStoreRoot(AVMStore store, int version);
 
     /**
      * Update a node that has been dirtied.
@@ -76,13 +76,6 @@ public interface AVMNodeDAO
      * @return A List of orphaned AVMNodes.
      */
     public List<AVMNode> getOrphans(int batchSize);
-    
-    /**
-     * Get all nodes that have the given repository as their owning repository.
-     * @param rep The Repository.
-     * @return An Iterator over the matching nodes.
-     */
-    public Iterator<AVMNode> getByRepository(Repository rep);
     
     /**
      * Inappropriate hack to get Hibernate to play nice.

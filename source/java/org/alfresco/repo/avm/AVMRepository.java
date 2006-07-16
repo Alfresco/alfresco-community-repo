@@ -27,16 +27,16 @@ import java.util.List;
 import java.util.SortedMap;
 
 /**
- * This or Repository are
+ * This or AVMStore are
  * the implementors of the operations specified by AVMService.
  * @author britt
  */
-class SuperRepository
+class AVMRepository
 {
     /**
-     * The single instance of SuperRepository.
+     * The single instance of AVMRepository.
      */
-    private static SuperRepository fgInstance;
+    private static AVMRepository fgInstance;
     
     /**
      * The current lookup count.
@@ -70,7 +70,7 @@ class SuperRepository
      * @param layerIssuer
      * @param storage
      */
-    public SuperRepository(Issuer nodeIssuer,
+    public AVMRepository(Issuer nodeIssuer,
                            Issuer contentIssuer,
                            Issuer layerIssuer,
                            String storage)
@@ -92,7 +92,7 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        Repository rep = getRepositoryByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0], true);
 //        fSession.get().lock(rep, LockMode.UPGRADE);
         return rep.createFile(pathParts[1], name);
     }
@@ -107,7 +107,7 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        Repository rep = getRepositoryByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0], true);
         rep.createFile(pathParts[1], name, data);
     }
     
@@ -120,7 +120,7 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        Repository rep = getRepositoryByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0], true);
         rep.createDirectory(pathParts[1], name);
     }
 
@@ -139,7 +139,7 @@ class SuperRepository
         }
         fLookupCount.set(1);
         String[] pathParts = SplitPath(dstPath);
-        Repository rep = getRepositoryByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0], true);
 //        fSession.get().lock(rep, LockMode.UPGRADE);
         rep.createLayeredDirectory(srcPath, pathParts[1], name);
     }
@@ -154,20 +154,20 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(dstPath);
-        Repository rep = getRepositoryByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0], true);
         rep.createLayeredFile(srcPath, pathParts[1], name);
     }
 
     /**
-     * Create a new repository.
-     * @param name The name to give the new repository.
+     * Create a new AVMStore.
+     * @param name The name to give the new AVMStore.
      */
-    public void createRepository(String name)
+    public void createAVMStore(String name)
     {
         try
         {
-            getRepositoryByName(name, false);
-            throw new AVMExistsException("Repository exists: " + name);
+            getAVMStoreByName(name, false);
+            throw new AVMExistsException("AVMStore exists: " + name);
         }
         catch (AVMNotFoundException anf)
         {
@@ -175,10 +175,10 @@ class SuperRepository
         }
         // Newing up the object causes it to be written to the db.
         @SuppressWarnings("unused") 
-        Repository rep = new RepositoryImpl(this, name);
-        // Special handling for repository creation.
-        NewInRepository newInRep = AVMContext.fgInstance.fNewInRepositoryDAO.getByNode(rep.getRoot());
-        AVMContext.fgInstance.fNewInRepositoryDAO.delete(newInRep);
+        AVMStore rep = new AVMStoreImpl(this, name);
+        // Special handling for AVMStore creation.
+        NewInAVMStore newInRep = AVMContext.fgInstance.fNewInAVMStoreDAO.getByNode(rep.getRoot());
+        AVMContext.fgInstance.fNewInAVMStoreDAO.delete(newInRep);
     }
 
     /**
@@ -197,12 +197,12 @@ class SuperRepository
         // Lookup the src node.
         fLookupCount.set(1);
         String [] pathParts = SplitPath(srcPath);
-        Repository srcRepo = getRepositoryByName(pathParts[0], false);
+        AVMStore srcRepo = getAVMStoreByName(pathParts[0], false);
         Lookup sPath = srcRepo.lookup(version, pathParts[1], false);
         // Lookup the destination directory.
         fLookupCount.set(1);
         pathParts = SplitPath(dstPath);
-        Repository dstRepo = getRepositoryByName(pathParts[0], true);
+        AVMStore dstRepo = getAVMStoreByName(pathParts[0], true);
         Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1], true);
         DirectoryNode dirNode = (DirectoryNode)dPath.getCurrentNode();
         AVMNode srcNode = sPath.getCurrentNode();
@@ -243,7 +243,7 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        Repository rep = getRepositoryByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0], true);
         return rep.getOutputStream(pathParts[1]);
     }
     
@@ -258,7 +258,7 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        Repository rep = getRepositoryByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0], true);
         return rep.getRandomAccess(version, pathParts[1], access);
     }
 
@@ -279,7 +279,7 @@ class SuperRepository
         }
         fLookupCount.set(1);
         String [] pathParts = SplitPath(srcPath);
-        Repository srcRepo = getRepositoryByName(pathParts[0], true);
+        AVMStore srcRepo = getAVMStoreByName(pathParts[0], true);
         Lookup sPath = srcRepo.lookupDirectory(-1, pathParts[1], true);
         DirectoryNode srcDir = (DirectoryNode)sPath.getCurrentNode();
         AVMNode srcNode = srcDir.lookupChild(sPath, srcName, -1, true);
@@ -289,7 +289,7 @@ class SuperRepository
         }
         fLookupCount.set(1);
         pathParts = SplitPath(dstPath);
-        Repository dstRepo = getRepositoryByName(pathParts[0], true);
+        AVMStore dstRepo = getAVMStoreByName(pathParts[0], true);
         Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1], true);
         DirectoryNode dstDir = (DirectoryNode)dPath.getCurrentNode();
         AVMNode dstNode = dstDir.lookupChild(dPath, dstName, -1, true);
@@ -392,35 +392,35 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(dirPath);
-        Repository repo = getRepositoryByName(pathParts[0], true);
+        AVMStore repo = getAVMStoreByName(pathParts[0], true);
         repo.uncover(pathParts[1], name);
     }
 
     /**
      * Snapshot the given repositories.
-     * @param repositories The list of repository name to snapshot.
-     * @return A List of version ids for each newly snapshotted repository.
+     * @param repositories The list of AVMStore name to snapshot.
+     * @return A List of version ids for each newly snapshotted AVMStore.
      */
     public List<Integer> createSnapshot(List<String> repositories)
     {
         List<Integer> result = new ArrayList<Integer>();
         for (String repName : repositories)
         {
-            Repository repo = getRepositoryByName(repName, true);
+            AVMStore repo = getAVMStoreByName(repName, true);
             result.add(repo.createSnapshot());
         }
         return result;
     }
 
     /**
-     * Create a snapshot of a single repository.
-     * @param repository The name of the repository.
+     * Create a snapshot of a single AVMStore.
+     * @param store The name of the repository.
      * @return The version id of the newly snapshotted repository.
      */
-    public int createSnapshot(String repository)
+    public int createSnapshot(String storeName)
     {
-        Repository repo = getRepositoryByName(repository, true);
-        return repo.createSnapshot();
+        AVMStore store = getAVMStoreByName(storeName, true);
+        return store.createSnapshot();
     }
 
     /**
@@ -432,46 +432,46 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        Repository repo = getRepositoryByName(pathParts[0], true);
-        repo.removeNode(pathParts[1], name);
+        AVMStore store = getAVMStoreByName(pathParts[0], true);
+        store.removeNode(pathParts[1], name);
     }
 
     /**
-     * Get rid of all content that lives only in the given repository.
-     * Also removes the repository.
-     * @param name The name of the repository to purge.
+     * Get rid of all content that lives only in the given AVMStore.
+     * Also removes the AVMStore.
+     * @param name The name of the AVMStore to purge.
      */
     @SuppressWarnings("unchecked")
-    public void purgeRepository(String name)
+    public void purgeAVMStore(String name)
     {
-        Repository rep = getRepositoryByName(name, true);
-        AVMNode root = rep.getRoot();
+        AVMStore store = getAVMStoreByName(name, true);
+        AVMNode root = store.getRoot();
         root.setIsRoot(false);
         VersionRootDAO vrDAO = AVMContext.fgInstance.fVersionRootDAO;
-        List<VersionRoot> vRoots = vrDAO.getAllInRepository(rep);
+        List<VersionRoot> vRoots = vrDAO.getAllInAVMStore(store);
         for (VersionRoot vr : vRoots)
         {
             AVMNode node = vr.getRoot();
             node.setIsRoot(false);
             vrDAO.delete(vr);
         }
-        List<NewInRepository> newGuys = AVMContext.fgInstance.fNewInRepositoryDAO.getByRepository(rep);
-        for (NewInRepository newGuy : newGuys)
+        List<NewInAVMStore> newGuys = AVMContext.fgInstance.fNewInAVMStoreDAO.getByAVMStore(store);
+        for (NewInAVMStore newGuy : newGuys)
         {
-            AVMContext.fgInstance.fNewInRepositoryDAO.delete(newGuy);
+            AVMContext.fgInstance.fNewInAVMStoreDAO.delete(newGuy);
         }
-        AVMContext.fgInstance.fRepositoryDAO.delete(rep);
+        AVMContext.fgInstance.fAVMStoreDAO.delete(store);
     }
     
     /**
-     * Remove all content specific to a repository and version.
-     * @param name The name of the repository.
+     * Remove all content specific to a AVMRepository and version.
+     * @param name The name of the AVMStore.
      * @param version The version to purge.
      */
     public void purgeVersion(String name, int version)
     {
-        Repository rep = getRepositoryByName(name, true);
-        rep.purgeVersion(version);
+        AVMStore store = getAVMStoreByName(name, true);
+        store.purgeVersion(version);
     }
 
     /**
@@ -484,8 +484,8 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        Repository repo = getRepositoryByName(pathParts[0], false);
-        return repo.getInputStream(version, pathParts[1]);
+        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        return store.getInputStream(version, pathParts[1]);
     }
 
     /**
@@ -520,8 +520,8 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        Repository repo = getRepositoryByName(pathParts[0], false);
-        return repo.getListing(version, pathParts[1]);
+        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        return store.getListing(version, pathParts[1]);
     }
 
     /**
@@ -543,55 +543,55 @@ class SuperRepository
     }
     
     /**
-     * Get the names of all repositories.
-     * @return A list of names.
+     * Get descriptors of all AVMStores.
+     * @return A list of all descriptors.
      */
     @SuppressWarnings("unchecked")
-    public List<RepositoryDescriptor> getRepositories()
+    public List<AVMStoreDescriptor> getAVMStores()
     {
-        List<Repository> l = AVMContext.fgInstance.fRepositoryDAO.getAll();
-        List<RepositoryDescriptor> result = new ArrayList<RepositoryDescriptor>();
-        for (Repository rep : l)
+        List<AVMStore> l = AVMContext.fgInstance.fAVMStoreDAO.getAll();
+        List<AVMStoreDescriptor> result = new ArrayList<AVMStoreDescriptor>();
+        for (AVMStore store : l)
         {
-            result.add(rep.getDescriptor());
+            result.add(store.getDescriptor());
         }
         return result;
     }
 
     /**
-     * Get a descriptor for a repository.
+     * Get a descriptor for an AVMStore.
      * @param name The name to get.
      * @return The descriptor.
      */
-    public RepositoryDescriptor getRepository(String name)
+    public AVMStoreDescriptor getAVMStore(String name)
     {
-        Repository rep = getRepositoryByName(name, false);
-        return rep.getDescriptor();
+        AVMStore store = getAVMStoreByName(name, false);
+        return store.getDescriptor();
     }
     
     /**
-     * Get all version for a given repository.
-     * @param name The name of the repository.
+     * Get all version for a given AVMStore.
+     * @param name The name of the AVMStore.
      * @return A Set will all the version ids.
      */
-    public List<VersionDescriptor> getRepositoryVersions(String name)
+    public List<VersionDescriptor> getAVMStoreVersions(String name)
     {
-        Repository rep = getRepositoryByName(name, false);
-        return rep.getVersions();
+        AVMStore store = getAVMStoreByName(name, false);
+        return store.getVersions();
     }
 
     /**
      * Get the set of versions between (inclusive) of the given dates. 
      * From or to may be null but not both.
-     * @param name The name of the repository.
+     * @param name The name of the AVMRepository.
      * @param from The earliest date.
      * @param to The latest date.
      * @return The Set of version IDs.
      */
-    public List<VersionDescriptor> getRepositoryVersions(String name, Date from, Date to)
+    public List<VersionDescriptor> getAVMStoreVersions(String name, Date from, Date to)
     {
-        Repository rep = getRepositoryByName(name, false);
-        return rep.getVersions(from, to);
+        AVMStore store = getAVMStoreByName(name, false);
+        return store.getVersions(from, to);
     }
     
     /**
@@ -631,51 +631,51 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        Repository rep = getRepositoryByName(pathParts[0], false);
-        return rep.getIndirectionPath(version, pathParts[1]);
+        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        return store.getIndirectionPath(version, pathParts[1]);
     }
 
     /**
-     * Get the next version id for the given repository.
-     * @param name The name of the repository.
+     * Get the next version id for the given AVMStore.
+     * @param name The name of the AVMStore.
      * @return The next version id.
      */
     public int getLatestVersionID(String name)
     {
-        Repository rep = getRepositoryByName(name, false);
-        return rep.getNextVersionID();
+        AVMStore store = getAVMStoreByName(name, false);
+        return store.getNextVersionID();
     }
     
     /**
-     * Get a repository by name.
-     * @param name The name of the repository.
+     * Get an AVMStore by name.
+     * @param name The name of the AVMStore.
      * @param write Whether this is called for a write operation.
-     * @return The Repository.
+     * @return The AVMStore.
      */
-    private Repository getRepositoryByName(String name, boolean write)
+    private AVMStore getAVMStoreByName(String name, boolean write)
     {
-        Repository rep = AVMContext.fgInstance.fRepositoryDAO.getByName(name);
-        if (rep == null)
+        AVMStore store = AVMContext.fgInstance.fAVMStoreDAO.getByName(name);
+        if (store == null)
         {
-            throw new AVMNotFoundException("Repository not found: " + name);
+            throw new AVMNotFoundException("AVMStore not found: " + name);
         }
-        return rep;
+        return store;
     }
 
     /**
-     * Get a descriptor for a repository root.
+     * Get a descriptor for an AVMStore root.
      * @param version The version to get.
-     * @param name The name of the repository.
+     * @param name The name of the AVMStore.
      * @return The descriptor for the root.
      */
-    public AVMNodeDescriptor getRepositoryRoot(int version, String name)
+    public AVMNodeDescriptor getAVMStoreRoot(int version, String name)
     {
-        Repository rep = getRepositoryByName(name, false);
-        if (rep == null)
+        AVMStore store = getAVMStoreByName(name, false);
+        if (store == null)
         {
             throw new AVMNotFoundException("Not found: " + name);
         }
-        return rep.getRoot(version);
+        return store.getRoot(version);
     }
  
     // TODO Fix this awful mess regarding cycle detection.
@@ -701,8 +701,8 @@ class SuperRepository
             throw new AVMCycleException("Cycle in lookup.");
         }
         String [] pathParts = SplitPath(path);
-        Repository rep = getRepositoryByName(pathParts[0], false);
-        Lookup result = rep.lookup(version, pathParts[1], false);
+        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        Lookup result = store.lookup(version, pathParts[1], false);
         if (count == null)
         {
             fLookupCount.set(null);
@@ -747,8 +747,8 @@ class SuperRepository
             throw new AVMCycleException("Cycle in lookup.");
         }
         String [] pathParts = SplitPath(path);
-        Repository rep = getRepositoryByName(pathParts[0], false);
-        return rep.lookupDirectory(version, pathParts[1], false);
+        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        return store.lookupDirectory(version, pathParts[1], false);
     }
 
     /**
@@ -783,8 +783,8 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        Repository rep = getRepositoryByName(pathParts[0], true);
-        rep.makePrimary(pathParts[1]);
+        AVMStore store = getAVMStoreByName(pathParts[0], true);
+        store.makePrimary(pathParts[1]);
     }
 
     /**
@@ -796,8 +796,8 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        Repository rep = getRepositoryByName(pathParts[0], true);
-        rep.retargetLayeredDirectory(pathParts[1], target);
+        AVMStore store = getAVMStoreByName(pathParts[0], true);
+        store.retargetLayeredDirectory(pathParts[1], target);
     }
     
     /**
@@ -840,18 +840,18 @@ class SuperRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        Repository rep = getRepositoryByName(pathParts[0], true);
-        rep.setOpacity(pathParts[1], opacity);
+        AVMStore store = getAVMStoreByName(pathParts[0], true);
+        store.setOpacity(pathParts[1], opacity);
     }
         
     /**
-     * Get the RepositoryDescriptor for a Repository.
-     * @param name The name of the Repository.
+     * Get the AVMStoreDescriptor for an AVMStore.
+     * @param name The name of the AVMStore.
      * @return The descriptor.
      */
-    public RepositoryDescriptor getRepositoryDescriptor(String name)
+    public AVMStoreDescriptor getAVMStoreDescriptor(String name)
     {
-        return getRepositoryByName(name, false).getDescriptor();
+        return getAVMStoreByName(name, false).getDescriptor();
     }
     
     /**
@@ -901,10 +901,10 @@ class SuperRepository
     }
 
     /**
-     * Get the single instance of SuperRepository.
+     * Get the single instance of AVMRepository.
      * @return The single instance.
      */
-    public static SuperRepository GetInstance()
+    public static AVMRepository GetInstance()
     {
         return fgInstance;
     }

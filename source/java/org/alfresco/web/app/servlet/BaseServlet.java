@@ -103,8 +103,22 @@ public abstract class BaseServlet extends HttpServlet
     * 
     * @throws IOException
     */
-   public AuthenticationStatus servletAuthenticate(HttpServletRequest req, HttpServletResponse res)
+   public AuthenticationStatus servletAuthenticate(HttpServletRequest req, HttpServletResponse res) 
       throws IOException
+   {
+      return servletAuthenticate(req, res, true);
+   }
+   
+   /**
+    * Perform an authentication for the servlet request URI. Processing any "ticket" or
+    * "guest" URL arguments.
+    * 
+    * @return AuthenticationStatus
+    * 
+    * @throws IOException
+    */
+   public AuthenticationStatus servletAuthenticate(HttpServletRequest req, HttpServletResponse res,
+         boolean redirectToLoginPage) throws IOException
    {
       AuthenticationStatus status;
       
@@ -124,9 +138,9 @@ public abstract class BaseServlet extends HttpServlet
          }
          status = AuthenticationHelper.authenticate(getServletContext(), req, res, forceGuest);
       }
-      if (status == AuthenticationStatus.Failure)
+      if (status == AuthenticationStatus.Failure && redirectToLoginPage)
       {
-         // authentication failed - now need to display the login page to the user
+         // authentication failed - now need to display the login page to the user, if asked to
          redirectToLoginPage(req, res, getServletContext());
       }
       

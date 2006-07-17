@@ -22,9 +22,7 @@ import org.apache.commons.logging.LogFactory;
  * The URL to the servlet should be in the form:
  * <pre>/alfresco/ajax/command/Bean.binding.expression</pre>
  * <p>
- * where 'command' is one of 'invoke', 'get' or 'set'.
- * <p>
- * TODO: Explain what the commands do...
+ * See http://wiki.alfresco.com/wiki/AJAX_Support for details.
  * <p>
  * Like most Alfresco servlets, the URL may be followed by a valid 'ticket' argument for authentication:
  * ?ticket=1234567890
@@ -69,14 +67,12 @@ public class AjaxServlet extends BaseServlet
             }
          }
          
-         // ************
-         // TODO: Need to send in a flag to method to stop it from redirecting
-         //       to login page, we can then throw an error in here!!
-         
-         AuthenticationStatus status = servletAuthenticate(request, response);
+         // Make sure the user is authenticated, if not throw an error to return the 
+         // 500 Internal Server Error code back to the client
+         AuthenticationStatus status = servletAuthenticate(request, response, false);
          if (status == AuthenticationStatus.Failure)
          {
-            return;
+            throw new AlfrescoRuntimeException("Access Denied: User not authenticated");
          }
          
          uri = uri.substring(request.getContextPath().length());
@@ -109,10 +105,6 @@ public class AjaxServlet extends BaseServlet
          {
             command = new GetCommand();
          }
-//         else if (Command.set.toString().equals(commandName))
-//         {
-//            command = new SetCommand();
-//         }
          else
          {
             throw new AlfrescoRuntimeException("Unrecognised command received: " + commandName);

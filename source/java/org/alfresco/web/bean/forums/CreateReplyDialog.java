@@ -62,32 +62,4 @@ public class CreateReplyDialog extends CreatePostDialog
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), "reply");
    }
-
-   // ------------------------------------------------------------------------------
-   // Bean Getters and Setters
-   
-   /**
-    * Returns the content of the post we are replying to
-    * 
-    * @return The content
-    */
-   public String getReplyContent()
-   {
-      if (this.replyContent == null)
-      {
-         // get the content reader of the node we are replying to
-         NodeRef replyNode = this.browseBean.getDocument().getNodeRef();
-         if (replyNode != null)
-         {
-            ContentReader reader = this.contentService.getReader(replyNode, ContentModel.PROP_CONTENT);
-            
-            if (reader != null)
-            {
-               this.replyContent = reader.getContentString();
-            }
-         }
-      }
-      
-      return this.replyContent;
-   }
 }

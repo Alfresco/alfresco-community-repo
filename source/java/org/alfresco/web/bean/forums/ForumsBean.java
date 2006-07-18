@@ -17,6 +17,7 @@
 package org.alfresco.web.bean.forums;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -536,6 +537,61 @@ public class ForumsBean implements IContextListener
       }
    }
    
+   /**
+    * Returns the HTML to represent a bubble rendition of the text of the the
+    * forum article being replied to.
+    * 
+    * @return The HTML for the bubble
+    */
+   public String getReplyBubbleHTML()
+   {
+      try
+      {
+         // if the forum being replied to was a new post show the orange bubble
+         // with the user on the left otherwise show the yellow bubble with the
+         // user on the right.
+         StringWriter writer = new StringWriter();
+         
+         FacesContext context = FacesContext.getCurrentInstance();
+         Node replyToNode = this.browseBean.getDocument();
+         boolean isReplyPost = this.nodeService.hasAspect(replyToNode.getNodeRef(),
+               ContentModel.ASPECT_REFERENCING);
+         String contextPath = context.getExternalContext().getRequestContextPath();
+         String colour = isReplyPost ? "yellow" : "orange";
+         String bgColour = isReplyPost ? "#FFF5A3" : "#FCC75E";
+         
+         // build the HTML to represent the user that posted the article being replied to
+         StringBuilder replyPosterHTML = new StringBuilder("<td valign='top'>");
+         replyPosterHTML.append("<img src='");
+         replyPosterHTML.append(contextPath);
+         replyPosterHTML.append("/images/icons/user_large.gif' /><br/>");
+         replyPosterHTML.append((String)replyToNode.getProperties().get("creator"));
+         replyPosterHTML.append("</td>");
+         
+         // start the table
+         writer.write("<table border='0' cellpadding='0' cellspacing='0' width='100%'><tr>");
+         
+         if (isReplyPost)
+         {
+            renderReplyContentHTML(context, replyToNode, writer, contextPath, colour, bgColour);
+            writer.write(replyPosterHTML.toString());
+         }
+         else
+         {
+            writer.write(replyPosterHTML.toString());
+            renderReplyContentHTML(context, replyToNode, writer, contextPath, colour, bgColour);
+         }
+         
+         // finish the table
+         writer.write("</tr></table>");
+         
+         return writer.toString();
+      }
+      catch (IOException ioe)
+      {
+         throw new AlfrescoRuntimeException("Failed to render reply bubble HTML", ioe);
+      }
+   }
    
    // ------------------------------------------------------------------------------
    // IContextListener implementation 
@@ -947,7 +1003,7 @@ public class ForumsBean implements IContextListener
    
    
    // ------------------------------------------------------------------------------
-   // Private helpers
+   // Helpers
    
    /**
     * Initialise default values from client configuration
@@ -982,6 +1038,37 @@ public class ForumsBean implements IContextListener
          logger.debug("Set default topic view mode to: " + this.topicViewMode);
          logger.debug("Set default topic page size to: " + this.topicPageSize);
       }
+   }
+   
+   protected void renderReplyContentHTML(FacesContext context, 
+         Node replyToNode, StringWriter writer, 
+         String contextPath, String colour, String bgColour) 
+         throws IOException
+   {
+      // get the content of the article being replied to
+      String replyContent = "";
+      ContentReader reader = this.contentService.getReader(replyToNode.getNodeRef(), 
+            ContentModel.PROP_CONTENT);  
+      if (reader != null)
+      {
+         replyContent = reader.getContentString();
+      }
+      
+      // get the date of the article being replied to
+      String postedDate = Utils.getDateTimeFormat(context).
+            format(replyToNode.getProperties().get("created"));
+      
+      // generate the HTML
+      writer.write("<td width='100%'>");
+      TopicBubbleViewRenderer.renderBubbleTop(writer, contextPath, colour, bgColour);
+      writer.write("<span class='mainSubTitle'>");
+      writer.write(Application.getMessage(context, "posted"));
+      writer.write(":&nbsp</span>");
+      writer.write(postedDate);
+      TopicBubbleViewRenderer.renderBubbleMiddle(writer, contextPath, colour);
+      writer.write(replyContent);
+      TopicBubbleViewRenderer.renderBubbleBottom(writer, contextPath, colour);
+      writer.write("</td>");
    }
    
    /**

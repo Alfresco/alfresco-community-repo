@@ -74,7 +74,6 @@ public abstract class BaseServlet extends HttpServlet
       validRedirectJSPs.add("/jsp/dialog/about.jsp");
       validRedirectJSPs.add("/jsp/dialog/advanced-search.jsp");
       validRedirectJSPs.add("/jsp/dialog/system-info.jsp");
-      validRedirectJSPs.add("/jsp/forums/forums.jsp");
       validRedirectJSPs.add("/jsp/users/users.jsp");
       validRedirectJSPs.add("/jsp/trashcan/trash-list.jsp");
    }

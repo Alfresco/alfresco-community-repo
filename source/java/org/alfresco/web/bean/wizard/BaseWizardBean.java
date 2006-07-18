@@ -15,6 +15,16 @@ public abstract class BaseWizardBean extends BaseDialogBean implements IWizardBe
 {
    private static final String MSG_NOT_SET = "value_not_set";
    
+   public String next()
+   {
+      return null;
+   }
+   
+   public String back()
+   {
+      return null;
+   }
+   
    public boolean getNextButtonDisabled()
    {
       return false;

@@ -10,6 +10,20 @@ import org.alfresco.web.bean.dialog.IDialogBean;
 public interface IWizardBean extends IDialogBean
 {
    /**
+    * Called when the next button is pressed by the user
+    * 
+    * @return Reserved for future use
+    */
+   public String next();
+   
+   /**
+    * Called when the back button is pressed by the user
+    * 
+    * @return Reserved for future use
+    */
+   public String back();
+   
+   /**
     * Returns the label to use for the next button
     * 
     * @return The next button label

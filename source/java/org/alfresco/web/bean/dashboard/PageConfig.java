@@ -1,0 +1,283 @@
+/*
+ * Copyright (C) 2005 Alfresco, Inc.
+ *
+ * Licensed under the Mozilla Public License version 1.1 
+ * with a permitted attribution clause. You may obtain a
+ * copy of the License at
+ *
+ *   http://www.alfresco.org/legal/license.txt
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License.
+ */
+package org.alfresco.web.bean.dashboard;
+
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.web.config.DashboardsConfigElement;
+import org.alfresco.web.config.DashboardsConfigElement.DashletDefinition;
+import org.alfresco.web.config.DashboardsConfigElement.LayoutDefinition;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
+
+/**
+ * Describes the config for the Pages in a user Dashboard.
+ * Multiple Pages are supported.
+ * 
+ * @author Kevin Roast
+ */
+final class PageConfig
+{
+   private static Log logger = LogFactory.getLog(DashboardManager.class);
+   
+   private static final String ELEMENT_DASHBOARD = "dashboard";
+   private static final String ELEMENT_PAGE = "page";
+   private static final String ELEMENT_COLUMN = "column";
+   private static final String ELEMENT_DASHLET = "dashlet";
+   private static final String ATTR_ID = "id";
+   private static final String ATTR_LAYOUTID = "layout-id";
+   private static final String ATTR_REFID = "idref";
+   
+   private List<Page> pages = new ArrayList<Page>(4);
+   private int currentPageIndex = 0;
+   
+   public Page getCurrentPage()
+   {
+      if (currentPageIndex < pages.size())
+      {
+         return pages.get(currentPageIndex);
+      }
+      else
+      {
+         return null;
+      }
+   }
+   
+   public void addPage(Page page)
+   {
+      pages.add(page);
+   }
+   
+   public Page getPage(String pageId)
+   {
+      Page foundPage = null;
+      for (Page page : pages)
+      {
+         if (page.getId().equals(pageId))
+         {
+            foundPage = page;
+            break;
+         }
+      }
+      return foundPage;
+   }
+   
+   /**
+    * Convert this config to an XML definition which can be serialized.
+    * Example:
+    * <code>
+    * <?xml version="1.0"?>
+    * <dashboard>
+    *    <page id="main" layout-id="narrow-left-2column">
+    *       <column>
+    *          <dashlet idref="clock" />
+    *          <dashlet idref="random-joke" />
+    *       </column>
+    *       <column>
+    *          <dashlet idref="getting-started" />
+    *          <dashlet idref="task-list" />
+    *          <dashlet idref="my-checkedout-docs" />
+    *          <dashlet idref="my-documents" />
+    *       </column>
+    *    </page>
+    * </dashboard>
+    * </code>
+    * 
+    * @return XML for this config
+    */
+   public String toXML()
+   {
+      try
+      {
+         Document doc = DocumentHelper.createDocument();
+         
+         Element root = doc.addElement(ELEMENT_DASHBOARD);
+         for (Page page : pages)
+         {
+            Element pageElement = root.addElement(ELEMENT_PAGE);
+            pageElement.addAttribute(ATTR_ID, page.getId());
+            pageElement.addAttribute(ATTR_LAYOUTID, page.getLayoutDefinition().Id);
+            for (Column column : page.getColumns())
+            {
+               Element columnElement = pageElement.addElement(ELEMENT_COLUMN);
+               for (DashletDefinition dashletDef : column.getDashlets())
+               {
+                  columnElement.addElement(ELEMENT_DASHLET).addAttribute(ATTR_REFID, dashletDef.Id);
+               }
+            }
+         }
+         
+         StringWriter out = new StringWriter(512);
+         XMLWriter writer = new XMLWriter(OutputFormat.createPrettyPrint());
+         writer.setWriter(out);
+         writer.write(doc);
+         
+         return out.toString();
+      }
+      catch (Throwable err)
+      {
+         throw new AlfrescoRuntimeException("Unable to serialize Dashboard PageConfig to XML: " + err.getMessage(), err);
+      }
+   }
+   
+   @Override
+   public String toString()
+   {
+      return toXML();
+   }
+
+   /**
+    * Deserialise this PageConfig instance from the specified XML stream.
+    * 
+    * @param xml
+    */
+   public void fromXML(DashboardsConfigElement config, String xml)
+   {
+      try
+      {
+         SAXReader reader = new SAXReader();
+         Document document = reader.read(new StringReader(xml));
+         Element rootElement = document.getRootElement();
+         
+         // walk the pages found in xml
+         Iterator itrPages = rootElement.elementIterator(ELEMENT_PAGE);
+         while (itrPages.hasNext())
+         {
+            Element pageElement = (Element)itrPages.next();
+            String layoutId = pageElement.attributeValue(ATTR_LAYOUTID);
+            LayoutDefinition layoutDef = config.getLayoutDefinition(layoutId);
+            if (layoutDef != null)
+            {
+               // found the layout now build the page and read the columns
+               Page page = new Page(pageElement.attributeValue(ATTR_ID), layoutDef);
+               Iterator itrColumns = pageElement.elementIterator(ELEMENT_COLUMN);
+               while (itrColumns.hasNext())
+               {
+                  Column column = new Column();
+                  
+                  // read and resolve the dashlet definitions for this column
+                  Element columnElement = (Element)itrColumns.next();
+                  Iterator itrDashlets = columnElement.elementIterator(ELEMENT_DASHLET);
+                  while (itrDashlets.hasNext())
+                  {
+                     String dashletId = ((Element)itrDashlets.next()).attributeValue(ATTR_REFID);
+                     DashletDefinition dashletDef = config.getDashletDefinition(dashletId);
+                     if (dashletDef != null)
+                     {
+                        column.addDashlet(dashletDef);
+                     }
+                     else if (logger.isWarnEnabled())
+                     {
+                        logger.warn("Failed to resolve Dashboard Dashlet Definition ID: " + dashletId);
+                     }
+                  }
+                  
+                  // add the column of dashlets to the page
+                  page.addColumn(column);
+               }
+               
+               // add the page to this config instance 
+               this.addPage(page);
+            }
+            else if (logger.isWarnEnabled())
+            {
+               logger.warn("Failed to resolve Dashboard Layout Definition ID: " + layoutId);
+            }
+         }
+      }
+      catch (DocumentException docErr)
+      {
+         // if we cannot parse, then we simply revert to default
+      }
+   }
+}
+
+/**
+ * Simple class to represent a Page in a Dashboard.
+ * Each Page has a Layout associated with it, and a number of Column definitions.
+ */
+final class Page
+{
+   private String id;
+   private LayoutDefinition layoutDef;
+   private List<Column> columns = new ArrayList<Column>(4);
+   
+   public Page(String id, LayoutDefinition layout)
+   {
+      if (id == null || id.length() == 0)
+      {
+         throw new IllegalArgumentException("ID for a Dashboard Page is mandatory.");
+      }
+      if (layout == null)
+      {
+         throw new IllegalArgumentException("Layout for a Dashboard Page is mandatory.");
+      }
+      this.id = id;
+      this.layoutDef = layout;
+   }
+   
+   public String getId()
+   {
+      return this.id;
+   }
+   
+   public LayoutDefinition getLayoutDefinition()
+   {
+      return this.layoutDef;
+   }
+   
+   public void addColumn(Column column)
+   {
+      this.columns.add(column);
+   }
+   
+   public List<Column> getColumns()
+   {
+      return this.columns;
+   }
+}
+
+/**
+ * Simple class representing a single Column in a dashboard Page.
+ * Each column contains a list of Dashlet definitions.
+ */
+final class Column
+{
+   private List<DashletDefinition> dashlets = new ArrayList<DashletDefinition>(4);
+   
+   public void addDashlet(DashletDefinition dashlet)
+   {
+      dashlets.add(dashlet);
+   }
+   
+   public List<DashletDefinition> getDashlets()
+   {
+      return this.dashlets;
+   }
+}

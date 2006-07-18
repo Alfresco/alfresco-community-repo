@@ -467,21 +467,34 @@ public class FileFolderServiceImpl implements FileFolderService
             targetParentRef = assocRef.getParentRef();
         }
         
-        // there is nothing to do if both the name and parent folder haven't changed
-        if (targetParentRef.equals(assocRef.getParentRef()) && newName.equals(beforeFileInfo.getName()))
+        boolean checkExists = true;
+        if (targetParentRef.equals(assocRef.getParentRef()))
         {
-            if (logger.isDebugEnabled())
+            // there is nothing to do if both the name and parent folder haven't changed
+            if (newName.equals(beforeFileInfo.getName()))
             {
-                logger.debug("Doing nothing - neither filename or parent has not changed: \n" +
-                        "   parent: " + targetParentRef + "\n" +
-                        "   before: " + beforeFileInfo + "\n" +
-                        "   new name: " + newName);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Doing nothing - neither filename or parent has changed: \n" +
+                            "   parent: " + targetParentRef + "\n" +
+                            "   before: " + beforeFileInfo + "\n" +
+                            "   new name: " + newName);
+                }
+                return beforeFileInfo;
             }
-            return beforeFileInfo;
+            else if (newName.equalsIgnoreCase(beforeFileInfo.getName()))
+            {
+                // name has only changed case so don't bother with exists check
+                checkExists = false;
+            }
         }
         
-        // check for existing file or folder
-        checkExists(targetParentRef, newName);
+        // check for existing file or folder (if name has changed)
+        if (checkExists)
+        {
+            checkExists(targetParentRef, newName);
+        }
+
         
         QName qname = QName.createQName(
                 NamespaceService.CONTENT_MODEL_1_0_URI,

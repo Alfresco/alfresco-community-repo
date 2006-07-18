@@ -1344,7 +1344,7 @@ public class SMBSrvSession extends SrvSession implements Runnable
 
             // We are using case sensitive pathnames and long file names
 
-            setDefaultFlags(0);        	
+            setDefaultFlags(SMBSrvPacket.FLG_CASELESS);
             setDefaultFlags2(SMBSrvPacket.FLG2_LONGFILENAMES + SMBSrvPacket.FLG2_UNICODE);
 
             // Access the authenticator for this server and determine if the server is in share or

@@ -448,7 +448,7 @@ public class FileStateTable implements Runnable
         // Dump the file state cache entries to the specified stream
 
         if (m_stateTable.size() > 0)
-            logger.info("++ FileStateCache Entries:");
+            logger.debug("++ FileStateCache Entries:");
 
         Enumeration enm = m_stateTable.keys();
         long curTime = System.currentTimeMillis();
@@ -458,7 +458,7 @@ public class FileStateTable implements Runnable
             String fname = (String) enm.nextElement();
             FileState state = m_stateTable.get(fname);
 
-            logger.info("  ++  " + fname + "(" + state.getSecondsToExpire(curTime) + ") : " + state);
+            logger.debug("  ++  " + fname + "(" + state.getSecondsToExpire(curTime) + ") : " + state);
         }
     }
 }

@@ -34,7 +34,7 @@ public class SearchLanguageConversion
      *   <li>Reserved: \%_</li>
      * </ul>
      */
-    public static LanguageDefinition DEF_XPATH_LIKE = new SimpleLanguageDef('\\', "%", "_", "\\%_");
+    public static LanguageDefinition DEF_XPATH_LIKE = new SimpleLanguageDef('\\', "%", "_", "\\%_[]");
     /**
      * Regular expression query language summary:
      * <ul>

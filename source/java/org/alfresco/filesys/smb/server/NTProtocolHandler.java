@@ -6576,41 +6576,12 @@ public class NTProtocolHandler extends CoreProtocolHandler
             return;
         }
 
-        // Check if this is a buffer length check, if so the maximum returned data count will be
-        // zero
+    	// Return an empty security descriptor
+    	
+        byte[] paramblk = new byte[4];
+        DataPacker.putIntelInt(0, paramblk, 0);
 
-        if (tbuf.getReturnDataLimit() == 0)
-        {
-
-            // Return the security descriptor length in the parameter block
-
-            byte[] paramblk = new byte[4];
-            DataPacker.putIntelInt(_sdEveryOne.length, paramblk, 0);
-
-            // Initialize the transaction reply
-
-            outPkt.initTransactReply(paramblk, paramblk.length, null, 0);
-
-            // Set a warning status to indicate the supplied data buffer was too small to return the
-            // security
-            // descriptor
-
-            outPkt.setLongErrorCode(SMBStatus.NTBufferTooSmall);
-        }
-        else
-        {
-
-            // Return the security descriptor length in the parameter block
-
-            byte[] paramblk = new byte[4];
-            DataPacker.putIntelInt(_sdEveryOne.length, paramblk, 0);
-
-            // Initialize the transaction reply. Return the fixed security descriptor that allows
-            // anyone to access the
-            // file/directory
-
-            outPkt.initTransactReply(paramblk, paramblk.length, _sdEveryOne, _sdEveryOne.length);
-        }
+        outPkt.initTransactReply(paramblk, paramblk.length, null, 0);
 
         // Send back the response
 

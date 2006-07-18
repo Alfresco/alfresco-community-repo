@@ -47,19 +47,9 @@ public class PageTag extends TagSupport
  */
 
    private final static String ALF_URL   = "http://www.alfresco.com";
-   private final static String ALF_LOGO  = "http://www.alfresco.com/images/alfresco_community_horizont.gif";
-   private final static String SF_LOGO  = "/images/logo/sflogo.php.png";
-   private final static String ALF_TEXT  = "Alfresco Community";
-   private final static String ALF_COPY  = "Supplied free of charge with " +
-        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#support'>no support</a>, " +
-        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#certification'>no certification</a>, " +
-        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#maintenance'>no maintenance</a>, " +
-        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#warranty'>no warranty</a> and " +
-        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#indemnity'>no indemnity</a> by " +
-        "<a class=footer href='http://www.alfresco.com'>Alfresco</a> or its " +
-        "<a class=footer href='http://www.alfresco.com/partners/'>Certified Partners</a>. " +
-        "<a class=footer href='http://www.alfresco.com/services/support/'>Click here for support</a>. " +
-        "Alfresco Software Inc. &copy; 2005-2006 All rights reserved.";
+   private final static String ALF_LOGO  = "/images/logo/alfresco_enterprise.gif";
+   private final static String ALF_TEXT  = "Alfresco Enterprise";
+   private final static String ALF_COPY  = "Certified and supported. Alfresco Software Inc. &copy; 2005-2006 All rights reserved.";
    
    private static Log logger = LogFactory.getLog(PageTag.class);
    private static String alfresco = null;
@@ -211,11 +201,10 @@ public class PageTag extends TagSupport
          String reqPath = ((HttpServletRequest)pageContext.getRequest()).getContextPath();
          alfresco = "<center><table><tr><td>" +
                     "<a href='" + ALF_URL + "'>" +
-                    "<img border=0 alt='' title='" + ALF_TEXT + "' align=absmiddle src='" + ALF_LOGO + "'>" +
+                    "<img border=0 alt='' title='" + ALF_TEXT + "' align=absmiddle src='" + reqPath + ALF_LOGO + "'>" +
                     "</a></td><td align=center>" +
                     "<span class=footer>" + ALF_COPY +
-                    "</span></td><td><a href='http://sourceforge.net/projects/alfresco'><img border=0 alt='' title='SourceForge' align=absmiddle src='" +
-                    reqPath + SF_LOGO + "'></a>" +
+                    "</span></td><td>" +
                     "</td></tr></table></center>";
       }
       

@@ -61,6 +61,8 @@ import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 
 /**
+ * Backing bean for the Manage Deleted Items (soft delete and archiving) pages.
+ * 
  * @author Kevin Roast
  */
 public class TrashcanBean implements IContextListener

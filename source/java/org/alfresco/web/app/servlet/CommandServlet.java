@@ -47,7 +47,7 @@ import org.apache.commons.logging.LogFactory;
  * The 'processor-name' identifies the command processor to execute the command. For example the
  * 'workflow' processor will execute workflow commands upon a node (e.g. "approve" or "reject").
  * For example:
- * <pre>/alfresco/command/workflow/approve/workspace/SpacesStore/0000-0000-0000-0000
+ * <pre>/alfresco/command/workflow/approve/workspace/SpacesStore/0000-0000-0000-0000</pre>
  * The store protocol, followed by the store ID, followed by the content Node Id used to
  * identify the node to execute the workflow action upon.
  * <p>

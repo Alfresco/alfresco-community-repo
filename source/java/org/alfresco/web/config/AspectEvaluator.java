@@ -16,9 +16,10 @@
  */
 package org.alfresco.web.config;
 
-import java.util.Set;
+import javax.faces.context.FacesContext;
 
 import org.alfresco.config.evaluator.Evaluator;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -28,7 +29,7 @@ import org.alfresco.web.bean.repository.Repository;
  * 
  * @author gavinc
  */
-public class AspectEvaluator implements Evaluator
+public final class AspectEvaluator implements Evaluator
 {
    /**
     * Determines whether the given aspect is applied to the given object
@@ -37,19 +38,19 @@ public class AspectEvaluator implements Evaluator
     */
    public boolean applies(Object obj, String condition)
    {
-      boolean result = false;
-      
       if (obj instanceof Node)
       {
-         Set aspects = ((Node)obj).getAspects();
-         if (aspects != null)
+         DictionaryService dd = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDictionaryService();
+         QName aspectQName = Repository.resolveToQName(condition);
+         for (QName aspect : ((Node)obj).getAspects())
          {
-            QName spaceQName = Repository.resolveToQName(condition);
-            result = aspects.contains(spaceQName);
+            if (dd.isSubClass(aspect, aspectQName) == true)
+            {
+                return true;
+            }
          }
       }
       
-      return result;
+      return false;
    }
-
 }

@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE faces-config PUBLIC "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"
+                              "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
+<faces-config>
+
+   <!-- ==================== MANAGED BEANS ==================== -->
+
+   <managed-bean>
+      <description>
+         The bean that holds state for the License Manager.
+      </description>
+      <managed-bean-name>LicenseBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.LicenseBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>descriptorService</property-name>
+         <value>#{DescriptorService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   
+   <!-- ==================== NAVIGATION RULES==================== -->
+      
+</faces-config>

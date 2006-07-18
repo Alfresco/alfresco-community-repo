@@ -14,6 +14,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
@@ -89,7 +90,19 @@ public class RunActionWizard extends BaseActionWizard
    {
       // reset the current document properties/aspects in case we have changed them
       // during the execution of the custom action
-      this.browseBean.getDocument().reset();
+      Node document = this.browseBean.getDocument();
+      if (document != null)
+      {
+         document.reset();
+      }
+      
+      // reset the current space properties/aspects as well in case we have 
+      // changed them during the execution of the custom action
+      Node space = this.browseBean.getActionSpace();
+      if (space != null)
+      {
+         space.reset();
+      }
       
       return outcome;
    }

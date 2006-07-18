@@ -129,9 +129,9 @@
    </config>
    
    <config evaluator="string-compare" condition="Command Servlet">
-      <!-- The list registed servlet command processors -->
+      <!-- The list of registered servlet command processors -->
       <!-- Command processors implement org.alfresco.web.app.servlet.command.CommandProcessor -->
-      <!-- They are registered against a name and all calls to the command servlet -->
+      <!-- They register a class impl against a unique name. All calls to the command servlet -->
       <!-- which match the name are forwared to the class instance -->
       <command-servlet>
          <command-processor name="workflow" class="org.alfresco.web.app.servlet.command.WorkflowCommandProcessor" />

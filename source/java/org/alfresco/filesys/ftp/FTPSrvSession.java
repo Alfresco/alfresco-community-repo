@@ -127,7 +127,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
     // File transfer buffer size
 
-    private static final int DEFAULT_BUFFERSIZE = 64000;
+    public static final int DEFAULT_BUFFERSIZE = 64000;
 
     // Carriage return/line feed combination required for response messages
 
@@ -137,6 +137,10 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
     protected final static String LIST_OPTION_HIDDEN = "-a";
 
+    // Flag to control whether data transfers use a seperate thread
+    
+    private static boolean UseThreadedDataTransfer = true;
+    
     // Session socket
 
     private Socket m_sock;
@@ -235,14 +239,18 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
         if (m_dataSess != null)
         {
+        	// Abort any active transfer
+        	
+        	m_dataSess.abortTransfer();
+        	
+        	// Remove the data session
+        	
             getFTPServer().releaseDataSession(m_dataSess);
             m_dataSess = null;
         }
 
         // Close the socket first, if the client is still connected this should
-        // allow the
-        // input/output streams
-        // to be closed
+        // allow the input/output streams to be closed
 
         if (m_sock != null)
         {
@@ -335,8 +343,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Set the default path for the session
      * 
-     * @param rootPath
-     *            FTPPath
+     * @param rootPath FTPPath
      */
     public final void setRootPath(FTPPath rootPath)
     {
@@ -353,10 +360,8 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Get the path details for the current request
      * 
-     * @param req
-     *            FTPRequest
-     * @param filePath
-     *            boolean
+     * @param req FTPRequest
+     * @param filePath boolean
      * @return FTPPath
      */
     protected final FTPPath generatePathForRequest(FTPRequest req, boolean filePath)
@@ -367,12 +372,9 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Get the path details for the current request
      * 
-     * @param req
-     *            FTPRequest
-     * @param filePath
-     *            boolean
-     * @param checkExists
-     *            boolean
+     * @param req FTPRequest
+     * @param filePath boolean
+     * @param checkExists boolean
      * @return FTPPath
      */
     protected final FTPPath generatePathForRequest(FTPRequest req, boolean filePath, boolean checkExists)
@@ -583,8 +585,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Convert a path string from share path seperators to FTP path seperators
      * 
-     * @param path
-     *            String
+     * @param path String
      * @return String
      */
     protected final String convertToFTPSeperators(String path)
@@ -603,8 +604,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Find the required disk shared device
      * 
-     * @param name
-     *            String
+     * @param name String
      * @return DiskSharedDevice
      */
     protected final DiskSharedDevice findShare(String name)
@@ -630,8 +630,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Set the binary mode flag
      * 
-     * @param bin
-     *            boolean
+     * @param bin boolean
      */
     protected final void setBinary(boolean bin)
     {
@@ -641,10 +640,8 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Send an FTP command response
      * 
-     * @param stsCode
-     *            int
-     * @param msg
-     *            String
+     * @param stsCode int
+     * @param msg String
      * @exception IOException
      */
     protected final void sendFTPResponse(int stsCode, String msg) throws IOException
@@ -680,8 +677,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Send an FTP command response
      * 
-     * @param msg
-     *            StringBuffer
+     * @param msg StringBuffer
      * @exception IOException
      */
     protected final void sendFTPResponse(StringBuffer msg) throws IOException
@@ -700,8 +696,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a user command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procUser(FTPRequest req) throws IOException
@@ -750,8 +745,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a password command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procPassword(FTPRequest req) throws IOException
@@ -827,6 +821,10 @@ public class FTPSrvSession extends SrvSession implements Runnable
             sendFTPResponse(230, "User logged in, proceed");
             setLoggedOn(true);
 
+            // Save the client info
+            
+            setClientInformation( cInfo);
+            
             // DEBUG
 
             if (logger.isDebugEnabled() && hasDebug(DBG_STATE))
@@ -909,8 +907,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a port command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procPort(FTPRequest req) throws IOException
@@ -990,8 +987,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a passive command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procPassive(FTPRequest req) throws IOException
@@ -1049,8 +1045,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a print working directory command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procPrintWorkDir(FTPRequest req) throws IOException
@@ -1078,8 +1073,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a change working directory command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procChangeWorkDir(FTPRequest req) throws IOException
@@ -1128,8 +1122,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a change directory up command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procCdup(FTPRequest req) throws IOException
@@ -1177,8 +1170,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a long directory listing command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procList(FTPRequest req) throws IOException
@@ -1380,8 +1372,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a short directory listing command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procNList(FTPRequest req) throws IOException
@@ -1532,8 +1523,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a system status command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procSystemStatus(FTPRequest req) throws IOException
@@ -1547,8 +1537,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a server status command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procServerStatus(FTPRequest req) throws IOException
@@ -1562,8 +1551,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a help command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procHelp(FTPRequest req) throws IOException
@@ -1577,8 +1565,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a no-op command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procNoop(FTPRequest req) throws IOException
@@ -1592,8 +1579,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a quit command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procQuit(FTPRequest req) throws IOException
@@ -1616,8 +1602,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a type command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procType(FTPRequest req) throws IOException
@@ -1660,8 +1645,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a restart command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procRestart(FTPRequest req) throws IOException
@@ -1708,8 +1692,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a return file command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procReturnFile(FTPRequest req) throws IOException
@@ -1760,198 +1743,215 @@ public class FTPSrvSession extends SrvSession implements Runnable
             return;
         }
 
-        // Get the data connection socket
-
-        Socket dataSock = null;
-
-        try
+        // Check if a seperate thread should be used for the data transfer
+        
+        if ( UseThreadedDataTransfer == true)
         {
-            dataSock = m_dataSess.getSocket();
+	        // DEBUG
+        	
+	        if (logger.isDebugEnabled() && hasDebug(DBG_FILE))
+	            logger.debug("Returning (threaded) ftp="
+	                    + ftpPath.getFTPPath() + ", share=" + ftpPath.getShareName() + ", path=" + ftpPath.getSharePath());
+
+            // Start the transfer in a seperate thread
+            
+            m_dataSess.doReturnFile( ftpPath, m_restartPos, req.getArgument());
         }
-        catch (Exception ex)
+        else
         {
-        }
-
-        if (dataSock == null)
-        {
-            sendFTPResponse(426, "Connection closed; transfer aborted");
-            return;
-        }
-
-        // DEBUG
-
-        if (logger.isDebugEnabled() && hasDebug(DBG_FILE))
-            logger.debug("Returning ftp="
-                    + ftpPath.getFTPPath() + ", share=" + ftpPath.getShareName() + ", path=" + ftpPath.getSharePath());
-
-        // Send the file to the client
-
-        OutputStream os = null;
-        DiskInterface disk = null;
-        TreeConnection tree = null;
-        NetworkFile netFile = null;
-
-        try
-        {
-
-            // Open an output stream to the client
-
-            os = dataSock.getOutputStream();
-
-            // Create a temporary tree connection
-
-            tree = getTreeConnection(ftpPath.getSharedDevice());
-
-            // Check if the file exists and it is a file, if so then open the
-            // file
-
-            disk = (DiskInterface) ftpPath.getSharedDevice().getInterface();
-
-            // Create the file open parameters
-
-            FileOpenParams params = new FileOpenParams(ftpPath.getSharePath(), FileAction.OpenIfExists,
-                    AccessMode.ReadOnly, 0);
-
-            // Check if the file exists and it is a file
-
-            int sts = disk.fileExists(this, tree, ftpPath.getSharePath());
-
-            if (sts == FileStatus.FileExists)
-            {
-
-                // Open the file
-
-                netFile = disk.openFile(this, tree, params);
-            }
-
-            // Check if the file has been opened
-
-            if (netFile == null)
-            {
-                sendFTPResponse(550, "File " + req.getArgument() + " not available");
-                return;
-            }
-
-            // Allocate the buffer for the file data
-
-            byte[] buf = new byte[DEFAULT_BUFFERSIZE];
-            long filePos = m_restartPos;
-
-            int len = -1;
-
-            while (filePos < netFile.getFileSize())
-            {
-
-                // Read another block of data from the file
-
-                len = disk.readFile(this, tree, netFile, buf, 0, buf.length, filePos);
-
-                // DEBUG
-
-                if (logger.isDebugEnabled() && hasDebug(DBG_FILEIO))
-                    logger.debug(" Write len=" + len + " bytes");
-
-                // Write the current data block to the client, update the file
-                // position
-
-                if (len > 0)
-                {
-
-                    // Write the data to the client
-
-                    os.write(buf, 0, len);
-
-                    // Update the file position
-
-                    filePos += len;
-                }
-            }
-
-            // Close the output stream to the client
-
-            os.close();
-            os = null;
-
-            // Indicate that the file has been transmitted
-
-            sendFTPResponse(226, "Closing data connection");
-
-            // Close the data session
-
-            getFTPServer().releaseDataSession(m_dataSess);
-            m_dataSess = null;
-
-            // Close the network file
-
-            disk.closeFile(this, tree, netFile);
-            netFile = null;
-
-            // DEBUG
-
-            if (logger.isDebugEnabled() && hasDebug(DBG_FILEIO))
-                logger.debug(" Transfer complete, file closed");
-        }
-        catch (SocketException ex)
-        {
-
-            // DEBUG
-
-            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
-                logger.debug(" Error during transfer", ex);
-
-            // Close the data socket to the client
-
-            if (m_dataSess != null)
-            {
-                m_dataSess.closeSession();
-                m_dataSess = null;
-            }
-
-            // Indicate that there was an error during transmission of the file
-            // data
-
-            sendFTPResponse(426, "Data connection closed by client");
-        }
-        catch (Exception ex)
-        {
-
-            // DEBUG
-
-            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
-                logger.debug(" Error during transfer", ex);
-
-            // Indicate that there was an error during transmission of the file
-            // data
-
-            sendFTPResponse(426, "Error during transmission");
-        } finally
-        {
-
-            // Close the network file
-
-            if (netFile != null && disk != null && tree != null)
-                disk.closeFile(this, tree, netFile);
-
-            // Close the output stream to the client
-
-            if (os != null)
-                os.close();
-
-            // Close the data connection to the client
-
-            if (m_dataSess != null)
-            {
-                getFTPServer().releaseDataSession(m_dataSess);
-                m_dataSess = null;
-            }
+	        // Get the data connection socket
+	
+	        Socket dataSock = null;
+	
+	        try
+	        {
+	            dataSock = m_dataSess.getSocket();
+	        }
+	        catch (Exception ex)
+	        {
+	        }
+	
+	        if (dataSock == null)
+	        {
+	            sendFTPResponse(426, "Connection closed; transfer aborted");
+	            return;
+	        }
+	
+	        // DEBUG
+	
+	        if (logger.isDebugEnabled() && hasDebug(DBG_FILE))
+	            logger.debug("Returning ftp="
+	                    + ftpPath.getFTPPath() + ", share=" + ftpPath.getShareName() + ", path=" + ftpPath.getSharePath());
+	
+	        // Send the file to the client
+	
+	        OutputStream os = null;
+	        DiskInterface disk = null;
+	        TreeConnection tree = null;
+	        NetworkFile netFile = null;
+	
+	        try
+	        {
+	
+	            // Open an output stream to the client
+	
+	            os = dataSock.getOutputStream();
+	
+	            // Create a temporary tree connection
+	
+	            tree = getTreeConnection(ftpPath.getSharedDevice());
+	
+	            // Check if the file exists and it is a file, if so then open the
+	            // file
+	
+	            disk = (DiskInterface) ftpPath.getSharedDevice().getInterface();
+	
+	            // Create the file open parameters
+	
+	            FileOpenParams params = new FileOpenParams(ftpPath.getSharePath(), FileAction.OpenIfExists,
+	                    AccessMode.ReadOnly, 0);
+	
+	            // Check if the file exists and it is a file
+	
+	            int sts = disk.fileExists(this, tree, ftpPath.getSharePath());
+	
+	            if (sts == FileStatus.FileExists)
+	            {
+	
+	                // Open the file
+	
+	                netFile = disk.openFile(this, tree, params);
+	            }
+	
+	            // Check if the file has been opened
+	
+	            if (netFile == null)
+	            {
+	                sendFTPResponse(550, "File " + req.getArgument() + " not available");
+	                return;
+	            }
+	
+	            // Allocate the buffer for the file data
+	
+	            byte[] buf = new byte[DEFAULT_BUFFERSIZE];
+	            long filePos = m_restartPos;
+	
+	            int len = -1;
+	
+	            while (filePos < netFile.getFileSize())
+	            {
+	
+	                // Read another block of data from the file
+	
+	                len = disk.readFile(this, tree, netFile, buf, 0, buf.length, filePos);
+	
+	                // DEBUG
+	
+	                if (logger.isDebugEnabled() && hasDebug(DBG_FILEIO))
+	                    logger.debug(" Write len=" + len + " bytes");
+	
+	                // Write the current data block to the client, update the file
+	                // position
+	
+	                if (len > 0)
+	                {
+	
+	                    // Write the data to the client
+	
+	                    os.write(buf, 0, len);
+	
+	                    // Update the file position
+	
+	                    filePos += len;
+	                }
+	            }
+	
+	            // Close the output stream to the client
+	
+	            os.close();
+	            os = null;
+	
+	            // Indicate that the file has been transmitted
+	
+	            sendFTPResponse(226, "Closing data connection");
+	
+	            // Close the data session
+	
+	            getFTPServer().releaseDataSession(m_dataSess);
+	            m_dataSess = null;
+	
+	            // Close the network file
+	
+	            disk.closeFile(this, tree, netFile);
+	            netFile = null;
+	
+	            // DEBUG
+	
+	            if (logger.isDebugEnabled() && hasDebug(DBG_FILEIO))
+	                logger.debug(" Transfer complete, file closed");
+	        }
+	        catch (SocketException ex)
+	        {
+	
+	            // DEBUG
+	
+	            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
+	                logger.debug(" Error during transfer", ex);
+	
+	            // Close the data socket to the client
+	
+	            if (m_dataSess != null)
+	            {
+	                m_dataSess.closeSession();
+	                m_dataSess = null;
+	            }
+	
+	            // Indicate that there was an error during transmission of the file
+	            // data
+	
+	            sendFTPResponse(426, "Data connection closed by client");
+	        }
+	        catch (Exception ex)
+	        {
+	
+	            // DEBUG
+	
+	            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
+	                logger.debug(" Error during transfer", ex);
+	
+	            // Indicate that there was an error during transmission of the file
+	            // data
+	
+	            sendFTPResponse(426, "Error during transmission");
+	        }
+	        finally
+	        {
+	
+	            // Close the network file
+	
+	            if (netFile != null && disk != null && tree != null)
+	                disk.closeFile(this, tree, netFile);
+	
+	            // Close the output stream to the client
+	
+	            if (os != null)
+	                os.close();
+	
+	            // Close the data connection to the client
+	
+	            if (m_dataSess != null)
+	            {
+	                getFTPServer().releaseDataSession(m_dataSess);
+	                m_dataSess = null;
+	            }
+	        }
         }
     }
 
     /**
      * Process a store file command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procStoreFile(FTPRequest req) throws IOException
@@ -1982,252 +1982,269 @@ public class FTPSrvSession extends SrvSession implements Runnable
             return;
         }
 
-        // Send the file to the client
-
-        InputStream is = null;
-        DiskInterface disk = null;
-        TreeConnection tree = null;
-        NetworkFile netFile = null;
-
-        try
+        // Check if a seperate thread should be used for the data transfer
+        
+        if ( UseThreadedDataTransfer == true)
         {
-
-            // Create a temporary tree connection
-
-            tree = getTreeConnection(ftpPath.getSharedDevice());
-
-            // Check if the session has the required access to the filesystem
-
-            if (tree == null || tree.hasWriteAccess() == false)
-            {
-
-                // Session does not have write access to the filesystem
-
-                sendFTPResponse(550, "Access denied");
-                return;
-            }
-
-            // Check if the file exists
-
-            disk = (DiskInterface) ftpPath.getSharedDevice().getInterface();
-            int sts = disk.fileExists(this, tree, ftpPath.getSharePath());
-
-            if (sts == FileStatus.DirectoryExists)
-            {
-
-                // Return an error status
-
-                sendFTPResponse(500, "Invalid path (existing directory)");
-                return;
-            }
-
-            // Create the file open parameters
-
-            FileOpenParams params = new FileOpenParams(ftpPath.getSharePath(),
-                    sts == FileStatus.FileExists ? FileAction.TruncateExisting : FileAction.CreateNotExist,
-                    AccessMode.ReadWrite, 0);
-
-            // Create a new file to receive the data
-
-            if (sts == FileStatus.FileExists)
-            {
-
-                // Overwrite the existing file
-
-                netFile = disk.openFile(this, tree, params);
-            }
-            else
-            {
-
-                // Create a new file
-
-                netFile = disk.createFile(this, tree, params);
-            }
-
-            // Notify change listeners that a new file has been created
-
-            DiskDeviceContext diskCtx = (DiskDeviceContext) tree.getContext();
-
-            if (diskCtx.hasChangeHandler())
-                diskCtx.getChangeHandler().notifyFileChanged(NotifyChange.ActionAdded, ftpPath.getSharePath());
-
-            // Send the intermediate response
-
-            sendFTPResponse(150, "File status okay, about to open data connection");
-
-            // Check if there is an active data session
-
-            if (m_dataSess == null)
-            {
-                sendFTPResponse(425, "Can't open data connection");
-                return;
-            }
-
-            // Get the data connection socket
-
-            Socket dataSock = null;
-
-            try
-            {
-                dataSock = m_dataSess.getSocket();
-            }
-            catch (Exception ex)
-            {
-            }
-
-            if (dataSock == null)
-            {
-                sendFTPResponse(426, "Connection closed; transfer aborted");
-                return;
-            }
-
-            // Open an input stream from the client
-
-            is = dataSock.getInputStream();
-
             // DEBUG
-
+        	
             if (logger.isDebugEnabled() && hasDebug(DBG_FILE))
-                logger.debug("Storing ftp="
+                logger.debug("Storing (threaded) ftp="
                         + ftpPath.getFTPPath() + ", share=" + ftpPath.getShareName() + ", path="
                         + ftpPath.getSharePath());
 
-            // Allocate the buffer for the file data
-
-            byte[] buf = new byte[DEFAULT_BUFFERSIZE];
-            long filePos = 0;
-            int len = is.read(buf, 0, buf.length);
-
-            while (len > 0)
-            {
-
-                // DEBUG
-
-                if (logger.isDebugEnabled() && hasDebug(DBG_FILEIO))
-                    logger.debug(" Receive len=" + len + " bytes");
-
-                // Write the current data block to the file, update the file
-                // position
-
-                disk.writeFile(this, tree, netFile, buf, 0, len, filePos);
-                filePos += len;
-
-                // Read another block of data from the client
-
-                len = is.read(buf, 0, buf.length);
-            }
-
-            // Close the input stream from the client
-
-            is.close();
-            is = null;
-
-            // Close the network file
-
-            disk.closeFile(this, tree, netFile);
-            netFile = null;
-
-            // Indicate that the file has been received
-
-            sendFTPResponse(226, "Closing data connection");
-
-            // DEBUG
-
-            if (logger.isDebugEnabled() && hasDebug(DBG_FILEIO))
-                logger.debug(" Transfer complete, file closed");
+            // Start the transfer in a seperate thread
+            
+            m_dataSess.doStoreFile( ftpPath, m_restartPos, req.getArgument());
         }
-        catch( AccessDeniedException ex)
+        else
         {
-            // DEBUG
-
-            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
-                logger.debug(" Access denied", ex);
-
-            // Session does not have write access to the filesystem
-
-            sendFTPResponse(550, "Access denied");
-        }
-        catch (SocketException ex)
-        {
-            // DEBUG
-
-            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
-                logger.debug(" Error during transfer", ex);
-
-            // Close the data socket to the client
-
-            if (m_dataSess != null)
-            {
-                getFTPServer().releaseDataSession(m_dataSess);
-                m_dataSess = null;
-            }
-
-            // Indicate that there was an error during transmission of the file
-            // data
-
-            sendFTPResponse(426, "Data connection closed by client");
-        }
-        catch (DiskFullException ex)
-        {
-
-            // DEBUG
-
-            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
-                logger.debug(" Error during transfer", ex);
-
-            // Close the data socket to the client
-
-            if (m_dataSess != null)
-            {
-                getFTPServer().releaseDataSession(m_dataSess);
-                m_dataSess = null;
-            }
-
-            // Indicate that there was an error during writing of the file
-
-            sendFTPResponse(451, "Disk full");
-        }
-        catch (Exception ex)
-        {
-
-            // DEBUG
-
-            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
-                logger.debug(" Error during transfer", ex);
-
-            // Indicate that there was an error during transmission of the file
-            // data
-
-            sendFTPResponse(426, "Error during transmission");
-        }
-        finally
-        {
-
-            // Close the network file
-
-            if (netFile != null && disk != null && tree != null)
-                disk.closeFile(this, tree, netFile);
-
-            // Close the input stream to the client
-
-            if (is != null)
-                is.close();
-
-            // Close the data connection to the client
-
-            if (m_dataSess != null)
-            {
-                getFTPServer().releaseDataSession(m_dataSess);
-                m_dataSess = null;
-            }
+	        // Send the file to the client
+	
+	        InputStream is = null;
+	        DiskInterface disk = null;
+	        TreeConnection tree = null;
+	        NetworkFile netFile = null;
+	
+	        try
+	        {
+	
+	            // Create a temporary tree connection
+	
+	            tree = getTreeConnection(ftpPath.getSharedDevice());
+	
+	            // Check if the session has the required access to the filesystem
+	
+	            if (tree == null || tree.hasWriteAccess() == false)
+	            {
+	
+	                // Session does not have write access to the filesystem
+	
+	                sendFTPResponse(550, "Access denied");
+	                return;
+	            }
+	
+	            // Check if the file exists
+	
+	            disk = (DiskInterface) ftpPath.getSharedDevice().getInterface();
+	            int sts = disk.fileExists(this, tree, ftpPath.getSharePath());
+	
+	            if (sts == FileStatus.DirectoryExists)
+	            {
+	
+	                // Return an error status
+	
+	                sendFTPResponse(500, "Invalid path (existing directory)");
+	                return;
+	            }
+	
+	            // Create the file open parameters
+	
+	            FileOpenParams params = new FileOpenParams(ftpPath.getSharePath(),
+	                    sts == FileStatus.FileExists ? FileAction.TruncateExisting : FileAction.CreateNotExist,
+	                    AccessMode.ReadWrite, 0);
+	
+	            // Create a new file to receive the data
+	
+	            if (sts == FileStatus.FileExists)
+	            {
+	
+	                // Overwrite the existing file
+	
+	                netFile = disk.openFile(this, tree, params);
+	            }
+	            else
+	            {
+	
+	                // Create a new file
+	
+	                netFile = disk.createFile(this, tree, params);
+	            }
+	
+	            // Notify change listeners that a new file has been created
+	
+	            DiskDeviceContext diskCtx = (DiskDeviceContext) tree.getContext();
+	
+	            if (diskCtx.hasChangeHandler())
+	                diskCtx.getChangeHandler().notifyFileChanged(NotifyChange.ActionAdded, ftpPath.getSharePath());
+	
+	            // Send the intermediate response
+	
+	            sendFTPResponse(150, "File status okay, about to open data connection");
+	
+	            // Check if there is an active data session
+	
+	            if (m_dataSess == null)
+	            {
+	                sendFTPResponse(425, "Can't open data connection");
+	                return;
+	            }
+	
+	            // Get the data connection socket
+	
+	            Socket dataSock = null;
+	
+	            try
+	            {
+	                dataSock = m_dataSess.getSocket();
+	            }
+	            catch (Exception ex)
+	            {
+	            }
+	
+	            if (dataSock == null)
+	            {
+	                sendFTPResponse(426, "Connection closed; transfer aborted");
+	                return;
+	            }
+	
+	            // Open an input stream from the client
+	
+	            is = dataSock.getInputStream();
+	
+	            // DEBUG
+	
+	            if (logger.isDebugEnabled() && hasDebug(DBG_FILE))
+	                logger.debug("Storing ftp="
+	                        + ftpPath.getFTPPath() + ", share=" + ftpPath.getShareName() + ", path="
+	                        + ftpPath.getSharePath());
+	
+	            // Allocate the buffer for the file data
+	
+	            byte[] buf = new byte[DEFAULT_BUFFERSIZE];
+	            long filePos = 0;
+	            int len = is.read(buf, 0, buf.length);
+	
+	            while (len > 0)
+	            {
+	
+	                // DEBUG
+	
+	                if (logger.isDebugEnabled() && hasDebug(DBG_FILEIO))
+	                    logger.debug(" Receive len=" + len + " bytes");
+	
+	                // Write the current data block to the file, update the file
+	                // position
+	
+	                disk.writeFile(this, tree, netFile, buf, 0, len, filePos);
+	                filePos += len;
+	
+	                // Read another block of data from the client
+	
+	                len = is.read(buf, 0, buf.length);
+	            }
+	
+	            // Close the input stream from the client
+	
+	            is.close();
+	            is = null;
+	
+	            // Close the network file
+	
+	            disk.closeFile(this, tree, netFile);
+	            netFile = null;
+	
+	            // Indicate that the file has been received
+	
+	            sendFTPResponse(226, "Closing data connection");
+	
+	            // DEBUG
+	
+	            if (logger.isDebugEnabled() && hasDebug(DBG_FILEIO))
+	                logger.debug(" Transfer complete, file closed");
+	        }
+	        catch( AccessDeniedException ex)
+	        {
+	            // DEBUG
+	
+	            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
+	                logger.debug(" Access denied", ex);
+	
+	            // Session does not have write access to the filesystem
+	
+	            sendFTPResponse(550, "Access denied");
+	        }
+	        catch (SocketException ex)
+	        {
+	            // DEBUG
+	
+	            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
+	                logger.debug(" Error during transfer", ex);
+	
+	            // Close the data socket to the client
+	
+	            if (m_dataSess != null)
+	            {
+	                getFTPServer().releaseDataSession(m_dataSess);
+	                m_dataSess = null;
+	            }
+	
+	            // Indicate that there was an error during transmission of the file
+	            // data
+	
+	            sendFTPResponse(426, "Data connection closed by client");
+	        }
+	        catch (DiskFullException ex)
+	        {
+	
+	            // DEBUG
+	
+	            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
+	                logger.debug(" Error during transfer", ex);
+	
+	            // Close the data socket to the client
+	
+	            if (m_dataSess != null)
+	            {
+	                getFTPServer().releaseDataSession(m_dataSess);
+	                m_dataSess = null;
+	            }
+	
+	            // Indicate that there was an error during writing of the file
+	
+	            sendFTPResponse(451, "Disk full");
+	        }
+	        catch (Exception ex)
+	        {
+	
+	            // DEBUG
+	
+	            if (logger.isDebugEnabled() && hasDebug(DBG_ERROR))
+	                logger.debug(" Error during transfer", ex);
+	
+	            // Indicate that there was an error during transmission of the file
+	            // data
+	
+	            sendFTPResponse(426, "Error during transmission");
+	        }
+	        finally
+	        {
+	
+	            // Close the network file
+	
+	            if (netFile != null && disk != null && tree != null)
+	                disk.closeFile(this, tree, netFile);
+	
+	            // Close the input stream to the client
+	
+	            if (is != null)
+	                is.close();
+	
+	            // Close the data connection to the client
+	
+	            if (m_dataSess != null)
+	            {
+	                getFTPServer().releaseDataSession(m_dataSess);
+	                m_dataSess = null;
+	            }
+	        }
         }
     }
 
     /**
      * Process a delete file command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procDeleteFile(FTPRequest req) throws IOException
@@ -2342,8 +2359,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a rename from command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procRenameFrom(FTPRequest req) throws IOException
@@ -2445,8 +2461,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a rename to command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procRenameTo(FTPRequest req) throws IOException
@@ -2573,8 +2588,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a create directory command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procCreateDirectory(FTPRequest req) throws IOException
@@ -2682,8 +2696,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a delete directory command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procRemoveDirectory(FTPRequest req) throws IOException
@@ -2800,8 +2813,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a modify date/time command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procModifyDateTime(FTPRequest req) throws IOException
@@ -2815,8 +2827,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a file size command
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procFileSize(FTPRequest req) throws IOException
@@ -2892,8 +2903,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a structure command. This command is obsolete.
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procStructure(FTPRequest req) throws IOException
@@ -2912,8 +2922,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
     /**
      * Process a mode command. This command is obsolete.
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procMode(FTPRequest req) throws IOException
@@ -2930,10 +2939,44 @@ public class FTPSrvSession extends SrvSession implements Runnable
     }
 
     /**
+     * Abort an active file transfer
+     * 
+     * @param req FTPRequest
+     * @exception IOException
+     */
+    protected final void procAbort(FTPRequest req) throws IOException
+    {
+    	// Check if threaded transfers are enabled
+    	
+    	if ( UseThreadedDataTransfer == true)
+    	{
+    		// Check if there is an active data connection
+    		
+    		if ( m_dataSess != null)
+    		{
+    			// Abort the data transfer
+    			
+    			m_dataSess.abortTransfer();
+    		}
+    		else
+    		{
+    			// Send an error status, no transfer in progress
+    			
+    			sendFTPResponse( 226, "Data connection not active");
+    		}
+    	}
+    	else
+    	{
+    		// Abort not implemented for inline transfers
+    		
+    		sendFTPResponse( 502, "Abort not implemented");
+    	}
+    }
+    
+    /**
      * Process an allocate command. This command is obsolete.
      * 
-     * @param req
-     *            FTPRequest
+     * @param req FTPRequest
      * @exception IOException
      */
     protected final void procAllocate(FTPRequest req) throws IOException
@@ -2948,12 +2991,9 @@ public class FTPSrvSession extends SrvSession implements Runnable
      * Build a list of file name or file information objects for the specified
      * server path
      * 
-     * @param path
-     *            FTPPath
-     * @param nameOnly
-     *            boolean
-     * @param hidden
-     *            boolean
+     * @param path FTPPath
+     * @param nameOnly boolean
+     * @param hidden boolean
      * @return Vector<FileInfo>
      */
     protected final Vector<FileInfo> listFilesForPath(FTPPath path, boolean nameOnly, boolean hidden)
@@ -3144,8 +3184,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
      * Get a tree connection for the specified shared device. Creates and caches
      * a new tree connection if required.
      * 
-     * @param share
-     *            SharedDevice
+     * @param share SharedDevice
      * @return TreeConnection
      */
     protected final TreeConnection getTreeConnection(SharedDevice share)
@@ -3338,7 +3377,6 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
                 switch (ftpReq.isCommand())
                 {
-
                 // User command
 
                 case FTPCommand.User:
@@ -3516,6 +3554,12 @@ public class FTPSrvSession extends SrvSession implements Runnable
                     procAllocate(ftpReq);
                     break;
 
+                // Abort an active file data transfer
+                    
+                case FTPCommand.Abor:
+                	procAbort(ftpReq);
+                	break;
+                	
                 // Unknown/unimplemented command
 
                 default:
@@ -3599,5 +3643,34 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
         if (hasDebug(DBG_STATE))
             logger.debug("Server session closed");
+    }
+    
+    /**
+     * Authenticate an associated FTP data session using the same credentials as the main FTP session
+     * 
+     * @exception AuthenticationException
+     */
+    protected void authenticateDataSession() throws org.alfresco.repo.security.authentication.AuthenticationException
+    {
+        // Use the normal authentication service as we have the plaintext password
+        
+        AuthenticationService authService = getServer().getConfiguration().getAuthenticationService();
+        
+        // Authenticate the user
+
+        ClientInfo cInfo = getClientInformation();
+        
+        if ( cInfo.isGuest())
+        {
+            // Authenticate as the guest user
+            
+            authService.authenticateAsGuest();
+        }
+        else
+        {
+            // Authenticate as a normal user
+
+            authService.authenticate( cInfo.getUserName(), cInfo.getPasswordAsCharArray());
+        }
     }
 }

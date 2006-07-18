@@ -39,7 +39,7 @@ public class Win32NetBIOSLanaMonitor extends Thread
     //
     // Initial LANA listener array size
     
-    private static final int LanaListenerArraySize  = 16;
+    private static final int LanaListenerArraySize  = 256;
     
     // Debug logging
 
@@ -153,24 +153,7 @@ public class Win32NetBIOSLanaMonitor extends Thread
         // Check if the listener array has been allocated
         
         if ( m_listeners == null)
-        {
-            int len = LanaListenerArraySize;
-            if ( lana > len)
-                len = (lana + 3) & 0x00FC;
-            
-            m_listeners = new LanaListener[len];
-        }
-        else if ( lana >= m_listeners.length)
-        {
-            // Extend the LANA listener array
-            
-            LanaListener[] newArray = new LanaListener[(lana + 3) & 0x00FC];
-           
-            // Copy the existing array to the extended array
-            
-            System.arraycopy(m_listeners, 0, newArray, 0, m_listeners.length);
-            m_listeners = newArray;
-        }
+            m_listeners = new LanaListener[LanaListenerArraySize];
         
         //  Add the LANA listener
         
@@ -343,6 +326,10 @@ public class Win32NetBIOSLanaMonitor extends Thread
 
                             m_lanas.set(lana);
                             m_lanaSts.set(lana, true);
+                            
+                            // Add a listener for the new LANA
+                            
+                            addLanaListener( sessHandler.getLANANumber(), sessHandler);
                         }
                     }
                     else

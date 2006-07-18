@@ -217,7 +217,7 @@
                         <value>imconvert "${source}" ${options} "${target}"</value>
                     </entry>
                     <entry key=".*">
-                        <value>imconvert ${source} ${options} ${target}</value>
+                        <value>convert ${source} ${options} ${target}</value>
                     </entry>
                 </map>
             </property>

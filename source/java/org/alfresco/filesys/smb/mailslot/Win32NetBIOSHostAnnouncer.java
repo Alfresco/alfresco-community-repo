@@ -120,6 +120,6 @@ public class Win32NetBIOSHostAnnouncer extends HostAnnouncer
 
         int sts = Win32NetBIOS.SendDatagram(getLana(), getNameNumber(), destName, buf, 0, len);
         if ( sts != NetBIOS.NRC_GoodRet)
-            logger.debug("Win32NetBIOS host announce error " + NetBIOS.getErrorString( -sts));
+            logger.debug("Win32NetBIOS host announce error " + NetBIOS.getErrorString( -sts) + " (LANA " + getLana() + ")");
     }
 }

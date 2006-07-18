@@ -59,6 +59,14 @@ public class CheckinCheckoutBean
    // Bean property getters and setters 
    
    /**
+    * @param navigator The NavigationBean to set.
+    */
+   public void setNavigator(NavigationBean navigator)
+   {
+      this.navigator = navigator;
+   }
+   
+   /**
     * @return Returns the BrowseBean.
     */
    public BrowseBean getBrowseBean()
@@ -535,6 +543,7 @@ public class CheckinCheckoutBean
       String id = params.get("id");
       if (id != null && id.length() != 0)
       {
+         boolean editingInline = false;
          Node node = setupContentDocument(id);
          
          // detect the inline editing aspect to see which edit mode to use
@@ -544,50 +553,44 @@ public class CheckinCheckoutBean
          {
             // retrieve the content reader for this node
             ContentReader reader = getContentService().getReader(node.getNodeRef(), ContentModel.PROP_CONTENT);
-            String mimetype = reader.getMimetype();
-            
-            // calculate which editor screen to display
-            if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(mimetype) ||
-                MimetypeMap.MIMETYPE_XML.equals(mimetype) ||
-                MimetypeMap.MIMETYPE_TEXT_CSS.equals(mimetype) ||
-                MimetypeMap.MIMETYPE_JAVASCRIPT.equals(mimetype))
+            if (reader != null)
             {
-               // make content available to the editing screen
-               if (reader != null)
+               editingInline = true;
+               String mimetype = reader.getMimetype();
+               
+               // calculate which editor screen to display
+               if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(mimetype) ||
+                   MimetypeMap.MIMETYPE_XML.equals(mimetype) ||
+                   MimetypeMap.MIMETYPE_TEXT_CSS.equals(mimetype) ||
+                   MimetypeMap.MIMETYPE_JAVASCRIPT.equals(mimetype))
                {
+                  // make content available to the editing screen
                   setEditorOutput(reader.getContentString());
+                  
+                  // navigate to appropriate screen
+                  FacesContext fc = FacesContext.getCurrentInstance();
+                  this.navigator.setupDispatchContext(node);
+                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "editTextInline");
                }
                else
                {
-                  setEditorOutput("");
-               }
-               
-               // navigate to appropriate screen
-               FacesContext fc = FacesContext.getCurrentInstance();
-               fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "editTextInline");
-            }
-            else
-            {
-               // make content available to the editing screen
-               if (reader != null)
-               {
+                  // make content available to the editing screen
                   setDocumentContent(reader.getContentString());
+                  setEditorOutput(null);
+                  
+                  // navigate to appropriate screen
+                  FacesContext fc = FacesContext.getCurrentInstance();
+                  this.navigator.setupDispatchContext(node);
+                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "editHtmlInline");
                }
-               else
-               {
-                  setDocumentContent("");
-               }
-               setEditorOutput(null);
-               
-               // navigate to appropriate screen
-               FacesContext fc = FacesContext.getCurrentInstance();
-               fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "editHtmlInline");
             }
          }
-         else
+         
+         if (editingInline == false)
          {
             // normal downloadable document
             FacesContext fc = FacesContext.getCurrentInstance();
+            this.navigator.setupDispatchContext(node);
             fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "editFile");
          }
       }
@@ -750,7 +753,6 @@ public class CheckinCheckoutBean
             // we can either checkin the content from the current working copy node
             // which would have been previously updated by the user
             String contentUrl;
-            String mimetype;
             if (getCopyLocation().equals(COPYLOCATION_CURRENT))
             {
                ContentData contentData = (ContentData) node.getProperties().get(ContentModel.PROP_CONTENT);
@@ -785,11 +787,9 @@ public class CheckinCheckoutBean
                props.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
             }
             
-            NodeRef originalDoc = this.versionOperationsService.checkin(
-                  node.getNodeRef(),
-                  props,
-                  contentUrl, 
-                  this.keepCheckedOut);
+            // perform the checkin
+            this.versionOperationsService.checkin(node.getNodeRef(),
+                  props, contentUrl, this.keepCheckedOut);
             
             // commit the transaction
             tx.commit();
@@ -940,6 +940,9 @@ public class CheckinCheckoutBean
    
    /** The BrowseBean to be used by the bean */
    protected BrowseBean browseBean;
+   
+   /** The NavigationBean bean reference */
+   protected NavigationBean navigator;
    
    /** The NodeService to be used by the bean */
    protected NodeService nodeService;

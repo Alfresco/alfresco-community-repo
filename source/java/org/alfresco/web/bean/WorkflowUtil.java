@@ -124,7 +124,7 @@ public class WorkflowUtil
       // first we need to take off the simpleworkflow aspect
       nodeService.removeAspect(ref, ContentModel.ASPECT_SIMPLE_WORKFLOW);
       
-      if (rejectMove.booleanValue())
+      if (rejectMove != null && rejectMove.booleanValue())
       {
          // move the document to the specified folder
          String qname = QName.createValidLocalName(docNode.getName());

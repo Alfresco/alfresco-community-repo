@@ -28,8 +28,6 @@ import javax.faces.el.ValueBinding;
 
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Dynamic description component that switches text based on the events
@@ -39,7 +37,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class UIDynamicDescription extends SelfRenderingComponent
 {
-   private static Log logger = LogFactory.getLog(UIDynamicDescription.class);
    private String selected;
    private String functionName;
    
@@ -141,6 +138,7 @@ public class UIDynamicDescription extends SelfRenderingComponent
    /**
     * @see javax.faces.component.UIComponent#encodeChildren(javax.faces.context.FacesContext)
     */
+   @SuppressWarnings("unchecked")
    public void encodeChildren(FacesContext context) throws IOException
    {
       if (this.isRendered() == false)
@@ -240,6 +238,7 @@ public class UIDynamicDescription extends SelfRenderingComponent
     * @param context The faces context
     * @param descriptions The descriptions to render
     */
+   @SuppressWarnings("unchecked")
    private void renderDescriptions(FacesContext context, UIDescriptions descriptions)
       throws IOException
    {

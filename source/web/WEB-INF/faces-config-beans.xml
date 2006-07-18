@@ -884,6 +884,10 @@
          <value>#{BrowseBean}</value>
       </managed-property>
       <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
          <property-name>nodeService</property-name>
          <value>#{NodeService}</value>
       </managed-property>

@@ -327,7 +327,7 @@ public class RulesBean implements IContextListener
     * Inner class to wrap the Rule objects so we can expose a flag to indicate whether
     * the rule is a local or inherited rule
     */
-   public class WrappedRule
+   public static class WrappedRule
    {
       private Rule rule;
       private NodeRef ruleNode;

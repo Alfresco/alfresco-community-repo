@@ -311,6 +311,13 @@ public class ClipboardBean
                       dd.isSubClass(item.Node.getType(), ContentModel.TYPE_FOLDER))
                   {
                      // copy the file/folder
+                     // first check that we are not attempting to copy a duplicate into the same parent
+                     if (destRef.equals(assocRef.getParentRef()) && name.equals(item.Node.getName()))
+                     {
+                        // manually change the name if this occurs
+                        String copyOf = Application.getMessage(FacesContext.getCurrentInstance(), MSG_COPY_OF);
+                        name = copyOf + ' ' + name;
+                     }
                      this.fileFolderService.copy(
                            item.Node.getNodeRef(),
                            destRef,

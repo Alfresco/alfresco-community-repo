@@ -289,14 +289,9 @@ public class UsersBean implements IContextListener
     */
    public String deleteOK()
    {
-      UserTransaction tx = null;
-
+      FacesContext context = FacesContext.getCurrentInstance();
       try
       {
-         FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context);
-         tx.begin();
-         
          String userName = (String)getPerson().getProperties().get("userName");
          
          // we only delete the user auth if Alfresco is managing the authentication 
@@ -310,15 +305,12 @@ public class UsersBean implements IContextListener
             }
             catch (AuthenticationException authErr)
             {
-               Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(), ERROR_USER_DELETE));
+               Utils.addErrorMessage(Application.getMessage(context, ERROR_USER_DELETE));
             }
          }
          
          // delete the associated Person
          this.personService.deletePerson(userName);
-         
-         // commit the transaction
-         tx.commit();
          
          // re-do the search to refresh the list
          search();
@@ -326,9 +318,8 @@ public class UsersBean implements IContextListener
       catch (Throwable e)
       {
          // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext
-               .getCurrentInstance(), ERROR_DELETE), e.getMessage()), e);
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(context,
+               ERROR_DELETE), e.getMessage()), e);
       }
       
       return DIALOG_CLOSE;

@@ -1531,7 +1531,11 @@ public class AdvancedSearchBean
                   AspectDefinition aspectDef = dd.getAspect(aspect);
                   propDef = aspectDef.getProperties().get(propQName);
                }
-               customPropertyLookup.put(propQName.toString(), propDef.getDataType());
+               
+               if (propQName != null && propDef != null)
+               {
+                  customPropertyLookup.put(propQName.toString(), propDef.getDataType());
+               }
             }
          }
       }

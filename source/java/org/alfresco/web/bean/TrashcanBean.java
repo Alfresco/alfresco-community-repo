@@ -36,6 +36,7 @@ import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -537,6 +538,20 @@ public class TrashcanBean implements IContextListener
       }
    };
    
+   private NodePropertyResolver resolverMimetype = new NodePropertyResolver() {
+      public Object get(Node node) {
+         ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
+         return (content != null ? content.getMimetype() : null);
+      }
+   };
+   
+   private NodePropertyResolver resolverSize = new NodePropertyResolver() {
+      public Object get(Node node) {
+         ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
+         return (content != null ? new Long(content.getSize()) : 0L);
+      }
+   };
+   
    private NodePropertyResolver resolverDeletedDate = new NodePropertyResolver() {
       public Object get(Node node) {
          return node.getProperties().get(ContentModel.PROP_ARCHIVED_DATE);
@@ -613,6 +628,8 @@ public class TrashcanBean implements IContextListener
             node.addPropertyResolver("deletedDate", resolverDeletedDate);
             node.addPropertyResolver("deletedBy", resolverDeletedBy);
             node.addPropertyResolver("isFolder", resolverIsFolder);
+            node.addPropertyResolver("mimetype", resolverMimetype);
+            node.addPropertyResolver("size", resolverSize);
             
             if (this.dictionaryService.isSubClass(node.getType(), ContentModel.TYPE_FOLDER) == true && 
                 this.dictionaryService.isSubClass(node.getType(), ContentModel.TYPE_SYSTEM_FOLDER) == false)

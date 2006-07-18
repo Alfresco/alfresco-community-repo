@@ -10,6 +10,7 @@ import java.util.ResourceBundle;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
+import org.alfresco.repo.action.executer.CheckInActionExecuter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -26,8 +27,18 @@ import org.alfresco.web.data.QuickSort;
  */
 public class RunActionWizard extends BaseActionWizard
 {
+   protected boolean checkinActionPresent = false;
+   
    // ------------------------------------------------------------------------------
    // Wizard implementation
+   
+   @Override
+   public void init(Map<String, String> parameters)
+   {
+      super.init(parameters);
+      
+      this.checkinActionPresent = false;
+   }
    
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception
@@ -39,6 +50,12 @@ public class RunActionWizard extends BaseActionWizard
          // to setup the currentActionProperties and action variables
          String actionName = (String)actionParams.get(PROP_ACTION_NAME);
          this.action = actionName;
+         
+         // remember the fact we have a checkin action
+         if (actionName.equals(CheckInActionExecuter.NAME))
+         {
+            this.checkinActionPresent = true;
+         }
          
          // get the action handler to prepare for the save
          Map<String, Serializable> repoActionParams = new HashMap<String, Serializable>();
@@ -102,6 +119,14 @@ public class RunActionWizard extends BaseActionWizard
       if (space != null)
       {
          space.reset();
+      }
+      
+      // special case handling for checkin - if it was successful the working
+      // copy node the Run Action Wizard was launched against will no longer
+      // exist, we therefore need the client to go back to the main browse view.
+      if (this.checkinActionPresent)
+      {
+         outcome = "browse";
       }
       
       return outcome;

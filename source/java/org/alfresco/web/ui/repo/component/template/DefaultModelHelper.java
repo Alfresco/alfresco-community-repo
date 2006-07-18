@@ -103,7 +103,7 @@ public class DefaultModelHelper
    }
    
    /** Template Image resolver helper */
-   public static TemplateImageResolver imageResolver = new TemplateImageResolver()
+   public static final TemplateImageResolver imageResolver = new TemplateImageResolver()
    {
        public String resolveImagePathForName(String filename, boolean small)
        {

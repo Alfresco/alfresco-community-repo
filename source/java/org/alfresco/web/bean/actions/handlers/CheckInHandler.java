@@ -23,7 +23,7 @@ public class CheckInHandler extends BaseActionHandler
    @Override
    public void setupUIDefaults(Map<String, Serializable> actionProps)
    {
-      actionProps.put(PROP_CHECKIN_MINOR, new Boolean(true));
+      actionProps.put(PROP_CHECKIN_MINOR, Boolean.TRUE);
    }
 
    public String getJSPPath()

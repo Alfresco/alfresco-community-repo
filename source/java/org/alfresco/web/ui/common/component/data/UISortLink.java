@@ -65,7 +65,7 @@ public class UISortLink extends UICommand
       boolean bPreviouslySorted = false;
       boolean descending = true;
       String lastSortedColumn = dataContainer.getCurrentSortColumn();
-      if (lastSortedColumn == (String)getValue())
+      if (lastSortedColumn.equals(getValue()))
       {
          descending = !dataContainer.isCurrentSortDescending();
          bPreviouslySorted = true;

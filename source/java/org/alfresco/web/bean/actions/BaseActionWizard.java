@@ -230,24 +230,31 @@ public abstract class BaseActionWizard extends BaseWizardBean
                {
                   QName idQName = Repository.resolveToQName(child.getAttribute("name"));
 
-                  // try and get the display label from config
-                  String label = Utils.getDisplayLabel(context, child);
-
-                  // if there wasn't a client based label try and get it from the dictionary
-                  if (label == null)
+                  if (idQName != null)
                   {
-                     AspectDefinition aspectDef = this.dictionaryService.getAspect(idQName);
-                     if (aspectDef != null)
+                     // try and get the display label from config
+                     String label = Utils.getDisplayLabel(context, child);
+   
+                     // if there wasn't a client based label try and get it from the dictionary
+                     if (label == null)
                      {
-                        label = aspectDef.getTitle();
+                        AspectDefinition aspectDef = this.dictionaryService.getAspect(idQName);
+                        if (aspectDef != null)
+                        {
+                           label = aspectDef.getTitle();
+                        }
+                        else
+                        {
+                           label = idQName.getLocalName();
+                        }
                      }
-                     else
-                     {
-                        label = idQName.getLocalName();
-                     }
+                     
+                     this.aspects.add(new SelectItem(idQName.toString(), label));
                   }
-                  
-                  this.aspects.add(new SelectItem(idQName.toString(), label));
+                  else
+                  {
+                     logger.warn("Failed to resolve aspect '" + child.getAttribute("name") + "'");
+                  }
                }
                
                // make sure the list is sorted by the label
@@ -873,6 +880,11 @@ public abstract class BaseActionWizard extends BaseWizardBean
          {
             return false;
          }
+      }
+      
+      public int hashCode()
+      {
+         return authority.hashCode();
       }
       
       private String name;

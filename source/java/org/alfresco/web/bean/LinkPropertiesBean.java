@@ -137,7 +137,7 @@ public class LinkPropertiesBean
          Map<String, Object> props = this.editableNode.getProperties();
          
          // get the name and move the node as necessary
-         String name = (String)props.get(ContentModel.PROP_NAME);
+         //String name = (String)props.get(ContentModel.PROP_NAME);
          //if (name != null)
          //{
          //   fileFolderService.rename(nodeRef, name);

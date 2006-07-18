@@ -16,7 +16,6 @@
  */
 package org.alfresco.web.action.evaluator;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;

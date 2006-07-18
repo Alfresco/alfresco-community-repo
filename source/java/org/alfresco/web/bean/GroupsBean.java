@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
@@ -568,16 +569,21 @@ public class GroupsBean implements IContextListener
                services.getNamespaceService(),
                false);
          
-         items = new SelectItem[nodes.size()];
-         for (int index=0; index<nodes.size(); index++)
+         ArrayList<SelectItem> itemList = new ArrayList<SelectItem>(nodes.size());
+         for (NodeRef personRef : nodes)
          {
-            NodeRef personRef = nodes.get(index);
-            String firstName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
-            String lastName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
             String username = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
-            SelectItem item = new SortableSelectItem(username, firstName + " " + lastName, lastName);
-            items[index] = item;
+            if (PermissionService.GUEST_AUTHORITY.equals(username) == false)
+            {
+               String firstName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
+               String lastName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
+               
+               SelectItem item = new SortableSelectItem(username, firstName + " " + lastName, lastName);
+               itemList.add(item);
+            }
          }
+         items = new SelectItem[itemList.size()];
+         itemList.toArray(items);
          
          // commit the transaction
          tx.commit();

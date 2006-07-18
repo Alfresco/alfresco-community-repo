@@ -261,13 +261,13 @@ public class TemplateContentServlet extends BaseServlet
    private Object getModel(ServiceRegistry services, HttpServletRequest req, NodeRef templateRef, NodeRef nodeRef)
    {
       // build FreeMarker default model and merge
-      Map root = DefaultModelHelper.buildDefaultModel(services, Application.getCurrentUser(req.getSession())); 
+      Map root = DefaultModelHelper.buildDefaultModel(
+            services, Application.getCurrentUser(req.getSession()), templateRef); 
       
       // put the current NodeRef in as "space" and "document"
       TemplateNode node = new TemplateNode(nodeRef, services, this.imageResolver);
       root.put("space", node);
       root.put("document", node);
-      root.put("template", new TemplateNode(templateRef, services, this.imageResolver));
       
       // add URL arguments as a map called 'args' to the root of the model
       Map<String, String> args = new HashMap<String, String>(8, 1.0f);

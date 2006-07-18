@@ -58,7 +58,7 @@ public class DefaultModelHelper
     * 
     * @return Map containing the default model.
     */
-   public static Map<String, Object> buildDefaultModel(ServiceRegistry services, User user)
+   public static Map<String, Object> buildDefaultModel(ServiceRegistry services, User user, NodeRef template)
    {
       if (services == null)
       {
@@ -84,6 +84,12 @@ public class DefaultModelHelper
       
       // supply the current user Node as "person"
       root.put("person", new TemplateNode(user.getPerson(), services, imageResolver));
+      
+      // add the template itself as "template" if it comes from content on a node
+      if (template != null)
+      {
+         root.put("template", new TemplateNode(template, services, imageResolver));
+      }
       
       // current date/time is useful to have and isn't supplied by FreeMarker by default
       root.put("date", new Date());

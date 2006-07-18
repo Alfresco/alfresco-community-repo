@@ -35,32 +35,6 @@
                         ignore-if-missing="false" />
       </property-sheet>
    </config>
-   
-   <config evaluator="node-type" condition="fm:forums">
-      <property-sheet>
-         <show-property name="name"/>
-         <show-property name="description"/>
-         <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
-                        component-generator="SpaceIconPickerGenerator" />
-      </property-sheet>
-   </config>
-   
-   <config evaluator="node-type" condition="fm:forum">
-      <property-sheet>
-         <show-property name="name"/>
-         <show-property name="description"/>
-         <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
-                        component-generator="SpaceIconPickerGenerator" />
-      </property-sheet>
-   </config>
-   
-   <config evaluator="node-type" condition="fm:topic">
-      <property-sheet>
-         <show-property name="name" display-label-id="subject" />
-         <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
-                        component-generator="SpaceIconPickerGenerator" />
-      </property-sheet>
-   </config>
 
    <config evaluator="node-type" condition="dictionaryModel">
       <property-sheet>  
@@ -97,11 +71,25 @@
       <property-sheet>
          <!-- The 'name' property isn't part of the titled aspect -->
          <!-- but it's presence here will force it to the top of the -->
-         <!-- list when custom types are defined in  -->
+         <!-- list when custom content types are defined in  -->
          <!-- web-client-config-custom.xml -->
          <show-property name="name" />
          <show-property name="title" />
          <show-property name="description" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="app:uifacets">
+      <property-sheet>
+         <!-- The 'name' property isn't part of the uifacets aspect -->
+         <!-- but it's presence here will force it to the top of the -->
+         <!-- list when custom folder types are defined in  -->
+         <!-- web-client-config-custom.xml -->
+         <show-property name="name" />
+         <show-property name="title" />
+         <show-property name="description" />
+         <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
+                        component-generator="SpaceIconPickerGenerator" />
       </property-sheet>
    </config>
    
@@ -181,6 +169,41 @@
       <property-sheet>
          <show-property name="sys:archivedBy" />
          <show-property name="sys:archivedDate" />
+      </property-sheet>
+   </config>
+   
+   <!-- Configuration for discussion types -->
+   
+   <config evaluator="node-type" condition="fm:forums">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="description"/>
+         <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
+                        component-generator="SpaceIconPickerGenerator" />
+         <!-- hide the title property -->
+         <show-property name="title" show-in-view-mode="false" show-in-edit-mode="false" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="fm:forum">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="description"/>
+         <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
+                        component-generator="SpaceIconPickerGenerator" />
+         <!-- hide the title property -->
+         <show-property name="title" show-in-view-mode="false" show-in-edit-mode="false" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="fm:topic">
+      <property-sheet>
+         <show-property name="name" display-label-id="subject" />
+         <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
+                        component-generator="SpaceIconPickerGenerator" />
+         <!-- hide the description and title properties -->
+         <show-property name="description" show-in-view-mode="false" show-in-edit-mode="false" />
+         <show-property name="title" show-in-view-mode="false" show-in-edit-mode="false" />
       </property-sheet>
    </config>
    

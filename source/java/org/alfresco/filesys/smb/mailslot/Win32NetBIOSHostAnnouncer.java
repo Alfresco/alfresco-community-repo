@@ -32,6 +32,10 @@ import org.alfresco.filesys.smb.server.win32.Win32NetBIOSSessionSocketHandler;
 public class Win32NetBIOSHostAnnouncer extends HostAnnouncer
 {
 
+	// Number of send errors before marking the LANA as offline
+	
+	private static final int SendErrorCount	= 3;
+	
     // Associated session handler
 
     Win32NetBIOSSessionSocketHandler m_handler;
@@ -120,6 +124,36 @@ public class Win32NetBIOSHostAnnouncer extends HostAnnouncer
 
         int sts = Win32NetBIOS.SendDatagram(getLana(), getNameNumber(), destName, buf, 0, len);
         if ( sts != NetBIOS.NRC_GoodRet)
-            logger.debug("Win32NetBIOS host announce error " + NetBIOS.getErrorString( -sts) + " (LANA " + getLana() + ")");
+        {
+        	// Log the error
+
+        	if ( logger.isErrorEnabled())
+        		logger.error("Host announce error " + NetBIOS.getErrorString( -sts) +
+        				" (LANA " + getLana() + ")");
+            
+            // Update the error count
+            
+            if ( incrementErrorCount() == SendErrorCount)
+            {
+            	//	Mark the LANA as offline
+            	
+            	m_handler.lanaStatusChange( getLana(), false);
+
+            	// Clear the error count
+            	
+            	clearErrorCount();
+            	
+            	// Log the error
+
+            	if ( logger.isErrorEnabled())
+            		logger.error("Marked LANA as unavailable due to send errors");
+            }
+        }
+        else
+        {
+        	// Clear the error count
+        	
+        	clearErrorCount();
+        }
     }
 }

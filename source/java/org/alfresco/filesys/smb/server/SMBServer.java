@@ -78,7 +78,7 @@ public class SMBServer extends NetworkFileServer implements Runnable
 
     // Server type flags, used when announcing the host
 
-    private int m_srvType = ServerType.WorkStation + ServerType.Server;
+    private int m_srvType = ServerType.WorkStation + ServerType.Server + ServerType.NTServer;
 
     // Next available session id
 

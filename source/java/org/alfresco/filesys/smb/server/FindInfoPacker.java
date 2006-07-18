@@ -40,24 +40,24 @@ class FindInfoPacker
 
     // File information levels
 
-    public static final int InfoStandard = 1;
-    public static final int InfoQueryEASize = 2;
-    public static final int InfoQueryEAFromList = 3;
-    public static final int InfoDirectory = 0x101;
-    public static final int InfoFullDirectory = 0x102;
-    public static final int InfoNames = 0x103;
-    public static final int InfoDirectoryBoth = 0x104;
-    public static final int InfoMacHfsInfo = 0x302;
+    public static final int InfoStandard 			= 1;
+    public static final int InfoQueryEASize 		= 2;
+    public static final int InfoQueryEAFromList 	= 3;
+    public static final int InfoDirectory 			= 0x101;
+    public static final int InfoFullDirectory 		= 0x102;
+    public static final int InfoNames 				= 0x103;
+    public static final int InfoDirectoryBoth 		= 0x104;
+    public static final int InfoMacHfsInfo 			= 0x302;
 
     // File information fixed lengths, includes nulls on strings.
 
-    public static final int InfoStandardLen = 24;
-    public static final int InfoQueryEASizeLen = 28;
-    public static final int InfoDirectoryLen = 64;
-    public static final int InfoFullDirectoryLen = 68;
-    public static final int InfoNamesLen = 12;
-    public static final int InfoDirectoryBothLen = 94;
-    public static final int InfoMacHfsLen = 120;
+    public static final int InfoStandardLen 		= 24;
+    public static final int InfoQueryEASizeLen 		= 28;
+    public static final int InfoDirectoryLen 		= 64;
+    public static final int InfoFullDirectoryLen 	= 68;
+    public static final int InfoNamesLen 			= 12;
+    public static final int InfoDirectoryBothLen 	= 94;
+    public static final int InfoMacHfsLen 			= 120;
 
     /**
      * Pack a file information object into the specified buffer, using information level 1 format.
@@ -426,7 +426,7 @@ class FindInfoPacker
 
         // Align the buffer pointer and set the offset to the next file information entry
 
-        buf.longwordAlign();
+        buf.wordAlign();
 
         int curPos = buf.getPosition();
         buf.setPosition(startPos);
@@ -518,7 +518,7 @@ class FindInfoPacker
 
         // Align the buffer pointer and set the offset to the next file information entry
 
-        buf.longwordAlign();
+        buf.wordAlign();
 
         int curPos = buf.getPosition();
         buf.setPosition(startPos);
@@ -615,7 +615,7 @@ class FindInfoPacker
 
         // Align the buffer pointer and set the offset to the next file information entry
 
-        buf.longwordAlign();
+        buf.wordAlign();
 
         int curPos = buf.getPosition();
         buf.setPosition(startPos);
@@ -718,7 +718,7 @@ class FindInfoPacker
 
         // Align the buffer pointer and set the offset to the next file information entry
 
-        buf.longwordAlign();
+        buf.wordAlign();
 
         int curPos = buf.getPosition();
         buf.setPosition(startPos);
@@ -839,7 +839,7 @@ class FindInfoPacker
 
         // Align the buffer pointer and set the offset to the next file information entry
 
-        buf.longwordAlign();
+        buf.wordAlign();
 
         int curPos = buf.getPosition();
         buf.setPosition(startPos);

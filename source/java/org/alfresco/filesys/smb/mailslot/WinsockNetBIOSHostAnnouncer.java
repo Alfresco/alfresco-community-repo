@@ -16,6 +16,8 @@
  */
 package org.alfresco.filesys.smb.mailslot;
 
+import java.io.IOException;
+
 import org.alfresco.filesys.netbios.NetBIOSName;
 import org.alfresco.filesys.netbios.win32.NetBIOS;
 import org.alfresco.filesys.netbios.win32.NetBIOSSocket;
@@ -34,6 +36,10 @@ import org.alfresco.filesys.smb.server.win32.Win32NetBIOSSessionSocketHandler;
  */
 public class WinsockNetBIOSHostAnnouncer extends HostAnnouncer
 {
+	// Number of send errors before marking the LANA as offline
+	
+	private static final int SendErrorCount	= 3;
+	
     // Associated session handler
 
     private Win32NetBIOSSessionSocketHandler m_handler;
@@ -116,8 +122,49 @@ public class WinsockNetBIOSHostAnnouncer extends HostAnnouncer
 
         // Send the host announce datagram via the Win32 Netbios() API call
 
-        int sts = m_dgramSocket.sendDatagram(destNbName, buf, 0, len);
-        if ( sts != len)
-            logger.debug("WinsockNetBIOS host announce error");
+        boolean txOK = false;
+        
+        try
+        {
+	        int sts = m_dgramSocket.sendDatagram(destNbName, buf, 0, len);
+	        if ( sts == len)
+	        	txOK = true;
+        }
+        catch ( IOException ex)
+        {
+        	// Log the error
+
+        	if ( logger.isErrorEnabled())
+        		logger.error("Host announce error, " + ex.getMessage() + ", (LANA " + getLana() + ")");
+        }
+
+        // Check if the send was successful
+
+        if ( txOK == false)
+        {
+            // Update the error count
+            
+            if ( incrementErrorCount() == SendErrorCount)
+            {
+            	//	Mark the LANA as offline
+            	
+            	m_handler.lanaStatusChange( getLana(), false);
+
+            	// Clear the error count
+            	
+            	clearErrorCount();
+            	
+            	// Log the error
+
+            	if ( logger.isErrorEnabled())
+            		logger.error("Marked LANA as unavailable due to send errors, (LANA " + getLana() + ")");
+            }
+        }
+        else
+        {
+        	// Clear the error count
+        	
+        	clearErrorCount();
+        }
     }
 }

@@ -311,7 +311,8 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             // Set parameters
             
-            context.setFilesystemAttributes(FileSystem.CasePreservedNames);
+            context.setFilesystemAttributes(FileSystem.CasePreservedNames + FileSystem.UnicodeOnDisk +
+            		FileSystem.CaseSensitiveSearch);
         }
         catch (Exception ex)
         {
@@ -1466,15 +1467,6 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 logger.debug("Deleted file: \n" +
                         "   file: " + name + "\n" +
                         "   node: " + nodeRef);
-            }
-        }
-        catch (FileNotFoundException e)
-        {
-            // already gone
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Deleted file <alfready gone>: \n" +
-                        "   file: " + name);
             }
         }
         catch (NodeLockedException ex)

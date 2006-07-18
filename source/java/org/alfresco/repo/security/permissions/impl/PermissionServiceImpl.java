@@ -283,6 +283,13 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             return authorityType;
         }
+        
+        @Override
+        public String toString()
+        {
+            return accessStatus + " " + this.permission + " - " +
+                   this.authority + " (" + this.authorityType + ")";
+        }
 
         @Override
         public boolean equals(Object o)

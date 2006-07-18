@@ -549,4 +549,64 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         });
        
     }
+    
+    public void testAddRemoveVersionableAspect()
+    {
+    	HashMap<QName, Serializable> props2 = new HashMap<QName, Serializable>();
+        props2.put(ContentModel.PROP_NAME, "test.txt");
+        final NodeRef nodeRef = this.dbNodeService.createNode(
+                rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("{test}MyVersionableNode2"),
+                TEST_TYPE_QNAME,
+                props2).getChildRef();
+        this.dbNodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+        
+        setComplete();
+        endTransaction();
+        
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+            	// Check that the version history has been created
+                VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());
+                
+                // Remove the versionable aspect 
+                VersionServiceImplTest.this.dbNodeService.removeAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+                
+                return null;
+            }
+        });
+        
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+            	// Check that the version history has been removed
+                VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
+                assertNull(versionHistory);
+                
+                // Re-add the versionable aspect
+                VersionServiceImplTest.this.dbNodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                
+                return null;
+            }
+        });
+        
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+            	// Check that the version history has been created 
+                VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());                
+                
+                return null;
+            }
+        });
+    }
 }

@@ -349,14 +349,11 @@
         <property name="policyComponent">
             <ref bean="policyComponent" />
         </property>
-        <property name="ruleService">
-            <ref bean="ruleService"/>
+        <property name="versionService">
+            <ref bean="versionService"/>
         </property>
         <property name="nodeService">
             <ref bean="nodeService"/>
-        </property>
-        <property name="actionService">
-            <ref bean="actionService"/>
         </property>
     </bean>
 

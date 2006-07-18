@@ -17,23 +17,23 @@
 package org.alfresco.repo.version;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.executer.CreateVersionActionExecuter;
 import org.alfresco.repo.content.ContentServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
-import org.alfresco.repo.rule.RuntimeRuleService;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.rule.Rule;
-import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -42,36 +42,27 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
-public class VersionableAspect implements ContentServicePolicies.OnContentUpdatePolicy
+public class VersionableAspect implements ContentServicePolicies.OnContentUpdatePolicy, 
+										  NodeServicePolicies.OnAddAspectPolicy,
+										  NodeServicePolicies.OnRemoveAspectPolicy
 {
-    /**
-     * The policy component
-     */
+	/** The i18n'ized messages */
+	private static final String MSG_INITIAL_VERSION = "create_version.initial_version";
+	private static final String MSG_AUTO_VERSION = "create_version.auto_version";
+	
+	/** Transaction resource key */
+	private static final String KEY_INITIAL_VERSION = "initial_version_";
+	
+    /** The policy component */
 	private PolicyComponent policyComponent;
     
-    /**
-     * The node service
-     */
+    /** The node service */
     private NodeService nodeService;
     
-    /**
-     * The rule service
-     */
-    private RuleService ruleService;
-    
-    /**
-     * The action service
-     */
-    private ActionService actionService;
-    
-    /**
-     * The rule used to create versions
-     */
-    private Rule rule;
+    /** The Version service */
+    private VersionService versionService;
 
-    /**
-     * Auto version behaviour
-     */
+    /** Auto version behaviour */
     private Behaviour autoVersionBehaviour;
 	
     /**
@@ -84,25 +75,15 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
 		this.policyComponent = policyComponent;
 	}
     
-    /**
-     * Set the rule service
-     * 
-     * @param ruleService   the rule service
-     */
-    public void setRuleService(RuleService ruleService)
+	/**
+	 * Set the version service
+	 * 
+	 * @param versionService	the version service
+	 */
+    public void setVersionService(VersionService versionService) 
     {
-        this.ruleService = ruleService;
-    }
-    
-    /**
-     * Set the action service
-     * 
-     * @param actionService     the action service
-     */
-    public void setActionService(ActionService actionService)
-    {
-        this.actionService = actionService;
-    }
+		this.versionService = versionService;
+	}
     
     /**
      * Set the node service
@@ -122,8 +103,13 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
 		this.policyComponent.bindClassBehaviour(
 				QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"), 
 				ContentModel.ASPECT_VERSIONABLE, 
-                new JavaBehaviour(this, "onAddAspect"));
-        autoVersionBehaviour = new JavaBehaviour(this, "onContentUpdate");
+                new JavaBehaviour(this, "onAddAspect", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+		this.policyComponent.bindClassBehaviour(
+				QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), 
+				ContentModel.ASPECT_VERSIONABLE, 
+                new JavaBehaviour(this, "onRemoveAspect", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+		
+        autoVersionBehaviour = new JavaBehaviour(this, "onContentUpdate", Behaviour.NotificationFrequency.TRANSACTION_COMMIT);
         this.policyComponent.bindClassBehaviour(
                 ContentServicePolicies.ON_CONTENT_UPDATE,
                 ContentModel.ASPECT_VERSIONABLE,
@@ -157,28 +143,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                 ContentModel.ASPECT_VERSIONABLE, 
                 ContentModel.PROP_AUTO_VERSION, 
                 this.nodeService.getProperty(sourceNodeRef, ContentModel.PROP_AUTO_VERSION));
-    }
-    
-    /**
-     * OnCreateVersion behaviour for the version aspect
-     * <p>
-     * Ensures that the version aspect and it proerties are 'frozen' as part of
-     * the versioned state.
-     * 
-     * @param classRef              the class reference
-     * @param versionableNode       the versionable node reference
-     * @param versionProperties     the version properties
-     * @param nodeDetails           the details of the node to be versioned
-     */
-    public void onCreateVersion(
-            QName classRef,
-            NodeRef versionableNode, 
-            Map<String, Serializable> versionProperties,
-            PolicyScope nodeDetails)
-    {
-        // Do nothing since we do not what to freeze any of the version 
-        // properties
-    }
+    }   
  
 	
 	/**
@@ -187,7 +152,6 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
 	 * @param nodeRef
 	 * @param aspectTypeQName
 	 */
-	@SuppressWarnings("unchecked")
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
 	{
 	    if (aspectTypeQName.equals(ContentModel.ASPECT_VERSIONABLE) == true)
@@ -198,14 +162,28 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
             {
                 initialVersion = value.booleanValue();
             }
-            // else this means that the default vlaue has not been set the versionable aspect we applied pre-1.2
+            // else this means that the default value has not been set the versionable aspect we applied pre-1.2
             
             if (initialVersion == true)
             {
                 // Queue create version action
-                queueCreateVersionAction(nodeRef);
+            	Map<String, Serializable> versionDetails = new HashMap<String, Serializable>(1);
+            	versionDetails.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_INITIAL_VERSION));
+            	this.versionService.createVersion(nodeRef, versionDetails);
+            	
+            	// Keep track of the fact that the initial version has been created
+            	AlfrescoTransactionSupport.bindResource(KEY_INITIAL_VERSION + nodeRef.toString(), nodeRef);
             }
         }
+	}
+	
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+	public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName) 
+	{
+		// When the versionable aspect is removed from a node, then delete the associatied verison history
+		this.versionService.deleteVersionHistory(nodeRef);
 	}
     
     /**
@@ -217,21 +195,27 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     {
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
         {
-            // Determine whether the node is auto versionable or not
-            boolean autoVersion = false;
-            Boolean value = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION);
-            if (value != null)
-            {
-                // If the value is not null then 
-                autoVersion = value.booleanValue();
-            }
-            // else this means that the default value has not been set and the versionable aspect was applied pre-1.1
-            
-            if (autoVersion == true)
-            {
-                // Queue create version action
-                queueCreateVersionAction(nodeRef);
-            }
+        	// Determine whether we have already created an initial version during this transaction
+        	if (AlfrescoTransactionSupport.getResource(KEY_INITIAL_VERSION + nodeRef.toString()) == null)
+        	{
+	            // Determine whether the node is auto versionable or not
+	            boolean autoVersion = false;
+	            Boolean value = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION);
+	            if (value != null)
+	            {
+	                // If the value is not null then 
+	                autoVersion = value.booleanValue();
+	            }
+	            // else this means that the default value has not been set and the versionable aspect was applied pre-1.1
+	            
+	            if (autoVersion == true)
+	            {
+	                // Create the auto-version
+	            	Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
+	            	versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_AUTO_VERSION));
+	                this.versionService.createVersion(nodeRef, versionProperties);
+	            }
+        	}
         }
     }
     
@@ -251,24 +235,5 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     public void disableAutoVersion()
     {
         this.autoVersionBehaviour.disable();
-    }
-    
-    /**
-     * Queue create version action
-     * 
-     * @param nodeRef   the node reference
-     */
-    private void queueCreateVersionAction(NodeRef nodeRef)
-    {
-        if (this.rule == null)
-        {
-            // Create the version action rule
-            this.rule = this.ruleService.createRule("inbound");
-            Action action = this.actionService.createAction(CreateVersionActionExecuter.NAME);
-            this.rule.addAction(action);
-        }
-        
-        // Stash the rule pending execution at the end of the transaction
-        ((RuntimeRuleService)this.ruleService).addRulePendingExecution(nodeRef, nodeRef, this.rule, true);
-    }    
+    }   
 }

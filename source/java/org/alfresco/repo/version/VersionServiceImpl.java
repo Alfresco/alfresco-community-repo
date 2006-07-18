@@ -802,25 +802,6 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
         }
         
         return result;
-    }
-    
-    /**
-     * Checks the given node for the version aspect.  Throws an exception if it is not present.
-     * 
-     * @param nodeRef   the node reference
-     * @throws AspectMissingException
-     *                  the version aspect is not present on the node
-     */
-    private void checkForVersionAspect(NodeRef nodeRef)
-       throws AspectMissingException
-    {
-        QName aspectRef = ContentModel.ASPECT_VERSIONABLE;
-        
-        if (this.nodeService.hasAspect(nodeRef, aspectRef) == false)
-        {
-            // Raise exception to indicate version aspect is not present
-            throw new AspectMissingException(aspectRef, nodeRef);
-        }
     }	
     
     /**
@@ -1089,14 +1070,19 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
 	public void deleteVersionHistory(NodeRef nodeRef) 
 		throws AspectMissingException 
 	{
-		// First check that the versionable aspect is present
-		checkForVersionAspect(nodeRef);
-		
-		// Get the version history node for the node is question and delete it
+		// Get the version history node for the node is question and delete it		
 		NodeRef versionHistoryNodeRef = getVersionHistoryNodeRef(nodeRef);
-		this.dbNodeService.deleteNode(versionHistoryNodeRef);
 		
-		// Reset the version label property on the versionable node
-		this.nodeService.setProperty(nodeRef, ContentModel.PROP_VERSION_LABEL, null);
+		if (versionHistoryNodeRef != null)
+		{
+			// Delete the version history node
+			this.dbNodeService.deleteNode(versionHistoryNodeRef);
+			
+			if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
+			{
+				// Reset the version label property on the versionable node
+				this.nodeService.setProperty(nodeRef, ContentModel.PROP_VERSION_LABEL, null);
+			}
+		}
 	}
 }

@@ -483,6 +483,12 @@
         <property name="searchService">
             <ref bean="SearchService" />
         </property>
+        <property name="permissionService">
+            <ref bean="PermissionService" />
+        </property>
+        <property name="authenticationService">
+            <ref bean="AuthenticationService" />
+        </property>
     </bean>
 
     <!--                           -->

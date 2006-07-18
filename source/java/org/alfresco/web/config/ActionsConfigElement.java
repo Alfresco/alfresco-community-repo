@@ -288,7 +288,7 @@ public class ActionsConfigElement extends ConfigElementAdapter
          return this.actions;
       }
       
-      /*pacakge*/ Set<String> getHiddenActions()
+      /*package*/ Set<String> getHiddenActions()
       {
          return this.hiddenActions;
       }

@@ -16,6 +16,7 @@
          <element-reader element-name="actions" class="org.alfresco.web.config.ActionsElementReader" />
          <element-reader element-name="dialogs" class="org.alfresco.web.config.DialogsElementReader"/>
          <element-reader element-name="wizards" class="org.alfresco.web.config.WizardsElementReader"/>
+         <element-reader element-name="dashboards" class="org.alfresco.web.config.DashboardsElementReader"/>
       </element-readers>
    </plug-ins>
    
@@ -159,7 +160,37 @@
          </custom-properties>
       </advanced-search>
    </config>
-
+   
+   <config evaluator="string-compare" condition="Dashboards">
+      <!-- Dashboard layouts and available dashlets for the My Alfresco pages -->
+      <dashboards>
+         <layouts>
+            <!-- the "default" layout - will be used for all users initially -->
+            <layout id="default" columns="1" column-length="5" image="/images/icons/layout-single-column.gif"
+                  label-id="layout_single_label" description-id="layout_single_desc"
+                  jsp="/jsp/dashboards/layouts/single-column.jsp" />
+            <layout id="narrow-left-2column" columns="2" column-length="4" image="/images/icons/layout-narrow-left.gif"
+                  label-id="layout_narrow_left_label" description-id="layout_narrow_left_desc"
+                  jsp="/jsp/dashboards/layouts/narrow-left-2column.jsp" />
+            <layout id="narrow-right-2column" columns="2" column-length="4" image="/images/icons/layout-narrow-right.gif"
+                  label-id="layout_narrow_right_label" description-id="layout_narrow_right_desc"
+                  jsp="/jsp/dashboards/layouts/narrow-right-2column.jsp" />
+            <layout id="three-column" columns="3" column-length="4" image="/images/icons/layout-three-column.gif"
+                  label-id="layout_three_column_label" description-id="layout_three_column_desc"
+                  jsp="/jsp/dashboards/layouts/three-column.jsp" />
+         </layouts>
+         <dashlets>
+            <!-- this is the default dashlet shown in the default layout initially -->
+            <dashlet id="getting-started" label-id="dashlet_gettingstarted_label"
+                  description-id="dashlet_gettingstarted_desc"
+                  jsp="/jsp/dashboards/dashlets/getting-started.jsp" allow-narrow="false" />
+            <!-- TEMP -->
+            <dashlet id="task-list" label="My Tasklist" description="A description of the Task List"
+                  jsp="/jsp/dashboards/dashlets/tasklist.jsp" allow-narrow="false" />
+         </dashlets>
+      </dashboards>
+   </config>
+   
    <config evaluator="string-compare" condition="Space Wizards">
       <!-- The list of custom folder types to show in the advanced space wizard -->
       <folder-types>

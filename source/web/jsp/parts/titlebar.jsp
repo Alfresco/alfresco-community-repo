@@ -31,7 +31,7 @@
                      <a:listItem value="company" label="#{msg.company_home}" rendered="#{NavigationBean.companyHomeVisible}" />
                      <a:listItem value="home" label="#{msg.my_home}" />
                      <a:listItem value="guest" label="#{msg.guest_home}" rendered="#{NavigationBean.isGuest == false && NavigationBean.guestHomeVisible}" />
-                     <a:listItem value="myalfresco" label="#{msg.my_alfresco}" />
+                     <a:listItem value="dashboard" label="#{msg.my_alfresco}" />
                   </a:modeList>
                </td>
                <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_end.gif" width=8 height=30></td>

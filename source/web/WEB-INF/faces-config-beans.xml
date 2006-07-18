@@ -1437,6 +1437,13 @@
       <managed-bean-scope>session</managed-bean-scope>
    </managed-bean>
    
+   <managed-bean>
+		<description>Bean that manages the Dashboard framework</description>
+		<managed-bean-name>DashboardManager</managed-bean-name>
+		<managed-bean-class>org.alfresco.web.bean.dashboard.DashboardManager</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+	</managed-bean>
+   
    
    <!-- ==================== COMPONENT GENERATOR BEANS ==================== -->
    <managed-bean>

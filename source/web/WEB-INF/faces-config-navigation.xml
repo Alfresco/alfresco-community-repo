@@ -33,6 +33,10 @@
          <to-view-id>/jsp/browse/browse.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
+         <from-outcome>myalfresco</from-outcome>
+         <to-view-id>/jsp/dashboards/container.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
          <from-outcome>about</from-outcome>
          <to-view-id>/jsp/dialog/about.jsp</to-view-id>
       </navigation-case>

@@ -66,16 +66,18 @@ public abstract class BaseServlet extends HttpServlet
    static
    {
       validRedirectJSPs.add("/jsp/browse/browse.jsp");
-      validRedirectJSPs.add("/jsp/browse/dashboard.jsp");
       validRedirectJSPs.add("/jsp/admin/admin-console.jsp");
       validRedirectJSPs.add("/jsp/admin/node-browser.jsp");
       validRedirectJSPs.add("/jsp/admin/store-browser.jsp");
+      validRedirectJSPs.add("/jsp/users/user-console.jsp");
       validRedirectJSPs.add("/jsp/categories/categories.jsp");
       validRedirectJSPs.add("/jsp/dialog/about.jsp");
       validRedirectJSPs.add("/jsp/dialog/advanced-search.jsp");
       validRedirectJSPs.add("/jsp/dialog/system-info.jsp");
+      validRedirectJSPs.add("/jsp/forums/forums.jsp");
       validRedirectJSPs.add("/jsp/users/users.jsp");
       validRedirectJSPs.add("/jsp/trashcan/trash-list.jsp");
+      validRedirectJSPs.add("/jsp/dashboards/container.jsp");
    }
    
    private static Log logger = LogFactory.getLog(BaseServlet.class);

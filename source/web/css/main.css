@@ -488,3 +488,18 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 {
 	vertical-align: top;
 }
+
+.tableThirdWidth
+{
+   width: 33%;
+}
+
+.tableNarrowWidth
+{
+   width: 30%;
+}
+
+.tableWideWidth
+{
+   width: 70%;
+}

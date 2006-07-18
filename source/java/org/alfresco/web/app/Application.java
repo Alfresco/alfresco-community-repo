@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.ErrorBean;
+import org.alfresco.web.bean.dashboard.DashboardManager;
 import org.alfresco.web.bean.dialog.DialogManager;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wizard.WizardManager;
@@ -187,6 +188,16 @@ public class Application
    public static WizardManager getWizardManager()
    {
       return (WizardManager)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "WizardManager");
+   }
+   
+   /**
+    * Retrieves the DashboardManager managed bean
+    * 
+    * @return DashboardManager bean
+    */
+   public static DashboardManager getDashboardManager()
+   {
+      return (DashboardManager)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "DashboardManager");
    }
    
    /**

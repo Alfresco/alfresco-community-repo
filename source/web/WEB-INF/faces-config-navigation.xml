@@ -287,6 +287,10 @@
          <from-outcome>showForum</from-outcome>
          <to-view-id>/jsp/forums/forum.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>editCategories</from-outcome>
+         <to-view-id>/jsp/dialog/edit-space-category.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <navigation-rule>
@@ -374,6 +378,18 @@
       <navigation-case>
          <from-outcome>finish</from-outcome>
          <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
+      <from-view-id>/jsp/dialog/edit-space-category.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>cancel</from-outcome>
+         <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>finish</from-outcome>
+         <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

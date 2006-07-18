@@ -197,7 +197,8 @@
 	</bean>
 
 	<!-- The Hibernate Transaction wrapper. -->
-	<bean id="retryingTransaction" class="org.alfresco.repo.avm.hibernate.HibernateTxn">
+	<bean id="retryingTransaction" 
+		  class="org.alfresco.repo.avm.hibernate.HibernateRetryingTransaction">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>

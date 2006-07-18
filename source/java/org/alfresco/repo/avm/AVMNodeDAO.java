@@ -16,7 +16,6 @@
  */
 package org.alfresco.repo.avm;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**

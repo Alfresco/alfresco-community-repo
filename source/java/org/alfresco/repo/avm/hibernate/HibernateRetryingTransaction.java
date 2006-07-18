@@ -37,9 +37,9 @@ import org.springframework.transaction.TransactionStatus;
  * Helper for DAOs.
  * @author britt
  */
-public class HibernateTxn extends HibernateTemplate implements RetryingTransaction
+public class HibernateRetryingTransaction extends HibernateTemplate implements RetryingTransaction
 {
-    private static Logger fgLogger = Logger.getLogger(HibernateTxn.class);
+    private static Logger fgLogger = Logger.getLogger(HibernateRetryingTransaction.class);
     /**
      * The transaction manager.
      */
@@ -64,7 +64,7 @@ public class HibernateTxn extends HibernateTemplate implements RetryingTransacti
      * Make one up.
      * @param sessionFactory The SessionFactory.
      */
-    public HibernateTxn()
+    public HibernateRetryingTransaction()
     {
         fRandom = new Random();
     }
@@ -82,15 +82,6 @@ public class HibernateTxn extends HibernateTemplate implements RetryingTransacti
                 status = 
                     fTransactionManager.getTransaction(write ? fWriteDefinition : fReadDefinition);
                 execute(new HibernateCallbackWrapper(callback));
-                try
-                {
-                    fTransactionManager.commit(status);
-                }
-                catch (TransactionException te)
-                {
-                    throw new AVMException("Transaction Exception.", te);
-                }
-                return;
             }
             catch (Throwable t)
             {
@@ -133,6 +124,15 @@ public class HibernateTxn extends HibernateTemplate implements RetryingTransacti
                 }
                 throw new AVMException("Unrecoverable error.", t);
             }
+            try
+            {
+                fTransactionManager.commit(status);
+            }
+            catch (TransactionException te)
+            {
+                throw new AVMException("Transaction Exception.", te);
+            }
+            return;
         }
     }
     

@@ -849,6 +849,10 @@ public class FTPDataSession extends SrvSession implements Runnable
             disk.closeFile(this, tree, netFile);
             netFile = null;
 
+            // Commit the transaction now before notifying the client that the transfer is finished
+            
+            endTransaction();
+            
             // Indicate that the file has been received
 
             sendFTPResponse(226, "Closing data connection");

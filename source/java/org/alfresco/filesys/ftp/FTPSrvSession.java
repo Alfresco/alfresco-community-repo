@@ -694,6 +694,25 @@ public class FTPSrvSession extends SrvSession implements Runnable
     }
 
     /**
+     * Send an FTP command response
+     * 
+     * @param msg String
+     * @exception IOException
+     */
+    protected final void sendFTPResponse(String msg) throws IOException
+    {
+
+        // Output the FTP response
+
+        if (m_out != null)
+        {
+            m_out.write(msg);
+            m_out.write(CRLF);
+            m_out.flush();
+        }
+    }
+
+    /**
      * Process a user command
      * 
      * @param req FTPRequest
@@ -2623,7 +2642,6 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
         DiskInterface disk = null;
         TreeConnection tree = null;
-        NetworkFile netFile = null;
 
         try
         {
@@ -2742,7 +2760,6 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
         DiskInterface disk = null;
         TreeConnection tree = null;
-        NetworkFile netFile = null;
 
         try
         {
@@ -2825,6 +2842,29 @@ public class FTPSrvSession extends SrvSession implements Runnable
     }
 
     /**
+     * Process a features command
+     * 
+     * @param req FTPRequest
+     * @exception IOException
+     */
+    protected final void procFeatures(FTPRequest req) throws IOException
+    {
+        // Check if the user is logged in
+
+        if (isLoggedOn() == false)
+        {
+            sendFTPResponse(500, "");
+            return;
+        }
+
+        // Send back the list of features supported by this FTP server
+        
+        sendFTPResponse( 211, "Features");
+        sendFTPResponse( "SIZE");
+        sendFTPResponse( 211, "End");
+    }
+    
+    /**
      * Process a file size command
      * 
      * @param req FTPRequest
@@ -2854,7 +2894,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
         FTPPath ftpPath = generatePathForRequest(req, true);
         if (ftpPath == null)
         {
-            sendFTPResponse(500, "Invalid path");
+            sendFTPResponse(550, "Invalid path");
             return;
         }
 
@@ -3558,6 +3598,12 @@ public class FTPSrvSession extends SrvSession implements Runnable
                     
                 case FTPCommand.Abor:
                 	procAbort(ftpReq);
+                	break;
+                	
+                // Return the list of features that this server supports
+                    
+                case FTPCommand.Feat:
+                	procFeatures(ftpReq);
                 	break;
                 	
                 // Unknown/unimplemented command

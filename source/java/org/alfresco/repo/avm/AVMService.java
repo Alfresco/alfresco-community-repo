@@ -298,4 +298,12 @@ public interface AVMService
      */
     public AVMNodeDescriptor getCommonAncestor(AVMNodeDescriptor left,
                                                AVMNodeDescriptor right);
+    
+    /**
+     * Get layering information about a path.
+     * @param version The version to look under.
+     * @param path The full AVM path.
+     * @return A LayeringDescriptor.
+     */
+    public LayeringDescriptor getLayeringInfo(int version, String path);
 }

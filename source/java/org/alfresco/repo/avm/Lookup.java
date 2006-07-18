@@ -44,6 +44,11 @@ class Lookup
     private List<LookupComponent> fComponents;
     
     /**
+     * The final store in resolving layers.
+     */
+    private AVMStore fFinalStore;
+    
+    /**
      * Whether, at this point, a layered node has been hit.
      * Used while building a Lookup.
      */
@@ -96,6 +101,7 @@ class Lookup
         fLowestLayerIndex = -1;
         fNeedsCopying = false;
         fDirectlyContained = true;
+        fFinalStore = store;
     }
     
     /**
@@ -110,6 +116,11 @@ class Lookup
         LookupComponent comp = new LookupComponent();
         comp.setName(name);
         comp.setNode(node);
+        if (fPosition >= 0 && fDirectlyContained && 
+                fComponents.get(fPosition).getNode().getType() == AVMNodeType.LAYERED_DIRECTORY)
+        {
+            fDirectlyContained = ((DirectoryNode)fComponents.get(fPosition).getNode()).directlyContains(node);
+        }
         if (!write)
         {
             if (node.getType() == AVMNodeType.LAYERED_DIRECTORY)
@@ -127,11 +138,6 @@ class Lookup
             fComponents.add(comp);
             fPosition++;
             return;
-        }
-        if (fPosition >= 0 && fDirectlyContained && 
-            fComponents.get(fPosition).getNode().getType() == AVMNodeType.LAYERED_DIRECTORY)
-        {
-            fDirectlyContained = ((DirectoryNode)fComponents.get(fPosition).getNode()).directlyContains(node);
         }
         if (!node.getIsNew())
         {
@@ -331,8 +337,40 @@ class Lookup
         return builder.toString();
     }
     
+    /**
+     * Gets the final name in the lookup.
+     * @return The final name in the lookup.
+     */
     public String getBaseName()
     {
         return fComponents.get(fPosition).getName();
+    }
+    
+    /**
+     * Set the final store the lookup occurred in.
+     * @param store The store to set.
+     */
+    public void setFinalStore(AVMStore store)
+    {
+        fFinalStore = store;
+    }
+    
+    /**
+     * Get the final store traversed during lookup.
+     * @return The final store traversed.
+     */
+    public AVMStore getFinalStore()
+    {
+        return fFinalStore;
+    }
+    
+    /**
+     * Get whether the node looked up is directly contained from the
+     * original root.
+     * @return Whether the node looked up is directly contained.
+     */
+    public boolean getDirectlyContained()
+    {
+        return fDirectlyContained;
     }
 }

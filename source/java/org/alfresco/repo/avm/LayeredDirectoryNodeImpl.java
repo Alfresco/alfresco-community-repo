@@ -429,7 +429,9 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-            return dir.lookupChild(lookup, name, -1, false);
+            AVMNode retVal = dir.lookupChild(lookup, name, -1, false);
+            lPath.setFinalStore(lookup.getFinalStore());
+            return retVal;
         }
         catch (AVMException re)
         {

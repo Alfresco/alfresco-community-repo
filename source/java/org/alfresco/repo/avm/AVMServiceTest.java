@@ -37,6 +37,49 @@ import org.alfresco.repo.avm.util.BulkLoader;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test layering info.
+     */
+    public void testLayeringInfo()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createAVMStore("layer");
+            fService.createLayeredDirectory("main:/a", "layer:/", "alayer");
+            fService.createSnapshot("layer");
+            LayeringDescriptor info = fService.getLayeringInfo(-1, "layer:/alayer");
+            assertFalse(info.isBackground());
+            assertEquals("layer", info.getPathAVMStore().getName());
+            assertEquals("layer", info.getNativeAVMStore().getName());
+            info = fService.getLayeringInfo(-1, "layer:/alayer/b/c");
+            assertTrue(info.isBackground());
+            assertEquals("layer", info.getPathAVMStore().getName());
+            assertEquals("main", info.getNativeAVMStore().getName());
+            fService.createFile("layer:/alayer/b", "figs").close();
+            fService.createSnapshot("layer");
+            info = fService.getLayeringInfo(-1, "layer:/alayer/b/figs");
+            assertFalse(info.isBackground());
+            assertEquals("layer", info.getPathAVMStore().getName());
+            assertEquals("layer", info.getNativeAVMStore().getName());
+            info = fService.getLayeringInfo(-1, "layer:/alayer/b/c");
+            assertTrue(info.isBackground());
+            assertEquals("layer", info.getPathAVMStore().getName());
+            assertEquals("main", info.getNativeAVMStore().getName());
+            fService.createLayeredDirectory("layer:/alayer/b", "layer:/", "blayer");
+            fService.createSnapshot("layer");
+            info = fService.getLayeringInfo(-1, "layer:/blayer/c");
+            assertEquals("main", info.getNativeAVMStore().getName());
+            info = fService.getLayeringInfo(-1, "layer:/blayer/figs");
+            assertEquals("layer", info.getNativeAVMStore().getName());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
      * Another test of renaming in a layer.
      */
     public void testRenameLayer2()

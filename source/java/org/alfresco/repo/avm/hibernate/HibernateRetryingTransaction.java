@@ -40,6 +40,7 @@ import org.springframework.transaction.TransactionStatus;
 public class HibernateRetryingTransaction extends HibernateTemplate implements RetryingTransaction
 {
     private static Logger fgLogger = Logger.getLogger(HibernateRetryingTransaction.class);
+    
     /**
      * The transaction manager.
      */

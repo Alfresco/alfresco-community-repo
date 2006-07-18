@@ -734,6 +734,23 @@ class AVMRepository
     }
     
     /**
+     * Get information about layering of a path.
+     * @param version The version to look under.
+     * @param path The full avm path.
+     * @return A LayeringDescriptor.
+     */
+    public LayeringDescriptor getLayeringInfo(int version, String path)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        Lookup lookup = store.lookup(version, pathParts[1], false);
+        return new LayeringDescriptor(!lookup.getDirectlyContained(),
+                                      lookup.getAVMStore().getDescriptor(),
+                                      lookup.getFinalStore().getDescriptor());
+    }
+    
+    /**
      * Lookup a directory specifically.
      * @param version The version to look under.
      * @param path The path to lookup.

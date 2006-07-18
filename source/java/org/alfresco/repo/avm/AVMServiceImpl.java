@@ -973,6 +973,32 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
+     * Get layering information about a path.
+     * @param version The version to look under.
+     * @param path The full AVM path.
+     * @return A LayeringDescriptor.
+     */
+    public LayeringDescriptor getLayeringInfo(final int version, final String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null path: " + path);
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public LayeringDescriptor descriptor;
+            
+            public void perform()
+            {
+                descriptor = fAVMRepository.getLayeringInfo(version, path);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.descriptor;
+    }
+
+    /**
      * Get the common ancestor of two nodes if one exists.
      * @param left The first node.
      * @param right The second node.

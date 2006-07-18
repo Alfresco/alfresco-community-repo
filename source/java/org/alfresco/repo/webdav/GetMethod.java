@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
@@ -190,7 +191,7 @@ public class GetMethod extends WebDAVMethod
                     I18NUtil.getMessage(FileContentReader.MSG_MISSING_CONTENT),
                     nodeInfo.getNodeRef(), reader);
             // there is content associated with the node
-            m_response.setHeader(WebDAV.HEADER_CONTENT_LENGTH, "" + reader.getSize());
+            m_response.setHeader(WebDAV.HEADER_CONTENT_LENGTH, Long.toString(reader.getSize()));
             m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, reader.getMimetype());
             
             if (m_returnContent)
@@ -294,6 +295,8 @@ public class GetMethod extends WebDAVMethod
     private void generateDirectoryListing(FileInfo fileInfo)
     {
         FileFolderService fileFolderService = getFileFolderService();
+        MimetypeService mimeTypeService = getMimetypeService();
+        
         Writer writer = null;
 
         try
@@ -304,7 +307,9 @@ public class GetMethod extends WebDAVMethod
             List<FileInfo> childNodeInfos = fileFolderService.list(fileInfo.getNodeRef());
 
             // Send back the start of the HTML
-            writer.write("<html><head><title>Alfresco Content Repository</title>");
+            writer.write("<html><head><title>");
+            writer.write(I18NUtil.getMessage("webdav.repository_title"));
+            writer.write("</title>");
             writer.write("<style>");
             writer.write("body { font-family: Arial, Helvetica; font-size: 12pt; background-color: white; }\n");
             writer.write("table { font-family: Arial, Helvetica; font-size: 12pt; background-color: white; }\n");
@@ -321,16 +326,27 @@ public class GetMethod extends WebDAVMethod
             // Send back the table heading
             writer.write("<body>\n");
             writer.write("<table cellspacing='2' cellpadding='3' border='0' width='100%'>\n");
-            writer.write("<tr><td colspan='3' class='textLocation'>Directory listing for ");
+            writer.write("<tr><td colspan='4' class='textLocation'>");
+            writer.write(I18NUtil.getMessage("webdav.directory_listing"));
+            writer.write(' ');
             writer.write(WebDAVHelper.encodeHTML(getPath()));
             writer.write("</td></tr>\n");
-            writer.write("<tr><td height='10'></td></tr></table>");
+            writer.write("<tr><td height='10' colspan='4'></td></tr></table>");
 
             writer.write("<table cellspacing='2' cellpadding='3' border='0' width='100%' class='listingTable'>\n");
-            writer.write("<tr><td class='tableHeading' width='*'>Name</td>");
-            writer.write("<td class='tableHeading' width='10%'>Size</td>");
-            writer.write("<td class='tableHeading' width='20%'>Modified</td>");
-            writer.write("</tr>");
+            writer.write("<tr><td class='tableHeading' width='*'>");
+            writer.write(I18NUtil.getMessage("webdav.column.name"));
+            writer.write("</td>");
+            writer.write("<td class='tableHeading' width='10%'>");
+            writer.write(I18NUtil.getMessage("webdav.column.size"));
+            writer.write("</td>");
+            writer.write("<td class='tableHeading' width='20%'>");
+            writer.write(I18NUtil.getMessage("webdav.column.type"));
+            writer.write("</td>");
+            writer.write("<td class='tableHeading' width='25%'>");
+            writer.write(I18NUtil.getMessage("webdav.column.modifieddate"));
+            writer.write("</td>");
+            writer.write("</tr>\n");
 
             // Get the URL for the root path
             String rootURL = WebDAV.getURLForPath(m_request, getPath(), true);
@@ -343,27 +359,28 @@ public class GetMethod extends WebDAVMethod
             if (fileInfo.getNodeRef().equals(getRootNodeRef()) == false)
             {
                 writer.write("<tr class='rowOdd'>");
-                writer.write("<td class='textData'><a href=\"");
+                writer.write("<td colspan='4' class='textData'><a href=\"");
 
                 // Strip the last folder from the path
-
                 String[] paths = getDAVHelper().splitPath(rootURL.substring(0, rootURL.length() - 1));
                 writer.write(paths[0]);
 
                 writer.write("\">");
-                writer.write("[Up a level]</a>");
+                writer.write("[");
+                writer.write(I18NUtil.getMessage("webdav.column.navigate_up"));
+                writer.write("]</a>");
                 writer.write("</tr>\n");
             }
 
             // Send back what we have generated so far
             writer.flush();
             int rowId = 0;
-
+            
             for (FileInfo childNodeInfo : childNodeInfos)
             {
                 // Output the details for the current node
                 writer.write("<tr class='");
-                if (rowId++ % 2 == 0)
+                if ((rowId++ & 1) == 1)
                 {
                     writer.write("rowOdd");
                 }
@@ -374,6 +391,7 @@ public class GetMethod extends WebDAVMethod
                 writer.write("'><td class='textData'><a href=\"");
                 writer.write(rootURL);
 
+                // name field
                 String fname = childNodeInfo.getName();
 
                 writer.write(WebDAVHelper.encodeURL(fname));
@@ -381,23 +399,42 @@ public class GetMethod extends WebDAVMethod
                 writer.write(WebDAVHelper.encodeHTML(fname));
                 writer.write("</a>");
 
+                // size field
                 writer.write("</td><td class='textData'>");
-                if (fileInfo.isFolder())
+                if (childNodeInfo.isFolder())
                 {
-                    writer.write(formatSize("0"));
+                    writer.write("&nbsp;");
                 }
                 else
                 {
                     ContentReader reader = fileFolderService.getReader(childNodeInfo.getNodeRef());
                     long fsize = 0L;
-                    if ( reader != null)
+                    if (reader != null)
                     {
                         fsize = reader.getSize();
                     }
-                    writer.write(formatSize("" + fsize));
+                    writer.write(formatSize(Long.toString(fsize)));
                 }
                 writer.write("</td><td class='textData'>");
 
+                // mimetype field
+                if (childNodeInfo.isFolder())
+                {
+                    writer.write("&nbsp;");
+                }
+                else
+                {
+                    ContentReader reader = fileFolderService.getReader(childNodeInfo.getNodeRef());
+                    String mimetype = "";
+                    if (reader != null)
+                    {
+                        mimetype = mimeTypeService.getDisplaysByMimetype().get(reader.getMimetype());
+                    }
+                    writer.write(mimetype);
+                }
+                writer.write("</td><td class='textData'>");
+                
+                // modified date field
                 Date modifiedDate = childNodeInfo.getModifiedDate();
                 if (modifiedDate != null)
                 {
@@ -405,12 +442,15 @@ public class GetMethod extends WebDAVMethod
                 }
                 else
                 {
-                    writer.write("");
+                    writer.write("&nbsp;");
                 }
-                writer.write("</td>");
-
-                writer.write("</tr>\n");
-                writer.flush();
+                writer.write("</td></tr>\n");
+                
+                // flush every few rows
+                if ((rowId & 7) == 0)
+                {
+                    writer.flush();
+                }
             }
         }
         catch (Throwable e)
@@ -422,8 +462,8 @@ public class GetMethod extends WebDAVMethod
                 try
                 {
                     writer.write("<table><tr><td style='color:red'>");
-                    writer.write("An error occurred whilst generating the directory listing, ");
-                    writer.write("please contact the system administrator.</td></tr></table>");
+                    writer.write(I18NUtil.getMessage("webdav.err.dir"));
+                    writer.write("</td></tr></table>");
                     writer.flush();
                 }
                 catch (IOException ioe)
@@ -446,20 +486,20 @@ public class GetMethod extends WebDAVMethod
         int length = strSize.length();
         if (length < 4)
         {
-            strFormattedSize = strSize + " bytes";
+            strFormattedSize = strSize + ' ' + I18NUtil.getMessage("webdav.size.bytes");
         }
         else if (length >= 4 && length < 7)
         {
             String strLeft = strSize.substring(0, length - 3);
             String strRight = strSize.substring(length - 3, length - 2);
 
-            StringBuffer buffer = new StringBuffer(strLeft);
-            if (!strRight.equals("0"))
+            StringBuilder buffer = new StringBuilder(strLeft);
+            if (!strRight.equals('0'))
             {
-                buffer.append(".");
+                buffer.append('.');
                 buffer.append(strRight);
             }
-            buffer.append(" Kb");
+            buffer.append(' ').append(I18NUtil.getMessage("webdav.size.kilobytes"));
 
             strFormattedSize = buffer.toString();
         }
@@ -468,13 +508,13 @@ public class GetMethod extends WebDAVMethod
             String strLeft = strSize.substring(0, length - 6);
             String strRight = strSize.substring(length - 6, length - 5);
 
-            StringBuffer buffer = new StringBuffer(strLeft);
-            if (!strRight.equals("0"))
+            StringBuilder buffer = new StringBuilder(strLeft);
+            if (!strRight.equals('0'))
             {
-                buffer.append(".");
+                buffer.append('.');
                 buffer.append(strRight);
             }
-            buffer.append(" Mb");
+            buffer.append(' ').append(I18NUtil.getMessage("webdav.size.megabytes"));
 
             strFormattedSize = buffer.toString();
         }

@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.alfresco.repo.avm.util.BulkLoader;
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Big test of AVM behavior.
@@ -2016,6 +2018,30 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             e.printStackTrace(System.err);
             fail();
+        }
+    }
+
+    /**
+     * Test properties.
+     */
+    public void testProperties()
+    {
+        try
+        {
+            setupBasicTree();
+            QName name = QName.createQName("silly.uri", "SillyProperty");
+            PropertyValue value = new PropertyValue(name, "Silly Property Value");
+            fService.setProperty("main:/a/b/c/foo", name, value);
+            fService.createSnapshot("main");
+            PropertyValue returned = fService.getProperty(-1, "main:/a/b/c/foo", name);
+            assertEquals(value.toString(), returned.toString());
+            Map<QName, PropertyValue> props = fService.getProperties(-1, "main:/a/b/c/foo");
+            assertEquals(1, props.size());
+            assertEquals(value.toString(), props.get(name).toString());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
         }
     }
 }

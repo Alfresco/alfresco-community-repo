@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.namespace.QName;
+
 /**
  * A Repository contains a current root directory and a list of
  * root versions.  Each root version corresponds to a separate snapshot
@@ -822,5 +825,45 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         ((LayeredDirectoryNode)node).setOpacity(opacity);
         node.updateModTime();
+    }
+    
+    /**
+     * Set a property on a node.
+     * @param path The path to the node.
+     * @param name The name of the property.
+     * @param value The value to set.
+     */
+    public void setProperty(String path, QName name, PropertyValue value)
+    {
+        Lookup lPath = lookup(-1, path, true);
+        AVMNode node = lPath.getCurrentNode();
+        node.setProperty(name, value);
+    }
+    
+    /**
+     * Get a property by name.
+     * @param version The version to lookup.
+     * @param path The path to the node.
+     * @param name The name of the property.
+     * @return A PropertyValue or null if not found.
+     */
+    public PropertyValue getProperty(int version, String path, QName name)
+    {
+        Lookup lPath = lookup(version, path, false);
+        AVMNode node = lPath.getCurrentNode();
+        return node.getProperty(name);
+    }
+    
+    /**
+     * Get all the properties associated with a node.
+     * @param version The version to lookup.
+     * @param path The path to the node.
+     * @return A Map of QNames to PropertyValues.
+     */
+    public Map<QName, PropertyValue> getProperties(int version, String path)
+    {
+        Lookup lPath = lookup(version, path, false);
+        AVMNode node = lPath.getCurrentNode();
+        return node.getProperties();
     }
 }

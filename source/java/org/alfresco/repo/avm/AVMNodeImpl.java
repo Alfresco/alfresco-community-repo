@@ -18,6 +18,12 @@
 package org.alfresco.repo.avm;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Base class for all repository file system like objects.
@@ -260,5 +266,73 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     public void updateModTime()
     {
         fBasicAttributes.setModDate(System.currentTimeMillis());
+    }
+    
+    /**
+     * Copy all properties from another node.
+     * @param other The other node.
+     */
+    protected void copyProperties(AVMNode other)
+    {
+        Map<QName, PropertyValue> properties = other.getProperties();
+        for (QName name : properties.keySet())
+        {
+            AVMNodeProperty newProp = new AVMNodePropertyImpl();
+            newProp.setNode(this);
+            newProp.setName(name);
+            newProp.setValue(properties.get(name));
+            AVMContext.fgInstance.fAVMNodePropertyDAO.save(newProp);
+        }
+    }
+    
+    /**
+     * Set a property on a node. Overwrite it if it exists.
+     * @param name The name of the property.
+     * @param value The value to set.
+     */
+    public void setProperty(QName name, PropertyValue value)
+    {
+        AVMNodeProperty prop = AVMContext.fgInstance.fAVMNodePropertyDAO.get(this, name);
+        if (prop != null)
+        {
+            prop.setValue(value);
+            AVMContext.fgInstance.fAVMNodePropertyDAO.update(prop);
+            return;
+        }
+        prop = new AVMNodePropertyImpl();
+        prop.setNode(this);
+        prop.setName(name);
+        prop.setValue(value);
+        AVMContext.fgInstance.fAVMNodePropertyDAO.save(prop);
+    }
+    
+    /**
+     * Get a property by name.
+     * @param name The name of the property.
+     * @return The PropertyValue or null if non-existent.
+     */
+    public PropertyValue getProperty(QName name)
+    {
+        AVMNodeProperty prop = AVMContext.fgInstance.fAVMNodePropertyDAO.get(this, name);
+        if (prop == null)
+        {
+            return null;
+        }
+        return prop.getValue();
+    }
+    
+    /**
+     * Get all the properties associated with this node.
+     * @return A Map of QNames to PropertyValues.
+     */
+    public Map<QName, PropertyValue> getProperties()
+    {
+        Map<QName, PropertyValue> retVal = new HashMap<QName, PropertyValue>();
+        List<AVMNodeProperty> props = AVMContext.fgInstance.fAVMNodePropertyDAO.get(this);
+        for (AVMNodeProperty prop : props)
+        {
+            retVal.put(prop.getName(), prop.getValue());
+        }
+        return retVal;
     }
 }

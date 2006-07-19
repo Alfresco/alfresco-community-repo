@@ -16,6 +16,11 @@
  */
 package org.alfresco.repo.avm;
 
+import java.util.Map;
+
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.namespace.QName;
+
 /**
  * The Interface for versionable objects.
  * @author britt
@@ -129,4 +134,24 @@ public interface AVMNode
      * Update the modification time of this node.
      */
     public void updateModTime();
+    
+    /**
+     * Set a property.
+     * @param name The name of the property.
+     * @param value The value to set.
+     */
+    public void setProperty(QName name, PropertyValue value);
+    
+    /**
+     * Get a property by name.
+     * @param name The name of the property to get.
+     * @return A PropertyValue
+     */
+    public PropertyValue getProperty(QName name);
+    
+    /**
+     * Get all the properties associated with this node.
+     * @return A Map of QNames to PropertyValues.
+     */
+    public Map<QName, PropertyValue> getProperties();
 }

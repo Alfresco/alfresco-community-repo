@@ -22,7 +22,11 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
+
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.namespace.QName;
 
 /**
  * The store interface.  Methods for filesystem like, versioning,
@@ -263,4 +267,29 @@ public interface AVMStore
      * @param opacity True is opaque; false is not.
      */
     public void setOpacity(String path, boolean opacity);
+    
+    /**
+     * Set a property on a node.
+     * @param path The path to the node.
+     * @param name The name of the property.
+     * @param value The value to set.
+     */
+    public void setProperty(String path, QName name, PropertyValue value);
+    
+    /**
+     * Get a property by name.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @param name The name of the property.
+     * @return A PropertyValue or null if not found.
+     */
+    public PropertyValue getProperty(int version, String path, QName name);
+    
+    /**
+     * Get all the properties associated with a node.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return A Map of QNames to PropertyValues.
+     */
+    public Map<QName, PropertyValue> getProperties(int version, String path);
 }

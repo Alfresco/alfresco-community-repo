@@ -22,7 +22,11 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
+
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.namespace.QName;
 
 /**
  * This is the service interface for the [Alfresco|Addled|Advanced|Aleatoric|Apotheosed|Awful] 
@@ -306,4 +310,29 @@ public interface AVMService
      * @return A LayeringDescriptor.
      */
     public LayeringDescriptor getLayeringInfo(int version, String path);
+    
+    /**
+     * Set a property on a node.
+     * @param path The path to the node to set the property on. 
+     * @param name The QName of the property.
+     * @param value The property to set.
+     */
+    public void setProperty(String path, QName name, PropertyValue value);
+    
+    /**
+     * Get a property of a node by QName.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @param name The QName.
+     * @return The PropertyValue or null if it doesn't exist.
+     */
+    public PropertyValue getProperty(int version, String path, QName name);
+    
+    /**
+     * Get all the properties associated with a node.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return A Map of QNames to PropertyValues.
+     */
+    public Map<QName, PropertyValue> getProperties(int version, String path);
 }

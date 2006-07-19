@@ -109,6 +109,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(repos, this));
+        copyProperties(other);
     }
     
     /**
@@ -142,6 +143,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
+        copyProperties(other);
     }
 
     /**
@@ -165,6 +167,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
+        copyProperties(dir);
     }   
     
     /**

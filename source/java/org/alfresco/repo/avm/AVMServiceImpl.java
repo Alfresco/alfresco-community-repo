@@ -25,9 +25,12 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 
 import org.alfresco.repo.avm.AVMRepository;
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 
 /**
@@ -1027,5 +1030,80 @@ public class AVMServiceImpl implements AVMService
         TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
         return doit.ancestor;
+    }
+    /**
+     * Set a property on a node.
+     * @param path The path to the node to set the property on. 
+     * @param name The QName of the property.
+     * @param value The property to set.
+     */
+    public void setProperty(final String path, final QName name, final PropertyValue value)
+    {
+        if (path == null || name == null || value == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public void perform()
+            {
+                fAVMRepository.setProperty(path, name, value);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, true);
+    }
+    
+    /**
+     * Get a property of a node by QName.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @param name The QName.
+     * @return The PropertyValue or null if it doesn't exist.
+     */
+    public PropertyValue getProperty(final int version, final String path, final QName name)
+    {
+        if (path == null || name == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public PropertyValue value;
+            
+            public void perform()
+            {
+                value = fAVMRepository.getProperty(version, path, name);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.value;
+    }
+    
+    /**
+     * Get all the properties associated with a node.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return A List of AVMNodeProperties.
+     */
+    public Map<QName, PropertyValue> getProperties(final int version, final String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null path.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public Map<QName, PropertyValue> properties;
+            
+            public void perform()
+            {
+                properties = fAVMRepository.getProperties(version, path);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.properties;
     }
 }

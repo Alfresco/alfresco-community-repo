@@ -39,6 +39,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private String helpUrl = null;
    private String editLinkType = "http";
    private String homeSpacePermission = null;
+   private boolean ajaxEnabled = false;
    
    /**
     * Default Constructor
@@ -328,5 +329,23 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setHomeSpacePermission(String homeSpacePermission)
    {
       this.homeSpacePermission = homeSpacePermission;
+   }
+   
+   /**
+    * @return Returns whether AJAX support is enabled in the client
+    */
+   public boolean isAjaxEnabled()
+   {
+      return this.ajaxEnabled;
+   }
+   
+   /**
+    * Sets whether AJAX support is enabled in the client
+    * 
+    * @param ajaxEnabled
+    */
+   /*package*/ void setAjaxEnabled(boolean ajaxEnabled)
+   {
+      this.ajaxEnabled = ajaxEnabled;
    }
 }

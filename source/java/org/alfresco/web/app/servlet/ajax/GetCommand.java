@@ -49,7 +49,10 @@ public class GetCommand extends BaseAjaxCommand
             
             // get the value from the value binding
             Object value = binding.getValue(facesContext);
-            response.getWriter().write(value.toString());
+            if (value != null)
+            {
+               response.getWriter().write(value.toString());
+            }
             
             // commit
             tx.commit();

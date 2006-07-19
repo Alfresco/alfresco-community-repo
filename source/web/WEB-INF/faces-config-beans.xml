@@ -1536,4 +1536,23 @@
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
    
+   <!-- ==================== AJAX BEANS ==================== -->
+   
+   <managed-bean>
+      <description>
+         Bean that returns information on a node
+      </description>
+      <managed-bean-name>NodeInfoBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.ajax.NodeInfoBean</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>contentService</property-name>
+         <value>#{ContentService}</value>
+      </managed-property>
+   </managed-bean>
+   
 </faces-config>

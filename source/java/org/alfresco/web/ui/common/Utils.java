@@ -88,6 +88,8 @@ public final class Utils
    private static final String DEFAULT_FILE_IMAGE16 = IMAGE_PREFIX16 + "_default" + IMAGE_POSTFIX;
    private static final String DEFAULT_FILE_IMAGE32 = IMAGE_PREFIX32 + "_default" + IMAGE_POSTFIX;
    
+   private static final String AJAX_SCRIPTS_WRITTEN = "_alfAjaxScriptsWritten";
+   
    private static final Map<String, String> s_fileExtensionMap = new HashMap<String, String>(89, 1.0f);
    
    private static Log logger = LogFactory.getLog(Utils.class);
@@ -1237,5 +1239,38 @@ public final class Utils
       }
       
       return description;
+   }
+   
+   /**
+    * Writes the script tags for including AJAX support, ensuring they
+    * only get written once per page render.
+    *
+    * @param context Faces context
+    * @param out The response writer
+    */
+   @SuppressWarnings("unchecked")
+   public static void writeAjaxScripts(FacesContext context, ResponseWriter out)
+      throws IOException
+   {
+      Object present = context.getExternalContext().getRequestMap().get(AJAX_SCRIPTS_WRITTEN);
+      
+      if (present == null)
+      {
+         // write out the scripts
+         out.write("\n<script type=\"text/javascript\" src=\"");
+         out.write(context.getExternalContext().getRequestContextPath());
+         out.write("/scripts/ajax/dojo.js\"> </script>\n");
+         out.write("<script type=\"text/javascript\" src=\"");
+         out.write(context.getExternalContext().getRequestContextPath());
+         out.write("/scripts/ajax/common.js\"> </script>\n");
+         
+         // write out a global variable to hold the webapp context path
+         out.write("<script type=\"text/javascript\">var WEBAPP_CONTEXT = '");
+         out.write(context.getExternalContext().getRequestContextPath());
+         out.write("';</script>\n");
+         
+         // add marker to request
+         context.getExternalContext().getRequestMap().put(AJAX_SCRIPTS_WRITTEN, Boolean.TRUE);
+      }
    }
 }

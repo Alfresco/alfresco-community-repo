@@ -263,9 +263,11 @@
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
                            </f:facet>
-                           <a:actionLink id="col3-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}" styleClass="title">
-                              <f:param name="id" value="#{r.id}" />
-                           </a:actionLink>
+                           <r:nodeInfo id="col3-act2-nodeinfo" value="#{r.id}">
+                              <a:actionLink id="col3-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}" styleClass="title">
+                                 <f:param name="id" value="#{r.id}" />
+                              </a:actionLink>
+                           </r:nodeInfo>
                         </a:column>
                         
                         <%-- Description column for all view modes --%>

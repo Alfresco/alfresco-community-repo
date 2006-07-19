@@ -503,3 +503,11 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 {
    width: 70%;
 }
+
+.summaryPopupPanel
+{
+	background-color: #e9f0f4;
+	border: 1px solid #999999;
+	padding: 4px;
+	-moz-border-radius: 4px;
+}

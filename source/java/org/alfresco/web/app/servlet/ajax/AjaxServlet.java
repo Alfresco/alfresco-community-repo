@@ -38,6 +38,7 @@ public class AjaxServlet extends BaseServlet
    private static final long serialVersionUID = -7654769105419391840L;
    private static Log logger = LogFactory.getLog(AJAX_LOG_KEY);
    private static Log headersLogger = LogFactory.getLog(AJAX_LOG_KEY + ".headers");
+   private static Log perfLogger = LogFactory.getLog(AJAX_LOG_KEY + ".performance");
    
    /**
     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -45,6 +46,8 @@ public class AjaxServlet extends BaseServlet
    protected void service(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException
    {
+      long startTime = 0;
+      
       try
       {
          String uri = request.getRequestURI();
@@ -95,6 +98,10 @@ public class AjaxServlet extends BaseServlet
          // setup the faces context
          FacesContext facesContext = FacesHelper.getFacesContext(request, response, getServletContext());
          
+         // start a timer
+         if (perfLogger.isDebugEnabled())
+            startTime = System.currentTimeMillis();
+         
          // instantiate the relevant command
          AjaxCommand command = null;
          if (Command.invoke.toString().equals(commandName))
@@ -116,6 +123,15 @@ public class AjaxServlet extends BaseServlet
       catch (RuntimeException error)
       {
          handleError(response, error);
+      }
+      finally
+      {
+         // measure the time taken
+         if (perfLogger.isDebugEnabled())
+         {
+            long endTime = System.currentTimeMillis();
+            perfLogger.debug("Time to execute command: " + (endTime - startTime) + "ms");
+         }
       }
    }
    

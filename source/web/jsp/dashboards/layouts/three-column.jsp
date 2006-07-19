@@ -21,8 +21,8 @@
 
 <%@ page import="org.alfresco.web.app.Application" %>
 
-<%=Application.getDashboardManager()...%>
 <h:panelGrid columns="3" cellpadding="2" cellspacing="2" width="100%" columnClasses="tableThirdWidth">
+   <% Application.getDashboardManager().initDashboard(); %>
    <h:panelGroup>
       <a:panel label="#{DashboardManager.dashletTitle[0]}" id="dashlet-0" progressive="true" rendered="#{DashboardManager.dashletAvailable[0]}"
                border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE">

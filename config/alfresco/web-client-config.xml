@@ -166,16 +166,16 @@
       <dashboards>
          <layouts>
             <!-- the "default" layout - will be used for all users initially -->
-            <layout id="default" columns="1" column-length="5" image="/images/icons/layout-single-column.gif"
+            <layout id="default" columns="1" column-length="5" image="/images/icons/layout_single_column.gif"
                   label-id="layout_single_label" description-id="layout_single_desc"
                   jsp="/jsp/dashboards/layouts/single-column.jsp" />
-            <layout id="narrow-left-2column" columns="2" column-length="4" image="/images/icons/layout-narrow-left.gif"
+            <layout id="narrow-left-2column" columns="2" column-length="4" image="/images/icons/layout_narrow_left_2column.gif"
                   label-id="layout_narrow_left_label" description-id="layout_narrow_left_desc"
                   jsp="/jsp/dashboards/layouts/narrow-left-2column.jsp" />
-            <layout id="narrow-right-2column" columns="2" column-length="4" image="/images/icons/layout-narrow-right.gif"
+            <layout id="narrow-right-2column" columns="2" column-length="4" image="/images/icons/layout_narrow_right_2column.gif"
                   label-id="layout_narrow_right_label" description-id="layout_narrow_right_desc"
                   jsp="/jsp/dashboards/layouts/narrow-right-2column.jsp" />
-            <layout id="three-column" columns="3" column-length="4" image="/images/icons/layout-three-column.gif"
+            <layout id="three-column" columns="3" column-length="4" image="/images/icons/layout_three_column.gif"
                   label-id="layout_three_column_label" description-id="layout_three_column_desc"
                   jsp="/jsp/dashboards/layouts/three-column.jsp" />
          </layouts>

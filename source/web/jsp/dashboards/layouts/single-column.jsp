@@ -22,7 +22,7 @@
 <%@ page import="org.alfresco.web.app.Application" %>
 
 <% Application.getDashboardManager().initDashboard(); %>
-<h:panelGrid columns="1" cellpadding="2" cellspacing="2" width="100%" style="vertical-align:middle">
+<h:panelGrid columns="1" cellpadding="2" cellspacing="2" width="100%">
    <a:panel label="#{DashboardManager.dashletTitle[0]}" id="dashlet-1" progressive="true" rendered="#{DashboardManager.dashletAvailable[0]}"
             border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE">
       <f:subview id="dashlet-1-view">

@@ -42,8 +42,8 @@ public final class DashboardManager
    private static Log logger = LogFactory.getLog(DashboardManager.class);
    
    private static final String PREF_DASHBOARD = "dashboard";
-   private static final String LAYOUT_DEFAULT = "default";
-   private static final String DASHLET_DEFAULT = "getting-started";
+   static final String LAYOUT_DEFAULT = "default";
+   static final String DASHLET_DEFAULT = "getting-started";
    
    private static final String JSP_DUMMY = "/jsp/dashboards/dummy.jsp";
    
@@ -202,7 +202,7 @@ public final class DashboardManager
    /**
     * @return The externally configured WebClient config element for the Dashboards
     */
-   private static DashboardsConfigElement getDashboardConfig()
+   public static DashboardsConfigElement getDashboardConfig()
    {
       ConfigService service = Application.getConfigService(FacesContext.getCurrentInstance());
       DashboardsConfigElement config = (DashboardsConfigElement)service.getConfig("Dashboards").getConfigElement(

@@ -158,6 +158,30 @@
             </step>
          </wizard>
          
+         <!-- Definition of the Dashboard Layout wizard -->
+         <wizard name="configureDashboard" managed-bean="DashboardWizard"
+                 title-id="configure_dashboard_title" description-id="configure_dashboard_desc"
+                 icon="/images/icons/configure_dashboard_large.gif">
+            <step name="layout" title-id="step_layout" description-id="configure_dashboard_step1_desc">
+               <page path="/jsp/dashboards/wizard/layout.jsp" 
+                     title-id="configure_dashboard_step1_title"
+                     description-id="configure_dashboard_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="columns" title-id="step_columns" description-id="configure_dashboard_step2_desc">
+               <page path="/jsp/dashboards/wizard/columns.jsp" 
+                     title-id="configure_dashboard_step2_title"
+                     description-id="configure_dashboard_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary" 
+                     description-id="summary_desc" 
+                     instruction-id="configure_dashboard_finish_instruction" />
+            </step>
+         </wizard>
+         
       </wizards>
    </config>
    

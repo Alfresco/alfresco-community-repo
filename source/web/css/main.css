@@ -492,16 +492,19 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 .tableThirdWidth
 {
    width: 33%;
+   vertical-align: top;
 }
 
 .tableNarrowWidth
 {
    width: 30%;
+   vertical-align: top;
 }
 
 .tableWideWidth
 {
    width: 70%;
+   vertical-align: top;
 }
 
 .summaryPopupPanel

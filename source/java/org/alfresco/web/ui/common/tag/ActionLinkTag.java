@@ -57,7 +57,7 @@ public class ActionLinkTag extends HtmlComponentTag
       setStringProperty(component, "value", this.value);
       setStringProperty(component, "target", this.target);
       setStringProperty(component, "onclick", this.onclick);
-      
+      setBooleanProperty(component, "immediate", this.immediate);
       // TODO: Add image width/height properties
    }
 
@@ -77,6 +77,7 @@ public class ActionLinkTag extends HtmlComponentTag
       this.href = null;
       this.target = null;
       this.onclick = null;
+      this.immediate = null;
    }
    
    /**
@@ -178,6 +179,11 @@ public class ActionLinkTag extends HtmlComponentTag
    {
       this.onclick = onclick;
    }
+   
+   public void setImmediate(String immediate)
+   {
+      this.immediate = immediate;
+   }
 
    /** the target */
    private String target;
@@ -208,4 +214,7 @@ public class ActionLinkTag extends HtmlComponentTag
    
    /** the onclick handler */
    private String onclick;
+   
+   /** the immediate flag */
+   private String immediate;
 }

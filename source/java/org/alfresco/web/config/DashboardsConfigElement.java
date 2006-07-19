@@ -16,6 +16,7 @@
  */
 package org.alfresco.web.config;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -99,14 +100,14 @@ public class DashboardsConfigElement extends ConfigElementAdapter
       return this.dashletDefs.get(id);
    }
    
-   public Iterator getLayouts()
+   public Collection<LayoutDefinition> getLayouts()
    {
-      return this.layoutDefs.entrySet().iterator();
+      return this.layoutDefs.values();
    }
    
-   public Iterator getDashlets()
+   public Collection<DashletDefinition> getDashlets()
    {
-      return this.dashletDefs.entrySet().iterator();
+      return this.dashletDefs.values();
    }
    
    /**

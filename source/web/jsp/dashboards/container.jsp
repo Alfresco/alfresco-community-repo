@@ -73,6 +73,9 @@
                               <div class="mainTitle"><h:outputText value="#{msg.dashboard_info}" /></div>
                               <div class="mainSubText"><h:outputText value="#{msg.dashboard_description}" /></div>
                            </td>
+                           <td align="right">
+                              <a:actionLink value="#{msg.configure}" image="/images/icons/configure_dashboard.gif" padding="2" action="wizard:configureDashboard" />
+                           </td>
                         </tr>
                      </table>
                      

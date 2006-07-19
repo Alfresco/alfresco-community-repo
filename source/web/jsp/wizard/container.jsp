@@ -163,7 +163,7 @@
                                     <td align="center">
                                        <h:commandButton id="cancel-button" styleClass="wizardButton"
                                                         value="#{WizardManager.cancelButtonLabel}" 
-                                                        action="#{WizardManager.cancel}" />
+                                                        action="#{WizardManager.cancel}" immediate="true" />
                                     </td>
                                  </tr>
                               </table>

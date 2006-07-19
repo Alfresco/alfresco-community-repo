@@ -64,7 +64,7 @@ public class DashboardWizard extends BaseWizardBean
     */
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      return null;
+      return outcome;
    }
    
    /**

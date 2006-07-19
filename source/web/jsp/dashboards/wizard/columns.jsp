@@ -21,3 +21,14 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
+
+<f:verbatim>
+   <script type="text/javascript">
+      window.onload = pageLoaded;
+   
+      function pageLoaded()
+      {
+         document.getElementById("wizard:finish-button").disabled = false;
+      }
+   </script>
+</f:verbatim>

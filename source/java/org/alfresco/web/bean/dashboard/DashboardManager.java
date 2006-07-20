@@ -37,7 +37,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Kevin Roast
  */
-public final class DashboardManager
+public class DashboardManager
 {
    private static Log logger = LogFactory.getLog(DashboardManager.class);
    
@@ -116,40 +116,9 @@ public final class DashboardManager
    }
    
    /**
-    * Helper to get the DashDefinition as the zero based index, working from the left most column
-    * top-bottom then working left-right.
-    * 
-    * @param index   Zero based index from the left most column working top-bottom then left-right
-    * 
-    * @return DashletDefinition if found or null if no dashlet at the specified index
-    */
-   private static DashletDefinition getDashletDefinitionByIndex(PageConfig config, int index)
-   {
-      DashletDefinition def = null;
-      
-      LayoutDefinition layoutDef = config.getCurrentPage().getLayoutDefinition();
-      List<Column> columns = config.getCurrentPage().getColumns();
-      int columnCount = columns.size();
-      int selectedColumn = index / layoutDef.ColumnLength;
-      if (selectedColumn < columnCount)
-      {
-         List<DashletDefinition> dashlets = columns.get(selectedColumn).getDashlets();
-         if (index % layoutDef.ColumnLength < dashlets.size())
-         {
-            def = dashlets.get(index % layoutDef.ColumnLength);
-         }
-      }
-      if (logger.isDebugEnabled())
-         logger.debug("Searching for dashlet at index: " + index +
-               " and found " + (def != null ? def.JSPPage : null));
-      
-      return def;
-   }
-   
-   /**
     * @return the PageConfig for the current My Alfresco dashboard page
     */
-   private PageConfig getPageConfig()
+   public PageConfig getPageConfig()
    {
       if (this.pageConfig == null)
       {
@@ -189,7 +158,7 @@ public final class DashboardManager
                }
             }
             
-            // persist the config for this user
+            // persist the initial config for this user
             //PreferencesService.getPreferences().setValue(PREF_DASHBOARD, pageConfig.toXML());
          }
          
@@ -197,6 +166,15 @@ public final class DashboardManager
       }
       
       return this.pageConfig;
+   }
+   
+   /**
+    * Persist the supplied PageConfig for the current user
+    */
+   public void savePageConfig(PageConfig config)
+   {
+      this.pageConfig = config;
+      PreferencesService.getPreferences().setValue(PREF_DASHBOARD, this.pageConfig.toXML());
    }
    
    /**
@@ -208,6 +186,37 @@ public final class DashboardManager
       DashboardsConfigElement config = (DashboardsConfigElement)service.getConfig("Dashboards").getConfigElement(
             DashboardsConfigElement.CONFIG_ELEMENT_ID);
       return config;
+   }
+   
+   /**
+    * Helper to get the DashDefinition as the zero based index, working from the left most column
+    * top-bottom then working left-right.
+    * 
+    * @param index   Zero based index from the left most column working top-bottom then left-right
+    * 
+    * @return DashletDefinition if found or null if no dashlet at the specified index
+    */
+   private static DashletDefinition getDashletDefinitionByIndex(PageConfig config, int index)
+   {
+      DashletDefinition def = null;
+      
+      LayoutDefinition layoutDef = config.getCurrentPage().getLayoutDefinition();
+      List<Column> columns = config.getCurrentPage().getColumns();
+      int columnCount = columns.size();
+      int selectedColumn = index / layoutDef.ColumnLength;
+      if (selectedColumn < columnCount)
+      {
+         List<DashletDefinition> dashlets = columns.get(selectedColumn).getDashlets();
+         if (index % layoutDef.ColumnLength < dashlets.size())
+         {
+            def = dashlets.get(index % layoutDef.ColumnLength);
+         }
+      }
+      if (logger.isDebugEnabled())
+         logger.debug("Searching for dashlet at index: " + index +
+               " and found " + (def != null ? def.JSPPage : null));
+      
+      return def;
    }
    
    

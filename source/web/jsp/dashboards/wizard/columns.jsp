@@ -32,3 +32,41 @@
       }
    </script>
 </f:verbatim>
+
+<h:panelGrid columns="1" cellpadding="2" cellspacing="0" border="0" width="100%">
+   <h:panelGroup rendered="#{WizardManager.bean.columnCount != 1}">
+      <h:outputText value="#{msg.select_column}:" />
+      <f:verbatim>&nbsp;</f:verbatim>
+      <h:selectOneMenu id="columns" value="#{WizardManager.bean.column}" onchange="document.forms['wizard'].submit(); return true;">
+         <f:selectItems value="#{WizardManager.bean.columns}" />
+      </h:selectOneMenu>
+   </h:panelGroup>
+   
+   <h:panelGrid columns="3" cellpadding="2" cellspacing="0" border="0" columnClasses="alignTop,alignMiddle">
+      <h:panelGrid columns="1" cellpadding="2" border="0">
+         <h:outputText value="#{msg.dashlet_list}:" />
+         <%-- note this component ID is referenced in DashboardWizard --%>
+         <h:selectManyListbox id="all-dashlets" style="width:300px" size="8">
+            <f:selectItems value="#{WizardManager.bean.allDashlets}" />
+         </h:selectManyListbox>
+      </h:panelGrid>
+      
+      <h:commandButton value="#{msg.dashlet_btn_select} >>" actionListener="#{WizardManager.bean.addDashlets}" />
+      
+      <h:panelGrid columns="1" cellpadding="2" border="0">
+         <h:outputText value="#{msg.selected_dashlets}:" />
+         <h:panelGrid columns="2" cellpadding="2" cellspacing="0" border="0">
+            <%-- note this component ID is referenced in DashboardWizard --%>
+            <h:selectOneListbox id="column-dashlets" style="width:150px" size="8">
+               <f:selectItems value="#{WizardManager.bean.columnDashlets}" />
+            </h:selectOneListbox>
+            <h:panelGroup>
+               <h:commandButton value="+" style="width:24px" actionListener="#{WizardManager.bean.dashletUp}" />
+               <f:verbatim><br></f:verbatim>
+               <h:commandButton value="-" style="width:24px" actionListener="#{WizardManager.bean.dashletDown}"/>
+            </h:panelGroup>
+         </h:panelGrid>
+         <h:commandButton value="#{msg.dashlet_btn_remove}" actionListener="#{WizardManager.bean.removeDashlet}" />
+      </h:panelGrid>
+   </h:panelGrid>
+</h:panelGrid>

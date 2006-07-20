@@ -489,6 +489,11 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 	vertical-align: top;
 }
 
+.alignMiddle
+{
+	vertical-align: middle;
+}
+
 .tableThirdWidth
 {
    width: 33%;

@@ -1456,28 +1456,8 @@
          <value>#{NodeService}</value>
       </managed-property>
       <managed-property>
-         <property-name>fileFolderService</property-name>
-         <value>#{FileFolderService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>navigator</property-name>
-         <value>#{NavigationBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>browseBean</property-name>
-         <value>#{BrowseBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>dictionaryService</property-name>
-         <value>#{DictionaryService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>namespaceService</property-name>
-         <value>#{NamespaceService}</value>
+         <property-name>dashboardManager</property-name>
+         <value>#{DashboardManager}</value>
       </managed-property>
    </managed-bean>
    

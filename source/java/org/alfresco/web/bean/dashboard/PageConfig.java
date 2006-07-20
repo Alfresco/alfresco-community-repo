@@ -57,6 +57,33 @@ final class PageConfig
    private List<Page> pages = new ArrayList<Page>(4);
    private int currentPageIndex = 0;
    
+   
+   /**
+    * Default constructor
+    */
+   public PageConfig()
+   {
+   }
+   
+   /**
+    * Copy constructor
+    * 
+    * @param copy    PageConfig to copy
+    */
+   public PageConfig(PageConfig copy)
+   {
+      this.pages = new ArrayList<Page>(copy.pages.size());
+      for (Page page : copy.pages)
+      {
+         // invoke the copy constructor on each Page
+         // which in turn calls the copy constructor of child classes
+         this.pages.add(new Page(page));
+      }
+   }
+
+   /**
+    * @return The current page in the config
+    */
    public Page getCurrentPage()
    {
       if (currentPageIndex < pages.size())
@@ -69,11 +96,23 @@ final class PageConfig
       }
    }
    
+   /**
+    * Add a new Page to the list
+    * 
+    * @param page Page to add
+    */
    public void addPage(Page page)
    {
       pages.add(page);
    }
    
+   /**
+    * Get a Page with the specified page Id
+    * 
+    * @param pageId     Of the page to return
+    * 
+    * @return Page or null if not found
+    */
    public Page getPage(String pageId)
    {
       Page foundPage = null;
@@ -228,6 +267,12 @@ final class Page
    private LayoutDefinition layoutDef;
    private List<Column> columns = new ArrayList<Column>(4);
    
+   /**
+    * Constructor
+    * 
+    * @param id
+    * @param layout
+    */
    public Page(String id, LayoutDefinition layout)
    {
       if (id == null || id.length() == 0)
@@ -242,6 +287,22 @@ final class Page
       this.layoutDef = layout;
    }
    
+   /**
+    * Copy Constructor
+    * 
+    * @param copy    Page to build a copy from
+    */
+   public Page(Page copy)
+   {
+      this.id = copy.id;
+      this.layoutDef = copy.layoutDef;
+      for (Column column : copy.columns)
+      {
+         Column cloneColumn = new Column(column);
+         addColumn(cloneColumn);
+      }
+   }
+   
    public String getId()
    {
       return this.id;
@@ -250,6 +311,26 @@ final class Page
    public LayoutDefinition getLayoutDefinition()
    {
       return this.layoutDef;
+   }
+   
+   public void setLayoutDefinition(LayoutDefinition layout)
+   {
+      if (layout == null)
+      {
+         throw new IllegalArgumentException("Layout for a Dashboard Page is mandatory.");
+      }
+      
+      // correct column collection based on new layout definition
+      while (this.columns.size() < layout.Columns)
+      {
+         addColumn(new Column());
+      }
+      if (this.columns.size() > layout.Columns)
+      {
+         this.columns = this.columns.subList(0, layout.Columns);
+      }
+      
+      this.layoutDef = layout;
    }
    
    public void addColumn(Column column)
@@ -270,6 +351,23 @@ final class Page
 final class Column
 {
    private List<DashletDefinition> dashlets = new ArrayList<DashletDefinition>(4);
+   
+   /**
+    * Default constructor
+    */
+   public Column()
+   {
+   }
+   
+   /**
+    * Copy constructor
+    * 
+    * @param copy    Column to copy
+    */
+   public Column(Column copy)
+   {
+      this.dashlets = (List<DashletDefinition>)((ArrayList<DashletDefinition>)copy.dashlets).clone();
+   }
    
    public void addDashlet(DashletDefinition dashlet)
    {

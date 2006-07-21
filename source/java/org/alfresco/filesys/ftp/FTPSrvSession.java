@@ -67,8 +67,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.sun.star.uno.RuntimeException;
-
 /**
  * FTP Server Session Class
  * 

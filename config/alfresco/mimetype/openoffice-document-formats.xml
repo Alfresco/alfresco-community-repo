@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+<document-formats>
+
+  <!-- Export-Only Formats (no family attribute) -->
+
+  <document-format><name>Portable Document Format</name>
+    <mime-type>application/pdf</mime-type>
+    <file-extension>pdf</file-extension>
+    <export-filters>
+	  <entry><family>Presentation</family><string>impress_pdf_Export</string></entry>
+      <entry><family>Spreadsheet</family><string>calc_pdf_Export</string></entry>
+      <entry><family>Text</family><string>writer_pdf_Export</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Macromedia Flash</name>
+    <mime-type>application/x-shockwave-flash</mime-type>
+    <file-extension>swf</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>impress_flash_Export</string></entry>
+    </export-filters>
+  </document-format>
+
+  <!--
+	- Note: (X)HTML formats are here for completeness but they are currently unsupported because
+	-  1. additional files may be generated for images and this would require extra care in a servlet environment
+	-  2. output quality does not seem to be very good in many cases
+  -->
+  <document-format><name>HTML</name>
+    <mime-type>text/html</mime-type>
+    <file-extension>html</file-extension>
+    <export-filters>
+	  <entry><family>Presentation</family><string>impress_html_Export</string></entry>
+      <entry><family>Spreadsheet</family><string>HTML (StarCalc)</string></entry>
+      <entry><family>Text</family><string>HTML (StarWriter)</string></entry>
+    </export-filters>
+  </document-format>
+
+  <!-- Text (Word Processor) Formats -->
+
+  <document-format><name>OpenDocument Text</name>
+    <family>Text</family>
+    <mime-type>application/vnd.oasis.opendocument.text</mime-type>
+    <file-extension>odt</file-extension>
+    <export-filters>
+      <entry><family>Text</family><string>writer8</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>OpenOffice.org 1.0 Text Document</name>
+    <family>Text</family>
+    <mime-type>application/vnd.sun.xml.writer</mime-type>
+    <file-extension>sxw</file-extension>
+    <export-filters>
+      <entry><family>Text</family><string>StarOffice XML (Writer)</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Microsoft Word</name>
+    <family>Text</family>
+    <mime-type>application/msword</mime-type>
+    <file-extension>doc</file-extension>
+    <export-filters>
+      <entry><family>Text</family><string>MS Word 97</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>WordPerfect</name>
+    <family>Text</family>
+    <mime-type>application/wordperfect</mime-type>
+    <file-extension>wpd</file-extension>
+    <export-filters>
+      <entry><family>Text</family><string>WordPerfect</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Rich Text Format</name>
+    <family>Text</family>
+    <mime-type>text/rtf</mime-type>
+    <file-extension>rtf</file-extension>
+    <export-filters>
+      <entry><family>Text</family><string>Rich Text Format</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Plain Text</name>
+    <family>Text</family>
+    <mime-type>text/plain</mime-type>
+    <file-extension>txt</file-extension>
+    <export-filters>
+      <entry><family>Text</family><string>Text</string></entry>
+    </export-filters>
+  </document-format>
+
+  <!-- Spreadsheet Formats -->
+
+  <document-format><name>OpenDocument Spreadsheet</name>
+    <family>Spreadsheet</family>
+    <mime-type>application/vnd.oasis.opendocument.spreadsheet</mime-type>
+    <file-extension>ods</file-extension>
+    <export-filters>
+      <entry><family>Spreadsheet</family><string>calc8</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>OpenOffice.org 1.0 Spreadsheet</name>
+    <family>Spreadsheet</family>
+    <mime-type>application/vnd.sun.xml.calc</mime-type>
+    <file-extension>sxc</file-extension>
+    <export-filters>
+      <entry><family>Spreadsheet</family><string>StarOffice XML (Calc)</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Microsoft Excel</name>
+    <family>Spreadsheet</family>
+    <mime-type>application/application/vnd.ms-excel</mime-type>
+    <file-extension>xls</file-extension>
+    <export-filters>
+      <entry><family>Spreadsheet</family><string>MS Excel 97</string></entry>
+    </export-filters>
+  </document-format>
+
+
+  <!-- Presentation Formats -->
+
+  <document-format><name>OpenDocument Presentation</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.oasis.opendocument.presentation</mime-type>
+    <file-extension>odp</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>impress8</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>OpenOffice.org 1.0 Presentation</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.sun.xml.impress</mime-type>
+    <file-extension>sxi</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>StarOffice XML (Impress)</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Microsoft PowerPoint</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.ms-powerpoint</mime-type>
+    <file-extension>ppt</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>MS PowerPoint 97</string></entry>
+    </export-filters>
+  </document-format>
+
+</document-formats>

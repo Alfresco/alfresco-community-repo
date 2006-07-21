@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 Jesper Steen Mï¿½ller
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -16,20 +16,27 @@
  */
 package org.alfresco.repo.content.metadata;
 
+import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
+import net.sf.jooreports.openoffice.connection.SocketOpenOfficeConnection;
+
 
 /**
- * @author Jesper Steen Møller
+ * @author Jesper Steen Mï¿½ller
  */
-public class UnoMetadataExtracterTest extends AbstractMetadataExtracterTest
+public class OpenOfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
-    private UnoMetadataExtracter extracter;
+    private OpenOfficeMetadataExtracter extracter;
 
     @Override
     public void setUp() throws Exception
     {
         super.setUp();
-        extracter = new UnoMetadataExtracter();
+        
+        OpenOfficeConnection connection = new SocketOpenOfficeConnection();
+        
+        extracter = new OpenOfficeMetadataExtracter();
         extracter.setMimetypeService(mimetypeMap);
+        extracter.setConnection(connection);
         extracter.init();
     }
 
@@ -48,7 +55,7 @@ public class UnoMetadataExtracterTest extends AbstractMetadataExtracterTest
             return;
         }
         
-        for (String mimetype : UnoMetadataExtracter.SUPPORTED_MIMETYPES)
+        for (String mimetype : OpenOfficeMetadataExtracter.SUPPORTED_MIMETYPES)
         {
             double reliability = extracter.getReliability(mimetype);
             assertTrue("Expected above zero reliability", reliability > 0.0);
@@ -61,7 +68,7 @@ public class UnoMetadataExtracterTest extends AbstractMetadataExtracterTest
         {
             return;
         }
-        for (String mimetype : UnoMetadataExtracter.SUPPORTED_MIMETYPES)
+        for (String mimetype : OpenOfficeMetadataExtracter.SUPPORTED_MIMETYPES)
         {
             testExtractFromMimetype(mimetype);
         }

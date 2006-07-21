@@ -16,24 +16,30 @@
  */
 package org.alfresco.repo.content.transform;
 
+import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
+
 import org.alfresco.repo.content.MimetypeMap;
 
 /**
- * @see org.alfresco.repo.content.transform.UnoContentTransformer
+ * @see org.alfresco.repo.content.transform.OpenOfficeContentTransformer
  * 
  * @author Derek Hulley
  */
-public class UnoContentTransformerTest extends AbstractContentTransformerTest
+public class OpenOfficeContentTransformerTest extends AbstractContentTransformerTest
 {
     private static String MIMETYPE_RUBBISH = "text/rubbish";
     
-    private UnoContentTransformer transformer;
+    private OpenOfficeContentTransformer transformer;
     
     public void onSetUpInTransaction() throws Exception
     {
-        transformer = new UnoContentTransformer();
+        OpenOfficeConnection connection = (OpenOfficeConnection) applicationContext.getBean("openOfficeConnection");
+        
+        transformer = new OpenOfficeContentTransformer();
         transformer.setMimetypeService(mimetypeMap);
-        transformer.init();
+        transformer.setConnection(connection);
+        transformer.setDocumentFormatsConfiguration("classpath:alfresco/mimetype/openoffice-document-formats.xml");
+        transformer.register();
     }
     
     /**
@@ -61,6 +67,8 @@ public class UnoContentTransformerTest extends AbstractContentTransformerTest
         reliability = transformer.getReliability(MIMETYPE_RUBBISH, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         assertEquals("Mimetype should not be supported", 0.0, reliability);
         reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN, MIMETYPE_RUBBISH);
+        assertEquals("Mimetype should not be supported", 0.0, reliability);
+        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_XHTML);
         assertEquals("Mimetype should not be supported", 0.0, reliability);
         reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_WORD);
         assertEquals("Mimetype should be supported", 1.0, reliability);

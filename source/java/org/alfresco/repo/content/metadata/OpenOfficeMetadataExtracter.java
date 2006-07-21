@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 Jesper Steen Mï¿½ller
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -24,12 +24,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 
-import net.sf.joott.uno.UnoConnection;
+import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
 
 import com.sun.star.beans.PropertyValue;
@@ -41,9 +42,9 @@ import com.sun.star.ucb.XFileIdentifierConverter;
 import com.sun.star.uno.UnoRuntime;
 
 /**
- * @author Jesper Steen Møller
+ * @author Jesper Steen Mï¿½ller
  */
-public class UnoMetadataExtracter extends AbstractMetadataExtracter
+public class OpenOfficeMetadataExtracter extends AbstractMetadataExtracter
 {
     public static String[] SUPPORTED_MIMETYPES = new String[] {
         MimetypeMap.MIMETYPE_STAROFFICE5_WRITER,
@@ -55,31 +56,26 @@ public class UnoMetadataExtracter extends AbstractMetadataExtracter
     // quality since they involve conversion.
     };
 
-    private String contentUrl;
-    private MyUnoConnection connection;
+    private OpenOfficeConnection connection;
     private boolean isConnected;
 
-    public UnoMetadataExtracter()
+    public OpenOfficeMetadataExtracter()
     {
         super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)), 1.00, 10000);
-        this.contentUrl = UnoConnection.DEFAULT_CONNECTION_STRING;
     }
 
-    /**
-     * 
-     * @param contentUrl the URL to connect to
-     */
-    public void setContentUrl(String contentUrl)
+    public void setConnection(OpenOfficeConnection connection)
     {
-        this.contentUrl = contentUrl;
+        this.connection = connection;
     }
-
+    
     /**
      * Initialises the bean by establishing an UNO connection
      */
     public synchronized void init()
     {
-        connection = new MyUnoConnection(contentUrl);
+        PropertyCheck.mandatory("OpenOfficeMetadataExtracter", "connection", connection);
+
         // attempt to make an connection
         try
         {
@@ -109,7 +105,7 @@ public class UnoMetadataExtracter extends AbstractMetadataExtracter
 
         // create temporary files to convert from and to
         File tempFromFile = TempFileProvider.createTempFile(
-                "UnoContentTransformer_", "."
+                "OpenOfficeMetadataExtracter-", "."
                 + getMimetypeService().getExtension(sourceMimetype));
         // download the content from the source reader
         reader.getContent(tempFromFile);
@@ -158,9 +154,9 @@ public class UnoMetadataExtracter extends AbstractMetadataExtracter
         }
     }
 
-    public String toUrl(File file, MyUnoConnection connection) throws ConnectException
+    public String toUrl(File file, OpenOfficeConnection connection) throws ConnectException
     {
-        Object fcp = connection.getFileContentService();
+        Object fcp = connection.getFileContentProvider();
         XFileIdentifierConverter fic = (XFileIdentifierConverter) UnoRuntime.queryInterface(
                 XFileIdentifierConverter.class, fcp);
         return fic.getFileURLFromSystemPath("", file.getAbsolutePath());
@@ -180,18 +176,5 @@ public class UnoMetadataExtracter extends AbstractMetadataExtracter
         property.Name = name;
         property.Value = value;
         return property;
-    }
-
-    static class MyUnoConnection extends UnoConnection
-    {
-        public MyUnoConnection(String url)
-        {
-            super(url);
-        }
-
-        public Object getFileContentService() throws ConnectException
-        {
-            return getService("com.sun.star.ucb.FileContentProvider");
-        }
     }
 }

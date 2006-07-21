@@ -50,7 +50,6 @@ public class ContentTransformerRegistry
     private MimetypeMap mimetypeMap;
     /** Cache of previously used transactions */
     private Map<TransformationKey, List<ContentTransformer>> transformationCache;
-    private short accessCount;
     /** Controls read access to the transformation cache */
     private Lock transformationCacheReadLock;
     /** controls write access to the transformation cache */
@@ -67,7 +66,6 @@ public class ContentTransformerRegistry
         this.transformers = new ArrayList<ContentTransformer>(10);
         transformationCache = new HashMap<TransformationKey, List<ContentTransformer>>(17);
         
-        accessCount = 0;
         // create lock objects for access to the cache
         ReadWriteLock transformationCacheLock = new ReentrantReadWriteLock();
         transformationCacheReadLock = transformationCacheLock.readLock();
@@ -120,7 +118,6 @@ public class ContentTransformerRegistry
         try
         {
             transformationCache.clear();
-            accessCount = 0;
         }
         finally
         {
@@ -243,7 +240,6 @@ public class ContentTransformerRegistry
     private List<ContentTransformer> findDirectTransformers(String sourceMimetype, String targetMimetype)
     {
         double maxReliability = 0.0;
-        long leastTime = 100000L;   // 100 seconds - longer than anyone would think of waiting 
         List<ContentTransformer> bestTransformers = new ArrayList<ContentTransformer>(2);
         // loop through transformers
         for (ContentTransformer transformer : this.transformers)
@@ -289,6 +285,7 @@ public class ContentTransformerRegistry
     /**
      * Recursive method to build up a list of content transformers
      */
+    @SuppressWarnings("unused")
     private void buildTransformer(List<ContentTransformer> transformers,
             double reliability,
             List<String> touchedMimetypes,

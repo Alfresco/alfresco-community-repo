@@ -274,14 +274,14 @@ public interface AVMStore
      * @param name The name of the property.
      * @param value The value to set.
      */
-    public void setProperty(String path, QName name, PropertyValue value);
+    public void setNodeProperty(String path, QName name, PropertyValue value);
     
     /**
      * Set a collection of properties on a node.
      * @param path The path to the node.
      * @param properties The Map of QNames to PropertyValues.
      */
-    public void setProperties(String path, Map<QName, PropertyValue> properties);
+    public void setNodeProperties(String path, Map<QName, PropertyValue> properties);
     
     /**
      * Get a property by name.
@@ -290,14 +290,14 @@ public interface AVMStore
      * @param name The name of the property.
      * @return A PropertyValue or null if not found.
      */
-    public PropertyValue getProperty(int version, String path, QName name);
+    public PropertyValue getNodeProperty(int version, String path, QName name);
     
     /**
      * Delete a single property from a node.
      * @param path The path to the node.
      * @param name The name of the property.
      */
-    public void deleteProperty(String path, QName name);
+    public void deleteNodeProperty(String path, QName name);
     
     /**
      * Get all the properties associated with a node.
@@ -305,5 +305,37 @@ public interface AVMStore
      * @param path The path to the node.
      * @return A Map of QNames to PropertyValues.
      */
-    public Map<QName, PropertyValue> getProperties(int version, String path);
+    public Map<QName, PropertyValue> getNodeProperties(int version, String path);
+    
+    /**
+     * Set a property on this store. Replaces if property already exists.
+     * @param name The QName of the property.
+     * @param value The actual PropertyValue.
+     */
+    public void setProperty(QName name, PropertyValue value);
+    
+    /**
+     * Set a group of properties on this store. Replaces any property that exists.
+     * @param properties A Map of QNames to PropertyValues to set.
+     */
+    public void setProperties(Map<QName, PropertyValue> properties);
+    
+    /**
+     * Get a property by name.
+     * @param name The QName of the property to fetch.
+     * @return The PropertyValue or null if non-existent.
+     */
+    public PropertyValue getProperty(QName name);
+    
+    /**
+     * Get all the properties associated with this node.
+     * @return A Map of the properties.
+     */
+    public Map<QName, PropertyValue> getProperties();
+    
+    /**
+     * Delete a property.
+     * @param name The name of the property to delete.
+     */
+    public void deleteProperty(QName name);
 }

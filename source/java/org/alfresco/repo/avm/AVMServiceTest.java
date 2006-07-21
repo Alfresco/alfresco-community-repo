@@ -2032,11 +2032,11 @@ public class AVMServiceTest extends AVMServiceTestBase
             setupBasicTree();
             QName name = QName.createQName("silly.uri", "SillyProperty");
             PropertyValue value = new PropertyValue(name, "Silly Property Value");
-            fService.setProperty("main:/a/b/c/foo", name, value);
+            fService.setNodeProperty("main:/a/b/c/foo", name, value);
             fService.createSnapshot("main");
-            PropertyValue returned = fService.getProperty(-1, "main:/a/b/c/foo", name);
+            PropertyValue returned = fService.getNodeProperty(-1, "main:/a/b/c/foo", name);
             assertEquals(value.toString(), returned.toString());
-            Map<QName, PropertyValue> props = fService.getProperties(-1, "main:/a/b/c/foo");
+            Map<QName, PropertyValue> props = fService.getNodeProperties(-1, "main:/a/b/c/foo");
             assertEquals(1, props.size());
             assertEquals(value.toString(), props.get(name).toString());
             props = new HashMap<QName, PropertyValue>();
@@ -2049,16 +2049,16 @@ public class AVMServiceTest extends AVMServiceTestBase
             QName n3 = QName.createQName("silly.uri", "Prop3");
             PropertyValue p3 = new PropertyValue(null, 42);
             props.put(n3, p3);
-            fService.setProperties("main:/a/b/c/bar", props);
+            fService.setNodeProperties("main:/a/b/c/bar", props);
             fService.createSnapshot("main");
-            props = fService.getProperties(-1, "main:/a/b/c/bar");
+            props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
             assertEquals(3, props.size());
             assertEquals(p1.toString(), props.get(n1).toString());
             assertEquals(p2.toString(), props.get(n2).toString());
             assertEquals(p3.toString(), props.get(n3).toString());
-            fService.deleteProperty("main:/a/b/c/bar", n1);
+            fService.deleteNodeProperty("main:/a/b/c/bar", n1);
             fService.createSnapshot("main");
-            props = fService.getProperties(-1, "main:/a/b/c/bar");
+            props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
             assertEquals(2, props.size());
             assertEquals(p2.toString(), props.get(n2).toString());
             assertEquals(p3.toString(), props.get(n3).toString());
@@ -2066,6 +2066,45 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
+        }
+    }
+    
+    /**
+     * Test properties on stores.
+     */
+    public void testStoreProperties()
+    {
+        try
+        {
+            QName name = QName.createQName("silly.uri", "SillyProperty");
+            PropertyValue value = new PropertyValue(name, "Silly Property Value");
+            fService.setStoreProperty("main", name, value);
+            PropertyValue found = fService.getStoreProperty("main", name);
+            assertEquals(value.toString(), found.toString());
+            Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>();
+            QName n1 = QName.createQName("silly.uri", "Prop1");
+            PropertyValue p1 = new PropertyValue(null, new Date(System.currentTimeMillis()));
+            props.put(n1, p1);
+            QName n2 = QName.createQName("silly.uri", "Prop2");
+            PropertyValue p2 = new PropertyValue(null, "A String Property.");
+            props.put(n2, p2);
+            QName n3 = QName.createQName("silly.uri", "Prop3");
+            PropertyValue p3 = new PropertyValue(null, 42);
+            props.put(n3, p3);     
+            fService.setStoreProperties("main", props);
+            props = fService.getStoreProperties("main");
+            assertEquals(4, props.size());
+            assertEquals(p1.toString(), props.get(n1).toString());
+            assertEquals(p2.toString(), props.get(n2).toString());
+            assertEquals(p3.toString(), props.get(n3).toString());
+            fService.deleteStoreProperty("main", name);
+            props = fService.getStoreProperties("main");
+            assertEquals(3, props.size());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
         }
     }
 }

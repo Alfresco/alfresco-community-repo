@@ -1037,7 +1037,7 @@ public class AVMServiceImpl implements AVMService
      * @param name The QName of the property.
      * @param value The property to set.
      */
-    public void setProperty(final String path, final QName name, final PropertyValue value)
+    public void setNodeProperty(final String path, final QName name, final PropertyValue value)
     {
         if (path == null || name == null || value == null)
         {
@@ -1047,7 +1047,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fAVMRepository.setProperty(path, name, value);
+                fAVMRepository.setNodeProperty(path, name, value);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -1059,7 +1059,7 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the node.
      * @param properties The Map of properties to set.
      */
-    public void setProperties(final String path, final Map<QName, PropertyValue> properties)
+    public void setNodeProperties(final String path, final Map<QName, PropertyValue> properties)
     {
         if (path == null || properties == null)
         {
@@ -1069,7 +1069,7 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fAVMRepository.setProperties(path, properties);
+                fAVMRepository.setNodeProperties(path, properties);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -1083,7 +1083,7 @@ public class AVMServiceImpl implements AVMService
      * @param name The QName.
      * @return The PropertyValue or null if it doesn't exist.
      */
-    public PropertyValue getProperty(final int version, final String path, final QName name)
+    public PropertyValue getNodeProperty(final int version, final String path, final QName name)
     {
         if (path == null || name == null)
         {
@@ -1095,7 +1095,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                value = fAVMRepository.getProperty(version, path, name);
+                value = fAVMRepository.getNodeProperty(version, path, name);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -1109,7 +1109,7 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the node.
      * @return A List of AVMNodeProperties.
      */
-    public Map<QName, PropertyValue> getProperties(final int version, final String path)
+    public Map<QName, PropertyValue> getNodeProperties(final int version, final String path)
     {
         if (path == null)
         {
@@ -1121,7 +1121,7 @@ public class AVMServiceImpl implements AVMService
             
             public void perform()
             {
-                properties = fAVMRepository.getProperties(version, path);
+                properties = fAVMRepository.getNodeProperties(version, path);
             }
         }
         TxnCallback doit = new TxnCallback();
@@ -1134,7 +1134,7 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the node.
      * @param name The QName of the property to delete.
      */
-    public void deleteProperty(final String path, final QName name)
+    public void deleteNodeProperty(final String path, final QName name)
     {
         if (path == null || name == null)
         {
@@ -1144,7 +1144,125 @@ public class AVMServiceImpl implements AVMService
         {
             public void perform()
             {
-                fAVMRepository.deleteProperty(path, name);
+                fAVMRepository.deleteNodeProperty(path, name);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, true);
+    }
+    
+    /**
+     * Set a property on a store. If the property exists it will be overwritten.
+     * @param store The store to set the property on.
+     * @param name The name of the property.
+     * @param value The value of the property.
+     */
+    public void setStoreProperty(final String store, final QName name, final PropertyValue value)
+    {
+        if (store == null || name == null || value == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public void perform()
+            {
+                fAVMRepository.setStoreProperty(store, name, value);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, true);
+    }
+    
+    /**
+     * Set a group of properties on a store. Existing properties will be overwritten.
+     * @param store The name of the store.
+     * @param props A Map of the properties to set.
+     */
+    public void setStoreProperties(final String store, final Map<QName, PropertyValue> props)
+    {
+        if (store == null || props == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public void perform()
+            {
+                fAVMRepository.setStoreProperties(store, props);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, true);
+    }
+    
+    /**
+     * Get a property from a store.
+     * @param store The name of the store.
+     * @param name The name of the property.
+     * @return A PropertyValue or null if non-existent.
+     */
+    public PropertyValue getStoreProperty(final String store, final QName name)
+    {
+        if (store == null || name == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public PropertyValue value;
+            
+            public void perform()
+            {
+                value = fAVMRepository.getStoreProperty(store, name);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.value;
+    }
+    
+    /**
+     * Get all the properties associated with a store.
+     * @param store The name of the store.
+     * @return A Map of the stores properties.
+     */
+    public Map<QName, PropertyValue> getStoreProperties(final String store)
+    {
+        if (store == null)
+        {
+            throw new AVMBadArgumentException("Null store name.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public Map<QName, PropertyValue> props;
+            
+            public void perform()
+            {
+                props = fAVMRepository.getStoreProperties(store);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.props;
+    }
+    
+    /**
+     * Delete a property on a store by name.
+     * @param store The name of the store.
+     * @param name The name of the property to delete.
+     */
+    public void deleteStoreProperty(final String store, final QName name)
+    {
+        if (store == null || name == null)
+        {
+            throw new AVMBadArgumentException("Invalid null argument.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public void perform()
+            {
+                fAVMRepository.deleteStoreProperty(store, name);
             }
         }
         TxnCallback doit = new TxnCallback();

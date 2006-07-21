@@ -76,6 +76,11 @@ public class AVMContext
     public AVMNodePropertyDAO fAVMNodePropertyDAO;
     
     /**
+     * The AVMStorePropertyDAO
+     */
+    public AVMStorePropertyDAO fAVMStorePropertyDAO;
+    
+    /**
      * @param nodeDAO the fAVMNodeDAO to set
      */
     public void setNodeDAO(AVMNodeDAO nodeDAO)
@@ -158,5 +163,10 @@ public class AVMContext
     public void setAvmNodePropertyDAO(AVMNodePropertyDAO avmNodePropertyDAO)
     {
         fAVMNodePropertyDAO = avmNodePropertyDAO;
+    }
+    
+    public void setAvmStorePropertyDAO(AVMStorePropertyDAO avmStorePropertyDAO)
+    {
+        fAVMStorePropertyDAO = avmStorePropertyDAO;
     }
 }

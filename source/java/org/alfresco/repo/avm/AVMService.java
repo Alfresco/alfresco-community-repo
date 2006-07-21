@@ -317,14 +317,14 @@ public interface AVMService
      * @param name The QName of the property.
      * @param value The property to set.
      */
-    public void setProperty(String path, QName name, PropertyValue value);
+    public void setNodeProperty(String path, QName name, PropertyValue value);
     
     /**
      * Set a collection of properties on a node.
      * @param path The path to the node.
      * @param properties The Map of properties to set.
      */
-    public void setProperties(String path, Map<QName, PropertyValue> properties);
+    public void setNodeProperties(String path, Map<QName, PropertyValue> properties);
     
     /**
      * Get a property of a node by QName.
@@ -333,7 +333,7 @@ public interface AVMService
      * @param name The QName.
      * @return The PropertyValue or null if it doesn't exist.
      */
-    public PropertyValue getProperty(int version, String path, QName name);
+    public PropertyValue getNodeProperty(int version, String path, QName name);
     
     /**
      * Get all the properties associated with a node.
@@ -341,12 +341,49 @@ public interface AVMService
      * @param path The path to the node.
      * @return A Map of QNames to PropertyValues.
      */
-    public Map<QName, PropertyValue> getProperties(int version, String path);
+    public Map<QName, PropertyValue> getNodeProperties(int version, String path);
     
     /**
      * Delete a property.
      * @param path The path to the node.
      * @param name The QName of the property to delete.
      */
-    public void deleteProperty(String path, QName name);
+    public void deleteNodeProperty(String path, QName name);
+    
+    /**
+     * Set a property on a store. If the property exists it will be overwritten.
+     * @param store The store to set the property on.
+     * @param name The name of the property.
+     * @param value The value of the property.
+     */
+    public void setStoreProperty(String store, QName name, PropertyValue value);
+    
+    /**
+     * Set a group of properties on a store. Existing properties will be overwritten.
+     * @param store The name of the store.
+     * @param props A Map of the properties to set.
+     */
+    public void setStoreProperties(String store, Map<QName, PropertyValue> props);
+    
+    /**
+     * Get a property from a store.
+     * @param store The name of the store.
+     * @param name The name of the property.
+     * @return A PropertyValue or null if non-existent.
+     */
+    public PropertyValue getStoreProperty(String store, QName name);
+    
+    /**
+     * Get all the properties associated with a store.
+     * @param store The name of the store.
+     * @return A Map of the stores properties.
+     */
+    public Map<QName, PropertyValue> getStoreProperties(String store);
+    
+    /**
+     * Delete a property on a store by name.
+     * @param store The name of the store.
+     * @param name The name of the property to delete.
+     */
+    public void deleteStoreProperty(String store, QName name);
 }

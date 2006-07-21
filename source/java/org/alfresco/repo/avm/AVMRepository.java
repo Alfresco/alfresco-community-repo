@@ -871,12 +871,12 @@ class AVMRepository
      * @param name The name of the property.
      * @param value The value of the property.
      */
-    public void setProperty(String path, QName name, PropertyValue value)
+    public void setNodeProperty(String path, QName name, PropertyValue value)
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0], true);
-        store.setProperty(pathParts[1], name, value);
+        store.setNodeProperty(pathParts[1], name, value);
     }
     
     /**
@@ -884,12 +884,12 @@ class AVMRepository
      * @param path The path to the node.
      * @param properties The Map of QNames to PropertyValues.
      */
-    public void setProperties(String path, Map<QName, PropertyValue> properties)
+    public void setNodeProperties(String path, Map<QName, PropertyValue> properties)
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0], true);
-        store.setProperties(pathParts[1], properties);
+        store.setNodeProperties(pathParts[1], properties);
     }
     
     /**
@@ -899,12 +899,12 @@ class AVMRepository
      * @param name The name of the property.
      * @return The PropertyValue or null if it does not exist.
      */
-    public PropertyValue getProperty(int version, String path, QName name)
+    public PropertyValue getNodeProperty(int version, String path, QName name)
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0], false);
-        return store.getProperty(version, pathParts[1], name);
+        return store.getNodeProperty(version, pathParts[1], name);
     }
     
     /**
@@ -913,12 +913,12 @@ class AVMRepository
      * @param path The path to the node.
      * @return A Map of QNames to PropertyValues.
      */
-    public Map<QName, PropertyValue> getProperties(int version, String path)
+    public Map<QName, PropertyValue> getNodeProperties(int version, String path)
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0], false);
-        return store.getProperties(version, pathParts[1]);
+        return store.getNodeProperties(version, pathParts[1]);
     }
     
     /**
@@ -926,12 +926,64 @@ class AVMRepository
      * @param path The path to the node.
      * @param name The name of the property.
      */
-    public void deleteProperty(String path, QName name)
+    public void deleteNodeProperty(String path, QName name)
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0], true);
-        store.deleteProperty(pathParts[1], name);
+        store.deleteNodeProperty(pathParts[1], name);
+    }
+
+    /**
+     * Set a property on a store. Overwrites if property exists.
+     * @param store The AVMStore.
+     * @param name The QName.
+     * @param value The PropertyValue to set.
+     */
+    public void setStoreProperty(String store, QName name, PropertyValue value)
+    {
+        getAVMStoreByName(store, true).setProperty(name, value);
+    }
+    
+    /**
+     * Set a group of properties on a store. Overwrites any properties that exist.
+     * @param store The AVMStore.
+     * @param props The properties to set.
+     */
+    public void setStoreProperties(String store, Map<QName, PropertyValue> props)
+    {
+        getAVMStoreByName(store, true).setProperties(props);
+    }
+    
+    /**
+     * Get a property from a store.
+     * @param store The name of the store.
+     * @param name The property
+     * @return The property value or null if non-existent.
+     */
+    public PropertyValue getStoreProperty(String store, QName name)
+    {
+        return getAVMStoreByName(store, false).getProperty(name);
+    }
+    
+    /**
+     * Get all the properties for a store.
+     * @param store The name of the Store.
+     * @return A Map of all the properties.
+     */
+    public Map<QName, PropertyValue> getStoreProperties(String store)
+    {
+        return getAVMStoreByName(store, false).getProperties();
+    }
+    
+    /**
+     * Delete a property from a store.
+     * @param store The name of the store.
+     * @param name The name of the property.
+     */
+    public void deleteStoreProperty(String store, QName name)
+    {
+        getAVMStoreByName(store, true).deleteProperty(name);
     }
     
     /**

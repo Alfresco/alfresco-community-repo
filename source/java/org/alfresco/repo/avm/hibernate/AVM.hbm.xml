@@ -197,6 +197,23 @@
             <property name="serializableValue" column="serializable_value" type="serializable" length="16384"/>
        </component>
 	</class>
+	<class name="AVMStorePropertyImpl" proxy="AVMStoreProperty" table="avm_store_properties">
+		<composite-id>
+			<key-many-to-one name="store" class="AVMStoreImpl" column="avm_store_id"/>
+			<key-property name="name" column="qname" type="QName" length="200"/>
+		</composite-id>
+		<component class="org.alfresco.repo.domain.PropertyValue" name="value">
+            <property name="actualType" column="actual_type" type="string" length="15" not-null="true" />
+            <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
+            <property name="persistedType" column="persisted_type" type="string" length="15" not-null="true" />
+            <property name="booleanValue" column="boolean_value" type="boolean" />
+            <property name="longValue" column="long_value" type="long" />
+            <property name="floatValue" column="float_value" type="float" />
+            <property name="doubleValue" column="double_value" type="double" />
+            <property name="stringValue" column="string_value" type="string" length="1024"/>
+            <property name="serializableValue" column="serializable_value" type="serializable" length="16384"/>
+       </component>
+	</class>		
 	<query name="ChildEntry.ByNameParent">
 	<![CDATA[
 		from ChildEntryImpl ce

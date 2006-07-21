@@ -24,6 +24,7 @@ import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -833,7 +834,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @param name The name of the property.
      * @param value The value to set.
      */
-    public void setProperty(String path, QName name, PropertyValue value)
+    public void setNodeProperty(String path, QName name, PropertyValue value)
     {
         Lookup lPath = lookup(-1, path, true);
         AVMNode node = lPath.getCurrentNode();
@@ -845,7 +846,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @param path The path to the node.
      * @param properties The Map of QNames to PropertyValues.
      */
-    public void setProperties(String path, Map<QName, PropertyValue> properties)
+    public void setNodeProperties(String path, Map<QName, PropertyValue> properties)
     {
         Lookup lPath = lookup(-1, path, true);
         AVMNode node = lPath.getCurrentNode();
@@ -859,7 +860,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @param name The name of the property.
      * @return A PropertyValue or null if not found.
      */
-    public PropertyValue getProperty(int version, String path, QName name)
+    public PropertyValue getNodeProperty(int version, String path, QName name)
     {
         Lookup lPath = lookup(version, path, false);
         AVMNode node = lPath.getCurrentNode();
@@ -872,7 +873,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @param path The path to the node.
      * @return A Map of QNames to PropertyValues.
      */
-    public Map<QName, PropertyValue> getProperties(int version, String path)
+    public Map<QName, PropertyValue> getNodeProperties(int version, String path)
     {
         Lookup lPath = lookup(version, path, false);
         AVMNode node = lPath.getCurrentNode();
@@ -884,10 +885,71 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @param path The path to the node.
      * @param name The name of the property.
      */
-    public void deleteProperty(String path, QName name)
+    public void deleteNodeProperty(String path, QName name)
     {
         Lookup lPath = lookup(-1, path, true);
         AVMNode node = lPath.getCurrentNode();
         node.deleteProperty(name);
+    }
+    
+    /**
+     * Set a property on this store. Replaces if property already exists.
+     * @param name The QName of the property.
+     * @param value The actual PropertyValue.
+     */
+    public void setProperty(QName name, PropertyValue value)
+    {
+        AVMStoreProperty prop = new AVMStorePropertyImpl();
+        prop.setStore(this);
+        prop.setName(name);
+        prop.setValue(value);
+        AVMContext.fgInstance.fAVMStorePropertyDAO.save(prop);
+    }
+    
+    /**
+     * Set a group of properties on this store. Replaces any property that exists.
+     * @param properties A Map of QNames to PropertyValues to set.
+     */
+    public void setProperties(Map<QName, PropertyValue> properties)
+    {
+        for (QName name : properties.keySet())
+        {
+            setProperty(name, properties.get(name));
+        }
+    }
+    
+    /**
+     * Get a property by name.
+     * @param name The QName of the property to fetch.
+     * @return The PropertyValue or null if non-existent.
+     */
+    public PropertyValue getProperty(QName name)
+    {
+        return AVMContext.fgInstance.fAVMStorePropertyDAO.get(this, name).getValue();
+    }
+    
+    /**
+     * Get all the properties associated with this node.
+     * @return A Map of the properties.
+     */
+    public Map<QName, PropertyValue> getProperties()
+    {
+        List<AVMStoreProperty> props = 
+            AVMContext.fgInstance.fAVMStorePropertyDAO.get(this);
+        Map<QName, PropertyValue> retVal = new HashMap<QName, PropertyValue>();
+        for (AVMStoreProperty prop : props)
+        {
+            retVal.put(prop.getName(), prop.getValue());
+        }
+        return retVal;
+    }
+    
+    /**
+     * Delete a property.
+     * @param name The name of the property to delete.
+     */
+    public void deleteProperty(QName name)
+    {
+        AVMContext.fgInstance.fAVMStorePropertyDAO.delete(this, name);
     }
 }

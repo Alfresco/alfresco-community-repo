@@ -186,7 +186,7 @@
 
     <!-- Indexer and searchers for lucene -->
     <bean id="luceneIndexerAndSearcherFactory"
-        class="org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory">
+        class="org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory2">
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
@@ -566,7 +566,7 @@
     
     <!-- Bean to backup Lucene indexes -->
     <bean id="luceneIndexBackupComponent"
-          class="org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory$LuceneIndexBackupComponent">
+          class="org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory2$LuceneIndexBackupComponent">
         <property name="transactionService">
             <ref bean="transactionComponent" />
         </property>

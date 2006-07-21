@@ -236,7 +236,7 @@ public class LuceneSearcherImpl extends LuceneBase implements LuceneSearcher
                         switch (sd.getSortType())
                         {
                         case FIELD:
-                            fields[index++] = new SortField(sd.getField(), !sd.isAscending());
+                            fields[index++] = new SortField(sd.getField(), SortField.STRING, !sd.isAscending());
                             break;
                         case DOCUMENT:
                             fields[index++] = new SortField(null, SortField.DOC, !sd.isAscending());

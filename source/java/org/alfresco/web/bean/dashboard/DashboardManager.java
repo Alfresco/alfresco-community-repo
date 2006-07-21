@@ -71,6 +71,7 @@ public class DashboardManager
    public void initDashboard()
    {
       this.renderingList = null;
+      this.titleList = null;
    }
    
    /**
@@ -157,9 +158,6 @@ public class DashboardManager
                   pageConfig.addPage(page);
                }
             }
-            
-            // persist the initial config for this user
-            //PreferencesService.getPreferences().setValue(PREF_DASHBOARD, pageConfig.toXML());
          }
          
          this.pageConfig = pageConfig;
@@ -174,6 +172,11 @@ public class DashboardManager
    public void savePageConfig(PageConfig config)
    {
       this.pageConfig = config;
+      
+      // reset cached values
+      initDashboard();
+      
+      // persist the changes
       PreferencesService.getPreferences().setValue(PREF_DASHBOARD, this.pageConfig.toXML());
    }
    

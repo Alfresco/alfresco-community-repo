@@ -19,4 +19,4 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<h:outputText value="---TASKLIST DASHLET---" />
+<h:graphicImage value="/jsp/dashboards/dashlets/my-tasks-todo.png" />

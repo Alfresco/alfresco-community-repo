@@ -156,6 +156,14 @@ public class DashboardWizard extends BaseWizardBean
    }
    
    /**
+    * @return the number of components per column supported in the selected page layout
+    */
+   public int getColumnMax()
+   {
+      return DashboardManager.getDashboardConfig().getLayoutDefinition(getLayout()).ColumnLength;
+   }
+   
+   /**
     * @return the array of UI select items representing the columns that can be configured
     */
    public SelectItem[] getColumns()
@@ -171,11 +179,20 @@ public class DashboardWizard extends BaseWizardBean
       return columns;
    }
    
+   /**
+    * @return the index of the column being edited in the columns wizard page
+    */
    public int getColumn()
    {
       return this.column;
    }
    
+   /**
+    * Set the index of the column being edited in the columns wizard page. This value is
+    * set when the Columns drop-down value is changed by the user.
+    * 
+    * @param column  Column index
+    */
    public void setColumn(int column)
    {
       if (column != this.column)
@@ -186,6 +203,9 @@ public class DashboardWizard extends BaseWizardBean
       }
    }
    
+   /**
+    * @return The SelectItem List of all available dashlets
+    */
    public List<SelectItem> getAllDashlets()
    {
       if (this.dashlets == null)
@@ -265,6 +285,10 @@ public class DashboardWizard extends BaseWizardBean
       return this.layoutIcons;
    }
    
+   /**
+    * Build the cached list of values for the layout page. The lists are used by the
+    * image radio picker and dynamic description components.
+    */
    private void buildLayoutValueLists()
    {
       List<UIListItem> icons = new ArrayList<UIListItem>(4);
@@ -319,14 +343,33 @@ public class DashboardWizard extends BaseWizardBean
       // get the IDs of the selected Dashlet definitions
       Object[] selected = dashletPicker.getSelectedValues();
       
-      // get the column to add the dashlets too
-      DashboardsConfigElement config = DashboardManager.getDashboardConfig();
-      LayoutDefinition layoutDef = this.editConfig.getCurrentPage().getLayoutDefinition();
-      Column column = this.editConfig.getCurrentPage().getColumns().get(this.column);
-      // add each selected dashlet to the column
-      for (int i=0; i<selected.length && column.getDashlets().size() < layoutDef.ColumnLength; i++)
+      if (selected.length != 0)
       {
-         column.addDashlet(config.getDashletDefinition((String)selected[i]));
+         // get the column to add the dashlets too
+         DashboardsConfigElement config = DashboardManager.getDashboardConfig();
+         LayoutDefinition layoutDef = this.editConfig.getCurrentPage().getLayoutDefinition();
+         Column column = this.editConfig.getCurrentPage().getColumns().get(this.column);
+         
+         // add each selected dashlet to the column
+         for (int i=0; i<selected.length && column.getDashlets().size() < layoutDef.ColumnLength; i++)
+         {
+            String dashletId = (String)selected[i];
+            
+            // don't add if already present in the list
+            boolean found = false;
+            for (int x=0; x<column.getDashlets().size(); x++)
+            {
+               if (column.getDashlets().get(x).Id.equals(dashletId))
+               {
+                  found = true;
+                  break;
+               }
+            }
+            if (found == false)
+            {
+               column.addDashlet(config.getDashletDefinition(dashletId));
+            }
+         }
       }
    }
    
@@ -339,15 +382,85 @@ public class DashboardWizard extends BaseWizardBean
       
       // get the ID of the selected Dashlet definition
       String dashletId = (String)dashletColumn.getValue();
-      Column column = this.editConfig.getCurrentPage().getColumns().get(this.column);
-      
-      // remove the selected dashlet from the column
-      for (int i=0; i<column.getDashlets().size(); i++)
+      if (dashletId != null)
       {
-         if (column.getDashlets().get(i).Id.equals(dashletId))
+         Column column = this.editConfig.getCurrentPage().getColumns().get(this.column);
+         
+         // remove the selected dashlet from the column
+         for (int i=0; i<column.getDashlets().size(); i++)
          {
-            column.getDashlets().remove(i);
-            break;
+            if (column.getDashlets().get(i).Id.equals(dashletId))
+            {
+               column.getDashlets().remove(i);
+               break;
+            }
+         }
+      }
+   }
+   
+   /**
+    * Action event called to move a dashlet up the column list
+    */
+   public void dashletUp(ActionEvent event)
+   {
+      UISelectOne dashletColumn = (UISelectOne)event.getComponent().findComponent(COMPONENT_COLUMNDASHLETS);
+      
+      // get the ID of the selected Dashlet definition
+      String dashletId = (String)dashletColumn.getValue();
+      if (dashletId != null)
+      {
+         Column column = this.editConfig.getCurrentPage().getColumns().get(this.column);
+         
+         // find the dashlet in the list
+         for (int i=0; i<column.getDashlets().size(); i++)
+         {
+            if (column.getDashlets().get(i).Id.equals(dashletId))
+            {
+               if (i != 0)
+               {
+                  DashletDefinition dashletDef = column.getDashlets().get(i);
+                  column.getDashlets().remove(i);
+                  column.getDashlets().add(i - 1, dashletDef);
+               }
+               break;
+            }
+         }
+      }
+   }
+   
+   /**
+    * Action event called to move a dashlet down the column list
+    */
+   public void dashletDown(ActionEvent event)
+   {
+      UISelectOne dashletColumn = (UISelectOne)event.getComponent().findComponent(COMPONENT_COLUMNDASHLETS);
+      
+      // get the ID of the selected Dashlet definition
+      String dashletId = (String)dashletColumn.getValue();
+      if (dashletId != null)
+      {
+         Column column = this.editConfig.getCurrentPage().getColumns().get(this.column);
+         
+         // find the dashlet in the list
+         for (int i=0; i<column.getDashlets().size(); i++)
+         {
+            if (column.getDashlets().get(i).Id.equals(dashletId))
+            {
+               if (i != column.getDashlets().size() - 1)
+               {
+                  DashletDefinition dashletDef = column.getDashlets().get(i);
+                  column.getDashlets().remove(i);
+                  if (i + 1 < column.getDashlets().size())
+                  {
+                     column.getDashlets().add(i + 1, dashletDef);
+                  }
+                  else
+                  {
+                     column.getDashlets().add(dashletDef);
+                  }
+               }
+               break;
+            }
          }
       }
    }

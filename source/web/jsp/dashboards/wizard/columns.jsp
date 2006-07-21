@@ -40,6 +40,10 @@
       <h:selectOneMenu id="columns" value="#{WizardManager.bean.column}" onchange="document.forms['wizard'].submit(); return true;">
          <f:selectItems value="#{WizardManager.bean.columns}" />
       </h:selectOneMenu>
+      <f:verbatim>&nbsp;</f:verbatim>
+      <h:outputFormat value="- #{msg.column_max_components}">
+         <f:param value="#{WizardManager.bean.columnMax}" />
+      </h:outputFormat>
    </h:panelGroup>
    
    <h:panelGrid columns="3" cellpadding="2" cellspacing="0" border="0" columnClasses="alignTop,alignMiddle">

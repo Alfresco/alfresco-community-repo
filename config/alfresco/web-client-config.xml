@@ -169,12 +169,12 @@
             <layout id="default" columns="1" column-length="5" image="/images/icons/layout_single_column.gif"
                   label-id="layout_single_label" description-id="layout_single_desc"
                   jsp="/jsp/dashboards/layouts/single-column.jsp" />
-            <layout id="narrow-left-2column" columns="2" column-length="4" image="/images/icons/layout_narrow_left_2column.gif"
-                  label-id="layout_narrow_left_label" description-id="layout_narrow_left_desc"
-                  jsp="/jsp/dashboards/layouts/narrow-left-2column.jsp" />
             <layout id="narrow-right-2column" columns="2" column-length="4" image="/images/icons/layout_narrow_right_2column.gif"
                   label-id="layout_narrow_right_label" description-id="layout_narrow_right_desc"
                   jsp="/jsp/dashboards/layouts/narrow-right-2column.jsp" />
+            <layout id="narrow-left-2column" columns="2" column-length="4" image="/images/icons/layout_narrow_left_2column.gif"
+                  label-id="layout_narrow_left_label" description-id="layout_narrow_left_desc"
+                  jsp="/jsp/dashboards/layouts/narrow-left-2column.jsp" />
             <layout id="three-column" columns="3" column-length="4" image="/images/icons/layout_three_column.gif"
                   label-id="layout_three_column_label" description-id="layout_three_column_desc"
                   jsp="/jsp/dashboards/layouts/three-column.jsp" />
@@ -184,9 +184,20 @@
             <dashlet id="getting-started" label-id="dashlet_gettingstarted_label"
                   description-id="dashlet_gettingstarted_desc"
                   jsp="/jsp/dashboards/dashlets/getting-started.jsp" allow-narrow="false" />
-            <!-- TEMP -->
-            <dashlet id="task-list" label="My Tasklist" description="A description of the Task List"
-                  jsp="/jsp/dashboards/dashlets/tasklist.jsp" allow-narrow="false" />
+            <!-- TEMP! -->
+            <dashlet id="my-docs-template" label="My Documents"
+                  description="My Documents Template Page"
+                  jsp="/jsp/dashboards/dashlets/my-docs.jsp" allow-narrow="true" />
+            <dashlet id="task-list" label="My Tasklist To-do" description="List of your tasks still to complete"
+                  jsp="/jsp/dashboards/dashlets/tasklist-todo.jsp" allow-narrow="false" />
+            <dashlet id="task-list-complete" label="My Tasks Completed" description="List of your completed tasks"
+                  jsp="/jsp/dashboards/dashlets/tasklist-completed.jsp" allow-narrow="false" />
+            <dashlet id="content-checkedout" label="My Checkedout Content" description="List of the content checked out to you"
+                  jsp="/jsp/dashboards/dashlets/content-checkedout.jsp" allow-narrow="false" />
+            <dashlet id="calculator" label="Calculator" description="A small calculator applet"
+                  jsp="/jsp/dashboards/dashlets/calculator.jsp" allow-narrow="true" />
+            <dashlet id="calendar" label="Calendar" description="A small calendar application"
+                  jsp="/jsp/dashboards/dashlets/calendar.jsp" allow-narrow="true" />
          </dashlets>
       </dashboards>
    </config>

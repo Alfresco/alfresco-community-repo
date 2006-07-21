@@ -140,7 +140,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
 	}
     
     /**
-     * Sets the authenticatin service
+     * Sets the authentication service
      * 
      * @param authenticationService  the authentication service
      */
@@ -244,7 +244,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
 		workingCopyProperties.put(ContentModel.PROP_WORKING_COPY_OWNER, userName);
 		this.nodeService.addAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY, workingCopyProperties);
 		
-		// Lock the origional node
+		// Lock the original node
 		this.lockService.lock(nodeRef, LockType.READ_ONLY_LOCK);
 		
 		// Return the working copy
@@ -307,11 +307,11 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             try
             {
                 Map<QName, Serializable> workingCopyProperties = nodeService.getProperties(workingCopyNodeRef);
-    			// Try and get the origional node reference
+    			// Try and get the original node reference
     			nodeRef = (NodeRef) workingCopyProperties.get(ContentModel.PROP_COPY_REFERENCE);
     			if(nodeRef == null)
     			{
-    				// Error since the origional node can not be found
+    				// Error since the original node can not be found
     				throw new CheckOutCheckInServiceException(MSG_ERR_BAD_COPY);							
     			}
     			
@@ -347,7 +347,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     						contentData);
     			}
                 
-    			// Copy the contents of the working copy onto the origional
+    			// Copy the contents of the working copy onto the original
     			this.copyService.copy(workingCopyNodeRef, nodeRef);
                 
                 if (versionProperties != null && this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
@@ -364,7 +364,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     			}
     			else
     			{
-    				// Re-lock the origional node
+    				// Re-lock the original node
     				this.lockService.lock(nodeRef, LockType.READ_ONLY_LOCK);
     			}
             }
@@ -421,15 +421,15 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
 		// Ensure that the node has the copy aspect
 		if (this.nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_COPIEDFROM) == true)
 		{
-			// Get the origional node
+			// Get the original node
 			nodeRef = (NodeRef)this.nodeService.getProperty(workingCopyNodeRef, ContentModel.PROP_COPY_REFERENCE);
 			if (nodeRef == null)
 			{
-				// Error since the origional node can not be found
+				// Error since the original node can not be found
 				throw new CheckOutCheckInServiceException(MSG_ERR_BAD_COPY);
 			}			
 			
-			// Release the lock on the origional node
+			// Release the lock on the original node
 			this.lockService.unlock(nodeRef);
 			
 			// Delete the working copy
@@ -452,7 +452,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     {
         NodeRef workingCopy = null;
         
-        // Do a search to find the origional document
+        // Do a search to find the working copy document
         ResultSet resultSet = null;
         try
         {

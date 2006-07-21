@@ -159,6 +159,9 @@
                               <a href="http://www.openoffice.org/" target="new"><img src="<%=request.getContextPath()%>/images/logo/open-office.gif" border=0></a>
                            </span>
                            <span align=center>
+                              <a href="http://jooreports.sourceforge.net/" target="new"><img src="<%=request.getContextPath()%>/images/logo/jooreports.png" border=0></a>
+                           </span>
+                           <span align=center>
                               <a href="http://freemarker.sourceforge.net/" target="new"><img src="<%=request.getContextPath()%>/images/logo/freemarker.png" border=0></a>
                            </span>
                         </div>

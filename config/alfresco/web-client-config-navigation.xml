@@ -5,7 +5,6 @@
          <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/forums/forums.jsp" />
          <override from-outcome="browse" to-view-id="/jsp/forums/forums.jsp" />
          <override from-outcome="showSpaceDetails" to-view-id="/jsp/forums/forums-details.jsp" />
-         <override from-outcome="deleteSpace" to-view-id="/jsp/forums/delete-forums.jsp" />
       </navigation>
    </config>
    
@@ -14,7 +13,6 @@
          <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/forums/forum.jsp" />
          <override from-outcome="browse" to-view-id="/jsp/forums/forum.jsp" />
          <override from-outcome="showSpaceDetails" to-view-id="/jsp/forums/forum-details.jsp" />
-         <override from-outcome="deleteSpace" to-view-id="/jsp/forums/delete-forum.jsp" />
       </navigation>
    </config>
    
@@ -23,7 +21,6 @@
          <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/forums/topic.jsp" />
          <override from-outcome="browse" to-view-id="/jsp/forums/topic.jsp" />
          <override from-outcome="showSpaceDetails" to-view-id="/jsp/forums/topic-details.jsp" />
-         <override from-outcome="deleteSpace" to-view-id="/jsp/forums/delete-topic.jsp" />
       </navigation>
    </config>
    

@@ -16,6 +16,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
@@ -154,11 +155,17 @@ public class CreateDiscussionDialog extends CreateTopicDialog
          this.nodeService.removeAspect(this.discussingNodeRef, ForumModel.ASPECT_DISCUSSABLE);
          
          // delete the forum space created when the wizard started         
-         this.browseBean.setActionSpace(this.navigator.getCurrentNode());
-         this.browseBean.deleteSpaceOK();
-         
+         Node forumNode = this.navigator.getCurrentNode();
+         this.nodeService.deleteNode(forumNode.getNodeRef());
+            
          // commit the transaction
          tx.commit();
+         
+         // remove this node from the breadcrumb if required
+         this.browseBean.removeSpaceFromBreadcrumb(forumNode);
+               
+         // clear action context
+         this.browseBean.setActionSpace(null);
       }
       catch (Throwable e)
       {

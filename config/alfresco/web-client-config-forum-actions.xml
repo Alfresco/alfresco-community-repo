@@ -99,8 +99,8 @@
             </permissions>
             <label-id>delete_forums</label-id>
             <image>/images/icons/delete_forums.gif</image>
-            <action>dialog:deleteForums</action>
-            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <action>dialog:deleteSpace</action>
+            <action-listener>#{BrowseBean.setupDeleteAction}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -113,8 +113,8 @@
             </permissions>
             <label-id>delete_forum</label-id>
             <image>/images/icons/delete_forum.gif</image>
-            <action>dialog:deleteForum</action>
-            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <action>dialog:deleteSpace</action>
+            <action-listener>#{BrowseBean.setupDeleteAction}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -137,8 +137,8 @@
             </permissions>
             <label-id>delete_topic</label-id>
             <image>/images/icons/delete_topic.gif</image>
-            <action>dialog:deleteTopic</action>
-            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <action>dialog:deleteSpace</action>
+            <action-listener>#{BrowseBean.setupDeleteAction}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -189,7 +189,7 @@
             </permissions>
             <label-id>delete_post</label-id>
             <image>/images/icons/delete.gif</image>
-            <action>dialog:deletePost</action>
+            <action>dialog:deleteFile</action>
             <action-listener>#{BrowseBean.setupContentAction}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>

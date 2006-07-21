@@ -15,6 +15,11 @@
                  icon="/images/icons/details_large.gif" title-id="modify_space_properties" 
                  description-id="editspace_description" />
          
+         <!-- Definition of the delete space dialog -->
+         <dialog name="deleteSpace" page="/jsp/dialog/delete.jsp" managed-bean="DeleteSpaceDialog" 
+                 icon="/images/icons/delete_large.gif" title-id="delete_space" 
+                 description-id="delete_space_info" />
+         
          <!-- Definition of the set content properties dialog -->
          <dialog name="setContentProperties" page="/jsp/content/edit-content-properties.jsp" 
                  managed-bean="SetContentPropertiesDialog" icon="/images/icons/details_large.gif"
@@ -25,6 +30,10 @@
                  managed-bean="EditContentPropertiesDialog" icon="/images/icons/details_large.gif"
                  title-id="modify_content_properties" description-id="edit_content_description" />
          
+         <!-- Definition of the delete content dialog -->
+         <dialog name="deleteFile" page="/jsp/dialog/delete.jsp" managed-bean="DeleteContentDialog" 
+                 icon="/images/icons/delete_large.gif" title-id="delete_file" 
+                 description-id="delete_file_info" />
          
          <!--                -->
          <!-- Forums Dialogs -->
@@ -72,4 +81,35 @@
       </dialogs>
    </config>
    
+   <config evaluator="node-type" condition="fm:forums">
+      <dialogs>
+         <dialog name="deleteSpace" page="/jsp/dialog/delete.jsp" managed-bean="DeleteForumsDialog"
+                 icon="/images/icons/delete_forums_large.gif" title-id="delete_forums" 
+                 description-id="delete_forums_info" />
+      </dialogs>
+   </config>
+   
+   <config evaluator="node-type" condition="fm:forum">
+      <dialogs>
+         <dialog name="deleteSpace" page="/jsp/dialog/delete.jsp" managed-bean="DeleteForumDialog"
+                 icon="/images/icons/delete_forum_large.gif" title-id="delete_forum" 
+                 description-id="delete_forum_info" />
+      </dialogs>
+   </config>
+   
+   <config evaluator="node-type" condition="fm:topic">
+      <dialogs>
+         <dialog name="deleteSpace" page="/jsp/dialog/delete.jsp" managed-bean="DeleteTopicDialog"
+                 icon="/images/icons/delete_topic_large.gif" title-id="delete_topic" 
+                 description-id="delete_topic_info" />
+      </dialogs>
+   </config>
+   
+   <config evaluator="node-type" condition="fm:post">
+      <dialogs>
+         <dialog name="deleteFile" page="/jsp/dialog/delete.jsp" managed-bean="DeletePostDialog" 
+                 icon="/images/icons/delete_large.gif" title-id="delete_post" 
+                 description-id="delete_post_info" />
+      </dialogs>
+   </config>
 </alfresco-config>

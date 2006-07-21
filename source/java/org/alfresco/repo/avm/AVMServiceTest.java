@@ -2093,13 +2093,13 @@ public class AVMServiceTest extends AVMServiceTestBase
             props.put(n3, p3);     
             fService.setStoreProperties("main", props);
             props = fService.getStoreProperties("main");
-            assertEquals(4, props.size());
+            assertEquals(6, props.size());
             assertEquals(p1.toString(), props.get(n1).toString());
             assertEquals(p2.toString(), props.get(n2).toString());
             assertEquals(p3.toString(), props.get(n3).toString());
             fService.deleteStoreProperty("main", name);
             props = fService.getStoreProperties("main");
-            assertEquals(3, props.size());
+            assertEquals(5, props.size());
         }
         catch (Exception e)
         {

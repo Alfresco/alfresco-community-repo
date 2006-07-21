@@ -106,15 +106,13 @@
 		 Each store has it's own branch ids and layer ids but shares node ids
 		 with other repositories.  The physical repository is structured this way
 		 for better scaling. -->
-	<class table="avm_repositories" name="AVMStoreImpl"
+	<class table="avm_stores" name="AVMStoreImpl"
 		proxy="AVMStore" optimistic-lock="version">
 		<cache usage="read-write"/>
 		<id name="name" column="name" type="string"/>
 		<version name="vers" column="vers" type="long"/>
 		<property type="int" name="nextVersionID"
 			column="next_version_id" not-null="true"/>
-		<property type="string" name="creator" column="creator" not-null="true"/>
-		<property type="long" name="createDate" column="create_date" not-null="true"/>
 		<!-- Every AVMStore has a root directory that is the current root directory. -->
 		<!-- This should be not-null but hibernate (or my own idiocy) makes that difficult. -->
 		<many-to-one name="root" class="DirectoryNodeImpl"

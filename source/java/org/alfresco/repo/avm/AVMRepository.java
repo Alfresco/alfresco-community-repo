@@ -464,6 +464,7 @@ class AVMRepository
         {
             AVMContext.fgInstance.fNewInAVMStoreDAO.delete(newGuy);
         }
+        AVMContext.fgInstance.fAVMStorePropertyDAO.delete(store);
         AVMContext.fgInstance.fAVMStoreDAO.delete(store);
     }
     

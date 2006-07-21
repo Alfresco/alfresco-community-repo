@@ -30,7 +30,9 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -69,16 +71,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
     transient private AVMRepository fAVMRepository;
     
     /**
-     * The creator.
-     */
-    private String fCreator;
-    
-    /**
-     * The create date.
-     */
-    private long fCreateDate;
-    
-    /**
      * Default constructor.
      */
     protected AVMStoreImpl()
@@ -98,9 +90,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
         fName = name;
         fNextVersionID = 0;
         fRoot = null;
-        fCreator = "britt";
-        fCreateDate = System.currentTimeMillis();
         AVMContext.fgInstance.fAVMStoreDAO.save(this);
+        setProperty(ContentModel.PROP_CREATOR, new PropertyValue(null, "britt"));
+        setProperty(ContentModel.PROP_CREATED, new PropertyValue(null, new Date(System.currentTimeMillis())));
         // Make up the initial version record and save.
         long time = System.currentTimeMillis();
         fRoot = new PlainDirectoryNodeImpl(this);
@@ -766,48 +758,14 @@ public class AVMStoreImpl implements AVMStore, Serializable
     }
 
     /**
-     * Get the create date.
-     * @return The create date.
-     */
-    public long getCreateDate()
-    {
-        return fCreateDate;
-    }
-
-    /**
-     * Get the creator.
-     * @return The creator.
-     */
-    public String getCreator()
-    {
-        return fCreator;
-    }
-
-    /**
-     * Set the create date.
-     * @param date
-     */
-    public void setCreateDate(long date)
-    {
-        fCreateDate = date;
-    }
-
-    /**
-     * Set the creator.
-     * @param creator
-     */
-    public void setCreator(String creator)
-    {
-        fCreator = creator;
-    }
-
-    /**
      * Get the descriptor for this.
      * @return An AVMStoreDescriptor
      */
     public AVMStoreDescriptor getDescriptor()
     {
-        return new AVMStoreDescriptor(fName, fCreator, fCreateDate);
+        return new AVMStoreDescriptor(fName, 
+                getProperty(ContentModel.PROP_CREATOR).getStringValue(),
+                ((Date)getProperty(ContentModel.PROP_CREATED).getValue(DataTypeDefinition.DATE)).getTime());
     }
 
     /**

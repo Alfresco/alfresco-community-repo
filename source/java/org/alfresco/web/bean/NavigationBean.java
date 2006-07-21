@@ -398,10 +398,18 @@ public class NavigationBean
          {
              ContentContext contentCtx = (ContentContext) diskShare.getContext();
              NodeRef rootNode = contentCtx.getRootNode();
-             String cifsPath = Repository.getNamePath(this.nodeService, path, rootNode, "\\", "file:///" + getCIFSServerPath(diskShare));
+             try
+             {
+                String cifsPath = Repository.getNamePath(this.nodeService, path, rootNode, "\\", "file:///" + getCIFSServerPath(diskShare));
               
-             node.getProperties().put("cifsPath", cifsPath);
-             node.getProperties().put("cifsPathLabel", cifsPath.substring(8));  // strip file:/// part
+                node.getProperties().put("cifsPath", cifsPath);
+                node.getProperties().put("cifsPathLabel", cifsPath.substring(8));  // strip file:/// part
+             }
+             catch(AccessDeniedException ade)
+             {
+                 node.getProperties().put("cifsPath", "");
+                 node.getProperties().put("cifsPathLabel","");  // strip file:/// part
+             }
          }
          
          this.currentNode = node;

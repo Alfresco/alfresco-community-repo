@@ -277,6 +277,13 @@ public interface AVMStore
     public void setProperty(String path, QName name, PropertyValue value);
     
     /**
+     * Set a collection of properties on a node.
+     * @param path The path to the node.
+     * @param properties The Map of QNames to PropertyValues.
+     */
+    public void setProperties(String path, Map<QName, PropertyValue> properties);
+    
+    /**
      * Get a property by name.
      * @param version The version to look under.
      * @param path The path to the node.

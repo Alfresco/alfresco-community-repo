@@ -307,6 +307,18 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     }
     
     /**
+     * Set a collection of properties on this node.
+     * @param properties The Map of QNames to PropertyValues.
+     */
+    public void setProperties(Map<QName, PropertyValue> properties)
+    {
+        for (QName name : properties.keySet())
+        {
+            setProperty(name, properties.get(name));
+        }
+    }
+    
+    /**
      * Get a property by name.
      * @param name The name of the property.
      * @return The PropertyValue or null if non-existent.

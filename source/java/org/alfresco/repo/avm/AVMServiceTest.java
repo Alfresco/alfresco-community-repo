@@ -24,6 +24,7 @@ import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -2038,6 +2039,22 @@ public class AVMServiceTest extends AVMServiceTestBase
             Map<QName, PropertyValue> props = fService.getProperties(-1, "main:/a/b/c/foo");
             assertEquals(1, props.size());
             assertEquals(value.toString(), props.get(name).toString());
+            props = new HashMap<QName, PropertyValue>();
+            QName n1 = QName.createQName("silly.uri", "Prop1");
+            PropertyValue p1 = new PropertyValue(null, new Date(System.currentTimeMillis()));
+            props.put(n1, p1);
+            QName n2 = QName.createQName("silly.uri", "Prop2");
+            PropertyValue p2 = new PropertyValue(null, "A String Property.");
+            props.put(n2, p2);
+            QName n3 = QName.createQName("silly.uri", "Prop3");
+            PropertyValue p3 = new PropertyValue(null, 42);
+            props.put(n3, p3);
+            fService.setProperties("main:/a/b/c/bar", props);
+            fService.createSnapshot("main");
+            props = fService.getProperties(-1, "main:/a/b/c/bar");
+            assertEquals(p1.toString(), props.get(n1).toString());
+            assertEquals(p2.toString(), props.get(n2).toString());
+            assertEquals(p3.toString(), props.get(n3).toString());
         }
         catch (Exception e)
         {

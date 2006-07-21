@@ -29,6 +29,8 @@ public class AVMNodePropertyDAOHibernate extends HibernateDaoSupport
                     "from AVMNodePropertyImpl anp where anp.node = :node and anp.name = :name");
         query.setEntity("node", node);
         query.setParameter("name", name);
+        query.setCacheable(true);
+        query.setCacheRegion("Property.Lookup");
         return (AVMNodeProperty)query.uniqueResult();
     }
 
@@ -44,6 +46,8 @@ public class AVMNodePropertyDAOHibernate extends HibernateDaoSupport
             getSession().createQuery(
                     "from AVMNodePropertyImpl anp where anp.node = :node");
         query.setEntity("node", node);
+        query.setCacheable(true);
+        query.setCacheRegion("Properties.Lookup");
         return (List<AVMNodeProperty>)query.list();
     }
 
@@ -63,5 +67,17 @@ public class AVMNodePropertyDAOHibernate extends HibernateDaoSupport
     public void update(AVMNodeProperty prop)
     {
         // Do nothing for Hibernate.
+    }
+    
+    /**
+     * Delete all properties associated with a node.
+     * @param node The AVMNode whose properties should be deleted.
+     */
+    public void deleteAll(AVMNode node)
+    {
+        Query delete =
+            getSession().createQuery("delete from AVMNodePropertyImpl anp where anp.node = :node");
+        delete.setEntity("node", node);
+        delete.executeUpdate();
     }
 }

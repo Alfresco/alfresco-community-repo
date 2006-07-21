@@ -81,8 +81,15 @@
     	   timeToIdleSeconds="300"
     	   timeToLiveSeconds="600"
     	   memoryStoreEvictionPolicy="LRU"/>
-    <cache name="DeletedChild.ByNameParent"
-    	   maxElementsInMemory="1000"
+    <cache name="Property.Lookup"
+    	   maxElementsInMemory="5000"
+    	   eternal="true"
+    	   overflowToDisk="false"
+    	   timeToIdleSeconds="300"
+    	   timeToLiveSeconds="600"
+    	   memoryStoreEvictionPolicy="LRU"/>
+    <cache name="Properties.Lookup"
+    	   maxElementsInMemory="2000"
     	   eternal="true"
     	   overflowToDisk="false"
     	   timeToIdleSeconds="300"

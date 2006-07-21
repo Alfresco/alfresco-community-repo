@@ -238,8 +238,8 @@ public class OrphanReaper implements Runnable
                     {
                         AVMContext.fgInstance.fNewInAVMStoreDAO.delete(newInRep);
                     }
-                    // TODO What to do about such Hibernate wackiness: session.flush();
-                    // TODO More of the same: node = AVMNodeUnwrapper.Unwrap(node);
+                    // Get rid of all properties belonging to this node.
+                    AVMContext.fgInstance.fAVMNodePropertyDAO.deleteAll(node);
                     // Extra work for directories.
                     if (node.getType() == AVMNodeType.PLAIN_DIRECTORY ||
                         node.getType() == AVMNodeType.LAYERED_DIRECTORY)

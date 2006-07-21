@@ -53,4 +53,10 @@ public interface AVMNodePropertyDAO
      * @param prop The property.
      */
     public void update(AVMNodeProperty prop);
+    
+    /**
+     * Delete all properties associated with a node.
+     * @param node The AVMNode whose properties should be deleted.
+     */
+    public void deleteAll(AVMNode node);
 }

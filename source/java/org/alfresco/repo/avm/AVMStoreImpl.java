@@ -841,6 +841,18 @@ public class AVMStoreImpl implements AVMStore, Serializable
     }
     
     /**
+     * Set a collection of properties on a node.
+     * @param path The path to the node.
+     * @param properties The Map of QNames to PropertyValues.
+     */
+    public void setProperties(String path, Map<QName, PropertyValue> properties)
+    {
+        Lookup lPath = lookup(-1, path, true);
+        AVMNode node = lPath.getCurrentNode();
+        node.setProperties(properties);
+    }
+    
+    /**
      * Get a property by name.
      * @param version The version to lookup.
      * @param path The path to the node.

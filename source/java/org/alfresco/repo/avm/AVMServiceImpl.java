@@ -1053,7 +1053,29 @@ public class AVMServiceImpl implements AVMService
         TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
-    
+
+    /**
+     * Set a collection of properties on a node.
+     * @param path The path to the node.
+     * @param properties The Map of properties to set.
+     */
+    public void setProperties(final String path, final Map<QName, PropertyValue> properties)
+    {
+        if (path == null || properties == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public void perform()
+            {
+                fAVMRepository.setProperties(path, properties);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, true);
+    }
+
     /**
      * Get a property of a node by QName.
      * @param version The version to look under.

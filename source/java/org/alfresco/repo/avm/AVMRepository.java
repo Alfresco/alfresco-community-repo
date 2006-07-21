@@ -880,6 +880,19 @@ class AVMRepository
     }
     
     /**
+     * Set a collection of properties at once.
+     * @param path The path to the node.
+     * @param properties The Map of QNames to PropertyValues.
+     */
+    public void setProperties(String path, Map<QName, PropertyValue> properties)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0], true);
+        store.setProperties(pathParts[1], properties);
+    }
+    
+    /**
      * Get a property by name for a node.
      * @param version The version to look under.
      * @param path The path to the node.

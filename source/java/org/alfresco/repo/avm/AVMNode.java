@@ -143,6 +143,12 @@ public interface AVMNode
     public void setProperty(QName name, PropertyValue value);
     
     /**
+     * Set a collection of properties on this node.
+     * @param properties The Map of QNames to PropertyValues.
+     */
+    public void setProperties(Map<QName, PropertyValue> properties);
+    
+    /**
      * Get a property by name.
      * @param name The name of the property to get.
      * @return A PropertyValue

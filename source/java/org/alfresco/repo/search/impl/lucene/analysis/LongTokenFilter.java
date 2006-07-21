@@ -22,6 +22,7 @@ import java.io.Reader;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.WhitespaceTokenizer;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 
 /**
@@ -36,7 +37,7 @@ public class LongTokenFilter extends Tokenizer
     public LongTokenFilter(Reader in)
     {
         super(in);
-        baseTokeniser = new StandardTokenizer(in);
+        baseTokeniser = new WhitespaceTokenizer(in);
     }
 
     /*

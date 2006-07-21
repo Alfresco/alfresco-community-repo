@@ -2052,7 +2052,14 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.setProperties("main:/a/b/c/bar", props);
             fService.createSnapshot("main");
             props = fService.getProperties(-1, "main:/a/b/c/bar");
+            assertEquals(3, props.size());
             assertEquals(p1.toString(), props.get(n1).toString());
+            assertEquals(p2.toString(), props.get(n2).toString());
+            assertEquals(p3.toString(), props.get(n3).toString());
+            fService.deleteProperty("main:/a/b/c/bar", n1);
+            fService.createSnapshot("main");
+            props = fService.getProperties(-1, "main:/a/b/c/bar");
+            assertEquals(2, props.size());
             assertEquals(p2.toString(), props.get(n2).toString());
             assertEquals(p3.toString(), props.get(n3).toString());
         }

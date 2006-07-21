@@ -878,4 +878,16 @@ public class AVMStoreImpl implements AVMStore, Serializable
         AVMNode node = lPath.getCurrentNode();
         return node.getProperties();
     }
+    
+    /**
+     * Delete a single property from a node.
+     * @param path The path to the node.
+     * @param name The name of the property.
+     */
+    public void deleteProperty(String path, QName name)
+    {
+        Lookup lPath = lookup(-1, path, true);
+        AVMNode node = lPath.getCurrentNode();
+        node.deleteProperty(name);
+    }
 }

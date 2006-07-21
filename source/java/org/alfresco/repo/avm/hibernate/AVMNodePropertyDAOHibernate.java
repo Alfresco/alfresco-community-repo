@@ -80,4 +80,19 @@ public class AVMNodePropertyDAOHibernate extends HibernateDaoSupport
         delete.setEntity("node", node);
         delete.executeUpdate();
     }
+    
+    /**
+     * Delete the given property from the given node.
+     * @param node The node to delete the property to delete.
+     * @param name The name of the property to delete.
+     */
+    public void delete(AVMNode node, QName name)
+    {
+        Query delete =
+            getSession().createQuery("delete from AVMNodePropertyImpl anp where anp.node = :node " + 
+                                     "and name = :name");
+        delete.setEntity("node", node);
+        delete.setParameter("name", name);
+        delete.executeUpdate();
+    }
 }

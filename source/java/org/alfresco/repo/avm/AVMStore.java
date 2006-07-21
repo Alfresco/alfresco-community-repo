@@ -293,6 +293,13 @@ public interface AVMStore
     public PropertyValue getProperty(int version, String path, QName name);
     
     /**
+     * Delete a single property from a node.
+     * @param path The path to the node.
+     * @param name The name of the property.
+     */
+    public void deleteProperty(String path, QName name);
+    
+    /**
      * Get all the properties associated with a node.
      * @param version The version to look under.
      * @param path The path to the node.

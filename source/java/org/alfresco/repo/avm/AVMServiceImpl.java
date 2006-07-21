@@ -1128,4 +1128,26 @@ public class AVMServiceImpl implements AVMService
         fTransaction.perform(doit, false);
         return doit.properties;
     }
+
+    /**
+     * Delete a property.
+     * @param path The path to the node.
+     * @param name The QName of the property to delete.
+     */
+    public void deleteProperty(final String path, final QName name)
+    {
+        if (path == null || name == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public void perform()
+            {
+                fAVMRepository.deleteProperty(path, name);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, true);
+    }
 }

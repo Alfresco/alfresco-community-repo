@@ -347,4 +347,13 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         }
         return retVal;
     }
+
+    /**
+     * Delete a property from this node.
+     * @param name The name of the property.
+     */
+    public void deleteProperty(QName name)
+    {
+        AVMContext.fgInstance.fAVMNodePropertyDAO.delete(this, name);
+    }
 }

@@ -922,6 +922,19 @@ class AVMRepository
     }
     
     /**
+     * Delete a single property from a node.
+     * @param path The path to the node.
+     * @param name The name of the property.
+     */
+    public void deleteProperty(String path, QName name)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0], true);
+        store.deleteProperty(pathParts[1], name);
+    }
+    
+    /**
      * Get the AVMStoreDescriptor for an AVMStore.
      * @param name The name of the AVMStore.
      * @return The descriptor.

@@ -160,4 +160,10 @@ public interface AVMNode
      * @return A Map of QNames to PropertyValues.
      */
     public Map<QName, PropertyValue> getProperties();
+    
+    /**
+     * Delete a property from this node.
+     * @param name The name of the property.
+     */
+    public void deleteProperty(QName name);
 }

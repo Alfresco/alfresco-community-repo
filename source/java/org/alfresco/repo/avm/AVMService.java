@@ -342,4 +342,11 @@ public interface AVMService
      * @return A Map of QNames to PropertyValues.
      */
     public Map<QName, PropertyValue> getProperties(int version, String path);
+    
+    /**
+     * Delete a property.
+     * @param path The path to the node.
+     * @param name The QName of the property to delete.
+     */
+    public void deleteProperty(String path, QName name);
 }

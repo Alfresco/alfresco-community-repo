@@ -59,4 +59,11 @@ public interface AVMNodePropertyDAO
      * @param node The AVMNode whose properties should be deleted.
      */
     public void deleteAll(AVMNode node);
+    
+    /**
+     * Delete the given property from the given node.
+     * @param node The node to delete the property to delete.
+     * @param name The name of the property to delete.
+     */
+    public void delete(AVMNode node, QName name);
 }

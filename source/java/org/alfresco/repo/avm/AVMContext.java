@@ -129,7 +129,7 @@ public class AVMContext
     }
 
     /**
-     * @param aVMStore the fAVMStoreDAO to set
+     * @param aVMStoreDAO The fAVMStoreDAO to set
      */
     public void setAvmStoreDAO(AVMStoreDAO aVMStoreDAO)
     {

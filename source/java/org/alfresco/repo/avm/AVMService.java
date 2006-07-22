@@ -108,19 +108,19 @@ public interface AVMService
     
     /**
      * Create a new layered file.
-     * @param srcPath The simple absolute path that the new file will point at.
+     * @param targetPath The simple absolute path that the new file will point at.
      * @param parent The simple absolute path to the parent.
      * @param name The name to give the new file.
      */
-    public void createLayeredFile(String srcPath, String parent, String name);
+    public void createLayeredFile(String targetPath, String parent, String name);
     
     /**
      * Create a new layered directory.
-     * @param srcPath The simple absolute path that the new folder will point at.
+     * @param targetPath The simple absolute path that the new folder will point at.
      * @param parent The simple absolute path to the parent.
      * @param name The name to give the new folder.
      */
-    public void createLayeredDirectory(String srcPath, String parent, String name);
+    public void createLayeredDirectory(String targetPath, String parent, String name);
 
     /**
      * Retarget a layered directory.
@@ -183,7 +183,7 @@ public interface AVMService
      * deleted, or modified since the last time this function was called, is marked 
      * as needing to be copied, so that further modifications will trigger copy on write
      * semantics.
-     * @param stores The names of the AVMStores to snapshot.
+     * @param repositories  The names of the AVMStores to snapshot.
      */
     public List<Integer> createSnapshot(List<String> repositories);
     

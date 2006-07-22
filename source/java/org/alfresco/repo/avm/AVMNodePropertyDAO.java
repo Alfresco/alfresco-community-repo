@@ -39,7 +39,7 @@ public interface AVMNodePropertyDAO
      * @param name The QName.
      * @return The found AVMNodeProperty or null if not found.
      */
-    public AVMNodeProperty get(AVMNode node, QName name);
+    public AVMNodeProperty get(AVMNode owner, QName name);
     
     /**
      * Get a List of all properties for an owning node.

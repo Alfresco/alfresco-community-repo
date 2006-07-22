@@ -64,7 +64,7 @@ public interface VersionRootDAO
     
     /**
      * Get the highest numbered version in a store.
-     * @param stor The store.
+     * @param store The store.
      * @return The highest numbered version.
      */
     public VersionRoot getMaxVersion(AVMStore store);

@@ -21,7 +21,7 @@ package org.alfresco.repo.avm;
  * This is a helper class that knows how to issue identifiers.
  * @author britt
  */
-class Issuer
+public class Issuer
 {
     /**
      * The next number to issue.
@@ -29,12 +29,64 @@ class Issuer
     private long fNext;
     
     /**
-     * Rich constructor.
-     * @param next The next number to issue.
+     * The name of this issuer.
      */
-    public Issuer(long next)
+    private String fName;
+    
+    /**
+     * The transactional wrapper.
+     */
+    private RetryingTransaction fTransaction;
+    
+    /**
+     * Default constructor.
+     */
+    public Issuer()
     {
-        fNext = next;
+    }
+    
+    /**
+     * Set the name of this issuer. For Spring.
+     * @param name The name to set.
+     */
+    public void setName(String name)
+    {
+        fName = name;
+    }
+    
+    /**
+     * Set the transactional wrapper.
+     * @param retryingTransaction The transactional wrapper.
+     */
+    public void setRetryingTransaction(RetryingTransaction retryingTransaction)
+    {
+        fTransaction = retryingTransaction;
+    }
+    
+    /**
+     * After the database is up, get our value.
+     */
+    public void init()
+    {
+        class TxnCallback implements RetryingTransactionCallback 
+        {
+            public Long value;
+            
+            public void perform()
+            {
+                value = AVMContext.fgInstance.fIssuerDAO.getIssuerValue(fName);
+            }
+        };
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, false);
+        if (doit.value == null)
+        {
+            fNext = 0L;
+        }
+        else
+        {
+            fNext = doit.value;
+        }
     }
     
     /**

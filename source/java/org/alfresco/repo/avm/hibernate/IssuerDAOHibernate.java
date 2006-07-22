@@ -18,6 +18,7 @@
 package org.alfresco.repo.avm.hibernate;
 
 
+import org.alfresco.repo.avm.AVMException;
 import org.alfresco.repo.avm.IssuerDAO;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -36,18 +37,28 @@ public class IssuerDAOHibernate extends HibernateDaoSupport implements
         super();
     }
     
-    public Long getContentIssuerValue()
+    /**
+     * Get the largest issued id for the named issuer.
+     * @param The name of the issuer.
+     * @return The value or null if the issuer is brand new.
+     * @throws AVMException on an invalid name.
+     */
+    public Long getIssuerValue(String name)
     {
-        return (Long)getSession().createQuery("select max(fc.id) from FileContentImpl fc").uniqueResult();
-    }
-
-    public Long getLayerIssuerValue()
-    {
-        return (Long)getSession().createQuery("select max(an.layerID) from AVMNodeImpl an").uniqueResult();
-    }
-
-    public Long getNodeIssuerValue()
-    {
-        return (Long)getSession().createQuery("select max(an.id) from AVMNodeImpl an").uniqueResult();
+        if (name.equals("content"))
+        {
+            return (Long)getSession().
+                createQuery("select max(fc.id) from FileContentImpl fc").uniqueResult();
+        }
+        else if (name.equals("layer"))
+        {
+            return (Long)getSession().
+                createQuery("select max(an.layerID) from AVMNodeImpl an").uniqueResult();
+        }
+        else if (name.equals("node"))
+        {
+            return (Long)getSession().createQuery("select max(an.id) from AVMNodeImpl an").uniqueResult();            
+        }
+        throw new AVMException("Unknown issuer type: " + name);
     }
 }

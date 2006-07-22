@@ -57,21 +57,6 @@ public class AVMServiceImpl implements AVMService
     private String fStorage;
     
     /**
-     * The node id issuer.
-     */
-    private Issuer fNodeIssuer;
-    
-    /**
-     * The content id issuer.
-     */
-    private Issuer fContentIssuer;
-    
-    /**
-     * The layer id issuer.
-     */
-    private Issuer fLayerIssuer;
-    
-    /**
      * Whether the tables should be dropped and created.
      */
     private boolean fInitialize;
@@ -84,42 +69,22 @@ public class AVMServiceImpl implements AVMService
     }
     
     /**
+     * Set the storage directory.
+     * @param storage The full path to the storage directory.
+     */
+    public void setStorage(String storage)
+    {
+        fStorage = storage;
+    }
+    
+    /**
      * Final initialization of the service.  Must be called only on a 
      * fully initialized instance.
      */
     public void init()
     {
-        try
-        {
-            fTransaction.perform(
-            new RetryingTransactionCallback()
-            {
-                public void perform()
-                {
-                    IssuerDAO dao = AVMContext.fgInstance.fIssuerDAO;
-                    Long val = dao.getNodeIssuerValue();
-                    fNodeIssuer = new Issuer(val == null ? 0L : val + 1L);
-                    val = dao.getContentIssuerValue();
-                    fContentIssuer = new Issuer(val == null ? 0L : val + 1L);
-                    val = dao.getLayerIssuerValue();
-                    fLayerIssuer = new Issuer(val == null ? 0L : val + 1L);
-                }
-            }, false);
-            fAVMRepository = new AVMRepository(fNodeIssuer,
-                                                   fContentIssuer,
-                                                   fLayerIssuer,
-                                                   fStorage);
-            fgLogger.info("Initialized AVMService and AVMRepository");
-        }
-        catch (Exception e)
-        {
-            fgLogger.fatal("Failed to initialize AVMService", e);
-            // TODO Abort in some useful way.
-        }
         if (fInitialize)
         {
-            File storageDir = new File(fStorage);
-            storageDir.mkdirs();
             createAVMStore("main");
             fgLogger.info("Created new main AVMStore");
         }
@@ -135,21 +100,21 @@ public class AVMServiceImpl implements AVMService
     }
     
     /**
-     * Set the location of file storage.
-     * @param storage
-     */
-    public void setStorage(String storage)
-    {
-        fStorage = storage;
-    }
-    
-    /**
      * Set whether we should create an initial AVMStore.
      * @param initialize
      */
     public void setInitialize(boolean initialize)
     {
         fInitialize = initialize;
+    }
+
+    /**
+     * Set the repository reference. For Spring.
+     * @param avmRepository The repository reference.
+     */
+    public void setAvmRepository(AVMRepository avmRepository)
+    {
+        fAVMRepository = avmRepository;
     }
 
     /**

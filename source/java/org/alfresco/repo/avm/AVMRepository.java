@@ -35,7 +35,7 @@ import org.alfresco.service.namespace.QName;
  * the implementors of the operations specified by AVMService.
  * @author britt
  */
-class AVMRepository
+public class AVMRepository
 {
     /**
      * The single instance of AVMRepository.
@@ -68,25 +68,56 @@ class AVMRepository
     private String fStorage;
     
     /**
-     * Create a new one.  It's given issuers and a storage directory.
-     * @param nodeIssuer
-     * @param contentIssuer
-     * @param layerIssuer
-     * @param storage
+     * Create a new one.
      */
-    public AVMRepository(Issuer nodeIssuer,
-                           Issuer contentIssuer,
-                           Issuer layerIssuer,
-                           String storage)
+    public AVMRepository()
     {
-        fStorage = storage;
-        fNodeIssuer = nodeIssuer;
-        fContentIssuer = contentIssuer;
-        fLayerIssuer = layerIssuer;
         fLookupCount = new ThreadLocal<Integer>();
         fgInstance = this;
     }
+    
+    /**
+     * Set the storage directory.
+     * @param storage The absolute path to content storage directory.
+     */
+    public void setStorage(String storage)
+    {
+        fStorage = storage;
+    }
+    
+    /**
+     * Set the node issuer. For Spring.
+     * @param nodeIssuer The issuer.
+     */
+    public void setNodeIssuer(Issuer nodeIssuer)
+    {
+        fNodeIssuer = nodeIssuer;
+    }
 
+    /**
+     * Set the content issuer. For Spring.
+     * @param contentIssuer The issuer.
+     */
+    public void setContentIssuer(Issuer contentIssuer)
+    {
+        fContentIssuer = contentIssuer;
+    }
+    
+    /**
+     * Set the layer issuer. For Spring.
+     * @param layerIssuer The issuer.
+     */
+    public void setLayerIssuer(Issuer layerIssuer)
+    {
+        fLayerIssuer = layerIssuer;
+    }
+
+    public void init()
+    {
+        File storageDir = new File(fStorage);
+        storageDir.mkdirs();
+    }
+    
     /**
      * Create a file.
      * @param path The path to the containing directory.
@@ -97,7 +128,6 @@ class AVMRepository
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
         AVMStore rep = getAVMStoreByName(pathParts[0]);
-//        fSession.get().lock(rep, LockMode.UPGRADE);
         return rep.createFile(pathParts[1], name);
     }
 

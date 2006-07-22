@@ -24,17 +24,9 @@ package org.alfresco.repo.avm;
 public interface IssuerDAO
 {
     /**
-     * Get the node Issuer value.
+     * Get the Issuer value.
+     * @param The name of the issuer.
+     * @return The largest id issued by the named issuer.
      */
-    public Long getNodeIssuerValue();
-    
-    /**
-     * Get the content Issuer value.
-     */
-    public Long getContentIssuerValue();
-    
-    /**
-     * Get the layer Issuer value.
-     */
-    public Long getLayerIssuerValue();
+    public Long getIssuerValue(String name);
 }

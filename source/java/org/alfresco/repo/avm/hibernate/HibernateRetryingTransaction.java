@@ -70,8 +70,11 @@ public class HibernateRetryingTransaction extends HibernateTemplate implements R
         fRandom = new Random();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.hibernate.RetryingTransaction#perform(org.alfresco.repo.avm.hibernate.HibernateTxnCallback, boolean)
+    /**
+     * Run an idempotent transaction, repeating invocations as necessary
+     * for failures caused by deadlocks and lost races.
+     * @param callback The callback containging the work to do.
+     * @param write Whether this is a write transaction.
      */
     public void perform(RetryingTransactionCallback callback, boolean write)
     {

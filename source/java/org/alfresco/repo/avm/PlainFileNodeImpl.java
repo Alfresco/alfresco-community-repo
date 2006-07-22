@@ -86,11 +86,12 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     }
 
     /**
-     * Constructor that takes a FileContent to share.
+     * Constructor that takes a FileContent to share. Called by LayeredFileNodeImpl.copy().
      * @param content The FileContent to share.
      * @param store The AVMStore.
      */
-    public PlainFileNodeImpl(FileContent content,
+    public PlainFileNodeImpl(LayeredFileNode other,
+                             FileContent content,
                              AVMStore store,
                              BasicAttributes oAttrs)
     {
@@ -100,6 +101,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
+        copyProperties(other);
     }
 
     /**

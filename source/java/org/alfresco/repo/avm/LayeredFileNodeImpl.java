@@ -84,7 +84,10 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         // This is a mildly dirty trick.  We use getContentForRead so as not to startle
         // the ultimate destination content into copying itself prematurely.
         FileContent content = ((FileNode)indirect).getContentForRead();
-        PlainFileNodeImpl newMe = new PlainFileNodeImpl(content, lPath.getAVMStore(), getBasicAttributes());
+        PlainFileNodeImpl newMe = new PlainFileNodeImpl(this, 
+                                                        content, 
+                                                        lPath.getAVMStore(), 
+                                                        getBasicAttributes());
         newMe.setAncestor(this);
         return newMe;
     }

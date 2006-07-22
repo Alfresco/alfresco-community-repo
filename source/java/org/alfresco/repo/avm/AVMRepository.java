@@ -96,7 +96,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        AVMStore rep = getAVMStoreByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0]);
 //        fSession.get().lock(rep, LockMode.UPGRADE);
         return rep.createFile(pathParts[1], name);
     }
@@ -111,7 +111,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        AVMStore rep = getAVMStoreByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0]);
         rep.createFile(pathParts[1], name, data);
     }
     
@@ -124,7 +124,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        AVMStore rep = getAVMStoreByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0]);
         rep.createDirectory(pathParts[1], name);
     }
 
@@ -143,7 +143,7 @@ class AVMRepository
         }
         fLookupCount.set(1);
         String[] pathParts = SplitPath(dstPath);
-        AVMStore rep = getAVMStoreByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0]);
 //        fSession.get().lock(rep, LockMode.UPGRADE);
         rep.createLayeredDirectory(srcPath, pathParts[1], name);
     }
@@ -158,7 +158,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(dstPath);
-        AVMStore rep = getAVMStoreByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0]);
         rep.createLayeredFile(srcPath, pathParts[1], name);
     }
 
@@ -170,7 +170,7 @@ class AVMRepository
     {
         try
         {
-            getAVMStoreByName(name, false);
+            getAVMStoreByName(name);
             throw new AVMExistsException("AVMStore exists: " + name);
         }
         catch (AVMNotFoundException anf)
@@ -201,12 +201,12 @@ class AVMRepository
         // Lookup the src node.
         fLookupCount.set(1);
         String [] pathParts = SplitPath(srcPath);
-        AVMStore srcRepo = getAVMStoreByName(pathParts[0], false);
+        AVMStore srcRepo = getAVMStoreByName(pathParts[0]);
         Lookup sPath = srcRepo.lookup(version, pathParts[1], false);
         // Lookup the destination directory.
         fLookupCount.set(1);
         pathParts = SplitPath(dstPath);
-        AVMStore dstRepo = getAVMStoreByName(pathParts[0], true);
+        AVMStore dstRepo = getAVMStoreByName(pathParts[0]);
         Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1], true);
         DirectoryNode dirNode = (DirectoryNode)dPath.getCurrentNode();
         AVMNode srcNode = sPath.getCurrentNode();
@@ -247,7 +247,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        AVMStore rep = getAVMStoreByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0]);
         return rep.getOutputStream(pathParts[1]);
     }
     
@@ -262,7 +262,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        AVMStore rep = getAVMStoreByName(pathParts[0], true);
+        AVMStore rep = getAVMStoreByName(pathParts[0]);
         return rep.getRandomAccess(version, pathParts[1], access);
     }
 
@@ -283,7 +283,7 @@ class AVMRepository
         }
         fLookupCount.set(1);
         String [] pathParts = SplitPath(srcPath);
-        AVMStore srcRepo = getAVMStoreByName(pathParts[0], true);
+        AVMStore srcRepo = getAVMStoreByName(pathParts[0]);
         Lookup sPath = srcRepo.lookupDirectory(-1, pathParts[1], true);
         DirectoryNode srcDir = (DirectoryNode)sPath.getCurrentNode();
         AVMNode srcNode = srcDir.lookupChild(sPath, srcName, -1, true);
@@ -293,7 +293,7 @@ class AVMRepository
         }
         fLookupCount.set(1);
         pathParts = SplitPath(dstPath);
-        AVMStore dstRepo = getAVMStoreByName(pathParts[0], true);
+        AVMStore dstRepo = getAVMStoreByName(pathParts[0]);
         Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1], true);
         DirectoryNode dstDir = (DirectoryNode)dPath.getCurrentNode();
         AVMNode dstNode = dstDir.lookupChild(dPath, dstName, -1, true);
@@ -396,7 +396,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(dirPath);
-        AVMStore repo = getAVMStoreByName(pathParts[0], true);
+        AVMStore repo = getAVMStoreByName(pathParts[0]);
         repo.uncover(pathParts[1], name);
     }
 
@@ -410,7 +410,7 @@ class AVMRepository
         List<Integer> result = new ArrayList<Integer>();
         for (String repName : repositories)
         {
-            AVMStore repo = getAVMStoreByName(repName, true);
+            AVMStore repo = getAVMStoreByName(repName);
             result.add(repo.createSnapshot());
         }
         return result;
@@ -423,7 +423,7 @@ class AVMRepository
      */
     public int createSnapshot(String storeName)
     {
-        AVMStore store = getAVMStoreByName(storeName, true);
+        AVMStore store = getAVMStoreByName(storeName);
         return store.createSnapshot();
     }
 
@@ -436,7 +436,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], true);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         store.removeNode(pathParts[1], name);
     }
 
@@ -448,7 +448,7 @@ class AVMRepository
     @SuppressWarnings("unchecked")
     public void purgeAVMStore(String name)
     {
-        AVMStore store = getAVMStoreByName(name, true);
+        AVMStore store = getAVMStoreByName(name);
         AVMNode root = store.getRoot();
         root.setIsRoot(false);
         VersionRootDAO vrDAO = AVMContext.fgInstance.fVersionRootDAO;
@@ -475,7 +475,7 @@ class AVMRepository
      */
     public void purgeVersion(String name, int version)
     {
-        AVMStore store = getAVMStoreByName(name, true);
+        AVMStore store = getAVMStoreByName(name);
         store.purgeVersion(version);
     }
 
@@ -489,7 +489,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         return store.getInputStream(version, pathParts[1]);
     }
 
@@ -525,7 +525,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         return store.getListing(version, pathParts[1]);
     }
 
@@ -570,7 +570,7 @@ class AVMRepository
      */
     public AVMStoreDescriptor getAVMStore(String name)
     {
-        AVMStore store = getAVMStoreByName(name, false);
+        AVMStore store = getAVMStoreByName(name);
         return store.getDescriptor();
     }
     
@@ -581,7 +581,7 @@ class AVMRepository
      */
     public List<VersionDescriptor> getAVMStoreVersions(String name)
     {
-        AVMStore store = getAVMStoreByName(name, false);
+        AVMStore store = getAVMStoreByName(name);
         return store.getVersions();
     }
 
@@ -595,7 +595,7 @@ class AVMRepository
      */
     public List<VersionDescriptor> getAVMStoreVersions(String name, Date from, Date to)
     {
-        AVMStore store = getAVMStoreByName(name, false);
+        AVMStore store = getAVMStoreByName(name);
         return store.getVersions(from, to);
     }
     
@@ -636,7 +636,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         return store.getIndirectionPath(version, pathParts[1]);
     }
 
@@ -647,17 +647,16 @@ class AVMRepository
      */
     public int getLatestVersionID(String name)
     {
-        AVMStore store = getAVMStoreByName(name, false);
+        AVMStore store = getAVMStoreByName(name);
         return store.getNextVersionID();
     }
     
     /**
      * Get an AVMStore by name.
      * @param name The name of the AVMStore.
-     * @param write Whether this is called for a write operation.
      * @return The AVMStore.
      */
-    private AVMStore getAVMStoreByName(String name, boolean write)
+    private AVMStore getAVMStoreByName(String name)
     {
         AVMStore store = AVMContext.fgInstance.fAVMStoreDAO.getByName(name);
         if (store == null)
@@ -675,7 +674,7 @@ class AVMRepository
      */
     public AVMNodeDescriptor getAVMStoreRoot(int version, String name)
     {
-        AVMStore store = getAVMStoreByName(name, false);
+        AVMStore store = getAVMStoreByName(name);
         if (store == null)
         {
             throw new AVMNotFoundException("Not found: " + name);
@@ -706,7 +705,7 @@ class AVMRepository
             throw new AVMCycleException("Cycle in lookup.");
         }
         String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         Lookup result = store.lookup(version, pathParts[1], false);
         if (count == null)
         {
@@ -748,7 +747,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         Lookup lookup = store.lookup(version, pathParts[1], false);
         return new LayeringDescriptor(!lookup.getDirectlyContained(),
                                       lookup.getAVMStore().getDescriptor(),
@@ -769,7 +768,7 @@ class AVMRepository
             throw new AVMCycleException("Cycle in lookup.");
         }
         String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         return store.lookupDirectory(version, pathParts[1], false);
     }
 
@@ -805,7 +804,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], true);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         store.makePrimary(pathParts[1]);
     }
 
@@ -818,7 +817,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], true);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         store.retargetLayeredDirectory(pathParts[1], target);
     }
     
@@ -862,7 +861,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String[] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], true);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         store.setOpacity(pathParts[1], opacity);
     }
         
@@ -876,7 +875,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], true);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         store.setNodeProperty(pathParts[1], name, value);
     }
     
@@ -889,7 +888,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], true);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         store.setNodeProperties(pathParts[1], properties);
     }
     
@@ -904,7 +903,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         return store.getNodeProperty(version, pathParts[1], name);
     }
     
@@ -918,7 +917,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], false);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         return store.getNodeProperties(version, pathParts[1]);
     }
     
@@ -931,7 +930,7 @@ class AVMRepository
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0], true);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
         store.deleteNodeProperty(pathParts[1], name);
     }
 
@@ -943,7 +942,7 @@ class AVMRepository
      */
     public void setStoreProperty(String store, QName name, PropertyValue value)
     {
-        getAVMStoreByName(store, true).setProperty(name, value);
+        getAVMStoreByName(store).setProperty(name, value);
     }
     
     /**
@@ -953,7 +952,7 @@ class AVMRepository
      */
     public void setStoreProperties(String store, Map<QName, PropertyValue> props)
     {
-        getAVMStoreByName(store, true).setProperties(props);
+        getAVMStoreByName(store).setProperties(props);
     }
     
     /**
@@ -964,7 +963,7 @@ class AVMRepository
      */
     public PropertyValue getStoreProperty(String store, QName name)
     {
-        return getAVMStoreByName(store, false).getProperty(name);
+        return getAVMStoreByName(store).getProperty(name);
     }
     
     /**
@@ -974,7 +973,7 @@ class AVMRepository
      */
     public Map<QName, PropertyValue> getStoreProperties(String store)
     {
-        return getAVMStoreByName(store, false).getProperties();
+        return getAVMStoreByName(store).getProperties();
     }
     
     /**
@@ -984,7 +983,7 @@ class AVMRepository
      */
     public void deleteStoreProperty(String store, QName name)
     {
-        getAVMStoreByName(store, true).deleteProperty(name);
+        getAVMStoreByName(store).deleteProperty(name);
     }
     
     /**
@@ -994,7 +993,7 @@ class AVMRepository
      */
     public AVMStoreDescriptor getAVMStoreDescriptor(String name)
     {
-        return getAVMStoreByName(name, false).getDescriptor();
+        return getAVMStoreByName(name).getDescriptor();
     }
     
     /**

@@ -33,7 +33,7 @@ import org.alfresco.service.namespace.QName;
  * Versioning Model.  It specifies methods that are close in functionality to the underlying
  * implementation, and is intended as both a first class Alfresco service and an
  * aid in creating new implementations of existing services.
- * Paths are of the form storename:/foo/bar/baz
+ * Paths are of the form storename:/foo/bar/baz.  
  * @author britt
  */
 public interface AVMService
@@ -43,6 +43,9 @@ public interface AVMService
      * @param version The version id to look in.
      * @param path The simple absolute path to the file node.
      * @return An InputStream for the designated file.
+     * @throws AVMNotFoundException If <code>path</code> is not found.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * component that is not a Directory of if it does not point at a file.
      */
     public InputStream getFileInputStream(int version, String path);
     
@@ -50,12 +53,17 @@ public interface AVMService
      * Get an input stream from a particular version of a file.
      * @param desc The node descriptor pointing at the node.
      * @return The InputStream.
+     * @throws AVMNotFoundException If <code>desc</code> is dangling or
+     * otherwise invalid.
      */
     public InputStream getFileInputStream(AVMNodeDescriptor desc);
 
     /**
      * Get an output stream to a file node.  The file must already exist.
      * @param path The simple absolute path to the file node.
+     * @throws AVMNotFoundException If <code>path</code> is not found.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * component that is not a directory, or if it is not pointing to a file.
      */
     public OutputStream getFileOutputStream(String path);
     
@@ -65,6 +73,11 @@ public interface AVMService
      * @param path The path to the file.
      * @param access The access mode for RandomAccessFile.
      * @return A RandomAccessFile
+     * @throws AVMNotFoundException If <code>path</code> is not found.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * component that is not a directory, or if <code>path</code> is not pointing
+     * at a file.
+     * @throws AVMException If trying to write to anything but the head version.
      */
     public RandomAccessFile getRandomAccess(int version, String path, String access);
     
@@ -73,6 +86,10 @@ public interface AVMService
      * @param version The version id to look in.
      * @param path The simple absolute path to the file node.
      * @return A List of FolderEntrys.
+     * @throws AVMNotFoundException If <code>path</code> is not found.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * component that is not a directory, or if <code>path</code> is not pointing
+     * at a directory.
      */
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(int version, String path);
     
@@ -80,6 +97,9 @@ public interface AVMService
      * Get a directory listing from a node descriptor.
      * @param dir The directory node descriptor.
      * @return A Map of names to node descriptors.
+     * @throws AVMNotFoundException If the descriptor is stale.
+     * @throws AVMWrongTypeException If the descriptor does not point at
+     * a directory.
      */
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir);
     
@@ -87,6 +107,10 @@ public interface AVMService
      * Create a new File. Fails if the file already exists.
      * @param path The simple absolute path to the parent.
      * @param name The name to give the file.
+     * @throws AVMNotFound If <code>path</code> is non existent.
+     * @throws AVMExists If <code>name</code> already exists.
+     * @throws AVMWrongType If some component of <code>path</code> is not
+     * a directory.
      */
     public OutputStream createFile(String path, String name);
     
@@ -96,6 +120,10 @@ public interface AVMService
      * @param path The path to the parent directory.
      * @param name The name for the new file. 
      * @param in An input stream with data for the file.
+     * @throws AVMNotFound If <code>path</code> is non existent.
+     * @throws AVMExists If <code>name</code> already exists.
+     * @throws AVMWrongType If some component of <code>path</code> is not
+     * a directory.
      */
     public void createFile(String path, String name, InputStream in);
     
@@ -103,6 +131,10 @@ public interface AVMService
      * Create a new directory.
      * @param path The simple absolute path to the parent.
      * @param name The name to give the folder.
+     * @throws AVMNotFound If <code>path</code> is non existent.
+     * @throws AVMExists If <code>name</code> already exists.
+     * @throws AVMWrongType If some component of <code>path</code> is not
+     * a directory.
      */
     public void createDirectory(String path, String name);
     
@@ -111,6 +143,10 @@ public interface AVMService
      * @param targetPath The simple absolute path that the new file will point at.
      * @param parent The simple absolute path to the parent.
      * @param name The name to give the new file.
+     * @throws AVMNotFound If <code>parent</code> is non existent.
+     * @throws AVMExists If <code>name</code> already exists.
+     * @throws AVMWrongType If some component of <code>parent</code> is not
+     * a directory.
      */
     public void createLayeredFile(String targetPath, String parent, String name);
     
@@ -119,6 +155,10 @@ public interface AVMService
      * @param targetPath The simple absolute path that the new folder will point at.
      * @param parent The simple absolute path to the parent.
      * @param name The name to give the new folder.
+     * @throws AVMNotFound If <code>parent</code> is non existent.
+     * @throws AVMExists If <code>name</code> already exists.
+     * @throws AVMWrongType If some component of <code>parent</code> is not
+     * a directory.
      */
     public void createLayeredDirectory(String targetPath, String parent, String name);
 
@@ -126,6 +166,10 @@ public interface AVMService
      * Retarget a layered directory.
      * @param path Path to the layered directory.
      * @param target The new target to aim at.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * component that is not a directory or if it does not point at a retargetable 
+     * directory.
      */
     public void retargetLayeredDirectory(String path, String target);
     
@@ -133,6 +177,7 @@ public interface AVMService
      * Create a new AVMStore.  All AVMStores are top level in a hierarchical
      * sense.
      * @param name The name to give the AVMStore.
+     * @throws AVMExistsException If <code>name</code> is an already existing store.
      */
     public void createAVMStore(String name);
     
@@ -143,6 +188,11 @@ public interface AVMService
      * @param dstPath The path to the directory to contain the 
      * new branch.
      * @param name The name to give the new branch.
+     * @throws AVMNotFoundException If either <code>srcPath</code> or
+     * <code>dstPath</code> does not exist.
+     * @throws AVMExistsException If <code>name</code> already exists.
+     * @throws AVMWrongTypeException If <code>srcPath</code> or <code>dstPath</code>
+     * contains a non-terminal element that is not a directory.
      */
     public void createBranch(int version, String srcPath, String dstPath, String name);
     
@@ -150,6 +200,10 @@ public interface AVMService
      * Remove a child from its parent.
      * @param parent The simple absolute path to the parent directory. 
      * @param name The name of the child to remove.
+     * @throws AVMNotFoundException If <code>parent</code> or <code>name</code>
+     * does not exist.
+     * @throws AVMWrongTypeException If <code>parent</code> contains a non-terminal
+     * element that is not a directory.
      */
     public void removeNode(String parent, String name);
     
@@ -159,6 +213,12 @@ public interface AVMService
      * @param srcName The name of the node in the src Folder.
      * @param dstParent The simple absolute path to the destination folder.
      * @param dstName The name that the node will have in the destination folder.
+     * @throws AVMNotFoundException If <code>srcParent</code>, 
+     * <code>srcName</code>, or <code>dstParent</code> do not exist.
+     * @throws AVMExistsException If <code>dstName</code> already exists.
+     * @throws AVMWrongTypeException If <code>srcParent</code> or
+     * <code>dstParent</code> contain non-terminal elements that are not directories
+     * or if either do not point at directories.
      */
     public void rename(String srcParent, String srcName, String dstParent, String dstName);
     
@@ -168,6 +228,9 @@ public interface AVMService
      * name from the deleted list.
      * @param dirPath The path to the layered directory.
      * @param name The name to uncover.
+     * @throws AVMNotFoundException If <code>dirPath</code> does not exist.
+     * @throws AVMWrongTypeExceptiont If <code>dirPath</code> contains a non-terminal
+     * element that is not a directory.
      */
     public void uncover(String dirPath, String name);
 
@@ -175,6 +238,7 @@ public interface AVMService
      * Get the latest version id of the AVMStore.
      * @param storeName The name of the AVMStore.
      * @return The latest version id of the AVMStore.
+     * @throws AVMNotFoundException If <code>storeName</code> does not exist.
      */
     public int getLatestVersionID(String storeName);
     
@@ -183,13 +247,15 @@ public interface AVMService
      * deleted, or modified since the last time this function was called, is marked 
      * as needing to be copied, so that further modifications will trigger copy on write
      * semantics.
-     * @param repositories  The names of the AVMStores to snapshot.
+     * @param stores The names of the AVMStores to snapshot.
+     * @throws AVMNotFoundException If any of the stores do not exist.
      */
-    public List<Integer> createSnapshot(List<String> repositories);
+    public List<Integer> createSnapshot(List<String> stores);
     
     /**
      * Snapshot the given AVMStore.
      * @param store The name of the AVMStore to snapshot.
+     * @throws AVMNotFoundException If <code>store</code> does not exist.
      */
     public int createSnapshot(String store);
     
@@ -197,6 +263,7 @@ public interface AVMService
      * Get the set of versions in an AVMStore
      * @param name The name of the AVMStore.
      * @return A Set of version IDs
+     * @throws AVMNotFoundException If <code>name</code> does not exist.
      */
     public List<VersionDescriptor> getAVMStoreVersions(String name);
     
@@ -207,6 +274,7 @@ public interface AVMService
      * @param from Earliest date of version to include.
      * @param to Latest date of version to include.
      * @return The Set of version IDs that match.
+     * @throws AVMNotFoundException If <code>name</code> does not exist.
      */
     public List<VersionDescriptor> getAVMStoreVersions(String name, Date from, Date to);
     
@@ -220,6 +288,7 @@ public interface AVMService
      * Get a descriptor for an AVMStore.
      * @param name The AVMStore's name.
      * @return A Descriptor.
+     * @throws AVMNotFoundException If <code>name</code> does not exist.
      */
     public AVMStoreDescriptor getAVMStore(String name);
     
@@ -228,6 +297,8 @@ public interface AVMService
      * @param version The version to look up.
      * @param name The name of the AVMStore.
      * @return A descriptor for the specified root.
+     * @throws AVMNotFoundException If <code>name</code> does not exist or
+     * if <code>version</code> does not exist.
      */
     public AVMNodeDescriptor getAVMStoreRoot(int version, String name);
         
@@ -236,6 +307,10 @@ public interface AVMService
      * @param version The version id to look under.
      * @param path The simple absolute path to the parent directory.
      * @return An AVMNodeDescriptor.
+     * @throws AVMNotFoundException If <code>path</code> does not exist or
+     * if <code>version</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal 
+     * element that is not a directory.
      */
     public AVMNodeDescriptor lookup(int version, String path);
     
@@ -244,6 +319,9 @@ public interface AVMService
      * @param dir The descriptor for the directory node.
      * @param name The name to lookup.
      * @return The descriptor for the child.
+     * @throws AVMNotFoundException If <code>name</code> does not exist or
+     * if <code>dir</code> is dangling.
+     * @throws AVMWrongTypeException If <code>dir</code> does not refer to a directory.
      */
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name);
     
@@ -252,12 +330,18 @@ public interface AVMService
      * @param version The version number to get.
      * @param path The path to the node of interest.
      * @return The indirection path.
+     * @throws AVMNotFoundException If <code>path</code> does not exist or
+     * if <code>version</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * element that is not a directory or if it does not refer to a layered
+     * node.
      */
     public String getIndirectionPath(int version, String path);
     
     /**
      * Purge an AVMStore.  This is a complete wipe of an AVMStore.
      * @param name The name of the AVMStore.
+     * @throws AVMNotFoundException If <code>name</code> does not exist.
      */
     public void purgeAVMStore(String name);
     
@@ -266,12 +350,18 @@ public interface AVMService
      * the given version only.
      * @param version The version to purge.
      * @param name The name of the AVMStore from which to purge it.
+     * @throws AVMNotFoundException If <code>name</code> or <code>version</code>
+     * do not exist.
      */
     public void purgeVersion(int version, String name);
     
     /**
      * Make a directory into a primary indirection node.
      * @param path The full path.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * element that is not a directory or if it refers to a node that can't be made
+     * primary.
      */
     public void makePrimary(String path);
     
@@ -280,6 +370,7 @@ public interface AVMService
      * @param desc The version of a node to find ancestors for.
      * @param count How many. -1 means all.
      * @return A List of ancestors starting with the most recent.
+     * @throws AVMNotFoundException If <code>desc</code> is dangling.
      */
     public List<AVMNodeDescriptor> getHistory(AVMNodeDescriptor desc, int count);
     
@@ -287,6 +378,10 @@ public interface AVMService
      * Set the opacity of a layered directory.  An opaque layered directory
      * hides the contents of its indirection.
      * @param path The path to the layered directory.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * element that is not a directory or if it refers to a node that cannot have
+     * its opacity set.
      */
     public void setOpacity(String path, boolean opacity);
     
@@ -299,6 +394,8 @@ public interface AVMService
      * an ancestor of right.  Right returned means that right is strictly an
      * ancestor of left.  Any other non null return is the common ancestor and
      * indicates that left and right are in conflict.
+     * @throws AVMNotFoundException If <code>left</code> or <code>right</code>
+     * do not exist.
      */
     public AVMNodeDescriptor getCommonAncestor(AVMNodeDescriptor left,
                                                AVMNodeDescriptor right);
@@ -308,6 +405,10 @@ public interface AVMService
      * @param version The version to look under.
      * @param path The full AVM path.
      * @return A LayeringDescriptor.
+     * @throws AVMNotFoundException If <code>path</code> or <code>version</code>
+     * do not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * element that is not a directory.
      */
     public LayeringDescriptor getLayeringInfo(int version, String path);
     
@@ -316,6 +417,9 @@ public interface AVMService
      * @param path The path to the node to set the property on. 
      * @param name The QName of the property.
      * @param value The property to set.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * element that is not a directory.
      */
     public void setNodeProperty(String path, QName name, PropertyValue value);
     
@@ -323,6 +427,9 @@ public interface AVMService
      * Set a collection of properties on a node.
      * @param path The path to the node.
      * @param properties The Map of properties to set.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * element that is not a directory.
      */
     public void setNodeProperties(String path, Map<QName, PropertyValue> properties);
     
@@ -332,6 +439,10 @@ public interface AVMService
      * @param path The path to the node.
      * @param name The QName.
      * @return The PropertyValue or null if it doesn't exist.
+     * @throws AVMNotFoundException If <code>path</code> or <code>version</code>
+     * do not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * element that is not a directory.
      */
     public PropertyValue getNodeProperty(int version, String path, QName name);
     
@@ -340,6 +451,10 @@ public interface AVMService
      * @param version The version to look under.
      * @param path The path to the node.
      * @return A Map of QNames to PropertyValues.
+     * @throws AVMNotFoundException If <code>path</code> or <code>version</code>
+     * do not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * element that is not a directory.
      */
     public Map<QName, PropertyValue> getNodeProperties(int version, String path);
     
@@ -347,6 +462,9 @@ public interface AVMService
      * Delete a property.
      * @param path The path to the node.
      * @param name The QName of the property to delete.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * element that is not a directory.
      */
     public void deleteNodeProperty(String path, QName name);
     
@@ -355,6 +473,8 @@ public interface AVMService
      * @param store The store to set the property on.
      * @param name The name of the property.
      * @param value The value of the property.
+     * @throws AVMNotFoundException If <code>store</code>
+     * does not exist.
      */
     public void setStoreProperty(String store, QName name, PropertyValue value);
     
@@ -362,6 +482,8 @@ public interface AVMService
      * Set a group of properties on a store. Existing properties will be overwritten.
      * @param store The name of the store.
      * @param props A Map of the properties to set.
+     * @throws AVMNotFoundException If <code>store</code>
+     * does not exist.
      */
     public void setStoreProperties(String store, Map<QName, PropertyValue> props);
     
@@ -370,6 +492,8 @@ public interface AVMService
      * @param store The name of the store.
      * @param name The name of the property.
      * @return A PropertyValue or null if non-existent.
+     * @throws AVMNotFoundException If <code>store</code>
+     * does not exist.
      */
     public PropertyValue getStoreProperty(String store, QName name);
     
@@ -377,6 +501,8 @@ public interface AVMService
      * Get all the properties associated with a store.
      * @param store The name of the store.
      * @return A Map of the stores properties.
+     * @throws AVMNotFoundException If <code>store</code>
+     * does not exist.
      */
     public Map<QName, PropertyValue> getStoreProperties(String store);
     
@@ -384,6 +510,8 @@ public interface AVMService
      * Delete a property on a store by name.
      * @param store The name of the store.
      * @param name The name of the property to delete.
+     * @throws AVMNotFoundException If <code>store</code>
+     * does not exist.
      */
     public void deleteStoreProperty(String store, QName name);
 }

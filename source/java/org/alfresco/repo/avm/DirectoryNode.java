@@ -23,7 +23,7 @@ import java.util.SortedMap;
  * The interface for Directory Nodes.
  * @author britt
  */
-public interface DirectoryNode extends AVMNode
+interface DirectoryNode extends AVMNode
 {
     /**
      * Does this directory directly contain the specified node.

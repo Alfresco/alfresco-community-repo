@@ -222,8 +222,7 @@ class AVMCrawler implements Runnable
                 return;
             }
             e.printStackTrace(System.err);
-            return;
-//            throw new AVMException("Failure", e);
+            throw new AVMException("Failure", e);
         }
     }
     

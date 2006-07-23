@@ -23,7 +23,7 @@ import java.util.List;
  * DAO for Repositories.
  * @author britt
  */
-public interface AVMStoreDAO
+interface AVMStoreDAO
 {
     /**
      * Save an AVMStore, never before saved.

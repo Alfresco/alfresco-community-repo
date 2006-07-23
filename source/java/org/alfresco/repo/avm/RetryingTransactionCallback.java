@@ -21,7 +21,7 @@ package org.alfresco.repo.avm;
  * Worker object for AVM Retrying Transactions.
  * @author britt
  */
-public interface RetryingTransactionCallback
+interface RetryingTransactionCallback
 {
     /**
      * Do our work.

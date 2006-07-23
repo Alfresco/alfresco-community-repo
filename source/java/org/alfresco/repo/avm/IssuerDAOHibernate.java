@@ -15,18 +15,16 @@
  * License.
  */
 
-package org.alfresco.repo.avm.hibernate;
+package org.alfresco.repo.avm;
 
 
-import org.alfresco.repo.avm.AVMException;
-import org.alfresco.repo.avm.IssuerDAO;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * DAO for Issuers.  Hibernate version.
  * @author britt
  */
-public class IssuerDAOHibernate extends HibernateDaoSupport implements
+class IssuerDAOHibernate extends HibernateDaoSupport implements
         IssuerDAO
 {
     /**

@@ -15,13 +15,10 @@
  * License.
  */
 
-package org.alfresco.repo.avm.hibernate;
+package org.alfresco.repo.avm;
 
 import java.util.List;
 
-import org.alfresco.repo.avm.AVMNode;
-import org.alfresco.repo.avm.MergeLink;
-import org.alfresco.repo.avm.MergeLinkDAO;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -29,7 +26,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * The Hibernate implementation of the DAO for a MergeLink
  * @author britt
  */
-public class MergeLinkDAOHibernate extends HibernateDaoSupport implements
+class MergeLinkDAOHibernate extends HibernateDaoSupport implements
         MergeLinkDAO
 {
     /**

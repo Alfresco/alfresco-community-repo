@@ -6,7 +6,7 @@ import java.util.List;
  * Interface for Layered Directories.
  * @author britt
  */
-public interface LayeredDirectoryNode extends DirectoryNode, Layered
+interface LayeredDirectoryNode extends DirectoryNode, Layered
 {
     /**
      * Does this node have a primary indirection.

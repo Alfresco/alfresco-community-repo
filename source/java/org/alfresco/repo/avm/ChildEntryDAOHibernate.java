@@ -15,16 +15,11 @@
  * License.
  */
 
-package org.alfresco.repo.avm.hibernate;
+package org.alfresco.repo.avm;
 
 import java.io.Serializable;
 import java.util.List;
 
-import org.alfresco.repo.avm.AVMNode;
-import org.alfresco.repo.avm.ChildEntry;
-import org.alfresco.repo.avm.ChildEntryDAO;
-import org.alfresco.repo.avm.ChildEntryImpl;
-import org.alfresco.repo.avm.DirectoryNode;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -32,7 +27,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * The Hibernate version of the ChildEntry DAO.
  * @author britt
  */
-public class ChildEntryDAOHibernate extends HibernateDaoSupport implements
+class ChildEntryDAOHibernate extends HibernateDaoSupport implements
         ChildEntryDAO
 {
     /**

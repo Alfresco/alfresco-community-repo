@@ -15,14 +15,10 @@
  * License.
  */
 
-package org.alfresco.repo.avm.hibernate;
+package org.alfresco.repo.avm;
 
 import java.util.List;
 
-import org.alfresco.repo.avm.AVMNode;
-import org.alfresco.repo.avm.DeletedChild;
-import org.alfresco.repo.avm.DeletedChildDAO;
-import org.alfresco.repo.avm.LayeredDirectoryNode;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -30,7 +26,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * Hibernate implementation of DAO for DeletedChildren.
  * @author britt
  */
-public class DeletedChildDAOHibernate extends HibernateDaoSupport implements
+class DeletedChildDAOHibernate extends HibernateDaoSupport implements
         DeletedChildDAO
 {
     /**

@@ -15,17 +15,15 @@
  * License.
  */
 
-package org.alfresco.repo.avm.hibernate;
+package org.alfresco.repo.avm;
 
-import org.alfresco.repo.avm.FileContent;
-import org.alfresco.repo.avm.FileContentDAO;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * @author britt
  *
  */
-public class FileContentDAOHibernate extends HibernateDaoSupport implements
+class FileContentDAOHibernate extends HibernateDaoSupport implements
         FileContentDAO
 {
     /**

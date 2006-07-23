@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory;
  * in the AVM repository.  These orphans arise from purge operations.
  * @author britt
  */
-public class OrphanReaper implements Runnable
+class OrphanReaper implements Runnable
 {
     private Log fgLogger = LogFactory.getLog(OrphanReaper.class);
     /**
@@ -69,7 +69,7 @@ public class OrphanReaper implements Runnable
     /**
      * Create one with default parameters.
      */
-    public OrphanReaper()
+    OrphanReaper()
     {
         fInactiveBaseSleep = 30000;
         fActiveBaseSleep = 1000;
@@ -119,7 +119,7 @@ public class OrphanReaper implements Runnable
     /**
      * Start things up after configuration is complete.
      */
-    public void init()
+    void init()
     {
         fThread = new Thread(this);
         fThread.start();
@@ -129,7 +129,7 @@ public class OrphanReaper implements Runnable
      * Shutdown the reaper. This needs to be called when 
      * the application shuts down.
      */
-    public void shutDown()
+    void shutDown()
     {
         fDone = true;
         try

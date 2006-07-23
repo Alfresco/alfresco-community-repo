@@ -21,7 +21,7 @@ package org.alfresco.repo.avm;
  * Interface to a deleted directory entry in a layered directory.
  * @author britt
  */
-public interface DeletedChild
+interface DeletedChild
 {
     /**
      * Get the name of the deleted child.

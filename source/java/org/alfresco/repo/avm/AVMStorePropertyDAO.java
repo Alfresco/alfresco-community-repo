@@ -25,7 +25,7 @@ import org.alfresco.service.namespace.QName;
  * The DAO interface for AVMStoreProperties.
  * @author britt
  */
-public interface AVMStorePropertyDAO
+interface AVMStorePropertyDAO
 {
     /**
      * Persist a property.

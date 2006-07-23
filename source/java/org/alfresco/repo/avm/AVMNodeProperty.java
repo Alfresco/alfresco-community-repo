@@ -24,7 +24,7 @@ import org.alfresco.service.namespace.QName;
  * Alfresco Properties for AVM..
  * @author britt
  */
-public interface AVMNodeProperty
+interface AVMNodeProperty
 {
     /**
      * Set the node that owns this property.

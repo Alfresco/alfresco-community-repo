@@ -25,7 +25,7 @@ import org.alfresco.service.namespace.QName;
  * The Interface for versionable objects.
  * @author britt
  */
-public interface AVMNode
+interface AVMNode
 {
     /**
      * Set the ancestor of this node.

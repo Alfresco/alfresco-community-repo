@@ -7,7 +7,7 @@ package org.alfresco.repo.avm;
  * Ownership, timestamps, later perhaps ACLs
  * @author britt
  */
-public interface BasicAttributes
+interface BasicAttributes
 {
     /**
      * Set the creator of the node.

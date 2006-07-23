@@ -24,7 +24,7 @@ import java.io.RandomAccessFile;
  * Interface for file content.  FileContent can be shared between files.
  * @author britt
  */
-public interface FileContent
+interface FileContent
 {
     /**
      * Get the number of files that refer to this content.

@@ -21,7 +21,7 @@ package org.alfresco.repo.avm;
  * DAO for FileContent objects.
  * @author britt
  */
-public interface FileContentDAO
+interface FileContentDAO
 {
     /**
      * Save one.

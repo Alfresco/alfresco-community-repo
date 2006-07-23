@@ -23,7 +23,7 @@ import java.io.Serializable;
  * Represents a deleted child in a layered directory.
  * @author britt
  */
-public class DeletedChildImpl implements DeletedChild, Serializable
+class DeletedChildImpl implements DeletedChild, Serializable
 {
     private static final long serialVersionUID = 4997060636280774719L;
 

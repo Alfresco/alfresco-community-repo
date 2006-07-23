@@ -35,7 +35,7 @@ import org.alfresco.service.namespace.QName;
  * the implementors of the operations specified by AVMService.
  * @author britt
  */
-public class AVMRepository
+class AVMRepository
 {
     /**
      * The single instance of AVMRepository.
@@ -70,7 +70,7 @@ public class AVMRepository
     /**
      * Create a new one.
      */
-    public AVMRepository()
+    AVMRepository()
     {
         fLookupCount = new ThreadLocal<Integer>();
         fgInstance = this;
@@ -112,7 +112,7 @@ public class AVMRepository
         fLayerIssuer = layerIssuer;
     }
 
-    public void init()
+    void init()
     {
         File storageDir = new File(fStorage);
         storageDir.mkdirs();

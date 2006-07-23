@@ -22,7 +22,7 @@ import java.util.List;
  * DAO for AVMNodes interface.
  * @author britt
  */
-public interface AVMNodeDAO
+interface AVMNodeDAO
 {
     /**
      * Save the given node, having never been saved before.

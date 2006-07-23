@@ -21,7 +21,7 @@ package org.alfresco.repo.avm;
  * DAO for Issuers.
  * @author britt
  */
-public interface IssuerDAO
+interface IssuerDAO
 {
     /**
      * Get the Issuer value.

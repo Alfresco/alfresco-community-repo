@@ -26,7 +26,7 @@ import org.alfresco.service.namespace.QName;
  * Simple bean to hold properties attached to AVMStores.
  * @author britt
  */
-public class AVMStorePropertyImpl implements AVMStoreProperty, Serializable
+class AVMStorePropertyImpl implements AVMStoreProperty, Serializable
 {
     private static final long serialVersionUID = -5419606158990318723L;
 

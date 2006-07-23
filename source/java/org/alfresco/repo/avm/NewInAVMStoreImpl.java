@@ -23,7 +23,7 @@ import java.io.Serializable;
  * A record of a node that is new and in which store it resides.
  * @author britt
  */
-public class NewInAVMStoreImpl implements NewInAVMStore, Serializable
+class NewInAVMStoreImpl implements NewInAVMStore, Serializable
 {
     private static final long serialVersionUID = 1905996612150732182L;
 

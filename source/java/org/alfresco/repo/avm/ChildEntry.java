@@ -21,7 +21,7 @@ package org.alfresco.repo.avm;
  * This interface represents an entry in a directory.
  * @author britt
  */
-public interface ChildEntry
+interface ChildEntry
 {
     /**
      * Set the name of the child. 

@@ -13,7 +13,7 @@
 		</property>
 	</bean>
 	
-    <import resource="classpath:alfresco/avm-base-context.xml"/>
+    <import resource="file:config/alfresco/avm-base-context.xml"/>
 	
 	<bean id="bulkLoader" class="org.alfresco.repo.avm.util.BulkLoader">
 		<property name="avmService">

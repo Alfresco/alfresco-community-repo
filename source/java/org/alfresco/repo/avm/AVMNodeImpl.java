@@ -29,7 +29,7 @@ import org.alfresco.service.namespace.QName;
  * Base class for all repository file system like objects.
  * @author britt
  */
-public abstract class AVMNodeImpl implements AVMNode, Serializable
+abstract class AVMNodeImpl implements AVMNode, Serializable
 {
     /**
      * The Object ID.

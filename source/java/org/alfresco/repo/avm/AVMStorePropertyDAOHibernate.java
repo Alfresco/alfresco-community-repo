@@ -15,13 +15,10 @@
  * License.
  */
 
-package org.alfresco.repo.avm.hibernate;
+package org.alfresco.repo.avm;
 
 import java.util.List;
 
-import org.alfresco.repo.avm.AVMStore;
-import org.alfresco.repo.avm.AVMStoreProperty;
-import org.alfresco.repo.avm.AVMStorePropertyDAO;
 import org.alfresco.service.namespace.QName;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -30,7 +27,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * The Hibernate implementation of the DAO for AVMNodeProperties.
  * @author britt
  */
-public class AVMStorePropertyDAOHibernate extends HibernateDaoSupport implements AVMStorePropertyDAO
+class AVMStorePropertyDAOHibernate extends HibernateDaoSupport implements AVMStorePropertyDAO
 {
     /**
      * Persist a property.

@@ -24,7 +24,7 @@ import java.util.List;
  * DAO for VersionRoot objects.
  * @author britt
  */
-public interface VersionRootDAO
+interface VersionRootDAO
 {
     /**
      * Save an unsaved VersionRoot.

@@ -23,10 +23,10 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * A Property attached to an AVMNode.
  * @author britt
- *
  */
-public class AVMNodePropertyImpl implements AVMNodeProperty, Serializable
+class AVMNodePropertyImpl implements AVMNodeProperty, Serializable
 {
     private static final long serialVersionUID = -7194228119659288619L;
 

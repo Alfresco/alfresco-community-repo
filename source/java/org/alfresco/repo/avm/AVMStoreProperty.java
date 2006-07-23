@@ -24,7 +24,7 @@ import org.alfresco.service.namespace.QName;
  * Arbitrary properties associated with AVMStores.
  * @author britt
  */
-public interface AVMStoreProperty
+interface AVMStoreProperty
 {
     /**
      * Set the AVMStore.

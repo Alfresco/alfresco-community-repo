@@ -1,9 +1,13 @@
 package org.alfresco.repo.avm;
 
-
-public interface RetryingTransaction
+/**
+ * Interface for a retrying transaction. All operations, so far,
+ * in the AVM repository are idempotent and can thus be retried
+ * when a transaction fails for synchronization reasons.
+ * @author britt
+ */
+interface RetryingTransaction
 {
-
     /**
      * Perform a set of operations under a single transaction.
      * Keep trying if the operation fails because of a concurrency issue.

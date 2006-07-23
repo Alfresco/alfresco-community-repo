@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
  * Implements the AVMService.  Stub.
  * @author britt
  */
-public class AVMServiceImpl implements AVMService
+class AVMServiceImpl implements AVMService
 {
     private static Logger fgLogger = Logger.getLogger(AVMServiceImpl.class);
     
@@ -64,7 +64,7 @@ public class AVMServiceImpl implements AVMService
     /**
      * Basic constructor for the service.
      */
-    public AVMServiceImpl()
+    AVMServiceImpl()
     {
     }
     
@@ -81,7 +81,7 @@ public class AVMServiceImpl implements AVMService
      * Final initialization of the service.  Must be called only on a 
      * fully initialized instance.
      */
-    public void init()
+    void init()
     {
         if (fInitialize)
         {

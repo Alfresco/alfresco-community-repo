@@ -21,7 +21,7 @@ package org.alfresco.repo.avm;
  * Interface for the ancestor-descendent relationship.
  * @author britt
  */
-public interface HistoryLink
+interface HistoryLink
 {
     /**
      * Set the ancestor part of this.

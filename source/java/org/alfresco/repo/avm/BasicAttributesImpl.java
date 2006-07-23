@@ -10,7 +10,7 @@ import java.io.Serializable;
  * Implementation of the BasicAttributesBean.
  * @author britt
  */
-public class BasicAttributesImpl implements BasicAttributes, Serializable
+class BasicAttributesImpl implements BasicAttributes, Serializable
 {
     private static final long serialVersionUID = -3796354564923670005L;
 

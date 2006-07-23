@@ -15,13 +15,10 @@
  * License.
  */
 
-package org.alfresco.repo.avm.hibernate;
+package org.alfresco.repo.avm;
 
 import java.util.List;
 
-import org.alfresco.repo.avm.AVMStore;
-import org.alfresco.repo.avm.AVMStoreDAO;
-import org.alfresco.repo.avm.AVMStoreImpl;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -29,7 +26,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * The Hibernate version for AVMStoreDAO
  * @author britt
  */
-public class AVMStoreDAOHibernate extends HibernateDaoSupport implements
+class AVMStoreDAOHibernate extends HibernateDaoSupport implements
         AVMStoreDAO
 {
     /**

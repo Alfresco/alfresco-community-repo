@@ -15,13 +15,10 @@
  * License.
  */
 
-package org.alfresco.repo.avm.hibernate;
+package org.alfresco.repo.avm;
 
 import java.util.List;
 
-import org.alfresco.repo.avm.AVMNode;
-import org.alfresco.repo.avm.HistoryLink;
-import org.alfresco.repo.avm.HistoryLinkDAO;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -29,7 +26,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * The Hibernate implementation of the DAO for HistoryLinks.
  * @author britt
  */
-public class HistoryLinkDAOHibernate extends HibernateDaoSupport implements
+class HistoryLinkDAOHibernate extends HibernateDaoSupport implements
         HistoryLinkDAO
 {
     /**

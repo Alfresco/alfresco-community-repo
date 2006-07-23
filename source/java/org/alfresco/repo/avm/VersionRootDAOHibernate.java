@@ -15,14 +15,11 @@
  * License.
  */
 
-package org.alfresco.repo.avm.hibernate;
+package org.alfresco.repo.avm;
 
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.repo.avm.AVMStore;
-import org.alfresco.repo.avm.VersionRoot;
-import org.alfresco.repo.avm.VersionRootDAO;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -30,7 +27,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * This is the Hibernate version of the DAO for version roots.
  * @author britt
  */
-public class VersionRootDAOHibernate extends HibernateDaoSupport implements
+class VersionRootDAOHibernate extends HibernateDaoSupport implements
         VersionRootDAO
 {
     /**

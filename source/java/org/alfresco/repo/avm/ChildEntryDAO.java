@@ -23,7 +23,7 @@ import java.util.List;
  * DAO for ChildEntries.
  * @author britt
  */
-public interface ChildEntryDAO
+interface ChildEntryDAO
 {
     /**
      * Save an unsaved ChildEntry.

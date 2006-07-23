@@ -21,7 +21,7 @@ package org.alfresco.repo.avm;
  * This is a helper class that knows how to issue identifiers.
  * @author britt
  */
-public class Issuer
+class Issuer
 {
     /**
      * The next number to issue.
@@ -41,7 +41,7 @@ public class Issuer
     /**
      * Default constructor.
      */
-    public Issuer()
+    Issuer()
     {
     }
     
@@ -66,7 +66,7 @@ public class Issuer
     /**
      * After the database is up, get our value.
      */
-    public void init()
+    void init()
     {
         class TxnCallback implements RetryingTransactionCallback 
         {

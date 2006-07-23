@@ -8,14 +8,14 @@ package org.alfresco.repo.avm;
  * point for access to needed global instances.
  * @author britt
  */
-public class AVMContext
+class AVMContext
 {
     /**
      * The single instance of an AVMContext.
      */
     public static AVMContext fgInstance;
     
-    public AVMContext()
+    AVMContext()
     {
         fgInstance = this;
     }

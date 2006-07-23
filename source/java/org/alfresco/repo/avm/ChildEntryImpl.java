@@ -23,7 +23,7 @@ import java.io.Serializable;
  * An entry in a directory. Contains a name, parent, and child.
  * @author britt
  */
-public class ChildEntryImpl implements ChildEntry, Serializable
+class ChildEntryImpl implements ChildEntry, Serializable
 {
     private static final long serialVersionUID = -307752114272916930L;
 

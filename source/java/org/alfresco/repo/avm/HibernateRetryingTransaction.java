@@ -1,4 +1,4 @@
-package org.alfresco.repo.avm.hibernate;
+package org.alfresco.repo.avm;
 
 /*
  * Copyright (C) 2006 Alfresco, Inc.
@@ -19,10 +19,6 @@ package org.alfresco.repo.avm.hibernate;
 
 import java.util.Random;
 
-import org.alfresco.repo.avm.AVMException;
-import org.alfresco.repo.avm.AVMNotFoundException;
-import org.alfresco.repo.avm.RetryingTransactionCallback;
-import org.alfresco.repo.avm.RetryingTransaction;
 import org.apache.log4j.Logger;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
@@ -37,7 +33,7 @@ import org.springframework.transaction.TransactionStatus;
  * Helper for DAOs.
  * @author britt
  */
-public class HibernateRetryingTransaction extends HibernateTemplate implements RetryingTransaction
+class HibernateRetryingTransaction extends HibernateTemplate implements RetryingTransaction
 {
     private static Logger fgLogger = Logger.getLogger(HibernateRetryingTransaction.class);
     
@@ -65,7 +61,7 @@ public class HibernateRetryingTransaction extends HibernateTemplate implements R
      * Make one up.
      * @param sessionFactory The SessionFactory.
      */
-    public HibernateRetryingTransaction()
+    HibernateRetryingTransaction()
     {
         fRandom = new Random();
     }
@@ -89,6 +85,10 @@ public class HibernateRetryingTransaction extends HibernateTemplate implements R
             }
             catch (Throwable t)
             {
+                if (status == null)
+                {
+                    t.printStackTrace(System.err);
+                }
                 if (!status.isCompleted())
                 {
                     fTransactionManager.rollback(status);

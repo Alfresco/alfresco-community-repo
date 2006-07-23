@@ -33,7 +33,7 @@ import org.alfresco.service.namespace.QName;
  * and layering operations.
  * @author britt
  */
-public interface AVMStore
+interface AVMStore
 {
     /**
      * This returns the next version in this store that will be snapshotted.

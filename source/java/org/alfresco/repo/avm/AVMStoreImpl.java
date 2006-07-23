@@ -41,7 +41,7 @@ import org.alfresco.service.namespace.QName;
  * operation.
  * @author britt
  */
-public class AVMStoreImpl implements AVMStore, Serializable
+class AVMStoreImpl implements AVMStore, Serializable
 {
     static final long serialVersionUID = -1485972568675732904L;
 

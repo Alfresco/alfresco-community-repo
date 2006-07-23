@@ -23,7 +23,7 @@ import java.util.List;
  * DAO for NewInAVMStore markers.
  * @author britt
  */
-public interface NewInAVMStoreDAO
+interface NewInAVMStoreDAO
 {
     /**
      * Save one.

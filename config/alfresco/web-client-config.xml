@@ -245,6 +245,7 @@
          <aspect name="templatable"/>
          <aspect name="translatable"/>
          <aspect name="localizable"/>
+         <aspect name="emailed"/>
       </aspects>
       <!-- The list of transformers to show in the transform actions -->
       <transformers>

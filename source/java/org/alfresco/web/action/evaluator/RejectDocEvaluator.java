@@ -17,6 +17,7 @@
 package org.alfresco.web.action.evaluator;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
 
@@ -33,8 +34,7 @@ public final class RejectDocEvaluator implements ActionEvaluator
    public boolean evaluate(Node node)
    {
       return (node.getProperties().get("app:rejectStep") != null &&
-              node.isLocked() == false &&
-              node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false);
+              node.isLocked() == false);
    }
 }
 /*

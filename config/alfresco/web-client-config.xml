@@ -249,6 +249,10 @@
       </aspects>
       <!-- The list of transformers to show in the transform actions -->
       <transformers>
+         <transformer name="application/vnd.oasis.opendocument.text"/>
+         <transformer name="application/vnd.oasis.opendocument.presentation"/>
+         <transformer name="application/vnd.oasis.opendocument.spreadsheet"/>
+         <transformer name="application/rtf"/>
          <transformer name="text/html"/>
          <transformer name="application/pdf"/>
          <transformer name="text/plain"/>
@@ -256,6 +260,9 @@
          <transformer name="application/x-shockwave-flash"/>
          <transformer name="image/gif"/>
          <transformer name="image/jpeg"/>
+         <transformer name="application/msword"/>
+         <transformer name="application/vnd.excel"/>
+         <transformer name="application/vnd.powerpoint"/>
       </transformers>
       <image-transformers>
          <transformer name="image/gif"/>

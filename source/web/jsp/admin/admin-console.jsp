@@ -126,9 +126,6 @@
                                     <tr>
                                        <td><a:actionLink value="#{msg.node_browser}" image="/images/icons/node_browser.gif" action="dialog:showNodeBrowser" styleClass="title" /></td>
                                     </tr>
-                                    <tr>
-                                       <td><h:outputText value="#{LicenseBean.licenseDescription}" /></td>
-                                    </tr>
                                  </table>
                                  <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "ballongrey"); %>
                            

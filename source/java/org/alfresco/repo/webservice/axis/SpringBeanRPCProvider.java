@@ -32,7 +32,7 @@ public class SpringBeanRPCProvider extends RPCProvider
 {
    private static final long serialVersionUID = 2173234269124176995L;
    private static final String OPTION_NAME = "springBean";
-   private WebApplicationContext webAppCtx;
+   private static WebApplicationContext webAppCtx;
 
    /**
     * Retrieves the class of the bean represented by the given name
@@ -93,16 +93,26 @@ public class SpringBeanRPCProvider extends RPCProvider
     */
    private WebApplicationContext getWebAppContext(MessageContext msgCtx) throws AxisFault
    {
-      if (this.webAppCtx == null && msgCtx != null)
+      if (webAppCtx == null && msgCtx != null)
       {
-         this.webAppCtx = Utils.getSpringContext(msgCtx);
+         webAppCtx = Utils.getSpringContext(msgCtx);
       }
       
-      if (this.webAppCtx == null)
+      if (webAppCtx == null)
       {
          throw new AxisFault("Failed to retrieve the Spring web application context");
       }
       
-      return this.webAppCtx;
+      return webAppCtx;
+   }
+   
+   @Override
+   public void initServiceDesc(SOAPService service, MessageContext msgContext) throws AxisFault 
+   {
+       if( msgContext != null )
+       {
+           getWebAppContext(msgContext);
+       }
+       super.initServiceDesc(service, msgContext);
    }
 }

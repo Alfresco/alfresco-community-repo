@@ -6,7 +6,7 @@ package org.alfresco.repo.avm;
  * when a transaction fails for synchronization reasons.
  * @author britt
  */
-interface RetryingTransaction
+interface RetryingTransactionHelper
 {
     /**
      * Perform a set of operations under a single transaction.

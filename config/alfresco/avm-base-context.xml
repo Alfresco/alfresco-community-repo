@@ -211,7 +211,7 @@
 	<bean id="readTransactionDefinition" 
 		class="org.springframework.transaction.support.DefaultTransactionDefinition">
 		<property name="propagationBehaviorName">
-			<value>PROPAGATION_REQUIRES_NEW</value>
+			<value>PROPAGATION_REQUIRED</value>
 		</property>
 		<property name="isolationLevelName">
 			<value>ISOLATION_READ_COMMITTED</value>
@@ -225,7 +225,7 @@
 	<bean id="writeTransactionDefinition" 
 		class="org.springframework.transaction.support.DefaultTransactionDefinition">
 		<property name="propagationBehaviorName">
-			<value>PROPAGATION_REQUIRES_NEW</value>
+			<value>PROPAGATION_REQUIRED</value>
 		</property>
 		<property name="isolationLevelName">
 			<value>ISOLATION_READ_COMMITTED</value>
@@ -237,7 +237,7 @@
 
 	<!-- The Hibernate Transaction wrapper. -->
 	<bean id="retryingTransaction" 
-		  class="org.alfresco.repo.avm.HibernateRetryingTransaction">
+		  class="org.alfresco.repo.avm.HibernateRetryingTransactionHelper">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>

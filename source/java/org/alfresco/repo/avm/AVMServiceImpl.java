@@ -44,7 +44,7 @@ class AVMServiceImpl implements AVMService
     /**
      * The RetryingTransaction.
      */
-    private RetryingTransaction fTransaction;
+    private RetryingTransactionHelper fTransaction;
     
     /**
      * The AVMRepository for each service thread.
@@ -94,7 +94,7 @@ class AVMServiceImpl implements AVMService
      * Set the Retrying Transaction wrapper.
      * @param txn
      */
-    public void setRetryingTransaction(RetryingTransaction txn)
+    public void setRetryingTransaction(RetryingTransactionHelper txn)
     {
         fTransaction = txn;
     }

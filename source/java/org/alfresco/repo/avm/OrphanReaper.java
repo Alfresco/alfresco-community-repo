@@ -33,7 +33,7 @@ class OrphanReaper implements Runnable
     /**
      * The HibernateTxn instance.
      */
-    private RetryingTransaction fTransaction;
+    private RetryingTransactionHelper fTransaction;
     
     /**
      * Inactive base sleep interval.
@@ -111,7 +111,7 @@ class OrphanReaper implements Runnable
      * Set the Hibernate Transaction Wrapper.
      * @param transaction
      */
-    public void setRetryingTransaction(RetryingTransaction transaction)
+    public void setRetryingTransaction(RetryingTransactionHelper transaction)
     {
         fTransaction = transaction;
     }

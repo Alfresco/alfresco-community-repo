@@ -36,7 +36,7 @@ class Issuer
     /**
      * The transactional wrapper.
      */
-    private RetryingTransaction fTransaction;
+    private RetryingTransactionHelper fTransaction;
     
     /**
      * Default constructor.
@@ -58,7 +58,7 @@ class Issuer
      * Set the transactional wrapper.
      * @param retryingTransaction The transactional wrapper.
      */
-    public void setRetryingTransaction(RetryingTransaction retryingTransaction)
+    public void setRetryingTransaction(RetryingTransactionHelper retryingTransaction)
     {
         fTransaction = retryingTransaction;
     }

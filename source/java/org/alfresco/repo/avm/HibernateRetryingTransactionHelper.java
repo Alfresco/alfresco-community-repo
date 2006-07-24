@@ -26,16 +26,15 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 
 /**
  * Helper for DAOs.
  * @author britt
  */
-class HibernateRetryingTransaction extends HibernateTemplate implements RetryingTransaction
+class HibernateRetryingTransactionHelper extends HibernateTemplate implements RetryingTransactionHelper
 {
-    private static Logger fgLogger = Logger.getLogger(HibernateRetryingTransaction.class);
+    private static Logger fgLogger = Logger.getLogger(HibernateRetryingTransactionHelper.class);
     
     /**
      * The transaction manager.
@@ -61,7 +60,7 @@ class HibernateRetryingTransaction extends HibernateTemplate implements Retrying
      * Make one up.
      * @param sessionFactory The SessionFactory.
      */
-    HibernateRetryingTransaction()
+    HibernateRetryingTransactionHelper()
     {
         fRandom = new Random();
     }
@@ -77,12 +76,17 @@ class HibernateRetryingTransaction extends HibernateTemplate implements Retrying
         while (true)
         {
             TransactionStatus status = null;
+            boolean newTxn = true;
             try
             {
                 status = 
                     fTransactionManager.getTransaction(write ? fWriteDefinition : fReadDefinition);
+                newTxn = status.isNewTransaction();
                 execute(new HibernateCallbackWrapper(callback));
-                fTransactionManager.commit(status);
+                if (newTxn)
+                {
+                    fTransactionManager.commit(status);
+                }
                 return;
             }
             catch (Throwable t)
@@ -95,6 +99,10 @@ class HibernateRetryingTransaction extends HibernateTemplate implements Retrying
                 if (!status.isCompleted())
                 {
                     fTransactionManager.rollback(status);
+                }
+                if (!newTxn)
+                {
+                    throw new AVMException("Unrecoverable error.", t);
                 }
                 // If we've lost a race or we've deadlocked, retry.
                 if (t instanceof DeadlockLoserDataAccessException)

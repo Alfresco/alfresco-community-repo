@@ -21,7 +21,7 @@ import net.sf.jooreports.openoffice.connection.SocketOpenOfficeConnection;
 
 
 /**
- * @author Jesper Steen M�ller
+ * @author Jesper Steen Møller
  */
 public class OpenOfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
 {

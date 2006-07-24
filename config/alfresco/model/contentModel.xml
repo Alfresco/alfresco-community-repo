@@ -649,6 +649,29 @@
          </associations>
       </aspect>
       
+      <aspect name="cm:emailed">
+         <title>Emailed</title>
+         <properties>
+            <property name="cm:originator">
+               <title>Originator</title>
+               <type>d:text</type>
+            </property>
+            <property name="cm:addressee">
+               <title>Addressee</title>
+               <type>d:text</type>
+            </property>
+            <property name="cm:addressees">
+               <title>Addressees</title>
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="cm:sentdate">
+               <title>Sent Date</title>
+               <type>d:datetime</type>
+            </property>
+         </properties>
+      </aspect>
+      
    </aspects>
 
 </model>

@@ -4,7 +4,7 @@ package org.alfresco.repo.content.metadata;
 /**
  * @see org.alfresco.repo.content.transform.OfficeMetadataExtracter
  * 
- * @author Jesper Steen Møller
+ * @author Jesper Steen MÃ¸ller
  */
 public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
 {

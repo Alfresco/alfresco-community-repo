@@ -42,7 +42,7 @@ import com.sun.star.ucb.XFileIdentifierConverter;
 import com.sun.star.uno.UnoRuntime;
 
 /**
- * @author Jesper Steen M�ller
+ * @author Jesper Steen Møller
  */
 public class OpenOfficeMetadataExtracter extends AbstractMetadataExtracter
 {

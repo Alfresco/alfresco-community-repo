@@ -112,6 +112,7 @@
    <!-- Content Metadata Extracters -->
    <bean class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter" parent="baseMetadataExtracter" />
    <bean class="org.alfresco.repo.content.metadata.OfficeMetadataExtracter" parent="baseMetadataExtracter" />
+   <bean class="org.alfresco.repo.content.metadata.MailMetadataExtracter" parent="baseMetadataExtracter" />
    <bean class="org.alfresco.repo.content.metadata.HtmlMetadataExtracter" parent="baseMetadataExtracter" />
    <bean class="org.alfresco.repo.content.metadata.MP3MetadataExtracter" parent="baseMetadataExtracter" />
    <bean class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter" parent="baseMetadataExtracter" />

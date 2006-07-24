@@ -246,6 +246,38 @@ class AVMServiceImpl implements AVMService
     }
 
     /**
+     * Get the listing of nodes contained directly in a directory. This is the
+     * same as getDirectoryListing for PlainDirectories, but returns only those that
+     * are directly contained in a layered directory.
+     * @param version The version to look up.
+     * @param path The full path to get listing for.
+     * @return A Map of names to descriptors.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains any non-directory
+     * elements.
+     */
+    public SortedMap<String, AVMNodeDescriptor> 
+        getDirectoryListingDirect(final int version, final String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null path.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public SortedMap<String, AVMNodeDescriptor> listing;
+            
+            public void perform()
+            {
+                listing = fAVMRepository.getListingDirect(version, path);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.listing;
+    }
+
+    /**
      * Get a directory listing from a node descriptor.
      * @param dir The directory node descriptor.
      * @return A Map of names to node descriptors.
@@ -263,6 +295,35 @@ class AVMServiceImpl implements AVMService
             public void perform()
             {
                 listing = fAVMRepository.getListing(dir);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.listing;
+    }
+
+    /**
+     * Get the names of nodes that have been deleted in a directory.
+     * @param version The version to look under.
+     * @param path The path of the directory.
+     * @return A List of names.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains any elements
+     * that are not directories.
+     */
+    public List<String> getDeleted(final int version, final String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null path.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public List<String> listing;
+            
+            public void perform()
+            {
+                listing = fAVMRepository.getDeleted(version, path);
             }
         }
         TxnCallback doit = new TxnCallback();

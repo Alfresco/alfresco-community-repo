@@ -85,7 +85,7 @@ public interface AVMService
      * Get a listing of a Folder by name.
      * @param version The version id to look in.
      * @param path The simple absolute path to the file node.
-     * @return A List of FolderEntrys.
+     * @return A Map of names to descriptors.
      * @throws AVMNotFoundException If <code>path</code> is not found.
      * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
      * component that is not a directory, or if <code>path</code> is not pointing
@@ -93,6 +93,20 @@ public interface AVMService
      */
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(int version, String path);
     
+    /**
+     * Get the listing of nodes contained directly in a directory. This is the
+     * same as getDirectoryListing for PlainDirectories, but returns only those that
+     * are directly contained in a layered directory.
+     * @param version The version to look up.
+     * @param path The full path to get listing for.
+     * @return A Map of names to descriptors.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains any non-directory
+     * elements.
+     */
+    public SortedMap<String, AVMNodeDescriptor> 
+        getDirectoryListingDirect(int version, String path);
+
     /**
      * Get a directory listing from a node descriptor.
      * @param dir The directory node descriptor.
@@ -102,6 +116,17 @@ public interface AVMService
      * a directory.
      */
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir);
+    
+    /**
+     * Get the names of nodes that have been deleted in a directory.
+     * @param version The version to look under.
+     * @param path The path of the directory.
+     * @return A List of names.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains any elements
+     * that are not directories.
+     */
+    public List<String> getDeleted(int version, String path);
     
     /**
      * Create a new File. Fails if the file already exists.

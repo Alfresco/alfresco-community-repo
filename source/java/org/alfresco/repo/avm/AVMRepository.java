@@ -560,6 +560,20 @@ class AVMRepository
     }
 
     /**
+     * Get the list of nodes directly contained in a directory.
+     * @param version The version to look under.
+     * @param path The path to the directory to list.
+     * @return A Map of names to descriptors.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getListingDirect(int version, String path)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        return store.getListingDirect(version, pathParts[1]);
+    }
+    
+    /**
      * Get a directory listing from a directory node descriptor.
      * @param dir The directory node descriptor.
      * @return A SortedMap listing.
@@ -575,6 +589,20 @@ class AVMRepository
         }
         DirectoryNode dirNode = (DirectoryNode)node;
         return dirNode.getListing(dir);
+    }
+    
+    /**
+     * Get the names of deleted nodes in a directory.
+     * @param version The version to look under.
+     * @param path The path to the directory.
+     * @return A List of names.
+     */
+    public List<String> getDeleted(int version, String path)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        return store.getDeleted(version, pathParts[1]);
     }
     
     /**

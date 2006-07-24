@@ -110,7 +110,23 @@ interface AVMStore
      * @return A listing.
      */
     public SortedMap<String, AVMNodeDescriptor> getListing(int version, String path);
+    
+    /**
+     * Get the list of nodes directly contained in a directory.
+     * @param version The version to look under.
+     * @param path The path to the directory.
+     * @return A Map of names to descriptors.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getListingDirect(int version, String path);
 
+    /**
+     * Get the names of the deleted nodes in a directory.
+     * @param version The version to look under.
+     * @param path The path to the directory.
+     * @return A List of names.
+     */
+    public List<String> getDeleted(int version, String path);
+    
     /**
      * Get an output stream to a file.
      * @param path The path to the file.

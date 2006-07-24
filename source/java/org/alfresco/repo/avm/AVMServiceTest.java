@@ -40,6 +40,68 @@ import org.alfresco.service.namespace.QName;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test getting deleted names.
+     */
+    public void testGetDeleted()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createLayeredDirectory("main:/a", "main:/", "layer");
+            fService.createSnapshot("main");
+            List<String> deleted = fService.getDeleted(-1, "main:/layer/b/c");
+            assertEquals(0, deleted.size());
+            fService.removeNode("main:/a/b/c", "foo");
+            fService.createSnapshot("main");
+            deleted = fService.getDeleted(-1, "main:/a/b/c");
+            assertEquals(0, deleted.size());
+            fService.removeNode("main:/layer/b/c", "bar");
+            fService.createSnapshot("main");
+            deleted = fService.getDeleted(-1, "main:/layer/b/c");
+            assertEquals(1, deleted.size());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
+     * Test directly contained listing.
+     */
+    public void testListingDirect()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createLayeredDirectory("main:/a", "main:/", "layer");
+            fService.createSnapshot("main");
+            Map<String, AVMNodeDescriptor> listing = 
+                fService.getDirectoryListingDirect(-1, 
+                                                   "main:/layer");
+            assertEquals(0, listing.size());
+            fService.createFile("main:/layer/b/c", "sigmoid").close();
+            fService.createSnapshot("main");
+            listing = fService.getDirectoryListingDirect(-1, "main:/layer");
+            assertEquals(1, listing.size());
+            fService.createFile("main:/layer", "lepton");
+            fService.createSnapshot("main");
+            listing = fService.getDirectoryListingDirect(-1, "main:/layer");
+            assertEquals(2, listing.size());
+            listing = fService.getDirectoryListingDirect(-1, "main:/layer/b/c");
+            assertEquals(1, listing.size());
+            listing = fService.getDirectoryListingDirect(-1, "main:/a/b/c");
+            assertEquals(2, listing.size());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
      * Test layering info.
      */
     public void testLayeringInfo()

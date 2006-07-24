@@ -17,6 +17,7 @@
 
 package org.alfresco.repo.avm;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -350,6 +351,21 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     }
 
     /**
+     * Get a listing of the nodes directly contained by a directory.
+     * @param lPath The Lookup to this directory.
+     * @return A Map of names to nodes.
+     */
+    public Map<String, AVMNode> getListingDirect(Lookup lPath)
+    {
+        Map<String, AVMNode> listing = new HashMap<String, AVMNode>();
+        for (ChildEntry entry : AVMContext.fgInstance.fChildEntryDAO.getByParent(this))
+        {
+            listing.put(entry.getName(), entry.getChild());
+        }
+        return listing;
+    }
+
+    /**
      * Get a listing from a directory node descriptor.
      * @param dir The directory node descriptor.
      * @return A Map of names to node descriptors.
@@ -399,6 +415,21 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                                            dir.getIndirection()));
         }
         return baseListing;
+    }
+
+    /**
+     * Get the names of nodes deleted in this directory.
+     * @return A List of names.
+     */
+    public List<String> getDeletedNames()
+    {
+        List<DeletedChild> deleted = getDeleted();
+        List<String> listing = new ArrayList<String>();
+        for (DeletedChild child : deleted)
+        {
+            listing.add(child.getName());
+        }
+        return listing;
     }
 
     /**

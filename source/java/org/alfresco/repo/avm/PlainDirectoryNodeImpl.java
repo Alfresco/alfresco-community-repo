@@ -17,6 +17,8 @@
 
 package org.alfresco.repo.avm;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -90,13 +92,23 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     @SuppressWarnings("unchecked")
     public Map<String, AVMNode> getListing(Lookup lPath)
     {
-        TreeMap<String, AVMNode> result = new TreeMap<String, AVMNode>();
+        Map<String, AVMNode> result = new HashMap<String, AVMNode>();
         List<ChildEntry> children = AVMContext.fgInstance.fChildEntryDAO.getByParent(this);
         for (ChildEntry child : children)
         {
             result.put(child.getName(), child.getChild());
         }
         return result;
+    }
+
+    /**
+     * Get a listing of the nodes directly contained by a directory.
+     * @param lPath The Lookup to this directory.
+     * @return A Map of names to nodes.
+     */
+    public Map<String, AVMNode> getListingDirect(Lookup lPath)
+    {
+        return getListing(lPath);
     }
 
     /**
@@ -118,6 +130,15 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                        child.getChild().getDescriptor(dir.getPath(), child.getName(), dir.getIndirection()));
         }
         return result;
+    }
+
+    /**
+     * Get the names of nodes deleted in this directory.
+     * @return A List of names.
+     */
+    public List<String> getDeletedNames()
+    {
+        return new ArrayList<String>();
     }
 
     /**

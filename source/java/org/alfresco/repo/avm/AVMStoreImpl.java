@@ -307,6 +307,33 @@ class AVMStoreImpl implements AVMStore, Serializable
         Lookup lPath = lookupDirectory(version, path, false);
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         Map<String, AVMNode> listing = dir.getListing(lPath);
+        return translateListing(listing, lPath);
+    }
+
+    /**
+     * Get the list of nodes directly contained in a directory.
+     * @param version The version to look under.
+     * @param path The path to the directory.
+     * @return A Map of names to descriptors.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getListingDirect(int version, String path)
+    {
+        Lookup lPath = lookupDirectory(version, path, false);
+        DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
+        Map<String, AVMNode> listing = dir.getListingDirect(lPath);
+        return translateListing(listing, lPath);
+    }
+
+    /**
+     * Helper to convert an internal representation of a directory listing
+     * to an external representation.
+     * @param listing The internal listing, a Map of names to nodes.
+     * @param lPath The Lookup for the directory.
+     * @return A Map of names to descriptors.
+     */
+    private SortedMap<String, AVMNodeDescriptor> 
+        translateListing(Map<String, AVMNode> listing, Lookup lPath)
+    {
         SortedMap<String, AVMNodeDescriptor> results = new TreeMap<String, AVMNodeDescriptor>();
         for (String name : listing.keySet())
         {
@@ -315,6 +342,19 @@ class AVMStoreImpl implements AVMStore, Serializable
             results.put(name, desc);
         }
         return results;
+    }
+
+    /**
+     * Get the names of the deleted nodes in a directory.
+     * @param version The version to look under.
+     * @param path The path to the directory.
+     * @return A List of names.
+     */
+    public List<String> getDeleted(int version, String path)
+    {
+        Lookup lPath = lookupDirectory(version, path, false);
+        DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
+        return dir.getDeletedNames();
     }
 
     /**

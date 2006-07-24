@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +54,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Wrapper;
 import org.springframework.util.StringUtils;
@@ -888,24 +891,36 @@ public final class Node implements Serializable
             // set using a JavaScript Array object
             ScriptableObject values = (ScriptableObject)value;
             
-            // convert JavaScript array of values to a List of Serializable objects
-            Object[] propIds = values.getIds();
-            List<Serializable> propValues = new ArrayList<Serializable>(propIds.length);
-            for (int i=0; i<propIds.length; i++)
+            if (value instanceof NativeArray)
             {
-                // work on each key in turn
-                Object propId = propIds[i];
-                
-                // we are only interested in keys that indicate a list of values
-                if (propId instanceof Integer)
-                {
-                    // get the value out for the specified key
-                    Serializable val = (Serializable)values.get((Integer)propId, values);
-                    // recursively call this method to convert the value
-                    propValues.add(convertValue(val));
-                }
+               // convert JavaScript array of values to a List of Serializable objects
+               Object[] propIds = values.getIds();
+               List<Serializable> propValues = new ArrayList<Serializable>(propIds.length);
+               for (int i=0; i<propIds.length; i++)
+               {
+                   // work on each key in turn
+                   Object propId = propIds[i];
+                   
+                   // we are only interested in keys that indicate a list of values
+                   if (propId instanceof Integer)
+                   {
+                       // get the value out for the specified key
+                       Serializable val = (Serializable)values.get((Integer)propId, values);
+                       // recursively call this method to convert the value
+                       propValues.add(convertValue(val));
+                   }
+               }
+               value = (Serializable)propValues;
             }
-            value = (Serializable)propValues;
+            else
+            {
+               // TODO: add code here to use the dictionary and convert to correct value type
+               Object javaObj = Context.jsToJava(value, Date.class);
+               if (javaObj instanceof Date)
+               {
+                  value = (Date)javaObj;
+               }
+            }
         }
         return value;
     }
@@ -1178,14 +1193,8 @@ public final class Node implements Serializable
                         {
                             // get the value out for the specified key - make sure it is Serializable
                             Object value = props.get((String)propId, props);
-                            if (value instanceof Wrapper)
-                            {
-                                value = ((Wrapper)value).unwrap();
-                            }
-                            if (value instanceof Serializable)
-                            {
-                                aspectProps.put(createQName((String)propId), (Serializable)value);
-                            }
+                            value = convertValue((Serializable)value);
+                            aspectProps.put(createQName((String)propId), (Serializable)value);
                         }
                     }
                 }

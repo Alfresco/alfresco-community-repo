@@ -645,19 +645,29 @@ public class SessionImpl implements Session
         if (isLive())
         {
             // invalidate authentication
-            getRepositoryImpl().getServiceRegistry().getAuthenticationService().invalidateTicket(getTicket());
-            ticket = null;
-            
-            // clean up resources
             try
             {
-                sessionIsolation.rollback();
+                try
+                {
+                    getRepositoryImpl().getServiceRegistry().getAuthenticationService().invalidateTicket(getTicket());
+                }
+                finally
+                {
+                    try
+                    {
+                        sessionIsolation.rollback();
+                    }
+                    catch(RepositoryException e)
+                    {
+                        // continue execution and force logout
+                    }
+                }
             }
-            catch(RepositoryException e)
+            finally
             {
-                // force logout
+                ticket = null;
+                repository.deregisterSession();
             }
-            repository.deregisterSession();
         }
     }
 

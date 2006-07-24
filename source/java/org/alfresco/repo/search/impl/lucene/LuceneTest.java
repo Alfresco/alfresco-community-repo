@@ -41,6 +41,7 @@ import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.search.QueryRegisterComponent;
+import org.alfresco.repo.search.impl.lucene.analysis.NumericEncoder;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.search.results.ChildAssocRefResultSet;
 import org.alfresco.repo.search.results.DetachedResultSet;
@@ -59,6 +60,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.service.cmr.search.QueryParameter;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -92,6 +94,16 @@ public class LuceneTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     private static Log logger = LogFactory.getLog(LuceneTest.class);
+
+    QName createdDate = QName.createQName(TEST_NAMESPACE, "createdDate");
+
+    QName orderDouble = QName.createQName(TEST_NAMESPACE, "orderDouble");
+    
+    QName orderFloat = QName.createQName(TEST_NAMESPACE, "orderFloat");
+    
+    QName orderLong = QName.createQName(TEST_NAMESPACE, "orderLong");
+    
+    QName orderInt = QName.createQName(TEST_NAMESPACE, "orderInt");
 
     TransactionService transactionService;
 
@@ -179,7 +191,6 @@ public class LuceneTest extends TestCase
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
         this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        
 
         queryRegisterComponent.loadQueryCollection("testQueryRegister.xml");
 
@@ -189,7 +200,7 @@ public class LuceneTest extends TestCase
         testTX = transactionService.getUserTransaction();
         testTX.begin();
         this.authenticationComponent.setSystemUserAsCurrentUser();
-        
+
         // load in the test model
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
         InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/search/impl/lucene/LuceneTest_model.xml");
@@ -201,16 +212,16 @@ public class LuceneTest extends TestCase
         rootNodeRef = nodeService.getRootNode(storeRef);
 
         n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"),
-                testSuperType).getChildRef();
+                testSuperType, getOrderProperties()).getChildRef();
         nodeService.setProperty(n1, QName.createQName("{namespace}property-1"), "ValueOne");
 
         n2 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}two"),
-                testSuperType).getChildRef();
+                testSuperType, getOrderProperties()).getChildRef();
         nodeService.setProperty(n2, QName.createQName("{namespace}property-1"), "valueone");
         nodeService.setProperty(n2, QName.createQName("{namespace}property-2"), "valuetwo");
 
         n3 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}three"),
-                testSuperType).getChildRef();
+                testSuperType, getOrderProperties()).getChildRef();
 
         ObjectOutputStream oos;
         try
@@ -270,24 +281,24 @@ public class LuceneTest extends TestCase
         nodeService.getProperties(n3);
         nodeService.getProperties(n4);
 
-        n5 = nodeService.createNode(n1, ASSOC_TYPE_QNAME, QName.createQName("{namespace}five"), testSuperType)
-                .getChildRef();
-        n6 = nodeService.createNode(n1, ASSOC_TYPE_QNAME, QName.createQName("{namespace}six"), testSuperType)
-                .getChildRef();
-        n7 = nodeService.createNode(n2, ASSOC_TYPE_QNAME, QName.createQName("{namespace}seven"), testSuperType)
-                .getChildRef();
-        n8 = nodeService.createNode(n2, ASSOC_TYPE_QNAME, QName.createQName("{namespace}eight-2"), testSuperType)
-                .getChildRef();
-        n9 = nodeService.createNode(n5, ASSOC_TYPE_QNAME, QName.createQName("{namespace}nine"), testSuperType)
-                .getChildRef();
-        n10 = nodeService.createNode(n5, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ten"), testSuperType)
-                .getChildRef();
-        n11 = nodeService.createNode(n5, ASSOC_TYPE_QNAME, QName.createQName("{namespace}eleven"), testSuperType)
-                .getChildRef();
-        n12 = nodeService.createNode(n5, ASSOC_TYPE_QNAME, QName.createQName("{namespace}twelve"), testSuperType)
-                .getChildRef();
-        n13 = nodeService.createNode(n12, ASSOC_TYPE_QNAME, QName.createQName("{namespace}thirteen"), testSuperType)
-                .getChildRef();
+        n5 = nodeService.createNode(n1, ASSOC_TYPE_QNAME, QName.createQName("{namespace}five"), testSuperType,
+                getOrderProperties()).getChildRef();
+        n6 = nodeService.createNode(n1, ASSOC_TYPE_QNAME, QName.createQName("{namespace}six"), testSuperType,
+                getOrderProperties()).getChildRef();
+        n7 = nodeService.createNode(n2, ASSOC_TYPE_QNAME, QName.createQName("{namespace}seven"), testSuperType,
+                getOrderProperties()).getChildRef();
+        n8 = nodeService.createNode(n2, ASSOC_TYPE_QNAME, QName.createQName("{namespace}eight-2"), testSuperType,
+                getOrderProperties()).getChildRef();
+        n9 = nodeService.createNode(n5, ASSOC_TYPE_QNAME, QName.createQName("{namespace}nine"), testSuperType,
+                getOrderProperties()).getChildRef();
+        n10 = nodeService.createNode(n5, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ten"), testSuperType,
+                getOrderProperties()).getChildRef();
+        n11 = nodeService.createNode(n5, ASSOC_TYPE_QNAME, QName.createQName("{namespace}eleven"), testSuperType,
+                getOrderProperties()).getChildRef();
+        n12 = nodeService.createNode(n5, ASSOC_TYPE_QNAME, QName.createQName("{namespace}twelve"), testSuperType,
+                getOrderProperties()).getChildRef();
+        n13 = nodeService.createNode(n12, ASSOC_TYPE_QNAME, QName.createQName("{namespace}thirteen"), testSuperType,
+                getOrderProperties()).getChildRef();
 
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-16"));
@@ -317,6 +328,32 @@ public class LuceneTest extends TestCase
 
     }
 
+    private double orderDoubleCount = -0.11d;
+
+    private Date orderDate = new Date();
+    
+    private float orderFloatCount = -3.5556f;
+    
+    private long orderLongCount = -1999999999999999l;
+    
+    private int orderIntCount = -45764576;
+
+    public Map<QName, Serializable> getOrderProperties()
+    {
+        Map<QName, Serializable> testProperties = new HashMap<QName, Serializable>();
+        testProperties.put(createdDate, orderDate);
+        testProperties.put(orderDouble, orderDoubleCount);
+        testProperties.put(orderFloat, orderFloatCount);
+        testProperties.put(orderLong, orderLongCount);
+        testProperties.put(orderInt, orderIntCount);
+        orderDate = Duration.subtract(orderDate, new Duration("P1D"));
+        orderDoubleCount += 0.1d;
+        orderFloatCount += 0.82f;
+        orderLongCount += 299999999999999l;
+        orderIntCount += 8576457;
+        return testProperties;
+    }
+
     @Override
     protected void tearDown() throws Exception
     {
@@ -342,7 +379,7 @@ public class LuceneTest extends TestCase
         luceneFTS.resume();
     }
 
-    public void testDeleteIssue() throws Exception
+    public void xtestDeleteIssue() throws Exception
     {
 
         testTX.commit();
@@ -391,7 +428,7 @@ public class LuceneTest extends TestCase
         tx3.commit();
     }
 
-    public void testMTDeleteIssue() throws Exception
+    public void xtestMTDeleteIssue() throws Exception
     {
         luceneFTS.pause();
         testTX.commit();
@@ -794,6 +831,226 @@ public class LuceneTest extends TestCase
         }
         results.close();
 
+        // sort by created date
+
+        SearchParameters sp7 = new SearchParameters();
+        sp7.addStore(rootNodeRef.getStoreRef());
+        sp7.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp7.setQuery("PATH:\"//.\"");
+        sp7.addSort("@" + createdDate, true);
+        results = searcher.query(sp7);
+
+        Date date = null;
+        for (ResultSetRow row : results)
+        {
+            Date currentBun = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(row
+                    .getNodeRef(), createdDate));
+            //System.out.println(currentBun);
+            if (date != null)
+            {
+                assertTrue(date.compareTo(currentBun) <= 0);
+            }
+            date = currentBun;
+        }
+        results.close();
+
+        SearchParameters sp8 = new SearchParameters();
+        sp8.addStore(rootNodeRef.getStoreRef());
+        sp8.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp8.setQuery("PATH:\"//.\"");
+        sp8.addSort("@" + createdDate, false);
+        results = searcher.query(sp8);
+
+        date = null;
+        for (ResultSetRow row : results)
+        {
+            Date currentBun = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(row
+                    .getNodeRef(), createdDate));
+            //System.out.println(currentBun);
+            if ((date != null) && (currentBun != null))
+            {
+                assertTrue(date.compareTo(currentBun) >= 0);
+            }
+            date = currentBun;
+        }
+        results.close();
+
+        // sort by double
+
+        SearchParameters sp9 = new SearchParameters();
+        sp9.addStore(rootNodeRef.getStoreRef());
+        sp9.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp9.setQuery("PATH:\"//.\"");
+        sp9.addSort("@" + orderDouble, true);
+        results = searcher.query(sp9);
+
+        Double d = null;
+        for (ResultSetRow row : results)
+        {
+            Double currentBun = DefaultTypeConverter.INSTANCE.convert(Double.class, nodeService.getProperty(row
+                    .getNodeRef(), orderDouble));
+            //System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ "    "+currentBun);
+            if (d != null)
+            {
+                assertTrue(d.compareTo(currentBun) <= 0);
+            }
+            d = currentBun;
+        }
+        results.close();
+
+        SearchParameters sp10 = new SearchParameters();
+        sp10.addStore(rootNodeRef.getStoreRef());
+        sp10.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp10.setQuery("PATH:\"//.\"");
+        sp10.addSort("@" + orderDouble, false);
+        results = searcher.query(sp10);
+
+        d = null;
+        for (ResultSetRow row : results)
+        {
+            Double currentBun = DefaultTypeConverter.INSTANCE.convert(Double.class, nodeService.getProperty(row
+                    .getNodeRef(), orderDouble));
+            //System.out.println(currentBun);
+            if ((d != null) && (currentBun != null))
+            {
+                assertTrue(d.compareTo(currentBun) >= 0);
+            }
+            d = currentBun;
+        }
+        results.close();
+        
+        // sort by float
+
+        SearchParameters sp11 = new SearchParameters();
+        sp11.addStore(rootNodeRef.getStoreRef());
+        sp11.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp11.setQuery("PATH:\"//.\"");
+        sp11.addSort("@" + orderFloat, true);
+        results = searcher.query(sp11);
+
+        Float f = null;
+        for (ResultSetRow row : results)
+        {
+            Float currentBun = DefaultTypeConverter.INSTANCE.convert(Float.class, nodeService.getProperty(row
+                    .getNodeRef(), orderFloat));
+            //System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ "    "+currentBun);
+            if (f != null)
+            {
+                assertTrue(f.compareTo(currentBun) <= 0);
+            }
+            f = currentBun;
+        }
+        results.close();
+
+        SearchParameters sp12 = new SearchParameters();
+        sp12.addStore(rootNodeRef.getStoreRef());
+        sp12.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp12.setQuery("PATH:\"//.\"");
+        sp12.addSort("@" + orderFloat, false);
+        results = searcher.query(sp12);
+
+        f = null;
+        for (ResultSetRow row : results)
+        {
+            Float currentBun = DefaultTypeConverter.INSTANCE.convert(Float.class, nodeService.getProperty(row
+                    .getNodeRef(), orderFloat));
+            //System.out.println(currentBun);
+            if ((f != null) && (currentBun != null))
+            {
+                assertTrue(f.compareTo(currentBun) >= 0);
+            }
+            f = currentBun;
+        }
+        results.close();
+        
+        // sort by long
+
+        SearchParameters sp13 = new SearchParameters();
+        sp13.addStore(rootNodeRef.getStoreRef());
+        sp13.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp13.setQuery("PATH:\"//.\"");
+        sp13.addSort("@" + orderLong, true);
+        results = searcher.query(sp13);
+
+        Long l = null;
+        for (ResultSetRow row : results)
+        {
+            Long currentBun = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(row
+                    .getNodeRef(), orderLong));
+            //System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ "    "+currentBun);
+            if (l != null)
+            {
+                assertTrue(l.compareTo(currentBun) <= 0);
+            }
+            l = currentBun;
+        }
+        results.close();
+
+        SearchParameters sp14 = new SearchParameters();
+        sp14.addStore(rootNodeRef.getStoreRef());
+        sp14.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp14.setQuery("PATH:\"//.\"");
+        sp14.addSort("@" + orderLong, false);
+        results = searcher.query(sp14);
+
+        l = null;
+        for (ResultSetRow row : results)
+        {
+            Long currentBun = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(row
+                    .getNodeRef(), orderLong));
+            //System.out.println(currentBun);
+            if ((l != null) && (currentBun != null))
+            {
+                assertTrue(l.compareTo(currentBun) >= 0);
+            }
+            l = currentBun;
+        }
+        results.close();
+
+        // sort by int
+
+        SearchParameters sp15 = new SearchParameters();
+        sp15.addStore(rootNodeRef.getStoreRef());
+        sp15.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp15.setQuery("PATH:\"//.\"");
+        sp15.addSort("@" + orderInt, true);
+        results = searcher.query(sp15);
+
+        Integer i = null;
+        for (ResultSetRow row : results)
+        {
+            Integer currentBun = DefaultTypeConverter.INSTANCE.convert(Integer.class, nodeService.getProperty(row
+                    .getNodeRef(), orderInt));
+            //System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ "    "+currentBun);
+            if (i != null)
+            {
+                assertTrue(i.compareTo(currentBun) <= 0);
+            }
+            i = currentBun;
+        }
+        results.close();
+
+        SearchParameters sp16 = new SearchParameters();
+        sp16.addStore(rootNodeRef.getStoreRef());
+        sp16.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp16.setQuery("PATH:\"//.\"");
+        sp16.addSort("@" + orderInt, false);
+        results = searcher.query(sp16);
+
+        i = null;
+        for (ResultSetRow row : results)
+        {
+            Integer currentBun = DefaultTypeConverter.INSTANCE.convert(Integer.class, nodeService.getProperty(row
+                    .getNodeRef(), orderInt));
+            //System.out.println(currentBun);
+            if ((i != null) && (currentBun != null))
+            {
+                assertTrue(i.compareTo(currentBun) >= 0);
+            }
+            i = currentBun;
+        }
+        results.close();
+        
         luceneFTS.resume();
     }
 
@@ -2078,7 +2335,7 @@ public class LuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
     }
-    
+
     public void testNumericInPath() throws Exception
     {
         String COMPLEX_LOCAL_NAME = "Woof12";
@@ -2860,7 +3117,7 @@ public class LuceneTest extends TestCase
         luceneFTS.resume();
     }
 
-    public void testIssueAR47() throws Exception
+    public void xtestIssueAR47() throws Exception
     {
         // This bug arose from repeated deletes and adds creating empty index
         // segments.

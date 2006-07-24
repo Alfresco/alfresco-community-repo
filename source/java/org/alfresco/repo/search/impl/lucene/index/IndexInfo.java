@@ -396,12 +396,12 @@ public class IndexInfo
         cleanerThread = new Thread(cleaner);
         cleanerThread.setDaemon(true);
         cleanerThread.setName("Index cleaner thread");
-        cleanerThread.start();
+        //cleanerThread.start();
 
         mergerThread = new Thread(merger);
         mergerThread.setDaemon(true);
         mergerThread.setName("Index merger thread");
-        mergerThread.start();
+        //mergerThread.start();
 
         IndexWriter writer;
         try
@@ -1633,9 +1633,22 @@ public class IndexInfo
         return size;
     }
 
-    private interface LockWork<Result>
+    public interface LockWork<Result>
     {
         public Result doWork() throws Exception;
+    }
+
+    public <R> R doWithWriteLock(LockWork<R> lockWork)
+    {
+        getWriteLock();
+        try
+        {
+            return doWithFileLock(lockWork);
+        }
+        finally
+        {
+            releaseWriteLock();
+        }
     }
 
     private <R> R doWithFileLock(LockWork<R> lockWork)
@@ -1683,65 +1696,91 @@ public class IndexInfo
         }
     }
 
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args)
     {
-        System.setProperty("disableLuceneLocks", "true");
 
-        HashSet<NodeRef> deletions = new HashSet<NodeRef>();
-        for (int i = 0; i < 0; i++)
-        {
-            deletions.add(new NodeRef(new StoreRef("woof", "bingle"), GUID.generate()));
-        }
-
-        int repeat = 100;
-        int docs = 1;
-        final IndexInfo ii = new IndexInfo(new File("c:\\indexTest"));
-
-        long totalTimeA = 0;
-        long countA = 0;
-
+        String indexLocation = args[0];
+        IndexInfo ii = new IndexInfo(new File(indexLocation));
         while (true)
         {
-            long start = System.nanoTime();
-            for (int i = 0; i < repeat; i++)
+            ii.readWriteLock.writeLock().lock();
+            try
             {
-                String guid = GUID.generate();
-                ii.setStatus(guid, TransactionStatus.ACTIVE, null, null);
-                IndexWriter writer = ii.getDeltaIndexWriter(guid, new StandardAnalyzer());
-
-                for (int j = 0; j < docs; j++)
+                System.out.println("Entry List for " + indexLocation);
+                System.out.println("   Size = " + ii.indexEntries.size());
+                int i = 0;
+                for (IndexEntry entry : ii.indexEntries.values())
                 {
-                    Document doc = new Document();
-                    for (int k = 0; k < 15; k++)
-                    {
-                        doc.add(new Field("ID" + k, guid + " " + j + " " + k, false, true, false));
-                    }
-                    writer.addDocument(doc);
-                }
-
-                ii.closeDeltaIndexWriter(guid);
-                ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-                ii.setPreparedState(guid, deletions, docs, false);
-                ii.getDeletions(guid);
-                ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
-                ii.setStatus(guid, TransactionStatus.COMMITTING, null, null);
-                ii.setStatus(guid, TransactionStatus.COMMITTED, null, null);
-                for (int j = 0; j < 0; j++)
-                {
-                    ii.getMainIndexReferenceCountingReadOnlyIndexReader();
+                    System.out.println("\t" + (i++) + "\t" + entry.toString());
                 }
             }
-
-            long end = System.nanoTime();
-
-            totalTimeA += (end - start);
-            countA += repeat;
-            float average = countA * 1000000000f / totalTimeA;
-
-            System.out.println("Repeated "
-                    + repeat + " in " + ((end - start) / 1000000000.0) + "    average = " + average);
+            finally
+            {
+                ii.releaseWriteLock();
+            }
         }
     }
+
+    // public static void main(String[] args) throws IOException
+
+    // {
+    // System.setProperty("disableLuceneLocks", "true");
+    //
+    // HashSet<NodeRef> deletions = new HashSet<NodeRef>();
+    // for (int i = 0; i < 0; i++)
+    // {
+    // deletions.add(new NodeRef(new StoreRef("woof", "bingle"), GUID.generate()));
+    // }
+    //
+    // int repeat = 100;
+    // int docs = 1;
+    // final IndexInfo ii = new IndexInfo(new File("c:\\indexTest"));
+    //
+    // long totalTimeA = 0;
+    // long countA = 0;
+    //
+    // while (true)
+    // {
+    // long start = System.nanoTime();
+    // for (int i = 0; i < repeat; i++)
+    // {
+    // String guid = GUID.generate();
+    // ii.setStatus(guid, TransactionStatus.ACTIVE, null, null);
+    // IndexWriter writer = ii.getDeltaIndexWriter(guid, new StandardAnalyzer());
+    //
+    // for (int j = 0; j < docs; j++)
+    // {
+    // Document doc = new Document();
+    // for (int k = 0; k < 15; k++)
+    // {
+    // doc.add(new Field("ID" + k, guid + " " + j + " " + k, false, true, false));
+    // }
+    // writer.addDocument(doc);
+    // }
+    //
+    // ii.closeDeltaIndexWriter(guid);
+    // ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
+    // ii.setPreparedState(guid, deletions, docs, false);
+    // ii.getDeletions(guid);
+    // ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
+    // ii.setStatus(guid, TransactionStatus.COMMITTING, null, null);
+    // ii.setStatus(guid, TransactionStatus.COMMITTED, null, null);
+    // for (int j = 0; j < 0; j++)
+    // {
+    // ii.getMainIndexReferenceCountingReadOnlyIndexReader();
+    // }
+    // }
+    //
+    // long end = System.nanoTime();
+    //
+    // totalTimeA += (end - start);
+    // countA += repeat;
+    // float average = countA * 1000000000f / totalTimeA;
+    //
+    // System.out.println("Repeated "
+    // + repeat + " in " + ((end - start) / 1000000000.0) + " average = " + average);
+    // }
+    // }
 
     /**
      * Clean up support.
@@ -1862,120 +1901,132 @@ public class IndexInfo
 
             while (running)
             {
-                // Get the read local to decide what to do
-                // Single JVM to start with
-                MergeAction action = MergeAction.NONE;
-
-                getReadLock();
                 try
                 {
-                    if (indexIsShared && !checkVersion())
-                    {
-                        releaseReadLock();
-                        getWriteLock();
-                        try
-                        {
-                            // Sync with disk image if required
-                            doWithFileLock(new LockWork<Object>()
-                            {
-                                public Object doWork() throws Exception
-                                {
-                                    return null;
-                                }
-                            });
-                        }
-                        finally
-                        {
-                            getReadLock();
-                            releaseWriteLock();
-                        }
-                    }
+                    // Get the read local to decide what to do
+                    // Single JVM to start with
+                    MergeAction action = MergeAction.NONE;
 
-                    int indexes = 0;
-                    boolean mergingIndexes = false;
-                    int deltas = 0;
-                    boolean applyingDeletions = false;
-
-                    for (IndexEntry entry : indexEntries.values())
-                    {
-                        if (entry.getType() == IndexType.INDEX)
-                        {
-                            indexes++;
-                            if (entry.getStatus() == TransactionStatus.MERGE)
-                            {
-                                mergingIndexes = true;
-                            }
-                        }
-                        else if (entry.getType() == IndexType.DELTA)
-                        {
-                            if (entry.getStatus() == TransactionStatus.COMMITTED)
-                            {
-                                deltas++;
-                            }
-                            if (entry.getStatus() == TransactionStatus.COMMITTED_DELETING)
-                            {
-                                applyingDeletions = true;
-                            }
-                        }
-                    }
-
-                    if (s_logger.isDebugEnabled())
-                    {
-                        s_logger.debug("Indexes = " + indexes);
-                        s_logger.debug("Merging = " + mergingIndexes);
-                        s_logger.debug("Deltas = " + deltas);
-                        s_logger.debug("Deleting = " + applyingDeletions);
-                    }
-
-                    if (!mergingIndexes && !applyingDeletions)
-                    {
-
-                        if ((indexes > 5) || (deltas > 5))
-                        {
-                            if (indexes > deltas)
-                            {
-                                // Try merge
-                                action = MergeAction.MERGE_INDEX;
-                            }
-                            else
-                            {
-                                // Try delete
-                                action = MergeAction.APPLY_DELTA_DELETION;
-
-                            }
-                        }
-                    }
-                }
-
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                    // Ignore IO error and retry
-                }
-                finally
-                {
-                    releaseReadLock();
-                }
-
-                if (action == MergeAction.APPLY_DELTA_DELETION)
-                {
-                    mergeDeletions();
-                }
-                else if (action == MergeAction.MERGE_INDEX)
-                {
-                    mergeIndexes();
-                }
-
-                synchronized (this)
-                {
+                    getReadLock();
                     try
                     {
-                        this.wait();
+                        if (indexIsShared && !checkVersion())
+                        {
+                            releaseReadLock();
+                            getWriteLock();
+                            try
+                            {
+                                // Sync with disk image if required
+                                doWithFileLock(new LockWork<Object>()
+                                {
+                                    public Object doWork() throws Exception
+                                    {
+                                        return null;
+                                    }
+                                });
+                            }
+                            finally
+                            {
+                                try
+                                {
+                                    getReadLock();
+                                }
+                                finally
+                                {
+                                    releaseWriteLock();
+                                }
+                            }
+                        }
+
+                        int indexes = 0;
+                        boolean mergingIndexes = false;
+                        int deltas = 0;
+                        boolean applyingDeletions = false;
+
+                        for (IndexEntry entry : indexEntries.values())
+                        {
+                            if (entry.getType() == IndexType.INDEX)
+                            {
+                                indexes++;
+                                if (entry.getStatus() == TransactionStatus.MERGE)
+                                {
+                                    mergingIndexes = true;
+                                }
+                            }
+                            else if (entry.getType() == IndexType.DELTA)
+                            {
+                                if (entry.getStatus() == TransactionStatus.COMMITTED)
+                                {
+                                    deltas++;
+                                }
+                                if (entry.getStatus() == TransactionStatus.COMMITTED_DELETING)
+                                {
+                                    applyingDeletions = true;
+                                }
+                            }
+                        }
+
+                        if (s_logger.isDebugEnabled())
+                        {
+                            s_logger.debug("Indexes = " + indexes);
+                            s_logger.debug("Merging = " + mergingIndexes);
+                            s_logger.debug("Deltas = " + deltas);
+                            s_logger.debug("Deleting = " + applyingDeletions);
+                        }
+
+                        if (!mergingIndexes && !applyingDeletions)
+                        {
+
+                            if ((indexes > 5) || (deltas > 5))
+                            {
+                                if (indexes > deltas)
+                                {
+                                    // Try merge
+                                    action = MergeAction.MERGE_INDEX;
+                                }
+                                else
+                                {
+                                    // Try delete
+                                    action = MergeAction.APPLY_DELTA_DELETION;
+
+                                }
+                            }
+                        }
                     }
-                    catch (InterruptedException e)
+
+                    catch (IOException e)
                     {
-                        running = false;
+                        s_logger.error(e);
                     }
+                    finally
+                    {
+                        releaseReadLock();
+                    }
+
+                    if (action == MergeAction.APPLY_DELTA_DELETION)
+                    {
+                        mergeDeletions();
+                    }
+                    else if (action == MergeAction.MERGE_INDEX)
+                    {
+                        mergeIndexes();
+                    }
+
+                    synchronized (this)
+                    {
+                        try
+                        {
+                            this.wait();
+                        }
+                        catch (InterruptedException e)
+                        {
+                            // No action - could signal thread termination
+                        }
+                    }
+                }
+                catch (Throwable t)
+                {
+                    s_logger.error(t);
                 }
             }
 
@@ -2151,7 +2202,7 @@ public class IndexInfo
             }
             catch (IOException e)
             {
-                e.printStackTrace();
+                s_logger.error(e);
                 fail = true;
             }
 
@@ -2411,9 +2462,9 @@ public class IndexInfo
                     }
                 }
             }
-            catch (IOException e)
+            catch (Throwable e)
             {
-                e.printStackTrace();
+                s_logger.error(e);
                 fail = true;
             }
 
@@ -2528,10 +2579,10 @@ public class IndexInfo
 
     private void dumpInfo()
     {
-        readWriteLock.writeLock().lock();
-        try
+        if (s_logger.isDebugEnabled())
         {
-            if (s_logger.isDebugEnabled())
+            readWriteLock.writeLock().lock();
+            try
             {
                 s_logger.debug("");
                 s_logger.debug("Entry List");
@@ -2540,10 +2591,10 @@ public class IndexInfo
                     s_logger.debug("        " + entry.toString());
                 }
             }
-        }
-        finally
-        {
-            readWriteLock.writeLock().unlock();
+            finally
+            {
+                readWriteLock.writeLock().unlock();
+            }
         }
 
     }
@@ -2584,4 +2635,8 @@ public class IndexInfo
         readWriteLock.readLock().unlock();
     }
 
+    public String toString()
+    {
+        return indexDirectory.toString();
+    }
 }

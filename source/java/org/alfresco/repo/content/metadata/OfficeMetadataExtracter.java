@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 Jesper Steen Mï¿½ller
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -28,7 +28,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
-import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hpsf.PropertySet;
 import org.apache.poi.hpsf.PropertySetFactory;
 import org.apache.poi.hpsf.SummaryInformation;
@@ -37,15 +36,16 @@ import org.apache.poi.poifs.eventfilesystem.POIFSReaderEvent;
 import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
 
 /**
+ * Office file format Metadata Extracter
  * 
- * @author Jesper Steen Møller
+ * @author Jesper Steen MÃ¸ller
  */
 public class OfficeMetadataExtracter extends AbstractMetadataExtracter
 {
     public static String[] SUPPORTED_MIMETYPES = new String[] {
         MimetypeMap.MIMETYPE_WORD,
         MimetypeMap.MIMETYPE_EXCEL,
-        MimetypeMap.MIMETYPE_PPT };
+        MimetypeMap.MIMETYPE_PPT};
 
     public OfficeMetadataExtracter()
     {
@@ -64,6 +64,7 @@ public class OfficeMetadataExtracter extends AbstractMetadataExtracter
                     if (ps instanceof SummaryInformation)
                     {
                         SummaryInformation si = (SummaryInformation) ps;
+                        
                         // Titled aspect
                         trimPut(ContentModel.PROP_TITLE, si.getTitle(), destination);
                         trimPut(ContentModel.PROP_DESCRIPTION, si.getSubject(), destination);
@@ -73,16 +74,6 @@ public class OfficeMetadataExtracter extends AbstractMetadataExtracter
                         trimPut(ContentModel.PROP_MODIFIED, si.getLastSaveDateTime(), destination); 
                         trimPut(ContentModel.PROP_AUTHOR, si.getAuthor(), destination);
                     }
-                    else if (ps instanceof DocumentSummaryInformation)
-                    {
-//                        DocumentSummaryInformation dsi = (DocumentSummaryInformation) ps;
-
-                        // These are not really interesting to any aspect:
-                        // trimPut(ContentModel.PROP_xxx, dsi.getCompany(),
-                        // destination);
-                        // trimPut(ContentModel.PROP_yyy, dsi.getManager(),
-                        // destination);
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -90,6 +81,7 @@ public class OfficeMetadataExtracter extends AbstractMetadataExtracter
                 }
             }
         };
+        
         InputStream is = null;
         try
         {

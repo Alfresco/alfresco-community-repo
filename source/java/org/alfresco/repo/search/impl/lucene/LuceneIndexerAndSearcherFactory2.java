@@ -17,7 +17,6 @@
 package org.alfresco.repo.search.impl.lucene;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +33,7 @@ import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
+import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.repo.search.transaction.LuceneIndexLock;
 import org.alfresco.repo.search.transaction.SimpleTransaction;
 import org.alfresco.repo.search.transaction.SimpleTransactionManager;
@@ -61,11 +61,9 @@ import org.quartz.JobExecutionException;
 /**
  * This class is resource manager LuceneIndexers and LuceneSearchers.
  * 
- * It supports two phase commit inside XA transactions and outside transactions
- * it provides thread local transaction support.
+ * It supports two phase commit inside XA transactions and outside transactions it provides thread local transaction support.
  * 
- * TODO: Provide pluggable support for a transaction manager TODO: Integrate
- * with Spring transactions
+ * TODO: Provide pluggable support for a transaction manager TODO: Integrate with Spring transactions
  * 
  * @author andyh
  * 
@@ -73,6 +71,8 @@ import org.quartz.JobExecutionException;
 
 public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearcher, XAResource
 {
+    private static Log logger = LogFactory.getLog(LuceneIndexerAndSearcherFactory2.class);
+
     private DictionaryService dictionaryService;
 
     private NamespaceService nameSpaceService;
@@ -90,9 +90,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     private String lockDirectory;
 
     /**
-     * A map of active global transactions . It contains all the indexers a
-     * transaction has used, with at most one indexer for each store within a
-     * transaction
+     * A map of active global transactions . It contains all the indexers a transaction has used, with at most one indexer for each store within a transaction
      */
 
     private static Map<Xid, Map<StoreRef, LuceneIndexer2>> activeIndexersInGlobalTx = new HashMap<Xid, Map<StoreRef, LuceneIndexer2>>();
@@ -191,20 +189,18 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     }
 
     /**
-     * Set the maximum average transformation time allowed to a transformer in order to have
-     * the transformation performed in the current transaction.  The default is 20ms. 
+     * Set the maximum average transformation time allowed to a transformer in order to have the transformation performed in the current transaction. The default is 20ms.
      * 
-     * @param maxAtomicTransformationTime the maximum average time that a text transformation may
-     *      take in order to be performed atomically.
+     * @param maxAtomicTransformationTime
+     *            the maximum average time that a text transformation may take in order to be performed atomically.
      */
     public void setMaxAtomicTransformationTime(long maxAtomicTransformationTime)
     {
         this.maxAtomicTransformationTime = maxAtomicTransformationTime;
     }
-    
+
     /**
-     * Check if we are in a global transactoin according to the transaction
-     * manager
+     * Check if we are in a global transactoin according to the transaction manager
      * 
      * @return
      */
@@ -240,8 +236,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     }
 
     /**
-     * Get an indexer for the store to use in the current transaction for this
-     * thread of control.
+     * Get an indexer for the store to use in the current transaction for this thread of control.
      * 
      * @param storeRef -
      *            the id of the store
@@ -357,7 +352,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(storeRef, deltaId, this);
         indexer.setNodeService(nodeService);
         indexer.setDictionaryService(dictionaryService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setLuceneFullTextSearchIndexer(luceneFullTextSearchIndexer);
         indexer.setContentService(contentService);
         indexer.setMaxAtomicTransformationTime(maxAtomicTransformationTime);
@@ -395,7 +390,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     {
         LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(storeRef, indexer, this);
         searcher.setNamespacePrefixResolver(nameSpaceService);
-        //searcher.setLuceneIndexLock(luceneIndexLock);
+        // searcher.setLuceneIndexLock(luceneIndexLock);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setQueryRegister(queryRegister);
@@ -454,7 +449,8 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
                 }
                 return;
             }
-        } finally
+        }
+        finally
         {
             activeIndexersInGlobalTx.remove(xid);
         }
@@ -587,7 +583,8 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
             {
                 indexer.rollback();
             }
-        } finally
+        }
+        finally
         {
             activeIndexersInGlobalTx.remove(xid);
         }
@@ -677,7 +674,8 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
                     }
                 }
             }
-        } finally
+        }
+        finally
         {
             if (threadLocalIndexers.get() != null)
             {
@@ -875,17 +873,17 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     {
         IndexWriter.WRITE_LOCK_TIMEOUT = timeout;
     }
-    
+
     public void setCommitLockTimeout(long timeout)
     {
         IndexWriter.COMMIT_LOCK_TIMEOUT = timeout;
     }
-    
+
     public void setLockPollInterval(long time)
     {
         Lock.LOCK_POLL_INTERVAL = time;
     }
-    
+
     public int getIndexerMaxFieldLength()
     {
         return indexerMaxFieldLength;
@@ -896,25 +894,25 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         this.indexerMaxFieldLength = indexerMaxFieldLength;
         System.setProperty("org.apache.lucene.maxFieldLength", "" + indexerMaxFieldLength);
     }
-    
+
     /**
-     * This component is able to <i>safely</i> perform backups of the Lucene indexes while
-     * the server is running.
+     * This component is able to <i>safely</i> perform backups of the Lucene indexes while the server is running.
      * <p>
-     * It can be run directly by calling the {@link #backup() } method, but the convenience
-     * {@link LuceneIndexBackupJob} can be used to call it as well.
+     * It can be run directly by calling the {@link #backup() } method, but the convenience {@link LuceneIndexBackupJob} can be used to call it as well.
      * 
      * @author Derek Hulley
      */
     public static class LuceneIndexBackupComponent
     {
-        private static Log logger = LogFactory.getLog(LuceneIndexerAndSearcherFactory2.class);
-        
+
         private TransactionService transactionService;
-        private LuceneIndexerAndSearcherFactory2 factory;
+
+        private LuceneIndexerAndSearcher factory;
+
         private NodeService nodeService;
+
         private String targetLocation;
-        
+
         public LuceneIndexBackupComponent()
         {
         }
@@ -932,9 +930,10 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         /**
          * Set the Lucene index factory that will be used to control the index locks
          * 
-         * @param factory the index factory
+         * @param factory
+         *            the index factory
          */
-        public void setFactory(LuceneIndexerAndSearcherFactory2 factory)
+        public void setFactory(LuceneIndexerAndSearcher factory)
         {
             this.factory = factory;
         }
@@ -942,7 +941,8 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         /**
          * Used to retrieve the stores
          * 
-         * @param nodeService the node service
+         * @param nodeService
+         *            the node service
          */
         public void setNodeService(NodeService nodeService)
         {
@@ -952,13 +952,14 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         /**
          * Set the directory to which the backup will be copied
          * 
-         * @param targetLocation the backup directory
+         * @param targetLocation
+         *            the backup directory
          */
         public void setTargetLocation(String targetLocation)
         {
             this.targetLocation = targetLocation;
         }
-        
+
         /**
          * Backup the Lucene indexes
          */
@@ -978,62 +979,45 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         private void backupImpl()
         {
             // create the location to copy to
-            File targetDir = new File(targetLocation);
+            final File targetDir = new File(targetLocation);
             if (targetDir.exists() && !targetDir.isDirectory())
             {
                 throw new AlfrescoRuntimeException("Target location is a file and not a directory: " + targetDir);
             }
-            File targetParentDir = targetDir.getParentFile();
+            final File targetParentDir = targetDir.getParentFile();
             if (targetParentDir == null)
             {
                 throw new AlfrescoRuntimeException("Target location may not be a root directory: " + targetDir);
             }
-            File tempDir = new File(targetParentDir, "indexbackup_temp");
+            final File tempDir = new File(targetParentDir, "indexbackup_temp");
 
-            // get all the available stores
-            List<StoreRef> storeRefs = nodeService.getStores();
-            
-            // lock all the stores
-            List<StoreRef> lockedStores = new ArrayList<StoreRef>(storeRefs.size());
-            try
+            factory.doWithAllWriteLocks(new WithAllWriteLocksWork<Object>()
             {
-                for (StoreRef storeRef : storeRefs)
-                {
-                    factory.luceneIndexLock.getWriteLock(storeRef);
-                    lockedStores.add(storeRef);
-                }
-                File indexRootDir = new File(factory.indexRootLocation);
-                // perform the copy
-                backupDirectory(indexRootDir, tempDir, targetDir);
-            }
-            catch (Throwable e)
-            {
-                throw new AlfrescoRuntimeException("Failed to copy Lucene index root: \n" +
-                        "   Index root: " + factory.indexRootLocation + "\n" +
-                        "   Target: " + targetDir,
-                        e);
-            }
-            finally
-            {
-                for (StoreRef storeRef : lockedStores)
+                public Object doWork()
                 {
                     try
                     {
-                        factory.luceneIndexLock.releaseWriteLock(storeRef);
+                        File indexRootDir = new File(factory.getIndexRootLocation());
+                        // perform the copy
+                        backupDirectory(indexRootDir, tempDir, targetDir);
+                        return null;
                     }
                     catch (Throwable e)
                     {
-                        logger.error("Failed to release index lock for store " + storeRef, e);
+                        throw new AlfrescoRuntimeException(
+                                "Failed to copy Lucene index root: \n"
+                                        + "   Index root: " + factory.getIndexRootLocation() + "\n" + "   Target: "
+                                        + targetDir, e);
                     }
                 }
-            }
+            });
+
             if (logger.isDebugEnabled())
             {
-                logger.debug("Backed up Lucene indexes: \n" +
-                        "   Target directory: " + targetDir);
+                logger.debug("Backed up Lucene indexes: \n" + "   Target directory: " + targetDir);
             }
         }
-        
+
         /**
          * Makes a backup of the source directory via a temporary folder
          */
@@ -1085,20 +1069,125 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     {
         /** KEY_LUCENE_INDEX_BACKUP_COMPONENT = 'luceneIndexBackupComponent' */
         public static final String KEY_LUCENE_INDEX_BACKUP_COMPONENT = "luceneIndexBackupComponent";
-        
+
         /**
          * Locks the Lucene indexes and copies them to a backup location
          */
         public void execute(JobExecutionContext context) throws JobExecutionException
         {
             JobDataMap jobData = context.getJobDetail().getJobDataMap();
-            LuceneIndexBackupComponent backupComponent = (LuceneIndexBackupComponent) jobData.get(KEY_LUCENE_INDEX_BACKUP_COMPONENT);
+            LuceneIndexBackupComponent backupComponent = (LuceneIndexBackupComponent) jobData
+                    .get(KEY_LUCENE_INDEX_BACKUP_COMPONENT);
             if (backupComponent == null)
             {
                 throw new JobExecutionException("Missing job data: " + KEY_LUCENE_INDEX_BACKUP_COMPONENT);
             }
             // perform the backup
             backupComponent.backup();
+        }
+    }
+
+    public <R> R doWithAllWriteLocks(WithAllWriteLocksWork<R> lockWork)
+    {
+        // get all the available stores
+        List<StoreRef> storeRefs = nodeService.getStores();
+
+        IndexInfo.LockWork<R> currentLockWork = null;
+
+        for (int i = storeRefs.size() - 1; i >= 0; i--)
+        {
+            if (currentLockWork == null)
+            {
+                currentLockWork = new CoreLockWork<R>(getIndexer(storeRefs.get(i)), lockWork);
+            }
+            else
+            {
+                currentLockWork = new NestingLockWork<R>(getIndexer(storeRefs.get(i)), currentLockWork);
+            }
+        }
+
+        if (currentLockWork != null)
+        {
+            try
+            {
+                return currentLockWork.doWork();
+            }
+            catch (Throwable exception)
+            {
+
+                // Re-throw the exception
+                if (exception instanceof RuntimeException)
+                {
+                    throw (RuntimeException) exception;
+                }
+                else
+                {
+                    throw new RuntimeException("Error during run with lock.", exception);
+                }
+            }
+
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    private static class NestingLockWork<R> implements IndexInfo.LockWork<R>
+    {
+        IndexInfo.LockWork<R> lockWork;
+
+        LuceneIndexer2 indexer;
+
+        NestingLockWork(LuceneIndexer2 indexer, IndexInfo.LockWork<R> lockWork)
+        {
+            this.indexer = indexer;
+            this.lockWork = lockWork;
+        }
+
+        public R doWork() throws Exception
+        {
+            return indexer.doWithWriteLock(lockWork);
+        }
+    }
+
+    private static class CoreLockWork<R> implements IndexInfo.LockWork<R>
+    {
+        WithAllWriteLocksWork<R> lockWork;
+
+        LuceneIndexer2 indexer;
+
+        CoreLockWork(LuceneIndexer2 indexer, WithAllWriteLocksWork<R> lockWork)
+        {
+            this.indexer = indexer;
+            this.lockWork = lockWork;
+        }
+
+        public R doWork() throws Exception
+        {
+            return indexer.doWithWriteLock(new IndexInfo.LockWork<R>()
+            {
+                public R doWork()
+                {
+                    try
+                    {
+                        return lockWork.doWork();
+                    }
+                    catch (Throwable exception)
+                    {
+
+                        // Re-throw the exception
+                        if (exception instanceof RuntimeException)
+                        {
+                            throw (RuntimeException) exception;
+                        }
+                        else
+                        {
+                            throw new RuntimeException("Error during run with lock.", exception);
+                        }
+                    }
+                }
+            });
         }
     }
 }

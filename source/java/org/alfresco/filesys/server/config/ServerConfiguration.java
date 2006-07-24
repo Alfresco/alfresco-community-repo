@@ -460,8 +460,6 @@ public class ServerConfiguration implements ApplicationListener
             throw new AlfrescoRuntimeException("Property 'configService' not set");
         }
         
-        initialised = false;
-
         // Create the configuration context
 
         ConfigLookupContext configCtx = new ConfigLookupContext(ConfigArea);
@@ -470,59 +468,106 @@ public class ServerConfiguration implements ApplicationListener
 
         determinePlatformType();
 
+        // Initialize the filesystems
+
+        boolean filesysInitOK = false;
+        Config config = null;
+        
         try
         {
-
-            // Process the CIFS server configuration
-
-            Config config = configService.getConfig(ConfigCIFS, configCtx);
-            processCIFSServerConfig(config);
-
-            // Process the FTP server configuration
-
-            config = configService.getConfig(ConfigFTP, configCtx);
-            processFTPServerConfig(config);
-
-            // Process the security configuration
-
-            config = configService.getConfig(ConfigSecurity, configCtx);
-            processSecurityConfig(config);
-
             // Process the filesystems configuration
 
             config = configService.getConfig(ConfigFilesystems, configCtx);
             processFilesystemsConfig(config);
-
-            // Successful initialisation
-            initialised = true;
+            
+            // Indicate that the filesystems were initialized
+            
+            filesysInitOK = true;
         }
-        catch (UnsatisfiedLinkError ex)
-        {
-            // Error accessing the Win32NetBIOS DLL code
-
-            logger.error("Error accessing Win32 NetBIOS, check DLL is on the path");
-
-            // Disable the CIFS server
-
-            setNetBIOSSMB(false);
-            setTcpipSMB(false);
-            setWin32NetBIOS(false);
-
-            setSMBServerEnabled(false);
-        }
-        catch (Throwable ex)
+        catch (Exception ex)
         {
             // Configuration error
 
             logger.error("File server configuration error, " + ex.getMessage(), ex);
+        }
 
-            // Disable the CIFS server
+        // Initialize the CIFS and FTP servers, if the filesystem(s) initialized successfully
+        
+        if ( filesysInitOK == true)
+        {
+        	// Initialize the CIFS server
 
-            setNetBIOSSMB(false);
-            setTcpipSMB(false);
-            setWin32NetBIOS(false);
+        	try
+	        {
+	
+	            // Process the CIFS server configuration
+	
+	            config = configService.getConfig(ConfigCIFS, configCtx);
+	            processCIFSServerConfig(config);
+	
+	            // Process the security configuration
+	
+	            config = configService.getConfig(ConfigSecurity, configCtx);
+	            processSecurityConfig(config);
+	
+	            // Log the successful startup
+	            
+	            logger.info("CIFS server started");
+	        }
+	        catch (UnsatisfiedLinkError ex)
+	        {
+	            // Error accessing the Win32NetBIOS DLL code
+	
+	            logger.error("Error accessing Win32 NetBIOS, check DLL is on the path");
+	
+	            // Disable the CIFS server
+	
+	            setNetBIOSSMB(false);
+	            setTcpipSMB(false);
+	            setWin32NetBIOS(false);
+	
+	            setSMBServerEnabled(false);
+	        }
+	        catch (Throwable ex)
+	        {
+	            // Configuration error
+	
+	            logger.error("CIFS server configuration error, " + ex.getMessage(), ex);
+	
+	            // Disable the CIFS server
+	
+	            setNetBIOSSMB(false);
+	            setTcpipSMB(false);
+	            setWin32NetBIOS(false);
+	
+	            setSMBServerEnabled(false);
+	        }
 
-            setSMBServerEnabled(false);
+	        // Initialize the FTP server
+
+        	try
+	        {
+	            // Process the FTP server configuration
+	
+	            config = configService.getConfig(ConfigFTP, configCtx);
+	            processFTPServerConfig(config);
+	            
+	            // Log the successful startup
+	            
+	            logger.info("FTP server started");
+	        }
+        	catch (Exception ex)
+        	{
+	            // Configuration error
+        		
+	            logger.error("FTP server configuration error, " + ex.getMessage(), ex);
+        	}        		
+    	}
+        else
+        {
+        	// Log the error
+        	
+        	logger.error("CIFS and FTP servers not started due to filesystem initialization error");
         }
     }
 

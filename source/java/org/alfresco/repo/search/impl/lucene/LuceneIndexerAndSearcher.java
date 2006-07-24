@@ -24,4 +24,12 @@ public interface LuceneIndexerAndSearcher extends IndexerAndSearcher, LuceneConf
     public int prepare() throws IndexerException;
     public void commit() throws IndexerException;
     public void rollback();
+    
+    
+    public interface WithAllWriteLocksWork<Result>
+    {
+        public Result doWork() throws Exception;
+    }
+
+    public <R> R doWithAllWriteLocks(WithAllWriteLocksWork<R> lockWork);
 }

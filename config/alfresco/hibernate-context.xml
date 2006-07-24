@@ -32,6 +32,10 @@
     <bean id="sessionFactoryBase" abstract="true">
         <property name="mappingResources">
             <list>
+                <!--  -->
+                <!-- Alfresco Node Storage -->
+                <!--  -->
+                
                 <value>org/alfresco/repo/domain/hibernate/Node.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Store.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/VersionCount.hbm.xml</value>

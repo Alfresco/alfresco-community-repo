@@ -18,6 +18,8 @@ package org.alfresco.service.namespace;
 
 import java.util.Collection;
 
+import org.alfresco.service.Auditable;
+
 /**
  * The <code>NamespacePrefixResolver</code> provides a mapping between
  * namespace prefixes and namespace URIs.
@@ -33,6 +35,7 @@ public interface NamespacePrefixResolver
      * @return  the namespace
      * @throws NamespaceException  if prefix has not been registered  
      */
+    @Auditable(parameters = {"prefix"})
     public String getNamespaceURI(String prefix)
         throws NamespaceException;
     
@@ -43,6 +46,7 @@ public interface NamespacePrefixResolver
      * @return  the prefixes (or empty collection, if no prefixes registered against URI)
      * @throws NamespaceException  if URI has not been registered 
      */
+    @Auditable(parameters = {"namespaceURI"})
     public Collection<String> getPrefixes(String namespaceURI)
         throws NamespaceException;
     
@@ -51,6 +55,7 @@ public interface NamespacePrefixResolver
      * 
      * @return collection of all registered namespace prefixes
      */
+    @Auditable
     Collection<String> getPrefixes();
 
     /**
@@ -58,6 +63,7 @@ public interface NamespacePrefixResolver
      * 
      * @return collection of all registered namespace uris
      */
+    @Auditable
     Collection<String> getURIs();
 
 }

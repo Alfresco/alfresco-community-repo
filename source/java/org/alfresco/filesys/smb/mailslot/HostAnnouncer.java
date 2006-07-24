@@ -75,6 +75,10 @@ public abstract class HostAnnouncer extends Thread
 
     private byte m_updateCount;
 
+    // Error count
+    
+    private int m_errorCount;
+    
     // Shutdown flag, host announcer should remove the announced name as it shuts down
 
     private boolean m_shutdown = false;
@@ -156,6 +160,16 @@ public abstract class HostAnnouncer extends Thread
         return m_names.numberOfStrings();
     }
 
+    /**
+     * Return the error count
+     * 
+     * @return int
+     */
+    protected final int getErrorCount()
+    {
+    	return m_errorCount;
+    }
+    
     /**
      * Return the specified host name being announced.
      * 
@@ -493,6 +507,24 @@ public abstract class HostAnnouncer extends Thread
         m_srvtype = typ;
     }
 
+    /**
+     * Increment the error count
+     * 
+     * @return int
+     */
+    protected final int incrementErrorCount()
+    {
+    	return ++m_errorCount;
+    }
+    
+    /**
+     * Clear the error count
+     */
+    protected final void clearErrorCount()
+    {
+    	m_errorCount = 0;
+    }
+    
     /**
      * Shutdown the host announcer and remove the announced name from Network Neighborhood.
      */

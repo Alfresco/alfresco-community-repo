@@ -98,10 +98,10 @@ public class FTPDate
             buf.append(hr);
             buf.append(":");
 
-            int sec = cal.get(Calendar.SECOND);
-            if (sec < 10)
+            int min = cal.get(Calendar.MINUTE);
+            if (min < 10)
                 buf.append("0");
-            buf.append(sec);
+            buf.append(min);
         }
     }
 }

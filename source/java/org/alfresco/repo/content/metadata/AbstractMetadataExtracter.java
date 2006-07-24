@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 Jesper Steen Mï¿½ller
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -31,11 +31,11 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * 
- * @author Jesper Steen Møller
+ * @author Jesper Steen MÃ¸ller
  */
 abstract public class AbstractMetadataExtracter implements MetadataExtracter
 {
-    private static Log logger = LogFactory.getLog(AbstractMetadataExtracter.class);
+    protected static Log logger = LogFactory.getLog(AbstractMetadataExtracter.class);
     
     private MimetypeService mimetypeService;
     private MetadataExtracterRegistry registry;

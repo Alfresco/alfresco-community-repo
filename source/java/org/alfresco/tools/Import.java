@@ -409,7 +409,7 @@ public class Import extends Tool
                     throw new ToolArgumentException("Source directory " + fileSourceDir.getAbsolutePath() + " does not exist.");
                 }
             }
-            if (packageName.endsWith(".acp"))
+            if (packageName.endsWith(".acp") || packageName.endsWith(".zip"))
             {
                 File packageFile = new File(getSourceDir(), packageName);
                 if (!packageFile.exists())

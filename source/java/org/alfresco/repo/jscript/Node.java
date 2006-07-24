@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +54,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Wrapper;
 import org.springframework.util.StringUtils;
@@ -847,55 +850,79 @@ public final class Node implements Serializable
         for (String key : this.properties.keySet())
         {
             Serializable value = (Serializable)this.properties.get(key);
-            if (value instanceof Node)
-            {
-                // convert back to NodeRef
-                value = ((Node)value).getNodeRef();
-            }
-            else if (value instanceof ScriptContentData)
-            {
-                // convert back to ContentData
-                value = ((ScriptContentData)value).contentData;
-            }
-            else if (value instanceof Wrapper)
-            {
-                // unwrap a Java object from a JavaScript wrapper
-                value = (Serializable)((Wrapper)value).unwrap();
-            }
-            else if (value instanceof ScriptableObject)
-            {
-                // a scriptable object will probably indicate a multi-value property
-                // set using a JavaScript Array object
-                ScriptableObject values = (ScriptableObject)value;
-                
-                // convert JavaScript array of values to a List of Serializable objects
-                Object[] propIds = values.getIds();
-                List<Serializable> propValues = new ArrayList<Serializable>(propIds.length);
-                for (int i=0; i<propIds.length; i++)
-                {
-                    // work on each key in turn
-                    Object propId = propIds[i];
-                    
-                    // we are only interested in keys that indicate a list of values
-                    if (propId instanceof Integer)
-                    {
-                        // get the value out for the specified key - make sure it is Serializable
-                        Object val = values.get((Integer)propId, values);
-                        if (val instanceof Wrapper)
-                        {
-                            val = ((Wrapper)val).unwrap();
-                        }
-                        if (val instanceof Serializable)
-                        {
-                            propValues.add((Serializable)val);
-                        }
-                    }
-                }
-                value = (Serializable)propValues;
-            }
+            
+            // perform the conversion from script wrapper object to repo serializable values
+            value = convertValue(value);
+            
             props.put(createQName(key), value);
         }
         this.nodeService.setProperties(this.nodeRef, props);
+    }
+
+    /**
+     * Convert an object from any script wrapper value to a valid repository serializable value.
+     * This includes converting JavaScript Array objects to Lists of valid objects.
+     * 
+     * @param value     Value to convert from script wrapper object to repo serializable value
+     * 
+     * @return valid repo value
+     */
+    private static Serializable convertValue(Serializable value)
+    {
+        if (value instanceof Node)
+        {
+            // convert back to NodeRef
+            value = ((Node)value).getNodeRef();
+        }
+        else if (value instanceof ScriptContentData)
+        {
+            // convert back to ContentData
+            value = ((ScriptContentData)value).contentData;
+        }
+        else if (value instanceof Wrapper)
+        {
+            // unwrap a Java object from a JavaScript wrapper
+            // recursively call this method to convert the unwrapped value
+            value = convertValue((Serializable)((Wrapper)value).unwrap());
+        }
+        else if (value instanceof ScriptableObject)
+        {
+            // a scriptable object will probably indicate a multi-value property
+            // set using a JavaScript Array object
+            ScriptableObject values = (ScriptableObject)value;
+            
+            if (value instanceof NativeArray)
+            {
+               // convert JavaScript array of values to a List of Serializable objects
+               Object[] propIds = values.getIds();
+               List<Serializable> propValues = new ArrayList<Serializable>(propIds.length);
+               for (int i=0; i<propIds.length; i++)
+               {
+                   // work on each key in turn
+                   Object propId = propIds[i];
+                   
+                   // we are only interested in keys that indicate a list of values
+                   if (propId instanceof Integer)
+                   {
+                       // get the value out for the specified key
+                       Serializable val = (Serializable)values.get((Integer)propId, values);
+                       // recursively call this method to convert the value
+                       propValues.add(convertValue(val));
+                   }
+               }
+               value = (Serializable)propValues;
+            }
+            else
+            {
+               // TODO: add code here to use the dictionary and convert to correct value type
+               Object javaObj = Context.jsToJava(value, Date.class);
+               if (javaObj instanceof Date)
+               {
+                  value = (Date)javaObj;
+               }
+            }
+        }
+        return value;
     }
     
     /**
@@ -1166,14 +1193,8 @@ public final class Node implements Serializable
                         {
                             // get the value out for the specified key - make sure it is Serializable
                             Object value = props.get((String)propId, props);
-                            if (value instanceof Wrapper)
-                            {
-                                value = ((Wrapper)value).unwrap();
-                            }
-                            if (value instanceof Serializable)
-                            {
-                                aspectProps.put(createQName((String)propId), (Serializable)value);
-                            }
+                            value = convertValue((Serializable)value);
+                            aspectProps.put(createQName((String)propId), (Serializable)value);
                         }
                     }
                 }

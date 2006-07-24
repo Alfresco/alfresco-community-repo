@@ -42,7 +42,7 @@ public class SearchLanguageConversionTest extends TestCase
         assertEquals("Escaping for xpath failed",
                 "\\\\ | ! \" £ " +
                 "$ \\% ^ & * ( " +
-                ") \\_ { } [ ] " +
+                ") \\_ { } \\[ \\] " +
                 "@ # ~ ' : ; " +
                 ", . < > + ? " +
                 "/ \\\\\\\\ \\\\* \\\\? \\\\\\_",

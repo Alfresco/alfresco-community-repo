@@ -18,10 +18,9 @@ package org.alfresco.repo.search.impl.lucene;
 
 import java.util.Set;
 
-import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.IndexerSPI;
-import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
+import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -44,4 +43,6 @@ public interface LuceneIndexer2 extends IndexerSPI
     public  void flushPending() throws LuceneIndexException;
     public Set<NodeRef> getDeletions();
     public boolean getDeleteOnlyNodes();
+    
+    public <R> R doWithWriteLock(IndexInfo.LockWork <R> lockWork);
 }

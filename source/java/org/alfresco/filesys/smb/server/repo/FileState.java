@@ -20,7 +20,6 @@ import org.alfresco.filesys.locking.FileLock;
 import org.alfresco.filesys.locking.FileLockList;
 import org.alfresco.filesys.locking.LockConflictException;
 import org.alfresco.filesys.locking.NotLockedException;
-import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.FileOpenParams;
 import org.alfresco.filesys.server.filesys.FileStatus;
 import org.alfresco.filesys.smb.SharingMode;
@@ -587,35 +586,7 @@ public class FileState
      */
     public final static String normalizePath(String path)
     {
-
-        // Split the path into directories and file name, only uppercase the directories to
-        // normalize the path.
-
-        String normPath = path;
-
-        if (path.length() > 3)
-        {
-
-            // Split the path to seperate the folders/file name
-
-            int pos = path.lastIndexOf(FileName.DOS_SEPERATOR);
-            if (pos != -1)
-            {
-
-                // Get the path and file name parts, normalize the path
-
-                String pathPart = path.substring(0, pos).toUpperCase();
-                String namePart = path.substring(pos);
-
-                // Rebuild the path string
-
-                normPath = pathPart + namePart;
-            }
-        }
-
-        // Return the normalized path
-
-        return normPath;
+    	return path.toUpperCase();
     }
 
     /**

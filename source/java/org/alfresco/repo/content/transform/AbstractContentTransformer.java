@@ -123,12 +123,8 @@ public abstract class AbstractContentTransformer implements ContentTransformer
     {
         if (registry == null)
         {
-            if (registry == null)
-            {
-                logger.warn("Property 'registry' has not been set.  Ignoring auto-registration: \n" +
-                        "   transformer: " + this);
-                return;
-            }
+            logger.warn("Property 'registry' has not been set.  Ignoring auto-registration: \n" +
+                    "   transformer: " + this);
             return;
         }
         // first register any explicit transformations

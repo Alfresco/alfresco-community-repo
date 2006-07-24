@@ -174,7 +174,11 @@ public class DiskDeviceContext extends DeviceContext
      */
     public void CloseContext()
     {
-
+    	// Close the notify handler
+    	
+    	if ( hasChangeHandler())
+    		getChangeHandler().shutdownRequest();
+    	
         // Call the base class
 
         super.CloseContext();

@@ -181,6 +181,12 @@ public class NumericEncodingTest extends TestCase
         assertEquals("ffefffffffffffff", NumericEncoder.encode(Double.MAX_VALUE));
         assertEquals("fff0000000000000", NumericEncoder.encode(Double.POSITIVE_INFINITY));
         assertEquals("fff8000000000000", NumericEncoder.encode(Double.NaN));
+        
+        assertTrue( NumericEncoder.encode(-0.9).compareTo(NumericEncoder.encode(0.88)) < 0);
+        assertTrue( NumericEncoder.encode(-0.9).compareTo(NumericEncoder.encode(0.91)) < 0);
+        assertTrue( NumericEncoder.encode(0.88).compareTo(NumericEncoder.encode(0.91)) < 0);
 
+        
+        
     }
 }

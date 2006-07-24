@@ -25,14 +25,14 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.security.authority.AuthorityDAOImpl;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 public class TopLevelGroupParentChildAssociationTypePatch extends AbstractPatch
 {
     private static final String MSG_RESULT = "patch.topLevelGroupParentChildAssociationTypePatch.result";
+    private static final String ERR_SYS_PATH_NOT_FOUND = "patch.topLevelGroupParentChildAssociationTypePatch.err.sys_path_not_found";
+    private static final String ERR_AUTH_PATH_NOT_FOUND = "patch.topLevelGroupParentChildAssociationTypePatch.err.auth_path_not_found";
 
     public TopLevelGroupParentChildAssociationTypePatch()
     {
@@ -48,12 +48,15 @@ public class TopLevelGroupParentChildAssociationTypePatch extends AbstractPatch
         {
             if (!car.getTypeQName().equals(ContentModel.ASSOC_CHILDREN))
             {
-                nodeService
-                        .moveNode(car.getChildRef(), car.getParentRef(), ContentModel.ASSOC_CHILDREN, car.getQName());
+                nodeService.moveNode(
+                        car.getChildRef(),
+                        car.getParentRef(),
+                        ContentModel.ASSOC_CHILDREN,
+                        car.getQName());
             }
         }
 
-        return I18NUtil.getMessage(MSG_RESULT);
+        return I18NUtil.getMessage(MSG_RESULT, results.size());
     }
 
     private NodeRef getAuthorityContainer()
@@ -68,7 +71,7 @@ public class TopLevelGroupParentChildAssociationTypePatch extends AbstractPatch
         NodeRef sysNodeRef = null;
         if (results.size() == 0)
         {
-            throw new AlfrescoRuntimeException("Required authority system path not found: " + qnameAssocSystem);
+            throw new AlfrescoRuntimeException(ERR_SYS_PATH_NOT_FOUND, new Object[] {qnameAssocSystem});
         }
         else
         {
@@ -78,7 +81,7 @@ public class TopLevelGroupParentChildAssociationTypePatch extends AbstractPatch
         NodeRef authNodeRef = null;
         if (results.size() == 0)
         {
-            throw new AlfrescoRuntimeException("Required authority path not found: " + qnameAssocAuthorities);
+            throw new AlfrescoRuntimeException(ERR_AUTH_PATH_NOT_FOUND, new Object[] {qnameAssocAuthorities});
         }
         else
         {

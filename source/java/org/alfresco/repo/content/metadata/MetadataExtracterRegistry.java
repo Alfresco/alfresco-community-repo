@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 Jesper Steen Mï¿½ller
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
  * The extracters themselves know how well they are able to extract metadata.
  * 
  * @see org.alfresco.repo.content.metadata.MetadataExtracter
- * @author Jesper Steen Møller
+ * @author Jesper Steen MÃ¸ller
  */
 public class MetadataExtracterRegistry
 {

@@ -87,6 +87,8 @@
       </constructor-arg>
    </bean>
    
+   <bean id="openOfficeConnection" class="net.sf.jooreports.openoffice.connection.SocketOpenOfficeConnection" />
+   
    <!-- Metadata Extraction Regisitry -->
    <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry" >
       <property name="mimetypeMap">
@@ -110,10 +112,15 @@
    <!-- Content Metadata Extracters -->
    <bean class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter" parent="baseMetadataExtracter" />
    <bean class="org.alfresco.repo.content.metadata.OfficeMetadataExtracter" parent="baseMetadataExtracter" />
+   <bean class="org.alfresco.repo.content.metadata.MailMetadataExtracter" parent="baseMetadataExtracter" />
    <bean class="org.alfresco.repo.content.metadata.HtmlMetadataExtracter" parent="baseMetadataExtracter" />
    <bean class="org.alfresco.repo.content.metadata.MP3MetadataExtracter" parent="baseMetadataExtracter" />
    <bean class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter" parent="baseMetadataExtracter" />
-   <bean class="org.alfresco.repo.content.metadata.UnoMetadataExtracter" parent="baseMetadataExtracter" init-method="init" />
+   <bean class="org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracter" parent="baseMetadataExtracter" init-method="init" >
+      <property name="connection">
+         <ref bean="openOfficeConnection" />
+      </property>
+   </bean>
    
 
    <!-- Content Transformation Regisitry -->
@@ -180,9 +187,15 @@
          parent="baseContentTransformer" />
 
    <bean id="transformer.OpenOffice"
-         class="org.alfresco.repo.content.transform.UnoContentTransformer"
-         parent="baseContentTransformer"
-         init-method="init" />
+         class="org.alfresco.repo.content.transform.OpenOfficeContentTransformer"
+         parent="baseContentTransformer" >
+      <property name="connection">
+         <ref bean="openOfficeConnection" />
+      </property>
+      <property name="documentFormatsConfiguration">
+         <value>classpath:alfresco/mimetype/openoffice-document-formats.xml</value>
+      </property>
+   </bean>
 
    <bean id="transformer.complex.OpenOffice.PdfBox"
         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
@@ -217,7 +230,7 @@
                         <value>imconvert "${source}" ${options} "${target}"</value>
                     </entry>
                     <entry key=".*">
-                        <value>imconvert ${source} ${options} ${target}</value>
+                        <value>convert ${source} ${options} ${target}</value>
                     </entry>
                 </map>
             </property>

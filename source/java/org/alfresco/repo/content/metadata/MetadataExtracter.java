@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 Jesper Steen Mï¿½ller
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -25,7 +25,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * 
- * @author Jesper Steen Møller
+ * @author Jesper Steen MÃ¸ller
  */
 public interface MetadataExtracter
 {

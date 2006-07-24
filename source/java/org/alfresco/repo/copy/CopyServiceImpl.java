@@ -47,6 +47,10 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -73,6 +77,12 @@ public class CopyServiceImpl implements CopyService
     
     /** Rule service */
     private RuleService ruleService;
+    
+    /** Permission service */
+    private PermissionService permissionService;
+    
+    /** Authentication service */
+    private AuthenticationService authenticationService;
 
 	/** Policy delegates */
 	private ClassPolicyDelegate<CopyServicePolicies.OnCopyNodePolicy> onCopyNodeDelegate;
@@ -127,6 +137,26 @@ public class CopyServiceImpl implements CopyService
     {
         this.ruleService = ruleService;
     }
+    
+    /**
+     * Set the permission service
+     * 
+     * @param permissionService		the permission service
+     */
+    public void setPermissionService(PermissionService permissionService) 
+    {
+		this.permissionService = permissionService;
+	}
+    
+    /**
+     * Sets the authentication service
+     * 
+     * @param authenticationService		the authentication service
+     */
+    public void setAuthenticationService(AuthenticationService authenticationService) 
+    {
+		this.authenticationService = authenticationService;
+	}
     
 	/**
 	 * Initialise method
@@ -395,6 +425,9 @@ public class CopyServiceImpl implements CopyService
     		
     		// Copy the associations
     		copyAssociations(destinationNodeRef, copyDetails, copyChildren, copiedChildren);
+    		
+    		// Copy permissions
+    		copyPermissions(sourceNodeRef, destinationNodeRef);
         }
         finally
         {
@@ -404,6 +437,34 @@ public class CopyServiceImpl implements CopyService
         return destinationNodeRef;
     }
 	
+	/**
+	 * Copies the permissions of the source node reference onto the destination node reference
+	 * 
+	 * @param sourceNodeRef			the source node reference
+	 * @param destinationNodeRef	the destination node reference
+	 */
+    private void copyPermissions(NodeRef sourceNodeRef, NodeRef destinationNodeRef) 
+	{
+		// Get the permission details of the source node reference
+    	Set<AccessPermission> permissions = this.permissionService.getAllSetPermissions(sourceNodeRef);
+    	boolean includeInherited = this.permissionService.getInheritParentPermissions(sourceNodeRef);
+    	
+    	AccessStatus writePermission = permissionService.hasPermission(destinationNodeRef, PermissionService.CHANGE_PERMISSIONS);
+        if (this.authenticationService.isCurrentUserTheSystemUser() || writePermission.equals(AccessStatus.ALLOWED))
+        {
+	    	// Set the permission values on the destination node    	
+	    	for (AccessPermission permission : permissions) 
+	    	{
+	    		this.permissionService.setPermission(
+	    				destinationNodeRef, 
+	    				permission.getAuthority(), 
+	    				permission.getPermission(), 
+	    				permission.getAccessStatus().equals(AccessStatus.ALLOWED));
+			}
+	    	this.permissionService.setInheritParentPermissions(destinationNodeRef, includeInherited);
+        }
+	}
+
 	/**
 	 * Gets the copy details.  This calls the appropriate policies that have been registered
 	 * against the node and aspect types in order to pick-up any type specific copy behaviour.

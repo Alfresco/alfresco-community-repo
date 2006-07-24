@@ -18,7 +18,6 @@ package org.alfresco.repo.action.executer;
 
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
@@ -168,6 +167,10 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             overwrite = overwriteValue.booleanValue();
         }
         
+        // Calculate the destination name
+        String originalName = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
+        String newName = transformName(originalName, mimeType);
+        
         // Since we are overwriting we need to figure out whether the destination node exists
         NodeRef copyNodeRef = null;
         if (overwrite == true)
@@ -182,9 +185,10 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
                     if (this.nodeService.hasAspect(copy, ContentModel.ASPECT_WORKING_COPY) == false)
                     {
                         // We can assume that we are looking for a node created by this action so the primary parent will
-                        // match the destination folder
+                        // match the destination folder and the name will be the same
                         NodeRef parent = this.nodeService.getPrimaryParent(copy).getParentRef();
-                        if (parent.equals(destinationParent) == true)
+                        String copyName = (String)this.nodeService.getProperty(copy, ContentModel.PROP_NAME);
+                        if (parent.equals(destinationParent) == true && copyName.equals(newName) == true)
                         {
                             if (copyNodeRef == null)
                             {
@@ -212,58 +216,46 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
                     destinationAssocQName,
                     false);
             newCopy = true;
-        }		
+        }		 
         
-        // Get the content reader
-        ContentReader contentReader = this.contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
-        if (contentReader == null)
-        {
-            // for some reason, this action is premature
-            throw new AlfrescoRuntimeException(
-                    "Attempting to execute content transformation rule " +
-                    "but content has not finished writing, i.e. no URL is available.");
-        }
-        String originalMimetype = contentReader.getMimetype();
-
-        // get the writer and set it up
-        ContentWriter contentWriter = this.contentService.getWriter(copyNodeRef, ContentModel.PROP_CONTENT, true);
-        contentWriter.setMimetype(mimeType);                        // new mimetype
-        contentWriter.setEncoding(contentReader.getEncoding());     // original encoding
-
         if (newCopy == true)
         {
             // Adjust the name of the copy
-            String originalName = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
-            String newName = transformName(originalName, originalMimetype, mimeType);
             nodeService.setProperty(copyNodeRef, ContentModel.PROP_NAME, newName);
             String originalTitle = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TITLE);
             if (originalTitle != null && originalTitle.length() > 0)
             {
-                String newTitle = transformName(originalTitle, originalMimetype, mimeType);
+                String newTitle = transformName(originalTitle, mimeType);
                 nodeService.setProperty(copyNodeRef, ContentModel.PROP_TITLE, newTitle);
             }
         }
-		
-		// Try and transform the content
-        try
+        
+        // Get the content reader
+        ContentReader contentReader = this.contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
+        // Only do the transformation if some content is available
+        if (contentReader != null)
         {
-        	doTransform(ruleAction, contentReader, contentWriter);
-        }
-        catch(NoTransformerException e)
-        {
-        	if (logger.isDebugEnabled())
+            // get the writer and set it up
+            ContentWriter contentWriter = this.contentService.getWriter(copyNodeRef, ContentModel.PROP_CONTENT, true);
+            contentWriter.setMimetype(mimeType);                        // new mimetype
+            contentWriter.setEncoding(contentReader.getEncoding());     // original encoding
+
+    		// Try and transform the content
+            try
             {
-                logger.debug("No transformer found to execute rule: \n" +
-                        "   reader: " + contentReader + "\n" +
-                        "   writer: " + contentWriter + "\n" +
-                        "   action: " + this);
+            	doTransform(ruleAction, contentReader, contentWriter);
             }
-            //if (newCopy == true)
-            //{
-                // TODO: Revisit this for alternative solutions
-            //    nodeService.deleteNode(copyNodeRef);
-           // }
-        }        
+            catch(NoTransformerException e)
+            {
+            	if (logger.isDebugEnabled())
+                {
+                    logger.debug("No transformer found to execute rule: \n" +
+                            "   reader: " + contentReader + "\n" +
+                            "   writer: " + contentWriter + "\n" +
+                            "   action: " + this);
+                }             
+            }
+        }
 	}	
 	
 	protected void doTransform(Action ruleAction, ContentReader contentReader, ContentWriter contentWriter)	
@@ -279,7 +271,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
      * @param newMimetype
      * @return
      */
-    private String transformName(String original, String originalMimetype, String newMimetype)
+    private String transformName(String original, String newMimetype)
     {
         // get the current extension
         int dotIndex = original.lastIndexOf('.');

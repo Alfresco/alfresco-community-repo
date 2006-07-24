@@ -311,7 +311,8 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             // Set parameters
             
-            context.setFilesystemAttributes(FileSystem.CasePreservedNames);
+            context.setFilesystemAttributes(FileSystem.CasePreservedNames + FileSystem.UnicodeOnDisk +
+            		FileSystem.CaseSensitiveSearch);
         }
         catch (Exception ex)
         {
@@ -597,10 +598,8 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
         {
             // a valid use case
             if (logger.isDebugEnabled())
-            {
                 logger.debug("Getting file information - File not found: \n" +
                         "   path: " + path);
-            }
             throw e;
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
@@ -1448,7 +1447,8 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
         
         try
         {
-            // get the node
+            // Get the node
+        	
             NodeRef nodeRef = getNodeForPath(tree, name);
             if (nodeService.exists(nodeRef))
             {
@@ -1466,15 +1466,6 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 logger.debug("Deleted file: \n" +
                         "   file: " + name + "\n" +
                         "   node: " + nodeRef);
-            }
-        }
-        catch (FileNotFoundException e)
-        {
-            // already gone
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Deleted file <alfready gone>: \n" +
-                        "   file: " + name);
             }
         }
         catch (NodeLockedException ex)
@@ -1610,8 +1601,11 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                         
                         // DEBUG
                         
-                        if ( logger.isDebugEnabled())
+                        if ( logger.isDebugEnabled()) 
+                        {
                             logger.debug("Cached rename state for " + oldName + ", state=" + fstate);
+                            logger.debug("  new name " + newName + ", state=" + newState);
+                        }
                     }
                 }
                 else

@@ -43,6 +43,7 @@ import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.search.impl.lucene.index.TransactionStatus;
+import org.alfresco.repo.search.impl.lucene.index.IndexInfo.LockWork;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -1969,6 +1970,10 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
            return false;
        }
     }
+
+   
+
+
 
   
 }

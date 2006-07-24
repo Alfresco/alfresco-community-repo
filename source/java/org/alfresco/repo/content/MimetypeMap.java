@@ -40,6 +40,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class MimetypeMap implements MimetypeService
 {
+    public static final String EXTENSION_BINARY = "bin";
+    
     public static final String MIMETYPE_TEXT_PLAIN = "text/plain";
     public static final String MIMETYPE_TEXT_CSS = "text/css";    
     public static final String MIMETYPE_XML = "text/xml";
@@ -87,6 +89,8 @@ public class MimetypeMap implements MimetypeService
     public static final String MIMETYPE_STAROFFICE5_WRITER = "application/vnd.stardivision.writer";
     public static final String MIMETYPE_STAROFFICE5_WRITER_GLOBAL = "application/vnd.stardivision.writer-global";
     public static final String MIMETYPE_STAROFFICE5_MATH = "application/vnd.stardivision.math";
+    // WordPerfect
+    public static final String MIMETYPE_WORDPERFECT = "application/wordperfect";
     // Audio
     public static final String MIMETYPE_MP3 = "audio/x-mpeg";
     // Alfresco
@@ -207,18 +211,26 @@ public class MimetypeMap implements MimetypeService
     }
     
     /**
+     * Get the file extension associated with the mimetype.
+     * 
      * @param mimetype a valid mimetype
-     * @return Returns the default extension for the mimetype
-     * @throws AlfrescoRuntimeException if the mimetype doesn't exist
+     * @return Returns the default extension for the mimetype.  Returns the {@link #MIMETYPE_BINARY binary}
+     *      mimetype extension.
+     * 
+     * @see #MIMETYPE_BINARY
+     * @see #EXTENSION_BINARY
      */
     public String getExtension(String mimetype)
     {
         String extension = extensionsByMimetype.get(mimetype);
         if (extension == null)
         {
-            throw new AlfrescoRuntimeException("No extension available for mimetype: " + mimetype);
+            return EXTENSION_BINARY;
         }
-        return extension;
+        else
+        {
+            return extension;
+        }
     }
 
     public Map<String, String> getDisplaysByExtension()

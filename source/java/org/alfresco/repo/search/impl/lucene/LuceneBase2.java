@@ -23,6 +23,7 @@ import java.util.Set;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.repo.search.impl.lucene.index.TransactionStatus;
+import org.alfresco.repo.search.impl.lucene.index.IndexInfo.LockWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -278,6 +279,12 @@ public abstract class LuceneBase2
     public String getDeltaId()
     {
         return deltaId;
+    }
+    
+
+    public <R> R doWithWriteLock(LockWork<R> lockWork)
+    {
+        return indexInfo.doWithWriteLock(lockWork);
     }
 
 }

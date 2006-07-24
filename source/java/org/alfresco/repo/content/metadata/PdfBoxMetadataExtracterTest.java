@@ -5,7 +5,7 @@ import org.alfresco.repo.content.MimetypeMap;
 /**
  * @see org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter
  * 
- * @author Jesper Steen Møller
+ * @author Jesper Steen MÃ¸ller
  */
 public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
 {

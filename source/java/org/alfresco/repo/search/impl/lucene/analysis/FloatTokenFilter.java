@@ -21,6 +21,7 @@ import java.io.Reader;
 
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.WhitespaceTokenizer;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 
 /**
@@ -35,7 +36,7 @@ public class FloatTokenFilter extends Tokenizer
     public FloatTokenFilter(Reader in)
     {
         super(in);
-        baseTokeniser = new StandardTokenizer(in);
+        baseTokeniser = new WhitespaceTokenizer(in);
     }
 
     /*

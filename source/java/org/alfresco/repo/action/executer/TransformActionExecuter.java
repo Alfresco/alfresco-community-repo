@@ -167,6 +167,10 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             overwrite = overwriteValue.booleanValue();
         }
         
+        // Calculate the destination name
+        String originalName = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
+        String newName = transformName(originalName, mimeType);
+        
         // Since we are overwriting we need to figure out whether the destination node exists
         NodeRef copyNodeRef = null;
         if (overwrite == true)
@@ -181,9 +185,10 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
                     if (this.nodeService.hasAspect(copy, ContentModel.ASPECT_WORKING_COPY) == false)
                     {
                         // We can assume that we are looking for a node created by this action so the primary parent will
-                        // match the destination folder
+                        // match the destination folder and the name will be the same
                         NodeRef parent = this.nodeService.getPrimaryParent(copy).getParentRef();
-                        if (parent.equals(destinationParent) == true)
+                        String copyName = (String)this.nodeService.getProperty(copy, ContentModel.PROP_NAME);
+                        if (parent.equals(destinationParent) == true && copyName.equals(newName) == true)
                         {
                             if (copyNodeRef == null)
                             {
@@ -216,8 +221,6 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         if (newCopy == true)
         {
             // Adjust the name of the copy
-            String originalName = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
-            String newName = transformName(originalName, mimeType);
             nodeService.setProperty(copyNodeRef, ContentModel.PROP_NAME, newName);
             String originalTitle = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TITLE);
             if (originalTitle != null && originalTitle.length() > 0)

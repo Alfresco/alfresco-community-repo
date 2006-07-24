@@ -114,7 +114,7 @@
 
   <document-format><name>Microsoft Excel</name>
     <family>Spreadsheet</family>
-    <mime-type>application/application/vnd.ms-excel</mime-type>
+    <mime-type>application/application/vnd.excel</mime-type>
     <file-extension>xls</file-extension>
     <export-filters>
       <entry><family>Spreadsheet</family><string>MS Excel 97</string></entry>
@@ -144,7 +144,7 @@
 
   <document-format><name>Microsoft PowerPoint</name>
     <family>Presentation</family>
-    <mime-type>application/vnd.ms-powerpoint</mime-type>
+    <mime-type>application/vnd.powerpoint</mime-type>
     <file-extension>ppt</file-extension>
     <export-filters>
       <entry><family>Presentation</family><string>MS PowerPoint 97</string></entry>

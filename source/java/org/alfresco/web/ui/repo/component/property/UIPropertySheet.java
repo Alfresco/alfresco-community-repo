@@ -739,37 +739,40 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
          }
          
          // now setup the common stuff across all component types
-         FacesHelper.setupComponentId(context, propSheetItem, id);
-         propSheetItem.setName(item.getName());
-         propSheetItem.setConverter(item.getConverter());
-         propSheetItem.setComponentGenerator(item.getComponentGenerator());
-         propSheetItem.setIgnoreIfMissing(item.getIgnoreIfMissing());
-
-         String displayLabel = item.getDisplayLabel();
-         if (item.getDisplayLabelId() != null)
+         if (propSheetItem != null)
          {
-            String label = Application.getMessage(context, item.getDisplayLabelId());
-            if (label != null)
+            FacesHelper.setupComponentId(context, propSheetItem, id);
+            propSheetItem.setName(item.getName());
+            propSheetItem.setConverter(item.getConverter());
+            propSheetItem.setComponentGenerator(item.getComponentGenerator());
+            propSheetItem.setIgnoreIfMissing(item.getIgnoreIfMissing());
+   
+            String displayLabel = item.getDisplayLabel();
+            if (item.getDisplayLabelId() != null)
             {
-               displayLabel = label; 
+               String label = Application.getMessage(context, item.getDisplayLabelId());
+               if (label != null)
+               {
+                  displayLabel = label; 
+               }
             }
+            propSheetItem.setDisplayLabel(displayLabel);
+            
+            // if this property sheet is set as read only or the config says the property
+            // should be read only set it as such
+            if (isReadOnly() || item.isReadOnly())
+            {
+               propSheetItem.setReadOnly(true);
+            }
+            
+            this.getChildren().add(propSheetItem);
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Created property sheet item component " + propSheetItem + "(" + 
+                      propSheetItem.getClientId(context) + 
+                      ") for '" + item.getName() + 
+                      "' and added it to property sheet " + this);
          }
-         propSheetItem.setDisplayLabel(displayLabel);
-         
-         // if this property sheet is set as read only or the config says the property
-         // should be read only set it as such
-         if (isReadOnly() || item.isReadOnly())
-         {
-            propSheetItem.setReadOnly(true);
-         }
-         
-         this.getChildren().add(propSheetItem);
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Created property sheet item component " + propSheetItem + "(" + 
-                   propSheetItem.getClientId(context) + 
-                   ") for '" + item.getName() + 
-                   "' and added it to property sheet " + this);
       }
    }
    

@@ -17,6 +17,7 @@
 package org.alfresco.web.bean.forums;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -50,7 +51,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -536,6 +536,61 @@ public class ForumsBean implements IContextListener
       }
    }
    
+   /**
+    * Returns the HTML to represent a bubble rendition of the text of the the
+    * forum article being replied to.
+    * 
+    * @return The HTML for the bubble
+    */
+   public String getReplyBubbleHTML()
+   {
+      try
+      {
+         // if the forum being replied to was a new post show the orange bubble
+         // with the user on the left otherwise show the yellow bubble with the
+         // user on the right.
+         StringWriter writer = new StringWriter();
+         
+         FacesContext context = FacesContext.getCurrentInstance();
+         Node replyToNode = this.browseBean.getDocument();
+         boolean isReplyPost = this.nodeService.hasAspect(replyToNode.getNodeRef(),
+               ContentModel.ASPECT_REFERENCING);
+         String contextPath = context.getExternalContext().getRequestContextPath();
+         String colour = isReplyPost ? "yellow" : "orange";
+         String bgColour = isReplyPost ? "#FFF5A3" : "#FCC75E";
+         
+         // build the HTML to represent the user that posted the article being replied to
+         StringBuilder replyPosterHTML = new StringBuilder("<td valign='top'>");
+         replyPosterHTML.append("<img src='");
+         replyPosterHTML.append(contextPath);
+         replyPosterHTML.append("/images/icons/user_large.gif' /><br/>");
+         replyPosterHTML.append((String)replyToNode.getProperties().get("creator"));
+         replyPosterHTML.append("</td>");
+         
+         // start the table
+         writer.write("<table border='0' cellpadding='0' cellspacing='0' width='100%'><tr>");
+         
+         if (isReplyPost)
+         {
+            renderReplyContentHTML(context, replyToNode, writer, contextPath, colour, bgColour);
+            writer.write(replyPosterHTML.toString());
+         }
+         else
+         {
+            writer.write(replyPosterHTML.toString());
+            renderReplyContentHTML(context, replyToNode, writer, contextPath, colour, bgColour);
+         }
+         
+         // finish the table
+         writer.write("</tr></table>");
+         
+         return writer.toString();
+      }
+      catch (IOException ioe)
+      {
+         throw new AlfrescoRuntimeException("Failed to render reply bubble HTML", ioe);
+      }
+   }
    
    // ------------------------------------------------------------------------------
    // IContextListener implementation 
@@ -697,159 +752,21 @@ public class ForumsBean implements IContextListener
             ForumModel.ASSOC_DISCUSSION, RegexQNamePattern.MATCH_ALL);
       
       // there should only be one child, retrieve it if there is
-      if (children.size() != 1)
+      if (children.size() == 1)
       {
-         throw new IllegalStateException("Node has the discussable aspect but does not have 1 child, it has " + 
-                                         children.size() + " children!");
+         // show the forum for the discussion
+         NodeRef forumNodeRef = children.get(0).getChildRef();
+         this.browseBean.clickSpace(forumNodeRef);
+         context.getApplication().getNavigationHandler().handleNavigation(context, null, "showForum");
       }
-      
-      // show the forum for the discussion
-      NodeRef forumNodeRef = children.get(0).getChildRef();
-      this.browseBean.clickSpace(forumNodeRef);
-      context.getApplication().getNavigationHandler().handleNavigation(context, null, "showForum");
+      else
+      {
+         // this should never happen as the action evaluator should stop the action
+         // from displaying, just in case print a warning to the console
+         logger.warn("Node has the discussable aspect but does not have 1 child, it has " + 
+               children.size() + " children!");
+      }
    }
-      
-   /**
-    * Called when the user confirms they wish to delete a forum space
-    * 
-    * @return The outcome
-    */
-   public String deleteForumsOK()
-   {
-      String outcomeOverride = "browse";
-      
-      // find out what the parent type of the node being deleted 
-      Node node = this.browseBean.getActionSpace();
-      ChildAssociationRef assoc = this.nodeService.getPrimaryParent(node.getNodeRef());
-      if (assoc != null)
-      {
-         NodeRef parent = assoc.getParentRef();
-         QName parentType = this.nodeService.getType(parent);
-         if (parentType.equals(ForumModel.TYPE_FORUMS))
-         {
-            outcomeOverride = "forumsDeleted";
-         }
-      }
-      
-      // call the generic handler
-      String outcome = this.browseBean.deleteSpaceOK();
-      
-      // if the delete was successful update the outcome
-      if (outcome != null)
-      {
-         // return an overidden outcome which closes the dialog with an outcome
-         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
-                   AlfrescoNavigationHandler.OUTCOME_SEPARATOR + outcomeOverride;
-      }
-
-      return outcome;
-   }
-   
-   /**
-    * Called when the user confirms they wish to delete a forum space
-    * 
-    * @return The outcome
-    */
-   public String deleteForumOK()
-   {
-      String outcomeOverride = "browse";
-      
-      // if this forum is being used for a discussion on a node we also
-      // need to remove the discussable aspect from the node.
-      Node forumSpace = this.browseBean.getActionSpace();
-      ChildAssociationRef assoc = this.nodeService.getPrimaryParent(forumSpace.getNodeRef());
-      if (assoc != null)
-      {
-         // get the parent node
-         NodeRef parent = assoc.getParentRef();
-         
-         // get the association type
-         QName type = assoc.getTypeQName();
-         if (type.equals(ForumModel.ASSOC_DISCUSSION))
-         {
-            // if the association type is the 'discussion' association we
-            // need to remove the discussable aspect from the parent node
-            this.nodeService.removeAspect(parent, ForumModel.ASPECT_DISCUSSABLE);
-         }
-         
-         // if the parent type is a forum space then we need the dialog to go
-         // back to the forums view otherwise it will use the default of 'browse',
-         // this happens when a forum being used to discuss a node is deleted.
-         QName parentType = this.nodeService.getType(parent);
-         if (parentType.equals(ForumModel.TYPE_FORUMS))
-         {
-            outcomeOverride = "forumDeleted";
-         }
-      }
-      
-      // call the generic handler
-      String outcome = this.browseBean.deleteSpaceOK();
-      
-      // if the delete was successful update the outcome
-      if (outcome != null)
-      {
-         // return an overidden outcome which closes the dialog with an outcome
-         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
-                   AlfrescoNavigationHandler.OUTCOME_SEPARATOR + outcomeOverride;
-      }
-      
-      return outcome;
-   }
-   
-   /**
-    * Called when the user confirms they wish to delete a forum space
-    * 
-    * @return The outcome
-    */
-   public String deleteTopicOK()
-   {
-      String outcomeOverride = "browse";
-      
-      // find out what the parent type of the node being deleted 
-      Node node = this.browseBean.getActionSpace();
-      ChildAssociationRef assoc = this.nodeService.getPrimaryParent(node.getNodeRef());
-      if (assoc != null)
-      {
-         NodeRef parent = assoc.getParentRef();
-         QName parentType = this.nodeService.getType(parent);
-         if (parentType.equals(ForumModel.TYPE_FORUM))
-         {
-            outcomeOverride = "topicDeleted";
-         }
-      }
-      
-      // call the generic handler
-      String outcome = this.browseBean.deleteSpaceOK();
-      
-      // if the delete was successful update the outcome
-      if (outcome != null)
-      {
-         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
-                   AlfrescoNavigationHandler.OUTCOME_SEPARATOR + outcomeOverride;
-      }
-      
-      return outcome;
-   }
-   
-   /**
-    * Called when the user confirms they wish to delete a forum space
-    * 
-    * @return The outcome
-    */
-   public String deletePostOK()
-   {
-      // call the generic handler
-      String outcome = this.browseBean.deleteFileOK();
-      
-      // if the delete was successful update the outcome
-      if (outcome != null)
-      {
-         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
-      }
-      
-      return outcome;
-   }
-   
    
    // ------------------------------------------------------------------------------
    // Property Resolvers
@@ -943,7 +860,7 @@ public class ForumsBean implements IContextListener
    
    
    // ------------------------------------------------------------------------------
-   // Private helpers
+   // Helpers
    
    /**
     * Initialise default values from client configuration
@@ -978,6 +895,37 @@ public class ForumsBean implements IContextListener
          logger.debug("Set default topic view mode to: " + this.topicViewMode);
          logger.debug("Set default topic page size to: " + this.topicPageSize);
       }
+   }
+   
+   protected void renderReplyContentHTML(FacesContext context, 
+         Node replyToNode, StringWriter writer, 
+         String contextPath, String colour, String bgColour) 
+         throws IOException
+   {
+      // get the content of the article being replied to
+      String replyContent = "";
+      ContentReader reader = this.contentService.getReader(replyToNode.getNodeRef(), 
+            ContentModel.PROP_CONTENT);  
+      if (reader != null)
+      {
+         replyContent = reader.getContentString();
+      }
+      
+      // get the date of the article being replied to
+      String postedDate = Utils.getDateTimeFormat(context).
+            format(replyToNode.getProperties().get("created"));
+      
+      // generate the HTML
+      writer.write("<td width='100%'>");
+      TopicBubbleViewRenderer.renderBubbleTop(writer, contextPath, colour, bgColour);
+      writer.write("<span class='mainSubTitle'>");
+      writer.write(Application.getMessage(context, "posted"));
+      writer.write(":&nbsp</span>");
+      writer.write(postedDate);
+      TopicBubbleViewRenderer.renderBubbleMiddle(writer, contextPath, colour);
+      writer.write(replyContent);
+      TopicBubbleViewRenderer.renderBubbleBottom(writer, contextPath, colour);
+      writer.write("</td>");
    }
    
    /**

@@ -162,7 +162,7 @@
                                  <tr><td class="wizardButtonSpacing"></td></tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel_button}" action="cancel" styleClass="wizardButton" immediate="true" />
+                                       <h:commandButton value="#{msg.cancel_button}" action="dialog:close" styleClass="wizardButton" immediate="true" />
                                     </td>
                                  </tr>
                               </table>

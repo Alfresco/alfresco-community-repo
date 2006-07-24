@@ -34,8 +34,7 @@ public final class ApproveDocEvaluator implements ActionEvaluator
    public boolean evaluate(Node node)
    {
       return (node.getProperties().get("app:approveStep") != null &&
-              node.isLocked() == false &&
-              node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false);
+              node.isLocked() == false);
    }
 }
 /*

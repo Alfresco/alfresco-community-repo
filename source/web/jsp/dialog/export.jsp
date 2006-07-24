@@ -92,7 +92,7 @@
                               <h:graphicImage id="wizard-logo" url="/images/icons/export_large.gif" />
                            </td>
                            <td>
-                              <div class="mainTitle"><h:outputText value="#{msg.export}"/> '<h:outputText value='#{NavigationBean.nodeProperties.name}' />'</div>
+                              <div class="mainTitle"><h:outputText value="#{msg.export}"/> '<h:outputText value='#{BrowseBean.actionSpace.name}' />'</div>
                               <div class="mainSubText"><h:outputText value="#{msg.export_info}"/></div>
                            </td>
                         </tr>

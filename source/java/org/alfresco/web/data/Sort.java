@@ -94,6 +94,7 @@ public abstract class Sort
     * 
     * @param collator      the Collator object to use to build String keys
     */
+   @SuppressWarnings("unchecked")
    protected List buildCollationKeys(Collator collator)
    {
       List data = this.data;
@@ -260,6 +261,7 @@ public abstract class Sort
     * Given the array and two indices, swap the two items in the
     * array.
     */
+   @SuppressWarnings("unchecked")
    protected void swap(final List v, final int a, final int b)
    {
       Object temp = v.get(a);
@@ -294,7 +296,7 @@ public abstract class Sort
    // ------------------------------------------------------------------------------
    // Inner classes for data type comparison
    
-   private class SimpleComparator implements Comparator
+   private static class SimpleComparator implements Comparator
    {
       /**
        * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
@@ -308,7 +310,7 @@ public abstract class Sort
       }
    }
    
-   private class SimpleStringComparator implements Comparator
+   private static class SimpleStringComparator implements Comparator
    {
       /**
        * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
@@ -322,7 +324,7 @@ public abstract class Sort
       }
    }
    
-   private class StringComparator implements Comparator
+   private static class StringComparator implements Comparator
    {
       /**
        * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
@@ -336,7 +338,7 @@ public abstract class Sort
       }
    }
    
-   private class IntegerComparator implements Comparator
+   private static class IntegerComparator implements Comparator
    {
       /**
        * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
@@ -350,7 +352,7 @@ public abstract class Sort
       }
    }
    
-   private class FloatComparator implements Comparator
+   private static class FloatComparator implements Comparator
    {
       /**
        * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
@@ -364,7 +366,7 @@ public abstract class Sort
       }
    }
    
-   private class LongComparator implements Comparator
+   private static class LongComparator implements Comparator
    {
       /**
        * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
@@ -378,7 +380,7 @@ public abstract class Sort
       }
    }
    
-   private class BooleanComparator implements Comparator
+   private static class BooleanComparator implements Comparator
    {
       /**
        * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
@@ -392,7 +394,7 @@ public abstract class Sort
       }
    }
    
-   private class DateComparator implements Comparator
+   private static class DateComparator implements Comparator
    {
       /**
        * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)

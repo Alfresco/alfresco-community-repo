@@ -768,7 +768,7 @@ public class AdminNodeBrowseBean
     /**
      * Permission representing the fact that "Read Permissions" has not been granted
      */
-    public class NoReadPermissionGranted
+    public static class NoReadPermissionGranted
     {
         public String getPermission()
         {

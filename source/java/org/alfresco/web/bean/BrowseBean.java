@@ -1350,117 +1350,38 @@ public class BrowseBean implements IContextListener
    }
    
    /**
-    * Handler called upon the completion of the Delete Space page
+    * Removes the given node from the breadcrumb i.e. following a delete
     * 
-    * @return outcome
+    * @param node The space to remove from the breadcrumb
     */
-   public String deleteSpaceOK()
+   public void removeSpaceFromBreadcrumb(Node node)
    {
-      String outcome = null;
-      
-      Node node = getActionSpace();
-      if (node != null)
+      List<IBreadcrumbHandler> location = navigator.getLocation();
+      IBreadcrumbHandler handler = location.get(location.size() - 1);
+      if (handler instanceof BrowseBreadcrumbHandler)
       {
-         try
+         // see if the current breadcrumb location is our node 
+         if ( ((BrowseBreadcrumbHandler)handler).getNodeRef().equals(node.getNodeRef()) == true )
          {
-            if (logger.isDebugEnabled())
-               logger.debug("Trying to delete space: " + node.getId());
+            location.remove(location.size() - 1);
             
-            this.nodeService.deleteNode(node.getNodeRef());
-            
-            // remove this node from the breadcrumb if required
-            List<IBreadcrumbHandler> location = navigator.getLocation();
-            IBreadcrumbHandler handler = location.get(location.size() - 1);
-            if (handler instanceof BrowseBreadcrumbHandler)
+            // now work out which node to set the list to refresh against
+            if (location.size() != 0)
             {
-               // see if the current breadcrumb location is our node 
-               if ( ((BrowseBreadcrumbHandler)handler).getNodeRef().equals(node.getNodeRef()) == true )
+               handler = location.get(location.size() - 1);
+               if (handler instanceof BrowseBreadcrumbHandler)
                {
-                  location.remove(location.size() - 1);
-                  
-                  // now work out which node to set the list to refresh against
-                  if (location.size() != 0)
-                  {
-                     handler = location.get(location.size() - 1);
-                     if (handler instanceof BrowseBreadcrumbHandler)
-                     {
-                        // change the current node Id
-                        navigator.setCurrentNodeId(((BrowseBreadcrumbHandler)handler).getNodeRef().getId());
-                     }
-                     else
-                     {
-                        // TODO: shouldn't do this - but for now the user home dir is the root!
-                        navigator.setCurrentNodeId(Application.getCurrentUser(FacesContext.getCurrentInstance()).getHomeSpaceId());
-                     }
-                  }
+                  // change the current node Id
+                  navigator.setCurrentNodeId(((BrowseBreadcrumbHandler)handler).getNodeRef().getId());
+               }
+               else
+               {
+                  // TODO: shouldn't do this - but for now the user home dir is the root!
+                  navigator.setCurrentNodeId(Application.getCurrentUser(FacesContext.getCurrentInstance()).getHomeSpaceId());
                }
             }
-            
-            // add a message to inform the user that the delete was OK 
-            String statusMsg = MessageFormat.format(
-                  Application.getMessage(FacesContext.getCurrentInstance(), "status_space_deleted"), 
-                  new Object[]{node.getName()});
-            Utils.addStatusMessage(FacesMessage.SEVERITY_INFO, statusMsg);
-            
-            // clear action context
-            setActionSpace(null);
-            
-            // setting the outcome will show the browse view again
-            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
-                      AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
-         }
-         catch (Throwable err)
-         {
-            Utils.addErrorMessage(Application.getMessage(
-                  FacesContext.getCurrentInstance(), MSG_ERROR_DELETE_SPACE) + err.getMessage(), err);
          }
       }
-      else
-      {
-         logger.warn("WARNING: deleteSpaceOK called without a current Space!");
-      }
-      
-      return outcome;
-   }
-   
-   /**
-    * Handler called upon the completion of the Delete File page
-    * 
-    * @return outcome
-    */
-   public String deleteFileOK()
-   {
-      String outcome = null;
-      
-      Node node = getDocument();
-      if (node != null)
-      {
-         try
-         {
-            if (logger.isDebugEnabled())
-               logger.debug("Trying to delete content node: " + node.getId());
-            
-            this.nodeService.deleteNode(node.getNodeRef());
-            
-            // clear action context
-            setDocument(null);
-            
-            // setting the outcome will show the browse view again
-            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME +
-                      AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
-         }
-         catch (Throwable err)
-         {
-            Utils.addErrorMessage(Application.getMessage(
-                  FacesContext.getCurrentInstance(), MSG_ERROR_DELETE_FILE) + err.getMessage(), err);
-         }
-      }
-      else
-      {
-         logger.warn("WARNING: deleteFileOK called without a current Document!");
-      }
-      
-      return outcome;
    }
    
    /**
@@ -1724,8 +1645,6 @@ public class BrowseBean implements IContextListener
    private static final String PAGE_NAME_BROWSE = "browse";
    
    /** I18N messages */
-   private static final String MSG_ERROR_DELETE_FILE  = "error_delete_file";
-   private static final String MSG_ERROR_DELETE_SPACE = "error_delete_space";
    private static final String MSG_DELETE_COMPANYROOT = "delete_companyroot_confirm";
    private static final String MSG_SEARCH_MINIMUM     = "search_minimum";
    

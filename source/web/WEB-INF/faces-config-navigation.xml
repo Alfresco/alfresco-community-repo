@@ -33,6 +33,10 @@
          <to-view-id>/jsp/browse/browse.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
+         <from-outcome>myalfresco</from-outcome>
+         <to-view-id>/jsp/dashboards/container.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
          <from-outcome>about</from-outcome>
          <to-view-id>/jsp/dialog/about.jsp</to-view-id>
       </navigation-case>
@@ -77,26 +81,22 @@
       </navigation-case>
    </navigation-rule>
    
-   <!-- rule to get back to the Admin Console from anywhere -->
+   <!-- rule to get back to the Admin/User Console from anywhere -->
    <navigation-rule>
       <from-view-id>/jsp/*</from-view-id>
-         <navigation-case>
+      <navigation-case>
          <from-outcome>adminConsole</from-outcome>
          <to-view-id>/jsp/admin/admin-console.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>userConsole</from-outcome>
+         <to-view-id>/jsp/users/user-console.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
    <!-- Browse screen action outcomes -->
    <navigation-rule>
       <from-view-id>/jsp/browse/browse.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>deleteSpace</from-outcome>
-         <to-view-id>/jsp/dialog/delete-space.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>deleteFile</from-outcome>
-         <to-view-id>/jsp/dialog/delete-file.jsp</to-view-id>
-      </navigation-case>
       <navigation-case>
          <from-outcome>addContent</from-outcome>
          <to-view-id>/jsp/content/add-content-dialog.jsp</to-view-id>
@@ -260,10 +260,6 @@
          <to-view-id>/jsp/dialog/rules.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>deleteSpace</from-outcome>
-         <to-view-id>/jsp/dialog/delete-space.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>import</from-outcome>
          <to-view-id>/jsp/dialog/import.jsp</to-view-id>
       </navigation-case>
@@ -282,6 +278,10 @@
       <navigation-case>
          <from-outcome>showForum</from-outcome>
          <to-view-id>/jsp/forums/forum.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>editCategories</from-outcome>
+         <to-view-id>/jsp/dialog/edit-space-category.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -304,10 +304,6 @@
          <to-view-id>/jsp/dialog/update-file.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>deleteFile</from-outcome>
-         <to-view-id>/jsp/dialog/delete-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>editFile</from-outcome>
          <to-view-id>/jsp/dialog/edit-file.jsp</to-view-id>
       </navigation-case>
@@ -326,10 +322,6 @@
       <navigation-case>
          <from-outcome>editCategories</from-outcome>
          <to-view-id>/jsp/dialog/edit-category.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>createAction</from-outcome>
-         <to-view-id>/jsp/wizard/create-action/action.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>previewContent</from-outcome>
@@ -374,6 +366,18 @@
    </navigation-rule>
    
    <navigation-rule>
+      <from-view-id>/jsp/dialog/edit-space-category.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>cancel</from-outcome>
+         <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>finish</from-outcome>
+         <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
       <from-view-id>/jsp/dialog/rules.jsp</from-view-id>
       <navigation-case>
          <from-outcome>deleteRule</from-outcome>
@@ -408,10 +412,6 @@
          <from-outcome>manageContentUsers</from-outcome>
          <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
       </navigation-case>
-      <navigation-case>
-         <from-outcome>deleteFile</from-outcome>
-         <to-view-id>/jsp/dialog/delete-file.jsp</to-view-id>
-      </navigation-case>
    </navigation-rule>
    
    <!-- Space Link object details page navigation -->
@@ -424,10 +424,6 @@
       <navigation-case>
          <from-outcome>manageContentUsers</from-outcome>
          <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>deleteFile</from-outcome>
-         <to-view-id>/jsp/dialog/delete-file.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -597,6 +593,15 @@
       <navigation-case>
          <from-outcome>changePassword</from-outcome>
          <to-view-id>/jsp/users/change-password.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <!-- User Details and preferences action outcomes -->
+   <navigation-rule>
+      <from-view-id>/jsp/users/user-console.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>changePassword</from-outcome>
+         <to-view-id>/jsp/users/change-my-password.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -790,24 +795,6 @@
          <from-outcome>showTopicDetails</from-outcome>
          <to-view-id>/jsp/forums/topic-details.jsp</to-view-id>
       </navigation-case>
-      
-      <navigation-case>
-         <from-outcome>deleteForums</from-outcome>
-         <to-view-id>/jsp/forums/delete-forums.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>deleteForum</from-outcome>
-         <to-view-id>/jsp/forums/delete-forum.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>deleteTopic</from-outcome>
-         <to-view-id>/jsp/forums/delete-topic.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>deletePost</from-outcome>
-         <to-view-id>/jsp/forums/delete-post.jsp</to-view-id>
-      </navigation-case>
-      
       <navigation-case>
          <from-outcome>manageInvitedUsers</from-outcome>
          <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
@@ -819,34 +806,6 @@
       <navigation-case>
          <from-outcome>export</from-outcome>
          <to-view-id>/jsp/dialog/export.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/delete-forums.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>forumsDeleted</from-outcome>
-         <to-view-id>/jsp/forums/forums.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>browse</from-outcome>
-         <to-view-id>/jsp/browse/browse.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/delete-forum.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>forumDeleted</from-outcome>
-         <to-view-id>/jsp/forums/forums.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/forums/delete-topic.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>topicDeleted</from-outcome>
-         <to-view-id>/jsp/forums/forum.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -887,4 +846,21 @@
       </navigation-case>
    </navigation-rule>
 
+   <!-- Overridden dialog:close rules -->
+   <navigation-rule>
+      <from-view-id>/jsp/dialog/container.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>forumsDeleted</from-outcome>
+         <to-view-id>/jsp/forums/forums.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>forumDeleted</from-outcome>
+         <to-view-id>/jsp/forums/forums.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>topicDeleted</from-outcome>
+         <to-view-id>/jsp/forums/forum.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
 </faces-config>

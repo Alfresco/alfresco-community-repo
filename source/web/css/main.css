@@ -488,3 +488,34 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 {
 	vertical-align: top;
 }
+
+.alignMiddle
+{
+	vertical-align: middle;
+}
+
+.tableThirdWidth
+{
+   width: 33%;
+   vertical-align: top;
+}
+
+.tableNarrowWidth
+{
+   width: 30%;
+   vertical-align: top;
+}
+
+.tableWideWidth
+{
+   width: 70%;
+   vertical-align: top;
+}
+
+.summaryPopupPanel
+{
+	background-color: #e9f0f4;
+	border: 1px solid #999999;
+	padding: 4px;
+	-moz-border-radius: 4px;
+}

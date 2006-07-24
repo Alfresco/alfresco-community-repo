@@ -3,12 +3,17 @@ package org.alfresco.web.bean.content;
 import java.io.File;
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
+import org.alfresco.config.Config;
+import org.alfresco.config.ConfigElement;
+import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
@@ -26,6 +31,7 @@ import org.alfresco.web.bean.repository.Repository;
  */
 public class AddContentDialog extends BaseContentWizard
 {
+   protected List<String> inlineEditableMimeTypes;
    protected File file;
    
    // ------------------------------------------------------------------------------
@@ -53,7 +59,16 @@ public class AddContentDialog extends BaseContentWizard
       {
          this.title = this.fileName;
       }
-         
+      
+      // determine whether inline editing should be enabled by default.
+      // if the mime type of the added file is in the list of mime types
+      // configured in "Content Wizards" then enable inline editing
+      List<String> mimeTypes = getInlineEditableMimeTypes();
+      if (mimeTypes.contains(this.mimeType))
+      {
+         this.inlineEdit = true;
+      }
+      
       saveContent(this.file, null);
       
       // return default outcome
@@ -71,6 +86,8 @@ public class AddContentDialog extends BaseContentWizard
    @Override
    protected String doPostCommitProcessing(FacesContext context, String outcome)
    {
+      clearUpload();
+      
       // as we were successful, go to the set properties dialog if asked
       // to otherwise just return
       if (this.showOtherProperties)
@@ -213,5 +230,31 @@ public class AddContentDialog extends BaseContentWizard
       // remove the file upload bean from the session
       FacesContext ctx = FacesContext.getCurrentInstance();
       ctx.getExternalContext().getSessionMap().remove(FileUploadBean.FILE_UPLOAD_BEAN_NAME);
+   }
+   
+   protected List<String> getInlineEditableMimeTypes()
+   {
+      if (this.inlineEditableMimeTypes == null)
+      {
+         this.inlineEditableMimeTypes = new ArrayList<String>(8);
+         
+         // get the create mime types list from the config
+         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
+         Config wizardCfg = svc.getConfig("Content Wizards");
+         if (wizardCfg != null)
+         {
+            ConfigElement typesCfg = wizardCfg.getConfigElement("create-mime-types");
+            if (typesCfg != null)
+            {
+               for (ConfigElement child : typesCfg.getChildren())
+               {
+                  String currentMimeType = child.getAttribute("name");
+                  this.inlineEditableMimeTypes.add(currentMimeType);
+               }
+            }
+         }
+      }
+      
+      return this.inlineEditableMimeTypes;
    }
 }

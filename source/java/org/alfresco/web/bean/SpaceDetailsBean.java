@@ -16,31 +16,28 @@
  */
 package org.alfresco.web.bean;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
-import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
-import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
 
 /**
  * Backing bean provided access to the details of a Space
@@ -50,9 +47,18 @@ import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
 public class SpaceDetailsBean extends BaseDetailsBean
 {
    private static final String OUTCOME_RETURN = "showSpaceDetails";
+   
+   private static final String MSG_HAS_FOLLOWING_CATEGORIES = "has_following_categories_space";
+   private static final String MSG_NO_CATEGORIES_APPLIED = "no_categories_applied_space";
+   private static final String MSG_ERROR_UPDATE_CATEGORY = "error_update_category";
+   private static final String MSG_ERROR_ASPECT_CLASSIFY = "error_aspect_classify_space";
 
    /** PermissionService bean reference */
    protected PermissionService permissionService;
+   
+   /** Category details */
+   private NodeRef addedCategory;
+   private List categories;
    
    
    // ------------------------------------------------------------------------------
@@ -161,6 +167,7 @@ public class SpaceDetailsBean extends BaseDetailsBean
     */
    public void nextItem(ActionEvent event)
    {
+      boolean foundNextItem = false;
       UIActionLink link = (UIActionLink)event.getComponent();
       Map<String, String> params = link.getParameterMap();
       String id = params.get("id");
@@ -191,9 +198,22 @@ public class SpaceDetailsBean extends BaseDetailsBean
                   
                   // prepare for showing details for this node
                   this.browseBean.setupSpaceAction(next.getId(), false);
+                  
+                  // we found a next item
+                  foundNextItem = true;
                }
             }
-        }
+         }
+         
+         // if we did not find a next item make sure the current node is 
+         // in the dispatch context otherwise the details screen will go back 
+         // to the default one.
+         if (foundNextItem == false)
+         {
+            NodeRef currNodeRef = new NodeRef(Repository.getStoreRef(), id);
+            Node currNode = new Node(currNodeRef);
+            this.navigator.setupDispatchContext(currNode);
+         }
       }
    }
    
@@ -202,6 +222,7 @@ public class SpaceDetailsBean extends BaseDetailsBean
     */
    public void previousItem(ActionEvent event)
    {
+      boolean foundPreviousItem = false;
       UIActionLink link = (UIActionLink)event.getComponent();
       Map<String, String> params = link.getParameterMap();
       String id = params.get("id");
@@ -229,8 +250,21 @@ public class SpaceDetailsBean extends BaseDetailsBean
                   
                   // show details for this node
                   this.browseBean.setupSpaceAction(previous.getId(), false);
+                  
+                  // we found a next item
+                  foundPreviousItem = true;
                }
             }
+         }
+         
+         // if we did not find a previous item make sure the current node is 
+         // in the dispatch context otherwise the details screen will go back 
+         // to the default one.
+         if (foundPreviousItem == false)
+         {
+            NodeRef currNodeRef = new NodeRef(Repository.getStoreRef(), id);
+            Node currNode = new Node(currNodeRef);
+            this.navigator.setupDispatchContext(currNode);
          }
       }
    }
@@ -243,5 +277,201 @@ public class SpaceDetailsBean extends BaseDetailsBean
    {
       this.navigator.resetCurrentNodeProperties();
       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Categorised Details
+   
+   /**
+    * Determines whether the current space has any categories applied
+    * 
+    * @return true if the document has categories attached
+    */
+   public boolean isCategorised()
+   {
+      return getSpace().hasAspect(ContentModel.ASPECT_GEN_CLASSIFIABLE);
+   }
+   
+   /**
+    * Returns a list of objects representing the categories applied to the 
+    * current space
+    *  
+    * @return List of categories
+    */
+   public String getCategoriesOverviewHTML()
+   {
+      String html = null;
+      
+      if (isCategorised())
+      {
+         // we know for now that the general classifiable aspect only will be
+         // applied so we can retrive the categories property direclty
+         Collection categories = (Collection)this.nodeService.getProperty(getSpace().getNodeRef(), 
+               ContentModel.PROP_CATEGORIES);
+         
+         if (categories == null || categories.size() == 0)
+         {
+            html = Application.getMessage(FacesContext.getCurrentInstance(), MSG_NO_CATEGORIES_APPLIED);
+         }
+         else
+         {
+            StringBuilder builder = new StringBuilder(Application.getMessage(FacesContext.getCurrentInstance(), 
+                  MSG_HAS_FOLLOWING_CATEGORIES));
+            
+            builder.append("<ul>");
+            for (Object obj : categories)
+            {
+               if (obj instanceof NodeRef)
+               {
+                  if (this.nodeService.exists((NodeRef)obj))
+                  {
+                     builder.append("<li>");
+                     builder.append(Repository.getNameForNode(this.nodeService, (NodeRef)obj));
+                     builder.append("</li>");
+                  }
+               }
+            }
+            builder.append("</ul>");
+            
+            html = builder.toString();
+         }
+      }
+      
+      return html;
+   }
+
+   /**
+    * Event handler called to setup the categories for editing
+    * 
+    * @param event The event
+    */
+   public void setupCategoriesForEdit(ActionEvent event)
+   {
+      this.categories = (List)this.nodeService.getProperty(getSpace().getNodeRef(), 
+               ContentModel.PROP_CATEGORIES);
+   }
+   
+   /**
+    * Returns a Map of the initial categories on the node keyed by the NodeRef
+    * 
+    * @return Map of initial categories
+    */
+   public List getCategories()
+   {
+      return this.categories;
+   }
+   
+   /**
+    * Sets the categories Map
+    * 
+    * @param categories
+    */
+   public void setCategories(List categories)
+   {
+      this.categories = categories;
+   }
+   
+   /**
+    * Returns the last category added from the multi value editor
+    * 
+    * @return The last category added
+    */
+   public NodeRef getAddedCategory()
+   {
+      return this.addedCategory;
+   }
+
+   /**
+    * Sets the category added from the multi value editor
+    * 
+    * @param addedCategory The added category
+    */
+   public void setAddedCategory(NodeRef addedCategory)
+   {
+      this.addedCategory = addedCategory;
+   }
+   
+   /**
+    * Updates the categories for the current document
+    *  
+    * @return The outcome
+    */
+   public String saveCategories()
+   {
+      String outcome = "cancel";
+      
+      UserTransaction tx = null;
+      
+      try
+      {
+         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
+         tx.begin();
+         
+         // firstly retrieve all the properties for the current node
+         Map<QName, Serializable> updateProps = this.nodeService.getProperties(
+        		 getSpace().getNodeRef());
+         
+         // create a node ref representation of the selected id and set the new properties
+         updateProps.put(ContentModel.PROP_CATEGORIES, (Serializable)this.categories);
+         
+         // set the properties on the node
+         this.nodeService.setProperties(getSpace().getNodeRef(), updateProps);
+         
+         // commit the transaction
+         tx.commit();
+         
+         // reset the state of the current document so it reflects the changes just made
+         getSpace().reset();
+         
+         outcome = "finish";
+      }
+      catch (Throwable e)
+      {
+         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), MSG_ERROR_UPDATE_CATEGORY), e.getMessage()), e);
+      }
+      
+      return outcome;
+   }
+   
+   /**
+    * Applies the classifiable aspect to the current document
+    */
+   public void applyClassifiable()
+   {
+      UserTransaction tx = null;
+      
+      try
+      {
+         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
+         tx.begin();
+         
+         // add the general classifiable aspect to the node
+         this.nodeService.addAspect(getSpace().getNodeRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, null);
+         
+         // commit the transaction
+         tx.commit();
+         
+         // reset the state of the current document
+         getSpace().reset();
+      }
+      catch (Throwable e)
+      {
+         // rollback the transaction
+         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), MSG_ERROR_ASPECT_CLASSIFY), e.getMessage()), e);
+      }
+   }
+   
+   /**
+    * Returns whether the current sapce is locked
+    * 
+    * @return true if the document is checked out
+    */
+   public boolean isLocked()
+   {
+      return getSpace().isLocked();
    }
 }

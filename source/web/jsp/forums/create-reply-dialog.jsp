@@ -19,8 +19,6 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<%@ page import="org.alfresco.web.bean.forums.ForumsBean.TopicBubbleViewRenderer" %>
-
 <f:verbatim>
 <script type="text/javascript">
    document.getElementById("dialog:dialog-body:message").focus();
@@ -51,31 +49,6 @@
    </h:panelGrid>
 </h:panelGrid>
 
-<f:verbatim>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <tr>
-   <td width="100%">
-      <% TopicBubbleViewRenderer.renderBubbleTop(out, request.getContextPath(), "yellow", "#FFF5A3"); %>
-      </f:verbatim>
-      <h:outputText value="#{msg.posted}:&nbsp" styleClass="mainSubTitle" escape="false" />
-      <h:outputText value="#{BrowseBean.document.properties.created}">
-         <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
-      </h:outputText>
-      <f:verbatim>
-      <% TopicBubbleViewRenderer.renderBubbleMiddle(out, request.getContextPath(), "yellow"); %>
-      </f:verbatim>
-      <h:outputText value="#{DialogManager.bean.replyContent}" escape="false" />
-      <f:verbatim>
-      <% TopicBubbleViewRenderer.renderBubbleBottom(out, request.getContextPath(), "yellow"); %>
-   </td>
-   <td valign="top">
-      </f:verbatim>
-      <h:graphicImage id="poster" url="/images/icons/user_large.gif" />
-      <h:outputText value="<br/>#{BrowseBean.document.properties.creator}" escape="false" />
-      <f:verbatim>
-   </td>
-   </tr>
-</table>
-</f:verbatim>
+<h:outputText value="#{ForumsBean.replyBubbleHTML}" escape="false" />
 
 

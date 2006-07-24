@@ -266,11 +266,18 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       
       if (dispatchContext != null)
       {
+         if (logger.isDebugEnabled())
+            logger.debug("Using dispatch context for dialog lookup: " + 
+                  dispatchContext.getType().toString());
+         
          // use the node to perform the lookup (this will include the global section)
          config = configSvc.getConfig(dispatchContext);
       }
       else
       {
+         if (logger.isDebugEnabled())
+            logger.debug("Looking up dialog in global config");
+            
          // just use the global 
          config = configSvc.getGlobalConfig();
       }
@@ -306,11 +313,18 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       
       if (dispatchContext != null)
       {
+         if (logger.isDebugEnabled())
+            logger.debug("Using dispatch context for wizard lookup: " + 
+                  dispatchContext.getType().toString());
+         
          // use the node to perform the lookup (this will include the global section)
          config = configSvc.getConfig(dispatchContext);
       }
       else
       {
+         if (logger.isDebugEnabled())
+            logger.debug("Looking up wizard in global config");
+         
          // just use the global 
          config = configSvc.getGlobalConfig();
       }

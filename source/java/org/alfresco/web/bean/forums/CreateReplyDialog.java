@@ -5,8 +5,6 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
@@ -61,33 +59,5 @@ public class CreateReplyDialog extends CreatePostDialog
    public String getFinishButtonLabel()
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), "reply");
-   }
-
-   // ------------------------------------------------------------------------------
-   // Bean Getters and Setters
-   
-   /**
-    * Returns the content of the post we are replying to
-    * 
-    * @return The content
-    */
-   public String getReplyContent()
-   {
-      if (this.replyContent == null)
-      {
-         // get the content reader of the node we are replying to
-         NodeRef replyNode = this.browseBean.getDocument().getNodeRef();
-         if (replyNode != null)
-         {
-            ContentReader reader = this.contentService.getReader(replyNode, ContentModel.PROP_CONTENT);
-            
-            if (reader != null)
-            {
-               this.replyContent = reader.getContentString();
-            }
-         }
-      }
-      
-      return this.replyContent;
    }
 }

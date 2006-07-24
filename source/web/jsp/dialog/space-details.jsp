@@ -202,6 +202,35 @@
                               
                               <div style="padding:4px"></div>
                               
+                              <h:panelGroup id="category-panel-facets">
+                                 <f:facet name="title">
+                                    <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
+                                       <a:actionLink id="titleLink3" value="#{msg.change_category}" showLink="false" image="/images/icons/Change_details.gif"
+                                             action="editCategories" actionListener="#{SpaceDetailsBean.setupCategoriesForEdit}" />
+                                    </r:permissionEvaluator>
+                                 </f:facet>
+                              </h:panelGroup>
+                              <a:panel label="#{msg.category}" id="category-panel" facetsId="category-panel-facets" progressive="true"
+                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" rendered="#{SpaceDetailsBean.categorised}"
+                                       expanded='#{SpaceDetailsBean.panels["category-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
+                                 <h:outputText id="category-overview" value="#{SpaceDetailsBean.categoriesOverviewHTML}" 
+                                               escape="false" />
+                              </a:panel>
+                              <a:panel label="#{msg.category}" id="no-category-panel" progressive="true"
+                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       rendered="#{SpaceDetailsBean.categorised == false}"
+                                       expanded='#{SpaceDetailsBean.panels["category-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
+                                 <h:outputText id="no-category-msg" value="#{msg.not_in_category_space}<br/><br/>" 
+                                               escape="false"/>
+                                 <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write" id="eval_cat">
+                                    <a:actionLink id="make-classifiable" value="#{msg.allow_categorization}" 
+                                                  action="#{SpaceDetailsBean.applyClassifiable}"
+                                                  rendered="#{SpaceDetailsBean.locked == false}" />
+                                 </r:permissionEvaluator>
+                              </a:panel>
+                              
+                              <div style="padding:4px"></div>
+                              
                               <h:column id="rules-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">

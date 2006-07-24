@@ -16,6 +16,7 @@
          <element-reader element-name="actions" class="org.alfresco.web.config.ActionsElementReader" />
          <element-reader element-name="dialogs" class="org.alfresco.web.config.DialogsElementReader"/>
          <element-reader element-name="wizards" class="org.alfresco.web.config.WizardsElementReader"/>
+         <element-reader element-name="dashboards" class="org.alfresco.web.config.DashboardsElementReader"/>
       </element-readers>
    </plug-ins>
    
@@ -42,9 +43,8 @@
          <!-- set this value to true to enable AND text terms for simple/advanced search by default -->
          <search-and-terms>false</search-and-terms>
           
-          <!-- Limit search results. -1 for unlimited. -->
-          <search-max-results>-1</search-max-results>
-          
+         <!-- Limit search results. -1 for unlimited. -->
+         <search-max-results>-1</search-max-results>
          
          <!-- The default permissions to apply to a new users Home Space when first created -->
          <!-- this permission is for other users attempting to access that Home Space -->
@@ -130,9 +130,9 @@
    </config>
    
    <config evaluator="string-compare" condition="Command Servlet">
-      <!-- The list registed servlet command processors -->
+      <!-- The list of registered servlet command processors -->
       <!-- Command processors implement org.alfresco.web.app.servlet.command.CommandProcessor -->
-      <!-- They are registered against a name and all calls to the command servlet -->
+      <!-- They register a class impl against a unique name. All calls to the command servlet -->
       <!-- which match the name are forwared to the class instance -->
       <command-servlet>
          <command-processor name="workflow" class="org.alfresco.web.app.servlet.command.WorkflowCommandProcessor" />
@@ -160,7 +160,48 @@
          </custom-properties>
       </advanced-search>
    </config>
-
+   
+   <config evaluator="string-compare" condition="Dashboards">
+      <!-- Dashboard layouts and available dashlets for the My Alfresco pages -->
+      <dashboards>
+         <layouts>
+            <!-- the "default" layout - will be used for all users initially -->
+            <layout id="default" columns="1" column-length="5" image="/images/icons/layout_single_column.gif"
+                  label-id="layout_single_label" description-id="layout_single_desc"
+                  jsp="/jsp/dashboards/layouts/single-column.jsp" />
+            <layout id="narrow-right-2column" columns="2" column-length="4" image="/images/icons/layout_narrow_right_2column.gif"
+                  label-id="layout_narrow_right_label" description-id="layout_narrow_right_desc"
+                  jsp="/jsp/dashboards/layouts/narrow-right-2column.jsp" />
+            <layout id="narrow-left-2column" columns="2" column-length="4" image="/images/icons/layout_narrow_left_2column.gif"
+                  label-id="layout_narrow_left_label" description-id="layout_narrow_left_desc"
+                  jsp="/jsp/dashboards/layouts/narrow-left-2column.jsp" />
+            <layout id="three-column" columns="3" column-length="4" image="/images/icons/layout_three_column.gif"
+                  label-id="layout_three_column_label" description-id="layout_three_column_desc"
+                  jsp="/jsp/dashboards/layouts/three-column.jsp" />
+         </layouts>
+         <dashlets>
+            <!-- this is the default dashlet shown in the default layout initially -->
+            <dashlet id="getting-started" label-id="dashlet_gettingstarted_label"
+                  description-id="dashlet_gettingstarted_desc"
+                  jsp="/jsp/dashboards/dashlets/getting-started.jsp" allow-narrow="false" />
+            <!-- TEMP! -->
+            <dashlet id="my-docs-template" label="My Documents"
+                  description="My Documents Template Page"
+                  jsp="/jsp/dashboards/dashlets/my-docs.jsp" allow-narrow="true" />
+            <dashlet id="task-list" label="My Tasklist To-do" description="List of your tasks still to complete"
+                  jsp="/jsp/dashboards/dashlets/tasklist-todo.jsp" allow-narrow="false" />
+            <dashlet id="task-list-complete" label="My Tasks Completed" description="List of your completed tasks"
+                  jsp="/jsp/dashboards/dashlets/tasklist-completed.jsp" allow-narrow="false" />
+            <dashlet id="content-checkedout" label="My Checkedout Content" description="List of the content checked out to you"
+                  jsp="/jsp/dashboards/dashlets/content-checkedout.jsp" allow-narrow="false" />
+            <dashlet id="calculator" label="Calculator" description="A small calculator applet"
+                  jsp="/jsp/dashboards/dashlets/calculator.jsp" allow-narrow="true" />
+            <dashlet id="calendar" label="Calendar" description="A small calendar application"
+                  jsp="/jsp/dashboards/dashlets/calendar.jsp" allow-narrow="true" />
+         </dashlets>
+      </dashboards>
+   </config>
+   
    <config evaluator="string-compare" condition="Space Wizards">
       <!-- The list of custom folder types to show in the advanced space wizard -->
       <folder-types>
@@ -204,9 +245,14 @@
          <aspect name="templatable"/>
          <aspect name="translatable"/>
          <aspect name="localizable"/>
+         <aspect name="emailed"/>
       </aspects>
       <!-- The list of transformers to show in the transform actions -->
       <transformers>
+         <transformer name="application/vnd.oasis.opendocument.text"/>
+         <transformer name="application/vnd.oasis.opendocument.presentation"/>
+         <transformer name="application/vnd.oasis.opendocument.spreadsheet"/>
+         <transformer name="application/rtf"/>
          <transformer name="text/html"/>
          <transformer name="application/pdf"/>
          <transformer name="text/plain"/>
@@ -214,6 +260,9 @@
          <transformer name="application/x-shockwave-flash"/>
          <transformer name="image/gif"/>
          <transformer name="image/jpeg"/>
+         <transformer name="application/msword"/>
+         <transformer name="application/vnd.excel"/>
+         <transformer name="application/vnd.powerpoint"/>
       </transformers>
       <image-transformers>
          <transformer name="image/gif"/>

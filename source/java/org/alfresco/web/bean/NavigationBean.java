@@ -62,6 +62,10 @@ import org.apache.log4j.Logger;
  */
 public class NavigationBean
 {
+   private static final String OUTCOME_MYALFRESCO = "myalfresco";
+
+   private static final String OUTCOME_BROWSE = "browse";
+
    /**
     * Default constructor
     */
@@ -394,10 +398,18 @@ public class NavigationBean
          {
              ContentContext contentCtx = (ContentContext) diskShare.getContext();
              NodeRef rootNode = contentCtx.getRootNode();
-             String cifsPath = Repository.getNamePath(this.nodeService, path, rootNode, "\\", "file:///" + getCIFSServerPath(diskShare));
+             try
+             {
+                String cifsPath = Repository.getNamePath(this.nodeService, path, rootNode, "\\", "file:///" + getCIFSServerPath(diskShare));
               
-             node.getProperties().put("cifsPath", cifsPath);
-             node.getProperties().put("cifsPathLabel", cifsPath.substring(8));  // strip file:/// part
+                node.getProperties().put("cifsPath", cifsPath);
+                node.getProperties().put("cifsPathLabel", cifsPath.substring(8));  // strip file:/// part
+             }
+             catch(AccessDeniedException ade)
+             {
+                 node.getProperties().put("cifsPath", "");
+                 node.getProperties().put("cifsPathLabel","");  // strip file:/// part
+             }
          }
          
          this.currentNode = node;
@@ -587,6 +599,9 @@ public class NavigationBean
             elements.add(new NavigationBreadcrumbHandler(companyHome.getNodeRef(), companyHome.getName()));
             setLocation(elements);
             setCurrentNodeId(companyHome.getId());
+            
+            // we need to force a navigation to refresh the browse screen breadcrumb
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, OUTCOME_BROWSE);
          }
          else if (LOCATION_HOME.equals(location))
          {
@@ -597,6 +612,9 @@ public class NavigationBean
             elements.add(new NavigationBreadcrumbHandler(homeSpaceRef, homeSpaceName));
             setLocation(elements);
             setCurrentNodeId(homeSpaceRef.getId());
+            
+            // we need to force a navigation to refresh the browse screen breadcrumb
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, OUTCOME_BROWSE);
          }
          else if (LOCATION_GUEST.equals(location))
          {
@@ -605,10 +623,31 @@ public class NavigationBean
             elements.add(new NavigationBreadcrumbHandler(guestHome.getNodeRef(), guestHome.getName()));
             setLocation(elements);
             setCurrentNodeId(guestHome.getId());
+            
+            // we need to force a navigation to refresh the browse screen breadcrumb
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, OUTCOME_BROWSE);
          }
-         
-         // we need to force a navigation to refresh the browse screen breadcrumb
-         context.getApplication().getNavigationHandler().handleNavigation(context, null, "browse");
+         else if (LOCATION_DASHBOARD.equals(location))
+         {
+            List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
+            elements.add(new IBreadcrumbHandler()
+               {
+                  public String navigationOutcome(UIBreadcrumb breadcrumb)
+                  {
+                     setLocation( (List)breadcrumb.getValue() );
+                     return OUTCOME_MYALFRESCO;
+                  };
+                  
+                  public String toString()
+                  {
+                     return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MYALFRESCO);
+                  };
+               });
+            setLocation(elements);
+            
+            // we need to force a navigation to refresh the browse screen breadcrumb
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, OUTCOME_MYALFRESCO);
+         }
       }
       catch (InvalidNodeRefException refErr)
       {
@@ -711,7 +750,7 @@ public class NavigationBean
          }
          else
          {
-            return "browse";
+            return OUTCOME_BROWSE;
          }
       }
       
@@ -734,6 +773,9 @@ public class NavigationBean
    private static final String LOCATION_COMPANY = "company";
    private static final String LOCATION_HOME = "home";
    private static final String LOCATION_GUEST = "guest";
+   private static final String LOCATION_DASHBOARD = "dashboard";
+   
+   private static final String MSG_MYALFRESCO = "my_alfresco";
    
    private static final String ERROR_DELETED_FOLDER = "error_deleted_folder";
    

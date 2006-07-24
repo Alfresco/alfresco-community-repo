@@ -129,7 +129,7 @@ public abstract class BaseEvaluator extends SelfRenderingComponent
    public abstract boolean evaluate();
    
    
-   protected static Logger s_logger = Logger.getLogger(BaseEvaluator.class);
+   protected static final Logger s_logger = Logger.getLogger(BaseEvaluator.class);
    
    /** the value to be evaluated against */
    private Object value;

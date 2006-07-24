@@ -34,10 +34,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.PreferencesService;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -65,7 +64,7 @@ public class UserShortcutsBean
    /** List of shortcut nodes */
    private List<Node> shortcuts = null;
    
-   private QName QNAME_SHORTCUTS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "shortcuts");
+   private String PREF_SHORTCUTS = "shortcuts";
    
    
    // ------------------------------------------------------------------------------
@@ -113,8 +112,7 @@ public class UserShortcutsBean
             tx.begin();
             
             // get the shortcuts from the preferences for this user
-            prefRef = getShortcutsNodeRef();
-            shortcuts = (List<String>)this.nodeService.getProperty(prefRef, QNAME_SHORTCUTS);
+            shortcuts = (List<String>)PreferencesService.getPreferences(context).getValue(PREF_SHORTCUTS);
             if (shortcuts != null)
             {
                // each shortcut node ID is persisted as a list item in a well known property
@@ -184,7 +182,7 @@ public class UserShortcutsBean
                {
                   shortcuts.add(this.shortcuts.get(i).getId());
                }
-               this.nodeService.setProperty(prefRef, QNAME_SHORTCUTS, (Serializable)shortcuts);
+               PreferencesService.getPreferences().setValue(PREF_SHORTCUTS, (Serializable)shortcuts);
             }
             catch (Exception err)
             {
@@ -246,14 +244,13 @@ public class UserShortcutsBean
                   tx = Repository.getUserTransaction(context);
                   tx.begin();
                   
-                  NodeRef prefRef = getShortcutsNodeRef();
-                  List<String> shortcuts = (List<String>)this.nodeService.getProperty(prefRef, QNAME_SHORTCUTS);
+                  List<String> shortcuts = (List<String>)PreferencesService.getPreferences(context).getValue(PREF_SHORTCUTS);
                   if (shortcuts == null)
                   {
                      shortcuts = new ArrayList<String>(1);
                   }
                   shortcuts.add(node.getNodeRef().getId());
-                  this.nodeService.setProperty(prefRef, QNAME_SHORTCUTS, (Serializable)shortcuts);
+                  PreferencesService.getPreferences(context).setValue(PREF_SHORTCUTS, (Serializable)shortcuts);
                   
                   // commit the transaction
                   tx.commit();
@@ -281,14 +278,6 @@ public class UserShortcutsBean
    }
    
    /**
-    * Get the node we need to store our user preferences
-    */
-   private NodeRef getShortcutsNodeRef()
-   {
-      return Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserPreferencesRef();
-   }
-   
-   /**
     * Action handler bound to the user shortcuts Shelf component called when a node is removed
     */
    public void removeShortcut(ActionEvent event)
@@ -303,13 +292,12 @@ public class UserShortcutsBean
          tx = Repository.getUserTransaction(context);
          tx.begin();
          
-         NodeRef prefRef = getShortcutsNodeRef();
-         List<String> shortcuts = (List<String>)this.nodeService.getProperty(prefRef, QNAME_SHORTCUTS);
+         List<String> shortcuts = (List<String>)PreferencesService.getPreferences(context).getValue(PREF_SHORTCUTS);
          if (shortcuts != null && shortcuts.size() > shortcutEvent.Index)
          {
             // remove the shortcut from the saved list and persist back
             shortcuts.remove(shortcutEvent.Index);
-            this.nodeService.setProperty(prefRef, QNAME_SHORTCUTS, (Serializable)shortcuts);
+            PreferencesService.getPreferences(context).setValue(PREF_SHORTCUTS, (Serializable)shortcuts);
             
             // commit the transaction
             tx.commit();
@@ -380,13 +368,12 @@ public class UserShortcutsBean
             tx = Repository.getUserTransaction(context);
             tx.begin();
             
-            NodeRef prefRef = getShortcutsNodeRef();
-            List<String> shortcuts = (List<String>)this.nodeService.getProperty(prefRef, QNAME_SHORTCUTS);
+            List<String> shortcuts = (List<String>)PreferencesService.getPreferences(context).getValue(PREF_SHORTCUTS);
             if (shortcuts != null && shortcuts.size() > shortcutEvent.Index)
             {
                // remove the shortcut from the saved list and persist back
                shortcuts.remove(shortcutEvent.Index);
-               this.nodeService.setProperty(prefRef, QNAME_SHORTCUTS, (Serializable)shortcuts);
+               PreferencesService.getPreferences(context).setValue(PREF_SHORTCUTS, (Serializable)shortcuts);
                
                // commit the transaction
                tx.commit();

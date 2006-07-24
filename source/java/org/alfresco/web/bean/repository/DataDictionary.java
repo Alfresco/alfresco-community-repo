@@ -24,10 +24,7 @@ import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Lighweight client side representation of the repository data dictionary. 
@@ -38,9 +35,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class DataDictionary
 {
-   private static Log logger = LogFactory.getLog(DataDictionary.class);
    private DictionaryService dictionaryService;
-   private NamespaceService namespaceService;
    private Map<QName, TypeDefinition> types = new HashMap<QName, TypeDefinition>(11, 1.0f);
 
    /**

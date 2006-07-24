@@ -1514,4 +1514,28 @@
       </attribute>
    </tag>
    
+   <tag>
+      <name>nodeInfo</name>
+      <tag-class>org.alfresco.web.ui.repo.tag.NodeInfoTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <description>
+         The nodeInfo component wraps another component, typically an
+         action link, to provide a floating pop up panel containing
+         information on a particular node.
+      </description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
 </taglib>

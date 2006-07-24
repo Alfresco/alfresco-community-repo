@@ -95,6 +95,24 @@ public class CreateSpaceWizard extends BaseWizardBean
       this.saveAsTemplate = false;
    }
    
+   public String next()
+   {
+      // if the user has chosen to create the space from an existing
+      // space or from a template we need to find it's type to show
+      // the current set of icons.
+      if (this.createFrom.equals("existing") && this.existingSpaceId != null)
+      {
+         this.spaceType = this.nodeService.getType(this.existingSpaceId).toString();
+      }
+      else if (this.createFrom.equals("template") && this.templateSpaceId != null)
+      {
+         NodeRef templateNode = new NodeRef(Repository.getStoreRef(), this.templateSpaceId);
+         this.spaceType = this.nodeService.getType(templateNode).toString();
+      }
+      
+      return null;
+   }
+   
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
@@ -611,6 +629,7 @@ public class CreateSpaceWizard extends BaseWizardBean
       //       which the user can change during the advanced space wizard
       
       List<UIListItem> icons = null;
+      List<String> iconNames = new ArrayList<String>(8);
       
       QName type = QName.createQName(this.spaceType);
       String typePrefixForm = type.toPrefixString(this.namespaceService);
@@ -648,6 +667,7 @@ public class CreateSpaceWizard extends BaseWizardBean
                   item.setValue(iconName);
                   item.getAttributes().put("image", iconPath);
                   icons.add(item);
+                  iconNames.add(iconName);
                }
             }
          }
@@ -660,9 +680,17 @@ public class CreateSpaceWizard extends BaseWizardBean
          this.icon = DEFAULT_SPACE_ICON_NAME;
          
          UIListItem item = new UIListItem();
-         item.setValue("space-icon-default");
+         item.setValue(DEFAULT_SPACE_ICON_NAME);
          item.getAttributes().put("image", "/images/icons/space-icon-default.gif");
          icons.add(item);
+         iconNames.add(DEFAULT_SPACE_ICON_NAME);
+      }
+      
+      // make sure the current value for the icon is valid for the 
+      // current list of icons about to be displayed
+      if (iconNames.contains(this.icon) == false)
+      {
+         this.icon = iconNames.get(0);
       }
       
       return icons;

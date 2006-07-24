@@ -17,21 +17,16 @@
 package org.alfresco.web.ui.repo.component.template;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
-import org.alfresco.repo.template.DateCompareMethod;
-import org.alfresco.repo.template.HasAspectMethod;
-import org.alfresco.repo.template.I18NMessageMethod;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
-import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -108,9 +103,6 @@ public class UITemplate extends SelfRenderingComponent
          return;
       }
       
-      // get the data model to use - building default if required
-      Object model = getModel();
-      
       // get the template to process
       String template = getTemplate();
       if (template != null && template.length() != 0)
@@ -124,6 +116,9 @@ public class UITemplate extends SelfRenderingComponent
             logger.debug("Using template processor name: " + engine);
             startTime = System.currentTimeMillis();
          }
+         
+         // get the data model to use - building default if required
+         Object model = getModel();
          
          // process the template against the model
          try
@@ -195,7 +190,16 @@ public class UITemplate extends SelfRenderingComponent
             FacesContext fc = FacesContext.getCurrentInstance();
             ServiceRegistry services = Repository.getServiceRegistry(fc);
             User user = Application.getCurrentUser(fc);
-            Map root = DefaultModelHelper.buildDefaultModel(services, user);
+            
+            // add the template itself to the model
+            NodeRef templateRef = null;
+            if (getTemplate().indexOf(StoreRef.URI_FILLER) != -1)
+            {
+               // found a noderef template
+               templateRef = new NodeRef(getTemplate());
+            }
+            
+            Map root = DefaultModelHelper.buildDefaultModel(services, user, templateRef);
             
             // merge models
             if (model instanceof Map)

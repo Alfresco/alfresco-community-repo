@@ -28,7 +28,7 @@ import org.alfresco.web.bean.repository.Repository;
  * 
  * @author gavinc
  */
-public class AspectEvaluator implements Evaluator
+public final class AspectEvaluator implements Evaluator
 {
    /**
     * Determines whether the given aspect is applied to the given object
@@ -51,5 +51,4 @@ public class AspectEvaluator implements Evaluator
       
       return result;
    }
-
 }

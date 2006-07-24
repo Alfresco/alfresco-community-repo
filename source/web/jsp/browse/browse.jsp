@@ -137,11 +137,6 @@
                                  <%-- More actions menu --%>
                                  <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
                                     <r:actions id="acts_browse" value="browse_actions_menu" context="#{NavigationBean.currentNode}" />
-                                    
-                                    <%-- admin user only actions --%>
-                                    <a:booleanEvaluator value="#{NavigationBean.currentUser.admin == true}" id="eval8">
-                                       <a:actionLink value="#{msg.admin_console}" image="/images/icons/admin_console.gif" action="adminConsole" id="link11" />
-                                    </a:booleanEvaluator>
                                  </a:menu>
                               </td>
                            </a:panel>
@@ -268,9 +263,11 @@
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
                            </f:facet>
-                           <a:actionLink id="col3-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}" styleClass="title">
-                              <f:param name="id" value="#{r.id}" />
-                           </a:actionLink>
+                           <r:nodeInfo id="col3-act2-nodeinfo" value="#{r.id}">
+                              <a:actionLink id="col3-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}" styleClass="title">
+                                 <f:param name="id" value="#{r.id}" />
+                              </a:actionLink>
+                           </r:nodeInfo>
                         </a:column>
                         
                         <%-- Description column for all view modes --%>

@@ -189,11 +189,11 @@
                                     <a:actionLink value="#{msg.modify}" image="/images/icons/edituser.gif" showLink="false" action="editUser" actionListener="#{NewUserWizard.startWizardForEdit}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
-                                    <a:actionLink value="#{msg.change_password}" image="/images/icons/change_password.gif" showLink="false" action="changePassword" actionListener="#{UsersBean.setupUserAction}">
+                                    <a:actionLink value="#{msg.change_password}" image="/images/icons/change_password.gif" showLink="false" action="dialog:changePassword" actionListener="#{UsersBean.setupUserAction}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
                                     <a:booleanEvaluator value="#{r.userName != 'admin'}">
-                                       <a:actionLink value="#{msg.delete}" image="/images/icons/delete_person.gif" showLink="false" action="deleteUser" actionListener="#{UsersBean.setupUserAction}">
+                                       <a:actionLink value="#{msg.delete}" image="/images/icons/delete_person.gif" showLink="false" action="dialog:deleteUser" actionListener="#{UsersBean.setupUserAction}">
                                           <f:param name="id" value="#{r.id}" />
                                        </a:actionLink>
                                     </a:booleanEvaluator>
@@ -211,7 +211,7 @@
                               <table cellpadding="0" cellspacing="0" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.close}" action="adminConsole" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.close}" action="dialog:close" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

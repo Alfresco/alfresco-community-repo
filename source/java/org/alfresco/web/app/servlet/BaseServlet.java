@@ -66,10 +66,10 @@ public abstract class BaseServlet extends HttpServlet
    static
    {
       validRedirectJSPs.add("/jsp/browse/browse.jsp");
-      validRedirectJSPs.add("/jsp/browse/dashboard.jsp");
       validRedirectJSPs.add("/jsp/admin/admin-console.jsp");
       validRedirectJSPs.add("/jsp/admin/node-browser.jsp");
       validRedirectJSPs.add("/jsp/admin/store-browser.jsp");
+      validRedirectJSPs.add("/jsp/users/user-console.jsp");
       validRedirectJSPs.add("/jsp/categories/categories.jsp");
       validRedirectJSPs.add("/jsp/dialog/about.jsp");
       validRedirectJSPs.add("/jsp/dialog/advanced-search.jsp");
@@ -77,6 +77,7 @@ public abstract class BaseServlet extends HttpServlet
       validRedirectJSPs.add("/jsp/forums/forums.jsp");
       validRedirectJSPs.add("/jsp/users/users.jsp");
       validRedirectJSPs.add("/jsp/trashcan/trash-list.jsp");
+      validRedirectJSPs.add("/jsp/dashboards/container.jsp");
    }
    
    private static Log logger = LogFactory.getLog(BaseServlet.class);
@@ -103,8 +104,22 @@ public abstract class BaseServlet extends HttpServlet
     * 
     * @throws IOException
     */
-   public AuthenticationStatus servletAuthenticate(HttpServletRequest req, HttpServletResponse res)
+   public AuthenticationStatus servletAuthenticate(HttpServletRequest req, HttpServletResponse res) 
       throws IOException
+   {
+      return servletAuthenticate(req, res, true);
+   }
+   
+   /**
+    * Perform an authentication for the servlet request URI. Processing any "ticket" or
+    * "guest" URL arguments.
+    * 
+    * @return AuthenticationStatus
+    * 
+    * @throws IOException
+    */
+   public AuthenticationStatus servletAuthenticate(HttpServletRequest req, HttpServletResponse res,
+         boolean redirectToLoginPage) throws IOException
    {
       AuthenticationStatus status;
       
@@ -124,9 +139,9 @@ public abstract class BaseServlet extends HttpServlet
          }
          status = AuthenticationHelper.authenticate(getServletContext(), req, res, forceGuest);
       }
-      if (status == AuthenticationStatus.Failure)
+      if (status == AuthenticationStatus.Failure && redirectToLoginPage)
       {
-         // authentication failed - now need to display the login page to the user
+         // authentication failed - now need to display the login page to the user, if asked to
          redirectToLoginPage(req, res, getServletContext());
       }
       

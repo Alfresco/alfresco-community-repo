@@ -225,7 +225,11 @@ public final class SearchContext implements Serializable
                   }
                   
                   // special case for AND all terms if set (apply after operator character removed)
-                  operatorAND = operatorAND | this.forceAndTerms;
+                  // note that we can't force AND if NOT operator has been set
+                  if (operatorNOT == false)
+                  {
+                     operatorAND = operatorAND | this.forceAndTerms;
+                  }
                   
                   if (term.length() != 0)
                   {

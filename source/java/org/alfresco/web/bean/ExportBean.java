@@ -103,7 +103,7 @@ public class ExportBean
              params.put(ExporterActionExecuter.PARAM_PACKAGE_NAME, this.packageName);
              params.put(ExporterActionExecuter.PARAM_ENCODING, this.encoding);
              params.put(ExporterActionExecuter.PARAM_DESTINATION_FOLDER, this.destination);
-             params.put(ExporterActionExecuter.PARAM_INCLUDE_CHILDREN, new Boolean(includeChildren));
+             params.put(ExporterActionExecuter.PARAM_INCLUDE_CHILDREN, Boolean.valueOf(includeChildren));
              params.put(ExporterActionExecuter.PARAM_INCLUDE_SELF, new Boolean(includeSelf));
              action = this.actionService.createAction(ExporterActionExecuter.NAME, params);
          }

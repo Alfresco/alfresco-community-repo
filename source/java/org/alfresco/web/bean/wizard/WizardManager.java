@@ -412,8 +412,8 @@ public class WizardManager
       if (logger.isDebugEnabled())
          logger.debug("next called, current step is now: " + this.currentStep);
       
-      // TODO: place a hook in here to call the wizard bean so it can override
-      //       what step comes next thus overrriding the wizard manager
+      // tell the wizard the next button has been pressed
+      this.currentWizard.next();
       
       determineCurrentPage();
    }
@@ -430,8 +430,8 @@ public class WizardManager
       if (logger.isDebugEnabled())
          logger.debug("back called, current step is now: " + this.currentStep);
       
-      // TODO: place a hook in here to call the wizard bean so it can override
-      //       what step comes next thus overrriding the wizard manager
+      // tell the wizard the back button has been pressed
+      this.currentWizard.back();
       
       determineCurrentPage();
    }

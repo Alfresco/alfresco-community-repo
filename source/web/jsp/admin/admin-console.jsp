@@ -98,13 +98,13 @@
                                  <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "ballongrey", "#EEEEEE"); %>
                                  <table cellpadding="6" cellspacing="6" border="0" width="100%">
                                     <tr>
-                                       <td><a:actionLink value="#{msg.manage_users}" image="/images/icons/users.gif" action="manageUsers" styleClass="title" actionListener="#{NewUserWizard.setupUsers}" /></td>
+                                       <td><a:actionLink value="#{msg.manage_users}" image="/images/icons/users.gif" action="dialog:manageUsers" styleClass="title" actionListener="#{NewUserWizard.setupUsers}" /></td>
                                     </tr>
                                     <tr>
-                                       <td><a:actionLink value="#{msg.manage_groups}" image="/images/icons/group.gif" action="manageGroups" styleClass="title" /></td>
+                                       <td><a:actionLink value="#{msg.manage_groups}" image="/images/icons/group.gif" action="dialog:manageGroups" styleClass="title" /></td>
                                     </tr>
                                     <tr>
-                                       <td><a:actionLink value="#{msg.category_management}" image="/images/icons/categories.gif" action="manageCategories" styleClass="title" /></td>
+                                       <td><a:actionLink value="#{msg.category_management}" image="/images/icons/categories.gif" action="dialog:manageCategories" styleClass="title" /></td>
                                     </tr>
                                     <tr>
                                        <td>
@@ -121,10 +121,10 @@
                                        </td>
                                     </tr>
                                     <tr>
-                                       <td><a:actionLink value="#{msg.system_info}" image="/images/icons/info_icon.gif" action="showSystemInfo" styleClass="title" /></td>
+                                       <td><a:actionLink value="#{msg.system_info}" image="/images/icons/info_icon.gif" action="dialog:showSystemInfo" styleClass="title" /></td>
                                     </tr>
                                     <tr>
-                                       <td><a:actionLink value="#{msg.node_browser}" image="/images/icons/node_browser.gif" action="showNodeBrowser" styleClass="title" /></td>
+                                       <td><a:actionLink value="#{msg.node_browser}" image="/images/icons/node_browser.gif" action="dialog:showNodeBrowser" styleClass="title" /></td>
                                     </tr>
                                  </table>
                                  <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "ballongrey"); %>
@@ -136,7 +136,7 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.close}" action="browse" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.close}" action="dialog:close" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

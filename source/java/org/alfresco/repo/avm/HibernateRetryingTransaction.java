@@ -82,12 +82,15 @@ class HibernateRetryingTransaction extends HibernateTemplate implements Retrying
                 status = 
                     fTransactionManager.getTransaction(write ? fWriteDefinition : fReadDefinition);
                 execute(new HibernateCallbackWrapper(callback));
+                fTransactionManager.commit(status);
+                return;
             }
             catch (Throwable t)
             {
                 if (status == null)
                 {
                     t.printStackTrace(System.err);
+                    throw new AVMException("Unrecoverable error.", t);
                 }
                 if (!status.isCompleted())
                 {
@@ -128,15 +131,6 @@ class HibernateRetryingTransaction extends HibernateTemplate implements Retrying
                 }
                 throw new AVMException("Unrecoverable error.", t);
             }
-            try
-            {
-                fTransactionManager.commit(status);
-            }
-            catch (TransactionException te)
-            {
-                throw new AVMException("Transaction Exception.", te);
-            }
-            return;
         }
     }
     

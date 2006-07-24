@@ -40,6 +40,24 @@ import org.alfresco.service.namespace.QName;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test goofy paths.
+     */
+    public void testGoofyPaths()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.getFileInputStream(-1, "main://a/b/c/foo").close();
+            fService.getDirectoryListing(-1, "main:/a/");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
      * Test getting deleted names.
      */
     public void testGetDeleted()

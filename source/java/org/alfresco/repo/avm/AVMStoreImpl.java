@@ -519,18 +519,21 @@ class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMException("Invalid path: " + path);
         }
-        if (path.length() > 1)
+        while (path.startsWith("/"))
         {
             path = path.substring(1);
         }
-        String[] pathElements = path.split("/");
+        while (path.endsWith("/"))
+        {
+            path = path.substring(0, path.length() - 1);
+        }
+        String[] pathElements = path.split("/+");
         // Grab the root node to start the lookup.
         DirectoryNode dir = null;
         // Versions less than 0 mean get current.
         if (version < 0)
         {
-            dir = fRoot; // TODO How to factor out this kind of Hibernate goofiness.
-                         // (DirectoryNode)AVMNodeUnwrapper.Unwrap(fRoot);
+            dir = fRoot;
         }
         else
         {
@@ -539,7 +542,7 @@ class AVMStoreImpl implements AVMStore, Serializable
         // Add an entry for the root.
         result.add(dir, "", write);
         dir = (DirectoryNode)result.getCurrentNode();
-        if (pathElements.length == 0)
+        if (pathElements.length == 1 && pathElements[0].equals(""))
         {
             return result;
         }

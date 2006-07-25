@@ -325,7 +325,17 @@ public class LoginBean
             }
             else
             {
-               return "success";
+               // special case to handle jump to My Alfresco page initially
+               String location = Application.getClientConfig(FacesContext.getCurrentInstance()).getInitialLocation();
+               if (NavigationBean.LOCATION_MYALFRESCO.equals(location))
+               {
+                  return "myalfresco";
+               }
+               else
+               {
+                  // generally this will navigate to the generic browse screen
+                  return "success";
+               }
             }
          }
          catch (AuthenticationException aerr)

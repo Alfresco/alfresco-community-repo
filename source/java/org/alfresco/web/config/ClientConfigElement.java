@@ -40,6 +40,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private String editLinkType = "http";
    private String homeSpacePermission = null;
    private boolean ajaxEnabled = false;
+   private String initialLocation = null;
    
    /**
     * Default Constructor
@@ -143,6 +144,17 @@ public class ClientConfigElement extends ConfigElementAdapter
           (newElement.getFromEmailAddress().equals(combinedElement.getFromEmailAddress()) == false))
       {
          combinedElement.setFromEmailAddress(newElement.getFromEmailAddress());
+      }
+      
+      if (newElement.isAjaxEnabled() != combinedElement.isAjaxEnabled())
+      {
+         combinedElement.setAjaxEnabled(newElement.isAjaxEnabled());
+      }
+      
+      if (newElement.getInitialLocation() != null &&
+          newElement.getInitialLocation().equals(combinedElement.getInitialLocation()) == false)
+      {
+         combinedElement.setInitialLocation(newElement.getInitialLocation());
       }
       
       return combinedElement;
@@ -347,5 +359,21 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setAjaxEnabled(boolean ajaxEnabled)
    {
       this.ajaxEnabled = ajaxEnabled;
+   }
+   
+   /**
+    * @return Returns the default initial location for the user.
+    */
+   public String getInitialLocation()
+   {
+      return this.initialLocation;
+   }
+
+   /**
+    * @param initialLocation  The initial location to set.
+    */
+   /*package*/ void setInitialLocation(String initialLocation)
+   {
+      this.initialLocation = initialLocation;
    }
 }

@@ -187,11 +187,93 @@ public class NavigationBean
    }
    
    /**
-    * @param toolbarLocation  The toolbar Location to set.
+    * @param location  The toolbar Location to set.
     */
-   public void setToolbarLocation(String toolbarLocation)
+   public void setToolbarLocation(String location)
    {
-      this.toolbarLocation = toolbarLocation;
+      processToolbarLocation(location, true);
+   }
+   
+   /**
+    * Process the selected toolbar location. Setup the breadcrumb with initial value and
+    * setup the current node ID. This method can also perform the navigatin setup if requested.
+    * 
+    * @param location      Toolbar location constant
+    * @param navigate      True to perform navigation, false otherwise
+    */
+   private void processToolbarLocation(String location, boolean navigate)
+   {
+      this.toolbarLocation = location;
+      
+      FacesContext context = FacesContext.getCurrentInstance();
+      if (LOCATION_COMPANY.equals(location))
+      {
+         List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
+         Node companyHome = getCompanyHomeNode();
+         elements.add(new NavigationBreadcrumbHandler(companyHome.getNodeRef(), companyHome.getName()));
+         setLocation(elements);
+         setCurrentNodeId(companyHome.getId());
+         
+         // we need to force a navigation to refresh the browse screen breadcrumb
+         if (navigate)
+         {
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, OUTCOME_BROWSE);
+         }
+      }
+      else if (LOCATION_HOME.equals(location))
+      {
+         List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
+         String homeSpaceId = Application.getCurrentUser(context).getHomeSpaceId();
+         NodeRef homeSpaceRef = new NodeRef(Repository.getStoreRef(), homeSpaceId);
+         String homeSpaceName = Repository.getNameForNode(this.nodeService, homeSpaceRef);
+         elements.add(new NavigationBreadcrumbHandler(homeSpaceRef, homeSpaceName));
+         setLocation(elements);
+         setCurrentNodeId(homeSpaceRef.getId());
+         
+         // we need to force a navigation to refresh the browse screen breadcrumb
+         if (navigate)
+         {
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, OUTCOME_BROWSE);
+         }
+      }
+      else if (LOCATION_GUEST.equals(location))
+      {
+         List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
+         Node guestHome = getGuestHomeNode();
+         elements.add(new NavigationBreadcrumbHandler(guestHome.getNodeRef(), guestHome.getName()));
+         setLocation(elements);
+         setCurrentNodeId(guestHome.getId());
+         
+         // we need to force a navigation to refresh the browse screen breadcrumb
+         if (navigate)
+         {
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, OUTCOME_BROWSE);
+         }
+      }
+      else if (LOCATION_MYALFRESCO.equals(location))
+      {
+         List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
+         elements.add(new IBreadcrumbHandler()
+            {
+               public String navigationOutcome(UIBreadcrumb breadcrumb)
+               {
+                  setLocation( (List)breadcrumb.getValue() );
+                  return OUTCOME_MYALFRESCO;
+               };
+               
+               public String toString()
+               {
+                  return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MYALFRESCO);
+               };
+            });
+         setLocation(elements);
+         
+         // we need to force a navigation to refresh the browse screen breadcrumb
+         if (navigate)
+         {
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, OUTCOME_MYALFRESCO);
+         }
+      }
    }
    
    /**
@@ -396,20 +478,20 @@ public class NavigationBean
          
          if (diskShare != null)
          {
-             ContentContext contentCtx = (ContentContext) diskShare.getContext();
-             NodeRef rootNode = contentCtx.getRootNode();
-             try
-             {
-                String cifsPath = Repository.getNamePath(this.nodeService, path, rootNode, "\\", "file:///" + getCIFSServerPath(diskShare));
-              
-                node.getProperties().put("cifsPath", cifsPath);
-                node.getProperties().put("cifsPathLabel", cifsPath.substring(8));  // strip file:/// part
-             }
-             catch(AccessDeniedException ade)
-             {
-                 node.getProperties().put("cifsPath", "");
-                 node.getProperties().put("cifsPathLabel","");  // strip file:/// part
-             }
+            ContentContext contentCtx = (ContentContext) diskShare.getContext();
+            NodeRef rootNode = contentCtx.getRootNode();
+            try
+            {
+               String cifsPath = Repository.getNamePath(this.nodeService, path, rootNode, "\\", "file:///" + getCIFSServerPath(diskShare));
+               
+               node.getProperties().put("cifsPath", cifsPath);
+               node.getProperties().put("cifsPathLabel", cifsPath.substring(8));  // strip file:/// part
+            }
+            catch(AccessDeniedException ade)
+            {
+               node.getProperties().put("cifsPath", "");
+               node.getProperties().put("cifsPathLabel","");  // strip file:/// part
+            }
          }
          
          this.currentNode = node;
@@ -425,26 +507,13 @@ public class NavigationBean
    {
       if (this.location == null)
       {
-         // set the current node to the users Home Space Id if one has not already been set
-         NodeRef homeSpaceRef;
-         List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
-         if (getCurrentNodeId() == null)
+         // get the initial location from the client config
+         String initialLocation = clientConfig.getInitialLocation();
+         if (initialLocation == null || initialLocation.length() == 0)
          {
-            User user = Application.getCurrentUser(FacesContext.getCurrentInstance());
-            homeSpaceRef = new NodeRef(Repository.getStoreRef(), user.getHomeSpaceId());
+            initialLocation = LOCATION_HOME;
          }
-         else
-         {
-            homeSpaceRef = new NodeRef(Repository.getStoreRef(), getCurrentNodeId());
-         }
-         
-         // set initial node ID
-         setCurrentNodeId(homeSpaceRef.getId());
-         
-         // setup the breadcrumb with the same initial location
-         String homeSpaceName = Repository.getNameForNode(this.nodeService, homeSpaceRef);
-         elements.add(new NavigationBreadcrumbHandler(homeSpaceRef, homeSpaceName));
-         setLocation(elements);
+         processToolbarLocation(initialLocation, false);
       }
       
       return this.location;
@@ -591,63 +660,6 @@ public class NavigationBean
          UIModeList locationList = (UIModeList)event.getComponent();
          String location = locationList.getValue().toString();
          setToolbarLocation(location);
-         
-         if (LOCATION_COMPANY.equals(location))
-         {
-            List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
-            Node companyHome = getCompanyHomeNode();
-            elements.add(new NavigationBreadcrumbHandler(companyHome.getNodeRef(), companyHome.getName()));
-            setLocation(elements);
-            setCurrentNodeId(companyHome.getId());
-            
-            // we need to force a navigation to refresh the browse screen breadcrumb
-            context.getApplication().getNavigationHandler().handleNavigation(context, null, OUTCOME_BROWSE);
-         }
-         else if (LOCATION_HOME.equals(location))
-         {
-            List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
-            String homeSpaceId = Application.getCurrentUser(context).getHomeSpaceId();
-            NodeRef homeSpaceRef = new NodeRef(Repository.getStoreRef(), homeSpaceId);
-            String homeSpaceName = Repository.getNameForNode(this.nodeService, homeSpaceRef);
-            elements.add(new NavigationBreadcrumbHandler(homeSpaceRef, homeSpaceName));
-            setLocation(elements);
-            setCurrentNodeId(homeSpaceRef.getId());
-            
-            // we need to force a navigation to refresh the browse screen breadcrumb
-            context.getApplication().getNavigationHandler().handleNavigation(context, null, OUTCOME_BROWSE);
-         }
-         else if (LOCATION_GUEST.equals(location))
-         {
-            List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
-            Node guestHome = getGuestHomeNode();
-            elements.add(new NavigationBreadcrumbHandler(guestHome.getNodeRef(), guestHome.getName()));
-            setLocation(elements);
-            setCurrentNodeId(guestHome.getId());
-            
-            // we need to force a navigation to refresh the browse screen breadcrumb
-            context.getApplication().getNavigationHandler().handleNavigation(context, null, OUTCOME_BROWSE);
-         }
-         else if (LOCATION_DASHBOARD.equals(location))
-         {
-            List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
-            elements.add(new IBreadcrumbHandler()
-               {
-                  public String navigationOutcome(UIBreadcrumb breadcrumb)
-                  {
-                     setLocation( (List)breadcrumb.getValue() );
-                     return OUTCOME_MYALFRESCO;
-                  };
-                  
-                  public String toString()
-                  {
-                     return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MYALFRESCO);
-                  };
-               });
-            setLocation(elements);
-            
-            // we need to force a navigation to refresh the browse screen breadcrumb
-            context.getApplication().getNavigationHandler().handleNavigation(context, null, OUTCOME_MYALFRESCO);
-         }
       }
       catch (InvalidNodeRefException refErr)
       {
@@ -770,10 +782,10 @@ public class NavigationBean
    private static Logger s_logger = Logger.getLogger(NavigationBean.class);
    
    /** constant values used by the toolbar location modelist control */
-   private static final String LOCATION_COMPANY = "company";
-   private static final String LOCATION_HOME = "home";
-   private static final String LOCATION_GUEST = "guest";
-   private static final String LOCATION_DASHBOARD = "dashboard";
+   static final String LOCATION_COMPANY    = "companyhome";
+   static final String LOCATION_HOME       = "userhome";
+   static final String LOCATION_GUEST      = "guesthome";
+   static final String LOCATION_MYALFRESCO = "myalfresco";
    
    private static final String MSG_MYALFRESCO = "my_alfresco";
    

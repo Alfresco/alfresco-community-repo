@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.BrowseBean;
+import org.alfresco.web.bean.dashboard.DashboardManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -64,9 +65,11 @@ public class ExternalAccessServlet extends BaseServlet
    private final static String OUTCOME_DOCDETAILS   = "showDocDetails";
    private final static String OUTCOME_SPACEDETAILS = "showSpaceDetails";
    private final static String OUTCOME_BROWSE       = "browse";
+   private final static String OUTCOME_MYALFRESCO   = "myalfresco";
    private final static String OUTCOME_LOGOUT       = "logout";
    
    private static final String ARG_TEMPLATE  = "template";
+   private static final String ARG_PAGE = "page";
    
    /**
     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -223,6 +226,19 @@ public class ExternalAccessServlet extends BaseServlet
             NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
             navigationHandler.handleNavigation(fc, null, outcome);
          }
+      }
+      else if (OUTCOME_MYALFRESCO.equals(outcome))
+      {
+         // setup the Dashboard Manager ready for the page we want to display
+         if (req.getParameter(ARG_PAGE) != null)
+         {
+            DashboardManager manager = (DashboardManager)FacesHelper.getManagedBean(fc, "DashboardManager");
+            manager.getPageConfig().setCurrentPage(req.getParameter(ARG_PAGE));
+         }
+         
+         // perform the appropriate JSF navigation outcome
+         NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
+         navigationHandler.handleNavigation(fc, null, outcome);
       }
       else if (OUTCOME_LOGOUT.equals(outcome))
       {

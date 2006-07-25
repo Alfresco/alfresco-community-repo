@@ -52,6 +52,10 @@
          <!-- see org.alfresco.service.cmr.security.PermissionService for allowed values -->
          <home-space-permission>Consumer</home-space-permission>
          
+         <!-- The default location to display when the browse screen is first shown -->
+         <!-- This value should be one of 'companyhome', 'userhome', 'guesthome' or 'myalfresco' -->
+         <initial-location>userhome</initial-location>
+         
          <!-- the URL to the client Help file -->
          <help-url>http://www.alfresco.org/help/webclient</help-url>
          

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="Review and Approve">
+   <swimlane name="Initiator"></swimlane>
+   <start-state name="start">
+     <task name="Submit" swimlane="Initiator">
+        <controller>
+          <variable name="reviewer" />
+        </controller>
+      </task>
+      <transition name="" to="Review"></transition>
+   </start-state>
+   <swimlane name="Reviewer">
+      <assignment actor-id="#{reviewer}"></assignment>
+   </swimlane>
+   <task-node name="Review">
+      <task name="Review" duedate="1 business day" blocking="true" swimlane="Reviewer">
+         <controller>
+            <variable name="comment" access="read,write,required"></variable>
+         </controller>
+      </task>
+      <transition name="reject" to="Rejected"></transition>
+      <transition name="approve" to="Approved"></transition>
+   </task-node>
+   <end-state name="end"></end-state>
+   <task-node name="Rejected">
+      <task name="Rejected" swimlane="Initiator">
+         <controller>
+            <variable name="comment" access="read"></variable>
+         </controller>
+      </task>
+      <transition name="" to="end"></transition>
+   </task-node>
+   <task-node name="Approved">
+      <task name="Approved" swimlane="Initiator">
+         <controller>
+            <variable name="comment" access="read"></variable>
+         </controller>
+      </task>
+      <transition name="" to="end"></transition>
+   </task-node>
+</process-definition>

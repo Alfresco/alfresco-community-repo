@@ -4,16 +4,25 @@
 <beans>
 
    <!-- jBPM configuration -->
-   <bean id="jbpm.configuration" class="org.springmodules.workflow.jbpm31.LocalJbpmConfigurationFactoryBean">
+   <bean id="jbpm_configuration" class="org.springmodules.workflow.jbpm31.LocalJbpmConfigurationFactoryBean">
       <property name="sessionFactory" ref="sessionFactory"/>
       <property name="configuration" value="classpath:org/jbpm/default.jbpm.cfg.xml"/>
+      <property name="processDefinitions">
+      <list>
+         <ref local="jbpm_testWorkflow"/>
+      </list>
+      </property>
+      
    </bean>
 
    <!-- jBPM template -->
-   <bean id="jbpm.template" class="org.springmodules.workflow.jbpm31.JbpmTemplate">
-      <constructor-arg index="0" ref="jbpm.configuration"/>
+   <bean id="jbpm_template" class="org.springmodules.workflow.jbpm31.JbpmTemplate">
+      <constructor-arg index="0" ref="jbpm_configuration"/>
    </bean>
 
-   
+   <!-- TODO: Remove this - for short-term testing only -->
+   <bean id="jbpm_testWorkflow" class="org.springmodules.workflow.jbpm31.definition.ProcessDefinitionFactoryBean">
+    <property name="definitionLocation" value="classpath:org/alfresco/repo/workflow/jbpm/test_processdefinition.xml"/>
+  </bean>   
 
 </beans>

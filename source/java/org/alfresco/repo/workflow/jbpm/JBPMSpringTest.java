@@ -41,9 +41,9 @@ public class JBPMSpringTest extends BaseSpringTest
 
         
     //@Override
-    protected void xonSetUpInTransaction() throws Exception
+    protected void onSetUpInTransaction() throws Exception
     {
-        jbpmTemplate = (JbpmTemplate)applicationContext.getBean("jbpm.template");
+        jbpmTemplate = (JbpmTemplate)applicationContext.getBean("jbpm_template");
         descriptorService = (DescriptorService)applicationContext.getBean("DescriptorService");
     }
     
@@ -51,7 +51,7 @@ public class JBPMSpringTest extends BaseSpringTest
     {
     }
         
-    public void xtestHelloWorld()
+    public void testHelloWorld()
         throws Exception
     {
         // Between the 3 method calls below, all data is passed via the 
@@ -74,21 +74,21 @@ public class JBPMSpringTest extends BaseSpringTest
         theProcessInstanceContinuesWhenAnAsyncMessageIsReceived();
     }
 
-    public void xtestStep0()
+    public void testStep0()
         throws Exception
     {
         deployProcessDefinition();
         setComplete();
     }
 
-    public void xtestStep1()
+    public void testStep1()
         throws Exception
     {
         processInstanceIsCreatedWhenUserSubmitsWebappForm();
         setComplete();
     }
     
-    public void xtestStep2()
+    public void testStep2()
         throws Exception
     {
         theProcessInstanceContinuesWhenAnAsyncMessageIsReceived();

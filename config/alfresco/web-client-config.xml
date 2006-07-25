@@ -193,7 +193,9 @@
                   description="My Documents Template Page"
                   jsp="/jsp/dashboards/dashlets/my-docs.jsp" allow-narrow="true" />
             <dashlet id="task-list" label="My Tasklist To-do" description="List of your tasks still to complete"
-                  jsp="/jsp/dashboards/dashlets/tasklist-todo.jsp" allow-narrow="false" />
+                  jsp="/jbpm/task_list.jsp" allow-narrow="true" />
+            <dashlet id="process-list" label="Workflows" description="List of workflows you may start"
+                  jsp="/jbpm/process_list.jsp" allow-narrow="true" />
             <dashlet id="task-list-complete" label="My Tasks Completed" description="List of your completed tasks"
                   jsp="/jsp/dashboards/dashlets/tasklist-completed.jsp" allow-narrow="false" />
             <dashlet id="content-checkedout" label="My Checkedout Content" description="List of the content checked out to you"

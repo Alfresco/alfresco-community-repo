@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Jesper Steen M�ller
+ * Copyright (C) 2005 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a

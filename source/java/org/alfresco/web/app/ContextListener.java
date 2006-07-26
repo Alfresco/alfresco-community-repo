@@ -146,17 +146,7 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
     */
    public void contextDestroyed(ServletContextEvent event)
    {
-      WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-      Scheduler quartz = (Scheduler) ctx.getBean("schedulerFactory");
-      try
-      {
-         quartz.shutdown(true);
-      }
-      catch (SchedulerException e)
-      {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
+      // nothing to do
    }
 
    /**

@@ -279,12 +279,15 @@ public class LoginBean
             // in the session - this is used by the servlet filter etc. on each page to check for login
             this.authenticationService.authenticate(this.username, this.password.toCharArray());
             
+            // Set the user name as stored by the back end 
+            this.username = this.authenticationService.getCurrentUserName();
+            
             // remove the session invalidated flag (used to remove last username cookie by AuthenticationFilter)
             session.remove(AuthenticationHelper.SESSION_INVALIDATED);
             
             // setup User object and Home space ID
             User user = new User(
-                  this.authenticationService.getCurrentUserName(),
+                    this.username,
                   this.authenticationService.getCurrentTicket(),
                   personService.getPerson(this.username));
             

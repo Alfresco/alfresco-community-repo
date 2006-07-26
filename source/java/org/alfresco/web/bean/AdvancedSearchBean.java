@@ -621,10 +621,6 @@ public class AdvancedSearchBean
                   }
                }
             }
-            
-            // make sure the list is sorted by the label
-            QuickSort sorter = new QuickSort(this.contentTypes, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
-            sorter.sort();
          }
       }
       
@@ -673,10 +669,6 @@ public class AdvancedSearchBean
                   }
                }
             }
-            
-            // make sure the list is sorted by the label
-            QuickSort sorter = new QuickSort(this.folderTypes, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
-            sorter.sort();
          }
       }
       

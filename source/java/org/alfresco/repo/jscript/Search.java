@@ -37,6 +37,7 @@ import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * Search component for use by the ScriptService.
@@ -51,13 +52,16 @@ import org.dom4j.io.SAXReader;
  * 
  * @author Kevin Roast
  */
-public final class Search
+public final class Search implements Scopeable
 {
     private static Log logger = LogFactory.getLog(Search.class);
     
     private ServiceRegistry services;
     private StoreRef storeRef;
     private TemplateImageResolver imageResolver;
+    
+    /** Root scope for this object */
+    private Scriptable scope;
     
     
     /**
@@ -70,6 +74,14 @@ public final class Search
         this.services = services;
         this.storeRef = storeRef;
         this.imageResolver = imageResolver;
+    }
+    
+    /**
+     * @see org.alfresco.repo.jscript.Scopeable#setScope(org.mozilla.javascript.Scriptable)
+     */
+    public void setScope(Scriptable scope)
+    {
+        this.scope = scope;
     }
     
     /**
@@ -171,7 +183,9 @@ public final class Search
                 for (ResultSetRow row: results)
                 {
                     NodeRef nodeRef = row.getNodeRef();
-                    nodes[count++] = new Node(nodeRef, services, this.imageResolver);
+                    nodes[count] = new Node(nodeRef, services, this.imageResolver);
+                    nodes[count].setScope(this.scope);
+                    count++;
                 }
             }
         }

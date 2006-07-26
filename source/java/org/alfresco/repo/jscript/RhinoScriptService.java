@@ -218,7 +218,18 @@ public class RhinoScriptService implements ScriptService
             {
                 for (String key : model.keySet())
                 {
-                    Object jsObject = Context.javaToJS(model.get(key), scope);
+                    // set the root scope on appropriate objects
+                    // this is used to allow native JS object creation etc.
+                    Object obj = model.get(key);
+                    if (obj instanceof Scopeable)
+                    {
+                        ((Scopeable)obj).setScope(scope);
+                    }
+                    
+                    // convert/wrap each object to JavaScript compatible
+                    Object jsObject = Context.javaToJS(obj, scope);
+                    
+                    // insert into the root scope ready for access by the script
                     ScriptableObject.putProperty(scope, key, jsObject);
                 }
             }

@@ -56,6 +56,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeArray;
+import org.mozilla.javascript.ScriptRuntime;
+import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Wrapper;
 import org.springframework.util.StringUtils;
@@ -72,7 +74,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Kevin Roast
  */
-public final class Node implements Serializable
+public final class Node implements Serializable, Scopeable
 {
     private static Log logger = LogFactory.getLog(Node.class);
     
@@ -81,18 +83,21 @@ public final class Node implements Serializable
     private final static String CONTENT_PROP_URL    = "/download/direct/{0}/{1}/{2}/{3}?property={4}";
     private final static String FOLDER_BROWSE_URL   = "/navigate/browse/{0}/{1}/{2}";
     
-    /** The children of this node */
-    private Node[] children = null;
-    
-    /** The associations from this node */
-    private ScriptableQNameMap<String, Node[]> assocs = null;
+    /** Root scope for this object */
+    private Scriptable scope;
     
     /** Cached values */
     private NodeRef nodeRef;
     private String name;
     private QName type;
     private String id;
+    /** The aspects applied to this node */
     private Set<QName> aspects = null;
+    /** The associations from this node */
+    private ScriptableQNameMap<String, Node[]> assocs = null;
+    /** The children of this node */
+    private Node[] children = null;
+    /** The properties of this node */
     private ScriptableQNameMap<String, Serializable> properties = null;
     private ServiceRegistry services = null;
     private NodeService nodeService = null;
@@ -134,6 +139,14 @@ public final class Node implements Serializable
         this.services = services;
         this.nodeService = services.getNodeService();
         this.imageResolver = resolver;
+    }
+    
+    /**
+     * @see org.alfresco.repo.jscript.Scopeable#setScope(org.mozilla.javascript.Scriptable)
+     */
+    public void setScope(Scriptable scope)
+    {
+        this.scope = scope;
     }
     
     
@@ -248,6 +261,7 @@ public final class Node implements Serializable
             {
                 // create our Node representation from the NodeRef
                 Node child = new Node(childRefs.get(i).getChildRef(), this.services, this.imageResolver);
+                child.setScope(this.scope);
                 this.children[i] = child;
             }
         }
@@ -338,6 +352,7 @@ public final class Node implements Serializable
                     nodes = newNodes;
                 }
                 nodes[nodes.length - 1] = new Node(ref.getTargetRef(), this.services, this.imageResolver);
+                nodes[nodes.length - 1].setScope(this.scope);
                 
                 this.assocs.put(ref.getTypeQName().toString(), nodes);
             }
@@ -371,11 +386,14 @@ public final class Node implements Serializable
             for (QName qname : props.keySet())
             {
                 Serializable propValue = props.get(qname);
+                
+                // perform conversions from Java objects to JavaScript scriptable instances
                 if (propValue instanceof NodeRef)
                 {
                     // NodeRef object properties are converted to new Node objects
                     // so they can be used as objects within a template
                     propValue = new Node(((NodeRef)propValue), this.services, this.imageResolver);
+                    ((Node)propValue).setScope(this.scope);
                 }
                 else if (propValue instanceof ContentData)
                 {
@@ -383,6 +401,18 @@ public final class Node implements Serializable
                     // so the content and other properties of those objects can be accessed
                     propValue = new ScriptContentData((ContentData)propValue, qname);
                 }
+                else if (propValue instanceof Date)
+                {
+                    // convert Date to JavaScript native Date object
+                    // call the "Date" constructor on the root scope object - passing in the millisecond
+                    // value from the Java date - this will construct a JavaScript Date with the same value
+                    Date date = (Date)propValue;
+                    Object val = ScriptRuntime.newObject(
+                            Context.getCurrentContext(), this.scope, "Date", new Object[] {date.getTime()});
+                    propValue = (Serializable)val;
+                }
+                // simple numbers and strings are handled automatically by Rhino
+                
                 this.properties.put(qname.toString(), propValue);
             }
         }
@@ -675,6 +705,7 @@ public final class Node implements Serializable
             if (parentRef != null)
             {
                 parent = new Node(parentRef, this.services, this.imageResolver);
+                parent.setScope(this.scope);
             }
         }
         
@@ -945,6 +976,7 @@ public final class Node implements Serializable
                 FileInfo fileInfo = this.services.getFileFolderService().create(
                         this.nodeRef, name, ContentModel.TYPE_CONTENT);
                 node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver);
+                node.setScope(this.scope);
             }
         }
         catch (FileExistsException fileErr)
@@ -978,6 +1010,7 @@ public final class Node implements Serializable
                 FileInfo fileInfo = this.services.getFileFolderService().create(
                         this.nodeRef, name, ContentModel.TYPE_FOLDER);
                 node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver);
+                node.setScope(this.scope);
             }
         }
         catch (FileExistsException fileErr)
@@ -1019,6 +1052,7 @@ public final class Node implements Serializable
                         createQName(type),
                         props);
                 node = new Node(childAssocRef.getChildRef(), this.services, this.imageResolver);
+                node.setScope(this.scope);
             }
         }
         catch (AccessDeniedException accessErr)
@@ -1092,6 +1126,7 @@ public final class Node implements Serializable
                         getPrimaryParentAssoc().getQName(),
                         deepCopy);
                 copy = new Node(copyRef, this.services, this.imageResolver);
+                copy.setScope(this.scope);
             }
         }
         catch (AccessDeniedException accessErr)
@@ -1308,6 +1343,7 @@ public final class Node implements Serializable
                 {
                     result = new Node[1];
                     result[0] = new Node(nodes.get(0), this.services, this.imageResolver);
+                    result[0].setScope(this.scope);
                 }
             }
             // or all the results
@@ -1318,6 +1354,7 @@ public final class Node implements Serializable
                 {
                     NodeRef ref = nodes.get(i);
                     result[i] = new Node(ref, this.services, this.imageResolver);
+                    result[i].setScope(this.scope);
                 }
             }
         }

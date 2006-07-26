@@ -29,6 +29,7 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -44,7 +45,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class VersionableAspect implements ContentServicePolicies.OnContentUpdatePolicy, 
 										  NodeServicePolicies.OnAddAspectPolicy,
-										  NodeServicePolicies.OnRemoveAspectPolicy
+										  NodeServicePolicies.OnRemoveAspectPolicy,
+										  NodeServicePolicies.OnDeleteNodePolicy
 {
 	/** The i18n'ized messages */
 	private static final String MSG_INITIAL_VERSION = "create_version.initial_version";
@@ -108,6 +110,10 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
 				QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), 
 				ContentModel.ASPECT_VERSIONABLE, 
                 new JavaBehaviour(this, "onRemoveAspect", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+		this.policyComponent.bindClassBehaviour(
+				QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"), 
+				ContentModel.ASPECT_VERSIONABLE, 
+                new JavaBehaviour(this, "onDeleteNode", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
 		
         autoVersionBehaviour = new JavaBehaviour(this, "onContentUpdate", Behaviour.NotificationFrequency.TRANSACTION_COMMIT);
         this.policyComponent.bindClassBehaviour(
@@ -122,6 +128,19 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                 new JavaBehaviour(this, "onCopy"));
 	}
     
+	/**
+	 * @see org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy#onDeleteNode(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+	 */
+    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived) 
+	{
+    	if (isNodeArchived == false)
+    	{
+    		// If we are perminantly deleting the node then we need to remove the associated version history
+    		this.versionService.deleteVersionHistory(childAssocRef.getChildRef());
+    	}
+    	// otherwise we do nothing since we need to hold onto the version history in case the node is restored later
+	}
+	
     /**
      * OnCopy behaviour implementation for the version aspect.
      * <p>
@@ -218,7 +237,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
         	}
         }
     }
-    
+	
     /**
      * Enable the auto version behaviour
      *
@@ -235,5 +254,5 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     public void disableAutoVersion()
     {
         this.autoVersionBehaviour.disable();
-    }   
+    }  
 }

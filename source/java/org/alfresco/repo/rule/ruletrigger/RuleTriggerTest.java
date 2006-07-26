@@ -93,23 +93,23 @@ public class RuleTriggerTest extends BaseSpringTest
         assertTrue(ruleType.rulesTriggered);		
 	}
 	
-	public void testOnDeleteNodeTrigger()
-	{
-		NodeRef nodeRef = this.nodeService.createNode(
-                this.rootNodeRef,
-				ContentModel.ASSOC_CHILDREN,
-                ContentModel.ASSOC_CHILDREN,
-                ContentModel.TYPE_CONTAINER).getChildRef();
-		
-		TestRuleType ruleType = createTestRuleType(ON_DELETE_NODE_TRIGGER);
-		assertFalse(ruleType.rulesTriggered);
-		
-		// Try and trigger the type
-		this.nodeService.deleteNode(nodeRef);
-		
-		// Check to see if the rule type has been triggered
-        assertTrue(ruleType.rulesTriggered);		
-	}
+//	public void testOnDeleteNodeTrigger()
+//	{
+//		NodeRef nodeRef = this.nodeService.createNode(
+//                this.rootNodeRef,
+//				ContentModel.ASSOC_CHILDREN,
+//                ContentModel.ASSOC_CHILDREN,
+//                ContentModel.TYPE_CONTAINER).getChildRef();
+//		
+//		TestRuleType ruleType = createTestRuleType(ON_DELETE_NODE_TRIGGER);
+//		assertFalse(ruleType.rulesTriggered);
+//		
+//		// Try and trigger the type
+//		this.nodeService.deleteNode(nodeRef);
+//		
+//		// Check to see if the rule type has been triggered
+//        assertTrue(ruleType.rulesTriggered);		
+//	}
 	
 	public void testOnCreateChildAssociationTrigger()
 	{

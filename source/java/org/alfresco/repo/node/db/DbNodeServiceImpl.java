@@ -451,7 +451,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // invoke policy behaviour
         if (movingStore)
         {
-            invokeOnDeleteNode(oldAssocRef, nodeToMoveTypeQName, nodeToMoveAspects);
+        	// TODO for now indicate that the node has been archived to prevent the version history from being removed
+        	//      in the future a onMove policy could be added and remove the need for onDelete and onCreate to be fired here
+            invokeOnDeleteNode(oldAssocRef, nodeToMoveTypeQName, nodeToMoveAspects, true);
             invokeOnCreateNode(newAssoc.getChildAssocRef());
         }
         else
@@ -643,6 +645,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
     public void deleteNode(NodeRef nodeRef)
     {
+    	boolean isArchivedNode = false;
+    	
 		// Invoke policy behaviours
 		invokeBeforeDeleteNode(nodeRef);
 		
@@ -663,15 +667,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             // perform a normal deletion
             nodeDaoService.deleteNode(node, true);
+            isArchivedNode = false;
         }
         else
         {
             // archive it
             archiveNode(nodeRef, archiveStoreRef);
+            isArchivedNode = true;
         }
 		
 		// Invoke policy behaviours
-		invokeOnDeleteNode(childAssocRef, nodeTypeQName, nodeAspectQNames);
+		invokeOnDeleteNode(childAssocRef, nodeTypeQName, nodeAspectQNames, isArchivedNode);
     }
     
     public ChildAssociationRef addChild(NodeRef parentRef, NodeRef childRef, QName assocTypeQName, QName assocQName)

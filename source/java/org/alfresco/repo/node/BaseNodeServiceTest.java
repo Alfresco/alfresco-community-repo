@@ -679,7 +679,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             nodeService.addAspect(nodeRef, ASPECT_QNAME_TEST_TITLED, null);
         }
 
-        public void onDeleteNode(ChildAssociationRef childAssocRef)
+        public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isArchivedNode)
         {
             // add the child to the list
             deletedNodeRefs.add(childAssocRef.getChildRef());

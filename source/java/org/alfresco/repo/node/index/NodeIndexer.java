@@ -96,7 +96,7 @@ public class NodeIndexer
         indexer.updateNode(nodeRef);
     }
 
-    public void onDeleteNode(ChildAssociationRef childAssocRef)
+    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isArchivedNode)
     {
         indexer.deleteNode(childAssocRef);
     }

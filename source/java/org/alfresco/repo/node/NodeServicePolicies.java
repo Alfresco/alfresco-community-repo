@@ -140,9 +140,10 @@ public interface NodeServicePolicies
          * which has been deleted and cannot be used to retrieve node or associaton
          * information from any of the services.
 		 * 
-         * @param childAssocRef the primary parent-child association of the deleted node
+         * @param childAssocRef 	the primary parent-child association of the deleted node
+         * @param isNodeArchived	indicates whether the node has been archived rather than purged
 		 */
-		public void onDeleteNode(ChildAssociationRef childAssocRef);
+		public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived);
 	}
 	
     public interface BeforeAddAspectPolicy extends ClassPolicy

@@ -126,15 +126,6 @@
    <bean id="on-property-update-trigger" class="org.alfresco.repo.rule.ruletrigger.OnPropertyUpdateRuleTrigger" parent="rule-trigger-base">
    </bean>
    
-   <bean id="on-delete-node-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleChildAssocRefPolicyRuleTrigger" parent="rule-trigger-base">
-      <property name="policyName">
-         <value>onDeleteNode</value>
-      </property>
-      <property name="isClassBehaviour">
-      	 <value>true</value>
-      </property>
-   </bean>
-   
    <bean id="on-create-child-association-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleChildAssocRefPolicyRuleTrigger" parent="rule-trigger-base">
       <property name="policyName">
          <value>onCreateChildAssociation</value>

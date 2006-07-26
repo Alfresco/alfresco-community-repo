@@ -335,7 +335,7 @@ public class IntegrityChecker
     /**
      * No checking performed: The association changes will be handled
      */
-    public void onDeleteNode(ChildAssociationRef childAssocRef)
+    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isArchivedNode)
     {
     }
 

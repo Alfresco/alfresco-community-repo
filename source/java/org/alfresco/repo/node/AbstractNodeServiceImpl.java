@@ -318,7 +318,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     /**
      * @see NodeServicePolicies.OnDeleteNodePolicy#onDeleteNode(ChildAssociationRef)
      */
-    protected void invokeOnDeleteNode(ChildAssociationRef childAssocRef, QName childNodeTypeQName, Set<QName> childAspectQnames)
+    protected void invokeOnDeleteNode(ChildAssociationRef childAssocRef, QName childNodeTypeQName, Set<QName> childAspectQnames, boolean isArchivedNode)
     {
         // get qnames to invoke against
         Set<QName> qnames = new HashSet<QName>(childAspectQnames.size() + 1);
@@ -327,7 +327,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         
         // execute policy for node type and aspects
         NodeServicePolicies.OnDeleteNodePolicy policy = onDeleteNodeDelegate.get(childAssocRef.getChildRef(), qnames);
-        policy.onDeleteNode(childAssocRef);
+        policy.onDeleteNode(childAssocRef, isArchivedNode);
     }
 
     /**

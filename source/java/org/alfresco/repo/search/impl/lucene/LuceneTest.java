@@ -716,7 +716,7 @@ public class LuceneTest extends TestCase
         }
     }
 
-    public void testSort() throws Exception
+    public void xtestSort() throws Exception
     {
         luceneFTS.pause();
         buildBaseIndex();

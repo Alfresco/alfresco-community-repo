@@ -85,7 +85,7 @@ class Issuer
         }
         else
         {
-            fNext = doit.value;
+            fNext = doit.value + 1;
         }
     }
     

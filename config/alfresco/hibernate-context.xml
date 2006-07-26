@@ -41,6 +41,7 @@
                 <value>org/alfresco/repo/domain/hibernate/VersionCount.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/AppliedPatch.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Permission.hbm.xml</value>
+                <value>org/alfresco/repo/avm/hibernate/AVM.hbm.xml</value>
             </list>
         </property>
         <property name="hibernateProperties" ref="hibernateConfigProperties" />

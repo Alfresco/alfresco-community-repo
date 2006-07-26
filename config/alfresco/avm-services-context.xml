@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+	"http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<!-- ID Issuers. -->
+	
+	<bean id="nodeIssuer" class="org.alfresco.repo.avm.Issuer"
+		depends-on="retryingTransaction,avmContext" init-method="init">
+		<property name="name">
+			<value>node</value>
+		</property>
+		<property name="retryingTransaction">
+			<ref bean="retryingTransaction"/>
+		</property>
+	</bean>
+
+	<bean id="contentIssuer" class="org.alfresco.repo.avm.Issuer"
+		depends-on="retryingTransaction,avmContext" init-method="init">
+		<property name="name">
+			<value>content</value>
+		</property>
+		<property name="retryingTransaction">
+			<ref bean="retryingTransaction"/>
+		</property>
+	</bean>
+
+	<bean id="layerIssuer" class="org.alfresco.repo.avm.Issuer"
+		depends-on="retryingTransaction,avmContext" init-method="init">
+		<property name="name">
+			<value>layer</value>
+		</property>
+		<property name="retryingTransaction">
+			<ref bean="retryingTransaction"/>
+		</property>
+	</bean>
+
+	<!-- DAOs for persistent data types -->
+	
+	<!-- Issuers are not actual entities. More like pseudo entities. -->
+	
+	<bean id="issuerDAO" class="org.alfresco.repo.avm.IssuerDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="nodeDAO" class="org.alfresco.repo.avm.AVMNodeDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="avmStoreDAO" class="org.alfresco.repo.avm.AVMStoreDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+
+	<bean id="versionRootDAO" class="org.alfresco.repo.avm.VersionRootDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="fileContentDAO" class="org.alfresco.repo.avm.FileContentDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="childEntryDAO" class="org.alfresco.repo.avm.ChildEntryDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="historyLinkDAO" class="org.alfresco.repo.avm.HistoryLinkDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+
+	<bean id="mergeLinkDAO" class="org.alfresco.repo.avm.MergeLinkDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+
+	<bean id="deletedChildDAO" class="org.alfresco.repo.avm.DeletedChildDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="newInAVMStoreDAO" class="org.alfresco.repo.avm.NewInAVMStoreDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="avmNodePropertyDAO" class="org.alfresco.repo.avm.AVMNodePropertyDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="avmStorePropertyDAO" class="org.alfresco.repo.avm.AVMStorePropertyDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="avmContext" class="org.alfresco.repo.avm.AVMContext">
+		<property name="issuerDAO">
+			<ref bean="issuerDAO"/>
+		</property>
+		<property name="nodeDAO">
+			<ref bean="nodeDAO"/>
+		</property>
+		<property name="avmStoreDAO">
+			<ref bean="avmStoreDAO"/>
+		</property>
+		<property name="versionRootDAO">
+			<ref bean="versionRootDAO"/>
+		</property>
+		<property name="fileContentDAO">
+			<ref bean="fileContentDAO"/>
+		</property>
+		<property name="childEntryDAO">
+			<ref bean="childEntryDAO"/>
+		</property>
+		<property name="historyLinkDAO">
+			<ref bean="historyLinkDAO"/>
+		</property>
+		<property name="mergeLinkDAO">
+			<ref bean="mergeLinkDAO"/>
+		</property>
+		<property name="deletedChildDAO">
+			<ref bean="deletedChildDAO"/>
+		</property>
+		<property name="newInAVMStoreDAO">
+			<ref bean="newInAVMStoreDAO"/>
+		</property>
+		<property name="avmNodePropertyDAO">
+			<ref bean="avmNodePropertyDAO"/>
+		</property>
+		<property name="avmStorePropertyDAO">
+			<ref bean="avmStorePropertyDAO"/>
+		</property>
+	</bean>
+	
+	<!-- A read only DefaultTransactionDefinition -->
+	<bean id="readTransactionDefinition" 
+		class="org.springframework.transaction.support.DefaultTransactionDefinition">
+		<property name="propagationBehaviorName">
+			<value>PROPAGATION_REQUIRED</value>
+		</property>
+		<property name="readOnly">
+			<value>true</value>
+		</property>
+	</bean>
+
+	<!-- A write DefaultTransactionDefinition -->
+	<bean id="writeTransactionDefinition" 
+		class="org.springframework.transaction.support.DefaultTransactionDefinition">
+		<property name="propagationBehaviorName">
+			<value>PROPAGATION_REQUIRED</value>
+		</property>
+		<property name="readOnly">
+			<value>false</value>
+		</property>
+	</bean>
+	
+	<!-- The Retrying Transaction Helper. -->
+	<bean id="retryingTransaction" 
+		  class="org.alfresco.repo.avm.HibernateRetryingTransactionHelper">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+		<property name="transactionManager">
+			<ref bean="transactionManager"/>
+		</property>
+		<property name="readTransactionDefinition">
+			<ref bean="readTransactionDefinition"/>
+		</property>
+		<property name="writeTransactionDefinition">
+			<ref bean="writeTransactionDefinition"/>
+		</property>
+	</bean>
+
+	<bean id="orphanReaper" class="org.alfresco.repo.avm.OrphanReaper"
+		init-method="init" destroy-method="shutDown" depends-on="AVMService">
+		<property name="inactiveBaseSleep">
+			<value>4000</value>
+		</property>
+		<property name="activeBaseSleep">
+			<value>1000</value>
+		</property>
+		<property name="batchSize">
+		    <value>50</value>
+		</property>
+		<property name="retryingTransaction">
+			<ref bean="retryingTransaction"/>
+		</property>
+	</bean>
+
+	<bean id="avmRepository" class="org.alfresco.repo.avm.AVMRepository"
+		init-method="init">
+		<property name="storage">
+			<value>${avm.storage}</value>
+		</property>
+		<property name="nodeIssuer">
+			<ref bean="nodeIssuer"/>
+		</property>
+		<property name="contentIssuer">
+			<ref bean="contentIssuer"/>
+		</property>
+		<property name="layerIssuer">
+			<ref bean="layerIssuer"/>
+		</property>
+	</bean>
+
+</beans>
+
+	
+	

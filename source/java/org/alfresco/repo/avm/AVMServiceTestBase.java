@@ -19,7 +19,9 @@ package org.alfresco.repo.avm;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -59,9 +61,8 @@ public class AVMServiceTestBase extends TestCase
     @Override
     protected void setUp() throws Exception
     {
-//        HibernateHelper.GetSessionFactory().getStatistics().setStatisticsEnabled(true);
         fContext = new FileSystemXmlApplicationContext("config/alfresco/avm-test-context.xml");
-        fService = (AVMService)fContext.getBean("avmService");
+        fService = (AVMService)fContext.getBean("AVMService");
         fReaper = (OrphanReaper)fContext.getBean("orphanReaper");
         fStartTime = System.currentTimeMillis();
     }
@@ -74,10 +75,15 @@ public class AVMServiceTestBase extends TestCase
     {
         long now = System.currentTimeMillis();
         System.out.println("Timing: " + (now - fStartTime) + "ms");
-//        Statistics stats = HibernateHelper.GetSessionFactory().getStatistics();
-//        stats.logSummary();
-//        stats.clear();
+        List<AVMStoreDescriptor> descriptors = fService.getAVMStores();
+        for (AVMStoreDescriptor desc : descriptors)
+        {
+            fService.purgeAVMStore(desc.getName());
+        }
         fContext.close();
+        File alfData = new File("alf_data");
+        File target = new File("alf_data" + now);
+        alfData.renameTo(target);
     }
     
     /**

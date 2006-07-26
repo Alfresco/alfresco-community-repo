@@ -4,6 +4,7 @@
 <beans>
 
 	<!-- Use substitution values in this config. -->
+	<!--
 	<bean id="configurationProperties" 
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
@@ -12,7 +13,7 @@
 			</list>
 		</property>
 	</bean>
-
-    <import resource="file:config/alfresco/avm-base-context.xml"/>
+	-->
+    <import resource="file:config/alfresco/application-context.xml"/>
 
 </beans>

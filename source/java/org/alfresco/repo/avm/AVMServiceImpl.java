@@ -85,8 +85,15 @@ class AVMServiceImpl implements AVMService
     {
         if (fInitialize)
         {
-            createAVMStore("main");
-            fgLogger.info("Created new main AVMStore");
+            try
+            {
+                createAVMStore("main");
+                fgLogger.info("Created new main AVMStore");
+            }
+            catch (AVMExistsException e)
+            {
+                fgLogger.info("AVMStore main already exists");
+            }
         }
     }
     

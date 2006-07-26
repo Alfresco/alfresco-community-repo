@@ -50,10 +50,6 @@ public class FTPNetworkServer extends NetworkFileServer implements Runnable
     // Session Thread group
     private static final ThreadGroup THREAD_GROUP_SESSION = new ThreadGroup("FTP_SESSION_GROUP");
     
-    // Server version
-
-    private static final String ServerVersion = "3.5.0";
-
     // Listen backlog for the server socket
 
     protected static final int LISTEN_BACKLOG = 10;
@@ -99,10 +95,6 @@ public class FTPNetworkServer extends NetworkFileServer implements Runnable
     public FTPNetworkServer(ServerConfiguration config)
     {
         super("FTP", config);
-
-        // Set the server version
-
-        setVersion(ServerVersion);
 
         // Allocate the session lists
 
@@ -365,7 +357,6 @@ public class FTPNetworkServer extends NetworkFileServer implements Runnable
         if (logger.isDebugEnabled() && hasDebug())
         {
             logger.debug("FTP Server starting on port " + getPort());
-            logger.debug("Version " + isVersion());
         }
 
         // Create a server socket to listen for incoming FTP session requests

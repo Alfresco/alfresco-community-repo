@@ -198,11 +198,15 @@ public class TcpipNetBIOSHostAnnouncer extends HostAnnouncer
      */
     protected void sendAnnouncement(String hostName, byte[] buf, int offset, int len) throws Exception
     {
-
+    	// DEBUG
+    	
+    	if ( logger.isDebugEnabled())
+    		logger.debug("Send NetBIOS host announcement to " + m_bcastAddr.getHostAddress() + ", port " + m_bcastPort);
+    	
         // Send the host announce datagram
 
         m_nbdgram.SendDatagram(NetBIOSDatagram.DIRECT_GROUP, hostName, NetBIOSName.FileServer, getDomain(),
-                NetBIOSName.MasterBrowser, buf, len, offset);
+                NetBIOSName.MasterBrowser, buf, len, offset, m_bcastAddr, m_bcastPort);
     }
 
     /**

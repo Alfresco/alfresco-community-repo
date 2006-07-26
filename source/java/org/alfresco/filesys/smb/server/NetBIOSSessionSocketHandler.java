@@ -20,7 +20,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 
-import org.alfresco.filesys.netbios.RFCNetBIOSProtocol;
 import org.alfresco.filesys.server.config.ServerConfiguration;
 import org.alfresco.filesys.smb.mailslot.TcpipNetBIOSHostAnnouncer;
 
@@ -154,7 +153,7 @@ public class NetBIOSSessionSocketHandler extends SessionSocketHandler
 
         // Create the NetBIOS SMB handler
 
-        SessionSocketHandler sessHandler = new NetBIOSSessionSocketHandler(server, RFCNetBIOSProtocol.PORT, config
+        SessionSocketHandler sessHandler = new NetBIOSSessionSocketHandler(server, config.getNetBIOSSessionPort(), config
                 .getSMBBindAddress(), sockDbg);
         sessHandler.initialize();
 
@@ -171,7 +170,7 @@ public class NetBIOSSessionSocketHandler extends SessionSocketHandler
         // DEBUG
 
         if (logger.isDebugEnabled() && sockDbg)
-            logger.debug("TCP NetBIOS session handler created");
+            logger.debug("TCP NetBIOS session handler created on port " + config.getNetBIOSSessionPort());
 
         // Check if a host announcer should be created
 
@@ -188,6 +187,7 @@ public class NetBIOSSessionSocketHandler extends SessionSocketHandler
             announcer.setDomain(config.getDomainName());
             announcer.setComment(config.getComment());
             announcer.setBindAddress(config.getSMBBindAddress());
+            announcer.setPort(config.getNetBIOSDatagramPort());
 
             // Set the announcement interval
 
@@ -222,7 +222,7 @@ public class NetBIOSSessionSocketHandler extends SessionSocketHandler
             // DEBUG
 
             if (logger.isDebugEnabled() && sockDbg)
-                logger.debug("TCP NetBIOS host announcer created");
+                logger.debug("TCP NetBIOS host announcer created on port " + config.getNetBIOSDatagramPort());
         }
     }
 }

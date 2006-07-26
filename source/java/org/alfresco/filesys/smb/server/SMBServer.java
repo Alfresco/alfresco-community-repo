@@ -80,15 +80,6 @@ public class SMBServer extends NetworkFileServer implements Runnable
 
     private int m_srvType = ServerType.WorkStation + ServerType.Server + ServerType.NTServer;
 
-    // Next available session id
-
-    private int m_sessId;
-
-    // Server shutdown flag and server active flag
-
-    private boolean m_shutdown = false;
-    private boolean m_active = false;
-
     // Server GUID
     
     private UUID m_serverGUID;
@@ -472,7 +463,7 @@ public class SMBServer extends NetworkFileServer implements Runnable
 
             // Clear the server shutdown flag
 
-            m_shutdown = false;
+            setShutdown(false);
 
             // Get the list of IP addresses the server is bound to
 
@@ -529,7 +520,7 @@ public class SMBServer extends NetworkFileServer implements Runnable
 
                 // Wait for incoming connection requests
 
-                while (m_shutdown == false)
+                while (hasShutdown() == false)
                 {
 
                     // Sleep for a while
@@ -569,7 +560,7 @@ public class SMBServer extends NetworkFileServer implements Runnable
             // Do not report an error if the server has shutdown, closing the server socket
             // causes an exception to be thrown.
 
-            if (m_shutdown == false)
+            if (hasShutdown() == false)
             {
                 logger.error("Server error : ", ex);
 
@@ -654,7 +645,7 @@ public class SMBServer extends NetworkFileServer implements Runnable
 
         // Indicate that the server is closing
 
-        m_shutdown = true;
+        setShutdown(true);
 
         try
         {

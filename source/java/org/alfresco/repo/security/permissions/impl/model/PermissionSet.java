@@ -19,6 +19,7 @@ package org.alfresco.repo.security.permissions.impl.model;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -44,7 +45,7 @@ public class PermissionSet implements XMLModelInitialisable
     
     private boolean exposeAll;
     
-    private Set<PermissionGroup> permissionGroups = new HashSet<PermissionGroup>();
+    private Set<PermissionGroup> permissionGroups = new LinkedHashSet<PermissionGroup>();
     
     private Set<Permission> permissions = new HashSet<Permission>();
     

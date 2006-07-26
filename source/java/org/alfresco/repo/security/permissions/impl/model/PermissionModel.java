@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -277,7 +278,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private Set<PermissionReference> getAllPermissionsImpl(QName type, boolean exposedOnly)
     {
-        Set<PermissionReference> permissions = new HashSet<PermissionReference>();
+        Set<PermissionReference> permissions = new LinkedHashSet<PermissionReference>();
         if (dictionaryService.getClass(type).isAspect())
         {
             addAspectPermissions(type, permissions, exposedOnly);

@@ -18,6 +18,7 @@ package org.alfresco.repo.security.permissions.impl;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -329,7 +330,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     public Set<String> getSettablePermissions(QName type)
     {
         Set<PermissionReference> settable = getSettablePermissionReferences(type);
-        Set<String> strings = new HashSet<String>(settable.size());
+        Set<String> strings = new LinkedHashSet<String>(settable.size());
         for (PermissionReference pr : settable)
         {
             strings.add(getPermission(pr));

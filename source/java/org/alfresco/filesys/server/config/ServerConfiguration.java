@@ -67,6 +67,7 @@ import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
 import org.alfresco.filesys.server.filesys.HomeShareMapper;
 import org.alfresco.filesys.smb.ServerType;
+import org.alfresco.filesys.smb.TcpipSMB;
 import org.alfresco.filesys.util.IPAddress;
 import org.alfresco.filesys.util.X64;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -181,6 +182,16 @@ public class ServerConfiguration implements ApplicationListener
     // Network broadcast mask string
 
     private String m_broadcast;
+
+    //	NetBIOS ports
+
+    private int m_nbNamePort     = RFCNetBIOSProtocol.NAME_PORT;
+    private int m_nbSessPort     = RFCNetBIOSProtocol.PORT;
+    private int m_nbDatagramPort = RFCNetBIOSProtocol.DATAGRAM;
+
+  	//	Native SMB port
+  	
+  	private int m_tcpSMBPort = TcpipSMB.PORT;
 
     // Announce the server to network neighborhood, announcement interval in
     // minutes
@@ -586,7 +597,7 @@ public class ServerConfiguration implements ApplicationListener
             m_platform = PlatformType.LINUX;
         else if (osName.startsWith("Mac OS X"))
             m_platform = PlatformType.MACOSX;
-        else if (osName.startsWith("Solaris"))
+        else if (osName.startsWith("Solaris") || osName.startsWith("SunOS"))
             m_platform = PlatformType.SOLARIS;
     }
 
@@ -896,8 +907,49 @@ public class ServerConfiguration implements ApplicationListener
                     
                     throw new AlfrescoRuntimeException( "Failed to get IP address(es) for the local server, check hosts file and/or DNS setup");
                 }
-                
             }
+
+            //	Check if the session port has been specified
+			
+			String portNum = elem.getAttribute("sessionPort");
+			if ( portNum != null && portNum.length() > 0) {
+				try {
+					setNetBIOSSessionPort(Integer.parseInt(portNum));
+					if ( getNetBIOSSessionPort() <= 0 || getNetBIOSSessionPort() >= 65535)
+						throw new AlfrescoRuntimeException("NetBIOS session port out of valid range");
+				}
+				catch (NumberFormatException ex) {
+					throw new AlfrescoRuntimeException("Invalid NetBIOS session port");
+				}
+			}
+
+			//	Check if the name port has been specified
+			
+			portNum = elem.getAttribute("namePort");
+			if ( portNum != null && portNum.length() > 0) {
+				try {
+					setNetBIOSNamePort(Integer.parseInt(portNum));
+					if ( getNetBIOSNamePort() <= 0 || getNetBIOSNamePort() >= 65535)
+						throw new AlfrescoRuntimeException("NetBIOS name port out of valid range");
+				}
+				catch (NumberFormatException ex) {
+					throw new AlfrescoRuntimeException("Invalid NetBIOS name port");
+				}
+			}
+
+			//	Check if the datagram port has been specified
+			
+			portNum = elem.getAttribute("datagramPort");
+			if ( portNum != null && portNum.length() > 0) {
+				try {
+					setNetBIOSDatagramPort(Integer.parseInt(portNum));
+					if ( getNetBIOSDatagramPort() <= 0 || getNetBIOSDatagramPort() >= 65535)
+						throw new AlfrescoRuntimeException("NetBIOS datagram port out of valid range");
+				}
+				catch (NumberFormatException ex) {
+					throw new AlfrescoRuntimeException("Invalid NetBIOS datagram port");
+				}
+			}
         }
         else
         {
@@ -937,6 +989,20 @@ public class ServerConfiguration implements ApplicationListener
             // Enable the TCP/IP SMB support, if enabled for this platform
 
             setTcpipSMB(platformOK);
+            
+			//	Check if the port has been specified
+			
+			String portNum = elem.getAttribute("port");
+			if ( portNum != null && portNum.length() > 0) {
+				try {
+					setTcpipSMBPort(Integer.parseInt(portNum));
+					if ( getTcpipSMBPort() <= 0 || getTcpipSMBPort() >= 65535)
+						throw new AlfrescoRuntimeException("TCP/IP SMB port out of valid range");
+				}
+				catch (NumberFormatException ex) {
+					throw new AlfrescoRuntimeException("Invalid TCP/IP SMB port");
+				}
+			}
         }
         else
         {
@@ -2014,6 +2080,36 @@ public class ServerConfiguration implements ApplicationListener
     }
 
     /**
+     * Return the NetBIOS name server port
+     * 
+     * @return int
+     */
+    public final int getNetBIOSNamePort()
+    {
+    	return m_nbNamePort;
+    }
+    
+    /**
+     * Return the NetBIOS session port
+     * 
+     * @return int
+     */
+    public final int getNetBIOSSessionPort()
+    {
+    	return m_nbSessPort;
+    }
+    
+    /**
+     * Return the NetBIOS datagram port
+     * 
+     * @return int
+     */
+    public final int getNetBIOSDatagramPort()
+    {
+    	return m_nbDatagramPort;
+    }
+    
+    /**
      * Return the network broadcast mask to be used for broadcast datagrams.
      * 
      * @return java.lang.String
@@ -2152,6 +2248,16 @@ public class ServerConfiguration implements ApplicationListener
     public final boolean useWinsockNetBIOS()
     {
         return m_win32NBUseWinsock;
+    }
+    
+    /**
+     * Return the native SMB port
+     * 
+     * @return int
+     */
+    public final int getTcpipSMBPort()
+    {
+    	return m_tcpSMBPort;
     }
     
     /**
@@ -2717,6 +2823,36 @@ public class ServerConfiguration implements ApplicationListener
     }
 
     /**
+     * Set the NetBIOS name server port
+     * 
+     * @param port int
+     */
+    public final void setNetBIOSNamePort(int port)
+    {
+    	m_nbNamePort = port;
+    }
+    
+    /**
+     * Set the NetBIOS session port
+     * 
+     * @param port int
+     */
+    public final void setNetBIOSSessionPort(int port)
+    {
+    	m_nbSessPort = port;
+    }
+    
+    /**
+     * Set the NetBIOS datagram port
+     * 
+     * @param port int
+     */
+    public final void setNetBIOSDatagramPort(int port)
+    {
+    	m_nbDatagramPort = port;
+    }
+    
+    /**
      * Enable/disable the TCP/IP SMB support
      * 
      * @param ena boolean
@@ -2726,6 +2862,16 @@ public class ServerConfiguration implements ApplicationListener
         m_tcpSMBEnable = ena;
     }
 
+    /**
+     * Set the TCP/IP SMB port
+     * 
+     * @param port int
+     */
+    public final void setTcpipSMBPort( int port)
+    {
+    	m_tcpSMBPort = port;
+    }
+    
     /**
      * Enable/disable the Win32 NetBIOS SMB support
      * 

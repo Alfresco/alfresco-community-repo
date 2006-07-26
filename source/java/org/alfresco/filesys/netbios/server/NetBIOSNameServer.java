@@ -412,7 +412,7 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
 
                     // Allocate the datagram packet, using the add name buffer
 
-                    DatagramPacket pkt = new DatagramPacket(buf, len, dest, getPort());
+                    DatagramPacket pkt = new DatagramPacket(buf, len, dest, RFCNetBIOSProtocol.NAME_PORT);
 
                     // Send the add name request
 
@@ -469,7 +469,7 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
 
                     // Allocate the datagram packet, using the refresh name buffer
 
-                    DatagramPacket pkt = new DatagramPacket(buf, len, dest, getPort());
+                    DatagramPacket pkt = new DatagramPacket(buf, len, dest, RFCNetBIOSProtocol.NAME_PORT);
 
                     // Send the refresh name request
 
@@ -525,7 +525,7 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
 
                     // Allocate the datagram packet, using the add name buffer
 
-                    DatagramPacket pkt = new DatagramPacket(buf, len, dest, getPort());
+                    DatagramPacket pkt = new DatagramPacket(buf, len, dest, RFCNetBIOSProtocol.NAME_PORT);
 
                     // Send the add name request
 
@@ -683,7 +683,12 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
     {
         super("NetBIOS", config);
 
+        // Set the NetBIOS name server port
+        
+        setServerPort( config.getNetBIOSNamePort());
+        
         // Perform common constructor code
+        
         commonConstructor();
     }
 
@@ -712,7 +717,6 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
         // Set the local address to bind the server to, and server port
 
         setBindAddress(getConfiguration().getNetBIOSBindAddress());
-        setServerPort(RFCNetBIOSProtocol.NAME_PORT);
 
         // Copy the WINS server addresses, if set
 
@@ -1716,7 +1720,6 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
     protected final void sendPacket(NetBIOSPacket nbpkt, int len, InetAddress replyAddr, int replyPort)
             throws java.io.IOException
     {
-
         // Allocate the datagram packet, using the add name buffer
 
         DatagramPacket pkt = new DatagramPacket(nbpkt.getBuffer(), len, replyAddr, replyPort);

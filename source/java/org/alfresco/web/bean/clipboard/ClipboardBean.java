@@ -28,6 +28,9 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -38,6 +41,8 @@ import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.QueryParameterDefinition;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
@@ -79,6 +84,14 @@ public class ClipboardBean
    public void setCopyService(CopyService copyService)
    {
       this.copyService = copyService;
+   }
+   
+   /**
+    * @param searchService  The SearchService to set.
+    */
+   public void setSearchService(SearchService searchService)
+   {
+      this.searchService = searchService;
    }
    
    /**
@@ -244,6 +257,12 @@ public class ClipboardBean
       
       // initial name to attempt the copy of the item with
       String name = item.Node.getName();
+      if (action == UIClipboardShelfItem.ACTION_PASTE_LINK)
+      {
+         // copy as link was specifically requested by the user
+         String linkTo = Application.getMessage(FacesContext.getCurrentInstance(), MSG_LINK_TO);                
+         name = linkTo + ' ' + name;
+      }
       
       boolean operationComplete = false;
       while (operationComplete == false)
@@ -254,56 +273,58 @@ public class ClipboardBean
             {
                if (action == UIClipboardShelfItem.ACTION_PASTE_LINK)
                {
+                  // LINK operation
                   if (logger.isDebugEnabled())
                      logger.debug("Attempting to link node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
                   
-                  // copy as link was specifically requested by the user
-                  
                   // we create a special Link Object node that has a property to reference the original
-                  // use FileFolderService to check if already exists as using nodeService directly here
-                  String linkTo = Application.getMessage(FacesContext.getCurrentInstance(), MSG_LINK_TO);                
-                  
                   // create the node using the nodeService (can only use FileFolderService for content)
-                  Map<QName, Serializable> props = new HashMap<QName, Serializable>(4, 1.0f);
-                  String linkName = linkTo + ' ' + name;
-                  props.put(ContentModel.PROP_NAME, linkName + ".lnk");
-                  props.put(ContentModel.PROP_LINK_DESTINATION, item.Node.getNodeRef());
-                  if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT))
+                  if (checkExists(name + ".lnk", destRef) == false)
                   {
-                     // create File Link node
-                     ChildAssociationRef childRef = this.nodeService.createNode(
-                           destRef,
-                           ContentModel.ASSOC_CONTAINS,
-                           assocRef.getQName(),
-                           ContentModel.TYPE_FILELINK,
-                           props);
+                     Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
+                     props.put(ContentModel.PROP_NAME, name + ".lnk");
+                     props.put(ContentModel.PROP_LINK_DESTINATION, item.Node.getNodeRef());
+                     if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT))
+                     {
+                        // create File Link node
+                        ChildAssociationRef childRef = this.nodeService.createNode(
+                              destRef,
+                              ContentModel.ASSOC_CONTAINS,
+                              assocRef.getQName(),
+                              ContentModel.TYPE_FILELINK,
+                              props);
+                        
+                        // apply the titled aspect - title and description
+                        Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(2, 1.0f);
+                        titledProps.put(ContentModel.PROP_TITLE, name);
+                        titledProps.put(ContentModel.PROP_DESCRIPTION, name);
+                        this.nodeService.addAspect(childRef.getChildRef(), ContentModel.ASPECT_TITLED, titledProps);
+                     }
+                     else
+                     {
+                        // create Folder link node
+                        ChildAssociationRef childRef = this.nodeService.createNode(
+                              destRef,
+                              ContentModel.ASSOC_CONTAINS,
+                              assocRef.getQName(),
+                              ContentModel.TYPE_FOLDERLINK,
+                              props);
+                        
+                        // apply the uifacets aspect - icon, title and description props
+                        Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(4, 1.0f);
+                        uiFacetsProps.put(ContentModel.PROP_ICON, "space-icon-link");
+                        uiFacetsProps.put(ContentModel.PROP_TITLE, name);
+                        uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, name);
+                        this.nodeService.addAspect(childRef.getChildRef(), ContentModel.ASPECT_UIFACETS, uiFacetsProps);
+                     }
                      
-                     // apply the titled aspect - title and description
-                     Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(2, 1.0f);
-                     titledProps.put(ContentModel.PROP_TITLE, linkName);
-                     titledProps.put(ContentModel.PROP_DESCRIPTION, linkName);
-                     this.nodeService.addAspect(childRef.getChildRef(), ContentModel.ASPECT_TITLED, titledProps);
-                  }
-                  else
-                  {
-                     // create Folder link node
-                     ChildAssociationRef childRef = this.nodeService.createNode(
-                           destRef,
-                           ContentModel.ASSOC_CONTAINS,
-                           assocRef.getQName(),
-                           ContentModel.TYPE_FOLDERLINK,
-                           props);
-                     
-                     // apply the uifacets aspect - icon, title and description props
-                     Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(3, 1.0f);
-                     uiFacetsProps.put(ContentModel.PROP_ICON, "space-icon-link");
-                     uiFacetsProps.put(ContentModel.PROP_TITLE, linkName);
-                     uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, linkName);
-                     this.nodeService.addAspect(childRef.getChildRef(), ContentModel.ASPECT_UIFACETS, uiFacetsProps);
+                     // if we get here without an exception, the clipboard link operation was successful
+                     operationComplete = true;
                   }
                }
                else
                {
+                  // COPY operation
                   if (logger.isDebugEnabled())
                      logger.debug("Attempting to copy node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
                   
@@ -326,17 +347,24 @@ public class ClipboardBean
                   else
                   {
                      // copy the node
-                     this.copyService.copy(
-                           item.Node.getNodeRef(),
-                           destRef,
-                           ContentModel.ASSOC_CONTAINS,
-                           assocRef.getQName(),
-                           true);
+                     if (checkExists(name, destRef) == false)
+                     {
+                        this.copyService.copy(
+                              item.Node.getNodeRef(),
+                              destRef,
+                              ContentModel.ASSOC_CONTAINS,
+                              assocRef.getQName(),
+                              true);
+                     }
                   }
+                  
+                  // if we get here without an exception, the clipboard copy operation was successful
+                  operationComplete = true;
                }
             }
             else
             {
+               // MOVE operation
                if (logger.isDebugEnabled())
                   logger.debug("Attempting to move node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
                
@@ -358,26 +386,56 @@ public class ClipboardBean
                         ContentModel.ASSOC_CONTAINS,
                         assocRef.getQName());
                }
+               
+               // if we get here without an exception, the clipboard move operation was successful
+               operationComplete = true;
             }
-            
-            // if we get here without an exception, the clipboard operation was successful
-            operationComplete = true;
          }
          catch (FileExistsException fileExistsErr)
          {
-            if (item.Mode == ClipboardStatus.COPY)
+            if (item.Mode != ClipboardStatus.COPY)
             {    
-                String copyOf = Application.getMessage(FacesContext.getCurrentInstance(), MSG_COPY_OF);
-                name = copyOf + ' ' + name;
-            }
-            else
-            {
-                // we should not rename an item when it is being moved
+                // we should not rename an item when it is being moved - so exit
                 throw fileExistsErr;
             }
          }
+         if (operationComplete == false)
+         {
+             String copyOf = Application.getMessage(FacesContext.getCurrentInstance(), MSG_COPY_OF);
+             name = copyOf + ' ' + name;
+         }
       }
    }
+   
+   private boolean checkExists(String name, NodeRef parent)
+   {
+      ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
+      
+      QueryParameterDefinition[] params = new QueryParameterDefinition[1];
+      params[0] = new QueryParameterDefImpl(
+            ContentModel.PROP_NAME,
+            services.getDictionaryService().getDataType(
+                  DataTypeDefinition.TEXT),
+                  true,
+                  name);
+      
+      // execute the query
+      List<NodeRef> nodeRefs = searchService.selectNodes(
+            parent,
+            XPATH_QUERY_NODE_MATCH,
+            params,
+            services.getNamespaceService(),
+            false);
+      
+      return (nodeRefs.size() != 0);
+   }
+   
+   /** Shallow search for nodes with a name pattern */
+   private static final String XPATH_QUERY_NODE_MATCH =
+      "./*" +
+      "[like(@cm:name, $cm:name, false)]";// +
+      //" and not (subtypeOf('" + ContentModel.TYPE_SYSTEM_FOLDER + "'))" +
+      //" and (subtypeOf('" + ContentModel.TYPE_FOLDER + "') or subtypeOf('" + ContentModel.TYPE_CONTENT + "'))]";
    
    /**
     * Add a clipboard node for an operation to the clipboard
@@ -436,6 +494,9 @@ public class ClipboardBean
    
    /** The CopyService to be used by the bean */
    protected CopyService copyService;
+   
+   /** The SearchService to be used by the bean */
+   protected SearchService searchService;
    
    /** The NavigationBean reference */
    protected NavigationBean navigator;

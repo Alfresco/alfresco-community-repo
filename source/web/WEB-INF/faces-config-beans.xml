@@ -239,6 +239,10 @@
          <property-name>copyService</property-name>
          <value>#{CopyService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

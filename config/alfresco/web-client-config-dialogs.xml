@@ -5,6 +5,9 @@
 
       <dialogs>
       
+         <!--                           -->
+         <!-- Content and Space Dialogs -->
+         
          <!-- Definition of the create space dialog -->
          <dialog name="createSpace" page="/jsp/spaces/create-space-dialog.jsp" managed-bean="CreateSpaceDialog"
                  icon="/images/icons/create_space_large.gif" title-id="create_space" 
@@ -34,6 +37,21 @@
          <dialog name="deleteFile" page="/jsp/dialog/delete.jsp" managed-bean="DeleteContentDialog" 
                  icon="/images/icons/delete_large.gif" title-id="delete_file" 
                  description-id="delete_file_info" />
+         
+         <!--                  -->
+         <!-- Workflow Dialogs -->
+         
+         <dialog name="manageWorkItem" page="/jsp/workflow/manage-workitem.jsp"
+                 managed-bean="ManageWorkItemDialog" icon="/images/icons/create_space_large.gif" 
+                 title-id="manage_workitem_title" description-id="manage_workitem_desc" 
+                 actions-config-id="workitem_actions" show-ok-button="false">
+            <buttons>
+               <button id="approve-button" label="Approve" action="#{ManageWorkItemDialog.approve}" 
+                       disabled="#{DialogManager.bean.approveDisabled}" onclick="alert('approve onclick')" />
+               <button label-id="reject_flow" action="#{ManageWorkItemDialog.reject}" 
+                       onclick="alert('reject onclick')" disabled="false" />
+            </buttons>
+         </dialog>
          
          <!--                -->
          <!-- Forums Dialogs -->

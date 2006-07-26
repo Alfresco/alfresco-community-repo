@@ -1,5 +1,7 @@
 package org.alfresco.web.bean.dialog;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.component.UIComponent;
@@ -9,6 +11,7 @@ import javax.faces.event.ActionEvent;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.config.DialogsConfigElement.DialogConfig;
 import org.alfresco.web.ui.common.component.UIActionLink;
 
@@ -148,6 +151,17 @@ public class DialogManager
    }
    
    /**
+    * Returns the id of a configured action group representing the actions to
+    * display for the dialog.
+    * 
+    * @return The action group id
+    */
+   public String getActions()
+   {
+      return this.currentDialogConfig.getActionsConfigId();
+   }
+   
+   /**
     * Returns the page the dialog will use
     * 
     * @return The page
@@ -155,6 +169,51 @@ public class DialogManager
    public String getPage()
    {
       return this.currentDialogConfig.getPage();
+   }
+   
+   /**
+    * Determines whether the current dialog's OK button is visible
+    * 
+    * @return true if the OK button is visible, false if it's not
+    */
+   public boolean isOKButtonVisible()
+   {
+      return this.currentDialogConfig.isOKButtonVisible();
+   }
+   
+   /**
+    * Returns a list of additional buttons to display in the dialog
+    * 
+    * @return List of button configurations
+    */
+   public List<DialogButtonConfig> getAdditionalButtons()
+   {
+      List<DialogButtonConfig> buttons = null;
+      
+      // get a list of buttons to display from the configuration
+      List<DialogButtonConfig> cfgButtons = this.currentDialogConfig.getButtons();
+      
+      // get a list of buttons added dynamically by the dialog
+      List<DialogButtonConfig> dynButtons = this.currentDialog.getAdditionalButtons();
+
+      if (cfgButtons != null && dynButtons != null)
+      {
+         // combine the two lists
+         buttons = new ArrayList<DialogButtonConfig>(
+               cfgButtons.size() + dynButtons.size());
+         buttons.addAll(cfgButtons);
+         buttons.addAll(dynButtons);
+      }
+      else if (cfgButtons != null && dynButtons == null)
+      {
+         buttons = cfgButtons;
+      }
+      else if (cfgButtons == null && dynButtons != null)
+      {
+         buttons = dynButtons;
+      }
+      
+      return buttons;
    }
    
    /**

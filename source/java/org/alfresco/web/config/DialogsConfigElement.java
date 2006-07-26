@@ -131,12 +131,15 @@ public class DialogsConfigElement extends ConfigElementAdapter
       protected String description;
       protected String descriptionId;
       protected String errorMsgId = "error_dialog";
+      protected boolean isOKButtonVisible = true;
+      protected List<DialogButtonConfig> buttons;
       
       public DialogConfig(String name, String page, String bean,
                           String actionsConfigId, String icon, 
                           String title, String titleId,
                           String description, String descriptionId,
-                          String errorMsgId)
+                          String errorMsgId, boolean isOKButtonVisible,
+                          List<DialogButtonConfig> buttons)
       {
          // check the mandatory parameters are present
          ParameterCheck.mandatoryString("name", name);
@@ -152,6 +155,8 @@ public class DialogsConfigElement extends ConfigElementAdapter
          this.titleId = titleId;
          this.description = description;
          this.descriptionId = descriptionId;
+         this.isOKButtonVisible = isOKButtonVisible;
+         this.buttons = buttons;
          
          if (errorMsgId != null && errorMsgId.length() > 0)
          {
@@ -209,6 +214,16 @@ public class DialogsConfigElement extends ConfigElementAdapter
          return this.errorMsgId;
       }
       
+      public boolean isOKButtonVisible()
+      {
+         return this.isOKButtonVisible;
+      }
+      
+      public List<DialogButtonConfig> getButtons()
+      {
+         return this.buttons;
+      }
+      
       /**
        * @see java.lang.Object#toString()
        */
@@ -225,7 +240,98 @@ public class DialogsConfigElement extends ConfigElementAdapter
          buffer.append(" titleId=").append(this.titleId);
          buffer.append(" description=").append(this.description);
          buffer.append(" descriptionId=").append(this.descriptionId);
-         buffer.append(" errorMsgId=").append(this.errorMsgId).append(")");
+         buffer.append(" errorMsgId=").append(this.errorMsgId);
+         buffer.append(" isOKButtonVisible=").append(this.isOKButtonVisible);
+         buffer.append(" buttons=").append(this.buttons).append(")");
+         return buffer.toString();
+      }
+   }
+   
+   /**
+    * Inner class representing the configuration for an additional
+    * dialog button.
+    * 
+    * @author gavinc
+    */
+   public static class DialogButtonConfig
+   {
+      private String id;
+      private String label;
+      private String labelId;
+      private String action;
+      private String disabled;
+      private String onclick;
+
+      public DialogButtonConfig(String id, String label, String labelId, 
+                                String action, String disabled, String onclick)
+      {
+         this.id = id;
+         this.label = label;
+         this.labelId = labelId;
+         this.action = action;
+         this.disabled = disabled;
+         this.onclick = onclick;
+         
+         if ((this.label == null || this.label.length() == 0) && 
+             (this.labelId == null || this.labelId.length() == 0))
+         {
+            throw new ConfigException("A dialog button needs to have a label or a label-id");
+         }
+         
+         if (this.action == null || this.action.length() == 0)
+         {
+            throw new ConfigException("A dialog button requires an action");
+         }
+         else if (this.action.startsWith("#{") == false)
+         {
+            throw new ConfigException("The action for a dialog button must be a method binding expression, '" 
+                  + this.action + "' is not!");
+         }
+      }
+
+      public String getAction()
+      {
+         return action;
+      }
+
+      public String getDisabled()
+      {
+         return disabled;
+      }
+
+      public String getId()
+      {
+         return id;
+      }
+
+      public String getLabel()
+      {
+         return label;
+      }
+
+      public String getLabelId()
+      {
+         return labelId;
+      }
+
+      public String getOnclick()
+      {
+         return onclick;
+      }
+      
+      /**
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         StringBuilder buffer = new StringBuilder(super.toString());
+         buffer.append(" (id=").append(this.id);
+         buffer.append(" label=").append(this.label);
+         buffer.append(" label-id=").append(this.labelId);
+         buffer.append(" action=").append(this.action);
+         buffer.append(" disabled=").append(this.disabled);
+         buffer.append(" onclick=").append(this.onclick).append(")");
          return buffer.toString();
       }
    }

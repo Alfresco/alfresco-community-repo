@@ -1538,4 +1538,26 @@
       </attribute>
    </tag>
    
+   <tag>
+      <name>dialogButtons</name>
+      <tag-class>org.alfresco.web.ui.repo.tag.DialogButtonsTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <description>
+         The dialogButtons component displays the buttons for a dialog.
+      </description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>styleClass</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
 </taglib>

@@ -111,7 +111,7 @@ if (dialog != null && dialog.getFileName() != null)
                         <tr>
                            <td width="100%" valign="top">
                               
-                              <a:errors message="#{msg.error_wizard}" styleClass="errorMessage" />
+                              <a:errors message="#{msg.error_dialog}" styleClass="errorMessage" />
                               
                               <% 
                               if (fileUploaded) 

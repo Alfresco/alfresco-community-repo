@@ -73,6 +73,11 @@
                               <div class="mainTitle"><h:outputText value="#{DialogManager.title}" /></div>
                               <div class="mainSubText"><h:outputText value="#{DialogManager.description}" /></div>
                            </td>
+                           <td style="padding-left:4px" align="right">
+                              <r:actions id="dialog_actions" value="#{DialogManager.actions}" 
+                                         context="#{NavigationBean.currentNode}" />
+                           </td>
+                           <td width="10">&nbsp;</td>
                         </tr>
                      </table>
                      
@@ -106,23 +111,7 @@
                            
                            <td valign="top">
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
-                              <table cellpadding="1" cellspacing="1" border="0">
-                                 <tr>
-                                    <td align="center">
-                                       <h:commandButton id="finish-button" styleClass="wizardButton"
-                                                        value="#{DialogManager.finishButtonLabel}" 
-                                                        action="#{DialogManager.finish}" 
-                                                        disabled="#{DialogManager.finishButtonDisabled}" />
-                                    </td>
-                                 </tr>
-                                 <tr>
-                                    <td align="center">
-                                       <h:commandButton id="cancel-button" styleClass="wizardButton"
-                                                        value="#{DialogManager.cancelButtonLabel}" 
-                                                        action="#{DialogManager.cancel}" />
-                                    </td>
-                                 </tr>
-                              </table>
+                              <r:dialogButtons id="dialog-buttons" styleClass="wizardButton" />
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
                            </td>
                         </tr>

@@ -221,7 +221,7 @@ public class UIGenericPicker extends UICommand
                {
                   // use reflection to execute the query callback method and retrieve results
                   Object result = callback.invoke(getFacesContext(), new Object[] {
-                     this.filterIndex, this.contains});
+                     this.filterIndex, this.contains.trim()});
                   
                   if (result instanceof SelectItem[])
                   {

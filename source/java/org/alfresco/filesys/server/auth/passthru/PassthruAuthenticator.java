@@ -125,7 +125,7 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
         {
             // Use the existing authentication token
             
-            m_authComponent.setCurrentUser(client.getUserName());
+            m_authComponent.setCurrentUser( mapUserNameToPerson( client.getUserName()));
 
             // Debug
             
@@ -220,40 +220,28 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
                         // Map the passthru username to an Alfresco person
     
                         String username = client.getUserName();
-                        NodeRef userNode = m_personService.getPerson( username);
+                        String personName = m_personService.getUserIdentifier( username);
                         
-                        if ( userNode != null)
+                        if ( personName != null)
                         {
-                            // Get the person name and use that as the current user to line up with permission checks
-                            
-                            String personName = (String) m_nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
+                        	// Use the person name as the current user
+                        	
                             m_authComponent.setCurrentUser(personName);
                             
                             // DEBUG
                             
                             if ( logger.isDebugEnabled())
                                 logger.debug("Setting current user using person " + personName + " (username " + username + ")");
+
+	                        // Allow the user full access to the server
+	
+	                        authSts = CifsAuthenticator.AUTH_ALLOW;
+	
+	                        // Debug
+	
+	                        if (logger.isDebugEnabled())
+	                            logger.debug("Passthru authenticate user=" + client.getUserName() + ", FULL");
                         }
-                        else
-                        {
-                            // Set using the user name
-                            
-                            m_authComponent.setCurrentUser( username);
-                            
-                            // DEBUG
-                            
-                            if ( logger.isDebugEnabled())
-                                logger.debug("Setting current user using username " + username);
-                        }
-
-                        // Allow the user full access to the server
-
-                        authSts = CifsAuthenticator.AUTH_ALLOW;
-
-                        // Debug
-
-                        if (logger.isDebugEnabled())
-                            logger.debug("Passthru authenticate user=" + client.getUserName() + ", FULL");
                     }
                     finally
                     {

@@ -91,7 +91,7 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
             if ( client.isGuest())
                 m_authComponent.setGuestUserAsCurrentUser();
             else
-                m_authComponent.setCurrentUser(client.getUserName());
+                m_authComponent.setCurrentUser(mapUserNameToPerson(client.getUserName()));
 
             // Debug
             
@@ -229,7 +229,7 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
                 
                 // Set the current user to be authenticated, save the authentication token
                 
-                client.setAuthenticationToken( m_authComponent.setCurrentUser(client.getUserName()));
+                client.setAuthenticationToken( m_authComponent.setCurrentUser(mapUserNameToPerson(client.getUserName())));
                 
                 // Get the users home folder node, if available
                 

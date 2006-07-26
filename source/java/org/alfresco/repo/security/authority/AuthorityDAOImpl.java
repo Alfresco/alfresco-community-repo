@@ -61,7 +61,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     private DictionaryService dictionaryService;
 
-    private SimpleCache<String, ArrayList<NodeRef>> userToAuthorityCache;
+    private SimpleCache<String, HashSet<String>> userToAuthorityCache;
 
     public AuthorityDAOImpl()
     {
@@ -90,7 +90,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
         this.searchService = searchService;
     }
 
-    public void setUserToAuthorityCache(SimpleCache<String, ArrayList<NodeRef>> userToAuthorityCache)
+    public void setUserToAuthorityCache(SimpleCache<String, HashSet<String>> userToAuthorityCache)
     {
         this.userToAuthorityCache = userToAuthorityCache;
     }
@@ -127,6 +127,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             }
             nodeService.addChild(parentRef, childRef, ContentModel.ASSOC_MEMBER, QName.createQName("usr", childName,
                     namespacePrefixResolver));
+            userToAuthorityCache.clear();
         }
         else
         {
@@ -165,7 +166,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             throw new UnknownAuthorityException("An authority was not found for " + name);
         }
         nodeService.deleteNode(nodeRef);
-
+        userToAuthorityCache.clear();
     }
 
     public Set<String> getAllRootAuthorities(AuthorityType type)
@@ -234,15 +235,31 @@ public class AuthorityDAOImpl implements AuthorityDAO
                 throw new UnknownAuthorityException("An authority was not found for " + childName);
             }
             nodeService.removeChild(parentRef, childRef);
+            userToAuthorityCache.clear();
         }
 
     }
 
     public Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate)
     {
-        HashSet<String> authorities = new HashSet<String>();
-        findAuthorities(type, name, authorities, true, !immediate);
-        return authorities;
+        if (AuthorityType.getAuthorityType(name).equals(AuthorityType.USER) && ! immediate && (type == null))
+        {
+            // Cache user to authority look ups
+            HashSet<String> authorities = userToAuthorityCache.get(name);
+            if(authorities == null)
+            {
+                authorities = new HashSet<String>();
+                findAuthorities(type, name, authorities, true, !immediate);
+                userToAuthorityCache.put(name, authorities);
+            }
+            return authorities;
+        }
+        else
+        {
+           HashSet<String> authorities = new HashSet<String>();
+           findAuthorities(type, name, authorities, true, !immediate);
+           return authorities;
+        }
     }
 
     private void findAuthorities(AuthorityType type, String name, Set<String> authorities, boolean parents,
@@ -276,12 +293,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     private ArrayList<NodeRef> getUserContainers(String name)
     {
-        ArrayList<NodeRef> containers = userToAuthorityCache.get(name);
-        if (containers == null)
-        {
-            containers = findUserContainers(name);
-            userToAuthorityCache.put(name, containers);
-        }
+        ArrayList<NodeRef> containers = findUserContainers(name);
         return containers;
     }
 

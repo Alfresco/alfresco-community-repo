@@ -65,6 +65,9 @@
         <property name="accessCache">
             <ref bean="permissionsAccessCache" />
         </property>
+		<property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
         <!-- Dynamic authorites are evaluated in the context of a store/node etc -->
         <!-- as opposed to being fixed like user name and groups.                -->
         <!-- There are two dynamic authorities, the ower of a node and the owner -->

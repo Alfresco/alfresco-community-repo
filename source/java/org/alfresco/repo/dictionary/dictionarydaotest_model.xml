@@ -150,6 +150,15 @@
          </overrides>
       </type>
 
+      <type name="test:file-derived">
+         <parent>test:file</parent>
+      </type>
+      
+      <type name="test:file-derived-no-archive">
+         <parent>test:file</parent>
+         <archive>false</archive>
+      </type>
+      
       <type name="test:folder">
          <parent>test:base</parent>
          <properties>

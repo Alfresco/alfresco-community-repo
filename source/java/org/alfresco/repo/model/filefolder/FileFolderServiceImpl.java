@@ -70,7 +70,7 @@ public class FileFolderServiceImpl implements FileFolderService
         "[not (subtypeOf('" + ContentModel.TYPE_SYSTEM_FOLDER + "'))" +
         " and (subtypeOf('" + ContentModel.TYPE_FOLDER + "'))]";
     
-    /** Shallow search for all files and folders */
+    /** Shallow search for files and folders with a name pattern */
     private static final String XPATH_QUERY_SHALLOW_ALL =
         "./*" +
         "[like(@cm:name, $cm:name, false)" +

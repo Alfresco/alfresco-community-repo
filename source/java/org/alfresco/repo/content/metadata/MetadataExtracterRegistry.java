@@ -24,8 +24,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.content.MimetypeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -45,7 +43,6 @@ public class MetadataExtracterRegistry
     private List<MetadataExtracter> extracters;
     private Map<String, MetadataExtracter> extracterCache;
 
-    private MimetypeMap mimetypeMap;
     /** Controls read access to the cache */
     private Lock extracterCacheReadLock;
     /** controls write access to the cache */
@@ -61,16 +58,6 @@ public class MetadataExtracterRegistry
         ReadWriteLock extractionCacheLock = new ReentrantReadWriteLock();
         extracterCacheReadLock = extractionCacheLock.readLock();
         extracterCacheWriteLock = extractionCacheLock.writeLock();
-    }
-
-    /**
-     * The mimetype map that will be used to check requests against
-     * 
-     * @param mimetypeMap a map of mimetypes
-     */
-    public void setMimetypeMap(MimetypeMap mimetypeMap)
-    {
-        this.mimetypeMap = mimetypeMap;
     }
 
     /**
@@ -109,12 +96,6 @@ public class MetadataExtracterRegistry
      */
     public MetadataExtracter getExtracter(String sourceMimetype)
     {
-        // check that the mimetypes are valid
-        if (!mimetypeMap.getMimetypes().contains(sourceMimetype))
-        {
-            throw new AlfrescoRuntimeException("Unknown extraction source mimetype: " + sourceMimetype);
-        }
-
         MetadataExtracter extracter = null;
         extracterCacheReadLock.lock();
         try

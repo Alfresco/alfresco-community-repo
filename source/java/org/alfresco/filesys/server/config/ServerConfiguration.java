@@ -19,7 +19,9 @@ package org.alfresco.filesys.server.config;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.Provider;
 import java.security.Security;
@@ -811,145 +813,199 @@ public class ServerConfiguration implements ApplicationListener
                 platformOK = true;
             }
 
-            // Check if the broadcast mask has been specified
-
-            if (getBroadcastMask() == null)
-                throw new AlfrescoRuntimeException("Network broadcast mask not specified");
-
             // Enable the NetBIOS SMB support, if enabled for this platform
 
             setNetBIOSSMB(platformOK);
 
-            // Check for a bind address
-
-            String bindto = elem.getAttribute("bindto");
-            if (bindto != null && bindto.length() > 0)
+            // Parse/check NetBIOS settings, if enabled
+            
+            if ( hasNetBIOSSMB())
             {
-
-                // Validate the bind address
-
-                try
-                {
-
-                    // Check the bind address
-
-                    InetAddress bindAddr = InetAddress.getByName(bindto);
-
-                    // Set the bind address for the NetBIOS name server
-
-                    setNetBIOSBindAddress(bindAddr);
-                }
-                catch (UnknownHostException ex)
-                {
-                    throw new AlfrescoRuntimeException("Invalid NetBIOS bind address");
-                }
+	            // Check if the broadcast mask has been specified
+	
+	            if (getBroadcastMask() == null)
+	                throw new AlfrescoRuntimeException("Network broadcast mask not specified");
+	
+	            // Check for a bind address
+	
+	            String bindto = elem.getAttribute("bindto");
+	            if (bindto != null && bindto.length() > 0)
+	            {
+	
+	                // Validate the bind address
+	
+	                try
+	                {
+	
+	                    // Check the bind address
+	
+	                    InetAddress bindAddr = InetAddress.getByName(bindto);
+	
+	                    // Set the bind address for the NetBIOS name server
+	
+	                    setNetBIOSBindAddress(bindAddr);
+	                }
+	                catch (UnknownHostException ex)
+	                {
+	                    throw new AlfrescoRuntimeException("Invalid NetBIOS bind address");
+	                }
+	            }
+	            else if (hasSMBBindAddress())
+	            {
+	
+	                // Use the SMB bind address for the NetBIOS name server
+	
+	                setNetBIOSBindAddress(getSMBBindAddress());
+	            }
+	            else
+	            {
+	                // Get a list of all the local addresses
+	
+	                InetAddress[] addrs = null;
+	                    
+	                try
+	                {
+	                    // Get the local server IP address list
+	
+	                    addrs = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
+	                }
+	                catch (UnknownHostException ex)
+	                {
+	                    logger.error("Failed to get local address list", ex);
+	                }
+	                
+	                // Check the address list for one or more valid local addresses filtering out the loopback address
+	                
+	                int addrCnt = 0;
+	
+	                if ( addrs != null)
+	                {
+	                    for (int i = 0; i < addrs.length; i++)
+	                    {
+	    
+	                        // Check for a valid address, filter out '127.0.0.1' and '0.0.0.0' addresses
+	    
+	                        if (addrs[i].getHostAddress().equals("127.0.0.1") == false
+	                                && addrs[i].getHostAddress().equals("0.0.0.0") == false)
+	                            addrCnt++;
+	                    }
+	                }
+	                
+	                // Check if any addresses were found
+	                
+	                if ( addrCnt == 0)
+	                {
+	                	// Enumerate the network adapter list
+	                	
+	                	Enumeration<NetworkInterface> niEnum = null;
+	                	
+	                	try
+	                	{
+	                		niEnum = NetworkInterface.getNetworkInterfaces();
+	                	}
+	                	catch (SocketException ex)
+	                	{
+	                	}
+	                	
+	                	if ( niEnum != null)
+	                	{
+	                		while ( niEnum.hasMoreElements())
+	                		{
+	                			// Get the current network interface
+	                			
+	                			NetworkInterface ni = niEnum.nextElement();
+	                			
+	                			// Enumerate the addresses for the network adapter
+	                			
+	                			Enumeration<InetAddress> niAddrs = ni.getInetAddresses();
+	                			if ( niAddrs != null)
+	                			{
+	                				// Check for any valid addresses
+	                				
+	                				while ( niAddrs.hasMoreElements())
+	                				{
+	                					InetAddress curAddr = niAddrs.nextElement();
+	                					
+	                					if ( curAddr.getHostAddress().equals("127.0.0.1") == false &&
+	                							curAddr.getHostAddress().equals("0.0.0.0") == false)
+	                						addrCnt++;
+	                				}
+	                			}
+	                		}
+	                		
+	                		// DEBUG
+	                		
+	                		if ( addrCnt > 0 && logger.isDebugEnabled())
+	                			logger.debug("Found valid IP address from interface list");
+	                	}
+	                	
+	                	// Check if we found any valid network addresses
+	                	
+	                	if ( addrCnt == 0)
+	                	{
+		                    // Log the available IP addresses
+		                    
+		                    if ( logger.isDebugEnabled())
+		                    {
+		                        logger.debug("Local address list dump :-");
+		                        if ( addrs != null)
+		                        {
+		                            for ( int i = 0; i < addrs.length; i++)
+		                                logger.debug( "  Address: " + addrs[i]);
+		                        }
+		                        else
+		                            logger.debug("  No addresses");
+		                    }
+		                    
+		                    // Throw an exception to stop the CIFS/NetBIOS name server from starting
+		                    
+		                    throw new AlfrescoRuntimeException( "Failed to get IP address(es) for the local server, check hosts file and/or DNS setup");
+	                	}
+	                }
+	            }
+	
+	            //	Check if the session port has been specified
+				
+				String portNum = elem.getAttribute("sessionPort");
+				if ( portNum != null && portNum.length() > 0) {
+					try {
+						setNetBIOSSessionPort(Integer.parseInt(portNum));
+						if ( getNetBIOSSessionPort() <= 0 || getNetBIOSSessionPort() >= 65535)
+							throw new AlfrescoRuntimeException("NetBIOS session port out of valid range");
+					}
+					catch (NumberFormatException ex) {
+						throw new AlfrescoRuntimeException("Invalid NetBIOS session port");
+					}
+				}
+	
+				//	Check if the name port has been specified
+				
+				portNum = elem.getAttribute("namePort");
+				if ( portNum != null && portNum.length() > 0) {
+					try {
+						setNetBIOSNamePort(Integer.parseInt(portNum));
+						if ( getNetBIOSNamePort() <= 0 || getNetBIOSNamePort() >= 65535)
+							throw new AlfrescoRuntimeException("NetBIOS name port out of valid range");
+					}
+					catch (NumberFormatException ex) {
+						throw new AlfrescoRuntimeException("Invalid NetBIOS name port");
+					}
+				}
+	
+				//	Check if the datagram port has been specified
+				
+				portNum = elem.getAttribute("datagramPort");
+				if ( portNum != null && portNum.length() > 0) {
+					try {
+						setNetBIOSDatagramPort(Integer.parseInt(portNum));
+						if ( getNetBIOSDatagramPort() <= 0 || getNetBIOSDatagramPort() >= 65535)
+							throw new AlfrescoRuntimeException("NetBIOS datagram port out of valid range");
+					}
+					catch (NumberFormatException ex) {
+						throw new AlfrescoRuntimeException("Invalid NetBIOS datagram port");
+					}
+				}
             }
-            else if (hasSMBBindAddress())
-            {
-
-                // Use the SMB bind address for the NetBIOS name server
-
-                setNetBIOSBindAddress(getSMBBindAddress());
-            }
-            else
-            {
-                // Get a list of all the local addresses
-
-                InetAddress[] addrs = null;
-                    
-                try
-                {
-                    // Get the local server IP address list
-
-                    addrs = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
-                }
-                catch (UnknownHostException ex)
-                {
-                    logger.error("Failed to get local address list", ex);
-                }
-                
-                // Check the address list for one or more valid local addresses filtering out the loopback address
-                
-                int addrCnt = 0;
-
-                if ( addrs != null)
-                {
-                    for (int i = 0; i < addrs.length; i++)
-                    {
-    
-                        // Check for a valid address, filter out '127.0.0.1' and '0.0.0.0' addresses
-    
-                        if (addrs[i].getHostAddress().equals("127.0.0.1") == false
-                                && addrs[i].getHostAddress().equals("0.0.0.0") == false)
-                            addrCnt++;
-                    }
-                }
-                
-                // Check if any addresses were found
-                
-                if ( addrCnt == 0)
-                {
-                    // Log the available IP addresses
-                    
-                    if ( logger.isDebugEnabled())
-                    {
-                        logger.debug("Local address list dump :-");
-                        if ( addrs != null)
-                        {
-                            for ( int i = 0; i < addrs.length; i++)
-                                logger.debug( "  Address: " + addrs[i]);
-                        }
-                        else
-                            logger.debug("  No addresses");
-                    }
-                    
-                    // Throw an exception to stop the CIFS/NetBIOS name server from starting
-                    
-                    throw new AlfrescoRuntimeException( "Failed to get IP address(es) for the local server, check hosts file and/or DNS setup");
-                }
-            }
-
-            //	Check if the session port has been specified
-			
-			String portNum = elem.getAttribute("sessionPort");
-			if ( portNum != null && portNum.length() > 0) {
-				try {
-					setNetBIOSSessionPort(Integer.parseInt(portNum));
-					if ( getNetBIOSSessionPort() <= 0 || getNetBIOSSessionPort() >= 65535)
-						throw new AlfrescoRuntimeException("NetBIOS session port out of valid range");
-				}
-				catch (NumberFormatException ex) {
-					throw new AlfrescoRuntimeException("Invalid NetBIOS session port");
-				}
-			}
-
-			//	Check if the name port has been specified
-			
-			portNum = elem.getAttribute("namePort");
-			if ( portNum != null && portNum.length() > 0) {
-				try {
-					setNetBIOSNamePort(Integer.parseInt(portNum));
-					if ( getNetBIOSNamePort() <= 0 || getNetBIOSNamePort() >= 65535)
-						throw new AlfrescoRuntimeException("NetBIOS name port out of valid range");
-				}
-				catch (NumberFormatException ex) {
-					throw new AlfrescoRuntimeException("Invalid NetBIOS name port");
-				}
-			}
-
-			//	Check if the datagram port has been specified
-			
-			portNum = elem.getAttribute("datagramPort");
-			if ( portNum != null && portNum.length() > 0) {
-				try {
-					setNetBIOSDatagramPort(Integer.parseInt(portNum));
-					if ( getNetBIOSDatagramPort() <= 0 || getNetBIOSDatagramPort() >= 65535)
-						throw new AlfrescoRuntimeException("NetBIOS datagram port out of valid range");
-				}
-				catch (NumberFormatException ex) {
-					throw new AlfrescoRuntimeException("Invalid NetBIOS datagram port");
-				}
-			}
         }
         else
         {

@@ -15,7 +15,6 @@
       
    <cm:systemfolder view:childName="system" view:id="the root system folder">
       <cm:name>System</cm:name>
-      <cm:orderedchildren>true</cm:orderedchildren>
       <cm:contains>
          
          <cm:systemfolder view:childName="cm:people folder">

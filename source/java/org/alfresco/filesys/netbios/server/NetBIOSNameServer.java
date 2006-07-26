@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -1484,6 +1485,54 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
                     if (addrs[i].getHostAddress().equals("127.0.0.1") == false
                             && addrs[i].getHostAddress().equals("0.0.0.0") == false)
                         ipList.add(addrs[i].getAddress());
+                }
+
+                // Check if the address list is empty, use the network interface list to get the local IP addresses
+                
+                if ( ipList.size() == 0)
+                {
+	            	// Enumerate the network adapter list
+	            	
+	            	Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();
+	            	
+	            	if ( niEnum != null)
+	            	{
+	            		while ( niEnum.hasMoreElements())
+	            		{
+	            			// Get the current network interface
+	            			
+	            			NetworkInterface ni = niEnum.nextElement();
+	            			
+	            			// Enumerate the addresses for the network adapter
+	            			
+	            			Enumeration<InetAddress> niAddrs = ni.getInetAddresses();
+	            			if ( niAddrs != null)
+	            			{
+	            				// Check for any valid addresses
+	            				
+	            				while ( niAddrs.hasMoreElements())
+	            				{
+	            					InetAddress curAddr = niAddrs.nextElement();
+	            					
+	            					if ( curAddr.getHostAddress().equals("127.0.0.1") == false &&
+	            							curAddr.getHostAddress().equals("0.0.0.0") == false)
+	            						ipList.add( curAddr.getAddress());
+	            				}
+	            			}
+	            		}
+	            		
+	            		// DEBUG
+	            		
+	            		if ( ipList.size() > 0 && logger.isDebugEnabled())
+	            			logger.debug("Found " + ipList.size() + " addresses using interface list");
+	            	}
+                }
+                else
+                {
+                	// DBEUG
+                	
+            		if ( logger.isDebugEnabled())
+            			logger.debug("Found " + ipList.size() + " addresses using host name lookup");
                 }
                 
                 // Check if any addresses were added to the list

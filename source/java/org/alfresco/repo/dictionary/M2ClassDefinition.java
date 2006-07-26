@@ -46,7 +46,6 @@ import org.alfresco.service.namespace.QName;
     protected M2Class m2Class;
     protected QName name;
     protected QName parentName = null;
-    protected boolean archive = false;
     
     private Map<QName, M2PropertyOverride> propertyOverrides = new HashMap<QName, M2PropertyOverride>();
     private Map<QName, PropertyDefinition> properties = new HashMap<QName, PropertyDefinition>();
@@ -57,8 +56,9 @@ import org.alfresco.service.namespace.QName;
     private List<AspectDefinition> defaultAspects = new ArrayList<AspectDefinition>();
     private List<QName> defaultAspectNames = new ArrayList<QName>();
     private List<AspectDefinition> inheritedDefaultAspects = new ArrayList<AspectDefinition>();
+    private Boolean archive = null;
+    private Boolean inheritedArchive = null;
     
-
     /**
      * Construct
      * 
@@ -74,7 +74,7 @@ import org.alfresco.service.namespace.QName;
         
         // Resolve Names
         this.name = QName.createQName(m2Class.getName(), resolver);
-        this.archive = m2Class.isArchive();
+        this.archive = m2Class.getArchive();
         if (m2Class.getParentName() != null && m2Class.getParentName().length() > 0)
         {
             this.parentName = QName.createQName(m2Class.getParentName(), resolver);
@@ -280,6 +280,13 @@ import org.alfresco.service.namespace.QName;
                 inheritedDefaultAspects.add(def);
             }
         }
+        
+        // resolve archive inheritance
+        if (parentClass != null && archive == null)
+        {
+            // archive not explicitly set on this class and there is a parent class
+            inheritedArchive = ((M2ClassDefinition)parentClass).isArchive();
+        }
     }
     
     /* (non-Javadoc)
@@ -340,8 +347,23 @@ import org.alfresco.service.namespace.QName;
         return (m2Class instanceof M2Aspect);
     }
     
+    /**
+     * @return Returns the archive flag, which defaults to <tt>false</tt>
+     */
     public boolean isArchive()
     {
+        if (archive == null)
+        {
+            if (inheritedArchive != null)
+            {
+                return inheritedArchive.booleanValue();
+            }
+            else
+            {
+                // default to false
+                return false;
+            }
+        }
         return archive;
     }
 

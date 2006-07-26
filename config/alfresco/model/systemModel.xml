@@ -127,6 +127,11 @@
 			<title>Incomplete</title>
 		</aspect>
       
+      <!-- aspect to tag temporary nodes -->
+      <aspect name="sys:temporary">
+         <title>Temporary</title>
+      </aspect>
+      
       <!-- details stored on archived nodes -->
       <aspect name="sys:archived">
          <title>Archived</title>

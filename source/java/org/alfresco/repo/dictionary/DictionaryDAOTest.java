@@ -36,7 +36,6 @@ import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 
 
 public class DictionaryDAOTest extends TestCase
@@ -185,6 +184,15 @@ public class DictionaryDAOTest extends TestCase
         QName testFileQName = QName.createQName(TEST_URL, "file");
         ClassDefinition fileClassDef = service.getClass(testFileQName);
         assertTrue("File type should have the archive flag", fileClassDef.isArchive());
+
+        QName testFileDerivedQName = QName.createQName(TEST_URL, "file-derived");
+        ClassDefinition fileDerivedClassDef = service.getClass(testFileDerivedQName);
+        assertTrue("Direct derived File type should have the archive flag", fileDerivedClassDef.isArchive());
+
+        QName testFileDerivedNoArchiveQName = QName.createQName(TEST_URL, "file-derived-no-archive");
+        ClassDefinition fileDerivedNoArchiveClassDef = service.getClass(testFileDerivedNoArchiveQName);
+        assertFalse("Derived File with archive override type should NOT have the archive flag",
+                fileDerivedNoArchiveClassDef.isArchive());
 
         QName testFolderQName = QName.createQName(TEST_URL, "folder");
         ClassDefinition folderClassDef = service.getClass(testFolderQName);

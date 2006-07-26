@@ -628,6 +628,13 @@
             <ref bean="policyComponent" />
         </property>
     </bean>
+    
+    <!-- Temporary Aspect -->
+    <bean id="temporaryAspect" class="org.alfresco.repo.node.TemporaryAspect" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+    </bean>
 
     <!-- Configurable service -->
     <bean id="configurableService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">

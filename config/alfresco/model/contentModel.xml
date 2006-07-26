@@ -45,11 +45,6 @@
          <title>Folder</title>
          <parent>cm:cmobject</parent>
          <archive>true</archive>
-         <properties>
-            <property name="cm:orderedchildren">
-               <type>d:boolean</type>
-            </property>
-         </properties>
          <associations>
             <child-association name="cm:contains">
                <source>

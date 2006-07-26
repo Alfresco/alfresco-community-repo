@@ -27,6 +27,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 public class ExceptionTranslatorMethodInterceptor implements MethodInterceptor
 {
     private static final String MSG_ACCESS_DENIED = "permissions.err_access_denied";
+    private static final String MSG_READ_ONLY = "permissions.err_read_only";
     
     public ExceptionTranslatorMethodInterceptor()
     {
@@ -46,7 +47,7 @@ public class ExceptionTranslatorMethodInterceptor implements MethodInterceptor
         catch (InvalidDataAccessApiUsageException e)
         {
             // this usually occurs when the server is in read-only mode
-            throw new AccessDeniedException(MSG_ACCESS_DENIED, e);
+            throw new AccessDeniedException(MSG_READ_ONLY, e);
         }
     }
 }

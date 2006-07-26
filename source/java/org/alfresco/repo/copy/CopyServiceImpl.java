@@ -536,7 +536,13 @@ public class CopyServiceImpl implements CopyService
 		ClassDefinition classDefinition = this.dictionaryService.getClass(classRef);	
 		if (classDefinition != null)
 		{
-             // Copy the properties
+            if (classDefinition.isAspect() == true)
+            {
+                // make sure any aspects without any properties or associations are copied
+                copyDetails.addAspect(classRef);
+            }
+
+            // Copy the properties
             Map<QName,PropertyDefinition> propertyDefinitions = classDefinition.getProperties();
             for (QName propertyName : propertyDefinitions.keySet()) 
             {

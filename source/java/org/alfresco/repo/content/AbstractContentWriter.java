@@ -156,8 +156,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         }
     }
 
-    /** helper implementation for base class */
-    protected boolean isChannelOpen()
+    public synchronized boolean isChannelOpen()
     {
         if (channel != null)
         {

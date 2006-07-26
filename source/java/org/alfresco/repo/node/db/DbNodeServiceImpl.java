@@ -645,10 +645,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
     public void deleteNode(NodeRef nodeRef)
     {
-    	boolean isArchivedNode = false;
+    	  boolean isArchivedNode = false;
+        boolean requiresDelete = false;
     	
-		// Invoke policy behaviours
-		invokeBeforeDeleteNode(nodeRef);
+		  // Invoke policy behaviours
+		  invokeBeforeDeleteNode(nodeRef);
 		
         // get the node
         Node node = getNodeNotNull(nodeRef);
@@ -659,11 +660,27 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Set<QName> nodeAspectQNames = node.getAspects();
 
         // check if we need to archive the node
-        StoreRef storeRef = nodeRef.getStoreRef();
-        StoreRef archiveStoreRef = storeArchiveMap.getArchiveMap().get(storeRef);
-        // get the type and check if we need archiving
-        TypeDefinition typeDef = dictionaryService.getType(node.getTypeQName());
-        if (typeDef == null || !typeDef.isArchive() || archiveStoreRef == null)
+        StoreRef archiveStoreRef = null;
+        if (nodeAspectQNames.contains(ContentModel.ASPECT_TEMPORARY))
+        {
+           // the node has the temporary aspect meaning
+           // it can not be archived
+           requiresDelete = true;
+           isArchivedNode = false;
+        }
+        else
+        {
+           StoreRef storeRef = nodeRef.getStoreRef();
+           archiveStoreRef = storeArchiveMap.getArchiveMap().get(storeRef);
+           // get the type and check if we need archiving
+           TypeDefinition typeDef = dictionaryService.getType(node.getTypeQName());
+           if (typeDef == null || !typeDef.isArchive() || archiveStoreRef == null)
+           {
+              requiresDelete = true;
+           }
+        }
+           
+        if (requiresDelete)
         {
             // perform a normal deletion
             nodeDaoService.deleteNode(node, true);

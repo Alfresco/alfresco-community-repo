@@ -2,210 +2,155 @@
 <view:view xmlns:view="http://www.alfresco.org/view/repository/1.0">
   <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:doc_info.ftl">
     <view:aspects>
-      <cm:auditable></cm:auditable>
       <app:uifacets></app:uifacets>
       <app:inlineeditable></app:inlineeditable>
     </view:aspects>
     <view:properties>
       <app:editInline>true</app:editInline>
-      <cm:modifier>admin</cm:modifier>
-      <cm:modified>2006-02-10T09:10:45.906Z</cm:modified>
       <cm:description>Displays basic information about the current document</cm:description>
-      <cm:creator>admin</cm:creator>
       <cm:content>contentUrl=classpath:alfresco/templates/content/examples/doc_info.ftl|mimetype=text/plain|size=636|encoding=UTF-8</cm:content>
       <cm:title>doc_info.ftl</cm:title>
       <cm:name>doc_info.ftl</cm:name>
-      <cm:created>2005-10-21T15:11:00.446+01:00</cm:created>
     </view:properties>
     <view:associations></view:associations>
   </cm:content>
   <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:localizable.ftl">
     <view:aspects>
-      <cm:auditable></cm:auditable>
       <app:uifacets></app:uifacets>
       <app:inlineeditable></app:inlineeditable>
     </view:aspects>
     <view:properties>
       <app:editInline>true</app:editInline>
-      <cm:modifier>admin</cm:modifier>
-      <cm:modified>2006-02-10T09:10:50.390Z</cm:modified>
       <cm:description>Calculates if the document has the localizable aspect applied</cm:description>
-      <cm:creator>admin</cm:creator>
       <cm:content>contentUrl=classpath:alfresco/templates/content/examples/localizable.ftl|mimetype=text/plain|size=380|encoding=UTF-8</cm:content>
       <cm:title>localizable.ftl</cm:title>
       <cm:name>localizable.ftl</cm:name>
-      <cm:created>2005-10-21T15:11:02.181+01:00</cm:created>
     </view:properties>
     <view:associations></view:associations>
   </cm:content>
   <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:my_docs.ftl">
     <view:aspects>
-      <cm:auditable></cm:auditable>
       <app:uifacets></app:uifacets>
       <app:inlineeditable></app:inlineeditable>
     </view:aspects>
     <view:properties>
       <app:editInline>true</app:editInline>
-      <cm:modifier>admin</cm:modifier>
-      <cm:modified>2006-02-10T09:10:51.937Z</cm:modified>
       <cm:description>Displays a list of the documents in the current user Home Space</cm:description>
-      <cm:creator>admin</cm:creator>
       <cm:content>contentUrl=classpath:alfresco/templates/content/examples/my_docs.ftl|mimetype=text/plain|size=750|encoding=UTF-8</cm:content>
       <cm:title>my_docs.ftl</cm:title>
       <cm:name>my_docs.ftl</cm:name>
-      <cm:created>2005-10-21T15:11:03.118+01:00</cm:created>
     </view:properties>
     <view:associations></view:associations>
   </cm:content>
   <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:my_spaces.ftl">
     <view:aspects>
-      <cm:auditable></cm:auditable>
       <app:uifacets></app:uifacets>
       <app:inlineeditable></app:inlineeditable>
     </view:aspects>
     <view:properties>
       <app:editInline>true</app:editInline>
-      <cm:modifier>admin</cm:modifier>
-      <cm:modified>2006-02-10T09:10:57.890Z</cm:modified>
       <cm:description>Displays a list of spaces in the current user Home Space</cm:description>
-      <cm:creator>admin</cm:creator>
       <cm:content>contentUrl=classpath:alfresco/templates/content/examples/my_spaces.ftl|mimetype=text/plain|size=682|encoding=UTF-8</cm:content>
       <cm:title>my_spaces.ftl</cm:title>
       <cm:name>my_spaces.ftl</cm:name>
-      <cm:created>2005-10-21T15:11:04.665+01:00</cm:created>
     </view:properties>
     <view:associations></view:associations>
   </cm:content>
   <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:my_summary.ftl">
     <view:aspects>
-      <cm:auditable></cm:auditable>
       <app:uifacets></app:uifacets>
       <app:inlineeditable></app:inlineeditable>
     </view:aspects>
     <view:properties>
       <app:editInline>true</app:editInline>
-      <cm:modifier>admin</cm:modifier>
-      <cm:modified>2006-02-10T09:10:59.421Z</cm:modified>
       <cm:description>Shows a simple summary page about the current user and their Home Space</cm:description>
-      <cm:creator>admin</cm:creator>
       <cm:content>contentUrl=classpath:alfresco/templates/content/examples/my_summary.ftl|mimetype=text/plain|size=537|encoding=UTF-8</cm:content>
       <cm:title>my_summary.ftl</cm:title>
       <cm:name>my_summary.ftl</cm:name>
-      <cm:created>2005-10-21T15:11:05.509+01:00</cm:created>
     </view:properties>
     <view:associations></view:associations>
   </cm:content>
   <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:translatable.ftl">
     <view:aspects>
-      <cm:auditable></cm:auditable>
       <app:uifacets></app:uifacets>
       <app:inlineeditable></app:inlineeditable>
     </view:aspects>
     <view:properties>
       <app:editInline>true</app:editInline>
-      <cm:modifier>admin</cm:modifier>
-      <cm:modified>2006-02-10T09:11:04.953Z</cm:modified>
       <cm:description>Calculates if the document has the translatable aspect applied</cm:description>
-      <cm:creator>admin</cm:creator>
       <cm:content>contentUrl=classpath:alfresco/templates/content/examples/translatable.ftl|mimetype=text/plain|size=415|encoding=UTF-8</cm:content>
       <cm:title>translatable.ftl</cm:title>
       <cm:name>translatable.ftl</cm:name>
-      <cm:created>2005-10-21T15:11:06.306+01:00</cm:created>
     </view:properties>
     <view:associations></view:associations>
   </cm:content>
   <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:RSS_2.0_recent_docs.ftl">
     <view:aspects>
-      <cm:auditable></cm:auditable>
       <app:uifacets></app:uifacets>
       <app:inlineeditable></app:inlineeditable>
     </view:aspects>
     <view:properties>
       <app:editInline>true</app:editInline>
-      <cm:modifier>admin</cm:modifier>
-      <cm:modified>2006-02-10T09:10:41.656Z</cm:modified>
       <cm:description>Renders a valid RSS2.0 XML document showing the documents in the current space created or modified in the last 7 days. The template should be configured to use the appropriate server and port before use.</cm:description>
-      <cm:creator>admin</cm:creator>
       <cm:content>contentUrl=classpath:alfresco/templates/content/examples/RSS_2.0_recent_docs.ftl|mimetype=text/plain|size=1917|encoding=UTF-8</cm:content>
       <cm:title>RSS_2.0_recent_docs.ftl</cm:title>
       <cm:name>RSS_2.0_recent_docs.ftl</cm:name>
-      <cm:created>2006-01-13T15:49:50.695Z</cm:created>
     </view:properties>
     <view:associations></view:associations>
   </cm:content>
   <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:recent_docs.ftl">
     <view:aspects>
-      <cm:auditable></cm:auditable>
       <app:uifacets></app:uifacets>
       <app:inlineeditable></app:inlineeditable>
     </view:aspects>
     <view:properties>
       <app:editInline>true</app:editInline>
-      <cm:modifier>admin</cm:modifier>
-      <cm:modified>2006-02-10T09:11:00.953Z</cm:modified>
       <cm:description>Displays a list of the documents in the current space created or modified in the last 7 days</cm:description>
-      <cm:creator>admin</cm:creator>
       <cm:content>contentUrl=classpath:alfresco/templates/content/examples/recent_docs.ftl|mimetype=text/plain|size=968|encoding=UTF-8</cm:content>
       <cm:title>recent_docs.ftl</cm:title>
       <cm:name>recent_docs.ftl</cm:name>
-      <cm:created>2006-01-13T15:50:02.164Z</cm:created>
     </view:properties>
     <view:associations></view:associations>
   </cm:content>
   <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:general_example.ftl">
     <view:aspects>
-      <cm:auditable></cm:auditable>
       <app:uifacets></app:uifacets>
       <app:inlineeditable></app:inlineeditable>
     </view:aspects>
     <view:properties>
       <app:editInline>true</app:editInline>
-      <cm:modifier>admin</cm:modifier>
-      <cm:modified>2006-02-10T09:10:48.062Z</cm:modified>
       <cm:description>Example of various lists of documents, spaces and summary information about the current user</cm:description>
-      <cm:creator>admin</cm:creator>
       <cm:content>contentUrl=classpath:alfresco/templates/content/examples/general_example.ftl|mimetype=text/plain|size=1608|encoding=UTF-8</cm:content>
       <cm:title>general_example.ftl</cm:title>
       <cm:name>general_example.ftl</cm:name>
-      <cm:created>2006-02-10T09:10:47.796Z</cm:created>
     </view:properties>
     <view:associations></view:associations>
   </cm:content>
   <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:my_docs_inline.ftl">
     <view:aspects>
-      <cm:auditable></cm:auditable>
       <app:uifacets></app:uifacets>
       <app:inlineeditable></app:inlineeditable>
     </view:aspects>
     <view:properties>
       <app:editInline>true</app:editInline>
-      <cm:modifier>admin</cm:modifier>
-      <cm:modified>2006-02-10T09:10:53.531Z</cm:modified>
       <cm:description>Displays a list of the documents in the current user Home Space. Text document content is shown inline, as is JPG content as small thumbnail images.</cm:description>
-      <cm:creator>admin</cm:creator>
       <cm:content>contentUrl=classpath:alfresco/templates/content/examples/my_docs_inline.ftl|mimetype=text/plain|size=652|encoding=UTF-8</cm:content>
       <cm:title>my_docs_inline.ftl</cm:title>
       <cm:name>my_docs_inline.ftl</cm:name>
-      <cm:created>2006-02-10T09:10:53.281Z</cm:created>
     </view:properties>
     <view:associations></view:associations>
   </cm:content>
   <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:xpath_search.ftl">
     <view:aspects>
-      <cm:auditable></cm:auditable>
       <app:uifacets></app:uifacets>
       <app:inlineeditable></app:inlineeditable>
     </view:aspects>
     <view:properties>
       <app:editInline>true</app:editInline>
-      <cm:modifier>admin</cm:modifier>
-      <cm:modified>2006-02-10T09:11:07.031Z</cm:modified>
       <cm:description>Example of using XPath and Lucene searches within a template.</cm:description>
-      <cm:creator>admin</cm:creator>
       <cm:content>contentUrl=classpath:alfresco/templates/content/examples/xpath_search.ftl|mimetype=text/plain|size=1109|encoding=UTF-8</cm:content>
       <cm:title>xpath_search.ftl</cm:title>
       <cm:name>xpath_search.ftl</cm:name>
-      <cm:created>2006-02-10T09:11:06.750Z</cm:created>
     </view:properties>
     <view:associations></view:associations>
   </cm:content>

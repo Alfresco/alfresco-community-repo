@@ -46,7 +46,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
-public class CheckOutCheckInServiceImpl implements CheckOutCheckInService 
+public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
 {
     /**
      * I18N labels
@@ -58,30 +58,30 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     private static final String MSG_ERR_NOT_AUTHENTICATED = "coci_service.err_not_authenticated";
     private static final String MSG_ERR_WORKINGCOPY_HAS_NO_MIMETYPE = "coci_service.err_workingcopy_has_no_mimetype"; 
 
-	/**
-	 * Extension character, used to recalculate the working copy names
-	 */
-	private static final String EXTENSION_CHARACTER = ".";
-	
-	/**
-	 * The node service
-	 */
-	private NodeService nodeService;
-	
-	/**
-	 * The version service
-	 */
-	private VersionService versionService;
-	
-	/**
-	 * The lock service
-	 */
-	private LockService lockService;
-	
-	/**
-	 * The copy service
-	 */
-	private CopyService copyService;
+    /**
+     * Extension character, used to recalculate the working copy names
+     */
+    private static final String EXTENSION_CHARACTER = ".";
+    
+    /**
+     * The node service
+     */
+    private NodeService nodeService;
+    
+    /**
+     * The version service
+     */
+    private VersionService versionService;
+    
+    /**
+     * The lock service
+     */
+    private LockService lockService;
+    
+    /**
+     * The copy service
+     */
+    private CopyService copyService;
     
     /**
      * The search service
@@ -97,47 +97,47 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
      * The versionable aspect behaviour implementation
      */
     private VersionableAspect versionableAspect;
-	
-	/**
-	 * Set the node service
-	 * 
-	 * @param nodeService  the node service
-	 */
-	public void setNodeService(NodeService nodeService) 
-	{
-		this.nodeService = nodeService;
-	}
-	
-	/**
-	 * Set the version service
-	 * 
-	 * @param versionService  the version service
-	 */
-	public void setVersionService(VersionService versionService) 
-	{
-		this.versionService = versionService;
-	}
-	
-	/**
-	 * Sets the lock service
-	 * 
-	 * @param lockService  the lock service
-	 */
-	public void setLockService(LockService lockService) 
-	{
-		this.lockService = lockService;
-	}
-	
-	/**
+    
+    /**
+     * Set the node service
+     * 
+     * @param nodeService  the node service
+     */
+    public void setNodeService(NodeService nodeService) 
+    {
+        this.nodeService = nodeService;
+    }
+    
+    /**
+     * Set the version service
+     * 
+     * @param versionService  the version service
+     */
+    public void setVersionService(VersionService versionService) 
+    {
+        this.versionService = versionService;
+    }
+    
+    /**
+     * Sets the lock service
+     * 
+     * @param lockService  the lock service
+     */
+    public void setLockService(LockService lockService) 
+    {
+        this.lockService = lockService;
+    }
+    
+    /**
      * Sets the copy service
      *  
      * @param copyService  the copy service
-	 */
-	public void setCopyService(
-			CopyService copyService) 
-	{
-		this.copyService = copyService;
-	}
+     */
+    public void setCopyService(
+            CopyService copyService) 
+    {
+        this.copyService = copyService;
+    }
     
     /**
      * Sets the authentication service
@@ -173,57 +173,57 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     /**
      * Get the working copy label.
      * 
-     * @return	the working copy label
+     * @return    the working copy label
      */
     public String getWorkingCopyLabel() 
     {
-		return I18NUtil.getMessage(MSG_WORKING_COPY_LABEL);
-	}
-	
-	/**
-	 * @see org.alfresco.service.cmr.coci.CheckOutCheckInService#checkout(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
-	 */
-	public NodeRef checkout(
-			NodeRef nodeRef, 
-			NodeRef destinationParentNodeRef,
-			QName destinationAssocTypeQName, 
-			QName destinationAssocQName) 
-	{
-		// Make sure we are no checking out a working copy node
-		if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == true)
-		{
-			throw new CheckOutCheckInServiceException(MSG_ERR_ALREADY_WORKING_COPY);
-		}
-		
-		// Apply the lock aspect if required
-		if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE) == false)
-		{
-			this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_LOCKABLE, null);
-		}
-		
-		// Rename the working copy
+        return I18NUtil.getMessage(MSG_WORKING_COPY_LABEL);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.coci.CheckOutCheckInService#checkout(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
+     */
+    public NodeRef checkout(
+            NodeRef nodeRef, 
+            NodeRef destinationParentNodeRef,
+            QName destinationAssocTypeQName, 
+            QName destinationAssocQName) 
+    {
+        // Make sure we are no checking out a working copy node
+        if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == true)
+        {
+            throw new CheckOutCheckInServiceException(MSG_ERR_ALREADY_WORKING_COPY);
+        }
+        
+        // Apply the lock aspect if required
+        if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE) == false)
+        {
+            this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_LOCKABLE, null);
+        }
+        
+        // Rename the working copy
         String copyName = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-		if (this.getWorkingCopyLabel() != null && this.getWorkingCopyLabel().length() != 0)
-		{
-			if (copyName != null && copyName.length() != 0)
-			{
-				int index = copyName.lastIndexOf(EXTENSION_CHARACTER);
-				if (index > 0)
-				{
-					// Insert the working copy label before the file extension
+        if (this.getWorkingCopyLabel() != null && this.getWorkingCopyLabel().length() != 0)
+        {
+            if (copyName != null && copyName.length() != 0)
+            {
+                int index = copyName.lastIndexOf(EXTENSION_CHARACTER);
+                if (index > 0)
+                {
+                    // Insert the working copy label before the file extension
                     copyName = copyName.substring(0, index) + " " + getWorkingCopyLabel() + copyName.substring(index);
-				}
-				else
-				{
-					// Simply append the working copy label onto the end of the existing name
+                }
+                else
+                {
+                    // Simply append the working copy label onto the end of the existing name
                     copyName = copyName + " " + getWorkingCopyLabel();
-				}
-			}
+                }
+            }
             else
             {
                 copyName = getWorkingCopyLabel();
             }
-		}
+        }
 
         // Make the working copy
         destinationAssocQName = QName.createQName(destinationAssocQName.getNamespaceURI(), QName.createValidLocalName(copyName));
@@ -236,20 +236,24 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         // Update the working copy name        
         this.nodeService.setProperty(workingCopy, ContentModel.PROP_NAME, copyName);
 
-		// Get the user 
-		String userName = getUserName();
-		
-		// Apply the working copy aspect to the working copy
-		Map<QName, Serializable> workingCopyProperties = new HashMap<QName, Serializable>(1);
-		workingCopyProperties.put(ContentModel.PROP_WORKING_COPY_OWNER, userName);
-		this.nodeService.addAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY, workingCopyProperties);
-		
-		// Lock the original node
-		this.lockService.lock(nodeRef, LockType.READ_ONLY_LOCK);
-		
-		// Return the working copy
-		return workingCopy;
-	}
+        // Get the user 
+        String userName = getUserName();
+        
+        // Apply the working copy aspect to the working copy
+        Map<QName, Serializable> workingCopyProperties = new HashMap<QName, Serializable>(1);
+        workingCopyProperties.put(ContentModel.PROP_WORKING_COPY_OWNER, userName);
+        this.nodeService.addAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY, workingCopyProperties);
+        
+        // Apply the sys:temporary aspect to tag the working copy as a temporary node
+        // so it doesn't get archived when checked in
+        this.nodeService.addAspect(workingCopy, ContentModel.ASPECT_TEMPORARY, null);
+      
+        // Lock the origional node
+        this.lockService.lock(nodeRef, LockType.READ_ONLY_LOCK);
+        
+        // Return the working copy
+        return workingCopy;
+    }
     
     /**
      * Gets the authenticated users node reference
@@ -269,64 +273,64 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         }
     }
 
-	/**
-	 * @see org.alfresco.service.cmr.coci.CheckOutCheckInService#checkout(org.alfresco.service.cmr.repository.NodeRef)
-	 */
-	public NodeRef checkout(NodeRef nodeRef) 
-	{
-		// Find the primary parent in order to determine where to put the copy
-		ChildAssociationRef childAssocRef = this.nodeService.getPrimaryParent(nodeRef);
-		
-		// Checkout the working copy to the same destination
-		return checkout(nodeRef, childAssocRef.getParentRef(), childAssocRef.getTypeQName(), childAssocRef.getQName());		
-	}
+    /**
+     * @see org.alfresco.service.cmr.coci.CheckOutCheckInService#checkout(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public NodeRef checkout(NodeRef nodeRef) 
+    {
+        // Find the primary parent in order to determine where to put the copy
+        ChildAssociationRef childAssocRef = this.nodeService.getPrimaryParent(nodeRef);
+        
+        // Checkout the working copy to the same destination
+        return checkout(nodeRef, childAssocRef.getParentRef(), childAssocRef.getTypeQName(), childAssocRef.getQName());        
+    }
 
-	/**
-	 * @see org.alfresco.repo.version.operations.VersionOperationsService#checkin(org.alfresco.repo.ref.NodeRef, Map<String,Serializable>, java.lang.String, boolean)
-	 */
-	public NodeRef checkin(
-			NodeRef workingCopyNodeRef,
-			Map<String,Serializable> versionProperties, 
-			String contentUrl,
-			boolean keepCheckedOut) 
-	{
-		NodeRef nodeRef = null;
-		
-		// Check that we have been handed a working copy
-		if (this.nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
-		{
-			// Error since we have not been passed a working copy
-			throw new AspectMissingException(ContentModel.ASPECT_WORKING_COPY, workingCopyNodeRef);
-		}
-		
-		// Check that the working node still has the copy aspect applied
-		if (this.nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_COPIEDFROM) == true)
-		{
+    /**
+     * @see org.alfresco.repo.version.operations.VersionOperationsService#checkin(org.alfresco.repo.ref.NodeRef, Map<String,Serializable>, java.lang.String, boolean)
+     */
+    public NodeRef checkin(
+            NodeRef workingCopyNodeRef,
+            Map<String,Serializable> versionProperties, 
+            String contentUrl,
+            boolean keepCheckedOut) 
+    {
+        NodeRef nodeRef = null;
+        
+        // Check that we have been handed a working copy
+        if (this.nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
+        {
+            // Error since we have not been passed a working copy
+            throw new AspectMissingException(ContentModel.ASPECT_WORKING_COPY, workingCopyNodeRef);
+        }
+        
+        // Check that the working node still has the copy aspect applied
+        if (this.nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_COPIEDFROM) == true)
+        {
             // Disable versionable behaviours since we don't want the auto version policy behaviour to execute when we check-in
             this.versionableAspect.disableAutoVersion();
             try
             {
                 Map<QName, Serializable> workingCopyProperties = nodeService.getProperties(workingCopyNodeRef);
-    			// Try and get the original node reference
-    			nodeRef = (NodeRef) workingCopyProperties.get(ContentModel.PROP_COPY_REFERENCE);
-    			if(nodeRef == null)
-    			{
-    				// Error since the original node can not be found
-    				throw new CheckOutCheckInServiceException(MSG_ERR_BAD_COPY);							
-    			}
-    			
-    			try
-    			{
-    				// Release the lock
-    				this.lockService.unlock(nodeRef);
-    			}
-    			catch (UnableToReleaseLockException exception)
-    			{
-    				throw new CheckOutCheckInServiceException(MSG_ERR_NOT_OWNER, exception);
-    			}
-    			
-    			if (contentUrl != null)
-    			{
+                // Try and get the original node reference
+                nodeRef = (NodeRef) workingCopyProperties.get(ContentModel.PROP_COPY_REFERENCE);
+                if(nodeRef == null)
+                {
+                    // Error since the original node can not be found
+                    throw new CheckOutCheckInServiceException(MSG_ERR_BAD_COPY);                            
+                }
+                
+                try
+                {
+                    // Release the lock
+                    this.lockService.unlock(nodeRef);
+                }
+                catch (UnableToReleaseLockException exception)
+                {
+                    throw new CheckOutCheckInServiceException(MSG_ERR_NOT_OWNER, exception);
+                }
+                
+                if (contentUrl != null)
+                {
                     ContentData contentData = (ContentData) workingCopyProperties.get(ContentModel.PROP_CONTENT);
                     if (contentData == null)
                     {
@@ -340,15 +344,15 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
                                 contentData.getSize(),
                                 contentData.getEncoding());
                     }
-    				// Set the content url value onto the working copy
-    				this.nodeService.setProperty(
-    						workingCopyNodeRef, 
-    						ContentModel.PROP_CONTENT, 
-    						contentData);
-    			}
+                    // Set the content url value onto the working copy
+                    this.nodeService.setProperty(
+                            workingCopyNodeRef, 
+                            ContentModel.PROP_CONTENT, 
+                            contentData);
+                }
                 
-    			// Copy the contents of the working copy onto the original
-    			this.copyService.copy(workingCopyNodeRef, nodeRef);
+                // Copy the contents of the working copy onto the original
+                this.copyService.copy(workingCopyNodeRef, nodeRef);
                 
                 if (versionProperties != null && this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
                 {
@@ -356,94 +360,94 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
                     this.versionService.createVersion(nodeRef, versionProperties);
                 }
                 
-    			if (keepCheckedOut == false)
-    			{
-    				// Delete the working copy
+                if (keepCheckedOut == false)
+                {
+                    // Delete the working copy
                     this.nodeService.removeAspect(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY);
-    				this.nodeService.deleteNode(workingCopyNodeRef);							
-    			}
-    			else
-    			{
-    				// Re-lock the original node
-    				this.lockService.lock(nodeRef, LockType.READ_ONLY_LOCK);
-    			}
+                    this.nodeService.deleteNode(workingCopyNodeRef);                            
+                }
+                else
+                {
+                    // Re-lock the original node
+                    this.lockService.lock(nodeRef, LockType.READ_ONLY_LOCK);
+                }
             }
             finally
             {
                 this.versionableAspect.enableAutoVersion();
             }
-			
-		}
-		else
-		{
-			// Error since the copy aspect is missing
-			throw new AspectMissingException(ContentModel.ASPECT_COPIEDFROM, workingCopyNodeRef);
-		}
-		
-		return nodeRef;
-	}
+            
+        }
+        else
+        {
+            // Error since the copy aspect is missing
+            throw new AspectMissingException(ContentModel.ASPECT_COPIEDFROM, workingCopyNodeRef);
+        }
+        
+        return nodeRef;
+    }
 
-	/**
-	 * @see org.alfresco.service.cmr.coci.CheckOutCheckInService#checkin(org.alfresco.service.cmr.repository.NodeRef, Map, java.lang.String)
-	 */
-	public NodeRef checkin(
-			NodeRef workingCopyNodeRef,
-			Map<String, Serializable> versionProperties, 
-			String contentUrl) 
-	{
-		return checkin(workingCopyNodeRef, versionProperties, contentUrl, false);
-	}
+    /**
+     * @see org.alfresco.service.cmr.coci.CheckOutCheckInService#checkin(org.alfresco.service.cmr.repository.NodeRef, Map, java.lang.String)
+     */
+    public NodeRef checkin(
+            NodeRef workingCopyNodeRef,
+            Map<String, Serializable> versionProperties, 
+            String contentUrl) 
+    {
+        return checkin(workingCopyNodeRef, versionProperties, contentUrl, false);
+    }
 
-	/**
-	 * @see org.alfresco.service.cmr.coci.CheckOutCheckInService#checkin(org.alfresco.service.cmr.repository.NodeRef, Map)
-	 */
-	public NodeRef checkin(
-			NodeRef workingCopyNodeRef,
-			Map<String, Serializable> versionProperties) 
-	{
-		return checkin(workingCopyNodeRef, versionProperties, null, false);
-	}
+    /**
+     * @see org.alfresco.service.cmr.coci.CheckOutCheckInService#checkin(org.alfresco.service.cmr.repository.NodeRef, Map)
+     */
+    public NodeRef checkin(
+            NodeRef workingCopyNodeRef,
+            Map<String, Serializable> versionProperties) 
+    {
+        return checkin(workingCopyNodeRef, versionProperties, null, false);
+    }
 
-	/**
-	 * @see org.alfresco.service.cmr.coci.CheckOutCheckInService#cancelCheckout(org.alfresco.service.cmr.repository.NodeRef)
-	 */
-	public NodeRef cancelCheckout(NodeRef workingCopyNodeRef) 
-	{
-		NodeRef nodeRef = null;
-		
-		// Check that we have been handed a working copy
-		if (this.nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
-		{
-			// Error since we have not been passed a working copy
-			throw new AspectMissingException(ContentModel.ASPECT_WORKING_COPY, workingCopyNodeRef);
-		}
-		
-		// Ensure that the node has the copy aspect
-		if (this.nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_COPIEDFROM) == true)
-		{
-			// Get the original node
-			nodeRef = (NodeRef)this.nodeService.getProperty(workingCopyNodeRef, ContentModel.PROP_COPY_REFERENCE);
-			if (nodeRef == null)
-			{
-				// Error since the original node can not be found
-				throw new CheckOutCheckInServiceException(MSG_ERR_BAD_COPY);
-			}			
-			
-			// Release the lock on the original node
-			this.lockService.unlock(nodeRef);
-			
-			// Delete the working copy
+    /**
+     * @see org.alfresco.service.cmr.coci.CheckOutCheckInService#cancelCheckout(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public NodeRef cancelCheckout(NodeRef workingCopyNodeRef) 
+    {
+        NodeRef nodeRef = null;
+        
+        // Check that we have been handed a working copy
+        if (this.nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
+        {
+            // Error since we have not been passed a working copy
+            throw new AspectMissingException(ContentModel.ASPECT_WORKING_COPY, workingCopyNodeRef);
+        }
+        
+        // Ensure that the node has the copy aspect
+        if (this.nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_COPIEDFROM) == true)
+        {
+            // Get the original node
+            nodeRef = (NodeRef)this.nodeService.getProperty(workingCopyNodeRef, ContentModel.PROP_COPY_REFERENCE);
+            if (nodeRef == null)
+            {
+                // Error since the original node can not be found
+                throw new CheckOutCheckInServiceException(MSG_ERR_BAD_COPY);
+            }            
+            
+            // Release the lock on the original node
+            this.lockService.unlock(nodeRef);
+            
+            // Delete the working copy
             this.nodeService.removeAspect(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY);
-			this.nodeService.deleteNode(workingCopyNodeRef);
-		}
-		else
-		{
-			// Error since the copy aspect is missing
-			throw new AspectMissingException(ContentModel.ASPECT_COPIEDFROM, workingCopyNodeRef);
-		}
-		
-		return nodeRef;
-	}
+            this.nodeService.deleteNode(workingCopyNodeRef);
+        }
+        else
+        {
+            // Error since the copy aspect is missing
+            throw new AspectMissingException(ContentModel.ASPECT_COPIEDFROM, workingCopyNodeRef);
+        }
+        
+        return nodeRef;
+    }
     
     /**
      * @see org.alfresco.service.cmr.coci.CheckOutCheckInService#getWorkingCopy(org.alfresco.service.cmr.repository.NodeRef)
@@ -454,6 +458,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         
         // Do a search to find the working copy document
         ResultSet resultSet = null;
+        
         try
         {
             resultSet = this.searchService.query(

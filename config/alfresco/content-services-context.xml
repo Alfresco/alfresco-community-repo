@@ -90,11 +90,7 @@
    <bean id="openOfficeConnection" class="net.sf.jooreports.openoffice.connection.SocketOpenOfficeConnection" />
    
    <!-- Metadata Extraction Regisitry -->
-   <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry" >
-      <property name="mimetypeMap">
-         <ref bean="mimetypeService" />
-      </property>
-   </bean>
+   <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry" />
    
    <!-- Abstract bean definition defining base definition for all metadata extracters -->
    <bean id="baseMetadataExtracter"
@@ -124,11 +120,7 @@
    
 
    <!-- Content Transformation Regisitry -->
-   <bean id="contentTransformerRegistry" class="org.alfresco.repo.content.transform.ContentTransformerRegistry" >
-      <constructor-arg>
-         <ref bean="mimetypeService" />
-      </constructor-arg>
-   </bean>
+   <bean id="contentTransformerRegistry" class="org.alfresco.repo.content.transform.ContentTransformerRegistry" />
 
    <!-- Abstract bean definition defining base definition for all transformers -->
    <bean id="baseContentTransformer"

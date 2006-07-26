@@ -82,6 +82,17 @@ public interface NodeServicePolicies
         public void onCreateNode(ChildAssociationRef childAssocRef);
     }
 
+    public interface OnMoveNodePolicy extends ClassPolicy
+    {
+        /**
+         * Called when a node has been moved.
+         *
+         * @param oldChildAssocRef the child association reference prior to the move
+         * @param newChildAssocRef the child association reference after the move
+         */
+        public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef);
+    }
+
     public interface BeforeUpdateNodePolicy extends ClassPolicy
     {
         /**

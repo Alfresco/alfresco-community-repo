@@ -310,6 +310,8 @@ public class AuthorityServiceTest extends TestCase
 
     public void testCreateAuthTree()
     {
+        personService.getPerson("andy");
+        
         String auth1;
         String auth2;
         String auth3;
@@ -339,12 +341,12 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
 
-        assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
+        assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
         pubAuthorityService.addAuthority(auth5, "andy");
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)
-        assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
+        assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
         assertEquals(2, pubAuthorityService.getContainingAuthorities(null, "andy", false).size());
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth5));
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth2));
@@ -362,7 +364,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)
-        assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
+        assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
         assertEquals(0, pubAuthorityService.getContainingAuthorities(null, "andy", false).size());
         assertEquals(1, pubAuthorityService.getContainingAuthorities(null, auth5, false).size());
         assertTrue(pubAuthorityService.getContainingAuthorities(null, auth5, false).contains(auth2));
@@ -375,6 +377,8 @@ public class AuthorityServiceTest extends TestCase
 
     public void testCreateAuthNet()
     {
+        personService.getPerson("andy");
+        
         String auth1;
         String auth2;
         String auth3;
@@ -399,14 +403,14 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
 
-        assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
+        assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
         pubAuthorityService.addAuthority(auth5, "andy");
         pubAuthorityService.addAuthority(auth1, "andy");
         
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)
-        assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
+        assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
         assertEquals(3, pubAuthorityService.getContainingAuthorities(null, "andy", false).size());
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth5));
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth2));
@@ -425,7 +429,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)
-        assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
+        assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
         assertEquals(2, pubAuthorityService.getContainingAuthorities(null, "andy", false).size());
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth5));
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth2));
@@ -440,6 +444,8 @@ public class AuthorityServiceTest extends TestCase
     
     public void testCreateAuthNet2()
     {
+        personService.getPerson("andy");
+        
         String auth1;
         String auth2;
         String auth3;
@@ -464,14 +470,14 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         
-        assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
+        assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
         pubAuthorityService.addAuthority(auth5, "andy");
         pubAuthorityService.addAuthority(auth1, "andy");
         
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)
-        assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
+        assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
         assertEquals(3, pubAuthorityService.getContainingAuthorities(null, "andy", false).size());
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth5));
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth2));
@@ -491,7 +497,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(5, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)
-        assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
+        assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
         assertEquals(4, pubAuthorityService.getContainingAuthorities(null, "andy", false).size());
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth5));
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth2));

@@ -434,6 +434,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         nodeDaoService.deleteChildAssoc(oldAssoc, false);
         // create a new assoc
         ChildAssoc newAssoc = nodeDaoService.newChildAssoc(newParentNode, nodeToMove, true, assocTypeQName, assocQName);
+        ChildAssociationRef newAssocRef = newAssoc.getChildAssocRef();
         
         // If the node is moving stores, then drag the node hierarchy with it
         if (movingStore)
@@ -463,6 +464,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             invokeOnUpdateNode(oldParentNode.getNodeRef());
             invokeOnUpdateNode(newParentRef);
         }
+        invokeOnMoveNode(oldAssocRef, newAssocRef);
         
         // update the node status
         nodeDaoService.recordChangeId(nodeToMoveRef);

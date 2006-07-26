@@ -264,6 +264,7 @@ public class LuceneTest extends TestCase
         testProperties.put(QName.createQName(TEST_NAMESPACE, "category-ista"), new NodeRef(storeRef, "CategoryId"));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "noderef-ista"), n1);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "path-ista"), nodeService.getPath(n3));
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "verbatim"), "     ");
         testProperties.put(QName.createQName(TEST_NAMESPACE, "null"), null);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "list"), new ArrayList());
         ArrayList<Object> testList = new ArrayList<Object>();
@@ -1855,6 +1856,19 @@ public class LuceneTest extends TestCase
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
         results.close();
 
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "verbatim")) + ":\"     \"",
+                null, null);
+        assertEquals(1, results.length());
+        assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "verbatim")));
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "verbatim")) + ":\"    \"",
+                null, null);
+        assertEquals(0, results.length());
+        results.close();
+        
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testType.toString() + "\"", null,
                 null);
         assertEquals(1, results.length());

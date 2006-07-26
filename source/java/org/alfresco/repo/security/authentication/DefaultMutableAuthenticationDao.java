@@ -22,7 +22,6 @@ import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.dao.UsernameNotFoundException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.springframework.dao.DataAccessException;
 
 /**
@@ -243,16 +242,6 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
      * @return
      */
     public String getMD4HashedPassword(String userName)
-    {
-        throw new AlfrescoRuntimeException("Not implemented");
-    }
-    
-    /**
-     * Are user names case sensitive?
-     * 
-     * @return
-     */
-    public boolean getUserNamesAreCaseSensitive()
     {
         throw new AlfrescoRuntimeException("Not implemented");
     }

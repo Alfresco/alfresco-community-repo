@@ -236,10 +236,8 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
                         }
                         else
                         {
-                            // Set using the user name, lowercase the name if the person service is case insensitive
+                            // Set using the user name
                             
-                            if ( m_personService.getUserNamesAreCaseSensitive() == false)
-                                username = username.toLowerCase();
                             m_authComponent.setCurrentUser( username);
                             
                             // DEBUG

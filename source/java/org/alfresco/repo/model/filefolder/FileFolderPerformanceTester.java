@@ -31,6 +31,7 @@ import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -236,10 +237,80 @@ public class FileFolderPerformanceTester extends TestCase
         }
     }
     
-    public void test_2_ordered_1_10() throws Exception
+    private void readStructure(
+            final NodeRef parentNodeRef,
+            final int threadCount,
+            final int repetitions,
+            final double[] dumpPoints)
     {
-        buildStructure(rootFolderRef, 2, false, 1, 10, null);
+        final List<ChildAssociationRef> children = nodeService.getChildAssocs(parentNodeRef);
+        Runnable runnable = new Runnable()
+        {
+            public void run()
+            {
+                // authenticate
+                authenticationComponent.setSystemUserAsCurrentUser();
+                
+                for (int i = 0; i < repetitions; i++)
+                {
+                    // read the contents of each folder
+                    for (ChildAssociationRef childAssociationRef : children)
+                    {
+                        final NodeRef folderRef = childAssociationRef.getChildRef();
+                        TransactionWork<Object> readWork = new TransactionWork<Object>()
+                        {
+                            public Object doWork() throws Exception
+                            {
+                                // read the child associations of the folder
+                                nodeService.getChildAssocs(folderRef);
+                                // get the type
+                                nodeService.getType(folderRef);
+                                // done
+                                return null;
+                            };
+                        };
+                        TransactionUtil.executeInUserTransaction(transactionService, readWork, true);
+                    }
+                }
+            }            
+        };
+
+        // kick off the required number of threads
+        logger.debug("\n" +
+                "Starting " + threadCount +
+                " threads reading properties and children of " + children.size() +
+                " folder " + repetitions +
+                " times.");
+        ThreadGroup threadGroup = new ThreadGroup(getName());
+        Thread[] threads = new Thread[threadCount];
+        for (int i = 0; i < threadCount; i++)
+        {
+            threads[i] = new Thread(threadGroup, runnable, String.format("FileReader-%02d", i));
+            threads[i].start();
+        }
+        // join each thread so that we wait for them all to finish
+        for (int i = 0; i < threads.length; i++)
+        {
+            try
+            {
+                threads[i].join();
+            }
+            catch (InterruptedException e)
+            {
+                // not too serious - the worker threads are non-daemon
+            }
+        }
     }
+    
+    public void test_1_ordered_1_10() throws Exception
+    {
+        buildStructure(rootFolderRef, 1, false, 1, 10, null);
+    }
+//    public void test_1_ordered_1_10_read() throws Exception
+//    {
+//        buildStructure(rootFolderRef, 1, false, 50, 1, null);
+//        readStructure(rootFolderRef, 50, 1000, null);
+//    }
 //    
 //    public void test_4_ordered_10_100() throws Exception
 //    {
@@ -250,24 +321,34 @@ public class FileFolderPerformanceTester extends TestCase
 //    {
 //        buildStructure(rootFolderRef, 4, true, 10, 100, new double[] {0.25, 0.50, 0.75});
 //    }
-    public void test_4_shuffled_100_100() throws Exception
+//    public void test_1_ordered_100_100() throws Exception
+//    {
+//        buildStructure(
+//                rootFolderRef,
+//                1,
+//                false,
+//                100,
+//                100,
+//                new double[] {0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+//    }
+    public void test_1_shuffled_10_400() throws Exception
+    {
+        buildStructure(
+                rootFolderRef,
+                1,
+                true,
+                10,
+                400,
+                new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+    }
+    public void test_4_shuffled_10_100() throws Exception
     {
         buildStructure(
                 rootFolderRef,
                 4,
                 true,
+                10,
                 100,
-                100,
-                new double[] {0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+                new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
     }
-//    public void test_4_shuffled_1000_1000() throws Exception
-//    {
-//        buildStructure(
-//                rootFolderRef,
-//                4,
-//                true,
-//                1000,
-//                1000,
-//                new double[] {0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
-//    }
 }

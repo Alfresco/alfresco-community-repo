@@ -118,7 +118,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             nodeService.setProperty(parentRef, ContentModel.PROP_MEMBERS, members);
             userToAuthorityCache.remove(childName);
         }
-        else
+        else if  (AuthorityType.getAuthorityType(childName).equals(AuthorityType.GROUP))
         {
             NodeRef childRef = getAuthorityOrNull(childName);
             if (childRef == null)
@@ -127,6 +127,10 @@ public class AuthorityDAOImpl implements AuthorityDAO
             }
             nodeService.addChild(parentRef, childRef, ContentModel.ASSOC_MEMBER, QName.createQName("usr", childName,
                     namespacePrefixResolver));
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("Authorities of the type "+AuthorityType.getAuthorityType(childName)+" may not be added to other authorities");
         }
 
     }

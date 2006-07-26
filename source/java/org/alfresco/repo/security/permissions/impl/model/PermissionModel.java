@@ -116,11 +116,11 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private HashMap<String, PermissionReference> permissionReferenceMap;
     
-    private Map<QName, Set<PermissionReference>> cachedTypePermissionsExposed =
-        new HashMap<QName, Set<PermissionReference>>(128, 1.0f);
+    private Map<QName, LinkedHashSet<PermissionReference>> cachedTypePermissionsExposed =
+        new HashMap<QName, LinkedHashSet<PermissionReference>>(128, 1.0f);
     
-    private Map<QName, Set<PermissionReference>> cachedTypePermissionsUnexposed =
-        new HashMap<QName, Set<PermissionReference>>(128, 1.0f);
+    private Map<QName, LinkedHashSet<PermissionReference>> cachedTypePermissionsUnexposed =
+        new HashMap<QName, LinkedHashSet<PermissionReference>>(128, 1.0f);
     
     public PermissionModel()
     {
@@ -284,9 +284,10 @@ public class PermissionModel implements ModelDAO, InitializingBean
         return getAllPermissionsImpl(type, true);
     }
     
+    @SuppressWarnings("unchecked")
     private Set<PermissionReference> getAllPermissionsImpl(QName type, boolean exposedOnly)
     {
-        Map<QName, Set<PermissionReference>> cache;
+        Map<QName, LinkedHashSet<PermissionReference>> cache;
         if (exposedOnly)
         {
             cache = this.cachedTypePermissionsExposed;
@@ -295,7 +296,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
         {
             cache = this.cachedTypePermissionsUnexposed;
         }
-        Set<PermissionReference> permissions = cache.get(type);
+        LinkedHashSet<PermissionReference> permissions = cache.get(type);
         if (permissions == null)
         {
             permissions = new LinkedHashSet<PermissionReference>();
@@ -310,7 +311,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
             }
             cache.put(type, permissions);
         }
-        return (Set<PermissionReference>)((LinkedHashSet)permissions).clone();
+        return (Set<PermissionReference>)permissions.clone();
     }
 
     /**

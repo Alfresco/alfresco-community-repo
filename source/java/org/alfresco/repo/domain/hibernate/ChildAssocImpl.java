@@ -149,12 +149,19 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
             return false;
         }
         ChildAssoc that = (ChildAssoc) obj;
-        return (
-                   EqualsHelper.nullSafeEquals(this.getTypeQName(), that.getTypeQName())
-                && EqualsHelper.nullSafeEquals(this.getQname(), that.getQname())
-                && EqualsHelper.nullSafeEquals(this.getParent(), that.getParent())
-                && EqualsHelper.nullSafeEquals(this.getChild(), that.getChild())
-               );
+        if (EqualsHelper.nullSafeEquals(id, that.getId()))
+        {
+            return true;
+        }
+        else
+        {
+            return (
+                    EqualsHelper.nullSafeEquals(this.getChild().getId(), that.getChild().getId())
+                    && EqualsHelper.nullSafeEquals(this.getQname(), that.getQname())
+                    && EqualsHelper.nullSafeEquals(this.getParent().getId(), that.getParent().getId())
+                    && EqualsHelper.nullSafeEquals(this.getTypeQName(), that.getTypeQName())
+                   );
+        }
     }
     
     public int hashCode()

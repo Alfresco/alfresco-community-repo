@@ -26,6 +26,8 @@ public class ExtendedPermissionServiceTest extends AbstractPermissionTest
 {
     public void testGroupPermission()
     {
+        personService.getPerson("andy");
+        
         runAs("andy");
         assertFalse(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
@@ -41,6 +43,8 @@ public class ExtendedPermissionServiceTest extends AbstractPermissionTest
     
     public void testDeletePermissionByRecipient()
     {
+        personService.getPerson("andy");
+        
         runAs("andy");
         assertFalse(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),

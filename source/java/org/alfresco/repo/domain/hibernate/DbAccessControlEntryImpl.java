@@ -79,8 +79,15 @@ public class DbAccessControlEntryImpl extends LifecycleAdapter
             return false;
         }
         DbAccessControlEntry other = (DbAccessControlEntry) o;
-        return (EqualsHelper.nullSafeEquals(this.permission, other.getPermission())
-                && EqualsHelper.nullSafeEquals(this.authority, other.getAuthority()));
+        if (EqualsHelper.nullSafeEquals(id, other.getId()))
+        {
+            return true;
+        }
+        else
+        {
+            return (EqualsHelper.nullSafeEquals(this.permission, other.getPermission())
+                    && EqualsHelper.nullSafeEquals(this.authority, other.getAuthority()));
+        }
     }
 
     @Override

@@ -1153,6 +1153,17 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 RegexQNamePattern.MATCH_ALL);
     }
     
+    public static class MovePolicyTester implements NodeServicePolicies.OnMoveNodePolicy
+    {
+        public List<ChildAssociationRef> policyAssocRefs = new ArrayList<ChildAssociationRef>(2);
+        public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+        {
+            policyAssocRefs.add(oldChildAssocRef);
+            policyAssocRefs.add(newChildAssocRef);
+        }
+    };
+
+    
     public void testMoveNode() throws Exception
     {
         Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
@@ -1163,12 +1174,24 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         NodeRef n5Ref = n5pn7Ref.getParentRef();
         NodeRef n6Ref = n6pn8Ref.getParentRef();
         NodeRef n8Ref = n6pn8Ref.getChildRef();
+        
+        MovePolicyTester policy = new MovePolicyTester();
+        // bind to listen to the deletion of a node
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"),
+                policy,
+                new JavaBehaviour(policy, "onMoveNode"));   
+        
         // move n8 to n5
         ChildAssociationRef assocRef = nodeService.moveNode(
                 n8Ref,
                 n5Ref,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName(BaseNodeServiceTest.NAMESPACE, "n5_p_n8"));
+        
+        // check that the move policy was fired
+        assertEquals("Move policy not fired", 2, policy.policyAssocRefs.size());
+        
         // check that n6 is no longer the parent
         List<ChildAssociationRef> n6ChildRefs = nodeService.getChildAssocs(
                 n6Ref,

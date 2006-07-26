@@ -39,7 +39,6 @@ import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.SaltSource;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -89,8 +88,6 @@ public class AuthenticationTest extends TestCase
 
     private AuthenticationComponent authenticationComponent;
 
-    private PermissionServiceSPI permissionServiceSPI;
-
     private UserTransaction userTransaction;
 
     private AuthenticationComponent authenticationComponentImpl;
@@ -117,7 +114,8 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService = (AuthenticationService) ctx.getBean("AuthenticationService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponentImpl");
-        permissionServiceSPI = (PermissionServiceSPI) ctx.getBean("permissionService");
+        // permissionServiceSPI = (PermissionServiceSPI)
+        // ctx.getBean("permissionService");
 
         dao = (MutableAuthenticationDao) ctx.getBean("alfDaoImpl");
         authenticationManager = (AuthenticationManager) ctx.getBean("authenticationManager");
@@ -181,7 +179,6 @@ public class AuthenticationTest extends TestCase
     public void xtestScalability()
     {
         long create = 0;
-        long count = 0;
 
         long start;
         long end;
@@ -207,6 +204,49 @@ public class AuthenticationTest extends TestCase
         authenticationComponent.clearCurrentSecurityContext();
     }
 
+    public void c()
+    {
+        try
+        {
+            authenticationService.authenticate("", "".toCharArray());
+        }
+        catch (AuthenticationException e)
+        {
+            // Expected
+        }
+    }
+
+    public void testCreateUsers()
+    {
+        authenticationService.createAuthentication("GUEST", "".toCharArray());
+        authenticationService.authenticate("GUEST", "".toCharArray());
+        // Guest is reported as lower case and the authentication basically
+        // ignored at the moment
+        assertEquals("guest", authenticationService.getCurrentUserName());
+
+        authenticationService.createAuthentication("Andy", "".toCharArray());
+        authenticationService.authenticate("Andy", "".toCharArray());
+        assertEquals("Andy", authenticationService.getCurrentUserName());
+
+        authenticationService.createAuthentication("Mr.Woof.Banana@chocolate.chip.cookie.com", "".toCharArray());
+        authenticationService.authenticate("Mr.Woof.Banana@chocolate.chip.cookie.com", "".toCharArray());
+        assertEquals("Mr.Woof.Banana@chocolate.chip.cookie.com", authenticationService.getCurrentUserName());
+
+        authenticationService.createAuthentication("Andy_Woof/Domain", "".toCharArray());
+        authenticationService.authenticate("Andy_Woof/Domain", "".toCharArray());
+        assertEquals("Andy_Woof/Domain", authenticationService.getCurrentUserName());
+
+        authenticationService.createAuthentication("Andy_ Woof/Domain", "".toCharArray());
+        authenticationService.authenticate("Andy_ Woof/Domain", "".toCharArray());
+        assertEquals("Andy_ Woof/Domain", authenticationService.getCurrentUserName());
+        
+        
+        authenticationService.createAuthentication("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", "".toCharArray());
+        authenticationService.authenticate("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", "".toCharArray());
+        assertEquals("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", authenticationService.getCurrentUserName());
+
+    }
+
     public void testCreateAndyUserAndOtherCRUD() throws NoSuchAlgorithmException, UnsupportedEncodingException
     {
         RepositoryAuthenticationDao dao = new RepositoryAuthenticationDao();
@@ -225,7 +265,7 @@ public class AuthenticationTest extends TestCase
 
         UserDetails AndyDetails = (UserDetails) dao.loadUserByUsername("Andy");
         assertNotNull(AndyDetails);
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", AndyDetails.getUsername());
+        assertEquals("Andy", AndyDetails.getUsername());
         // assertNotNull(dao.getSalt(AndyDetails));
         assertTrue(AndyDetails.isAccountNonExpired());
         assertTrue(AndyDetails.isAccountNonLocked());
@@ -240,7 +280,7 @@ public class AuthenticationTest extends TestCase
         dao.updateUser("Andy", "carrot".toCharArray());
         UserDetails newDetails = (UserDetails) dao.loadUserByUsername("Andy");
         assertNotNull(newDetails);
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", newDetails.getUsername());
+        assertEquals("Andy", newDetails.getUsername());
         // assertNotNull(dao.getSalt(newDetails));
         assertTrue(newDetails.isAccountNonExpired());
         assertTrue(newDetails.isAccountNonLocked());
@@ -624,7 +664,7 @@ public class AuthenticationTest extends TestCase
         authenticationService.authenticate("Andy", "auth1".toCharArray());
 
         // assert the user is authenticated
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        assertEquals("Andy", authenticationService.getCurrentUserName());
         // delete the user authentication object
 
         authenticationService.clearCurrentSecurityContext();
@@ -660,7 +700,7 @@ public class AuthenticationTest extends TestCase
         authenticationService.authenticate("Andy", "auth1".toCharArray());
 
         // assert the user is authenticated
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        assertEquals("Andy", authenticationService.getCurrentUserName());
         // delete the user authentication object
 
         authenticationService.clearCurrentSecurityContext();
@@ -696,7 +736,7 @@ public class AuthenticationTest extends TestCase
         authenticationService.authenticate("Andy", "auth1".toCharArray());
 
         // assert the user is authenticated
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        assertEquals("Andy", authenticationService.getCurrentUserName());
         // delete the user authentication object
 
         authenticationService.clearCurrentSecurityContext();
@@ -742,7 +782,7 @@ public class AuthenticationTest extends TestCase
         authenticationService.authenticate("Andy", "auth1".toCharArray());
 
         // assert the user is authenticated
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        assertEquals("Andy", authenticationService.getCurrentUserName());
         // delete the user authentication object
 
         authenticationService.clearCurrentSecurityContext();
@@ -798,7 +838,7 @@ public class AuthenticationTest extends TestCase
         authenticationService.authenticate("Andy", "auth1".toCharArray());
 
         // assert the user is authenticated
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        assertEquals("Andy", authenticationService.getCurrentUserName());
         // delete the user authentication object
 
         authenticationService.clearCurrentSecurityContext();
@@ -857,7 +897,7 @@ public class AuthenticationTest extends TestCase
         authenticationService.authenticate("Andy", "auth1".toCharArray());
 
         // assert the user is authenticated
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        assertEquals("Andy", authenticationService.getCurrentUserName());
         // delete the user authentication object
 
         authenticationService.clearCurrentSecurityContext();
@@ -918,7 +958,7 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
 
         // assert the user is authenticated
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        assertEquals("Andy", authenticationService.getCurrentUserName());
         // delete the user authentication object
 
         pubAuthenticationService.clearCurrentSecurityContext();
@@ -966,7 +1006,7 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
 
         // assert the user is authenticated
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        assertEquals("Andy", authenticationService.getCurrentUserName());
         // delete the user authentication object
 
         pubAuthenticationService.clearCurrentSecurityContext();
@@ -1013,7 +1053,7 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
 
         // assert the user is authenticated
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        assertEquals("Andy", authenticationService.getCurrentUserName());
         // delete the user authentication object
 
         pubAuthenticationService.clearCurrentSecurityContext();
@@ -1085,7 +1125,7 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
 
         // assert the user is authenticated
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        assertEquals("Andy", authenticationService.getCurrentUserName());
         // delete the user authentication object
 
         pubAuthenticationService.clearCurrentSecurityContext();
@@ -1114,7 +1154,7 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService.invalidateTicket(ticket);
 
     }
-    
+
     public void testPubAuthenticationService0()
     {
         // pubAuthenticationService.authenticateAsGuest();
@@ -1145,7 +1185,7 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
 
         // assert the user is authenticated
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        assertEquals("Andy", authenticationService.getCurrentUserName());
         // delete the user authentication object
 
         pubAuthenticationService.clearCurrentSecurityContext();
@@ -1172,21 +1212,21 @@ public class AuthenticationTest extends TestCase
 
         // destroy the ticket instance
         pubAuthenticationService.invalidateTicket(ticket);
-        
+
         authenticationComponent.clearCurrentSecurityContext();
-        
+
         pubAuthenticationService.authenticate("Andy", "auth3".toCharArray());
         pubAuthenticationService.updateAuthentication("Andy", "auth3".toCharArray(), "auth4".toCharArray());
         pubAuthenticationService.authenticate("Andy", "auth4".toCharArray());
-        
+
         try
         {
-             pubAuthenticationService.updateAuthentication("Andy", "auth3".toCharArray(), "auth4".toCharArray());
-             fail("Should not be able to update");
+            pubAuthenticationService.updateAuthentication("Andy", "auth3".toCharArray(), "auth4".toCharArray());
+            fail("Should not be able to update");
         }
-        catch(AuthenticationException ae)
+        catch (AuthenticationException ae)
         {
-            
+
         }
 
     }
@@ -1202,7 +1242,7 @@ public class AuthenticationTest extends TestCase
         authenticationService.createAuthentication("Andy", "auth1".toCharArray());
 
         authenticationComponent.setCurrentUser("Andy");
-        assertEquals(dao.getUserNamesAreCaseSensitive() ? "Andy" : "andy", authenticationService.getCurrentUserName());
+        assertEquals("Andy", authenticationService.getCurrentUserName());
 
         // authenticationService.deleteAuthentication("andy");
     }

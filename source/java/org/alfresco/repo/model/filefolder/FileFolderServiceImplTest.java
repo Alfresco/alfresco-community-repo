@@ -417,19 +417,20 @@ public class FileFolderServiceImplTest extends TestCase
     {
         // create a completely new path below the root
         List<String> namePath = new ArrayList<String>(4);
-        namePath.add("A");
-        namePath.add("B");
-        namePath.add("C");
-        namePath.add("D");
+        namePath.add("AAA");
+        namePath.add("BBB");
+        namePath.add("CCC");
+        namePath.add("DDD");
         
         FileInfo lastFileInfo = fileFolderService.makeFolders(rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
         assertNotNull("First makeFolder failed", lastFileInfo);
         // check that a repeat works
+        
         FileInfo lastFileInfoAgain = fileFolderService.makeFolders(rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
         assertNotNull("Repeat makeFolders failed", lastFileInfoAgain);
         assertEquals("Repeat created new leaf", lastFileInfo.getNodeRef(), lastFileInfoAgain.getNodeRef());
         // check that it worked
-        List<FileInfo> checkInfos = fileFolderService.search(rootNodeRef, "D", false, true, true);
+        List<FileInfo> checkInfos = fileFolderService.search(rootNodeRef, "DDD", false, true, true);
         assertEquals("Expected to find a result", 1, checkInfos.size());
         // get the path
         List<FileInfo> checkPathInfos = fileFolderService.getNamePath(rootNodeRef, checkInfos.get(0).getNodeRef());
@@ -440,6 +441,27 @@ public class FileFolderServiceImplTest extends TestCase
             assertEquals("Path mismatch", namePath.get(i), checkInfo.getName());
             i++;
         }
+    }
+    
+    /**
+     * Lucene only indexes terms that are 3 characters or more
+     */
+    public void testMakeFoldersShortNames() throws Exception
+    {
+        // create a completely new path below the root
+        List<String> namePath = new ArrayList<String>(4);
+        namePath.add("A");
+        namePath.add("B");
+        namePath.add("C");
+        namePath.add("D");
+        
+        FileInfo lastFileInfo = fileFolderService.makeFolders(rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
+        assertNotNull("First makeFolder failed", lastFileInfo);
+        // check that a repeat works
+        
+        FileInfo lastFileInfoAgain = fileFolderService.makeFolders(rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
+        assertNotNull("Repeat makeFolders failed", lastFileInfoAgain);
+        assertEquals("Repeat created new leaf", lastFileInfo.getNodeRef(), lastFileInfoAgain.getNodeRef());
     }
     
     public void testGetNamePath() throws Exception

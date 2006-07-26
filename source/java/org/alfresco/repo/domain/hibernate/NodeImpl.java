@@ -137,8 +137,14 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
             return false;
         }
         Node that = (Node) obj;
-        return (EqualsHelper.nullSafeEquals(getStore(), that.getStore())
-                && EqualsHelper.nullSafeEquals(getUuid(), that.getUuid()));
+        if (EqualsHelper.nullSafeEquals(id, that.getId()))
+        {
+            return true;
+        }
+        else
+        {
+            return (this.getNodeRef().equals(that.getNodeRef()));
+        }
     }
     
     public int hashCode()

@@ -19,7 +19,9 @@ package org.alfresco.filesys.smb.server.repo;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.List;
 
 import javax.transaction.UserTransaction;
@@ -352,7 +354,22 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 URL appURL = this.getClass().getClassLoader().getResource(appPath.getValue());
                 if ( appURL == null)
                     throw new DeviceContextException("Failed to find drag and drop application, " + appPath.getValue());
-                File appFile = new File(appURL.getFile());
+                
+                // Decode the URL path, it might contain escaped characters
+                
+                String appURLPath = null;
+                try
+                {
+                	appURLPath = URLDecoder.decode( appURL.getFile(), "UTF-8");
+                }
+                catch ( UnsupportedEncodingException ex)
+                {
+                	throw new DeviceContextException("Failed to decode drag/drop path, " + ex.getMessage());
+                }
+
+                // Check that the drag/drop file exists
+                
+                File appFile = new File(appURLPath);
                 if ( appFile.exists() == false)
                     throw new DeviceContextException("Drag and drop application not found, " + appPath.getValue());
                 

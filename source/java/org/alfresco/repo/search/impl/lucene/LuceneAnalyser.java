@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.search.impl.lucene.analysis.PathAnalyser;
+import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -117,8 +118,23 @@ public class LuceneAnalyser extends Analyzer
         {
             QName propertyQName = QName.createQName(fieldName.substring(1));
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-            DataTypeDefinition dataType = (propertyDef == null) ? dictionaryService.getDataType(DataTypeDefinition.TEXT) : propertyDef.getDataType();
-            analyser = loadAnalyzer(dataType);
+            if (propertyDef != null)
+            {
+                if (propertyDef.isTokenisedInIndex())
+                {
+                    DataTypeDefinition dataType =  propertyDef.getDataType();
+                    analyser = loadAnalyzer(dataType);
+                }
+                else
+                {
+                    analyser = new VerbatimAnalyser();
+                }
+            }
+            else
+            {
+                DataTypeDefinition dataType = dictionaryService.getDataType(DataTypeDefinition.TEXT);
+                analyser = loadAnalyzer(dataType);
+            }
         }
         else
         {
@@ -127,28 +143,31 @@ public class LuceneAnalyser extends Analyzer
         analysers.put(fieldName, analyser);
         return analyser;
     }
-    
+
     private Analyzer loadAnalyzer(DataTypeDefinition dataType)
     {
         String analyserClassName = dataType.getAnalyserClassName();
         try
         {
             Class<?> clazz = Class.forName(analyserClassName);
-            Analyzer analyser = (Analyzer)clazz.newInstance();
+            Analyzer analyser = (Analyzer) clazz.newInstance();
             return analyser;
         }
         catch (ClassNotFoundException e)
         {
-            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using " + analyserClassName);
+            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using "
+                    + analyserClassName);
         }
         catch (InstantiationException e)
         {
-            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using " + analyserClassName);
+            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using "
+                    + analyserClassName);
         }
         catch (IllegalAccessException e)
         {
-            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using " + analyserClassName);
+            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using "
+                    + analyserClassName);
         }
     }
-    
+
 }

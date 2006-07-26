@@ -662,10 +662,9 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
             }
             else
             {
-                // Set using the user name, lowercase the name if hte person service is case insensitive
+                // Set using the user name
                 
-                if ( m_personService.getUserNamesAreCaseSensitive() == false)
-                    username = username.toLowerCase();
+              
                 setCurrentUser( username);
                 
                 // DEBUG
@@ -838,10 +837,8 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                 }
                 else
                 {
-                    // Set using the user name, lowercase the name if the person service is case insensitive
+                    // Set using the user name
                     
-                    if ( m_personService.getUserNamesAreCaseSensitive() == false)
-                        username = username.toLowerCase();
                     setCurrentUser( username);
                     
                     // DEBUG

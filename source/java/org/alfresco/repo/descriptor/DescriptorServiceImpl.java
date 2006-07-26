@@ -44,6 +44,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -58,7 +59,7 @@ import org.springframework.core.io.Resource;
  * 
  * @author David Caruana
  */
-public class DescriptorServiceImpl implements DescriptorService, ApplicationListener, InitializingBean, ApplicationContextAware
+public class DescriptorServiceImpl implements DescriptorService, ApplicationListener, InitializingBean, ApplicationContextAware, DisposableBean
 {
     private static Log logger = LogFactory.getLog(DescriptorServiceImpl.class);
     
@@ -201,6 +202,13 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
         serverDescriptor = createServerDescriptor();
     }
 
+    /**
+     * Destruction hook
+     */
+    public void destroy() throws Exception
+    {
+    }
+    
     /**
      * Create server descriptor
      * 
@@ -710,5 +718,4 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
             return serverProperties.getProperty(key, "");
         }
     }
-
 }

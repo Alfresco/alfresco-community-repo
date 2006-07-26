@@ -146,8 +146,8 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         TestWithUserUtils.authenticateUser(this.userName, PWD, this.rootNodeRef, this.authenticationService);
         this.userNodeRef = TestWithUserUtils.getCurrentUser(this.authenticationService);
         
-        permissionService.setPermission(this.rootNodeRef, this.userName.toLowerCase(), PermissionService.ALL_PERMISSIONS, true);
-        permissionService.setPermission(this.nodeRef, this.userName.toLowerCase(), PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setPermission(this.rootNodeRef, this.userName, PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setPermission(this.nodeRef, this.userName, PermissionService.ALL_PERMISSIONS, true);
 	}
 	
 	/**

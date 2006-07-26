@@ -55,22 +55,22 @@ public class PersonServiceImpl implements PersonService
     private NodeService nodeService;
 
     private SearchService searchService;
-    
+
     private AuthorityService authorityService;
 
     private PermissionServiceSPI permissionServiceSPI;
-    
+
     private NamespacePrefixResolver namespacePrefixResolver;
 
     private boolean createMissingPeople;
-
-    private boolean userNamesAreCaseSensitive;
 
     private String companyHomePath;
 
     private NodeRef companyHomeNodeRef;
 
     private static Set<QName> mutableProperties;
+
+    private boolean userNamesAreCaseSensitive = false;
 
     static
     {
@@ -99,9 +99,8 @@ public class PersonServiceImpl implements PersonService
         this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
     }
 
-    public NodeRef getPerson(String caseSensitiveUserName)
+    public NodeRef getPerson(String userName)
     {
-        String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
         NodeRef personNode = getPersonOrNull(userName);
         if (personNode == null)
         {
@@ -126,12 +125,12 @@ public class PersonServiceImpl implements PersonService
         return getPersonOrNull(caseSensitiveUserName) != null;
     }
 
-    public NodeRef getPersonOrNull(String caseSensitiveUserName)
+    public NodeRef getPersonOrNull(String searchUserName)
     {
-        String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("TYPE:\\{http\\://www.alfresco.org/model/content/1.0\\}person +@cm\\:userName:\"" + userName + "\"");
+        sp.setQuery("TYPE:\\{http\\://www.alfresco.org/model/content/1.0\\}person +@cm\\:userName:\"" + searchUserName
+                + "\"");
         sp.addStore(storeRef);
         sp.excludeDataInTheCurrentTransaction(false);
 
@@ -141,22 +140,51 @@ public class PersonServiceImpl implements PersonService
         {
             rs = searchService.query(sp);
 
+            NodeRef returnRef = null;
+
             for (ResultSetRow row : rs)
             {
 
                 NodeRef nodeRef = row.getNodeRef();
                 if (nodeService.exists(nodeRef))
                 {
-                    String realUserName = DefaultTypeConverter.INSTANCE.convert(
-                            String.class,
-                            nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
-                    realUserName = userNamesAreCaseSensitive ? realUserName : realUserName.toLowerCase();
-                    if (realUserName.equals(userName))
+                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
+                            nodeRef, ContentModel.PROP_USERNAME));
+
+                    if (userNamesAreCaseSensitive)
                     {
-                        return nodeRef;
+                        if (realUserName.equals(searchUserName))
+                        {
+                            if (returnRef == null)
+                            {
+                                returnRef = nodeRef;
+                            }
+                            else
+                            {
+                                throw new AlfrescoRuntimeException("Found more than one user for " + searchUserName
+                                        + " (case sensitive)");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (realUserName.equalsIgnoreCase(searchUserName))
+                        {
+                            if (returnRef == null)
+                            {
+                                returnRef = nodeRef;
+                            }
+                            else
+                            {
+                                throw new AlfrescoRuntimeException("Found more than one user for " + searchUserName
+                                        + " (case insensitive)");
+                            }
+                        }
                     }
                 }
             }
+            
+            return returnRef;
         }
         finally
         {
@@ -165,8 +193,6 @@ public class PersonServiceImpl implements PersonService
                 rs.close();
             }
         }
-
-        return null;
     }
 
     public boolean createMissingPeople()
@@ -179,9 +205,8 @@ public class PersonServiceImpl implements PersonService
         return mutableProperties;
     }
 
-    public void setPersonProperties(String caseSensitiveUserName, Map<QName, Serializable> properties)
+    public void setPersonProperties(String userName, Map<QName, Serializable> properties)
     {
-        String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
         NodeRef personNode = getPersonOrNull(userName);
         if (personNode == null)
         {
@@ -195,8 +220,12 @@ public class PersonServiceImpl implements PersonService
             }
 
         }
-
-        properties.put(ContentModel.PROP_USERNAME, userName);
+        else
+        {
+            String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(personNode,
+                    ContentModel.PROP_USERNAME));
+            properties.put(ContentModel.PROP_USERNAME, realUserName);
+        }
 
         nodeService.setProperties(personNode, properties);
     }
@@ -231,26 +260,17 @@ public class PersonServiceImpl implements PersonService
 
     public NodeRef createPerson(Map<QName, Serializable> properties)
     {
-        String caseSensitiveUserName = DefaultTypeConverter.INSTANCE.convert(String.class, properties
+        String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties
                 .get(ContentModel.PROP_USERNAME));
-        String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
         properties.put(ContentModel.PROP_USERNAME, userName);
-        return nodeService.createNode(
-                getPeopleContainer(),
-                ContentModel.ASSOC_CHILDREN,
-                ContentModel.TYPE_PERSON,
-                ContentModel.TYPE_PERSON,
-                properties).getChildRef();
+        return nodeService.createNode(getPeopleContainer(), ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_PERSON,
+                ContentModel.TYPE_PERSON, properties).getChildRef();
     }
 
     public NodeRef getPeopleContainer()
     {
         NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-        List<NodeRef> results = searchService.selectNodes(
-                rootNodeRef,
-                PEOPLE_FOLDER,
-                null,
-                namespacePrefixResolver,
+        List<NodeRef> results = searchService.selectNodes(rootNodeRef, PEOPLE_FOLDER, null, namespacePrefixResolver,
                 false);
         if (results.size() == 0)
         {
@@ -265,25 +285,22 @@ public class PersonServiceImpl implements PersonService
     public void deletePerson(String userName)
     {
         NodeRef personNodeRef = getPersonOrNull(userName);
-        
+
         // delete the person
         if (personNodeRef != null)
         {
             nodeService.deleteNode(personNodeRef);
         }
 
-        // translate username based on user name case sensitivity
-        String authorityName = userNamesAreCaseSensitive ? userName : userName.toLowerCase();
-        
         // remove user from any containing authorities
         Set<String> containerAuthorities = authorityService.getContainingAuthorities(null, userName, true);
         for (String containerAuthority : containerAuthorities)
         {
-            authorityService.removeAuthority(containerAuthority, authorityName);
+            authorityService.removeAuthority(containerAuthority, userName);
         }
-        
+
         // remove any user permissions
-        permissionServiceSPI.deletePermissions(authorityName);
+        permissionServiceSPI.deletePermissions(userName);
     }
 
     public Set<NodeRef> getAllPeople()
@@ -301,7 +318,6 @@ public class PersonServiceImpl implements PersonService
         {
             rs = searchService.query(sp);
 
-           
             for (ResultSetRow row : rs)
             {
 
@@ -341,7 +357,7 @@ public class PersonServiceImpl implements PersonService
     {
         this.permissionServiceSPI = permissionServiceSPI;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -375,6 +391,18 @@ public class PersonServiceImpl implements PersonService
             companyHomeNodeRef = refs.get(0);
         }
         return companyHomeNodeRef;
+    }
+
+    public String getUserIdentifier(String caseSensitiveUserName)
+    {
+        NodeRef nodeRef = getPersonOrNull(caseSensitiveUserName);
+        if ((nodeRef != null) && nodeService.exists(nodeRef))
+        {
+            String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
+                    ContentModel.PROP_USERNAME));
+            return realUserName;
+        }
+        return null;
     }
 
     // IOC Setters

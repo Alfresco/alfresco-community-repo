@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -152,9 +153,18 @@ public class UIAssociationEditor extends BaseAssociationEditor
          {
             out.write("<tr><td>");
             AssociationRef assoc = (AssociationRef)iter.next();
-            out.write(Repository.getDisplayPath(nodeService.getPath(assoc.getTargetRef())));
-            out.write("/");
-            out.write(Repository.getNameForNode(nodeService, assoc.getTargetRef()));
+            NodeRef targetNode = assoc.getTargetRef();
+            // if the node represents a person, show the username instead of the name
+            if (ContentModel.TYPE_PERSON.equals(nodeService.getType(targetNode)))
+            {
+               out.write((String)nodeService.getProperty(targetNode, ContentModel.PROP_USERNAME));
+            }
+            else
+            {
+               out.write(Repository.getDisplayPath(nodeService.getPath(targetNode)));
+               out.write("/");
+               out.write(Repository.getNameForNode(nodeService, targetNode));
+            }
             out.write("</td></tr>");
          }
          

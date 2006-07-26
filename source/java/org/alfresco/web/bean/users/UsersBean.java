@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -413,10 +414,11 @@ public class UsersBean implements IContextListener
             tx.begin();
             
             // define the query to find people by their first or last name
+            String search = ISO9075.encode(this.searchCriteria);
             String query = "( TYPE:\"{http://www.alfresco.org/model/content/1.0}person\") AND " + 
-                           "((@\\{http\\://www.alfresco.org/model/content/1.0\\}firstName:" + this.searchCriteria + 
-                           "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}lastName:" + this.searchCriteria + 
-                           "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}userName:" + this.searchCriteria + 
+                           "((@\\{http\\://www.alfresco.org/model/content/1.0\\}firstName:" + search + 
+                           "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}lastName:" + search + 
+                           "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}userName:" + search + 
                            "*)))";
             
             if (logger.isDebugEnabled())

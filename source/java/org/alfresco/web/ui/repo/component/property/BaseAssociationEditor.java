@@ -32,6 +32,7 @@ import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.FacesEvent;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -698,9 +699,17 @@ public abstract class BaseAssociationEditor extends UIInput
       }
       out.write("'>");
 
-      out.write(Repository.getDisplayPath(nodeService.getPath(targetRef)));
-      out.write("/");
-      out.write(Repository.getNameForNode(nodeService, targetRef));
+      if (ContentModel.TYPE_PERSON.equals(nodeService.getType(targetRef)))
+      {
+         out.write((String)nodeService.getProperty(targetRef, ContentModel.PROP_USERNAME));
+      }
+      else
+      {
+         out.write(Repository.getDisplayPath(nodeService.getPath(targetRef)));
+         out.write("/");
+         out.write(Repository.getNameForNode(nodeService, targetRef));
+      }
+      
       out.write("</td><td class='");
       if (this.highlightedRow)
       {
@@ -815,9 +824,17 @@ public abstract class BaseAssociationEditor extends UIInput
                out.write("<option value='");
                out.write(item.getId());
                out.write("'>");
-               out.write(Repository.getDisplayPath(nodeService.getPath(item)));
-               out.write("/");
-               out.write(Repository.getNameForNode(nodeService, item));
+               // if the node represents a person, show the username instead of the name
+               if (ContentModel.TYPE_PERSON.equals(nodeService.getType(item)))
+               {
+                  out.write((String)nodeService.getProperty(item, ContentModel.PROP_USERNAME));
+               }
+               else
+               {
+                  out.write(Repository.getDisplayPath(nodeService.getPath(item)));
+                  out.write("/");
+                  out.write(Repository.getNameForNode(nodeService, item));
+               }
                out.write("</option>");
             }
          }
@@ -852,17 +869,31 @@ public abstract class BaseAssociationEditor extends UIInput
       if (assocDef != null)
       {
          // find and show all the available options for the current association
+         String type = assocDef.getTargetClass().getName().toString();
          StringBuilder query = new StringBuilder("+TYPE:\"");
-         query.append(assocDef.getTargetClass().getName().toString());
+         query.append(type);
          query.append("\"");
          
          if (contains != null && contains.length() > 0)
          {
             String safeContains = Utils.remove(contains.trim(), "\"");
-            String nameAttr = Repository.escapeQName(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "name"));
-            
             query.append(" AND +@");
-            query.append(nameAttr);
+            
+            // if the association's target is the person type search on the 
+            // username instead of the name property
+            if (type.equals(ContentModel.TYPE_PERSON.toString()))
+            {
+               String userName = Repository.escapeQName(QName.createQName(
+                     NamespaceService.CONTENT_MODEL_1_0_URI, "userName"));
+               query.append(userName);
+            }
+            else
+            {
+               String nameAttr = Repository.escapeQName(QName.createQName(
+                     NamespaceService.CONTENT_MODEL_1_0_URI, "name"));
+               query.append(nameAttr);
+            }
+            
             query.append(":*" + safeContains + "*");
          }
          

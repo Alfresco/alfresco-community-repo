@@ -57,6 +57,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.CachingDateFormat;
+import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.SearchContext.RangeProperties;
 import org.alfresco.web.bean.repository.MapNode;
@@ -1375,7 +1376,8 @@ public class AdvancedSearchBean
          {
             FacesContext fc = FacesContext.getCurrentInstance();
             User user = Application.getCurrentUser(fc);
-            String xpath = NamespaceService.APP_MODEL_PREFIX + ":" + QName.createValidLocalName(user.getUserName());
+            String userName = ISO9075.encode(user.getUserName());
+            String xpath = NamespaceService.APP_MODEL_PREFIX + ":" + QName.createValidLocalName(userName);
             
             List<NodeRef> results = null;
             try

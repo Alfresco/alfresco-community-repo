@@ -653,12 +653,18 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     	}
     }
 	
+    /**
+     * @see org.alfresco.repo.rule.RuntimeRuleService#addRulePendingExecution(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule)
+     */
     @SuppressWarnings("unchecked")
     public void addRulePendingExecution(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule) 
     {
         addRulePendingExecution(actionableNodeRef, actionedUponNodeRef, rule, false);
     }
 
+    /**
+     * @see org.alfresco.repo.rule.RuntimeRuleService#addRulePendingExecution(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule, boolean)
+     */
 	@SuppressWarnings("unchecked")
     public void addRulePendingExecution(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule, boolean executeAtEnd) 
 	{
@@ -684,7 +690,7 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
                 }
 			}
 			
-            // Prevent hte same rule being executed more than one in the same transaction                
+            // Prevent the same rule being executed more than once in the same transaction                
 			pendingRules.add(pendingRuleData);		
         }
         else
@@ -707,7 +713,10 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
 		{
 			logger.debug("Creating the executed rules list");
 		}
-        AlfrescoTransactionSupport.bindResource(KEY_RULES_EXECUTED, new HashSet<ExecutedRuleData>());
+		if (AlfrescoTransactionSupport.getResource(KEY_RULES_EXECUTED) == null)
+		{
+			AlfrescoTransactionSupport.bindResource(KEY_RULES_EXECUTED, new HashSet<ExecutedRuleData>());
+		}
         try
         {
             List<PendingRuleData> executeAtEndRules = new ArrayList<PendingRuleData>();
@@ -719,11 +728,11 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
         }
         finally
         {
-            AlfrescoTransactionSupport.unbindResource(KEY_RULES_EXECUTED);
-            if (logger.isDebugEnabled() == true)
-			{
-				logger.debug("Unbinding resource");
-			}
+            //AlfrescoTransactionSupport.unbindResource(KEY_RULES_EXECUTED);
+            //if (logger.isDebugEnabled() == true)
+			//{
+		//		logger.debug("Unbinding resource");
+		//	}
         }
 	}     
     
@@ -900,7 +909,7 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
      * 
      * @author Roy Wetherall
      */
-    private class ExecutedRuleData
+    public class ExecutedRuleData
     {
 
         protected NodeRef actionableNodeRef;

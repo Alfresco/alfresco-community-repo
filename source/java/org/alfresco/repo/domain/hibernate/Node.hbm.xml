@@ -43,8 +43,8 @@
             name="accessControlList"
             class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"
             column="acl_id"
-            lazy="false"
-            fetch="join"
+            lazy="proxy"
+            fetch="select"
             unique="false"
             not-null="false"
             cascade="delete" />

@@ -307,9 +307,9 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         if (this.nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_COPIEDFROM) == true)
         {
             // Disable versionable behaviours since we don't want the auto version policy behaviour to execute when we check-in
-            this.versionableAspect.disableAutoVersion();
-            try
-            {
+            //this.versionableAspect.disableAutoVersion();
+            //try
+            //{
                 Map<QName, Serializable> workingCopyProperties = nodeService.getProperties(workingCopyNodeRef);
                 // Try and get the original node reference
                 nodeRef = (NodeRef) workingCopyProperties.get(ContentModel.PROP_COPY_REFERENCE);
@@ -371,11 +371,11 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
                     // Re-lock the original node
                     this.lockService.lock(nodeRef, LockType.READ_ONLY_LOCK);
                 }
-            }
-            finally
-            {
-                this.versionableAspect.enableAutoVersion();
-            }
+            //}
+            //finally
+            //{
+            //    this.versionableAspect.enableAutoVersion();
+            //}
             
         }
         else

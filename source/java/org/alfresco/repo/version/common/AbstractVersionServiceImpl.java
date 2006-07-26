@@ -26,6 +26,7 @@ import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.version.VersionServicePolicies;
+import org.alfresco.repo.version.VersionServicePolicies.AfterCreateVersionPolicy;
 import org.alfresco.repo.version.VersionServicePolicies.BeforeCreateVersionPolicy;
 import org.alfresco.repo.version.VersionServicePolicies.CalculateVersionLabelPolicy;
 import org.alfresco.repo.version.VersionServicePolicies.OnCreateVersionPolicy;
@@ -68,6 +69,7 @@ public abstract class AbstractVersionServiceImpl
 	 * Policy delegates
 	 */
 	private ClassPolicyDelegate<BeforeCreateVersionPolicy> beforeCreateVersionDelegate;
+	private ClassPolicyDelegate<AfterCreateVersionPolicy> afterCreateVersionDelegate;
 	private ClassPolicyDelegate<OnCreateVersionPolicy> onCreateVersionDelegate;
 	private ClassPolicyDelegate<CalculateVersionLabelPolicy> calculateVersionLabelDelegate;
     
@@ -108,6 +110,7 @@ public abstract class AbstractVersionServiceImpl
     {
 		// Register the policies
         this.beforeCreateVersionDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.BeforeCreateVersionPolicy.class);
+        this.afterCreateVersionDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.AfterCreateVersionPolicy.class);
 		this.onCreateVersionDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.OnCreateVersionPolicy.class);
 		this.calculateVersionLabelDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.CalculateVersionLabelPolicy.class);		
     }	
@@ -125,6 +128,22 @@ public abstract class AbstractVersionServiceImpl
         // invoke for node aspects
         Set<QName> nodeAspectQNames = nodeService.getAspects(nodeRef);
 		this.beforeCreateVersionDelegate.get(nodeAspectQNames).beforeCreateVersion(nodeRef);
+	}
+	
+	/**
+	 * Invoke the after create version policy bahaviour
+	 * 
+	 * @param nodeRef	the nodeRef versioned
+	 * @param version 	the created version
+	 */
+	protected void invokeAfterCreateVersion(NodeRef nodeRef, Version version)
+	{
+		// invoke for node type
+        QName nodeTypeQName = nodeService.getType(nodeRef);
+        this.afterCreateVersionDelegate.get(nodeTypeQName).afterCreateVersion(nodeRef, version);
+        // invoke for node aspects
+        Set<QName> nodeAspectQNames = nodeService.getAspects(nodeRef);
+		this.afterCreateVersionDelegate.get(nodeAspectQNames).afterCreateVersion(nodeRef, version);
 	}
 	
 	/**

@@ -21,7 +21,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.alfresco.repo.rule.RuleServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionServiceException;
@@ -105,11 +107,14 @@ public class AsynchronousActionExecutionQueueImpl extends ThreadPoolExecutor imp
      *      org.alfresco.service.cmr.action.Action, boolean,
      *      org.alfresco.service.cmr.repository.NodeRef)
      */
-    public void executeAction(RuntimeActionService actionService, Action action, NodeRef actionedUponNodeRef,
+    @SuppressWarnings("unchecked")
+	public void executeAction(RuntimeActionService actionService, Action action, NodeRef actionedUponNodeRef,
             boolean checkConditions, Set<String> actionChain, NodeRef actionExecutionHistoryNodeRef)
     {
+    	Set<RuleServiceImpl.ExecutedRuleData> executedRules =
+            (Set<RuleServiceImpl.ExecutedRuleData>) AlfrescoTransactionSupport.getResource("RuleServiceImpl.ExecutedRules");    	
         execute(new ActionExecutionWrapper(actionService, transactionService, authenticationComponent, action,
-                actionedUponNodeRef, checkConditions, actionExecutionHistoryNodeRef, actionChain));
+                actionedUponNodeRef, checkConditions, actionExecutionHistoryNodeRef, actionChain, executedRules));
     }
 
     /**
@@ -176,6 +181,11 @@ public class AsynchronousActionExecutionQueueImpl extends ThreadPoolExecutor imp
          * The action chain
          */
         private Set<String> actionChain;
+        
+        /**
+         * List of executed list, helps to prevent loop scenarios with async rules
+         */
+        private Set<RuleServiceImpl.ExecutedRuleData> executedRules;
 
         /**
          * Constructor
@@ -190,7 +200,7 @@ public class AsynchronousActionExecutionQueueImpl extends ThreadPoolExecutor imp
          */
         public ActionExecutionWrapper(RuntimeActionService actionService, TransactionService transactionService,
                 AuthenticationComponent authenticationComponent, Action action, NodeRef actionedUponNodeRef,
-                boolean checkConditions, NodeRef actionExecutionHistoryNodeRef, Set<String> actionChain)
+                boolean checkConditions, NodeRef actionExecutionHistoryNodeRef, Set<String> actionChain, Set<RuleServiceImpl.ExecutedRuleData> executedRules)
         {
             this.actionService = actionService;
             this.transactionService = transactionService;
@@ -200,6 +210,7 @@ public class AsynchronousActionExecutionQueueImpl extends ThreadPoolExecutor imp
             this.checkConditions = checkConditions;
             this.actionExecutionHistoryNodeRef = actionExecutionHistoryNodeRef;
             this.actionChain = actionChain;
+            this.executedRules = executedRules;
         }
 
         /**
@@ -276,7 +287,12 @@ public class AsynchronousActionExecutionQueueImpl extends ThreadPoolExecutor imp
                             new TransactionUtil.TransactionWork<Object>()
                             {
                                 public Object doWork()
-                                {                                
+                                {   
+                                	if (ActionExecutionWrapper.this.executedRules != null)
+                                	{
+                                		AlfrescoTransactionSupport.bindResource("RuleServiceImpl.ExecutedRules", ActionExecutionWrapper.this.executedRules);
+                                	}
+                                	
                                     ActionExecutionWrapper.this.actionService.executeActionImpl(
                                         ActionExecutionWrapper.this.action,
                                         ActionExecutionWrapper.this.actionedUponNodeRef,

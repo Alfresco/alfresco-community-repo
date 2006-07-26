@@ -373,6 +373,9 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
                 ContentModel.PROP_VERSION_LABEL, 
                 version.getVersionLabel());
         
+        // Invoke the policy behaviour
+        invokeAfterCreateVersion(nodeRef, version);
+        
         // Return the data object representing the newly created version
         return version;
     }

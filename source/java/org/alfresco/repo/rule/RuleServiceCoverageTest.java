@@ -1547,4 +1547,90 @@ public class RuleServiceCoverageTest extends TestCase
 			throw new RuntimeException(exception);
 		}
     }
+    
+    public void testAsyncExecutionWithPotentialLoop()
+    {
+        if (this.transformerRegistry.getTransformer(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_TEXT_PLAIN) != null)
+        {
+    		try
+    		{
+    	        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+    			params.put(TransformActionExecuter.PARAM_MIME_TYPE, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+    	        params.put(TransformActionExecuter.PARAM_DESTINATION_FOLDER, this.nodeRef);
+    	        params.put(TransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, ContentModel.ASSOC_CONTAINS);
+    	        params.put(TransformActionExecuter.PARAM_ASSOC_QNAME, QName.createQName(TEST_NAMESPACE, "transformed"));
+    	        
+    	        Rule rule = createRule(
+    	        		RuleType.INBOUND, 
+    	        		TransformActionExecuter.NAME, 
+    	        		params, 
+    	        		NoConditionEvaluator.NAME, 
+    	        		null);
+    	        rule.setExecuteAsynchronously(true);
+    	        rule.setTitle("Transform document to text");
+    	        
+    	        UserTransaction tx0 = transactionService.getUserTransaction();
+    			tx0.begin();   			
+    	        this.ruleService.saveRule(this.nodeRef, rule);
+    	        tx0.commit();    	        
+    	
+    	        UserTransaction tx = transactionService.getUserTransaction();
+    			tx.begin();
+    			
+    			Map<QName, Serializable> props =new HashMap<QName, Serializable>(1);
+    	        props.put(ContentModel.PROP_NAME, "test.xls");
+    			
+    			// Create the node at the root
+    	        NodeRef newNodeRef = this.nodeService.createNode(
+    	                this.nodeRef,
+                        ContentModel.ASSOC_CHILDREN,                
+    	                QName.createQName(TEST_NAMESPACE, "origional"),
+    	                ContentModel.TYPE_CONTENT,
+    	                props).getChildRef(); 
+    			
+    			// Set some content on the origional
+    			ContentWriter contentWriter = this.contentService.getWriter(newNodeRef, ContentModel.PROP_CONTENT, true);
+                contentWriter.setMimetype(MimetypeMap.MIMETYPE_EXCEL);
+    			File testFile = AbstractContentTransformerTest.loadQuickTestFile("xls");
+    			contentWriter.putContent(testFile);
+    			
+    			tx.commit();
+    	        
+    			Thread.sleep(10000);
+    	        //System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.testStoreRef));
+    	        
+                //AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
+                //authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+                
+    	        // Check that the created node is still there
+    	        //List<ChildAssociationRef> origRefs = this.nodeService.getChildAssocs(
+    	        //        this.nodeRef, 
+    	        //        RegexQNamePattern.MATCH_ALL, QName.createQName(TEST_NAMESPACE, "origional"));
+    	        //assertNotNull(origRefs);
+    	        //assertEquals(1, origRefs.size());
+    	        //NodeRef origNodeRef = origRefs.get(0).getChildRef();
+    	        //assertEquals(newNodeRef, origNodeRef);
+    	
+    	        // Check that the created node has been copied
+    	        //List<ChildAssociationRef> copyChildAssocRefs = this.nodeService.getChildAssocs(
+    	        //                                            this.rootNodeRef, 
+    	        //                                            RegexQNamePattern.MATCH_ALL, QName.createQName(TEST_NAMESPACE, "transformed"));
+    	        //assertNotNull(copyChildAssocRefs);
+    	        //assertEquals(1, copyChildAssocRefs.size());
+    	        //NodeRef copyNodeRef = copyChildAssocRefs.get(0).getChildRef();
+    	        //assertTrue(this.nodeService.hasAspect(copyNodeRef, ContentModel.ASPECT_COPIEDFROM));
+    	        //NodeRef source = (NodeRef)this.nodeService.getProperty(copyNodeRef, ContentModel.PROP_COPY_REFERENCE);
+    	        //assertEquals(newNodeRef, source);
+    	        
+    	        // Check the transformed content
+                //ContentData contentData = (ContentData) nodeService.getProperty(copyNodeRef, ContentModel.PROP_CONTENT);
+    			//assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentData.getMimetype());
+    			
+    		}
+    		catch (Exception exception)
+    		{
+    			throw new RuntimeException(exception);
+    		}
+        }
+    }
 }

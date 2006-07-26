@@ -31,7 +31,7 @@ import org.dom4j.Element;
  * Store and read the definition of a permission set
  * @author andyh
  */
-public class PermissionSet implements XMLModelInitialisable
+public final class PermissionSet implements XMLModelInitialisable
 {
     private static final String TYPE = "type";
     private static final String PERMISSION_GROUP = "permissionGroup";
@@ -105,7 +105,4 @@ public class PermissionSet implements XMLModelInitialisable
     {
         return exposeAll;
     }
-    
-    
-
 }

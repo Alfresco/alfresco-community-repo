@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -371,7 +372,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         Set<String> authorisations = getAuthorisations(auth, nodeRef);
         Serializable key = generateKey(
                 authorisations,
-                nodeRef,
+                nodeService.getPath(nodeRef),
                 perm);
         AccessStatus status = accessCache.get(key);
         if (status != null)
@@ -426,11 +427,12 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
      * dynamically so they must all be used) the NodeRef ID and the permission reference itself.
      * This gives a unique key for each permission test.
      */
-    static Serializable generateKey(Set<String> auths, NodeRef ref, PermissionReference perm)
+    static Serializable generateKey(Set<String> auths, Path path, PermissionReference perm)
     {
-        HashSet<Serializable> key = new HashSet<Serializable>(auths);
-        key.add(ref.getId());
+        LinkedHashSet<Serializable> key = new LinkedHashSet<Serializable>();
         key.add(perm.toString());
+        key.addAll(auths); 
+        key.add(path);
         return key;
     }
 

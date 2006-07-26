@@ -1748,6 +1748,8 @@ public class ServerConfiguration implements ApplicationListener
             setAuthenticator(auth, authElem, allowGuest);
             auth.setMapToGuest( mapGuest);
         }
+        else
+        	throw new AlfrescoRuntimeException("Authenticator not specified");
     }
 
     /**

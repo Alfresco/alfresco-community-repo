@@ -139,16 +139,41 @@ public class OwnableServiceTest extends TestCase
         assertFalse(nodeService.hasAspect(testNode, ContentModel.ASPECT_OWNABLE));
         assertTrue(dynamicAuthority.hasAuthority(testNode, "andy"));
         
+        permissionService.setInheritParentPermissions(testNode, false);
+        
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rootNodeRef, PermissionService.TAKE_OWNERSHIP));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rootNodeRef, PermissionService.SET_OWNER));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.TAKE_OWNERSHIP));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.SET_OWNER));
+        
+       
+        
+        ownableService.setOwner(testNode, "woof");
+        assertEquals("woof", ownableService.getOwner(testNode));
+        assertTrue(dynamicAuthority.hasAuthority(testNode, "woof"));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.TAKE_OWNERSHIP));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.SET_OWNER));
+        
         
         ownableService.setOwner(testNode, "muppet");
         assertEquals("muppet", ownableService.getOwner(testNode));
+        assertTrue(dynamicAuthority.hasAuthority(testNode, "muppet"));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.TAKE_OWNERSHIP));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.SET_OWNER));
+        
+        
         ownableService.takeOwnership(testNode);
         assertEquals("andy", ownableService.getOwner(testNode));
+        assertTrue(dynamicAuthority.hasAuthority(testNode, "andy"));
         assertTrue(nodeService.hasAspect(testNode, ContentModel.ASPECT_AUDITABLE));
         assertTrue(nodeService.hasAspect(testNode, ContentModel.ASPECT_OWNABLE));
-        assertTrue(dynamicAuthority.hasAuthority(testNode, "andy"));
+      
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rootNodeRef, PermissionService.TAKE_OWNERSHIP));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rootNodeRef, PermissionService.SET_OWNER));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.TAKE_OWNERSHIP));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.SET_OWNER));
+        
+       
     }
     
     public void testContainer()

@@ -180,11 +180,14 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     private String getUserName(Authentication authentication)
     {
-        String username = authentication.getPrincipal().toString();
-
+        String username;
         if (authentication.getPrincipal() instanceof UserDetails)
         {
-            username = ((UserDetails) authentication.getPrincipal()).getUsername();
+            username = ((UserDetails)authentication.getPrincipal()).getUsername();
+        }
+        else
+        {
+            username = authentication.getPrincipal().toString();
         }
 
         return username;

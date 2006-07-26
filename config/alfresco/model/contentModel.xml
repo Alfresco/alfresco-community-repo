@@ -660,6 +660,10 @@
                <type>d:text</type>
                <multiple>true</multiple>
             </property>
+            <property name="cm:subjectline">
+               <title>Subject</title>
+               <type>d:text</type>
+            </property>
             <property name="cm:sentdate">
                <title>Sent Date</title>
                <type>d:datetime</type>

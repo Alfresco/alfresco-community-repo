@@ -95,6 +95,17 @@
       </managed-property>
    </managed-bean>
 
+   <managed-bean>
+      <description>Bean that provides information for the About page</description>
+      <managed-bean-name>AboutBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.AboutBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>descriptorService</property-name>
+         <value>#{DescriptorService}</value>
+      </managed-property>
+   </managed-bean>
+
 	<managed-bean>
 		<description>Bean that manages the dialog framework</description>
 		<managed-bean-name>DialogManager</managed-bean-name>

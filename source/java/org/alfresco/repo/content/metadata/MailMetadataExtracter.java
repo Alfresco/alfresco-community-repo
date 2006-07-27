@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.NamespaceService;
@@ -47,17 +48,9 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
     
     private static final String STREAM_PREFIX = "__substg1.0_";
     private static final int STREAM_PREFIX_LENGTH = STREAM_PREFIX.length();
-    
-    private static final QName ASPECT_MAILED = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "emailed");
-    private static final QName PROP_SENTDATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "sentdate");
-    private static final QName PROP_ORIGINATOR = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "originator");
-    private static final QName PROP_ADDRESSEE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "addressee");
-    private static final QName PROP_ADDRESSEES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "addressees");
-    private static final QName PROP_SUBJECT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "subjectline");
 
     // the CC: email addresses
     private ThreadLocal<List<String>> receipientEmails = new ThreadLocal<List<String>>();
-    //private StringBuilder debug = null;
     
     public MailMetadataExtracter()
     {
@@ -72,12 +65,11 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
             {
                 try
                 {
-                    //String name = event.getName();
-                    //String path = event.getPath().toString();
-                    //debug.append(path).append(" - ").append(name).append(" (").append(event.getStream().available()).append(")\r\n");
-                    
-                    StreamHandler handler = new StreamHandler(event.getName(), event.getStream());
-                    handler.process(destination);
+                    if (event.getName().startsWith(STREAM_PREFIX))
+                    {
+                        StreamHandler handler = new StreamHandler(event.getName(), event.getStream());
+                        handler.process(destination);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -89,7 +81,6 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
         InputStream is = null;
         try
         {
-            //debug = new StringBuilder(1024);
             this.receipientEmails.set(new ArrayList<String>());
             
             is = reader.getContentInputStream();
@@ -109,10 +100,8 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
             // store multi-value extracted property
             if (receipientEmails.get().size() != 0)
             {
-                destination.put(PROP_ADDRESSEES, (Serializable)receipientEmails.get());
+                destination.put(ContentModel.PROP_ADDRESSEES, (Serializable)receipientEmails.get());
             }
-            
-            //logger.warn(debug);
         }
         finally
         {
@@ -139,6 +128,7 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
     private static final String ENCODING_TEXT = "001E";
     private static final String ENCODING_BINARY = "0102";
     private static final String ENCODING_UNICODE = "001F";
+    
     private static final String SUBSTG_MESSAGEBODY = "1000";
     private static final String SUBSTG_RECIPIENTEMAIL = "39FE";
     private static final String SUBSTG_RECEIVEDEMAIL = "0076";
@@ -146,6 +136,9 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
     private static final String SUBSTG_DATE = "0047";
     private static final String SUBSTG_SUBJECT = "0037";
     
+    /**
+     * Class to handle stream types. Can process and extract specific streams.
+     */
     private class StreamHandler
     {
         StreamHandler(String name, DocumentInputStream stream)
@@ -160,7 +153,7 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
         {
             if (type.equals(SUBSTG_SENDEREMAIL))
             {
-                destination.put(PROP_ORIGINATOR, convertExchangeAddress(extractText()));
+                destination.put(ContentModel.PROP_ORIGINATOR, convertExchangeAddress(extractText()));
             }
             else if (type.equals(SUBSTG_RECIPIENTEMAIL))
             {
@@ -168,11 +161,11 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
             }
             else if (type.equals(SUBSTG_RECEIVEDEMAIL))
             {
-                destination.put(PROP_ADDRESSEE, convertExchangeAddress(extractText()));
+                destination.put(ContentModel.PROP_ADDRESSEE, convertExchangeAddress(extractText()));
             }
             else if (type.equals(SUBSTG_SUBJECT))
             {
-                destination.put(PROP_SUBJECT, extractText());
+                destination.put(ContentModel.PROP_SUBJECT, extractText());
             }
             else if (type.equals(SUBSTG_DATE))
             {
@@ -195,29 +188,42 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
                         int hour = Integer.parseInt(strHour);
                         String strMinute = date.substring(dateIndex + 10, dateIndex + 12);
                         int minute = Integer.parseInt(strMinute);
-                        destination.put(PROP_SENTDATE, new Date(year, month, day, hour, minute));
+                        destination.put(ContentModel.PROP_SENTDATE, new Date(year, month, day, hour, minute));
                     }
                 }
             }
         }
         
+        /**
+         * Extract the text from the stream based on the encoding
+         * 
+         * @return String
+         * 
+         * @throws IOException
+         */
         private String extractText()
             throws IOException
         {
             byte[] data = new byte[stream.available()];
             stream.read(data);
+            
             if (this.encoding.equals(ENCODING_TEXT) || this.encoding.equals(ENCODING_BINARY))
             {
                 return new String(data);
             }
-            else
+            else if (this.encoding.equals(ENCODING_UNICODE))
             {
+                // convert double-byte encoding to single byte for String conversion
                 byte[] b = new byte[data.length >> 1];
                 for (int i=0; i<b.length; i++)
                 {
                     b[i] = data[i << 1];
                 }
                 return new String(b);
+            }
+            else
+            {
+                return new String(data);
             }
         }
         

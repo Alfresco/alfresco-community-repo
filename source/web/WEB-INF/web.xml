@@ -143,7 +143,7 @@
 
    <filter-mapping>
       <filter-name>LogFilter</filter-name>
-      <url-pattern>/*</url-pattern>
+      <url-pattern>/faces/jbpm/*</url-pattern>
    </filter-mapping>
    <filter-mapping>
       <filter-name>JbpmContextFilter</filter-name>

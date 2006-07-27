@@ -218,6 +218,7 @@
                 <prop key="version.major">${version.major}</prop>
                 <prop key="version.minor">${version.minor}</prop>
                 <prop key="version.revision">${version.revision}</prop>
+                <prop key="version.build">${version.build}</prop>
                 <prop key="version.label">${version.label}</prop>
                 <prop key="version.schema">${version.schema}</prop>
                 <prop key="version.edition">${version.edition}</prop>

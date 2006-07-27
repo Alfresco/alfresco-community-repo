@@ -41,6 +41,9 @@
 				<property name="sys:versionLabel">
 					<type>d:text</type>
 				</property>
+            <property name="sys:versionBuild">
+               <type>d:text</type>
+            </property>
 				<property name="sys:versionSchema">
 					<type>d:int</type>
 					<mandatory enforced="true">true</mandatory>

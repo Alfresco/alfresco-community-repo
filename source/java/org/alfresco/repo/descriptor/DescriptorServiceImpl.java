@@ -270,6 +270,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
         nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_MINOR, serverDescriptor.getVersionMinor());
         nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_REVISION, serverDescriptor.getVersionRevision());
         nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_LABEL, serverDescriptor.getVersionLabel());
+        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_BUILD, serverDescriptor.getVersionBuild());
         nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_SCHEMA, serverDescriptor.getSchema());
         
         // done
@@ -450,6 +451,14 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
         }
 
         /* (non-Javadoc)
+         * @see org.alfresco.service.descriptor.Descriptor#getVersionBuild()
+         */
+        public String getVersionBuild()
+        {
+            return "Unknown";
+        }
+        
+        /* (non-Javadoc)
          * @see org.alfresco.service.descriptor.Descriptor#getVersion()
          */
         public String getVersion()
@@ -492,12 +501,97 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     }
     
     /**
+     * Base class for Descriptor implementations, provides a 
+     * default getVersion() implementation.
+     * 
+     * @author gavinc
+     */
+    public abstract class BaseDescriptor implements Descriptor
+    {
+        /* (non-Javadoc)
+         * @see org.alfresco.service.descriptor.Descriptor#getVersion()
+         */
+        public String getVersion()
+        {
+            StringBuilder version = new StringBuilder(getVersionMajor());
+            version.append(".");
+            version.append(getVersionMinor());
+            version.append(".");
+            version.append(getVersionRevision());
+            
+            String label = getVersionLabel();
+            String build = getVersionBuild();
+            
+            boolean hasLabel = (label != null && label.length() > 0);
+            boolean hasBuild = (build != null && build.length() > 0);
+            
+            // add opening bracket if either a label or build number is present
+            if (hasLabel || hasBuild)
+            {
+               version.append(" (");
+            }
+            
+            // add label if present
+            if (hasLabel)
+            {
+               version.append(label);
+            }
+            
+            // add build number is present
+            if (hasBuild)
+            {
+               // if there is also a label we need a separating space
+               if (hasLabel)
+               {
+                  version.append(" ");
+               }
+               
+               version.append(build);
+            }
+            
+            // add closing bracket if either a label or build number is present
+            if (hasLabel || hasBuild)
+            {
+               version.append(")");
+            }
+            
+            return version.toString();
+        }
+        
+        /**
+         * Returns the int representation of the given schema string
+         * 
+         * @param schemaStr The schema number as a string
+         * @return The schema number as an int
+         */
+        protected int getSchema(String schemaStr)
+        {
+            if (schemaStr == null)
+            {
+                return 0;
+            }
+            try
+            {
+                int schema = Integer.parseInt(schemaStr);
+                if (schema < 0)
+                {
+                    throw new NumberFormatException();
+                }
+                return schema;
+            }
+            catch (NumberFormatException e)
+            {
+                throw new AlfrescoRuntimeException("Schema must be a positive integer '" + schemaStr + "' is not!");
+            }
+        }
+    }
+    
+    /**
      * Repository Descriptor whose meta-data is retrieved from the repository store
      */
-    private class RepositoryDescriptor implements Descriptor
+    private class RepositoryDescriptor extends BaseDescriptor
     {
         private Map<QName, Serializable> properties;
-        
         
         /**
          * Construct
@@ -542,17 +636,11 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersion()
+         * @see org.alfresco.service.descriptor.Descriptor#getVersionBuild()
          */
-        public String getVersion()
+        public String getVersionBuild()
         {
-            String version = getVersionMajor() + "." + getVersionMinor() + "." + getVersionRevision();
-            String label = getVersionLabel();
-            if (label != null && label.length() > 0)
-            {
-                version += " (" + label + ")";
-            }
-            return version;
+            return getDescriptor("sys:versionBuild");
         }
 
         /* (non-Javadoc)
@@ -569,24 +657,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
          */
         public int getSchema()
         {
-            String schemaStr = getDescriptor("sys:versionSchema");
-            if (schemaStr == null)
-            {
-                return 0;
-            }
-            try
-            {
-                int schema = Integer.parseInt(schemaStr);
-                if (schema < 0)
-                {
-                    throw new NumberFormatException();
-                }
-                return schema;
-            }
-            catch (NumberFormatException e)
-            {
-                throw new AlfrescoRuntimeException("'version.schema' must be a positive integer");
-            }
+            return getSchema(getDescriptor("sys:versionSchema"));
         }
 
         /* (non-Javadoc)
@@ -618,7 +689,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     /**
      * Server Descriptor whose meta-data is retrieved from run-time environment 
      */
-    private class ServerDescriptor implements Descriptor
+    private class ServerDescriptor extends BaseDescriptor
     {
         /* (non-Javadoc)
          * @see org.alfresco.service.descriptor.Descriptor#getVersionMajor()
@@ -651,19 +722,13 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
         {
             return serverProperties.getProperty("version.label");
         }
-
+        
         /* (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersion()
+         * @see org.alfresco.service.descriptor.Descriptor#getVersionBuild()
          */
-        public String getVersion()
+        public String getVersionBuild()
         {
-            String version = getVersionMajor() + "." + getVersionMinor() + "." + getVersionRevision();
-            String label = getVersionLabel();
-            if (label != null && label.length() > 0)
-            {
-                version += " (" + label + ")";
-            }
-            return version;
+            return serverProperties.getProperty("version.build");
         }
 
         /* (non-Javadoc)
@@ -680,24 +745,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
          */
         public int getSchema()
         {
-            String schemaStr = serverProperties.getProperty("version.schema");
-            if (schemaStr == null)
-            {
-                return 0;
-            }
-            try
-            {
-                int schema = Integer.parseInt(schemaStr);
-                if (schema < 0)
-                {
-                    throw new NumberFormatException();
-                }
-                return schema;
-            }
-            catch (NumberFormatException e)
-            {
-                throw new AlfrescoRuntimeException("'version.schema' must be a positive integer");
-            }
+            return getSchema(serverProperties.getProperty("version.schema"));
         }
 
         /* (non-Javadoc)

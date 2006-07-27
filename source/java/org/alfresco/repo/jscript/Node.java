@@ -104,8 +104,6 @@ public final class Node implements Serializable, Scopeable
     private Boolean isDocument = null;
     private Boolean isContainer = null;
     private String displayPath = null;
-    private String mimetype = null;
-    private Long size = null;
     private TemplateImageResolver imageResolver = null;
     private Node parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
@@ -523,66 +521,6 @@ public final class Node implements Serializable, Scopeable
     }
     
     /**
-     * @return true if the node inherits permissions from the parent node, false otherwise
-     */
-    public boolean inheritsPermissions()
-    {
-       return this.services.getPermissionService().getInheritParentPermissions(this.nodeRef);
-    }
-    
-    /**
-     * Set whether this node should inherit permissions from the parent node.
-     * 
-     * @param inherit   True to inherit parent permissions, false otherwise.
-     */
-    public void setInheritsPermissions(boolean inherit)
-    {
-       this.services.getPermissionService().setInheritParentPermissions(this.nodeRef, inherit);
-    }
-    
-    /**
-     * Apply a permission for ALL users to the node.
-     * 
-     * @param permission   Permission to apply @see org.alfresco.service.cmr.security.PermissionService
-     */
-    public void setPermission(String permission)
-    {
-       this.services.getPermissionService().setPermission(this.nodeRef, PermissionService.ALL_AUTHORITIES, permission, true);
-    }
-    
-    /**
-     * Apply a permission for the specified authority (e.g. username or group) to the node.
-     *  
-     * @param permission   Permission to apply @see org.alfresco.service.cmr.security.PermissionService
-     * @param authority    Authority (generally a username or group name) to apply the permission for
-     */
-    public void setPermission(String permission, String authority)
-    {
-       this.services.getPermissionService().setPermission(this.nodeRef, authority, permission, true);
-    }
-    
-    /**
-     * Remove a permission for ALL user from the node.
-     * 
-     * @param permission   Permission to remove @see org.alfresco.service.cmr.security.PermissionService
-     */
-    public void removePermission(String permission)
-    {
-       this.services.getPermissionService().deletePermission(this.nodeRef, PermissionService.ALL_AUTHORITIES, permission);
-    }
-    
-    /**
-     * Remove a permission for the specified authority (e.g. username or group) from the node.
-     * 
-     * @param permission   Permission to remove @see org.alfresco.service.cmr.security.PermissionService
-     * @param authority    Authority (generally a username or group name) to apply the permission for
-     */
-    public void removePermission(String permission, String authority)
-    {
-       this.services.getPermissionService().deletePermission(this.nodeRef, authority, permission);
-    }
-    
-    /**
      * @return Display path to this node
      */
     public String getDisplayPath()
@@ -735,6 +673,10 @@ public final class Node implements Serializable, Scopeable
         return getPrimaryParentAssoc();
     }
     
+    
+    // ------------------------------------------------------------------------------
+    // Content API
+    
     /**
      * @return the content String for this node from the default content property
      *         (@see ContentModel.PROP_CONTENT)
@@ -819,13 +761,11 @@ public final class Node implements Serializable, Scopeable
      */
     public String getMimetype()
     {
-        if (mimetype == null)
+        String mimetype = null;
+        ScriptContentData content = (ScriptContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
+        if (content != null)
         {
-            ScriptContentData content = (ScriptContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
-            if (content != null)
-            {
-                mimetype = content.getMimetype();
-            }
+            mimetype = content.getMimetype();
         }
         
         return mimetype;
@@ -837,21 +777,39 @@ public final class Node implements Serializable, Scopeable
     }
     
     /**
+     * Set the mimetype encoding for the content attached to the node from the default content property
+     * (@see ContentModel.PROP_CONTENT)
+     * 
+     * @param mimetype      Mimetype to set
+     */
+    public void setMimetype(String mimetype)
+    {
+        ScriptContentData content = (ScriptContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
+        if (content != null)
+        {
+            content.setMimetype(mimetype);
+        }
+    }
+    
+    public void jsSet_mimetype(String mimetype)
+    {
+        setMimetype(mimetype);
+    }
+    
+    /**
      * @return The size in bytes of the content attached to the node from the default content property
      *         (@see ContentModel.PROP_CONTENT)
      */
     public long getSize()
     {
-        if (size == null)
+        long size = 0;
+        ScriptContentData content = (ScriptContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
+        if (content != null)
         {
-            ScriptContentData content = (ScriptContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
-            if (content != null)
-            {
-                size = content.getSize();
-            }
+            size = content.getSize();
         }
         
-        return size != null ? size.longValue() : 0L;
+        return size;
     }
     
     public long jsGet_size()
@@ -865,6 +823,70 @@ public final class Node implements Serializable, Scopeable
     public TemplateImageResolver getImageResolver()
     {
         return this.imageResolver;
+    }
+    
+    
+    // ------------------------------------------------------------------------------
+    // Security API 
+    
+    /**
+     * @return true if the node inherits permissions from the parent node, false otherwise
+     */
+    public boolean inheritsPermissions()
+    {
+       return this.services.getPermissionService().getInheritParentPermissions(this.nodeRef);
+    }
+    
+    /**
+     * Set whether this node should inherit permissions from the parent node.
+     * 
+     * @param inherit   True to inherit parent permissions, false otherwise.
+     */
+    public void setInheritsPermissions(boolean inherit)
+    {
+       this.services.getPermissionService().setInheritParentPermissions(this.nodeRef, inherit);
+    }
+    
+    /**
+     * Apply a permission for ALL users to the node.
+     * 
+     * @param permission   Permission to apply @see org.alfresco.service.cmr.security.PermissionService
+     */
+    public void setPermission(String permission)
+    {
+       this.services.getPermissionService().setPermission(this.nodeRef, PermissionService.ALL_AUTHORITIES, permission, true);
+    }
+    
+    /**
+     * Apply a permission for the specified authority (e.g. username or group) to the node.
+     *  
+     * @param permission   Permission to apply @see org.alfresco.service.cmr.security.PermissionService
+     * @param authority    Authority (generally a username or group name) to apply the permission for
+     */
+    public void setPermission(String permission, String authority)
+    {
+       this.services.getPermissionService().setPermission(this.nodeRef, authority, permission, true);
+    }
+    
+    /**
+     * Remove a permission for ALL user from the node.
+     * 
+     * @param permission   Permission to remove @see org.alfresco.service.cmr.security.PermissionService
+     */
+    public void removePermission(String permission)
+    {
+       this.services.getPermissionService().deletePermission(this.nodeRef, PermissionService.ALL_AUTHORITIES, permission);
+    }
+    
+    /**
+     * Remove a permission for the specified authority (e.g. username or group) from the node.
+     * 
+     * @param permission   Permission to remove @see org.alfresco.service.cmr.security.PermissionService
+     * @param authority    Authority (generally a username or group name) to apply the permission for
+     */
+    public void removePermission(String permission, String authority)
+    {
+       this.services.getPermissionService().deletePermission(this.nodeRef, authority, permission);
     }
     
     
@@ -954,6 +976,41 @@ public final class Node implements Serializable, Scopeable
             }
         }
         return value;
+    }
+    
+    /**
+     * Re-sets the type of the node. Can be called in order specialise a node to a sub-type.
+     * 
+     * This should be used with caution since calling it changes the type of the node and thus
+     * implies a different set of aspects, properties and associations.  It is the responsibility
+     * of the caller to ensure that the node is in a approriate state after changing the type.
+     * 
+     * @param type  Type to specialize the node
+     * 
+     * @return true if successful, false otherwise
+     */
+    public boolean specializeType(String type)
+    {
+        QName qnameType = createQName(type);
+        
+        // Ensure that we are performing a specialise
+        if (getType().equals(qnameType) == false &&
+            this.services.getDictionaryService().isSubClass(qnameType, getType()) == true)
+        {
+            // Specialise the type of the node
+            try
+            {
+                this.nodeService.setType(this.nodeRef, qnameType);
+                this.type = qnameType;
+                
+                return true;
+            }
+            catch (InvalidNodeRefException err)
+            {
+                // fall through to return fase
+            }
+        }
+        return false;
     }
     
     /**
@@ -1250,6 +1307,33 @@ public final class Node implements Serializable, Scopeable
         return success;
     }
     
+    
+    // ------------------------------------------------------------------------------
+    // Checkout/Checkin Services
+    
+    
+    
+    
+    // ------------------------------------------------------------------------------
+    // Helper methods
+    
+    /**
+     * Override Object.toString() to provide useful debug output
+     */
+    public String toString()
+    {
+        if (this.nodeService.exists(nodeRef))
+        {
+            return "Node Type: " + getType() + 
+                   "\nNode Properties: " + this.getProperties().toString() + 
+                   "\nNode Aspects: " + this.getAspects().toString();
+        }
+        else
+        {
+            return "Node no longer exists: " + nodeRef;
+        }
+    }
+    
     /**
      * Helper to create a QName from either a fully qualified or short-name QName string
      * 
@@ -1285,32 +1369,9 @@ public final class Node implements Serializable, Scopeable
        this.displayPath = null;
        this.isDocument = null;
        this.isContainer = null;
-       this.mimetype = null;
-       this.size = null;
        this.parent = null;
        this.primaryParentAssoc = null;
     }
-    
-    /**
-     * Override Object.toString() to provide useful debug output
-     */
-    public String toString()
-    {
-        if (this.nodeService.exists(nodeRef))
-        {
-            return "Node Type: " + getType() + 
-                   "\nNode Properties: " + this.getProperties().toString() + 
-                   "\nNode Aspects: " + this.getAspects().toString();
-        }
-        else
-        {
-            return "Node no longer exists: " + nodeRef;
-        }
-    }
-    
-    
-    // ------------------------------------------------------------------------------
-    // Private Helpers 
     
     /**
      * Return a list or a single Node from executing an xpath against the parent Node.
@@ -1463,6 +1524,20 @@ public final class Node implements Serializable, Scopeable
         public String jsGet_mimetype()
         {
             return getMimetype();
+        }
+        
+        public void setMimetype(String mimetype)
+        {
+            this.contentData = ContentData.setMimetype(this.contentData, mimetype);
+            services.getNodeService().setProperty(nodeRef, this.property, this.contentData);
+            
+            // update cached variables after putContent()
+            this.contentData = (ContentData)services.getNodeService().getProperty(nodeRef, this.property);
+        }
+        
+        public void jsSet_mimetype(String mimetype)
+        {
+            setMimetype(mimetype);
         }
         
         private ContentData contentData;

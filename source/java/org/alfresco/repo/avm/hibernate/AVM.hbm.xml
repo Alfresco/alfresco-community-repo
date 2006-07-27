@@ -91,7 +91,7 @@
 	</class>
 	<!-- Contents are objects to hang actual bytestreams off. They are explicitly reference
 	     counted. -->
-	<class table="contents" name="FileContentImpl" proxy="FileContent"
+	<class table="avm_contents" name="FileContentImpl" proxy="FileContent"
 		optimistic-lock="version">
 		<cache usage="read-write" />
 		<id name="id" column="id" type="long"/>
@@ -119,7 +119,7 @@
 			column="current_root_id" unique="true" cascade="save-update">
 		</many-to-one>
 	</class>
-	<class name="VersionRootImpl" proxy="VersionRoot" table="version_roots">
+	<class name="VersionRootImpl" proxy="VersionRoot" table="avm_version_roots">
 		<!-- <cache usage="read-write"/> -->
 		<id column="id" type="long">
 			<generator class="native"></generator>
@@ -139,7 +139,7 @@
 			column="root_id" not-null="true">
 		</many-to-one>
 	</class>
-	<class name="ChildEntryImpl" proxy="ChildEntry" table="child_entries" optimistic-lock="version">
+	<class name="ChildEntryImpl" proxy="ChildEntry" table="avm_child_entries" optimistic-lock="version">
 		<cache usage="read-write"/>
 		<composite-id>
 			<key-property name="name" type="string" column="name">
@@ -152,7 +152,7 @@
 			not-null="true">
 		</many-to-one>
 	</class>
-	<class table="deleted_children" name="DeletedChildImpl" proxy="DeletedChild">
+	<class table="avm_deleted_children" name="DeletedChildImpl" proxy="DeletedChild">
 	    <cache usage="read-write"/>
 		<composite-id>
 			<key-property name="name" column="name" type="string"/>
@@ -160,13 +160,13 @@
 				column="parent_id"/>
 		</composite-id>
 	</class>
-	<class name="HistoryLinkImpl" proxy="HistoryLink" table="history_links">
+	<class name="HistoryLinkImpl" proxy="HistoryLink" table="avm_history_links">
 		<composite-id>
 			<key-many-to-one name="ancestor" class="AVMNodeImpl" column="ancestor"/>
 			<key-many-to-one name="descendent" class="AVMNodeImpl" column="descendent"/>
 		</composite-id>
 	</class>
-	<class name="MergeLinkImpl" proxy="MergeLink" table="merge_links">
+	<class name="MergeLinkImpl" proxy="MergeLink" table="avm_merge_links">
 		<composite-id>
 			<key-many-to-one name="mfrom" class="AVMNodeImpl" column="mfrom"/>
 			<key-many-to-one name="mto" class="AVMNodeImpl" column="mto"/>

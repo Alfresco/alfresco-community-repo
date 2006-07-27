@@ -17,6 +17,7 @@
 
 package org.alfresco.repo.avm;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -67,6 +68,16 @@ class OrphanReaper implements Runnable
     private Thread fThread;
     
     /**
+     * The maximum length of the queue.
+     */
+    private int fQueueLength;
+    
+    /**
+     * The linked list containing ids of nodes that are purgable.
+     */
+    private LinkedList<Long> fPurgeQueue;
+    
+    /**
      * Create one with default parameters.
      */
     OrphanReaper()
@@ -74,6 +85,7 @@ class OrphanReaper implements Runnable
         fInactiveBaseSleep = 30000;
         fActiveBaseSleep = 1000;
         fBatchSize = 50;
+        fQueueLength = 1000;
         fActive = false;
         fDone = false;
     }
@@ -117,6 +129,15 @@ class OrphanReaper implements Runnable
     }
     
     /**
+     * Set the maximum size of the queue of purgeable nodes.
+     * @param queueLength The max length.
+     */
+    public void setMaxQueueLength(int queueLength)
+    {
+        fQueueLength = queueLength;
+    }
+    
+    /**
      * Start things up after configuration is complete.
      */
     void init()
@@ -131,7 +152,11 @@ class OrphanReaper implements Runnable
      */
     void shutDown()
     {
-        fDone = true;
+        synchronized (this)
+        {
+            fDone = true;
+            notify();
+        }
         try
         {
             fThread.join();
@@ -150,15 +175,18 @@ class OrphanReaper implements Runnable
     {
         while (!fDone)
         {
-            try
+            synchronized (this)
             {
-                Thread.sleep(fActive ? fActiveBaseSleep : fInactiveBaseSleep);
+                try
+                {
+                    wait(fActive? fActiveBaseSleep : fInactiveBaseSleep);
+                }
+                catch (InterruptedException ie)
+                {
+                    // Do nothing.
+                }
+                doBatch();
             }
-            catch (InterruptedException ie)
-            {
-                // Do nothing.
-            }
-            doBatch();
         }
     }
     
@@ -189,15 +217,29 @@ class OrphanReaper implements Runnable
         {
             public void perform()
             {
-                List<AVMNode> nodes = AVMContext.fgInstance.fAVMNodeDAO.getOrphans(fBatchSize);
-                if (nodes.size() == 0)
+                if (fPurgeQueue == null)
                 {
-                    fActive = false;
-                    return;
+                    List<AVMNode> nodes = AVMContext.fgInstance.fAVMNodeDAO.getOrphans(fQueueLength);
+                    if (nodes.size() == 0)
+                    {
+                        fActive = false;
+                        return;
+                    }
+                    fPurgeQueue = new LinkedList<Long>();
+                    for (AVMNode node : nodes)
+                    {
+                        fPurgeQueue.add(node.getId());
+                    }
                 }
                 fActive = true;
-                for (AVMNode node : nodes)
+                for (int i = 0; i < fBatchSize; i++)
                 {
+                    if (fPurgeQueue.size() == 0)
+                    {
+                        fPurgeQueue = null;
+                        return;
+                    }
+                    AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(fPurgeQueue.removeFirst());
                     // Save away the ancestor and merged from fields from this node.
                     HistoryLink hlink = AVMContext.fgInstance.fHistoryLinkDAO.getByDescendent(node);
                     AVMNode ancestor = null;

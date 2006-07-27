@@ -193,13 +193,16 @@
 	<bean id="orphanReaper" class="org.alfresco.repo.avm.OrphanReaper"
 		init-method="init" destroy-method="shutDown" depends-on="AVMService">
 		<property name="inactiveBaseSleep">
-			<value>4000</value>
+			<value>60000</value>
 		</property>
 		<property name="activeBaseSleep">
 			<value>1000</value>
 		</property>
 		<property name="batchSize">
 		    <value>50</value>
+		</property>
+		<property name="maxQueueLength">
+			<value>1000</value>
 		</property>
 		<property name="retryingTransaction">
 			<ref bean="retryingTransaction"/>

@@ -49,6 +49,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     {
         super(store.getAVMRepository().issueID(), store);
         fContent = new FileContentImpl(AVMRepository.GetInstance().issueContentID());
+        // AVMContext.fgInstance.fAVMNodeDAO.flush();
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));

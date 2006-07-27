@@ -55,8 +55,10 @@ public class AVMServiceTestBase extends TestCase
      */
     private long fStartTime;
 
-    /* (non-Javadoc)
-     * @see junit.framework.TestCase#setUp()
+    /**
+     * Setup for AVM tests.  Note that we set the polling
+     * interval for the reaper to 4 seconds so that tests will
+     * finish reasonably quickly.
      */
     @Override
     protected void setUp() throws Exception
@@ -67,8 +69,9 @@ public class AVMServiceTestBase extends TestCase
         fStartTime = System.currentTimeMillis();
     }
 
-    /* (non-Javadoc)
-     * @see junit.framework.TestCase#tearDown()
+    /**
+     * Cleanup after a test. Purge all stores. Move alf_data
+     * directory aside.
      */
     @Override
     protected void tearDown() throws Exception

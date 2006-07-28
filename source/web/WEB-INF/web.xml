@@ -28,7 +28,7 @@
       <param-name>org.apache.myfaces.DETECT_JAVASCRIPT</param-name>
       <param-value>false</param-value>
       <description>This is an EXPERIMENTAL feature, so leave it off for now!</description>
-    </context-param>
+   </context-param>
 
     <!-- TODO: Change this to false for production -->
     <context-param>
@@ -187,7 +187,7 @@
    <!-- Faces Servlet -->
    <servlet>
       <servlet-name>Faces Servlet</servlet-name>
-      <servlet-class>org.alfresco.web.app.servlet.AlfrescoFacesServlet</servlet-class>
+      <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
       <load-on-startup>1</load-on-startup>
    </servlet>
    
@@ -359,9 +359,9 @@
       <welcome-file>index.jsp</welcome-file>
    </welcome-file-list>
 
-   <taglib>
-       <taglib-uri>http://java.sun.com/jsp/jstl/core</taglib-uri>
-       <taglib-location>/WEB-INF/c.tld</taglib-location>
-     </taglib>
+   <error-page>
+      <error-code>500</error-code>
+      <location>/jsp/error.jsp</location>
+   </error-page>
      
 </web-app>

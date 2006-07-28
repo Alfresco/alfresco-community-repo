@@ -58,11 +58,22 @@ public class ErrorBean
    }
 
    /**
-    * @param lastError The lastError to set.
+    * @param error The lastError to set.
     */
-   public void setLastError(Throwable lastError)
+   public void setLastError(Throwable error)
    {
-      this.lastError = lastError;
+      // servlet exceptions hide the actual error within the rootCause
+      // variable, set the base error to that and throw away the 
+      // ServletException wrapper
+      if (error instanceof ServletException && 
+            ((ServletException)error).getRootCause() != null)
+      {
+         this.lastError = ((ServletException)error).getRootCause();
+      }
+      else
+      {
+         this.lastError = error;
+      }
    }
    
    /**
@@ -74,29 +85,17 @@ public class ErrorBean
       
       if (this.lastError != null)
       {
-         StringBuilder builder = null;
-         Throwable cause = null;
-         if (this.lastError instanceof ServletException && 
-             ((ServletException)this.lastError).getRootCause() != null)
-         {
-            // servlet exception puts the actual error in root cause!!
-            Throwable actualError = ((ServletException)this.lastError).getRootCause();
-            builder = new StringBuilder(actualError.toString());
-            cause = actualError.getCause();
-         }
-         else
-         {
-            builder = new StringBuilder(this.lastError.toString());
-            cause = this.lastError.getCause(); 
-         }
+         StringBuilder builder = new StringBuilder(this.lastError.toString());;
+         Throwable cause = this.lastError.getCause();
          
+         // build up stack trace of all causes
          while (cause != null)
          {
-            builder.append("<br/><br/>caused by:<br/>");
+            builder.append("\ncaused by:\n");
             builder.append(cause.toString());
             
             if (cause instanceof ServletException && 
-             ((ServletException)cause).getRootCause() != null)
+                  ((ServletException)cause).getRootCause() != null)
             {
                cause = ((ServletException)cause).getRootCause();
             }
@@ -107,6 +106,11 @@ public class ErrorBean
          }
          
          message = builder.toString();
+         
+         // format the message for HTML display
+         message = message.replaceAll("<", "&lt;");
+         message = message.replaceAll(">", "&gt;");
+         message = message.replaceAll("\n", "<br/>");
       }
       
       return message;
@@ -119,18 +123,14 @@ public class ErrorBean
    {
       StringWriter stringWriter = new StringWriter();
       PrintWriter writer = new PrintWriter(stringWriter);
+      this.lastError.printStackTrace(writer);
       
-      if (this.lastError instanceof ServletException && 
-          ((ServletException)this.lastError).getRootCause() != null)
-      {
-         Throwable actualError = ((ServletException)this.lastError).getRootCause();
-         actualError.printStackTrace(writer);
-      }
-      else
-      {
-         this.lastError.printStackTrace(writer);
-      }
+      // format the message for HTML display
+      String trace = stringWriter.toString();
+      trace = trace.replaceAll("<", "&lt;");
+      trace = trace.replaceAll(">", "&gt;");
+      trace = trace.replaceAll("\n", "<br/>");
       
-      return stringWriter.toString().replaceAll("\r\n", "<br/>");
+      return trace;
    }
 }

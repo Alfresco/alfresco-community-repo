@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterService;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -81,6 +82,7 @@ public interface ServiceRegistry
     static final QName TEMPLATE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "TemplateService");
     static final QName FILE_FOLDER_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FileFolderService");
     static final QName SCRIPT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ScriptService");
+    static final QName WORKFLOW_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "WorkflowService");
     
     /**
      * Get the list of services provided by the Repository
@@ -254,4 +256,10 @@ public interface ServiceRegistry
      */
     @NotAuditable
     ScriptService getScriptService();
+
+    /**
+     * @return the workflow service (or null if one is not provided)
+     */
+    @NotAuditable
+    WorkflowService getWorkflowService();
 }

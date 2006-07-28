@@ -3,7 +3,29 @@
 
 <beans>
 
-   <!-- jBPM configuration -->
+   <!--                                 -->
+   <!-- Workflow Service Implementation -->
+   <!--                                 -->
+
+   <bean id="workflowServiceImpl" class="org.alfresco.repo.workflow.WorkflowServiceImpl">
+      <property name="BPMEngineRegistry" ref="bpm_engineRegistry"/>
+   </bean>
+
+   <!--                       -->
+   <!-- Alfresco BPM Registry -->
+   <!--                       -->
+
+   <bean id="bpm_engineRegistry" class="org.alfresco.repo.workflow.BPMEngineRegistry">
+   </bean>
+
+   <bean id="bpm_engine" class="org.alfresco.repo.workflow.BPMEngine" abstract="true">
+      <property name="BPMEngineRegistry" ref="bpm_engineRegistry"/>
+   </bean>
+
+   <!--                     -->
+   <!-- jBPM Implementation -->
+   <!--                     -->
+
    <bean id="jbpm_configuration" class="org.springmodules.workflow.jbpm31.LocalJbpmConfigurationFactoryBean">
       <property name="sessionFactory" ref="sessionFactory"/>
       <property name="configuration" value="classpath:org/jbpm/default.jbpm.cfg.xml"/>
@@ -12,12 +34,17 @@
          <ref local="jbpm_testWorkflow"/>
       </list>
       </property>
-      
    </bean>
 
-   <!-- jBPM template -->
    <bean id="jbpm_template" class="org.springmodules.workflow.jbpm31.JbpmTemplate">
       <constructor-arg index="0" ref="jbpm_configuration"/>
+   </bean>
+
+   <bean id="jbpm_engine" class="org.alfresco.repo.workflow.jbpm.JBPMEngine" parent="bpm_engine">
+      <property name="engineId" value="jbpm"/>
+      <property name="JBPMTemplate" ref="jbpm_template"/>
+      <property name="dictionaryService" ref="DictionaryService"/>
+      <property name="namespaceService" ref="NamespaceService"/>
    </bean>
 
    <!-- TODO: Remove this - for short-term testing only -->

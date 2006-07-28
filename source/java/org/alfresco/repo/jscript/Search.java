@@ -17,9 +17,6 @@
 package org.alfresco.repo.jscript;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -28,7 +25,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
-import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
@@ -183,8 +179,7 @@ public final class Search implements Scopeable
                 for (ResultSetRow row: results)
                 {
                     NodeRef nodeRef = row.getNodeRef();
-                    nodes[count] = new Node(nodeRef, services, this.imageResolver);
-                    nodes[count].setScope(this.scope);
+                    nodes[count] = new Node(nodeRef, services, this.imageResolver, this.scope);
                     count++;
                 }
             }

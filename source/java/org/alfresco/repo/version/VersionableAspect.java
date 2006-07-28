@@ -178,7 +178,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
 	 */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
 	{
-	    if (aspectTypeQName.equals(ContentModel.ASPECT_VERSIONABLE) == true)
+	    if (this.nodeService.exists(nodeRef) == true && aspectTypeQName.equals(ContentModel.ASPECT_VERSIONABLE) == true)
         {
             boolean initialVersion = true;
             Boolean value = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_INITIAL_VERSION);
@@ -190,10 +190,14 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
             
             if (initialVersion == true)
             {
-                // Queue create version action
-            	Map<String, Serializable> versionDetails = new HashMap<String, Serializable>(1);
-            	versionDetails.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_INITIAL_VERSION));
-            	this.versionService.createVersion(nodeRef, versionDetails);
+                Map<NodeRef, NodeRef> versionedNodeRefs = (Map)AlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS);
+                if (versionedNodeRefs == null || versionedNodeRefs.containsKey(nodeRef) == false)           
+                {
+                    // Queue create version action
+                    Map<String, Serializable> versionDetails = new HashMap<String, Serializable>(1);
+                    versionDetails.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_INITIAL_VERSION));
+                    this.versionService.createVersion(nodeRef, versionDetails);
+                }
             }
         }
 	}

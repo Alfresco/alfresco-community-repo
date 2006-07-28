@@ -31,6 +31,7 @@ import java.util.StringTokenizer;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
@@ -49,6 +50,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -122,6 +125,19 @@ public final class Node implements Serializable, Scopeable
      */
     public Node(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver)
     {
+        this(nodeRef, services, resolver, null);
+    }
+    
+    /**
+     * Constructor
+     * 
+     * @param nodeRef       The NodeRef this Node wrapper represents
+     * @param services      The ServiceRegistry the Node can use to access services
+     * @param resolver      Image resolver to use to retrieve icons
+     * @param scope         Root scope for this Node
+     */
+    public Node(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver, Scriptable scope)
+    {
         if (nodeRef == null)
         {
             throw new IllegalArgumentException("NodeRef must be supplied.");
@@ -137,6 +153,7 @@ public final class Node implements Serializable, Scopeable
         this.services = services;
         this.nodeService = services.getNodeService();
         this.imageResolver = resolver;
+        this.scope = scope;
     }
     
     /**
@@ -258,8 +275,8 @@ public final class Node implements Serializable, Scopeable
             for (int i=0; i<childRefs.size(); i++)
             {
                 // create our Node representation from the NodeRef
-                Node child = new Node(childRefs.get(i).getChildRef(), this.services, this.imageResolver);
-                child.setScope(this.scope);
+                Node child = new Node(
+                        childRefs.get(i).getChildRef(), this.services, this.imageResolver, this.scope);
                 this.children[i] = child;
             }
         }
@@ -349,8 +366,8 @@ public final class Node implements Serializable, Scopeable
                     System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
                     nodes = newNodes;
                 }
-                nodes[nodes.length - 1] = new Node(ref.getTargetRef(), this.services, this.imageResolver);
-                nodes[nodes.length - 1].setScope(this.scope);
+                nodes[nodes.length - 1] = new Node(
+                        ref.getTargetRef(), this.services, this.imageResolver, this.scope);
                 
                 this.assocs.put(ref.getTypeQName().toString(), nodes);
             }
@@ -390,8 +407,8 @@ public final class Node implements Serializable, Scopeable
                 {
                     // NodeRef object properties are converted to new Node objects
                     // so they can be used as objects within a template
-                    propValue = new Node(((NodeRef)propValue), this.services, this.imageResolver);
-                    ((Node)propValue).setScope(this.scope);
+                    propValue = new Node(
+                            ((NodeRef)propValue), this.services, this.imageResolver, this.scope);
                 }
                 else if (propValue instanceof ContentData)
                 {
@@ -642,8 +659,7 @@ public final class Node implements Serializable, Scopeable
             // handle root node (no parent!)
             if (parentRef != null)
             {
-                parent = new Node(parentRef, this.services, this.imageResolver);
-                parent.setScope(this.scope);
+                parent = new Node(parentRef, this.services, this.imageResolver, this.scope);
             }
         }
         
@@ -1032,8 +1048,7 @@ public final class Node implements Serializable, Scopeable
             {
                 FileInfo fileInfo = this.services.getFileFolderService().create(
                         this.nodeRef, name, ContentModel.TYPE_CONTENT);
-                node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver);
-                node.setScope(this.scope);
+                node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver, this.scope);
             }
         }
         catch (FileExistsException fileErr)
@@ -1066,8 +1081,7 @@ public final class Node implements Serializable, Scopeable
             {
                 FileInfo fileInfo = this.services.getFileFolderService().create(
                         this.nodeRef, name, ContentModel.TYPE_FOLDER);
-                node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver);
-                node.setScope(this.scope);
+                node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver, this.scope);
             }
         }
         catch (FileExistsException fileErr)
@@ -1108,8 +1122,7 @@ public final class Node implements Serializable, Scopeable
                         QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(name)),
                         createQName(type),
                         props);
-                node = new Node(childAssocRef.getChildRef(), this.services, this.imageResolver);
-                node.setScope(this.scope);
+                node = new Node(childAssocRef.getChildRef(), this.services, this.imageResolver, this.scope);
             }
         }
         catch (AccessDeniedException accessErr)
@@ -1182,8 +1195,7 @@ public final class Node implements Serializable, Scopeable
                         ContentModel.ASSOC_CONTAINS,
                         getPrimaryParentAssoc().getQName(),
                         deepCopy);
-                copy = new Node(copyRef, this.services, this.imageResolver);
-                copy.setScope(this.scope);
+                copy = new Node(copyRef, this.services, this.imageResolver, this.scope);
             }
         }
         catch (AccessDeniedException accessErr)
@@ -1311,7 +1323,101 @@ public final class Node implements Serializable, Scopeable
     // ------------------------------------------------------------------------------
     // Checkout/Checkin Services
     
+    /**
+     * Perform a check-out of this document into the current parent space.
+     * 
+     * @return the working copy Node for the checked out document
+     */
+    public Node checkout()
+    {
+        NodeRef workingCopyRef = this.services.getCheckOutCheckInService().checkout(this.nodeRef);
+        Node workingCopy = new Node(workingCopyRef, this.services, this.imageResolver, this.scope);
+        
+        // reset the aspect and properties as checking out a document causes changes
+        this.properties = null;
+        this.aspects = null;
+        
+        return workingCopy;
+    }
     
+    /**
+     * Perform a check-out of this document into the specified destination space.
+     * 
+     * @param destination       Destination for the checked out document working copy Node.
+     * 
+     * @return the working copy Node for the checked out document
+     */
+    public Node checkout(Node destination)
+    {
+        ChildAssociationRef childAssocRef = this.nodeService.getPrimaryParent(destination.getNodeRef());
+        NodeRef workingCopyRef = this.services.getCheckOutCheckInService().checkout(this.nodeRef,
+                destination.getNodeRef(), ContentModel.ASSOC_CONTAINS, childAssocRef.getQName());
+        Node workingCopy = new Node(workingCopyRef, this.services, this.imageResolver, this.scope);
+        
+        // reset the aspect and properties as checking out a document causes changes
+        this.properties = null;
+        this.aspects = null;
+        
+        return workingCopy;
+    }
+    
+    /**
+     * Check-in a working copy document. The current state of the working copy is copied to the 
+     * original node, this will include any content updated in the working node. Note that this
+     * method can only be called on a working copy Node.
+     * 
+     * @return the original Node that was checked out.
+     */
+    public Node checkin()
+    {
+        return checkin("", false);
+    }
+    
+    /**
+     * Check-in a working copy document. The current state of the working copy is copied to the 
+     * original node, this will include any content updated in the working node. Note that this
+     * method can only be called on a working copy Node.
+     * 
+     * @param history       Version history note
+     * 
+     * @return the original Node that was checked out.
+     */
+    public Node checkin(String history)
+    {
+        return checkin(history, false);
+    }
+    
+    /**
+     * Check-in a working copy document. The current state of the working copy is copied to the 
+     * original node, this will include any content updated in the working node. Note that this
+     * method can only be called on a working copy Node.
+     * 
+     * @param history       Version history note
+     * @param majorVersion  True to save as a major version increment, false for minor version.
+     * 
+     * @return the original Node that was checked out.
+     */
+    public Node checkin(String history, boolean majorVersion)
+    {
+        Map<String, Serializable> props = new HashMap<String, Serializable>(2, 1.0f);
+        props.put(Version.PROP_DESCRIPTION, history);
+        props.put(VersionModel.PROP_VERSION_TYPE, majorVersion ? VersionType.MAJOR : VersionType.MINOR);
+        NodeRef original = this.services.getCheckOutCheckInService().checkin(this.nodeRef, props);
+        return new Node(original, this.services, this.imageResolver, this.scope);
+    }
+    
+    /**
+     * Cancel the check-out of a working copy document. The working copy will be deleted and any
+     * changes made to it are lost. Note that this method can only be called on a working copy Node.
+     * The reference to this working copy Node should be discarded.
+     * 
+     * @return the original Node that was checked out.
+     */
+    public Node cancelCheckout()
+    {
+        NodeRef original = this.services.getCheckOutCheckInService().cancelCheckout(this.nodeRef);
+        return new Node(original, this.services, this.imageResolver, this.scope);
+    }
     
     
     // ------------------------------------------------------------------------------
@@ -1403,8 +1509,7 @@ public final class Node implements Serializable, Scopeable
                 if (nodes.size() != 0)
                 {
                     result = new Node[1];
-                    result[0] = new Node(nodes.get(0), this.services, this.imageResolver);
-                    result[0].setScope(this.scope);
+                    result[0] = new Node(nodes.get(0), this.services, this.imageResolver, this.scope);
                 }
             }
             // or all the results
@@ -1414,8 +1519,7 @@ public final class Node implements Serializable, Scopeable
                 for (int i=0; i<nodes.size(); i++)
                 {
                     NodeRef ref = nodes.get(i);
-                    result[i] = new Node(ref, this.services, this.imageResolver);
-                    result[i].setScope(this.scope);
+                    result[i] = new Node(ref, this.services, this.imageResolver, this.scope);
                 }
             }
         }

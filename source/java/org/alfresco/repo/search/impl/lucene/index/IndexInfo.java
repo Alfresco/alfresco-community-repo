@@ -396,12 +396,12 @@ public class IndexInfo
         cleanerThread = new Thread(cleaner);
         cleanerThread.setDaemon(true);
         cleanerThread.setName("Index cleaner thread");
-        //cleanerThread.start();
+        cleanerThread.start();
 
         mergerThread = new Thread(merger);
         mergerThread.setDaemon(true);
         mergerThread.setName("Index merger thread");
-        //mergerThread.start();
+        mergerThread.start();
 
         IndexWriter writer;
         try

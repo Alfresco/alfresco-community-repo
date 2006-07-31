@@ -2142,6 +2142,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals(2, props.size());
             assertEquals(p2.toString(), props.get(n2).toString());
             assertEquals(p3.toString(), props.get(n3).toString());
+            fService.deleteNodeProperties("main:/a/b/c/bar");
+            fService.createSnapshot("main");
+            props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
+            assertEquals(0, props.size());
         }
         catch (Exception e)
         {

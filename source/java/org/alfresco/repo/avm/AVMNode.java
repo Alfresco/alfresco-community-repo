@@ -166,4 +166,9 @@ interface AVMNode
      * @param name The name of the property.
      */
     public void deleteProperty(QName name);
+    
+    /**
+     * Delete all properties from this node.
+     */
+    public void deleteProperties();
 }

@@ -494,6 +494,12 @@ public interface AVMService
     public void deleteNodeProperty(String path, QName name);
     
     /**
+     * Delete all the properties attached to an AVM node.
+     * @param path The path to the node.
+     */
+    public void deleteNodeProperties(String path);
+    
+    /**
      * Set a property on a store. If the property exists it will be overwritten.
      * @param store The store to set the property on.
      * @param name The name of the property.

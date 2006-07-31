@@ -356,4 +356,12 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
     {
         AVMContext.fgInstance.fAVMNodePropertyDAO.delete(this, name);
     }
+    
+    /**
+     * Delete all properties from this node.
+     */
+    public void deleteProperties()
+    {
+        AVMContext.fgInstance.fAVMNodePropertyDAO.deleteAll(this);
+    }
 }

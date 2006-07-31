@@ -292,6 +292,12 @@ interface AVMStore
     public void deleteNodeProperty(String path, QName name);
     
     /**
+     * Delete all properties from a node.
+     * @param path The path to the node.
+     */
+    public void deleteNodeProperties(String path);
+    
+    /**
      * Get all the properties associated with a node.
      * @param version The version to look under.
      * @param path The path to the node.

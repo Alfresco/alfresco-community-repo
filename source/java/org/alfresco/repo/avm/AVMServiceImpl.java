@@ -1183,7 +1183,28 @@ class AVMServiceImpl implements AVMService
         TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
     }
-    
+
+    /**
+     * Delete all the properties attached to an AVM node.
+     * @param path The path to the node.
+     */
+    public void deleteNodeProperties(final String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null path.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public void perform()
+            {
+                fAVMRepository.deleteNodeProperties(path);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, true);
+    }
+
     /**
      * Set a property on a store. If the property exists it will be overwritten.
      * @param store The store to set the property on.

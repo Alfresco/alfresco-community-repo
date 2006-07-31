@@ -63,7 +63,10 @@ public abstract class BaseActionWizard extends BaseWizardBean
    protected List<SelectItem> actions;
    protected List<SelectItem> transformers;
    protected List<SelectItem> imageTransformers;
-   protected List<SelectItem> aspects;
+   protected List<SelectItem> commonAspects;
+   protected List<SelectItem> removableAspects;
+   protected List<SelectItem> addableAspects;
+   protected List<SelectItem> testableAspects;
    protected List<SelectItem> users;
    protected List<SelectItem> encodings;
    protected List<SelectItem> objectTypes;
@@ -209,70 +212,129 @@ public abstract class BaseActionWizard extends BaseWizardBean
    }
    
    /**
-    * Returns the aspects that are available
+    * Returns a list of aspects that can be removed
     * 
-    * @return List of SelectItem objects representing the available aspects
+    * @return List of SelectItem objects representing the aspects that can be removed
     */
-   public List<SelectItem> getAspects()
+   public List<SelectItem> getRemovableAspects()
    {
-      if (this.aspects == null)
+      if (this.removableAspects == null)
       {
+         // get the list of common aspects
+         this.removableAspects = new ArrayList<SelectItem>();
+         this.removableAspects.addAll(getCommonAspects());
+         
+         // get those aspects configured to appear only in the remove aspect action
          ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Action Wizards");
          if (wizardCfg != null)
          {
-            ConfigElement aspectsCfg = wizardCfg.getConfigElement("aspects");
+            ConfigElement aspectsCfg = wizardCfg.getConfigElement("aspects-remove");
             if (aspectsCfg != null)
             {
-               FacesContext context = FacesContext.getCurrentInstance();
-               this.aspects = new ArrayList<SelectItem>();
-               for (ConfigElement child : aspectsCfg.getChildren())
-               {
-                  QName idQName = Repository.resolveToQName(child.getAttribute("name"));
-
-                  if (idQName != null)
-                  {
-                     // try and get the display label from config
-                     String label = Utils.getDisplayLabel(context, child);
-   
-                     // if there wasn't a client based label try and get it from the dictionary
-                     if (label == null)
-                     {
-                        AspectDefinition aspectDef = this.dictionaryService.getAspect(idQName);
-                        if (aspectDef != null)
-                        {
-                           label = aspectDef.getTitle();
-                        }
-                        else
-                        {
-                           label = idQName.getLocalName();
-                        }
-                     }
-                     
-                     this.aspects.add(new SelectItem(idQName.toString(), label));
-                  }
-                  else
-                  {
-                     logger.warn("Failed to resolve aspect '" + child.getAttribute("name") + "'");
-                  }
-               }
-               
-               // make sure the list is sorted by the label
-               QuickSort sorter = new QuickSort(this.aspects, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
-               sorter.sort();
+               List<SelectItem> aspects = readAspectsConfig(FacesContext.getCurrentInstance(), aspectsCfg);
+               this.removableAspects.addAll(aspects);
             }
             else
             {
-               logger.warn("Could not find 'aspects' configuration element");
+               logger.warn("Could not find 'aspects-remove' configuration element");
             }
          }
          else
          {
             logger.warn("Could not find 'Action Wizards' configuration section");
          }
+         
+         // make sure the list is sorted by the label
+         QuickSort sorter = new QuickSort(this.removableAspects, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+         sorter.sort();
       }
       
-      return this.aspects;
+      return this.removableAspects;
+   }
+   
+   /**
+    * Returns a list of aspects that can be added
+    * 
+    * @return List of SelectItem objects representing the aspects that can be added
+    */
+   public List<SelectItem> getAddableAspects()
+   {
+      if (this.addableAspects == null)
+      {
+         // get the list of common aspects
+         this.addableAspects = new ArrayList<SelectItem>();
+         this.addableAspects.addAll(getCommonAspects());
+         
+         // get those aspects configured to appear only in the remove aspect action
+         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
+         Config wizardCfg = svc.getConfig("Action Wizards");
+         if (wizardCfg != null)
+         {
+            ConfigElement aspectsCfg = wizardCfg.getConfigElement("aspects-add");
+            if (aspectsCfg != null)
+            {
+               List<SelectItem> aspects = readAspectsConfig(FacesContext.getCurrentInstance(), aspectsCfg);
+               this.addableAspects.addAll(aspects);
+            }
+            else
+            {
+               logger.warn("Could not find 'aspects-add' configuration element");
+            }
+         }
+         else
+         {
+            logger.warn("Could not find 'Action Wizards' configuration section");
+         }
+         
+         // make sure the list is sorted by the label
+         QuickSort sorter = new QuickSort(this.addableAspects, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+         sorter.sort();
+      }
+      
+      return this.addableAspects;
+   }
+   
+   /**
+    * Returns a list of aspects that can be tested i.e. hasAspect
+    * 
+    * @return List of SelectItem objects representing the aspects that can be tested for
+    */
+   public List<SelectItem> getTestableAspects()
+   {
+      if (this.testableAspects == null)
+      {
+         // get the list of common aspects
+         this.testableAspects = new ArrayList<SelectItem>();
+         this.testableAspects.addAll(getCommonAspects());
+         
+         // get those aspects configured to appear only in the remove aspect action
+         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
+         Config wizardCfg = svc.getConfig("Action Wizards");
+         if (wizardCfg != null)
+         {
+            ConfigElement aspectsCfg = wizardCfg.getConfigElement("aspects-test");
+            if (aspectsCfg != null)
+            {
+               List<SelectItem> aspects = readAspectsConfig(FacesContext.getCurrentInstance(), aspectsCfg);
+               this.testableAspects.addAll(aspects);
+            }
+            else
+            {
+               logger.warn("Could not find 'aspects-test' configuration element");
+            }
+         }
+         else
+         {
+            logger.warn("Could not find 'Action Wizards' configuration section");
+         }
+         
+         // make sure the list is sorted by the label
+         QuickSort sorter = new QuickSort(this.testableAspects, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+         sorter.sort();
+      }
+      
+      return this.testableAspects;
    }
    
    /**
@@ -844,6 +906,77 @@ public abstract class BaseActionWizard extends BaseWizardBean
             logger.warn("Could not find 'Action Wizards' configuration section");
          }
       }
+   }
+   
+   /**
+    * Returns the aspects that are available in all scenarios i.e. add, remove and test
+    * 
+    * @return List of SelectItem objects representing the available aspects
+    */
+   protected List<SelectItem> getCommonAspects()
+   {
+      if (this.commonAspects == null)
+      {
+         ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
+         Config wizardCfg = svc.getConfig("Action Wizards");
+         if (wizardCfg != null)
+         {
+            ConfigElement aspectsCfg = wizardCfg.getConfigElement("aspects");
+            if (aspectsCfg != null)
+            {
+               this.commonAspects = readAspectsConfig(FacesContext.getCurrentInstance(), aspectsCfg);
+            }
+            else
+            {
+               logger.warn("Could not find 'aspects' configuration element");
+            }
+         }
+         else
+         {
+            logger.warn("Could not find 'Action Wizards' configuration section");
+         }
+      }
+      
+      return this.commonAspects;
+   }
+   
+   
+   protected List<SelectItem> readAspectsConfig(FacesContext context, ConfigElement aspectsCfg)
+   {
+      List<SelectItem> aspects = new ArrayList<SelectItem>();
+
+      for (ConfigElement child : aspectsCfg.getChildren())
+      {
+         QName idQName = Repository.resolveToQName(child.getAttribute("name"));
+
+         if (idQName != null)
+         {
+            // try and get the display label from config
+            String label = Utils.getDisplayLabel(context, child);
+
+            // if there wasn't a client based label try and get it from the dictionary
+            if (label == null)
+            {
+               AspectDefinition aspectDef = this.dictionaryService.getAspect(idQName);
+               if (aspectDef != null)
+               {
+                  label = aspectDef.getTitle();
+               }
+               else
+               {
+                  label = idQName.getLocalName();
+               }
+            }
+            
+            aspects.add(new SelectItem(idQName.toString(), label));
+         }
+         else
+         {
+            logger.warn("Failed to resolve aspect '" + child.getAttribute("name") + "'");
+         }
+      }
+      
+      return aspects;
    }
    
    // ------------------------------------------------------------------------------

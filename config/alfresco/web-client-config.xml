@@ -239,6 +239,7 @@
       <!-- The list of content and/or folder types shown in the specialise-type action -->
       <specialise-types>
       </specialise-types>
+      
       <!-- The list of aspects to show in the add/remove features action -->
       <!-- and the has-aspect condition -->
       <aspects>
@@ -253,6 +254,16 @@
          <aspect name="localizable"/>
          <aspect name="emailed"/>
       </aspects>
+      <!-- List of aspects to only show in the add features action -->
+      <aspects-add>
+      </aspects-add>
+      <!-- List of aspects to only show in the remove features action -->
+      <aspects-remove>
+      </aspects-remove>
+      <!-- List of aspects to only show in the has aspect condition -->
+      <aspects-test>
+      </aspects-test>
+      
       <!-- The list of transformers to show in the transform actions -->
       <transformers>
          <transformer name="application/vnd.oasis.opendocument.text"/>

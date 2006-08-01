@@ -1796,6 +1796,7 @@ public class IndexInfo
             while (runnable)
             {
                 String id = null;
+                HashSet<String> fails = new HashSet<String>();
                 while ((id = deleteQueue.poll()) != null)
                 {
                     if (s_logger.isDebugEnabled())
@@ -1811,9 +1812,10 @@ public class IndexInfo
                             s_logger.debug("DELETE FAILED");
                         }
                         // try again later
-                        deleteQueue.add(id);
+                        fails.add(id);
                     }
                 }
+                deleteQueue.addAll(fails);
                 synchronized (this)
                 {
                     try

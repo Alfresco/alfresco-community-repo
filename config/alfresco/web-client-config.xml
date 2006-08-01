@@ -218,6 +218,7 @@
       <create-mime-types>
          <mime-type name="text/html" />
          <mime-type name="text/plain" />
+         <mime-type name="text/xml" />
       </create-mime-types>
       
       <!-- Controls the message regarding property editing after the content is created -->

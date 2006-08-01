@@ -64,6 +64,24 @@
       <description>Spring config file locations</description>
    </context-param>
 
+    <context-param>
+        <param-name>chiba.upload</param-name>
+        <param-value>upload</param-value>
+        <description>relative path to upload-dir</description>
+    </context-param>
+
+    <context-param>
+        <param-name>chiba.useragent.ajax.path</param-name>
+        <param-value>/FluxHelper</param-value>
+        <description>relative path under which AJAX helper servlet is mapped</description>
+    </context-param>
+
+    <context-param>
+        <param-name>chiba.xforms.stylesPath</param-name>
+        <param-value>/jsp/content/xforms/forms/xslt</param-value>
+        <description>location of stylesheets relative to webapp-dir</description>
+    </context-param>
+
    <filter>
       <filter-name>Authentication Filter</filter-name>
       <filter-class>org.alfresco.web.app.servlet.AuthenticationFilter</filter-class>
@@ -179,6 +197,37 @@
       </init-param>
       <load-on-startup>5</load-on-startup>
    </servlet>
+    <servlet>
+        <servlet-name>XFormsServlet</servlet-name>
+        <servlet-class>org.alfresco.web.templating.xforms.servlet.ChibaServlet</servlet-class>
+
+         <init-param>
+             <param-name>chiba.config</param-name>
+             <param-value>WEB-INF/chiba.xml</param-value>
+         </init-param>
+    </servlet>
+
+    <servlet>
+        <servlet-name>Flux</servlet-name>
+        <servlet-class>uk.ltd.getahead.dwr.DWRServlet</servlet-class>
+
+        <init-param>
+            <param-name>debug</param-name>
+            <param-value>true</param-value>
+            <description>Do we startup in debug mode?</description>
+        </init-param>
+    </servlet>
+
+    <servlet>
+        <servlet-name>FluxHelper</servlet-name>
+        <servlet-class>org.alfresco.web.templating.xforms.servlet.FluxHelperServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>SubmissionResponse</servlet-name>
+        <servlet-class>org.alfresco.web.templating.xforms.servlet.SubmissionResponseServlet</servlet-class>
+    </servlet>
    
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
@@ -224,6 +273,26 @@
 		<servlet-name>WebDAV</servlet-name>
 		<url-pattern>/webdav/*</url-pattern>
    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>Flux</servlet-name>
+        <url-pattern>/Flux/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>FluxHelper</servlet-name>
+        <url-pattern>/FluxHelper/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>XFormsServlet</servlet-name>
+        <url-pattern>/XFormsServlet</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>SubmissionResponse</servlet-name>
+        <url-pattern>/SubmissionResponse</url-pattern>
+    </servlet-mapping>
    
    <session-config>
       <session-timeout>60</session-timeout>

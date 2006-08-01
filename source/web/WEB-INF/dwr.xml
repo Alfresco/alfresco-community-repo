@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<dwr>
+
+
+  <allow>
+
+
+<!--
+    <create creator="new" javascript="JDate">
+      <param name="class" value="java.util.Date"/>
+      <exclude method="getHours"/>
+      <auth method="getMinutes" role="admin"/>
+      <auth method="getMinutes" role="devel"/>
+    </create>
+-->
+
+    <create creator="new" javascript="Flux" scope="request">
+      <param name="class" value="org.alfresco.web.templating.xforms.flux.FluxFacade"/>
+    </create>
+  </allow>
+</dwr>

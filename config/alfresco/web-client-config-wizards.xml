@@ -144,10 +144,47 @@
                         description-id="create_content_step2_desc"
                         instruction-id="default_instruction" />
                </condition>
+               <condition if="#{CreateContentWizard.mimeType == 'text/xml'}">
+                  <page path="/jsp/content/create-content-wizard/create-xml.jsp"
+                        title-id="create_content_step2_title"
+                        description-id="create_content_step2_desc"
+                        instruction-id="default_instruction" />
+               </condition>
                <!-- Default to the inline text editor -->
                <page path="/jsp/content/create-content-wizard/create-text.jsp"
                      title-id="create_content_step2_title"
                      description-id="create_content_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="content_finish_instruction" />
+            </step>
+         </wizard>
+
+         <wizard name="createXMLContentType" managed-bean="CreateXmlContentTypeWizard"
+                 title-id="create_xml_content_type_title" description-id="create_xml_content_type_desc"
+                 icon="/images/icons/new_content_large.gif">
+            <step name="details" title-id="details" description-id="create_xml_content_type_step1_desc">
+               <page path="/jsp/content/create-xml-content-type-wizard/details.jsp" 
+                     title-id="create_xml_content_type_step1_title"
+                     description-id="create_xml_content_type_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="edit_schema" title-id="edit_xml_schema" description-id="create_xml_content_type_step2_desc">
+               <page path="/jsp/content/create-xml-content-type-wizard/edit.jsp"
+                     title-id="create_xml_content_type_step2_title"
+                     description-id="create_xml_content_type_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="configure_presentation_templates" 
+		  title-id="configure_presentation_templates" 
+		  description-id="create_xml_content_type_step2_desc">
+               <page path="/jsp/content/create-xml-content-type-wizard/configure_presentation_templates.jsp"
+                     title-id="create_xml_content_type_step2_title"
+                     description-id="create_xml_content_type_step2_desc"
                      instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">

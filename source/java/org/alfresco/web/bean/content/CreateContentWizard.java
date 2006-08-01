@@ -1,6 +1,23 @@
+/*
+ * Copyright (C) 2005 Alfresco, Inc.
+ *
+ * Licensed under the Mozilla Public License version 1.1 
+ * with a permitted attribution clause. You may obtain a
+ * copy of the License at
+ *
+ *   http://www.alfresco.org/legal/license.txt
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License.
+ */
 package org.alfresco.web.bean.content;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -18,6 +35,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
+import org.alfresco.web.templating.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -29,11 +47,13 @@ import org.apache.commons.logging.LogFactory;
 public class CreateContentWizard extends BaseContentWizard
 {
    protected String content = null;
-   
+    protected String templateType;
    protected List<SelectItem> createMimeTypes;
    
    private static Log logger = LogFactory.getLog(CreateContentWizard.class);
-   
+    public static final org.alfresco.service.namespace.QName TT_QNAME = 
+	org.alfresco.service.namespace.QName.createQName(org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI, "tt");
+
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
@@ -41,8 +61,10 @@ public class CreateContentWizard extends BaseContentWizard
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception
    {
-      saveContent(null, this.content);
-      
+       saveContent(null, this.content);
+       if (templateType != null)
+	   this.nodeService.setProperty(createdNode, TT_QNAME, templateType);
+
       // return the default outcome
       return outcome;
    }
@@ -54,6 +76,7 @@ public class CreateContentWizard extends BaseContentWizard
       
       this.content = null;
       this.inlineEdit = true;
+      this.templateType = null;
       this.mimeType = MimetypeMap.MIMETYPE_HTML;
    }
    
@@ -116,6 +139,19 @@ public class CreateContentWizard extends BaseContentWizard
    {
       this.content = content;
    }
+
+    public List<SelectItem> getCreateTemplateTypes()
+    {
+	List<TemplateType> ttl = TemplatingService.getInstance().getTemplateTypes();
+	List<SelectItem> sil = new ArrayList<SelectItem>(ttl.size());
+	Iterator it = ttl.iterator();
+	while (it.hasNext())
+	{
+	    TemplateType tt = (TemplateType)it.next();
+	    sil.add(new SelectItem(tt.getName(), tt.getName()));
+	}
+	return sil;
+    }
    
    /**
     * @return Returns a list of mime types to allow the user to select from
@@ -164,6 +200,19 @@ public class CreateContentWizard extends BaseContentWizard
       }
       
       return this.createMimeTypes;
+   }
+
+   public String getTemplateType()
+   {
+      return this.templateType;
+   }
+
+   /**
+    * @param templateType Sets the currently selected template type
+    */
+   public void setTemplateType(String templateType)
+   {
+      this.templateType = templateType;
    }
    
    /**

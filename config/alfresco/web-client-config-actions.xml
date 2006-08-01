@@ -320,6 +320,16 @@
             <image>/images/icons/new_content.gif</image>
             <action>wizard:createContent</action>
          </action>
+
+	 <!-- Create XML content type -->
+         <action id="create_xml_content_type">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>create_xml_content_type</label-id>
+            <image>/images/icons/new_content.gif</image>
+            <action>wizard:createXMLContentType</action>
+         </action>
          
          <!-- Create space -->
          <action id="create_space">
@@ -539,6 +549,7 @@
          <!-- Actions Menu for Create in Browse screen -->
          <action-group id="browse_create_menu">
             <action idref="create_content" />
+            <action idref="create_xml_content_type" />
             <action idref="create_space" />
             <action idref="create_space_wizard" />
          </action-group>

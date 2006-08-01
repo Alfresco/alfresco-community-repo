@@ -23,6 +23,7 @@ public final class ComponentConstants
 {
    public static final String JAVAX_FACES_INPUT          = "javax.faces.Input";
    public static final String JAVAX_FACES_TEXT           = "javax.faces.Text";
+   public static final String JAVAX_FACES_TEXTAREA       = "javax.faces.Textarea";
    public static final String JAVAX_FACES_OUTPUT         = "javax.faces.Output";
    public static final String JAVAX_FACES_GRID           = "javax.faces.Grid";
    public static final String JAVAX_FACES_PANEL          = "javax.faces.Panel";

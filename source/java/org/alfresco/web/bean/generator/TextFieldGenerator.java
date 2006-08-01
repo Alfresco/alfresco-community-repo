@@ -26,6 +26,41 @@ import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
  */
 public class TextFieldGenerator extends BaseComponentGenerator
 {
+   private int size = 35;
+   private int maxLength = 1024;
+   
+   /**
+    * @return Returns the default size for a text field
+    */
+   public int getSize()
+   {
+      return size;
+   }
+
+   /**
+    * @param size Sets the size of a text field
+    */
+   public void setSize(int size)
+   {
+      this.size = size;
+   }
+
+   /**
+    * @return Returns the max length for the text field
+    */
+   public int getMaxLength()
+   {
+      return maxLength;
+   }
+
+   /**
+    * @param maxLength Sets the max length of the text field
+    */
+   public void setMaxLength(int maxLength)
+   {
+      this.maxLength = maxLength;
+   }
+
    @SuppressWarnings("unchecked")
    public UIComponent generate(FacesContext context, String id)
    {
@@ -33,8 +68,9 @@ public class TextFieldGenerator extends BaseComponentGenerator
             createComponent(ComponentConstants.JAVAX_FACES_INPUT);
       component.setRendererType(ComponentConstants.JAVAX_FACES_TEXT);
       FacesHelper.setupComponentId(context, component, id);
-      component.getAttributes().put("size", "35");
-      component.getAttributes().put("maxlength", "1024");
+
+      component.getAttributes().put("size", this.size);
+      component.getAttributes().put("maxlength", this.maxLength);
       
       return component;
    }

@@ -286,35 +286,35 @@
                                                          </td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.title}" id="title" />:</td><td><h:inputText value="#{AdvancedSearchBean.title}" size="28" maxlength="1024" id="txtTitle" /></td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.title}" id="title" />:</td><td><h:inputText value="#{AdvancedSearchBean.title}" size="#{TextFieldGenerator.size}" maxlength="1024" id="txtTitle" /></td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.description}" id="desc" />:</td><td><h:inputText value="#{AdvancedSearchBean.description}" size="28" maxlength="1024" id="txtDesc" /></td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.description}" id="desc" />:</td><td><h:inputText value="#{AdvancedSearchBean.description}" size="#{TextFieldGenerator.size}" maxlength="1024" id="txtDesc" /></td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.author}" id="author" />:</td><td><h:inputText value="#{AdvancedSearchBean.author}" size="28" maxlength="1024" id="txtAuthor" /></td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.author}" id="author" />:</td><td><h:inputText value="#{AdvancedSearchBean.author}" size="#{TextFieldGenerator.size}" maxlength="1024" id="txtAuthor" /></td>
                                                       </tr>
                                                    </table>
                                                    <table cellpadding="1" cellspacing="0" border="0">
-                                                      <tr><td colspan=2 class="paddingRow"></td></tr>
+                                                      <tr><td colspan="2" class="paddingRow"></td></tr>
                                                       <tr>
-                                                         <td colspan=2><h:selectBooleanCheckbox value="#{AdvancedSearchBean.modifiedDateChecked}" id="chkModDate" /><span style="vertical-align:20%"><h:outputText value="#{msg.modified_date}" id="modDate" />:</span></td>
+                                                         <td colspan="2"><h:selectBooleanCheckbox value="#{AdvancedSearchBean.modifiedDateChecked}" id="chkModDate" /><span style="vertical-align:20%"><h:outputText value="#{msg.modified_date}" id="modDate" />:</span></td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.from}" id="modDateFrom" />:</td><td><a:inputDatePicker value="#{AdvancedSearchBean.modifiedDateFrom}" yearCount="30" id="dateModFrom" /></td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.from}" id="modDateFrom" />:</td><td><a:inputDatePicker value="#{AdvancedSearchBean.modifiedDateFrom}" yearCount="#{DatePickerGenerator.yearCount}" startYear="#{DatePickerGenerator.startYear}" id="dateModFrom" /></td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.to}" id="modDateTo" />:</td><td><a:inputDatePicker value="#{AdvancedSearchBean.modifiedDateTo}" yearCount="30" id="dateModTo" /><td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.to}" id="modDateTo" />:</td><td><a:inputDatePicker value="#{AdvancedSearchBean.modifiedDateTo}" yearCount="#{DatePickerGenerator.yearCount}" startYear="#{DatePickerGenerator.startYear}" id="dateModTo" /></td>
                                                       </tr>
                                                       
                                                       <tr>
-                                                         <td colspan=2><h:selectBooleanCheckbox value="#{AdvancedSearchBean.createdDateChecked}" id="chkCreateDate" /><span style="vertical-align:20%"><h:outputText value="#{msg.created_date}" id="createDate" />:</span></td>
+                                                         <td colspan="2"><h:selectBooleanCheckbox value="#{AdvancedSearchBean.createdDateChecked}" id="chkCreateDate" /><span style="vertical-align:20%"><h:outputText value="#{msg.created_date}" id="createDate" />:</span></td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.from}" id="createDateFrom" />:</td><td><a:inputDatePicker value="#{AdvancedSearchBean.createdDateFrom}" yearCount="30" id="dateCreatedFrom" /></td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.from}" id="createDateFrom" />:</td><td><a:inputDatePicker value="#{AdvancedSearchBean.createdDateFrom}" yearCount="#{DatePickerGenerator.yearCount}" startYear="#{DatePickerGenerator.startYear}" id="dateCreatedFrom" /></td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.to}" id="createDateTo" />:</td><td><a:inputDatePicker value="#{AdvancedSearchBean.createdDateTo}" yearCount="30" id="dateCreatedTo" /><td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.to}" id="createDateTo" />:</td><td><a:inputDatePicker value="#{AdvancedSearchBean.createdDateTo}" yearCount="#{DatePickerGenerator.yearCount}" startYear="#{DatePickerGenerator.startYear}" id="dateCreatedTo" /></td>
                                                       </tr>
                                                    </table>
                                                    <div style="padding:4px"></div>

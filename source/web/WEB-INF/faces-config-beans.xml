@@ -1743,6 +1743,31 @@
       <managed-bean-name>TextFieldGenerator</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.generator.TextFieldGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
+      <!-- 
+      <managed-property>
+         <property-name>size</property-name>
+         <value>35</value>
+      </managed-property>
+      -->
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that generates a text area component
+      </description>
+      <managed-bean-name>TextAreaGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.TextAreaGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+      <!--
+      <managed-property>
+         <property-name>rows</property-name>
+         <value>3</value>
+      </managed-property>
+      <managed-property>
+         <property-name>columns</property-name>
+         <value>32</value>
+      </managed-property>
+      -->
    </managed-bean>
    
    <managed-bean>
@@ -1761,6 +1786,16 @@
       <managed-bean-name>DatePickerGenerator</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.generator.DatePickerGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
+      <!-- 
+      <managed-property>
+         <property-name>startYear</property-name>
+         <value>2008</value>
+      </managed-property>
+      <managed-property>
+         <property-name>yearCount</property-name>
+         <value>30</value>
+      </managed-property>
+      -->
    </managed-bean>
    
    <managed-bean>
@@ -1770,6 +1805,16 @@
       <managed-bean-name>DateTimePickerGenerator</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.generator.DateTimePickerGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
+      <!-- 
+      <managed-property>
+         <property-name>startYear</property-name>
+         <value>2008</value>
+      </managed-property>
+      <managed-property>
+         <property-name>yearCount</property-name>
+         <value>30</value>
+      </managed-property>
+      -->
    </managed-bean>
    
    <managed-bean>

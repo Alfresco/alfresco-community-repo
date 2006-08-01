@@ -1,5 +1,7 @@
 package org.alfresco.web.bean.generator;
 
+import java.util.Date;
+
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIOutput;
 import javax.faces.context.FacesContext;
@@ -21,8 +23,43 @@ import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
  */
 public class DatePickerGenerator extends BaseComponentGenerator
 {
+   private int yearCount = 30;
+   private int startYear = new Date().getYear() + 1900 + 2;
+   
    private static final String MSG_DATE = "date_pattern";
    
+   /**
+    * @return Returns the year to start counting back from
+    */
+   public int getStartYear()
+   {
+      return startYear;
+   }
+
+   /**
+    * @param startYear Sets the year to start counting back from
+    */
+   public void setStartYear(int startYear)
+   {
+      this.startYear = startYear;
+   }
+
+   /**
+    * @return Returns the number of years to show
+    */
+   public int getYearCount()
+   {
+      return yearCount;
+   }
+
+   /**
+    * @param yearCount Sets the number of years to show
+    */
+   public void setYearCount(int yearCount)
+   {
+      this.yearCount = yearCount;
+   }
+
    @SuppressWarnings("unchecked")
    public UIComponent generate(FacesContext context, String id)
    {
@@ -30,7 +67,8 @@ public class DatePickerGenerator extends BaseComponentGenerator
             createComponent(ComponentConstants.JAVAX_FACES_INPUT);
       component.setRendererType(RepoConstants.ALFRESCO_FACES_DATE_PICKER_RENDERER);
       FacesHelper.setupComponentId(context, component, id);
-      component.getAttributes().put("yearCount", new Integer(30));
+      component.getAttributes().put("startYear", this.startYear);
+      component.getAttributes().put("yearCount", this.yearCount);
       component.getAttributes().put("style", "margin-right: 7px;");
                
       return component;

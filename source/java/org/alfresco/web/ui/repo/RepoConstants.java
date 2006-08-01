@@ -43,6 +43,7 @@ public final class RepoConstants
    
    public static final String GENERATOR_LABEL = "LabelGenerator";
    public static final String GENERATOR_TEXT_FIELD = "TextFieldGenerator";
+   public static final String GENERATOR_TEXT_AREA = "TextAreaGenerator";
    public static final String GENERATOR_CHECKBOX = "CheckboxGenerator";
    public static final String GENERATOR_DATE_PICKER = "DatePickerGenerator";
    public static final String GENERATOR_DATETIME_PICKER = "DateTimePickerGenerator";

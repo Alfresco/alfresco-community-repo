@@ -154,6 +154,7 @@ class IndexEntry
         builder.append("Type=").append(getType()).append(" ");
         builder.append("Status=").append(getStatus()).append(" ");
         builder.append("Docs=").append(getDocumentCount()).append(" ");
+        builder.append("Deletions=").append(getDeletions()).append(" ");
         return builder.toString();
     }
     

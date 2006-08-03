@@ -49,13 +49,11 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.FilterIndexReaderByNodeRefs2;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.GUID;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.MultiReader;
@@ -206,6 +204,32 @@ public class IndexInfo
 
     private static HashMap<File, IndexInfo> indexInfos = new HashMap<File, IndexInfo>();
 
+    private int maxDocsForInMemoryMerge = 10000;
+
+    private int writerMinMergeDocs = 1000;
+
+    private int writerMergeFactor = 5;
+
+    private int writerMaxMergeDocs = 1000000;
+
+    private boolean writerUseCompoundFile = true;
+
+    private int mergerMinMergeDocs = 1000;
+
+    private int mergerMergeFactor = 5;
+
+    private int mergerMaxMergeDocs = 1000000;
+
+    private boolean mergerUseCompoundFile = true;
+
+    private int mergerTargetOverlays = 5;
+
+    // TODO: Something to control the maximum number of overlays
+
+    private boolean enableCleanerThread = true;
+
+    private boolean enableMergerThread = true;
+
     static
     {
         System.setProperty("disableLuceneLocks", "true");
@@ -283,6 +307,10 @@ public class IndexInfo
                             try
                             {
                                 writer = new IndexWriter(oldIndex, new StandardAnalyzer(), false);
+                                writer.setUseCompoundFile(writerUseCompoundFile);
+                                writer.minMergeDocs = writerMinMergeDocs;
+                                writer.mergeFactor = writerMergeFactor;
+                                writer.maxMergeDocs = writerMaxMergeDocs;
                                 writer.optimize();
                                 long docs = writer.docCount();
                                 writer.close();
@@ -393,24 +421,32 @@ public class IndexInfo
             }
         }
         // TODO: Add unrecognised folders for deletion.
-        cleanerThread = new Thread(cleaner);
-        cleanerThread.setDaemon(true);
-        cleanerThread.setName("Index cleaner thread");
-        cleanerThread.start();
 
-        mergerThread = new Thread(merger);
-        mergerThread.setDaemon(true);
-        mergerThread.setName("Index merger thread");
-        mergerThread.start();
+        if (enableCleanerThread)
+        {
+            cleanerThread = new Thread(cleaner);
+            cleanerThread.setDaemon(true);
+            cleanerThread.setName("Index cleaner thread "+indexDirectory);
+            cleanerThread.start();
+        }
+
+       
+        if (enableMergerThread)
+        {
+            mergerThread = new Thread(merger);
+            mergerThread.setDaemon(true);
+            mergerThread.setName("Index merger thread "+indexDirectory);
+            mergerThread.start();
+        }
 
         IndexWriter writer;
         try
         {
             writer = new IndexWriter(emptyIndex, new StandardAnalyzer(), true);
-            writer.setUseCompoundFile(true);
-            writer.minMergeDocs = 1000;
-            writer.mergeFactor = 5;
-            writer.maxMergeDocs = 1000000;
+            writer.setUseCompoundFile(writerUseCompoundFile);
+            writer.minMergeDocs = writerMinMergeDocs;
+            writer.mergeFactor = writerMergeFactor;
+            writer.maxMergeDocs = writerMaxMergeDocs;
         }
         catch (IOException e)
         {
@@ -441,17 +477,24 @@ public class IndexInfo
             // close index writer if required
             closeDeltaIndexWriter(id);
             // Check the index knows about the transaction
-            File location = ensureDeltaIsRegistered(id);
-            // Create a dummy index reader to deal with empty indexes and not persist these.
-            if (IndexReader.indexExists(location))
-            {
-                reader = IndexReader.open(location);
-            }
-            else
-            {
-                reader = IndexReader.open(emptyIndex);
-            }
+            reader = buildAndRegisterDeltaReader(id);
             indexReaders.put(id, reader);
+        }
+        return reader;
+    }
+
+    private IndexReader buildAndRegisterDeltaReader(String id) throws IOException
+    {
+        IndexReader reader;
+        File location = ensureDeltaIsRegistered(id);
+        // Create a dummy index reader to deal with empty indexes and not persist these.
+        if (IndexReader.indexExists(location))
+        {
+            reader = IndexReader.open(location);
+        }
+        else
+        {
+            reader = IndexReader.open(emptyIndex);
         }
         return reader;
     }
@@ -511,10 +554,10 @@ public class IndexInfo
         if (!IndexReader.indexExists(location))
         {
             IndexWriter creator = new IndexWriter(location, analyzer, true);
-            creator.setUseCompoundFile(true);
-            creator.minMergeDocs = 1000;
-            creator.mergeFactor = 5;
-            creator.maxMergeDocs = 1000000;
+            creator.setUseCompoundFile(writerUseCompoundFile);
+            creator.minMergeDocs = writerMinMergeDocs;
+            creator.mergeFactor = writerMergeFactor;
+            creator.maxMergeDocs = writerMaxMergeDocs;
             return creator;
         }
         return null;
@@ -538,10 +581,10 @@ public class IndexInfo
             if (writer == null)
             {
                 writer = new IndexWriter(location, analyzer, false);
-                writer.setUseCompoundFile(true);
-                writer.minMergeDocs = 1000;
-                writer.mergeFactor = 5;
-                writer.maxMergeDocs = 1000000;
+                writer.setUseCompoundFile(writerUseCompoundFile);
+                writer.minMergeDocs = writerMinMergeDocs;
+                writer.mergeFactor = writerMergeFactor;
+                writer.maxMergeDocs = writerMaxMergeDocs;
             }
             indexWriters.put(id, writer);
         }
@@ -789,12 +832,14 @@ public class IndexInfo
             // TODO: Should use the in memory index but we often end up forcing to disk anyway.
             // Is it worth it?
             // luceneIndexer.flushPending();
-            IndexReader deltaReader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(id,
-                    getDeltaIndexReader(id));
-            ReferenceCounting deltaRefCount = (ReferenceCounting) deltaReader;
-            deltaRefCount.incrementReferenceCount();
+            
+            IndexReader deltaReader =  buildAndRegisterDeltaReader(id);
             IndexReader reader = new MultiReader(new IndexReader[] {
                     new FilterIndexReaderByNodeRefs2(mainIndexReader, deletions, deleteOnlyNodes), deltaReader });
+            reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader("MainReader"+id, reader);
+            ReferenceCounting refCounting = (ReferenceCounting)reader;
+            refCounting.incrementReferenceCount();
+            refCounting.setInvalidForReuse();
             return reader;
         }
         finally
@@ -1659,7 +1704,18 @@ public class IndexInfo
         {
             if (indexIsShared)
             {
+                long start = 0l;
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug(" ... waiting for file lock");
+                    start = System.nanoTime();
+                }
                 fileLock = indexInfoChannel.lock();
+                if (s_logger.isDebugEnabled())
+                {
+                    long end = System.nanoTime();
+                    s_logger.debug(" ... got file lock in " + ((end - start)/10e6f) + " ms");
+                }
                 if (!checkVersion())
                 {
                     setStatusFromFile();
@@ -1688,6 +1744,10 @@ public class IndexInfo
                 try
                 {
                     fileLock.release();
+                    if (s_logger.isDebugEnabled())
+                    {
+                        s_logger.debug(" ... released file lock");
+                    }
                 }
                 catch (IOException e)
                 {
@@ -1696,6 +1756,11 @@ public class IndexInfo
         }
     }
 
+    /**
+     * Helper to print out index information
+     * 
+     * @param args
+     */
     public static void main(String[] args)
     {
 
@@ -1720,67 +1785,6 @@ public class IndexInfo
             }
         }
     }
-
-    // public static void main(String[] args) throws IOException
-
-    // {
-    // System.setProperty("disableLuceneLocks", "true");
-    //
-    // HashSet<NodeRef> deletions = new HashSet<NodeRef>();
-    // for (int i = 0; i < 0; i++)
-    // {
-    // deletions.add(new NodeRef(new StoreRef("woof", "bingle"), GUID.generate()));
-    // }
-    //
-    // int repeat = 100;
-    // int docs = 1;
-    // final IndexInfo ii = new IndexInfo(new File("c:\\indexTest"));
-    //
-    // long totalTimeA = 0;
-    // long countA = 0;
-    //
-    // while (true)
-    // {
-    // long start = System.nanoTime();
-    // for (int i = 0; i < repeat; i++)
-    // {
-    // String guid = GUID.generate();
-    // ii.setStatus(guid, TransactionStatus.ACTIVE, null, null);
-    // IndexWriter writer = ii.getDeltaIndexWriter(guid, new StandardAnalyzer());
-    //
-    // for (int j = 0; j < docs; j++)
-    // {
-    // Document doc = new Document();
-    // for (int k = 0; k < 15; k++)
-    // {
-    // doc.add(new Field("ID" + k, guid + " " + j + " " + k, false, true, false));
-    // }
-    // writer.addDocument(doc);
-    // }
-    //
-    // ii.closeDeltaIndexWriter(guid);
-    // ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-    // ii.setPreparedState(guid, deletions, docs, false);
-    // ii.getDeletions(guid);
-    // ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
-    // ii.setStatus(guid, TransactionStatus.COMMITTING, null, null);
-    // ii.setStatus(guid, TransactionStatus.COMMITTED, null, null);
-    // for (int j = 0; j < 0; j++)
-    // {
-    // ii.getMainIndexReferenceCountingReadOnlyIndexReader();
-    // }
-    // }
-    //
-    // long end = System.nanoTime();
-    //
-    // totalTimeA += (end - start);
-    // countA += repeat;
-    // float average = countA * 1000000000f / totalTimeA;
-    //
-    // System.out.println("Repeated "
-    // + repeat + " in " + ((end - start) / 1000000000.0) + " average = " + average);
-    // }
-    // }
 
     /**
      * Clean up support.
@@ -1979,7 +1983,7 @@ public class IndexInfo
                         if (!mergingIndexes && !applyingDeletions)
                         {
 
-                            if ((indexes > 5) || (deltas > 5))
+                            if ((indexes > mergerMergeFactor) || (deltas > mergerTargetOverlays))
                             {
                                 if (indexes > deltas)
                                 {
@@ -2333,7 +2337,7 @@ public class IndexInfo
                             }
                         }
 
-                        int position = findMergeIndex(1, 1000000, 5, mergeList);
+                        int position = findMergeIndex(1, mergerMaxMergeDocs, mergerMergeFactor, mergeList);
                         String firstMergeId = mergeList.get(position).getName();
 
                         long count = 0;
@@ -2417,7 +2421,7 @@ public class IndexInfo
                         else if (entry.getStatus() == TransactionStatus.MERGE_TARGET)
                         {
                             outputLocation = location;
-                            if (docCount < 10000)
+                            if (docCount < maxDocsForInMemoryMerge)
                             {
                                 ramDirectory = new RAMDirectory();
                                 writer = new IndexWriter(ramDirectory, new StandardAnalyzer(), true);
@@ -2425,11 +2429,12 @@ public class IndexInfo
                             else
                             {
                                 writer = new IndexWriter(location, new StandardAnalyzer(), true);
+                               
                             }
-                            writer.setUseCompoundFile(true);
-                            writer.minMergeDocs = 1000;
-                            writer.mergeFactor = 5;
-                            writer.maxMergeDocs = 1000000;
+                            writer.setUseCompoundFile(mergerUseCompoundFile);
+                            writer.minMergeDocs = mergerMinMergeDocs;
+                            writer.mergeFactor = mergerMergeFactor;
+                            writer.maxMergeDocs = mergerMaxMergeDocs;
                         }
                     }
                     writer.addIndexes(readers);
@@ -2525,17 +2530,18 @@ public class IndexInfo
                             indexEntries.remove(id);
                             deleteQueue.add(id);
                         }
-                        synchronized (cleaner)
-                        {
-                            cleaner.notify();
-                        }
-
+                        
                         dumpInfo();
 
                         writeStatus();
 
                         clearOldReaders();
 
+                        synchronized (cleaner)
+                        {
+                            cleaner.notify();
+                        }
+                        
                         return null;
                     }
 
@@ -2603,10 +2609,19 @@ public class IndexInfo
 
     private void getWriteLock()
     {
+        String threadName = null;
+        long start = 0l;
+        if (s_logger.isDebugEnabled())
+        {
+            threadName = Thread.currentThread().getName();
+            s_logger.debug("Waiting for WRITE lock  - " + threadName);
+            start = System.nanoTime();
+        }
         readWriteLock.writeLock().lock();
         if (s_logger.isDebugEnabled())
         {
-            s_logger.debug("GOT WRITE LOCK  - " + Thread.currentThread().getName());
+            long end = System.nanoTime();
+            s_logger.debug("...GOT WRITE LOCK  - " + threadName + " -  in " + ((end - start)/10e6f) + " ms");
         }
     }
 
@@ -2614,17 +2629,26 @@ public class IndexInfo
     {
         if (s_logger.isDebugEnabled())
         {
-            s_logger.debug("RELEASES WRITE LOCK  - " + Thread.currentThread().getName());
+            s_logger.debug("RELEASED WRITE LOCK  - " + Thread.currentThread().getName());
         }
         readWriteLock.writeLock().unlock();
     }
 
     private void getReadLock()
     {
+        String threadName = null;
+        long start = 0l;
+        if (s_logger.isDebugEnabled())
+        {
+            threadName = Thread.currentThread().getName();
+            s_logger.debug("Waiting for READ lock  - " + threadName);
+            start = System.nanoTime();
+        }
         readWriteLock.readLock().lock();
         if (s_logger.isDebugEnabled())
         {
-            s_logger.debug("GOT READ LOCK  - " + Thread.currentThread().getName());
+            long end = System.nanoTime();
+            s_logger.debug("...GOT READ LOCK  - " + threadName + " -  in " + ((end - start)/10e6f) + " ms");
         }
     }
 
@@ -2632,7 +2656,7 @@ public class IndexInfo
     {
         if (s_logger.isDebugEnabled())
         {
-            s_logger.debug("RELEASES READ LOCK  - " + Thread.currentThread().getName());
+            s_logger.debug("RELEASED READ LOCK  - " + Thread.currentThread().getName());
         }
         readWriteLock.readLock().unlock();
     }
@@ -2641,4 +2665,136 @@ public class IndexInfo
     {
         return indexDirectory.toString();
     }
+
+    public boolean isEnableCleanerThread()
+    {
+        return enableCleanerThread;
+    }
+
+    public void setEnableCleanerThread(boolean enableCleanerThread)
+    {
+        this.enableCleanerThread = enableCleanerThread;
+    }
+
+    public boolean isEnableMergerThread()
+    {
+        return enableMergerThread;
+    }
+
+    public void setEnableMergerThread(boolean enableMergerThread)
+    {
+        this.enableMergerThread = enableMergerThread;
+    }
+
+    public boolean isIndexIsShared()
+    {
+        return indexIsShared;
+    }
+
+    public void setIndexIsShared(boolean indexIsShared)
+    {
+        this.indexIsShared = indexIsShared;
+    }
+
+    public int getMaxDocsForInMemoryMerge()
+    {
+        return maxDocsForInMemoryMerge;
+    }
+
+    public void setMaxDocsForInMemoryMerge(int maxDocsForInMemoryMerge)
+    {
+        this.maxDocsForInMemoryMerge = maxDocsForInMemoryMerge;
+    }
+
+    public int getMergerMaxMergeDocs()
+    {
+        return mergerMaxMergeDocs;
+    }
+
+    public void setMergerMaxMergeDocs(int mergerMaxMergeDocs)
+    {
+        this.mergerMaxMergeDocs = mergerMaxMergeDocs;
+    }
+
+    public int getMergerMergeFactor()
+    {
+        return mergerMergeFactor;
+    }
+
+    public void setMergerMergeFactor(int mergerMergeFactor)
+    {
+        this.mergerMergeFactor = mergerMergeFactor;
+    }
+
+    public int getMergerMinMergeDocs()
+    {
+        return mergerMinMergeDocs;
+    }
+
+    public void setMergerMinMergeDocs(int mergerMinMergeDocs)
+    {
+        this.mergerMinMergeDocs = mergerMinMergeDocs;
+    }
+
+    public int getMergerTargetOverlays()
+    {
+        return mergerTargetOverlays;
+    }
+
+    public void setMergerTargetOverlays(int mergerTargetOverlays)
+    {
+        this.mergerTargetOverlays = mergerTargetOverlays;
+    }
+
+    public boolean isMergerUseCompoundFile()
+    {
+        return mergerUseCompoundFile;
+    }
+
+    public void setMergerUseCompoundFile(boolean mergerUseCompoundFile)
+    {
+        this.mergerUseCompoundFile = mergerUseCompoundFile;
+    }
+
+    public int getWriterMaxMergeDocs()
+    {
+        return writerMaxMergeDocs;
+    }
+
+    public void setWriterMaxMergeDocs(int writerMaxMergeDocs)
+    {
+        this.writerMaxMergeDocs = writerMaxMergeDocs;
+    }
+
+    public int getWriterMergeFactor()
+    {
+        return writerMergeFactor;
+    }
+
+    public void setWriterMergeFactor(int writerMergeFactor)
+    {
+        this.writerMergeFactor = writerMergeFactor;
+    }
+
+    public int getWriterMinMergeDocs()
+    {
+        return writerMinMergeDocs;
+    }
+
+    public void setWriterMinMergeDocs(int writerMinMergeDocs)
+    {
+        this.writerMinMergeDocs = writerMinMergeDocs;
+    }
+
+    public boolean isWriterUseCompoundFile()
+    {
+        return writerUseCompoundFile;
+    }
+
+    public void setWriterUseCompoundFile(boolean writerUseCompoundFile)
+    {
+        this.writerUseCompoundFile = writerUseCompoundFile;
+    }
+    
+    
 }

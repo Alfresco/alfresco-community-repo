@@ -32,15 +32,16 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
     public static class ReferenceCountingReadOnlyIndexReader extends FilterIndexReader implements ReferenceCounting
     {
         private static Logger s_logger = Logger.getLogger(ReferenceCountingReadOnlyIndexReader.class);
-        
-        
+
         private static final long serialVersionUID = 7693185658022810428L;
 
         String id;
-     
+
         int refCount = 0;
 
         boolean invalidForReuse = false;
+
+        boolean allowsDeletions;
 
         ReferenceCountingReadOnlyIndexReader(String id, IndexReader indexReader)
         {
@@ -51,18 +52,20 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         public synchronized void incrementReferenceCount()
         {
             refCount++;
-            if(s_logger.isDebugEnabled())
+            if (s_logger.isDebugEnabled())
             {
-                s_logger.debug(Thread.currentThread().getName()+ ": Reader "+id+ " - increment - ref count is "+refCount);
+                s_logger.debug(Thread.currentThread().getName()
+                        + ": Reader " + id + " - increment - ref count is " + refCount);
             }
         }
 
         public synchronized void decrementReferenceCount() throws IOException
         {
             refCount--;
-            if(s_logger.isDebugEnabled())
+            if (s_logger.isDebugEnabled())
             {
-                s_logger.debug(Thread.currentThread().getName()+ ": Reader "+id+ " - decrement - ref count is "+refCount);
+                s_logger.debug(Thread.currentThread().getName()
+                        + ": Reader " + id + " - decrement - ref count is " + refCount);
             }
             closeIfRequired();
         }
@@ -71,17 +74,19 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         {
             if ((refCount == 0) && invalidForReuse)
             {
-                if(s_logger.isDebugEnabled())
+                if (s_logger.isDebugEnabled())
                 {
-                    s_logger.debug(Thread.currentThread().getName()+ ": Reader "+id+ " closed.");
+                    s_logger.debug(Thread.currentThread().getName() + ": Reader " + id + " closed.");
                 }
                 in.close();
             }
             else
             {
-                if(s_logger.isDebugEnabled())
+                if (s_logger.isDebugEnabled())
                 {
-                    s_logger.debug(Thread.currentThread().getName()+ ": Reader "+id+ " still open .... ref = "+refCount+" invalidForReuse = "+invalidForReuse);
+                    s_logger.debug(Thread.currentThread().getName()
+                            + ": Reader " + id + " still open .... ref = " + refCount + " invalidForReuse = "
+                            + invalidForReuse);
                 }
             }
         }
@@ -94,9 +99,9 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         public synchronized void setInvalidForReuse() throws IOException
         {
             invalidForReuse = true;
-            if(s_logger.isDebugEnabled())
+            if (s_logger.isDebugEnabled())
             {
-                s_logger.debug(Thread.currentThread().getName()+ ": Reader "+id+ " set invalid for reuse");
+                s_logger.debug(Thread.currentThread().getName() + ": Reader " + id + " set invalid for reuse");
             }
             closeIfRequired();
         }
@@ -104,9 +109,9 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         @Override
         protected void doClose() throws IOException
         {
-            if(s_logger.isDebugEnabled())
+            if (s_logger.isDebugEnabled())
             {
-                s_logger.debug(Thread.currentThread().getName()+ ": Reader "+id+ " closing");
+                s_logger.debug(Thread.currentThread().getName() + ": Reader " + id + " closing");
             }
             decrementReferenceCount();
         }
@@ -116,7 +121,6 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         {
             throw new UnsupportedOperationException("Delete is not supported by read only index readers");
         }
-        
-        
+
     }
 }

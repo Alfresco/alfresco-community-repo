@@ -43,6 +43,7 @@ import org.alfresco.web.config.PropertySheetConfigElement.AssociationConfig;
 import org.alfresco.web.config.PropertySheetConfigElement.ChildAssociationConfig;
 import org.alfresco.web.config.PropertySheetConfigElement.ItemConfig;
 import org.alfresco.web.config.PropertySheetConfigElement.PropertyConfig;
+import org.alfresco.web.config.PropertySheetConfigElement.SeparatorConfig;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.repo.RepoConstants;
@@ -63,6 +64,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
    private static String DEFAULT_VAR_NAME = "node";
    private static String PROP_ID_PREFIX = "prop_";
    private static String ASSOC_ID_PREFIX = "assoc_";
+   private static String SEP_ID_PREFIX = "sep_";
    
    private List<ClientValidation> validations = new ArrayList<ClientValidation>();
    private String variable;
@@ -736,6 +738,12 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
             id = ASSOC_ID_PREFIX + item.getName();
             propSheetItem = (PropertySheetItem)context.getApplication().
                   createComponent(RepoConstants.ALFRESCO_FACES_CHILD_ASSOCIATION);
+         }
+         else if (item instanceof SeparatorConfig)
+         {
+            id = SEP_ID_PREFIX + item.getName();
+            propSheetItem = (PropertySheetItem)context.getApplication().
+                  createComponent(RepoConstants.ALFRESCO_FACES_SEPARATOR);
          }
          
          // now setup the common stuff across all component types

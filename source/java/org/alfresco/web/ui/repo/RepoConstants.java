@@ -26,6 +26,7 @@ public final class RepoConstants
    public static final String ALFRESCO_FACES_ASSOCIATION          = "org.alfresco.faces.Association";
    public static final String ALFRESCO_FACES_CHILD_ASSOCIATION    = "org.alfresco.faces.ChildAssociation";
    public static final String ALFRESCO_FACES_PROPERTY             = "org.alfresco.faces.Property";
+   public static final String ALFRESCO_FACES_SEPARATOR            = "org.alfresco.faces.Separator";
    public static final String ALFRESCO_FACES_SPACE_SELECTOR       = "org.alfresco.faces.SpaceSelector";
    public static final String ALFRESCO_FACES_ASSOC_EDITOR         = "org.alfresco.faces.AssociationEditor";
    public static final String ALFRESCO_FACES_CHILD_ASSOC_EDITOR   = "org.alfresco.faces.ChildAssociationEditor";
@@ -50,6 +51,8 @@ public final class RepoConstants
    public static final String GENERATOR_CATEGORY_SELECTOR = "CategorySelectorGenerator";
    public static final String GENERATOR_ASSOCIATION = "AssociationGenerator";
    public static final String GENERATOR_CHILD_ASSOCIATION = "ChildAssociationGenerator";
+   public static final String GENERATOR_SEPARATOR = "SeparatorGenerator";
+   public static final String GENERATOR_HEADER_SEPARATOR = "HeaderSeparatorGenerator";
    
    /**
     * Private constructor

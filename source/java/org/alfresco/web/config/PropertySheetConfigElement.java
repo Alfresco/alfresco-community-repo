@@ -32,9 +32,6 @@ import org.alfresco.config.element.ConfigElementAdapter;
  */
 public class PropertySheetConfigElement extends ConfigElementAdapter
 {
-   // TODO: Currently this object just deals with properties and associations to show,
-   //       in the future it will also deal with properties and associations to hide.
-   
    public static final String CONFIG_ELEMENT_ID = "property-sheet";
    
    protected Map<String, ItemConfig> items = new LinkedHashMap<String, ItemConfig>(8, 10f);
@@ -194,6 +191,24 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
    }
    
    /**
+    * Adds a separator
+    * 
+    * @param name The name of the separator
+    * @param displayLabel Display label to use for the separator
+    * @param displayLabelId Display label message id to use for the separator
+    * @param inView Sets whether the separator should be shown when the property 
+    *        sheet is in view mode
+    * @param inEdit Sets whether the separator should be shown when the property 
+    *        sheet is in edit mode
+    * @param compGenerator The name of a bean that can be used as a component generator
+    */
+   /*package*/ void addSeparator(String name, String displayLabel, String displayLabelId, 
+                                 String inView, String inEdit, String compGenerator)
+   {
+      addItem(new SeparatorConfig(name, displayLabel, displayLabelId, inView, inEdit, compGenerator));
+   }
+   
+   /**
     * @return Returns a map of the all the items
     */
    public Map<String, ItemConfig> getItems()
@@ -266,6 +281,12 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
             boolean readOnly, String converter, String inView, String inEdit, 
             String compGenerator, String ignoreIfMissing)
       {
+         // check we have a name
+         if (name == null || name.length() == 0)
+         {
+            throw new ConfigException("You must specify a name for a proprty sheet item");
+         }
+         
          this.name = name;
          this.displayLabel = displayLabel;
          this.displayLabelId = displayLabelId;
@@ -417,6 +438,19 @@ public class PropertySheetConfigElement extends ConfigElementAdapter
             String compGenerator)
       {
          super(name, displayLabel, displayLabelId, readOnly, converter, 
+               inView, inEdit, compGenerator, null);
+      }
+   }
+   
+   /**
+    * Inner class to represent a configured separator
+    */
+   public class SeparatorConfig extends ItemConfig
+   {
+      public SeparatorConfig(String name, String displayLabel, String displayLabelId, 
+            String inView, String inEdit, String compGenerator)
+      {
+         super(name, displayLabel, displayLabelId, false, null, 
                inView, inEdit, compGenerator, null);
       }
    }

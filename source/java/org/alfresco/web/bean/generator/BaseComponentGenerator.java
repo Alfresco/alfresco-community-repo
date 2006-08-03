@@ -32,6 +32,7 @@ import org.alfresco.web.ui.repo.component.property.BaseAssociationEditor;
 import org.alfresco.web.ui.repo.component.property.PropertySheetItem;
 import org.alfresco.web.ui.repo.component.property.UIProperty;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
+import org.alfresco.web.ui.repo.component.property.UISeparator;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet.ClientValidation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -82,6 +83,12 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
          
          // setup any converter the property needs
          setupConverter(context, propertySheet, item, propertyDef, component);
+      }
+      else if (item instanceof UISeparator)
+      {
+         // just create the component and add it
+         component = createComponent(context, propertySheet, item);
+         item.getChildren().add(component);
       }
       else
       {

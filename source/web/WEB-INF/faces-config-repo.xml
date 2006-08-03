@@ -13,6 +13,11 @@
       <component-type>org.alfresco.faces.Property</component-type>
       <component-class>org.alfresco.web.ui.repo.component.property.UIProperty</component-class>
    </component>
+	
+	<component>
+      <component-type>org.alfresco.faces.Separator</component-type>
+      <component-class>org.alfresco.web.ui.repo.component.property.UISeparator</component-class>
+   </component>
    
    <component>
       <component-type>org.alfresco.faces.Association</component-type>
@@ -170,6 +175,12 @@
          <component-family>org.alfresco.faces.Property</component-family>
          <renderer-type>org.alfresco.faces.PropertyRenderer</renderer-type>
          <renderer-class>org.alfresco.web.ui.repo.renderer.property.PropertyRenderer</renderer-class>
+      </renderer>
+		
+		<renderer>
+         <component-family>org.alfresco.faces.Separator</component-family>
+         <renderer-type>org.alfresco.faces.SeparatorRenderer</renderer-type>
+         <renderer-class>org.alfresco.web.ui.repo.renderer.property.SeparatorRenderer</renderer-class>
       </renderer>
       
       <renderer>

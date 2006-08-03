@@ -1870,6 +1870,24 @@
       <managed-bean-class>org.alfresco.web.bean.generator.ChildAssociationGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
+	
+	<managed-bean>
+      <description>
+         Bean that generates a separator component
+      </description>
+      <managed-bean-name>SeparatorGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.SeparatorGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+	
+	<managed-bean>
+      <description>
+         Bean that generates a header separator component
+      </description>
+      <managed-bean-name>HeaderSeparatorGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.HeaderSeparatorGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
    
    <!-- ==================== AJAX BEANS ==================== -->
    

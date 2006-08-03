@@ -34,6 +34,7 @@ public class PropertySheetElementReader implements ConfigElementReader
    public static final String ELEMENT_SHOW_PROPERTY = "show-property";
    public static final String ELEMENT_SHOW_ASSOC = "show-association";
    public static final String ELEMENT_SHOW_CHILD_ASSOC = "show-child-association";
+   public static final String ELEMENT_SEPARATOR = "separator";
    public static final String ATTR_NAME = "name";
    public static final String ATTR_DISPLAY_LABEL = "display-label";
    public static final String ATTR_DISPLAY_LABEL_ID = "display-label-id";
@@ -95,6 +96,10 @@ public class PropertySheetElementReader implements ConfigElementReader
             {
                configElement.addChildAssociation(propName, label, labelId, readOnly, converter, 
                      inView, inEdit, compGenerator);
+            }
+            else if (ELEMENT_SEPARATOR.equals(item.getName()))
+            {
+               configElement.addSeparator(propName, label, labelId, inView, inEdit, compGenerator);
             }
          }
       }

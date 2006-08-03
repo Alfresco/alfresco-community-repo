@@ -17,7 +17,6 @@
 package org.alfresco.web.ui.repo.renderer.property;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -27,11 +26,11 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.renderer.BaseRenderer;
 
 /**
- * Renderer for a PropertySheetItem component
+ * Renderer for a Separator component
  * 
  * @author gavinc
  */
-public class PropertySheetItemRenderer extends BaseRenderer
+public class SeparatorRenderer extends BaseRenderer
 {
    /**
     * @see javax.faces.render.Renderer#encodeBegin(javax.faces.context.FacesContext, javax.faces.component.UIComponent)
@@ -59,47 +58,16 @@ public class PropertySheetItemRenderer extends BaseRenderer
       }
       
       ResponseWriter out = context.getResponseWriter();
-      
-      // make sure there are 2 or 3 child components
+
       int count = component.getChildCount();
       
-      if (count == 2 || count == 3)
+      if (count == 1)
       {
-         // get the label and the control
-         List<UIComponent> children = component.getChildren();
-         UIComponent label = children.get(0);
-         UIComponent control = children.get(1);
-         
-         // encode the mandatory marker component if present
-         if (count == 3)
-         {
-            out.write("<td>");
-            UIComponent mandatoryMarker = children.get(2);
-            Utils.encodeRecursive(context, mandatoryMarker);
-            out.write("</td>");
-         }
-         else
-         {
-            // output an empty column
-            out.write("<td>&nbsp;</td>");
-         }
-         
-         // place a style class on the label column if necessary
-         String labelStylceClass = (String)component.getParent().getAttributes().get("labelStyleClass");
-         out.write("<td");
-         if (labelStylceClass != null)
-         {
-            outputAttribute(out, labelStylceClass, "class");
-         }
-         
-         // close the <td> 
-         out.write(">");
-         // encode the label
-         Utils.encodeRecursive(context, label);
-         // encode the control
-         out.write("</td><td>");
-         Utils.encodeRecursive(context, control);
-         
+         // there should be 3 columns so write out a td with colspan of 3
+         // then render the child component
+         out.write("<td colspan='3'>");
+         Utils.encodeRecursive(context, (UIComponent)component.getChildren().get(0));
+                  
          // NOTE: we'll allow the property sheet's grid renderer close off the last <td>
       }
    }

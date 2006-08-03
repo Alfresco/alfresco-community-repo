@@ -134,6 +134,7 @@ class Lookup
                 {
                     comp.setIndirection(computeIndirection(name));
                 }
+                fLayeredYet = true;
             }
             fComponents.add(comp);
             fPosition++;

@@ -99,6 +99,10 @@ public class AVMServiceTest extends AVMServiceTestBase
                 fService.getDirectoryListingDirect(-1, 
                                                    "main:/layer");
             assertEquals(0, listing.size());
+            listing = 
+                fService.getDirectoryListingDirect(-1,
+                                                   "main:/layer/b");
+            assertEquals(0, listing.size());
             fService.createFile("main:/layer/b/c", "sigmoid").close();
             fService.createSnapshot("main");
             listing = fService.getDirectoryListingDirect(-1, "main:/layer");

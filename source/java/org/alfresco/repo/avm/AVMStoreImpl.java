@@ -320,6 +320,10 @@ class AVMStoreImpl implements AVMStore, Serializable
     {
         Lookup lPath = lookupDirectory(version, path, false);
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
+        if (lPath.isLayered() && dir.getType() != AVMNodeType.LAYERED_DIRECTORY)
+        {
+            return new TreeMap<String, AVMNodeDescriptor>();
+        }
         Map<String, AVMNode> listing = dir.getListingDirect(lPath);
         return translateListing(listing, lPath);
     }

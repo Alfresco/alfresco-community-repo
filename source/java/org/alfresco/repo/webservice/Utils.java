@@ -37,11 +37,9 @@ import org.alfresco.repo.webservice.types.ParentReference;
 import org.alfresco.repo.webservice.types.Predicate;
 import org.alfresco.repo.webservice.types.PropertyDefinition;
 import org.alfresco.repo.webservice.types.Query;
-import org.alfresco.repo.webservice.types.QueryLanguageEnum;
 import org.alfresco.repo.webservice.types.Reference;
 import org.alfresco.repo.webservice.types.RoleDefinition;
 import org.alfresco.repo.webservice.types.Store;
-import org.alfresco.repo.webservice.types.StoreEnum;
 import org.alfresco.repo.webservice.types.Version;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -79,6 +77,12 @@ public class Utils
     {
         // don't allow construction
     }
+    
+    /** Query language names */
+    public static final String QUERY_LANG_LUCENE = "lucene";
+    public static final String QUERY_LANG_XPATH = "xpath";
+    public static final String QUERY_LANG_CQL = "cql";
+    
     
     /**
      * Utility method to convert from a string representation of a property value into the correct object representation.
@@ -222,7 +226,7 @@ public class Utils
      */
     public static StoreRef convertToStoreRef(Store store)
     {
-        return new StoreRef(store.getScheme().getValue(), store.getAddress());
+        return new StoreRef(store.getScheme(), store.getAddress());
     }
 
     /**
@@ -234,7 +238,7 @@ public class Utils
      */
     public static Store convertToStore(StoreRef ref)
     {
-        return new Store(StoreEnum.fromValue(ref.getProtocol()), ref
+        return new Store(ref.getProtocol(), ref
                 .getIdentifier());
     }
 
@@ -284,8 +288,7 @@ public class Utils
     public static Reference convertToReference(NodeRef node)
     {
         Reference ref = new Reference();
-        Store store = new Store(StoreEnum.fromValue(node.getStoreRef()
-                .getProtocol()), node.getStoreRef().getIdentifier());
+        Store store = new Store(node.getStoreRef().getProtocol(), node.getStoreRef().getIdentifier());
         ref.setStore(store);
         ref.setUuid(node.getId());
         return ref;
@@ -351,7 +354,7 @@ public class Utils
             {
                 StringBuilder builder = new StringBuilder(
                         "Failed to resolve to a single NodeRef with parameters (store=");
-                builder.append(store.getScheme().getValue()).append(":")
+                builder.append(store.getScheme()).append(":")
                         .append(store.getAddress());
                 builder.append(" uuid=").append(uuid);
                 builder.append(" path=").append(path).append("), found ");
@@ -425,13 +428,11 @@ public class Utils
                         "A Store has to be supplied to in order to execute a query.");
             }
 
-            QueryLanguageEnum langEnum = query.getLanguage();
-
-            if (langEnum.equals(QueryLanguageEnum.cql)
-                    || langEnum.equals(QueryLanguageEnum.xpath))
+            String language = query.getLanguage();
+            if (language.equals(QUERY_LANG_LUCENE) != true)
             {
                 throw new IllegalArgumentException("Only '"
-                        + QueryLanguageEnum.lucene.getValue()
+                        + QUERY_LANG_LUCENE
                         + "' queries are currently supported!");
             }
 
@@ -440,8 +441,7 @@ public class Utils
             try
             {
                 searchResults = searchService.query(Utils
-                    .convertToStoreRef(predicate.getStore()), langEnum
-                    .getValue(), query.getStatement());
+                    .convertToStoreRef(predicate.getStore()), language, query.getStatement());
                 // get hold of all the NodeRef's from the results
                 nodeRefs = searchResults.getNodeRefs();
             }

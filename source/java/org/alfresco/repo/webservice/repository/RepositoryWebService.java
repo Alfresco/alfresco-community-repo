@@ -35,10 +35,8 @@ import org.alfresco.repo.webservice.types.Node;
 import org.alfresco.repo.webservice.types.NodeDefinition;
 import org.alfresco.repo.webservice.types.Predicate;
 import org.alfresco.repo.webservice.types.Query;
-import org.alfresco.repo.webservice.types.QueryLanguageEnum;
 import org.alfresco.repo.webservice.types.Reference;
 import org.alfresco.repo.webservice.types.Store;
-import org.alfresco.repo.webservice.types.StoreEnum;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -103,14 +101,10 @@ public class RepositoryWebService extends AbstractWebService implements
     /**
      * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#createStore(org.alfresco.repo.webservice.types.StoreEnum, java.lang.String)
      */
-    public Store createStore(StoreEnum scheme, String address) throws RemoteException, RepositoryFault
+    public Store createStore(String scheme, String address) throws RemoteException, RepositoryFault
     {
-        String protocol = scheme.getValue();
-        StoreRef storeRef = this.nodeService.createStore(protocol, address);
-        
-        StoreEnum storeEnum = StoreEnum.fromString(storeRef
-                .getProtocol());
-        return new Store(storeEnum, storeRef.getIdentifier());
+        StoreRef storeRef = this.nodeService.createStore(scheme, address);
+        return Utils.convertToStore(storeRef);
     }
 
     /**
@@ -136,9 +130,7 @@ public class RepositoryWebService extends AbstractWebService implements
                     logger.debug("Store protocol :" + storeRef.getProtocol());
                 }
                 
-                StoreEnum storeEnum = StoreEnum.fromString(storeRef
-                        .getProtocol());
-                Store store = new Store(storeEnum, storeRef.getIdentifier());
+                Store store = Utils.convertToStore(storeRef);
                 returnStores[x] = store;
             }
 
@@ -175,13 +167,11 @@ public class RepositoryWebService extends AbstractWebService implements
     public QueryResult query(Store store, Query query, boolean includeMetaData)
             throws RemoteException, RepositoryFault
     {
-        QueryLanguageEnum langEnum = query.getLanguage();
-
-        if (langEnum.equals(QueryLanguageEnum.cql)
-                || langEnum.equals(QueryLanguageEnum.xpath))
+        String language = query.getLanguage();
+        if (language.equals(Utils.QUERY_LANG_LUCENE) == false)
         {
             throw new RepositoryFault(110, "Only '"
-                    + QueryLanguageEnum.lucene.getValue()
+                    + Utils.QUERY_LANG_LUCENE
                     + "' queries are currently supported!");
         }
 

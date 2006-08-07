@@ -53,14 +53,6 @@
       />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:QueryLanguageEnum"
-        type="java:org.alfresco.repo.webservice.types.QueryLanguageEnum"
-        serializer="org.apache.axis.encoding.ser.EnumSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
         qname="ns:ClassDefinition"
         type="java:org.alfresco.repo.webservice.types.ClassDefinition"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
@@ -177,14 +169,6 @@
         type="java:org.alfresco.repo.webservice.types.Query"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:StoreEnum"
-        type="java:org.alfresco.repo.webservice.types.StoreEnum"
-        serializer="org.apache.axis.encoding.ser.EnumSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory"
         encodingStyle=""
       />
       <typeMapping

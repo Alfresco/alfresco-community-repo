@@ -21,7 +21,7 @@
          <element name="createStore">
          	<complexType>
                <sequence>
-                  <element name="scheme" type="cms:StoreEnum"/>
+                  <element name="scheme" type="xsd:string"/>
                   <element name="address" type="xsd:string"/>
                </sequence>
             </complexType>

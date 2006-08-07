@@ -90,7 +90,7 @@ public class ResultSetQuerySession extends AbstractQuerySession
          try
          {
             searchResults = searchService.query(Utils.convertToStoreRef(this.store), 
-                  this.query.getLanguage().getValue(), statement);
+                  this.query.getLanguage(), statement);
          
             int totalRows = searchResults.length();
             int lastRow = calculateLastRowIndex(totalRows);
@@ -174,8 +174,8 @@ public class ResultSetQuerySession extends AbstractQuerySession
       builder.append(" (id=").append(getId());
       builder.append(" batchSize=").append(this.batchSize);
       builder.append(" position=").append(this.position);
-      builder.append(" store=").append(this.store.getScheme().getValue()).append(":").append(this.store.getAddress());
-      builder.append(" language=").append(this.query.getLanguage().getValue());
+      builder.append(" store=").append(this.store.getScheme()).append(":").append(this.store.getAddress());
+      builder.append(" language=").append(this.query.getLanguage());
       builder.append(" statement=").append(this.query.getStatement());
       builder.append(")");
       return builder.toString();

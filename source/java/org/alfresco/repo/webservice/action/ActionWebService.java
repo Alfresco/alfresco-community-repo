@@ -26,7 +26,6 @@ import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
-import org.alfresco.repo.rule.RuleImpl;
 import org.alfresco.repo.transaction.TransactionComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
@@ -482,26 +481,17 @@ public class ActionWebService extends AbstractWebService implements ActionServic
             }
         }
         
-        // Get the reference to the 'owning' node
-        NodeRef owningNodeRef = action.getOwningNodeRef();
-        Reference reference = null; 
-        if (owningNodeRef != null)
-        {
-            reference = Utils.convertToReference(owningNodeRef);
-        }
-        
         // Create the web service action object
         org.alfresco.repo.webservice.action.Action webServiceAction = new org.alfresco.repo.webservice.action.Action(
+                Utils.convertToReference(action.getNodeRef()),
                 action.getId(),
                 action.getActionDefinitionName(),
                 action.getTitle(),
                 action.getDescription(),
-                action.getExecuteAsychronously(),
                 namedValues,
                 webServiceConditions,
                 webServiceCompensatingAction,
-                childWebServiceActions,
-                reference);
+                childWebServiceActions);
         
         return webServiceAction;
     }
@@ -638,15 +628,12 @@ public class ActionWebService extends AbstractWebService implements ActionServic
             id = GUID.generate();
         }
         
-        // Get the owning node ref
-        NodeRef owningNodeRef = null;
-        if (webServiceAction.getReference() != null)
+        // Try and get the action node reference
+        NodeRef actionNodeRef = null;
+        Reference actionReference = webServiceAction.getActionReference();
+        if (actionReference != null)
         {
-            owningNodeRef = Utils.convertToNodeRef(
-                webServiceAction.getReference(),
-                this.nodeService,
-                this.searchService,
-                this.namespaceService);
+            actionNodeRef = Utils.convertToNodeRef(actionReference, this.nodeService, this.searchService, this.namespaceService);
         }
         
         // Create the action (or composite action)
@@ -654,20 +641,16 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         String actionDefinitionName = webServiceAction.getActionName();        
         if (CompositeActionExecuter.NAME.equals(actionDefinitionName) == true)
         {
-            action = new CompositeActionImpl(id, owningNodeRef);
+            action = new CompositeActionImpl(actionNodeRef, id);
         }
         else
         {
-            action = new ActionImpl(id, actionDefinitionName, owningNodeRef);
+            action = new ActionImpl(actionNodeRef, id, actionDefinitionName);
         }
         
         // Set some of the action's details
         action.setTitle(webServiceAction.getTitle());
         action.setDescription(webServiceAction.getDescription());
-        if (webServiceAction.isExecuteAsynchronously() == true)
-        {
-            action.setExecuteAsynchronously(true);
-        }
         
         // Set the parameters
         NamedValue[] namedValues = webServiceAction.getParameters();
@@ -958,51 +941,23 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     }
     
     private org.alfresco.repo.webservice.action.Rule convertToWebServiceRule(Rule rule)
-    {
-        // Get the run as user
-        // TODO for now set to null since this has no effect yet
-        String runAsUserName = null;
-        
-        // Get the conditions
-        List<ActionCondition> conditions = rule.getActionConditions();
-        Condition[] webServiceConditions = new Condition[conditions.size()];
-        int index2 = 0;
-        for (ActionCondition condition : conditions)
-        {
-            webServiceConditions[index2] = convertToWebServiceCondition(condition);
-            index2++;
-        }
-                
-        // Sort out any sub-actions
-        org.alfresco.repo.webservice.action.Action[] childWebServiceActions = null;
-        List<Action> childActions = rule.getActions();
-        childWebServiceActions = new org.alfresco.repo.webservice.action.Action[childActions.size()];
-        int index3 = 0;
-        for (Action childAction : childActions)
-        {
-            childWebServiceActions[index3] = convertToWebServiceAction(childAction);
-            index3 ++;
-        }
-        
-        // Get the reference to the 'owning' node
-        NodeRef owningNodeRef = rule.getOwningNodeRef();
-        Reference reference = null; 
+    {        
+        Reference owningReference = null;
+        NodeRef owningNodeRef = this.ruleService.getOwningNodeRef(rule);
         if (owningNodeRef != null)
         {
-            reference = Utils.convertToReference(owningNodeRef);
+            owningReference = Utils.convertToReference(owningNodeRef);
         }
         
         // Create the web service rule object
         org.alfresco.repo.webservice.action.Rule webServiceRule = new org.alfresco.repo.webservice.action.Rule(
-                rule.getId(),
-                rule.getRuleTypeName(),
+                Utils.convertToReference(rule.getNodeRef()),
+                owningReference,
+                rule.getRuleTypes().toArray(new String[rule.getRuleTypes().size()]),
                 rule.getTitle(),
                 rule.getDescription(),
-                rule.getExecuteAsychronously(),
-                webServiceConditions,
-                childWebServiceActions,
-                runAsUserName,
-                reference);
+                rule.getExecuteAsynchronously(),
+                convertToWebServiceAction(rule.getAction()));
         
         return webServiceRule;
     }
@@ -1123,56 +1078,38 @@ public class ActionWebService extends AbstractWebService implements ActionServic
      * @return
      */
     private Rule convertToRule(org.alfresco.repo.webservice.action.Rule webServiceRule)
-    {
-        // If the id is null then generate one
-        String id = webServiceRule.getId();
-        if (id == null || id.length() == 0)
+    {        
+        NodeRef ruleNodeRef = null;
+        if (webServiceRule.getRuleReference() != null)
         {
-            id = GUID.generate();
-        }
-        
-        // Get the owning node ref
-        NodeRef owningNodeRef = null;
-        if (webServiceRule.getReference() != null)
-        {
-            owningNodeRef = Utils.convertToNodeRef(
-                webServiceRule.getReference(),
-                this.nodeService,
-                this.searchService,
-                this.namespaceService);
+            ruleNodeRef = Utils.convertToNodeRef(
+                    webServiceRule.getRuleReference(), 
+                    this.nodeService, 
+                    this.searchService, 
+                    this.namespaceService);
         }
         
         // Get the rule type name
-        String ruleTypeName = webServiceRule.getRuleType();
+        String[] ruleTypes = webServiceRule.getRuleTypes();
         
         // Create the rule
-        RuleImpl rule = new RuleImpl(id, ruleTypeName, owningNodeRef);
+        Rule rule = new Rule();
+        List<String> ruleTypesList = new ArrayList<String>(ruleTypes.length);
+        for (String ruleType : ruleTypes)
+        {
+            ruleTypesList.add(ruleType);
+        }
+        rule.setRuleTypes(ruleTypesList);
+        rule.setNodeRef(ruleNodeRef);    
         
         // Set some of the rules details
         rule.setTitle(webServiceRule.getTitle());
         rule.setDescription(webServiceRule.getDescription());
-        rule.setExecuteAsynchronously(webServiceRule.isExecuteAsynchronously());        
+        rule.setExecuteAsynchronously(webServiceRule.isExecuteAsynchronously());
         
-        // Set the conditions
-        Condition[] webServiceConditions = webServiceRule.getConditions();
-        if (webServiceConditions != null)
-        {
-            for (Condition webServiceCondition : webServiceConditions)
-            {
-                rule.addActionCondition(convertToActionCondition(webServiceCondition));
-            }
-        }
-        
-        // Set the child actions 
-        org.alfresco.repo.webservice.action.Action[] webServiceChildActions = webServiceRule.getActions();
-        if (webServiceChildActions != null)
-        {
-            for (org.alfresco.repo.webservice.action.Action webServiceChildAction : webServiceChildActions)
-            {
-                Action childAction = convertToAction(webServiceChildAction);
-                rule.addAction(childAction);
-            }
-        }
+        // Set the action
+        Action action = convertToAction(webServiceRule.getAction());
+        rule.setAction(action);
         
         return rule;
     }

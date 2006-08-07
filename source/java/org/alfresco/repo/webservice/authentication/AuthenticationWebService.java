@@ -68,10 +68,12 @@ public class AuthenticationWebService implements AuthenticationServiceSoapPort
         } 
         catch (AuthenticationException ae)
         {
+            ae.printStackTrace();
             throw new AuthenticationFault(100, ae.getMessage());
         } 
         catch (Throwable e)
         {
+            e.printStackTrace();
             throw new AuthenticationFault(0, e.getMessage());
         }
     }

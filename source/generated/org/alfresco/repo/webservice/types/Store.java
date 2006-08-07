@@ -8,7 +8,7 @@
 package org.alfresco.repo.webservice.types;
 
 public class Store  implements java.io.Serializable {
-    private org.alfresco.repo.webservice.types.StoreEnum scheme;
+    private java.lang.String scheme;
 
     private java.lang.String address;
 
@@ -16,7 +16,7 @@ public class Store  implements java.io.Serializable {
     }
 
     public Store(
-           org.alfresco.repo.webservice.types.StoreEnum scheme,
+           java.lang.String scheme,
            java.lang.String address) {
            this.scheme = scheme;
            this.address = address;
@@ -28,7 +28,7 @@ public class Store  implements java.io.Serializable {
      * 
      * @return scheme
      */
-    public org.alfresco.repo.webservice.types.StoreEnum getScheme() {
+    public java.lang.String getScheme() {
         return scheme;
     }
 
@@ -38,7 +38,7 @@ public class Store  implements java.io.Serializable {
      * 
      * @param scheme
      */
-    public void setScheme(org.alfresco.repo.webservice.types.StoreEnum scheme) {
+    public void setScheme(java.lang.String scheme) {
         this.scheme = scheme;
     }
 
@@ -110,7 +110,7 @@ public class Store  implements java.io.Serializable {
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("scheme");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "scheme"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "StoreEnum"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();

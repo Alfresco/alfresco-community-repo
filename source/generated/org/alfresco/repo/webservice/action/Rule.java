@@ -8,9 +8,11 @@
 package org.alfresco.repo.webservice.action;
 
 public class Rule  implements java.io.Serializable {
-    private java.lang.String id;
+    private org.alfresco.repo.webservice.types.Reference ruleReference;
 
-    private java.lang.String ruleType;
+    private org.alfresco.repo.webservice.types.Reference owningReference;
+
+    private java.lang.String[] ruleTypes;
 
     private java.lang.String title;
 
@@ -18,76 +20,94 @@ public class Rule  implements java.io.Serializable {
 
     private boolean executeAsynchronously;
 
-    private org.alfresco.repo.webservice.action.Condition[] conditions;
-
-    private org.alfresco.repo.webservice.action.Action[] actions;
-
-    private java.lang.String runAsUserName;
-
-    private org.alfresco.repo.webservice.types.Reference reference;
+    private org.alfresco.repo.webservice.action.Action action;
 
     public Rule() {
     }
 
     public Rule(
-           java.lang.String id,
-           java.lang.String ruleType,
+           org.alfresco.repo.webservice.types.Reference ruleReference,
+           org.alfresco.repo.webservice.types.Reference owningReference,
+           java.lang.String[] ruleTypes,
            java.lang.String title,
            java.lang.String description,
            boolean executeAsynchronously,
-           org.alfresco.repo.webservice.action.Condition[] conditions,
-           org.alfresco.repo.webservice.action.Action[] actions,
-           java.lang.String runAsUserName,
-           org.alfresco.repo.webservice.types.Reference reference) {
-           this.id = id;
-           this.ruleType = ruleType;
+           org.alfresco.repo.webservice.action.Action action) {
+           this.ruleReference = ruleReference;
+           this.owningReference = owningReference;
+           this.ruleTypes = ruleTypes;
            this.title = title;
            this.description = description;
            this.executeAsynchronously = executeAsynchronously;
-           this.conditions = conditions;
-           this.actions = actions;
-           this.runAsUserName = runAsUserName;
-           this.reference = reference;
+           this.action = action;
     }
 
 
     /**
-     * Gets the id value for this Rule.
+     * Gets the ruleReference value for this Rule.
      * 
-     * @return id
+     * @return ruleReference
      */
-    public java.lang.String getId() {
-        return id;
+    public org.alfresco.repo.webservice.types.Reference getRuleReference() {
+        return ruleReference;
     }
 
 
     /**
-     * Sets the id value for this Rule.
+     * Sets the ruleReference value for this Rule.
      * 
-     * @param id
+     * @param ruleReference
      */
-    public void setId(java.lang.String id) {
-        this.id = id;
+    public void setRuleReference(org.alfresco.repo.webservice.types.Reference ruleReference) {
+        this.ruleReference = ruleReference;
     }
 
 
     /**
-     * Gets the ruleType value for this Rule.
+     * Gets the owningReference value for this Rule.
      * 
-     * @return ruleType
+     * @return owningReference
      */
-    public java.lang.String getRuleType() {
-        return ruleType;
+    public org.alfresco.repo.webservice.types.Reference getOwningReference() {
+        return owningReference;
     }
 
 
     /**
-     * Sets the ruleType value for this Rule.
+     * Sets the owningReference value for this Rule.
      * 
-     * @param ruleType
+     * @param owningReference
      */
-    public void setRuleType(java.lang.String ruleType) {
-        this.ruleType = ruleType;
+    public void setOwningReference(org.alfresco.repo.webservice.types.Reference owningReference) {
+        this.owningReference = owningReference;
+    }
+
+
+    /**
+     * Gets the ruleTypes value for this Rule.
+     * 
+     * @return ruleTypes
+     */
+    public java.lang.String[] getRuleTypes() {
+        return ruleTypes;
+    }
+
+
+    /**
+     * Sets the ruleTypes value for this Rule.
+     * 
+     * @param ruleTypes
+     */
+    public void setRuleTypes(java.lang.String[] ruleTypes) {
+        this.ruleTypes = ruleTypes;
+    }
+
+    public java.lang.String getRuleTypes(int i) {
+        return this.ruleTypes[i];
+    }
+
+    public void setRuleTypes(int i, java.lang.String _value) {
+        this.ruleTypes[i] = _value;
     }
 
 
@@ -152,98 +172,22 @@ public class Rule  implements java.io.Serializable {
 
 
     /**
-     * Gets the conditions value for this Rule.
+     * Gets the action value for this Rule.
      * 
-     * @return conditions
+     * @return action
      */
-    public org.alfresco.repo.webservice.action.Condition[] getConditions() {
-        return conditions;
+    public org.alfresco.repo.webservice.action.Action getAction() {
+        return action;
     }
 
 
     /**
-     * Sets the conditions value for this Rule.
+     * Sets the action value for this Rule.
      * 
-     * @param conditions
+     * @param action
      */
-    public void setConditions(org.alfresco.repo.webservice.action.Condition[] conditions) {
-        this.conditions = conditions;
-    }
-
-    public org.alfresco.repo.webservice.action.Condition getConditions(int i) {
-        return this.conditions[i];
-    }
-
-    public void setConditions(int i, org.alfresco.repo.webservice.action.Condition _value) {
-        this.conditions[i] = _value;
-    }
-
-
-    /**
-     * Gets the actions value for this Rule.
-     * 
-     * @return actions
-     */
-    public org.alfresco.repo.webservice.action.Action[] getActions() {
-        return actions;
-    }
-
-
-    /**
-     * Sets the actions value for this Rule.
-     * 
-     * @param actions
-     */
-    public void setActions(org.alfresco.repo.webservice.action.Action[] actions) {
-        this.actions = actions;
-    }
-
-    public org.alfresco.repo.webservice.action.Action getActions(int i) {
-        return this.actions[i];
-    }
-
-    public void setActions(int i, org.alfresco.repo.webservice.action.Action _value) {
-        this.actions[i] = _value;
-    }
-
-
-    /**
-     * Gets the runAsUserName value for this Rule.
-     * 
-     * @return runAsUserName
-     */
-    public java.lang.String getRunAsUserName() {
-        return runAsUserName;
-    }
-
-
-    /**
-     * Sets the runAsUserName value for this Rule.
-     * 
-     * @param runAsUserName
-     */
-    public void setRunAsUserName(java.lang.String runAsUserName) {
-        this.runAsUserName = runAsUserName;
-    }
-
-
-    /**
-     * Gets the reference value for this Rule.
-     * 
-     * @return reference
-     */
-    public org.alfresco.repo.webservice.types.Reference getReference() {
-        return reference;
-    }
-
-
-    /**
-     * Sets the reference value for this Rule.
-     * 
-     * @param reference
-     */
-    public void setReference(org.alfresco.repo.webservice.types.Reference reference) {
-        this.reference = reference;
+    public void setAction(org.alfresco.repo.webservice.action.Action action) {
+        this.action = action;
     }
 
     private java.lang.Object __equalsCalc = null;
@@ -258,12 +202,15 @@ public class Rule  implements java.io.Serializable {
         __equalsCalc = obj;
         boolean _equals;
         _equals = true && 
-            ((this.id==null && other.getId()==null) || 
-             (this.id!=null &&
-              this.id.equals(other.getId()))) &&
-            ((this.ruleType==null && other.getRuleType()==null) || 
-             (this.ruleType!=null &&
-              this.ruleType.equals(other.getRuleType()))) &&
+            ((this.ruleReference==null && other.getRuleReference()==null) || 
+             (this.ruleReference!=null &&
+              this.ruleReference.equals(other.getRuleReference()))) &&
+            ((this.owningReference==null && other.getOwningReference()==null) || 
+             (this.owningReference!=null &&
+              this.owningReference.equals(other.getOwningReference()))) &&
+            ((this.ruleTypes==null && other.getRuleTypes()==null) || 
+             (this.ruleTypes!=null &&
+              java.util.Arrays.equals(this.ruleTypes, other.getRuleTypes()))) &&
             ((this.title==null && other.getTitle()==null) || 
              (this.title!=null &&
               this.title.equals(other.getTitle()))) &&
@@ -271,18 +218,9 @@ public class Rule  implements java.io.Serializable {
              (this.description!=null &&
               this.description.equals(other.getDescription()))) &&
             this.executeAsynchronously == other.isExecuteAsynchronously() &&
-            ((this.conditions==null && other.getConditions()==null) || 
-             (this.conditions!=null &&
-              java.util.Arrays.equals(this.conditions, other.getConditions()))) &&
-            ((this.actions==null && other.getActions()==null) || 
-             (this.actions!=null &&
-              java.util.Arrays.equals(this.actions, other.getActions()))) &&
-            ((this.runAsUserName==null && other.getRunAsUserName()==null) || 
-             (this.runAsUserName!=null &&
-              this.runAsUserName.equals(other.getRunAsUserName()))) &&
-            ((this.reference==null && other.getReference()==null) || 
-             (this.reference!=null &&
-              this.reference.equals(other.getReference())));
+            ((this.action==null && other.getAction()==null) || 
+             (this.action!=null &&
+              this.action.equals(other.getAction())));
         __equalsCalc = null;
         return _equals;
     }
@@ -294,11 +232,22 @@ public class Rule  implements java.io.Serializable {
         }
         __hashCodeCalc = true;
         int _hashCode = 1;
-        if (getId() != null) {
-            _hashCode += getId().hashCode();
+        if (getRuleReference() != null) {
+            _hashCode += getRuleReference().hashCode();
         }
-        if (getRuleType() != null) {
-            _hashCode += getRuleType().hashCode();
+        if (getOwningReference() != null) {
+            _hashCode += getOwningReference().hashCode();
+        }
+        if (getRuleTypes() != null) {
+            for (int i=0;
+                 i<java.lang.reflect.Array.getLength(getRuleTypes());
+                 i++) {
+                java.lang.Object obj = java.lang.reflect.Array.get(getRuleTypes(), i);
+                if (obj != null &&
+                    !obj.getClass().isArray()) {
+                    _hashCode += obj.hashCode();
+                }
+            }
         }
         if (getTitle() != null) {
             _hashCode += getTitle().hashCode();
@@ -307,33 +256,8 @@ public class Rule  implements java.io.Serializable {
             _hashCode += getDescription().hashCode();
         }
         _hashCode += (isExecuteAsynchronously() ? Boolean.TRUE : Boolean.FALSE).hashCode();
-        if (getConditions() != null) {
-            for (int i=0;
-                 i<java.lang.reflect.Array.getLength(getConditions());
-                 i++) {
-                java.lang.Object obj = java.lang.reflect.Array.get(getConditions(), i);
-                if (obj != null &&
-                    !obj.getClass().isArray()) {
-                    _hashCode += obj.hashCode();
-                }
-            }
-        }
-        if (getActions() != null) {
-            for (int i=0;
-                 i<java.lang.reflect.Array.getLength(getActions());
-                 i++) {
-                java.lang.Object obj = java.lang.reflect.Array.get(getActions(), i);
-                if (obj != null &&
-                    !obj.getClass().isArray()) {
-                    _hashCode += obj.hashCode();
-                }
-            }
-        }
-        if (getRunAsUserName() != null) {
-            _hashCode += getRunAsUserName().hashCode();
-        }
-        if (getReference() != null) {
-            _hashCode += getReference().hashCode();
+        if (getAction() != null) {
+            _hashCode += getAction().hashCode();
         }
         __hashCodeCalc = false;
         return _hashCode;
@@ -346,16 +270,23 @@ public class Rule  implements java.io.Serializable {
     static {
         typeDesc.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "Rule"));
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("id");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "id"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setFieldName("ruleReference");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "ruleReference"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "Reference"));
         elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("ruleType");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "ruleType"));
+        elemField.setFieldName("owningReference");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "owningReference"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "Reference"));
+        elemField.setNillable(true);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("ruleTypes");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "ruleTypes"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setNillable(false);
+        elemField.setMaxOccursUnbounded(true);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("title");
@@ -376,31 +307,10 @@ public class Rule  implements java.io.Serializable {
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("conditions");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "conditions"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "Condition"));
-        elemField.setMinOccurs(0);
-        elemField.setNillable(true);
-        elemField.setMaxOccursUnbounded(true);
-        typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("actions");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "actions"));
+        elemField.setFieldName("action");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "action"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "Action"));
         elemField.setNillable(false);
-        elemField.setMaxOccursUnbounded(true);
-        typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("runAsUserName");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "runAsUserName"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setNillable(true);
-        typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("reference");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "reference"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "Reference"));
-        elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
     }
 

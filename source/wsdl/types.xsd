@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema xmlns:cms="http://www.alfresco.org/ws/model/content/1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.alfresco.org/ws/model/content/1.0" elementFormDefault="qualified" version="0.1">
     <xsd:annotation>
     	<xsd:documentation>Alfresco Web Services for Content Management. Type Definitions - Draft.</xsd:documentation>
@@ -31,21 +30,10 @@
 			<xsd:minLength value="1"/>
 		</xsd:restriction>
 	</xsd:simpleType>
-
-    <xsd:simpleType name="StoreEnum">
-    	<xsd:restriction base="xsd:string">
-    		<xsd:enumeration value="workspace"/>
-    		<xsd:enumeration value="versionStore"/>
-    		<xsd:enumeration value="user"/>
-    		<xsd:enumeration value="search"/>
-    		<xsd:enumeration value="http"/>
-    		<xsd:enumeration value="system"/>
-    	</xsd:restriction>
-    </xsd:simpleType>
     
     <xsd:complexType name="Store">
     	<xsd:sequence>
-    		<xsd:element name="scheme" type="cms:StoreEnum"/>
+    		<xsd:element name="scheme" type="xsd:string"/>
     		<xsd:element name="address">
     			<xsd:simpleType>
     				<xsd:restriction base="xsd:string">
@@ -218,17 +206,9 @@
 	<!-- Query Definitions -->
 	<!-- -->
 
-    <xsd:simpleType name="QueryLanguageEnum">
-    	<xsd:restriction base="xsd:string">
-    		<xsd:enumeration value="lucene"/>
-    		<xsd:enumeration value="xpath"/>
-    		<xsd:enumeration value="cql"/>
-    	</xsd:restriction>
-    </xsd:simpleType>
-
     <xsd:complexType name="Query">
     	<xsd:sequence>
-    		<xsd:element name="language" type="cms:QueryLanguageEnum"/>
+    		<xsd:element name="language" type="xsd:string"/>
     		<xsd:element name="statement" type="xsd:string"/>
     	</xsd:sequence>
     </xsd:complexType>

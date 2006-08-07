@@ -8,6 +8,8 @@
 package org.alfresco.repo.webservice.action;
 
 public class Action  implements java.io.Serializable {
+    private org.alfresco.repo.webservice.types.Reference actionReference;
+
     private java.lang.String id;
 
     private java.lang.String actionName;
@@ -15,8 +17,6 @@ public class Action  implements java.io.Serializable {
     private java.lang.String title;
 
     private java.lang.String description;
-
-    private boolean executeAsynchronously;
 
     private org.alfresco.repo.webservice.types.NamedValue[] parameters;
 
@@ -26,32 +26,48 @@ public class Action  implements java.io.Serializable {
 
     private org.alfresco.repo.webservice.action.Action[] actions;
 
-    private org.alfresco.repo.webservice.types.Reference reference;
-
     public Action() {
     }
 
     public Action(
+           org.alfresco.repo.webservice.types.Reference actionReference,
            java.lang.String id,
            java.lang.String actionName,
            java.lang.String title,
            java.lang.String description,
-           boolean executeAsynchronously,
            org.alfresco.repo.webservice.types.NamedValue[] parameters,
            org.alfresco.repo.webservice.action.Condition[] conditions,
            org.alfresco.repo.webservice.action.Action compensatingAction,
-           org.alfresco.repo.webservice.action.Action[] actions,
-           org.alfresco.repo.webservice.types.Reference reference) {
+           org.alfresco.repo.webservice.action.Action[] actions) {
+           this.actionReference = actionReference;
            this.id = id;
            this.actionName = actionName;
            this.title = title;
            this.description = description;
-           this.executeAsynchronously = executeAsynchronously;
            this.parameters = parameters;
            this.conditions = conditions;
            this.compensatingAction = compensatingAction;
            this.actions = actions;
-           this.reference = reference;
+    }
+
+
+    /**
+     * Gets the actionReference value for this Action.
+     * 
+     * @return actionReference
+     */
+    public org.alfresco.repo.webservice.types.Reference getActionReference() {
+        return actionReference;
+    }
+
+
+    /**
+     * Sets the actionReference value for this Action.
+     * 
+     * @param actionReference
+     */
+    public void setActionReference(org.alfresco.repo.webservice.types.Reference actionReference) {
+        this.actionReference = actionReference;
     }
 
 
@@ -132,26 +148,6 @@ public class Action  implements java.io.Serializable {
      */
     public void setDescription(java.lang.String description) {
         this.description = description;
-    }
-
-
-    /**
-     * Gets the executeAsynchronously value for this Action.
-     * 
-     * @return executeAsynchronously
-     */
-    public boolean isExecuteAsynchronously() {
-        return executeAsynchronously;
-    }
-
-
-    /**
-     * Sets the executeAsynchronously value for this Action.
-     * 
-     * @param executeAsynchronously
-     */
-    public void setExecuteAsynchronously(boolean executeAsynchronously) {
-        this.executeAsynchronously = executeAsynchronously;
     }
 
 
@@ -258,26 +254,6 @@ public class Action  implements java.io.Serializable {
         this.actions[i] = _value;
     }
 
-
-    /**
-     * Gets the reference value for this Action.
-     * 
-     * @return reference
-     */
-    public org.alfresco.repo.webservice.types.Reference getReference() {
-        return reference;
-    }
-
-
-    /**
-     * Sets the reference value for this Action.
-     * 
-     * @param reference
-     */
-    public void setReference(org.alfresco.repo.webservice.types.Reference reference) {
-        this.reference = reference;
-    }
-
     private java.lang.Object __equalsCalc = null;
     public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof Action)) return false;
@@ -290,6 +266,9 @@ public class Action  implements java.io.Serializable {
         __equalsCalc = obj;
         boolean _equals;
         _equals = true && 
+            ((this.actionReference==null && other.getActionReference()==null) || 
+             (this.actionReference!=null &&
+              this.actionReference.equals(other.getActionReference()))) &&
             ((this.id==null && other.getId()==null) || 
              (this.id!=null &&
               this.id.equals(other.getId()))) &&
@@ -302,7 +281,6 @@ public class Action  implements java.io.Serializable {
             ((this.description==null && other.getDescription()==null) || 
              (this.description!=null &&
               this.description.equals(other.getDescription()))) &&
-            this.executeAsynchronously == other.isExecuteAsynchronously() &&
             ((this.parameters==null && other.getParameters()==null) || 
              (this.parameters!=null &&
               java.util.Arrays.equals(this.parameters, other.getParameters()))) &&
@@ -314,10 +292,7 @@ public class Action  implements java.io.Serializable {
               this.compensatingAction.equals(other.getCompensatingAction()))) &&
             ((this.actions==null && other.getActions()==null) || 
              (this.actions!=null &&
-              java.util.Arrays.equals(this.actions, other.getActions()))) &&
-            ((this.reference==null && other.getReference()==null) || 
-             (this.reference!=null &&
-              this.reference.equals(other.getReference())));
+              java.util.Arrays.equals(this.actions, other.getActions())));
         __equalsCalc = null;
         return _equals;
     }
@@ -329,6 +304,9 @@ public class Action  implements java.io.Serializable {
         }
         __hashCodeCalc = true;
         int _hashCode = 1;
+        if (getActionReference() != null) {
+            _hashCode += getActionReference().hashCode();
+        }
         if (getId() != null) {
             _hashCode += getId().hashCode();
         }
@@ -341,7 +319,6 @@ public class Action  implements java.io.Serializable {
         if (getDescription() != null) {
             _hashCode += getDescription().hashCode();
         }
-        _hashCode += (isExecuteAsynchronously() ? Boolean.TRUE : Boolean.FALSE).hashCode();
         if (getParameters() != null) {
             for (int i=0;
                  i<java.lang.reflect.Array.getLength(getParameters());
@@ -378,9 +355,6 @@ public class Action  implements java.io.Serializable {
                 }
             }
         }
-        if (getReference() != null) {
-            _hashCode += getReference().hashCode();
-        }
         __hashCodeCalc = false;
         return _hashCode;
     }
@@ -392,6 +366,12 @@ public class Action  implements java.io.Serializable {
     static {
         typeDesc.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "Action"));
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("actionReference");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "actionReference"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "Reference"));
+        elemField.setNillable(true);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("id");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "id"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
@@ -414,12 +394,6 @@ public class Action  implements java.io.Serializable {
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "description"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setNillable(true);
-        typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("executeAsynchronously");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "executeAsynchronously"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
-        elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("parameters");
@@ -450,12 +424,6 @@ public class Action  implements java.io.Serializable {
         elemField.setMinOccurs(0);
         elemField.setNillable(true);
         elemField.setMaxOccursUnbounded(true);
-        typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("reference");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/action/1.0", "reference"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "Reference"));
-        elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
     }
 

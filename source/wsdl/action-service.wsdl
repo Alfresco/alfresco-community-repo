@@ -58,16 +58,15 @@
 
          <complexType name="Action">
             <sequence>
+               <element name="actionReference" type="cms:Reference" nillable="true"/>
                <element name="id" type="xsd:string" nillable="true"/>
                <element name="actionName" type="xsd:string"/>
                <element name="title" type="xsd:string" nillable="true"/>
                <element name="description" type="xsd:string" nillable="true"/>
-               <element name="executeAsynchronously" type="xsd:boolean"/>
                <element name="parameters" type="cms:NamedValue" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
                <element name="conditions" type="action:Condition" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
                <element name="compensatingAction" type="action:Action" nillable="true"/>
                <element name="actions" type="action:Action" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
-               <element name="reference" type="cms:Reference" nillable="true"/>
             </sequence>
          </complexType>
          <element name="Action" type="action:Action"/>
@@ -82,15 +81,13 @@
 
          <complexType name="Rule">
             <sequence>
-               <element name="id" type="xsd:string" nillable="true"/>
-               <element name="ruleType" type="xsd:string"/>
+               <element name="ruleReference" type="cms:Reference" nillable="true"/>               
+               <element name="owningReference" type="cms:Reference" nillable="true"/>
+               <element name="ruleTypes" type="xsd:string" maxOccurs="unbounded" minOccurs="1"/>
                <element name="title" type="xsd:string" nillable="true"/>
                <element name="description" type="xsd:string" nillable="true"/>
                <element name="executeAsynchronously" type="xsd:boolean"/>
-               <element name="conditions" type="action:Condition" maxOccurs="unbounded" minOccurs="0" nillable="true"/>
-               <element name="actions" type="action:Action" maxOccurs="unbounded" minOccurs="1"/>
-               <element name="runAsUserName" type="xsd:string" nillable="true"/>
-               <element name="reference" type="cms:Reference" nillable="true"/>
+               <element name="action" type="action:Action"/>
             </sequence>
          </complexType>
          <element name="Rule" type="action:Rule"/>

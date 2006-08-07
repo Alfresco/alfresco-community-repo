@@ -73,7 +73,7 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
         assertEquals(ContentModel.TYPE_CONTENT, this.nodeService.getType(this.nodeRef));
         
         // Execute the action
-        ActionImpl action = new ActionImpl(ID, SpecialiseTypeActionExecuter.NAME, null);
+        ActionImpl action = new ActionImpl(null, ID, SpecialiseTypeActionExecuter.NAME, null);
         action.setParameterValue(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_FOLDER);
         this.executer.execute(action, this.nodeRef);
         

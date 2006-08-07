@@ -81,7 +81,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.util.StopWatch;
 
 /**
- * @author Roy Wetherall
+ * @author Roy Wetherall 
  */
 public class RuleServiceCoverageTest extends TestCase
 {
@@ -109,6 +109,7 @@ public class RuleServiceCoverageTest extends TestCase
     private ActionService actionService;
     private ContentTransformerRegistry transformerRegistry;
     private CopyService copyService;
+    private AuthenticationComponent authenticationComponent;
     
     /**
      * Category related values
@@ -147,9 +148,10 @@ public class RuleServiceCoverageTest extends TestCase
         this.actionService = serviceRegistry.getActionService();
         this.transactionService = serviceRegistry.getTransactionService();
         this.transformerRegistry = (ContentTransformerRegistry)applicationContext.getBean("contentTransformerRegistry");
+        this.authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
-        authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+        //authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+        authenticationComponent.setSystemUserAsCurrentUser();
             
         this.testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);
@@ -159,11 +161,7 @@ public class RuleServiceCoverageTest extends TestCase
                 this.rootNodeRef,
 				ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
-                ContentModel.TYPE_CONTAINER).getChildRef();
-        
-        // Create and authenticate the user used in the tests
-        //TestWithUserUtils.createUser(USER_NAME, PWD, this.rootNodeRef, this.nodeService, this.authenticationService);
-        //TestWithUserUtils.authenticateUser(USER_NAME, PWD, this.rootNodeRef, this.authenticationService);        
+                ContentModel.TYPE_CONTAINER).getChildRef();      
     }
 	
 	private Rule createRule(
@@ -173,11 +171,14 @@ public class RuleServiceCoverageTest extends TestCase
 			String conditionName, 
 			Map<String, Serializable> conditionParams)
 	{
-		Rule rule = this.ruleService.createRule(ruleTypeName);
+		Rule rule = new Rule();
+        rule.setRuleType(ruleTypeName);        
+        
+        Action action = this.actionService.createAction(actionName, actionParams);        
         ActionCondition condition = this.actionService.createActionCondition(conditionName, conditionParams);
-        rule.addActionCondition(condition);
-        Action action = this.actionService.createAction(actionName, actionParams);
-        rule.addAction(action);        
+        action.addActionCondition(condition);
+        rule.setAction(action);  
+        
         return rule;
 	}
     
@@ -226,8 +227,8 @@ public class RuleServiceCoverageTest extends TestCase
     /**
      * Check async rule execution
      */
-    public void testAsyncRuleExecution()
-    {
+    public void testAsyncRuleExecution() 
+    {        
         final NodeRef newNodeRef = TransactionUtil.executeInUserTransaction(
                 this.transactionService,
                 new TransactionUtil.TransactionWork<NodeRef>()
@@ -323,9 +324,9 @@ public class RuleServiceCoverageTest extends TestCase
         params2.put(ContentModel.PROP_APPROVE_MOVE.toString(), false);
         
         // Test that rule can be updated and execute correctly
-        rule.removeAllActions();
+        //rule.removeAllActions();
         Action action2 = this.actionService.createAction(AddFeaturesActionExecuter.NAME, params2);
-        rule.addAction(action2);
+        rule.setAction(action2);
         this.ruleService.saveRule(this.nodeRef, rule);
         
         NodeRef newNodeRef2 = this.nodeService.createNode(
@@ -427,15 +428,15 @@ public class RuleServiceCoverageTest extends TestCase
                 getContentProperties()).getChildRef();
         addContentToNode(contentToCopy);
         
-        // Create the rule and add to folder
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
-        params.put("aspect-name", ContentModel.ASPECT_TEMPLATABLE);             
+        params.put("aspect-name", ContentModel.ASPECT_TEMPLATABLE);        
+        
         Rule rule = createRule(
                 RuleType.INBOUND, 
                 AddFeaturesActionExecuter.NAME, 
                 params, 
                 NoConditionEvaluator.NAME, 
-                null);   
+                null);  
         rule.applyToChildren(true);
         this.ruleService.saveRule(copyToFolder, rule);
         
@@ -1232,9 +1233,9 @@ public class RuleServiceCoverageTest extends TestCase
         // Test begins with
         Map<String, Serializable> condParamsBegins = new HashMap<String, Serializable>(1);
         condParamsBegins.put(ComparePropertyValueEvaluator.PARAM_VALUE, "bob*");
-        rule.removeAllActionConditions();
+        rule.getAction().removeAllActionConditions();
         ActionCondition condition1 = this.actionService.createActionCondition(ComparePropertyValueEvaluator.NAME, condParamsBegins);
-        rule.addActionCondition(condition1);
+        rule.getAction().addActionCondition(condition1);
         this.ruleService.saveRule(this.nodeRef, rule);
         Map<QName, Serializable> propsx = new HashMap<QName, Serializable>();
         propsx.put(ContentModel.PROP_NAME, "mybobbins.doc");
@@ -1264,9 +1265,9 @@ public class RuleServiceCoverageTest extends TestCase
         // Test ends with
         Map<String, Serializable> condParamsEnds = new HashMap<String, Serializable>(1);
         condParamsEnds.put(ComparePropertyValueEvaluator.PARAM_VALUE, "*s.doc");
-        rule.removeAllActionConditions();
+        rule.getAction().removeAllActionConditions();
         ActionCondition condition2 = this.actionService.createActionCondition(ComparePropertyValueEvaluator.NAME, condParamsEnds);
-        rule.addActionCondition(condition2);
+        rule.getAction().addActionCondition(condition2);
         this.ruleService.saveRule(this.nodeRef, rule);
         Map<QName, Serializable> propsa = new HashMap<QName, Serializable>();
         propsa.put(ContentModel.PROP_NAME, "bobbins.document");

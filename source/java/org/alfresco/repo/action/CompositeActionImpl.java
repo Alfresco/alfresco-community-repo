@@ -46,9 +46,9 @@ public class CompositeActionImpl extends ActionImpl implements CompositeAction
 	 * 
 	 * @param id  the action id
 	 */
-	public CompositeActionImpl(String id, NodeRef owningNodeRef)
+	public CompositeActionImpl(NodeRef nodeRef, String id)
 	{
-		super(id, CompositeActionExecuter.NAME, owningNodeRef);
+		super(nodeRef, id, CompositeActionExecuter.NAME);
 	}
 
 	/**

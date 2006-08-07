@@ -55,10 +55,7 @@
    <bean id="rule-type-base" abstract="true" init-method="init">   
 	  <property name="ruleService">
          <ref bean="ruleService"/>
-	  </property>  
-	  <property name="actionService">
-         <ref bean="actionService"/>
-	  </property>					
+	  </property>  					
    </bean>
    
    <bean id="inbound" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">

@@ -61,34 +61,27 @@ public class RuleServiceImplTest extends BaseRuleTest
     }
     
     /**
-     * Test createRule
-     */
-    public void testCreateRule()
-    {
-        Rule newRule = this.ruleService.createRule("ruleType1");
-        assertNotNull(newRule);
-        assertNotNull(newRule.getId());
-        assertEquals("ruleType1", newRule.getRuleTypeName());
-    }
-    
-    /**
      * Test addRule
      *
      */
     public void testAddRule()
     {
         Rule newRule = createTestRule();        
-        String ruleId = newRule.getId();
-        this.ruleService.saveRule(this.nodeRef, newRule);    
+        this.ruleService.saveRule(this.nodeRef, newRule);
+        assertNotNull(newRule.getNodeRef());
         
-        Rule savedRule = this.ruleService.getRule(this.nodeRef, ruleId);
+        // Check the owning node reference
+        assertNotNull(this.ruleService.getOwningNodeRef(newRule));
+        assertEquals(this.nodeRef, this.ruleService.getOwningNodeRef(newRule));
+        
+        Rule savedRule = this.ruleService.getRule(newRule.getNodeRef());
         assertNotNull(savedRule);
         assertFalse(savedRule.isAppliedToChildren());
         
         savedRule.applyToChildren(true);
         this.ruleService.saveRule(this.nodeRef, savedRule);
         
-        Rule savedRule2 = this.ruleService.getRule(this.nodeRef, ruleId);
+        Rule savedRule2 = this.ruleService.getRule(savedRule.getNodeRef());
         assertNotNull(savedRule2);
         assertTrue(savedRule2.isAppliedToChildren());
     }
@@ -100,9 +93,9 @@ public class RuleServiceImplTest extends BaseRuleTest
         assertNotNull(rules1);
         assertEquals(0, rules1.size());
         
-        Rule newRule = this.ruleService.createRule(ruleType.getName());        
+        Rule newRule = createTestRule(); //this.ruleService.createRule(ruleType.getName());        
         this.ruleService.saveRule(this.nodeRef, newRule); 
-        Rule newRule2 = this.ruleService.createRule(ruleType.getName());
+        Rule newRule2 = createTestRule(); //this.ruleService.createRule(ruleType.getName());
         this.ruleService.saveRule(this.nodeRef, newRule2); 
         
         List<Rule> rules2 = this.ruleService.getRules(this.nodeRef);
@@ -113,8 +106,7 @@ public class RuleServiceImplTest extends BaseRuleTest
         
         List<Rule> rules3 = this.ruleService.getRules(this.nodeRef);
         assertNotNull(rules3);
-        assertEquals(0, rules3.size());
-        
+        assertEquals(0, rules3.size());        
     }
     
     /**
@@ -145,16 +137,15 @@ public class RuleServiceImplTest extends BaseRuleTest
         Rule rule = rules.get(0);
         assertEquals("title", rule.getTitle());
         assertEquals("description", rule.getDescription());
-        assertNotNull(rule.getCreatedDate());
-        assertNotNull(rule.getModifiedDate());
+        assertNotNull(this.nodeService.getProperty(rule.getNodeRef(), ContentModel.PROP_CREATED));
+        assertNotNull(this.nodeService.getProperty(rule.getNodeRef(), ContentModel.PROP_CREATOR));
         
         // Check that the condition action have been retireved correctly
-        List<ActionCondition> conditions = rule.getActionConditions();
+        Action action = rule.getAction();
+        assertNotNull(action);
+        List<ActionCondition> conditions = action.getActionConditions();
         assertNotNull(conditions);
-        assertEquals(1, conditions.size());        
-        List<Action> actions = rule.getActions();
-        assertNotNull(actions);
-        assertEquals(1, actions.size());
+        assertEquals(1, conditions.size());                
     }
     
     /**
@@ -232,7 +223,9 @@ public class RuleServiceImplTest extends BaseRuleTest
         int count = 0;
         for (Rule rule : allRules)
         {
-            if (rule.getOwningNodeRef() == childWithRules)
+            NodeRef owningNodeRef = this.ruleService.getOwningNodeRef(rule);
+            assertNotNull(owningNodeRef);
+            if (owningNodeRef.equals(childWithRules) == true)
             {
                 count++;
             }
@@ -547,17 +540,19 @@ public class RuleServiceImplTest extends BaseRuleTest
         actionProps.put(ImageTransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, ContentModel.ASSOC_CHILDREN);
         actionProps.put(ImageTransformActionExecuter.PARAM_ASSOC_QNAME, ContentModel.ASSOC_CHILDREN);
         
-        Rule rule = this.ruleService.createRule(this.ruleType.getName());
+        Rule rule = new Rule();
+        rule.setRuleType(this.ruleType.getName());
         rule.setTitle("Convert from *.jpg to *.gif");
         rule.setExecuteAsynchronously(true);
         
-        ActionCondition actionCondition = this.actionService.createActionCondition(ComparePropertyValueEvaluator.NAME);
-        actionCondition.setParameterValues(conditionProps);
-        rule.addActionCondition(actionCondition);
-        
         Action action = this.actionService.createAction(ImageTransformActionExecuter.NAME);
         action.setParameterValues(actionProps);
-        rule.addAction(action);
+        
+        ActionCondition actionCondition = this.actionService.createActionCondition(ComparePropertyValueEvaluator.NAME);
+        actionCondition.setParameterValues(conditionProps);
+        action.addActionCondition(actionCondition);        
+        
+        rule.setAction(action);
         
         // Create the next rule
         
@@ -569,17 +564,19 @@ public class RuleServiceImplTest extends BaseRuleTest
         actionProps2.put(ImageTransformActionExecuter.PARAM_DESTINATION_FOLDER, nodeRef);
         actionProps2.put(ImageTransformActionExecuter.PARAM_ASSOC_QNAME, ContentModel.ASSOC_CHILDREN);
         
-        Rule rule2 = this.ruleService.createRule(this.ruleType.getName());
+        Rule rule2 = new Rule();
+        rule2.setRuleType(this.ruleType.getName());
         rule2.setTitle("Convert from *.gif to *.jpg");
         rule2.setExecuteAsynchronously(true);
         
-        ActionCondition actionCondition2 = this.actionService.createActionCondition(ComparePropertyValueEvaluator.NAME);
-        actionCondition2.setParameterValues(conditionProps2);
-        rule2.addActionCondition(actionCondition2);
-        
         Action action2 = this.actionService.createAction(ImageTransformActionExecuter.NAME);
         action2.setParameterValues(actionProps2);
-        rule2.addAction(action2);
+        
+        ActionCondition actionCondition2 = this.actionService.createActionCondition(ComparePropertyValueEvaluator.NAME);
+        actionCondition2.setParameterValues(conditionProps2);
+        action2.addActionCondition(actionCondition2);
+        
+        rule2.setAction(action2);
         
         // Save the rules
         this.ruleService.saveRule(nodeRef, rule);

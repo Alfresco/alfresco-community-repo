@@ -29,6 +29,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface Action extends ParameterizedItem
 {
+    /**
+     * Gets the node ref that represents the saved action node.
+     * Returns null id unsaved.
+     * 
+     * @return  the action node reference
+     */
+    NodeRef getNodeRef();
+    
 	/**
 	 * Get the name of the action definition that relates to this action
 	 * 
@@ -63,16 +71,6 @@ public interface Action extends ParameterizedItem
 	 * @param description  the description of the action
 	 */
 	void setDescription(String description);
-    
-    /**
-     * Get the node reference of the node that 'owns' this action.
-     * <p>
-     * The node that 'owns' the action is th one that stores it via its
-     * actionable aspect association.
-     * 
-     * @return  node reference
-     */
-    NodeRef getOwningNodeRef();
 	
 	/**
 	 * Gets a value indicating whether the action should be executed asychronously or not.

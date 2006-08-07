@@ -41,11 +41,6 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
      */
     private static Log logger = LogFactory.getLog(RuleTypeImpl.class); 
     
-    /**
-     * The action service
-     */
-    private ActionService actionService;
-    
 	/**
 	 * The rule service
 	 */
@@ -65,16 +60,6 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
 				trigger.registerRuleType(this);
 			}
     	}
-    }
-    
-    /**
-     * Set the action service
-     * 
-     * @param actionService the action service
-     */
-    public void setActionService(ActionService actionService)
-    {
-        this.actionService = actionService;
     }
     
     /**
@@ -116,29 +101,36 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
      */
 	public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef)
 	{
-		if (this.ruleService.hasRules(nodeRef) == true)
+        if (this.ruleService.isEnabled() == true)
         {
-            List<Rule> rules = this.ruleService.getRules(
-            		nodeRef, 
-                    true,
-                    this.name);
-			
-            for (Rule rule : rules)
-            {   
+    		if (this.ruleService.hasRules(nodeRef) == true)
+            {
+                List<Rule> rules = this.ruleService.getRules(
+                		nodeRef, 
+                        true,
+                        this.name);
+    			
+                for (Rule rule : rules)
+                {   
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        NodeRef ruleNodeRef = rule.getNodeRef();
+                        if (nodeRef != null)
+                        {
+                            logger.debug("Triggering rule " + ruleNodeRef.toString());
+                        }
+                    }
+                    
+                    // Queue the rule to be executed at the end of the transaction (but still in the transaction)
+                    ((RuntimeRuleService)this.ruleService).addRulePendingExecution(nodeRef, actionedUponNodeRef, rule);
+                }
+            }
+            else
+            {
                 if (logger.isDebugEnabled() == true)
                 {
-                    logger.debug("Triggering rule " + rule.getId());
+                    logger.debug("This node has no rules to trigger.");
                 }
-                
-                // Queue the rule to be executed at the end of the transaction (but still in the transaction)
-                ((RuntimeRuleService)this.ruleService).addRulePendingExecution(nodeRef, actionedUponNodeRef, rule);
-            }
-        }
-        else
-        {
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug("This node has no rules to trigger.");
             }
         }
 	}

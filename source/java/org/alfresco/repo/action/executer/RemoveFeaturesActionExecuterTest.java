@@ -101,7 +101,7 @@ public class RemoveFeaturesActionExecuterTest extends BaseSpringTest
         assertTrue(this.nodeService.hasAspect(this.nodeRef, ContentModel.ASPECT_CLASSIFIABLE));
         
         // Execute the action
-        ActionImpl action = new ActionImpl(ID, RemoveFeaturesActionExecuter.NAME, null);
+        ActionImpl action = new ActionImpl(null, ID, RemoveFeaturesActionExecuter.NAME, null);
         action.setParameterValue(RemoveFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
         this.executer.execute(action, this.nodeRef);
         
@@ -109,7 +109,7 @@ public class RemoveFeaturesActionExecuterTest extends BaseSpringTest
         assertFalse(this.nodeService.hasAspect(this.nodeRef, ContentModel.ASPECT_CLASSIFIABLE));
         
         // Now try and remove an aspect that is not present 
-        ActionImpl action2 = new ActionImpl(ID, RemoveFeaturesActionExecuter.NAME, null);
+        ActionImpl action2 = new ActionImpl(null, ID, RemoveFeaturesActionExecuter.NAME, null);
         action2.setParameterValue(RemoveFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);
         this.executer.execute(action2, this.nodeRef);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 Jesper Steen Mï¿½ller
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -37,7 +37,7 @@ import org.alfresco.util.GUID;
  * Test of the ActionExecuter for extracting metadata. Note: This test makes
  * assumptions about the PDF test data for PdfBoxExtracter.
  * 
- * @author Jesper Steen Møller
+ * @author Jesper Steen Mï¿½ller
  */
 public class ContentMetadataExtracterTest extends BaseSpringTest
 {
@@ -102,7 +102,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
         this.nodeService.setProperties(this.nodeRef, props);
 
         // Execute the action
-        ActionImpl action = new ActionImpl(ID, SetPropertyValueActionExecuter.NAME, null);
+        ActionImpl action = new ActionImpl(null, ID, SetPropertyValueActionExecuter.NAME, null);
 
         this.executer.execute(action, this.nodeRef);
 
@@ -130,7 +130,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
         this.nodeService.setProperties(this.nodeRef, props);
 
         // Execute the action
-        ActionImpl action = new ActionImpl(ID, SetPropertyValueActionExecuter.NAME, null);
+        ActionImpl action = new ActionImpl(null, ID, SetPropertyValueActionExecuter.NAME, null);
 
         this.executer.execute(action, this.nodeRef);
 

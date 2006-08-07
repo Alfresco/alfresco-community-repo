@@ -37,6 +37,9 @@
         <property name="descriptorService">
             <ref bean="descriptorComponent" />
         </property>
+        <property name="ruleService">
+            <ref bean="ruleService" />
+        </property>
         <property name="patchDaoService">
             <ref bean="patchDaoComponent" />
         </property>
@@ -359,14 +362,21 @@
             <ref bean="importerComponent" />
         </property>
     </bean>
-    
-    
+        
     <bean id="patch.topLevelGroupParentChildAssociationTypePatch" class="org.alfresco.repo.admin.patch.impl.TopLevelGroupParentChildAssociationTypePatch" parent="basePatch">
         <property name="id"><value>patch.topLevelGroupParentChildAssociationTypePatch</value></property>
         <property name="description"><value>patch.topLevelGroupParentChildAssociationTypePatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>13</value></property>
         <property name="targetSchema"><value>14</value></property>
+    </bean>
+    
+    <bean id="patch.actionRuleDecouplingPatch" class="org.alfresco.repo.admin.patch.impl.ActionRuleDecouplingPatch" parent="basePatch">
+        <property name="id"><value>patch.actionRuleDecouplingPatch</value></property>
+        <property name="description"><value>patch.actionRuleDecouplingPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>14</value></property>
+        <property name="targetSchema"><value>15</value></property>
     </bean>
     
 </beans>

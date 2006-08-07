@@ -17,6 +17,7 @@
 package org.alfresco.repo.rule;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -163,33 +164,40 @@ public class BaseRuleTest extends BaseSpringTest
         Map<String, Serializable> actionProps = new HashMap<String, Serializable>();
         actionProps.put(ACTION_PROP_NAME_1, ACTION_PROP_VALUE_1);
         
-        // Create the rule
-        Rule rule = this.ruleService.createRule(this.ruleType.getName());
-        rule.setTitle(TITLE);
-        rule.setDescription(DESCRIPTION);
-        rule.applyToChildren(isAppliedToChildren);
+        List<String> ruleTypes = new ArrayList<String>(1);
+        ruleTypes.add(this.ruleType.getName());
+        
+        // Create the action
+        Action action = this.actionService.createAction(CONDITION_DEF_NAME);
+        action.setParameterValues(conditionProps);
         
         ActionCondition actionCondition = this.actionService.createActionCondition(CONDITION_DEF_NAME);
         actionCondition.setParameterValues(conditionProps);
-        rule.addActionCondition(actionCondition);
+        action.addActionCondition(actionCondition);
         
-        Action action = this.actionService.createAction(CONDITION_DEF_NAME);
-        action.setParameterValues(conditionProps);
-        rule.addAction(action);
+        // Create the rule
+        Rule rule = new Rule();
+        rule.setRuleTypes(ruleTypes);
+        rule.setTitle(TITLE);
+        rule.setDescription(DESCRIPTION);
+        rule.applyToChildren(isAppliedToChildren);        
+        rule.setAction(action);
 
         return rule;
     }
 
-    protected void checkRule(RuleImpl rule, String id)
+    protected void checkRule(Rule rule)
     {
         // Check the basic details of the rule
-        assertEquals(id, rule.getId());
-        assertEquals(this.ruleType.getName(), rule.getRuleTypeName());
+        assertEquals(this.ruleType.getName(), rule.getRuleTypes().get(0));
         assertEquals(TITLE, rule.getTitle());
         assertEquals(DESCRIPTION, rule.getDescription());
 
+        Action ruleAction = rule.getAction();
+        assertNotNull(ruleAction);
+        
         // Check conditions
-        List<ActionCondition> ruleConditions = rule.getActionConditions();
+        List<ActionCondition> ruleConditions = ruleAction.getActionConditions();
         assertNotNull(ruleConditions);
         assertEquals(1, ruleConditions.size());
         assertEquals(CONDITION_DEF_NAME, ruleConditions.get(0)
@@ -202,11 +210,8 @@ public class BaseRuleTest extends BaseSpringTest
         assertEquals(COND_PROP_VALUE_1, condParams.get(COND_PROP_NAME_1));
 
         // Check the actions
-        List<Action> ruleActions = rule.getActions();
-        assertNotNull(ruleActions);
-        assertEquals(1, ruleActions.size());
-        assertEquals(ACTION_DEF_NAME, ruleActions.get(0).getActionDefinitionName());
-        Map<String, Serializable> actionParams = ruleActions.get(0).getParameterValues();
+        assertEquals(ACTION_DEF_NAME, ruleAction.getActionDefinitionName());
+        Map<String, Serializable> actionParams = ruleAction.getParameterValues();
         assertNotNull(actionParams);
         assertEquals(1, actionParams.size());
         assertTrue(actionParams.containsKey(ACTION_PROP_NAME_1));

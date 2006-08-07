@@ -1009,6 +1009,10 @@
          <property-name>actionService</property-name>
          <value>#{ActionService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

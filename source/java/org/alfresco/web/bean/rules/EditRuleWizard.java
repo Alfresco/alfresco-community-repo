@@ -12,6 +12,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.web.bean.actions.IHandler;
 import org.alfresco.web.bean.repository.Node;
@@ -46,16 +47,19 @@ public class EditRuleWizard extends CreateRuleWizard
       }
       
       // populate the bean with current values 
-      this.type = rule.getRuleTypeName();
+      this.type = rule.getRuleTypes().get(0);
       this.title = rule.getTitle();
       this.description = rule.getDescription();
       this.applyToSubSpaces = rule.isAppliedToChildren();
-      this.runInBackground = rule.getExecuteAsychronously();
+      this.runInBackground = rule.getExecuteAsynchronously();
       
       FacesContext context = FacesContext.getCurrentInstance();
       
+      // Get the composite action
+      CompositeAction compositeAction = getCompositeAction(rule);
+      
       // populate the conditions list with maps of properties representing each condition
-      List<ActionCondition> conditions = rule.getActionConditions();
+      List<ActionCondition> conditions = compositeAction.getActionConditions();
       for (ActionCondition condition : conditions)
       {
          this.currentConditionProperties = new HashMap<String, Serializable>(3);
@@ -90,7 +94,7 @@ public class EditRuleWizard extends CreateRuleWizard
       }
       
       // populate the actions list with maps of properties representing each action
-      List<Action> actions = rule.getActions();
+      List<Action> actions = compositeAction.getActions();
       for (Action action : actions)
       {
          this.currentActionProperties = new HashMap<String, Serializable>(3);
@@ -135,10 +139,13 @@ public class EditRuleWizard extends CreateRuleWizard
       
       // get the existing rule
       Rule rule = this.rulesBean.getCurrentRule();
+      
+      // Get the composite action
+      CompositeAction compositeAction = getCompositeAction(rule);
                   
       // remove all the conditions and actions from the current rule
-      rule.removeAllActionConditions();
-      rule.removeAllActions();
+      compositeAction.removeAllActionConditions();
+      compositeAction.removeAllActions();
       
       // re-setup the rule
       outcome = setupRule(context, rule, outcome);

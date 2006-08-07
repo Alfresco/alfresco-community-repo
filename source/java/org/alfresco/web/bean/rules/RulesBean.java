@@ -27,10 +27,12 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.web.app.Application;
@@ -67,6 +69,7 @@ public class RulesBean implements IContextListener
    private Rule currentRule;
    private UIRichList richList;
    private ActionService actionService;
+   private NodeService nodeService;
    
    
    /**
@@ -116,7 +119,11 @@ public class RulesBean implements IContextListener
       // wrap them all passing the current space
       for (Rule rule : repoRules)
       {
-         WrappedRule wrapped = new WrappedRule(rule, getSpace().getNodeRef());
+         Date createdDate = (Date)this.nodeService.getProperty(rule.getNodeRef(), ContentModel.PROP_CREATED);
+         Date modifiedDate = (Date)this.nodeService.getProperty(rule.getNodeRef(), ContentModel.PROP_MODIFIED);
+         boolean isLocal = getSpace().getNodeRef().equals(this.ruleService.getOwningNodeRef(rule));        
+         
+         WrappedRule wrapped = new WrappedRule(rule, isLocal, createdDate, modifiedDate);
          this.rules.add(wrapped);
       }
       
@@ -138,13 +145,13 @@ public class RulesBean implements IContextListener
          if (logger.isDebugEnabled())
             logger.debug("Rule clicked, it's id is: " + id);
          
-         this.currentRule = this.ruleService.getRule(
-               getSpace().getNodeRef(), id);
+         this.currentRule = this.ruleService.getRule(new NodeRef(id));
+               //getSpace().getNodeRef(), id);
          
          // refresh list
          contextUpdated();
       }
-   }
+   }  
    
    /**
     * Reapply the currently defines rules to the
@@ -306,6 +313,16 @@ public class RulesBean implements IContextListener
    {
       this.actionService = actionService;
    }
+   
+   /**
+    * Set the node service to use
+    * 
+    * @param nodeService    the node service
+    */
+   public void setNodeService(NodeService nodeService)
+   {
+       this.nodeService = nodeService;
+   }
 
    
    // ------------------------------------------------------------------------------
@@ -330,7 +347,9 @@ public class RulesBean implements IContextListener
    public static class WrappedRule
    {
       private Rule rule;
-      private NodeRef ruleNode;
+      private boolean isLocal;
+      private Date createdDate;
+      private Date modifiedDate;
       
       /**
        * Constructs a RuleWrapper object
@@ -338,10 +357,12 @@ public class RulesBean implements IContextListener
        * @param rule The rule we are wrapping
        * @param ruleNode The node the rules belong to 
        */
-      public WrappedRule(Rule rule, NodeRef ruleNode)
+      public WrappedRule(Rule rule, boolean isLocal, Date createdDate, Date modifiedDate)
       {
          this.rule = rule;
-         this.ruleNode = ruleNode;
+         this.isLocal = isLocal;
+         this.createdDate = createdDate;
+         this.modifiedDate = modifiedDate;
       }
       
       /**
@@ -362,7 +383,7 @@ public class RulesBean implements IContextListener
        */
       public boolean getLocal()
       {
-         return ruleNode.equals(this.rule.getOwningNodeRef());
+         return this.isLocal;
       }
 
       /** Methods to support sorting of the rules list in a table  */
@@ -374,7 +395,7 @@ public class RulesBean implements IContextListener
        */
       public String getId()
       {
-         return this.rule.getId();
+         return this.rule.getNodeRef().toString();
       }
       
       /**
@@ -404,7 +425,7 @@ public class RulesBean implements IContextListener
        */
       public Date getCreatedDate()
       {
-         return this.rule.getCreatedDate();
+         return this.createdDate;
       }
       
       /**
@@ -414,7 +435,7 @@ public class RulesBean implements IContextListener
        */
       public Date getModifiedDate()
       {
-         return this.rule.getModifiedDate();
+         return this.modifiedDate;
       }
    }
 }

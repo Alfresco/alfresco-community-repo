@@ -19,6 +19,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
+import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -100,7 +101,9 @@ public class CreateRuleWizard extends BaseActionWizard
       Node currentSpace = this.browseBean.getActionSpace();
       
       // create the new rule
-      Rule rule = this.ruleService.createRule(this.getType());
+      //Rule rule = this.ruleService.createRule(this.getType());
+      Rule rule = new Rule();
+      rule.setRuleType(this.getType());
 
       // setup the rule
       outcome = setupRule(context, rule, outcome);
@@ -202,6 +205,21 @@ public class CreateRuleWizard extends BaseActionWizard
    protected String getErrorMessageId()
    {
       return "error_rule";
+   }
+   
+   protected CompositeAction getCompositeAction(Rule rule)
+   {
+       // Get the composite action
+       Action ruleAction = rule.getAction();
+       if (ruleAction == null)
+       {
+           throw new AlfrescoRuntimeException("Rule does not have associated action.");          
+       }
+       else if ((ruleAction instanceof CompositeAction) == false)
+       {
+           throw new AlfrescoRuntimeException("Rules with non-composite actions are not currently supported by the UI");
+       }
+       return (CompositeAction)ruleAction;
    }
 
    // ------------------------------------------------------------------------------
@@ -651,6 +669,9 @@ public class CreateRuleWizard extends BaseActionWizard
       rule.applyToChildren(this.applyToSubSpaces);
       rule.setExecuteAsynchronously(this.runInBackground);
       
+      CompositeAction compositeAction = this.actionService.createCompositeAction();
+      rule.setAction(compositeAction);
+      
       // add all the conditions to the rule
       for (Map<String, Serializable> condParams : this.allConditionsProperties)
       {
@@ -674,7 +695,7 @@ public class CreateRuleWizard extends BaseActionWizard
          Boolean not = (Boolean)condParams.get(BaseConditionHandler.PROP_CONDITION_NOT);
          condition.setInvertCondition(((Boolean)not).booleanValue());
          
-         rule.addActionCondition(condition);
+         compositeAction.addActionCondition(condition);
       }
       
       // add all the actions to the rule
@@ -696,7 +717,7 @@ public class CreateRuleWizard extends BaseActionWizard
          // add the action to the rule
          Action action = this.actionService.createAction(actionName);
          action.setParameterValues(repoActionParams);
-         rule.addAction(action);
+         compositeAction.addAction(action);
       }
       
       return outcome;

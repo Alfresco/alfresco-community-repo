@@ -3,12 +3,13 @@
 <process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="Review and Approve">
    <swimlane name="Initiator"></swimlane>
    <start-state name="start">
-     <task name="Submit" swimlane="Initiator">
+     <task name="Submit" swimlane="Initiator" blocking="true">
         <controller>
-          <variable name="reviewer" />
+          <variable name="reviewer" access="write,required" />
         </controller>
       </task>
       <transition name="" to="Review"></transition>
+      <transition name="end" to="end"></transition>
    </start-state>
    <swimlane name="Reviewer">
       <assignment actor-id="#{reviewer}"></assignment>
@@ -22,7 +23,6 @@
       <transition name="reject" to="Rejected"></transition>
       <transition name="approve" to="Approved"></transition>
    </task-node>
-   <end-state name="end"></end-state>
    <task-node name="Rejected">
       <task name="Rejected" swimlane="Initiator">
          <controller>
@@ -39,4 +39,5 @@
       </task>
       <transition name="" to="end"></transition>
    </task-node>
+   <end-state name="end"></end-state>
 </process-definition>

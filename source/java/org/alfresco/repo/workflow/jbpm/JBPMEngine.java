@@ -636,7 +636,7 @@ public class JBPMEngine extends BPMEngine
                     }
                     else
                     {
-                        Node node = taskInstance.getTask().getTaskNode();
+                        Node node = taskInstance.getToken().getNode();
                         if (node.getLeavingTransition(transition) == null)
                         {
                             throw new WorkflowException("Transition '" + transition + "' is invalid for Workflow task '" + taskId + "'");

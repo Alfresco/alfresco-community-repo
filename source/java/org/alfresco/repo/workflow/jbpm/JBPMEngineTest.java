@@ -60,8 +60,6 @@ public class JBPMEngineTest extends BaseSpringTest
         workflowDefinitionComponent = registry.getWorkflowDefinitionComponent("jbpm");
         workflowComponent = registry.getWorkflowComponent("jbpm");
         taskComponent = registry.getTaskComponent("jbpm");
-        
-
     }
 
     
@@ -268,11 +266,9 @@ public class JBPMEngineTest extends BaseSpringTest
     public void testSignal()
     {
         WorkflowDefinition workflowDef = getTestDefinition();
-        Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
-        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, null);
         assertNotNull(path);
-        WorkflowPath updatedPath = workflowComponent.signal(path.id, path.node.transitions[0]);
+        WorkflowPath updatedPath = workflowComponent.signal(path.id, path.node.transitions[1]);
         assertNotNull(updatedPath);
     }
     
@@ -285,8 +281,11 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
         assertNotNull(path);
-        WorkflowPath updatedPath = workflowComponent.signal(path.id, path.node.transitions[0]);
-        assertNotNull(updatedPath);
+        List<WorkflowTask> tasks = workflowComponent.getTasksForWorkflowPath(path.id);
+        assertNotNull(tasks);
+        assertEquals(1, tasks.size());
+        WorkflowTask updatedTask = taskComponent.endTask(tasks.get(0).id, path.node.transitions[0]);
+        assertNotNull(updatedTask);
         List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks("admin", WorkflowTaskState.COMPLETED);
         assertNotNull(completedTasks);
         assertEquals(0, completedTasks.size());

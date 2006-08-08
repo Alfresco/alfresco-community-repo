@@ -4,6 +4,18 @@
 <beans>
 
    <!--                                 -->
+   <!-- Workflow Model                  -->
+   <!--                                 -->
+
+   <bean id="workflow.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+      <property name="models">
+         <list>
+            <value>alfresco/model/bpmModel.xml</value>
+         </list>
+      </property>
+   </bean>
+   
+   <!--                                 -->
    <!-- Workflow Service Implementation -->
    <!--                                 -->
 

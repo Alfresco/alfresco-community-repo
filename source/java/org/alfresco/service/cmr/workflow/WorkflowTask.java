@@ -17,10 +17,8 @@
 package org.alfresco.service.cmr.workflow;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 
@@ -51,16 +49,13 @@ public class WorkflowTask
     /** Task Properties as described by Task Definition */
     public Map<QName, Serializable> properties;
     
-    /** Task Associations as described by Task Definition */
-    public Map<QName, List<NodeRef>> associations;
-
-    
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
     public String toString()
     {
-        return "WorkflowTask[id=" + id + ",name=" + name + ",state=" + state + ",def=" + definition + ",path=" + path.toString() + "]";
+        String propCount = (properties == null) ? "null" : "" + properties.size();
+        return "WorkflowTask[id=" + id + ",name=" + name + ",state=" + state + ",props=" + propCount + ",def=" + definition + ",path=" + path.toString() + "]";
     }
 
 }

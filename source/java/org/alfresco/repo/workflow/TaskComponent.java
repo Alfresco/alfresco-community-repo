@@ -71,6 +71,25 @@ public interface TaskComponent
     public WorkflowTask updateTask(String taskId, Map<QName, Serializable> properties, Map<QName, List<NodeRef>> add, Map<QName, List<NodeRef>> remove);
     
     /**
+     * Start the specified Task
+     * 
+     * Note: this is an optional task operation.  It may be used to track
+     *       when work started on a task as well as resume a suspended task.
+     * 
+     * @param taskId  the task to start
+     * @return  the updated task
+     */
+    public WorkflowTask startTask(String taskId);
+    
+    /**
+     * Suspend the specified Task
+     * 
+     * @param taskId
+     * @return  the update task
+     */
+    public WorkflowTask suspendTask(String taskId);
+
+    /**
      * End the Task (i.e. complete the task)
      * 
      * @param taskId  the task id to end
@@ -78,6 +97,6 @@ public interface TaskComponent
      * @return  the updated task
      */    
     public WorkflowTask endTask(String taskId, String transition);
-    
+        
 }
 

@@ -19,17 +19,28 @@ package org.alfresco.repo.workflow.jbpm;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.BPMEngine;
 import org.alfresco.repo.workflow.TaskComponent;
 import org.alfresco.repo.workflow.WorkflowComponent;
 import org.alfresco.repo.workflow.WorkflowDefinitionComponent;
+import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -43,7 +54,6 @@ import org.alfresco.service.namespace.QName;
 import org.hibernate.proxy.HibernateProxy;
 import org.jbpm.JbpmContext;
 import org.jbpm.JbpmException;
-import org.jbpm.context.exe.ContextInstance;
 import org.jbpm.db.GraphSession;
 import org.jbpm.db.TaskMgmtSession;
 import org.jbpm.graph.def.Node;
@@ -72,6 +82,8 @@ public class JBPMEngine extends BPMEngine
     // Implementation dependencies
     protected DictionaryService dictionaryService;
     protected NamespaceService namespaceService;
+    protected NodeService nodeService;
+    protected PersonService personService;
     private JbpmTemplate jbpmTemplate;
 
     /**
@@ -104,6 +116,26 @@ public class JBPMEngine extends BPMEngine
         this.namespaceService = namespaceService;
     }
 
+    /**
+     * Sets the Node Service
+     * 
+     * @param nodeService
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    /**
+     * Sets the Person Service
+     * 
+     * @param personService
+     */
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
+    
     
     //
     // Workflow Definition...
@@ -114,8 +146,8 @@ public class JBPMEngine extends BPMEngine
      */
     public WorkflowDefinition deployDefinition(InputStream workflowDefinition)
     {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO
+        throw new UnsupportedOperationException();
     }
 
     /* (non-Javadoc)
@@ -123,8 +155,8 @@ public class JBPMEngine extends BPMEngine
      */
     public void undeployDefinition(String workflowDefinitionId)
     {
-        // TODO Auto-generated method stub
-        
+        // TODO
+        throw new UnsupportedOperationException();
     }
 
     /* (non-Javadoc)
@@ -465,10 +497,121 @@ public class JBPMEngine extends BPMEngine
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.TaskComponent#updateTask(java.lang.String, java.util.Map, java.util.Map, java.util.Map)
      */
-    public WorkflowTask updateTask(String taskId, Map<QName, Serializable> properties, Map<QName, List<NodeRef>> add, Map<QName, List<NodeRef>> remove)
+    public WorkflowTask updateTask(final String taskId, final Map<QName, Serializable> properties, final Map<QName, List<NodeRef>> add, final Map<QName, List<NodeRef>> remove)
     {
-        // TODO
-        throw new UnsupportedOperationException();
+        try
+        {
+            return (WorkflowTask) jbpmTemplate.execute(new JbpmCallback()
+            {
+                public Object doInJbpm(JbpmContext context)
+                {
+                    // retrieve task
+                    TaskMgmtSession taskSession = context.getTaskMgmtSession();
+                    TaskInstance taskInstance = taskSession.loadTaskInstance(getJbpmId(taskId));
+
+                    // create properties to set on task instance
+                    Map<QName, Serializable> newProperties = properties;
+                    if (newProperties == null && (add != null || remove != null))
+                    {
+                        newProperties = new HashMap<QName, Serializable>(10); 
+                    }
+                    
+                    if (add != null || remove != null)
+                    {
+                        Map<QName, Serializable> existingProperties = getTaskProperties(taskInstance);
+                        
+                        if (add != null)
+                        {
+                            // add new associations
+                            for (Entry<QName, List<NodeRef>> toAdd : add.entrySet())
+                            {
+                                // retrieve existing list of noderefs for association
+                                List<NodeRef> existingAdd = (List<NodeRef>)newProperties.get(toAdd.getKey());
+                                if (existingAdd == null)
+                                {
+                                    existingAdd = (List<NodeRef>)existingProperties.get(toAdd.getKey());
+                                }
+    
+                                // make the additions
+                                if (existingAdd == null)
+                                {
+                                    newProperties.put(toAdd.getKey(), (Serializable)toAdd.getValue());
+                                }
+                                else
+                                {
+                                    for (NodeRef nodeRef : (List<NodeRef>)toAdd.getValue())
+                                    {
+                                        if (!(existingAdd.contains(nodeRef)))
+                                        {
+                                            existingAdd.add(nodeRef);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (remove != null)
+                        {
+                            // add new associations
+                            for (Entry<QName, List<NodeRef>> toRemove: remove.entrySet())
+                            {
+                                // retrieve existing list of noderefs for association
+                                List<NodeRef> existingRemove = (List<NodeRef>)newProperties.get(toRemove.getKey());
+                                if (existingRemove == null)
+                                {
+                                    existingRemove = (List<NodeRef>)existingProperties.get(toRemove.getKey());
+                                }
+    
+                                // make the subtractions
+                                if (existingRemove != null)
+                                {
+                                    for (NodeRef nodeRef : (List<NodeRef>)toRemove.getValue())
+                                    {
+                                        existingRemove.remove(nodeRef);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // update the task
+                    if (newProperties != null)
+                    {
+                        setTaskProperties(taskInstance, newProperties);
+                        
+                        // save
+                        ProcessInstance processInstance = taskInstance.getToken().getProcessInstance();
+                        context.save(processInstance);
+                    }
+                    
+                    // note: the ending of a task may not have signalled (i.e. more than one task exists at
+                    //       this node)
+                    return createWorkflowTask(taskInstance);
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to update workflow task '" + taskId + "'", e);
+        }        
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.TaskComponent#startTask(java.lang.String)
+     */
+    public WorkflowTask startTask(String taskId)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.TaskComponent#suspendTask(java.lang.String)
+     */
+    public WorkflowTask suspendTask(String taskId)
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     /* (non-Javadoc)
@@ -526,45 +669,51 @@ public class JBPMEngine extends BPMEngine
         return null;
     }
     
-    /**
-     * Sets Properties of Task
-     * 
-     * @param instance  task instance
-     * @param properties  properties to set
-     */
-    protected void setTaskProperties(TaskInstance instance, Map<QName, Serializable> properties)
-    {
-        if (properties == null)
-        {
-            return;
-        }
-     
-        // TODO: Use Dictionary to drive mapping 
-        
-        // TODO: Determine if NodeRefs and collection of NodeRefs need to be converted to String
-        
-        ContextInstance context = instance.getContextInstance();
-        for (Entry<QName, Serializable> entry : properties.entrySet())
-        {
-            String name = null;
-            QName qname = entry.getKey();
-            if (qname.getNamespaceURI().equals(NamespaceService.DEFAULT_URI))
-            {
-                name = qname.getLocalName();
-            }
-            else
-            {
-                name = qname.toPrefixString(namespaceService);
-            }
-            context.setVariable(name, entry.getValue());
-        }
-    }
     
-
     //
     // Helpers...
     //
     
+    /**
+     * Gets the Task definition of the specified Task
+     * 
+     * @param task  the task
+     * @return  the task definition
+     */
+    private TypeDefinition getTaskDefinition(Task task)
+    {
+        // TODO: Extend jBPM task instance to include dictionary definition qname? 
+        QName typeName = QName.createQName(task.getName(), namespaceService);
+        TypeDefinition typeDef = dictionaryService.getType(typeName);
+        if (typeDef == null)
+        {
+            typeDef = dictionaryService.getType(WorkflowModel.TYPE_WORKFLOW_TASK);
+            if (typeDef == null)
+            {
+                throw new WorkflowException("Failed to find type definition '" + WorkflowModel.TYPE_WORKFLOW_TASK + "'");
+            }
+        }
+        return typeDef;
+    }
+    
+    /**
+     * Convert the specified Type definition to an anonymous Type definition.
+     * 
+     * This collapses all mandatory aspects into a single Type definition.
+     * 
+     * @param typeDef  the type definition
+     * @return  the anonymous type definition
+     */
+    private TypeDefinition getAnonymousTaskDefinition(TypeDefinition typeDef)
+    {
+        List<AspectDefinition> aspects = typeDef.getDefaultAspects();
+        List<QName> aspectNames = new ArrayList<QName>(aspects.size());
+        for (AspectDefinition aspect : aspects)
+        {
+            aspectNames.add(aspect.getName());
+        }
+        return dictionaryService.getAnonymousType(typeDef.getName(), aspectNames);
+    }
     
     /**
      * Get JBoss JBPM Id from Engine Global Id
@@ -610,6 +759,214 @@ public class JBPMEngine extends BPMEngine
         }
         
         return token;
+    }
+
+    /**
+     * Sets Properties of Task
+     * 
+     * @param instance  task instance
+     * @param properties  properties to set
+     */
+    @SuppressWarnings("unchecked")
+    protected Map<QName, Serializable> getTaskProperties(TaskInstance instance)
+    {
+        // establish task definition
+        TypeDefinition taskDef = getAnonymousTaskDefinition(getTaskDefinition(instance.getTask()));
+        Map<QName, AssociationDefinition> taskAssocs = taskDef.getAssociations();
+
+        // map arbitrary task variables
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(10);
+        Map<String, Object> vars = instance.getVariablesLocally();
+        for (Entry<String, Object> entry : vars.entrySet())
+        {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            
+            // perform data conversions
+            // NOTE: Only convert Authority name to NodeRef for now
+            QName qname = QName.createQName(key);
+            AssociationDefinition assocDef = taskAssocs.get(qname);
+            if (assocDef != null && assocDef.getTargetClass().equals(ContentModel.TYPE_PERSON))
+            {
+                // TODO: Also support group authorities
+                if (!(value instanceof String[]))
+                {
+                    throw new WorkflowException("Task variable '" + qname + "' value is invalid format");
+                }
+                value = mapNameToAuthority((String[])value);
+            }    
+
+            // place task variable in map to return
+            properties.put(qname, (Serializable)value);
+        }
+
+        // map jBPM task instance fields to properties
+        properties.put(WorkflowModel.PROP_TASK_ID, instance.getId());
+        properties.put(WorkflowModel.PROP_START_DATE, instance.getStart());
+        properties.put(WorkflowModel.PROP_DUE_DATE, instance.getDueDate());
+        properties.put(WorkflowModel.PROP_COMPLETION_DATE, instance.getEnd());
+        properties.put(WorkflowModel.PROP_PRIORITY, instance.getPriority());
+        properties.put(ContentModel.PROP_OWNER, instance.getActorId());
+        
+        // map jBPM task instance collections to associations
+        Set pooledActors = instance.getPooledActors();
+        if (pooledActors != null)
+        {
+            String[] pooledActorIds = new String[pooledActors.size()]; 
+            pooledActors.toArray(pooledActorIds);
+            List<NodeRef> pooledActorNodeRefs = mapNameToAuthority(pooledActorIds);
+            properties.put(WorkflowModel.ASSOC_POOLED_ACTORS, (Serializable)pooledActorNodeRefs);
+        }
+
+        return properties;
+    }
+    
+    /**
+     * Sets Properties of Task
+     * 
+     * @param instance  task instance
+     * @param properties  properties to set
+     */
+    protected void setTaskProperties(TaskInstance instance, Map<QName, Serializable> properties)
+    {
+        if (properties == null)
+        {
+            return;
+        }
+
+        // establish task definition
+        TypeDefinition taskDef = getAnonymousTaskDefinition(getTaskDefinition(instance.getTask()));
+        Map<QName, PropertyDefinition> taskProperties = taskDef.getProperties();
+        Map<QName, AssociationDefinition> taskAssocs = taskDef.getAssociations();
+
+        // map each parameter to task
+        for (Entry<QName, Serializable> entry : properties.entrySet())
+        {
+            QName key = entry.getKey();
+            Serializable value = entry.getValue();
+            
+            // determine if writing property
+            // NOTE: some properties map to fields on jBPM task instance whilst
+            //       others are set in the general variable bag on the task
+            PropertyDefinition propDef = taskProperties.get(key);
+            if (propDef != null)
+            {
+                if (propDef.isProtected())
+                {
+                    // NOTE: only write non-protected properties
+                    continue;
+                }
+                
+                // map property to specific jBPM task instance field
+                if (key.equals(WorkflowModel.PROP_DUE_DATE))
+                {
+                    if (!(value instanceof Date))
+                    {
+                        throw new WorkflowException("Task due date '" + value + "' is invalid");
+                    }
+                    instance.setDueDate((Date)value);
+                    continue;
+                }
+                else if (key.equals(WorkflowModel.PROP_PRIORITY))
+                {
+                    if (!(value instanceof Integer))
+                    {
+                        throw new WorkflowException("Task priority '" + value + "' is invalid");
+                    }
+                    instance.setPriority((Integer)value);
+                    continue;
+                }
+                else if (key.equals(ContentModel.PROP_OWNER))
+                {
+                    if (!(value instanceof String))
+                    {
+                        throw new WorkflowException("Task owner '" + value + "' is invalid");
+                    }
+                    instance.setActorId((String)value);
+                    continue;
+                }
+            }
+            else
+            {
+                // determine if writing association
+                AssociationDefinition assocDef = taskAssocs.get(key);
+                if (assocDef != null)
+                {
+                    // if association is to people, map them to authority names
+                    // TODO: support group authorities
+                    if (assocDef.getTargetClass().equals(ContentModel.TYPE_PERSON))
+                    {
+                        value = mapAuthorityToName((List<NodeRef>)value);
+                    }
+                    
+                    // map association to specific jBPM task instance field
+                    if (key.equals(WorkflowModel.ASSOC_POOLED_ACTORS))
+                    {
+                        instance.setPooledActors((String[])value);
+                        continue;
+                    }
+                }
+            }
+            
+            // no specific mapping to jBPM task has been established, so place into
+            // the generic task variable bag
+            String name = null;
+            if (key.getNamespaceURI().equals(NamespaceService.DEFAULT_URI))
+            {
+                name = key.getLocalName();
+            }
+            else
+            {
+                name = key.toString();
+            }
+            instance.setVariableLocally(name, value);
+        }
+    }
+    
+    /**
+     * Convert a list of Alfresco Authorities to a list of authority Names
+     *  
+     * @param authorities  the authorities to convert
+     * @return  the authority names
+     */
+    private String[] mapAuthorityToName(List<NodeRef> authorities)
+    {
+        String[] names = null;
+        if (authorities != null)
+        {
+            names = new String[authorities.size()];
+            int i = 0;
+            for (NodeRef person : authorities)
+            {
+                String name = (String)nodeService.getProperty(person, ContentModel.PROP_USERNAME);
+                names[i++] = name;
+            }
+        }
+        return names;
+    }
+    
+    /**
+     * Convert a list of authority Names to Alfresco Authorities
+     * 
+     * @param names  the authority names to convert
+     * @return  the Alfresco authorities
+     */
+    private List<NodeRef> mapNameToAuthority(String[] names)
+    {
+        List<NodeRef> authorities = null; 
+        if (names != null)
+        {
+            authorities = new ArrayList<NodeRef>(names.length);
+            for (String name : names)
+            {
+                // TODO: Should this be an exception?
+                if (personService.personExists(name))
+                {
+                    authorities.add(personService.getPerson(name));
+                }
+            }
+        }
+        return authorities;
     }
 
 
@@ -714,12 +1071,10 @@ public class JBPMEngine extends BPMEngine
         workflowTask.path = createWorkflowPath(task.getToken());
         workflowTask.state = getWorkflowTaskState(task);
         workflowTask.definition = createWorkflowTaskDefinition(task.getTask());
-        
-        // TODO: Properties and Associations
-        
+        workflowTask.properties = getTaskProperties(task);
         return workflowTask;
     }
-    
+ 
     /**
      * Creates a Workflow Task Definition
      * 
@@ -728,11 +1083,9 @@ public class JBPMEngine extends BPMEngine
      */
     protected WorkflowTaskDefinition createWorkflowTaskDefinition(Task task)
     {
-        // TODO: Extend jBPM task instance to include dictionary definition qname 
         WorkflowTaskDefinition taskDef = new WorkflowTaskDefinition();
         taskDef.id = task.getName();
-        QName typeName = QName.createQName(taskDef.id, namespaceService);
-        taskDef.metadata = dictionaryService.getType(typeName);
+        taskDef.metadata = getTaskDefinition(task);
         return taskDef;
     }
     

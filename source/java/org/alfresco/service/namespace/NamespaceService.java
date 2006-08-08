@@ -66,6 +66,12 @@ public interface NamespaceService extends NamespacePrefixResolver
     /** Application Model Prefix */
     public static final String APP_MODEL_PREFIX = "app";
 
+    /** Business Process Model URI */
+    public static final String BPM_MODEL_1_0_URI = "http://www.alfresco.org/model/bpm/1.0";
+
+    /** Business Process Model Prefix */
+    public static final String BPM_MODEL_PREFIX = "bpm";
+
     /** Alfresco View Namespace URI */
     public static final String REPOSITORY_VIEW_1_0_URI = "http://www.alfresco.org/view/repository/1.0";
     

@@ -162,8 +162,8 @@ import org.alfresco.service.namespace.QName;
     public String toString()
     {
         StringBuilder sb = new StringBuilder(120);
-        sb.append("ClassDef ")
-          .append("[ name=").append(name)
+        sb.append("ClassDef")
+          .append("[name=").append(name)
           .append("]");
         return sb.toString();
     }

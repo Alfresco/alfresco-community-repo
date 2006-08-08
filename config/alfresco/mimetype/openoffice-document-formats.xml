@@ -7,7 +7,7 @@
     <mime-type>application/pdf</mime-type>
     <file-extension>pdf</file-extension>
     <export-filters>
-	  <entry><family>Presentation</family><string>impress_pdf_Export</string></entry>
+	   <entry><family>Presentation</family><string>impress_pdf_Export</string></entry>
       <entry><family>Spreadsheet</family><string>calc_pdf_Export</string></entry>
       <entry><family>Text</family><string>writer_pdf_Export</string></entry>
     </export-filters>
@@ -30,7 +30,7 @@
     <mime-type>text/html</mime-type>
     <file-extension>html</file-extension>
     <export-filters>
-	  <entry><family>Presentation</family><string>impress_html_Export</string></entry>
+	   <entry><family>Presentation</family><string>impress_html_Export</string></entry>
       <entry><family>Spreadsheet</family><string>HTML (StarCalc)</string></entry>
       <entry><family>Text</family><string>HTML (StarWriter)</string></entry>
     </export-filters>

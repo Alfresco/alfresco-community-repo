@@ -169,7 +169,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         
         // Calculate the destination name
         String originalName = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
-        String newName = transformName(originalName, mimeType);
+        String newName = transformName(this.mimetypeService, originalName, mimeType);
         
         // Since we are overwriting we need to figure out whether the destination node exists
         NodeRef copyNodeRef = null;
@@ -225,7 +225,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             String originalTitle = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TITLE);
             if (originalTitle != null && originalTitle.length() > 0)
             {
-                String newTitle = transformName(originalTitle, mimeType);
+                String newTitle = transformName(this.mimetypeService, originalTitle, mimeType);
                 nodeService.setProperty(copyNodeRef, ContentModel.PROP_TITLE, newTitle);
             }
         }
@@ -267,11 +267,11 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
      * Transform name from original extension to new extension
      * 
      * @param original
-     * @param originalMimetype
      * @param newMimetype
-     * @return
+     * 
+     * @return name with new extension as appropriate for the mimetype
      */
-    private String transformName(String original, String newMimetype)
+    public static String transformName(MimetypeService mimetypeService, String original, String newMimetype)
     {
         // get the current extension
         int dotIndex = original.lastIndexOf('.');

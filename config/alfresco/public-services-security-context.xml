@@ -405,6 +405,7 @@
                org.alfresco.service.cmr.repository.ContentService.getWriter=ACL_NODE.0.sys:base.WriteContent
                org.alfresco.service.cmr.repository.ContentService.isTransformable=ACL_ALLOW
                org.alfresco.service.cmr.repository.ContentService.getTransformer=ACL_ALLOW
+               org.alfresco.service.cmr.repository.ContentService.getImageTransformer=ACL_ALLOW
                org.alfresco.service.cmr.repository.ContentService.transform=ACL_ALLOW
                org.alfresco.service.cmr.repository.ContentService.getTempWriter=ACL_ALLOW
             </value>

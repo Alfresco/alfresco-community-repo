@@ -30,6 +30,8 @@ import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.TransformActionExecuter;
+import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.ServiceRegistry;
@@ -45,6 +47,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -1421,6 +1424,196 @@ public final class Node implements Serializable, Scopeable
     
     
     // ------------------------------------------------------------------------------
+    // Transformation and Rendering API
+    
+    /**
+     * Transform a document to a new document mimetype format. A copy of the document is made and
+     * the extension changed to match the new mimetype, then the transformation is applied.
+     * 
+     * @param mimetype      Mimetype destination for the transformation
+     * 
+     * @return Node representing the newly transformed document.
+     */
+    public Node transformDocument(String mimetype)
+    {
+        return transformDocument(mimetype, getPrimaryParentAssoc().getParentRef());
+    }
+    
+    /**
+     * Transform a document to a new document mimetype format. A copy of the document is made in the
+     * specified destination folder and the extension changed to match the new mimetype, then then
+     * transformation is applied.
+     * 
+     * @param mimetype      Mimetype destination for the transformation
+     * @param destination   Destination folder location
+     * 
+     * @return Node representing the newly transformed document.
+     */
+    public Node transformDocument(String mimetype, Node destination)
+    {
+        return transformDocument(mimetype, destination.getNodeRef());
+    }
+    
+    private Node transformDocument(String mimetype, NodeRef destination)
+    {
+        // the delegate definition for transforming a document
+        Transformer transformer = new Transformer()
+        {
+            public Node transform(ContentService contentService, NodeRef nodeRef, ContentReader reader, ContentWriter writer)
+            {
+                Node transformedNode = null;
+                if (contentService.isTransformable(reader, writer))
+                {
+                    try
+                    {
+                        contentService.transform(reader, writer);
+                        transformedNode = new Node(nodeRef, services, imageResolver, scope);
+                    }
+                    catch (NoTransformerException err)
+                    {
+                        // failed to find a useful transformer - do not return a node instance
+                    }
+                }
+                return transformedNode;
+            }
+        };
+        
+        return transformNode(transformer, mimetype, destination);
+    }
+    
+    /**
+     * Generic method to transform Node content from one mimetype to another.
+     *  
+     * @param transformer       The Transformer delegate supplying the transformation logic
+     * @param mimetype          Mimetype of the destination content
+     * @param destination       Destination folder location for the resulting document
+     * 
+     * @return Node representing the transformed content - or null if the transform failed
+     */
+    private Node transformNode(Transformer transformer, String mimetype, NodeRef destination)
+    {
+        Node transformedNode = null;
+        
+        // get the content reader
+        ContentService contentService = this.services.getContentService();
+        ContentReader reader = contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
+        
+        // only perform the transformation if some content is available
+        if (reader != null)
+        {
+            // Copy the content node to a new node
+            NodeRef copyNodeRef = this.services.getCopyService().copy(
+                    this.nodeRef,
+                    destination,
+                    ContentModel.ASSOC_CONTAINS,
+                    getPrimaryParentAssoc().getQName(),
+                    false);
+            
+            // modify the name of the copy to reflect the new mimetype
+            this.nodeService.setProperty(
+                    copyNodeRef,
+                    ContentModel.PROP_NAME,
+                    TransformActionExecuter.transformName(
+                            this.services.getMimetypeService(), getName(), mimetype));
+            
+            // get the writer and set it up
+            ContentWriter writer = contentService.getWriter(copyNodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setMimetype(mimetype);                // new mimetype
+            writer.setEncoding(reader.getEncoding());    // original encoding
+            
+            // Try and transform the content using the supplied delegate
+            transformedNode = transformer.transform(contentService, copyNodeRef, reader, writer);
+        }
+        
+        return transformedNode;
+    }
+    
+    /**
+     * Transform an image to a new image format. A copy of the image document is made and
+     * the extension changed to match the new mimetype, then the transformation is applied.
+     * 
+     * @param mimetype      Mimetype destination for the transformation
+     * 
+     * @return Node representing the newly transformed image.
+     */
+    public Node transformImage(String mimetype)
+    {
+        return transformImage(mimetype, null, getPrimaryParentAssoc().getParentRef());
+    }
+    
+    /**
+     * Transform an image to a new image format. A copy of the image document is made and
+     * the extension changed to match the new mimetype, then the transformation is applied.
+     * 
+     * @param mimetype      Mimetype destination for the transformation
+     * @param options       Image convert command options
+     * 
+     * @return Node representing the newly transformed image.
+     */
+    public Node transformImage(String mimetype, String options)
+    {
+        return transformImage(mimetype, options, getPrimaryParentAssoc().getParentRef());
+    }
+    
+    /**
+     * Transform an image to a new image mimetype format. A copy of the image document is made in the
+     * specified destination folder and the extension changed to match the new mimetype, then then
+     * transformation is applied.
+     * 
+     * @param mimetype      Mimetype destination for the transformation
+     * @param destination   Destination folder location
+     * 
+     * @return Node representing the newly transformed image.
+     */
+    public Node transformImage(String mimetype, Node destination)
+    {
+        return transformImage(mimetype, null, destination.getNodeRef());
+    }
+    
+    /**
+     * Transform an image to a new image mimetype format. A copy of the image document is made in the
+     * specified destination folder and the extension changed to match the new mimetype, then then
+     * transformation is applied.
+     * 
+     * @param mimetype      Mimetype destination for the transformation
+     * @param options       Image convert command options
+     * @param destination   Destination folder location
+     * 
+     * @return Node representing the newly transformed image.
+     */
+    public Node transformImage(String mimetype, String options, Node destination)
+    {
+        return transformImage(mimetype, options, destination.getNodeRef());
+    }
+    
+    private Node transformImage(String mimetype, final String options, NodeRef destination)
+    {
+        // the delegate definition for transforming an image
+        Transformer transformer = new Transformer()
+        {
+            public Node transform(ContentService contentService, NodeRef nodeRef, ContentReader reader, ContentWriter writer)
+            {
+                Node transformedNode = null;
+                try
+                {
+                    Map<String, Object> opts = new HashMap<String, Object>(1);
+                    opts.put(ImageMagickContentTransformer.KEY_OPTIONS, options != null ? options : "");
+                    contentService.getImageTransformer().transform(reader, writer, opts);
+                    transformedNode = new Node(nodeRef, services, imageResolver, scope);
+                }
+                catch (NoTransformerException err)
+                {
+                    // failed to find a useful transformer - do not return a node instance
+                }
+                return transformedNode;
+            }
+        };
+        
+        return transformNode(transformer, mimetype, destination);
+    }
+    
+    
+    // ------------------------------------------------------------------------------
     // Helper methods
     
     /**
@@ -1646,5 +1839,24 @@ public final class Node implements Serializable, Scopeable
         
         private ContentData contentData;
         private QName property;
+    }
+    
+    
+    /**
+     * Interface contract for simple anonymous classes that implement document transformations
+     */
+    private interface Transformer
+    {
+        /**
+         * Transform the reader to the specified writer
+         * 
+         * @param contentService    ContentService
+         * @param noderef           NodeRef of the destination for the transform
+         * @param reader            Source reader
+         * @param writer            Destination writer
+         * 
+         * @return Node representing the transformed entity
+         */
+        Node transform(ContentService contentService, NodeRef noderef, ContentReader reader, ContentWriter writer);
     }
 }

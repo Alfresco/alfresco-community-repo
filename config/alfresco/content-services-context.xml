@@ -66,6 +66,9 @@
       <property name="policyComponent">
           <ref bean="policyComponent" />
       </property>
+      <property name="imageMagickContentTransformer">
+         <ref bean="transformer.ImageMagick" />
+      </property>
    </bean>
     
     <bean id="mimetypeConfigService" class="org.alfresco.config.xml.XMLConfigService" init-method="init">

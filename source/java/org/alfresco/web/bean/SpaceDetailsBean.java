@@ -306,8 +306,8 @@ public class SpaceDetailsBean extends BaseDetailsBean
       {
          // we know for now that the general classifiable aspect only will be
          // applied so we can retrive the categories property direclty
-         Collection categories = (Collection)this.nodeService.getProperty(getSpace().getNodeRef(), 
-               ContentModel.PROP_CATEGORIES);
+         Collection<NodeRef> categories = (Collection<NodeRef>)this.nodeService.getProperty(
+                 getSpace().getNodeRef(), ContentModel.PROP_CATEGORIES);
          
          if (categories == null || categories.size() == 0)
          {
@@ -319,16 +319,13 @@ public class SpaceDetailsBean extends BaseDetailsBean
                   MSG_HAS_FOLLOWING_CATEGORIES));
             
             builder.append("<ul>");
-            for (Object obj : categories)
+            for (NodeRef ref : categories)
             {
-               if (obj instanceof NodeRef)
+               if (this.nodeService.exists(ref))
                {
-                  if (this.nodeService.exists((NodeRef)obj))
-                  {
-                     builder.append("<li>");
-                     builder.append(Repository.getNameForNode(this.nodeService, (NodeRef)obj));
-                     builder.append("</li>");
-                  }
+                  builder.append("<li>");
+                  builder.append(Repository.getNameForNode(this.nodeService, ref));
+                  builder.append("</li>");
                }
             }
             builder.append("</ul>");

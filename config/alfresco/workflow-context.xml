@@ -4,15 +4,22 @@
 <beans>
 
    <!--                                 -->
-   <!-- Workflow Model                  -->
+   <!-- Workflow Definitions            -->
    <!--                                 -->
 
    <bean id="workflow.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
       <property name="models">
          <list>
             <value>alfresco/model/bpmModel.xml</value>
+            <value>alfresco/model/workflowModel.xml</value>
          </list>
       </property>
+   </bean>
+
+   <bean id="workflowDeployer" class="org.alfresco.repo.workflow.WorkflowDeployer" abstract="true">
+      <property name="transactionService" ref="transactionComponent"/>
+      <property name="authenticationComponent" ref="authenticationComponent" />
+      <property name="workflowService" ref="WorkflowService" />
    </bean>
    
    <!--                                 -->
@@ -41,11 +48,6 @@
    <bean id="jbpm_configuration" class="org.springmodules.workflow.jbpm31.LocalJbpmConfigurationFactoryBean">
       <property name="sessionFactory" ref="sessionFactory"/>
       <property name="configuration" value="classpath:org/jbpm/default.jbpm.cfg.xml"/>
-      <property name="processDefinitions">
-      <list>
-         <ref local="jbpm_testWorkflow"/>
-      </list>
-      </property>
    </bean>
 
    <bean id="jbpm_template" class="org.springmodules.workflow.jbpm31.JbpmTemplate">
@@ -57,11 +59,8 @@
       <property name="JBPMTemplate" ref="jbpm_template"/>
       <property name="dictionaryService" ref="DictionaryService"/>
       <property name="namespaceService" ref="NamespaceService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="personService" ref="personService"/>
    </bean>
-
-   <!-- TODO: Remove this - for short-term testing only -->
-   <bean id="jbpm_testWorkflow" class="org.springmodules.workflow.jbpm31.definition.ProcessDefinitionFactoryBean">
-    <property name="definitionLocation" value="classpath:org/alfresco/repo/workflow/jbpm/test_processdefinition.xml"/>
-  </bean>   
 
 </beans>

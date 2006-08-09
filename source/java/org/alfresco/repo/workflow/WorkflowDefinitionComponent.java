@@ -34,10 +34,23 @@ public interface WorkflowDefinitionComponent
      * Deploy a Workflow Definition
      * 
      * @param workflowDefinition  the content object containing the definition
+     * @param mimetype (optional)  the mime type of the workflow definition
      * @return workflow definition
      */
-    public WorkflowDefinition deployDefinition(InputStream workflowDefinition);
+    public WorkflowDefinition deployDefinition(InputStream workflowDefinition, String mimetype);
 
+    /**
+     * Is the specified Workflow Definition already deployed?
+     * 
+     * Note: the notion of "already deployed" may differ between bpm engines. For example,
+     *       different versions of the same process may be considered equal.
+     *       
+     * @param workflowDefinition  the definition to check
+     * @param mimetype  the mimetype of the definition
+     * @return  true => already deployed
+     */
+    public boolean isDefinitionDeployed(InputStream workflowDefinition, String mimetype);
+    
     /**
      * Undeploy an exisiting Workflow Definition
      * 

@@ -27,6 +27,9 @@ public class WorkflowDefinition
     /** Workflow Definition unique id */
     public String id;
     
+    /** Workflow Definition version */
+    public String version;
+    
     /** Workflow Definition name */
     public String name;
     
@@ -39,6 +42,6 @@ public class WorkflowDefinition
      */
     public String toString()
     {
-        return "WorkflowDefinition[id=" + id + ",name=" + name + ",startTask=" + startTaskDefinition.toString() + "]";
+        return "WorkflowDefinition[id=" + id + ",version=" + version + ",name=" + name + ",startTask=" + startTaskDefinition.toString() + "]";
     }
 }

@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.workflow;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +57,24 @@ public class WorkflowServiceImpl implements WorkflowService
     
     
     /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#deployDefinition(java.lang.String, java.io.InputStream, java.lang.String)
+     */
+    public WorkflowDefinition deployDefinition(String engineId, InputStream workflowDefinition, String mimetype)
+    {
+        WorkflowDefinitionComponent component = getWorkflowDefinitionComponent(engineId);
+        return component.deployDefinition(workflowDefinition, mimetype);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#isDefinitionDeployed(java.lang.String, java.io.InputStream, java.lang.String)
+     */
+    public boolean isDefinitionDeployed(String engineId, InputStream workflowDefinition, String mimetype)
+    {
+        WorkflowDefinitionComponent component = getWorkflowDefinitionComponent(engineId);
+        return component.isDefinitionDeployed(workflowDefinition, mimetype);
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.workflow.WorkflowService#deployDefinition(org.alfresco.service.cmr.repository.NodeRef)
      */
     public WorkflowDefinition deployDefinition(NodeRef definitionContent)
@@ -67,10 +86,11 @@ public class WorkflowServiceImpl implements WorkflowService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.workflow.WorkflowService#undeployDefinition(java.lang.String)
      */
-    public void undeployDefinition(String processDefinitionId)
+    public void undeployDefinition(String workflowDefinitionId)
     {
-        // TODO
-        throw new UnsupportedOperationException();
+        String engineId = BPMEngineRegistry.getEngineId(workflowDefinitionId);
+        WorkflowDefinitionComponent component = getWorkflowDefinitionComponent(engineId);
+        component.undeployDefinition(workflowDefinitionId);
     }
 
     /* (non-Javadoc)
@@ -275,5 +295,5 @@ public class WorkflowServiceImpl implements WorkflowService
         }
         return component;
     }
-    
+
 }

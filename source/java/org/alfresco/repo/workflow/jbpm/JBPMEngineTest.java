@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.TaskComponent;
 import org.alfresco.repo.workflow.WorkflowComponent;
@@ -39,6 +40,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
+import org.springframework.core.io.ClassPathResource;
 
 
 /**
@@ -51,6 +53,7 @@ public class JBPMEngineTest extends BaseSpringTest
     WorkflowDefinitionComponent workflowDefinitionComponent;
     WorkflowComponent workflowComponent;
     TaskComponent taskComponent;
+    WorkflowDefinition testWorkflowDef;
 
     
     //@Override
@@ -60,6 +63,15 @@ public class JBPMEngineTest extends BaseSpringTest
         workflowDefinitionComponent = registry.getWorkflowDefinitionComponent("jbpm");
         workflowComponent = registry.getWorkflowComponent("jbpm");
         taskComponent = registry.getTaskComponent("jbpm");
+        
+        // deploy test process definition
+        ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/test_processdefinition.xml");
+        assertFalse(workflowDefinitionComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
+        testWorkflowDef = workflowDefinitionComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML);
+        assertNotNull(testWorkflowDef);
+        assertEquals("Test", testWorkflowDef.name);
+        assertEquals("1", testWorkflowDef.version);
+        assertTrue(workflowDefinitionComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
     }
 
     
@@ -68,6 +80,16 @@ public class JBPMEngineTest extends BaseSpringTest
         List<WorkflowDefinition> workflowDefs = workflowDefinitionComponent.getDefinitions();
         assertNotNull(workflowDefs);
         assertTrue(workflowDefs.size() > 0);
+    }
+    
+    
+    public void testDeployWorkflow() throws Exception
+    {
+        ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/test_processdefinition.xml");
+        testWorkflowDef = workflowDefinitionComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML);
+        assertNotNull(testWorkflowDef);
+        assertEquals("Test", testWorkflowDef.name);
+        assertEquals("2", testWorkflowDef.version);
     }
     
     
@@ -321,16 +343,7 @@ public class JBPMEngineTest extends BaseSpringTest
      */
     private WorkflowDefinition getTestDefinition()
     {
-        List<WorkflowDefinition> workflowDefs = workflowDefinitionComponent.getDefinitions();
-        for (WorkflowDefinition workflowDef : workflowDefs)
-        {
-            if (workflowDef.name.equals("Review and Approve"))
-            {
-                return workflowDef;
-            }
-        }
-        fail("Test Workflow Definition not found");
-        return null;
+        return testWorkflowDef;
     }
     
 }

@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,8 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.zip.ZipInputStream;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.BPMEngine;
 import org.alfresco.repo.workflow.TaskComponent;
@@ -144,19 +147,90 @@ public class JBPMEngine extends BPMEngine
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.WorkflowDefinitionComponent#deployDefinition(java.io.InputStream)
      */
-    public WorkflowDefinition deployDefinition(InputStream workflowDefinition)
+    public WorkflowDefinition deployDefinition(final InputStream workflowDefinition, final String mimetype)
     {
-        // TODO
-        throw new UnsupportedOperationException();
+        try
+        {
+            return (WorkflowDefinition)jbpmTemplate.execute(new JbpmCallback()
+            {
+                public Object doInJbpm(JbpmContext context)
+                {
+                    // construct process definition
+                    ProcessDefinition def = createProcessDefinition(workflowDefinition, mimetype);
+                    
+                    // deploy the parsed definition
+                    context.deployProcessDefinition(def);
+                    
+                    // return deployed definition
+                    WorkflowDefinition workflowDef = createWorkflowDefinition(def);
+                    return workflowDef;
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to deploy workflow definition", e);
+        }
     }
 
+            
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowDefinitionComponent#isDefinitionDeployed(java.io.InputStream, java.lang.String)
+     */
+    public boolean isDefinitionDeployed(final InputStream workflowDefinition, final String mimetype)
+    {
+        try
+        {
+            return (Boolean) jbpmTemplate.execute(new JbpmCallback()
+            {
+                public Boolean doInJbpm(JbpmContext context)
+                {
+                    // create process definition from input stream
+                    ProcessDefinition processDefinition = createProcessDefinition(workflowDefinition, mimetype);
+                    
+                    // retrieve process definition from Alfresco Repository
+                    GraphSession graphSession = context.getGraphSession();
+                    ProcessDefinition existingDefinition = graphSession.findLatestProcessDefinition(processDefinition.getName());
+                    return (existingDefinition == null) ? false : true;
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to determine if workflow definition is already deployed", e);
+        }
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.WorkflowDefinitionComponent#undeployDefinition(java.lang.String)
      */
-    public void undeployDefinition(String workflowDefinitionId)
+    public void undeployDefinition(final String workflowDefinitionId)
     {
-        // TODO
-        throw new UnsupportedOperationException();
+        try
+        {
+            jbpmTemplate.execute(new JbpmCallback()
+            {
+                public Object doInJbpm(JbpmContext context)
+                {
+                    // retrieve process definition
+                    GraphSession graphSession = context.getGraphSession();
+                    ProcessDefinition processDefinition = graphSession.loadProcessDefinition(getJbpmId(workflowDefinitionId));
+                    // NOTE: if not found, should throw an exception
+                    
+                    // undeploy
+                    // NOTE: jBPM deletes all "in-flight" processes too
+                    // TODO: Determine if there's a safer undeploy we can expose via the WorkflowService contract
+                    graphSession.deleteProcessDefinition(processDefinition);
+                    
+                    // we're done
+                    return null;
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to deploy workflow definition", e);
+        }
     }
 
     /* (non-Javadoc)
@@ -675,6 +749,58 @@ public class JBPMEngine extends BPMEngine
     //
     
     /**
+     * Construct a Process Definition from the provided Process Definition stream
+     * 
+     * @param workflowDefinition  stream to create process definition from  
+     * @param mimetype  mimetype of stream
+     * @return  process definition
+     */
+    protected ProcessDefinition createProcessDefinition(InputStream definitionStream, String mimetype)
+    {
+        String actualMimetype = (mimetype == null) ? MimetypeMap.MIMETYPE_ZIP : mimetype;
+        ProcessDefinition def = null;
+        
+        // parse process definition from jBPM process archive file
+        
+        if (actualMimetype.equals(MimetypeMap.MIMETYPE_ZIP))
+        {
+            ZipInputStream zipInputStream = null;
+            try
+            {
+                zipInputStream = new ZipInputStream(definitionStream);
+                def = ProcessDefinition.parseParZipInputStream(zipInputStream);  
+            }
+            catch(Exception e)
+            {
+                throw new JbpmException("Failed to parse process definition from jBPM zip archive stream", e);
+            }
+            finally
+            {
+                if (zipInputStream != null)
+                {
+                    try { zipInputStream.close(); } catch(IOException e) {};
+                }
+            }
+        }
+        
+        // parse process definition from jBPM xml file
+        
+        else if (actualMimetype.equals(MimetypeMap.MIMETYPE_XML))
+        {
+            try
+            {
+                def = ProcessDefinition.parseXmlInputStream(definitionStream);
+            }
+            catch(Exception e)
+            {
+                throw new JbpmException("Failed to parse process definition from jBPM xml stream", e);
+            }
+        }
+        
+        return def;
+    }
+
+    /**
      * Gets the Task definition of the specified Task
      * 
      * @param task  the task
@@ -1013,11 +1139,14 @@ public class JBPMEngine extends BPMEngine
         // TODO: Is there a formal way of determing if task node?
         workflowNode.isTaskNode = workflowNode.type.equals("TaskNode");
         List transitions = node.getLeavingTransitions();
-        workflowNode.transitions = new String[transitions.size()];
-        int i = 0;
-        for (Transition transition : (List<Transition>)transitions)
+        workflowNode.transitions = new String[(transitions == null) ? 0 : transitions.size()];
+        if (transitions != null)
         {
-            workflowNode.transitions[i++] = transition.getName();
+            int i = 0;
+            for (Transition transition : (List<Transition>)transitions)
+            {
+                workflowNode.transitions[i++] = transition.getName();
+            }
         }
         return workflowNode;
     }
@@ -1047,6 +1176,7 @@ public class JBPMEngine extends BPMEngine
     {
         WorkflowDefinition workflowDef = new WorkflowDefinition();
         workflowDef.id = createGlobalId(new Long(definition.getId()).toString());
+        workflowDef.version = new Integer(definition.getVersion()).toString();
         workflowDef.name = definition.getName();
         Task startTask = definition.getTaskMgmtDefinition().getStartTask();
         if (startTask != null)

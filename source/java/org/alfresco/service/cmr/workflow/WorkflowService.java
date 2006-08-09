@@ -16,6 +16,7 @@
  */
 package org.alfresco.service.cmr.workflow;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,29 @@ public interface WorkflowService
     // Workflow Definition Management
     //
 
+    /**
+     * Deploy a Workflow Definition to the Alfresco Repository
+     * 
+     * @param  engineId  the bpm engine id
+     * @param  workflowDefinition  the workflow definition
+     * @param  overwrite  true => redeploy, if process definition already exists
+     * @return  mimetype  the mimetype of the workflow definition
+     */
+    public WorkflowDefinition deployDefinition(String engineId, InputStream workflowDefinition, String mimetype);
+    
+    /**
+     * Is the specified Workflow Definition already deployed?
+     * 
+     * Note: the notion of "already deployed" may differ between bpm engines. For example,
+     *       different versions of the same process may be considered equal.
+     *       
+     * @param  engineId  the bpm engine id
+     * @param  workflowDefinition  the definition to check
+     * @param  mimetype  the mimetype of the definition
+     * @return  true => already deployed
+     */
+    public boolean isDefinitionDeployed(String engineId, InputStream workflowDefinition, String mimetype);
+    
     /**
      * Deploy a Workflow Definition to the Alfresco Repository
      * 

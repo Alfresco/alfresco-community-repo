@@ -29,7 +29,7 @@ CreateContentWizard ccw = (CreateContentWizard)
     FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "CreateContentWizard");
 
 TemplateType tt = ts.getTemplateType(ccw.getTemplateType());
-final TemplateInputMethod tim = tt.getInputMethods()[0];
+final TemplateInputMethod tim = tt.getInputMethods().get(0);
 String url = tim.getInputURL(tt.getSampleXml(tt.getName()), tt);
 %>
 <f:verbatim>

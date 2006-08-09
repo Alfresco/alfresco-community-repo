@@ -32,15 +32,14 @@ xml = xml.replaceAll("<", "&lt;");
 <html>
     <head>
         <title>Instance Data submitted</title>
-        <link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/forms/styles/chiba-styles.css"/>
+        <link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/css/main.css"/>
      </head>
     <body>
-
-        <center>
-            <font face="sans-serif">XML submitted successfully!  you rock!  Click next!</font>
-        </center>
-<center><tt>
+        <div class="mainSubTitle">
+	XML submitted successfully!  you rock!  Click next!
+	</div>
+<tt>
 <%= xml %>
-<tt></center>
+<tt>
     </body>
 </html>

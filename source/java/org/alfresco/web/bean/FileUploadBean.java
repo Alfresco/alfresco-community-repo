@@ -25,7 +25,15 @@ import java.io.File;
  */
 public final class FileUploadBean
 {
+
    public static final String FILE_UPLOAD_BEAN_NAME = "alfresco.UploadBean";
+
+   public static String getKey(final String id)
+   {
+	return (id == null 
+		? FILE_UPLOAD_BEAN_NAME 
+		: FILE_UPLOAD_BEAN_NAME + "-" + id);
+   }
    
    private File file;
    private String fileName;

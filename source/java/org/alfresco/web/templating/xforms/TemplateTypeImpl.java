@@ -17,6 +17,7 @@
 package org.alfresco.web.templating.xforms;
 
 import java.io.*;
+import java.util.*;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.alfresco.util.TempFileProvider;
@@ -36,6 +37,7 @@ public class TemplateTypeImpl
 
     private final Document schema;
     private final String name;
+    private final LinkedList outputMethods = new LinkedList();
 
     public TemplateTypeImpl(final String name,
 			    final Document schema) 
@@ -131,15 +133,20 @@ public class TemplateTypeImpl
 	}
     }
 
-    public TemplateInputMethod[] getInputMethods()
+    public List<TemplateInputMethod> getInputMethods()
     {
-	return new TemplateInputMethod[] {
-	    new XFormsInputMethod()
-	};
+	return (List<TemplateInputMethod>)Arrays.asList(new TemplateInputMethod[] {
+		new XFormsInputMethod()
+	    });
     }
 
-    public TemplateOutputMethod[] getOutputMethods()
+    public void addOutputMethod(TemplateOutputMethod output)
     {
-	return new TemplateOutputMethod[0];
+	this.outputMethods.add(output);
+    }
+
+    public List<TemplateOutputMethod> getOutputMethods()
+    {
+	return this.outputMethods;
     }
 }

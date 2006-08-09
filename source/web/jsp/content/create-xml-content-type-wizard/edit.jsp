@@ -25,7 +25,7 @@ function set_edit_mode(on)
 {
   var iframe = document.getElementById("editor");
   editor.setAttribute("src", 
-                      on ? "</f:verbatim><h:outputText value="#{WizardManager.bean.schemaFormURL}" escape="false"/><f:verbatim>" 
+                      on ? "</f:verbatim><h:outputText value="not_implemented" escape="false"/><f:verbatim>" 
                          : "</f:verbatim><h:outputText value="#{WizardManager.bean.formURL}" escape="false"/><f:verbatim>");
 }
 </script>

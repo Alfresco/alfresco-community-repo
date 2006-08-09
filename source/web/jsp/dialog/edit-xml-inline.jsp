@@ -33,9 +33,9 @@ NodeRef nr = ccb.getDocument().getNodeRef();
 String ttName = (String)ccb.getNodeService().getProperty(nr, CreateContentWizard.TT_QNAME);
 TemplatingService ts = TemplatingService.getInstance();
 TemplateType tt  = ts.getTemplateType(ttName);
-TemplateInputMethod tim = tt.getInputMethods()[0];
+System.out.println("tt " + tt);
+TemplateInputMethod tim = tt.getInputMethods().get(0);
 String url = tim.getInputURL(ts.parseXML(ccb.getDocumentContent()), tt);
-System.out.println("TTTTTT  " + tt);
 System.out.println("inputurl  " + url);
 %>
 <r:page titleId="title_edit_text_inline">

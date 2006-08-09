@@ -9,6 +9,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -255,4 +256,13 @@ public abstract class BaseDialogBean implements IDialogBean
             FacesContext.getCurrentInstance(), getErrorMessageId()), 
             exception.getMessage());
    }
+
+    protected NodeRef getContainerNodeRef()
+    {
+      String nodeId = this.navigator.getCurrentNodeId();
+      return (nodeId == null
+	      ? this.nodeService.getRootNode(Repository.getStoreRef())
+	      :  new NodeRef(Repository.getStoreRef(), nodeId));
+    }
+
 }

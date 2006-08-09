@@ -18,9 +18,6 @@ package org.alfresco.web.templating.xforms.schemabuilder;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.SimpleLayout;
 import org.apache.xerces.xs.*;
 import org.chiba.xml.util.DOMUtil;
 import org.chiba.xml.xforms.NamespaceCtx;
@@ -32,8 +29,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -581,10 +576,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 	else if (o != null) 
 	{
             if (LOGGER.isDebugEnabled()) 
-	    {
                 LOGGER.debug("DOMImplementation is not a XSImplementation: "
 			     + o.getClass().getName());
-            }
             throw new RuntimeException(o.getClass().getName() + " is not a XSImplementation");
         }
     }
@@ -834,13 +827,15 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
     public void endFormControl(Element controlElement,
                                XSTypeDefinition controlType,
                                int minOccurs,
-                               int maxOccurs) {
+                               int maxOccurs) 
+    {
     }
 
     /**
      * __UNDOCUMENTED__
      */
-    public void reset() {
+    public void reset() 
+    {
         //refCounter = 0;
         counter = new HashMap();
         setProperty(CSS_STYLE_PROP, DEFAULT_CSS_STYLE_PROP);
@@ -1039,35 +1034,26 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         return chibaNSPrefix;
     }
 
-    /* Increments the xforms:ref attribute counter.
-     *
-     */
-    /*protected long incRefCounter() {
-       return refCounter++;
-       }*/
     protected String setXFormsId(Element el) {
         //remove the eventuel "id" attribute
-        if (el.hasAttributeNS(SchemaFormBuilder.XFORMS_NS, "id")) {
+        if (el.hasAttributeNS(SchemaFormBuilder.XFORMS_NS, "id"))
             el.removeAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
-        }
 
         //long count=this.incIdCounter();
         long count = 0;
         String name = el.getLocalName();
         Long l = (Long) counter.get(name);
 
-        if (l != null) {
+        if (l != null)
             count = l.longValue();
-        }
 
         String id = name + "_" + count;
 
         //increment the counter
         counter.put(name, new Long(count + 1));
         el.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
-                this.getXFormsNSPrefix() + "id",
-                id);
-
+			  this.getXFormsNSPrefix() + "id",
+			  id);
         return id;
     }
 
@@ -1122,7 +1108,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
         Iterator iterator = sortedList.iterator();
 
-        while (iterator.hasNext()) {
+        while (iterator.hasNext()) 
+	{
             String textValue = (String) iterator.next();
             Element item =
                     xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "item");
@@ -1147,8 +1134,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
     protected void addChoicesForSelectSwitchControl(Document xForm,
                                                     Element choicesElement,
                                                     Vector choiceValues,
-                                                    HashMap case_types) {
-
+                                                    HashMap case_types) 
+    {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("addChoicesForSelectSwitchControl, values=");
             Iterator it = choiceValues.iterator();
@@ -1205,9 +1192,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
             action.setAttributeNS(XMLEVENTS_NS, xmleventsNSPrefix + "event", "xforms-select");
 
-            Element toggle =
-                    xForm.createElementNS(XFORMS_NS,
-                            getXFormsNSPrefix() + "toggle");
+            Element toggle = xForm.createElementNS(XFORMS_NS,
+						   getXFormsNSPrefix() + "toggle");
             this.setXFormsId(toggle);
 
             //build the case element
@@ -1275,10 +1261,6 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         }
 
         return null;
-    }
-
-    private XSModel getSchema() {
-        return schema;
     }
 
     public XSParticle findCorrespondingParticleInComplexType(XSElementDeclaration elDecl) {
@@ -2122,7 +2104,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                                     //
                                     //controlType = getSchema().getComplexType((String)enumValues.get(0));
                                     controlType =
-                                            getSchema().getTypeDefinition((String) enumValues.get(0),
+                                            this.schema.getTypeDefinition((String) enumValues.get(0),
                                                     targetNamespace);
                                 }
                             } else if (LOGGER.isDebugEnabled())
@@ -2544,9 +2526,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                         + ", maxOccurs=" + maxOccurs);
 
             //repeatSection = (Element) formSection.appendChild(xForm.createElementNS(XFORMS_NS,getXFormsNSPrefix() + "repeat"));
-            repeatSection =
-                    xForm.createElementNS(XFORMS_NS,
-                            getXFormsNSPrefix() + "repeat");
+            repeatSection = xForm.createElementNS(XFORMS_NS,
+						  getXFormsNSPrefix() + "repeat");
 
             //bind instead of repeat
             //repeatSection.setAttributeNS(XFORMS_NS,getXFormsNSPrefix() + "nodeset",pathToRoot);
@@ -2569,19 +2550,18 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                 bind =
                         DOMUtil.getLastChildElement(modelSection.getParentNode());
 
-                if ((bind != null)
-                        && (bind.getLocalName() != null)
-                        && bind.getLocalName().equals("bind")) {
-                    bindId =
-                            bind.getAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
+                if ((bind != null) &&
+		    (bind.getLocalName() != null) && 
+		    bind.getLocalName().equals("bind")) {
+                    bindId = bind.getAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
                 } else {
                     LOGGER.warn("addRepeatIfNecessary: bind really not found");
                 }
             }
 
             repeatSection.setAttributeNS(XFORMS_NS,
-                    getXFormsNSPrefix() + "bind",
-                    bindId);
+					 getXFormsNSPrefix() + "bind",
+					 bindId);
             this.setXFormsId(repeatSection);
 
             //appearance=full is more user friendly
@@ -2591,20 +2571,19 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
             //triggers
             this.addTriggersForRepeat(xForm,
-                    formSection,
-                    repeatSection,
-                    minOccurs,
-                    maxOccurs,
-                    bindId);
-
+				      formSection,
+				      repeatSection,
+				      minOccurs,
+				      maxOccurs,
+				      bindId);
+	    
             Element controlWrapper =
                     _wrapper.createControlsWrapper(repeatSection);
             formSection.appendChild(controlWrapper);
 
             //add a group inside the repeat?
-            Element group =
-                    xForm.createElementNS(XFORMS_NS,
-                            this.getXFormsNSPrefix() + "group");
+            Element group = xForm.createElementNS(XFORMS_NS,
+						  this.getXFormsNSPrefix() + "group");
             this.setXFormsId(group);
             repeatSection.appendChild(group);
             repeatSection = group;
@@ -2627,11 +2606,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                                int maxOccurs) {
 
         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("addSimpleType for "
-                    + controlType.getName()
-                    + " (owningElementName="
-                    + owningElementName
-                    + ")");
+            LOGGER.debug("addSimpleType for " + controlType.getName() + 
+			 " (owningElementName=" + owningElementName + ")");
 
         // create the <xforms:bind> element and add it to the model.
         Element bindElement = xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "bind");
@@ -2656,14 +2632,13 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         }
 
         //eventual repeat
-        Element repeatSection =
-                addRepeatIfNecessary(xForm,
-                        modelSection,
-                        formSection,
-                        controlType,
-                        minOccurs,
-                        maxOccurs,
-                        pathToRoot);
+        Element repeatSection = addRepeatIfNecessary(xForm,
+						     modelSection,
+						     formSection,
+						     controlType,
+						     minOccurs,
+						     maxOccurs,
+						     pathToRoot);
 
         // create the form control element
         //put a wrapper for the repeat content, but only if it is really a repeat
@@ -2701,14 +2676,13 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         String caption = createCaption(owningElementName);
 
         //Element formControl = (Element) contentWrapper.appendChild(createFormControl(xForm,caption,controlType,bindId,bindElement,minOccurs,maxOccurs));
-        Element formControl =
-                createFormControl(xForm,
-                        caption,
-                        controlType,
-                        bindId,
-                        bindElement,
-                        minOccurs,
-                        maxOccurs);
+        Element formControl = createFormControl(xForm,
+						caption,
+						controlType,
+						bindId,
+						bindElement,
+						minOccurs,
+						maxOccurs);
         Element controlWrapper = _wrapper.createControlsWrapper(formControl);
         contentWrapper.appendChild(controlWrapper);
 
@@ -2717,8 +2691,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         //
         if (!repeatSection.equals(formSection)) {
             formControl.setAttributeNS(XFORMS_NS,
-                    getXFormsNSPrefix() + "ref",
-                    ".");
+				       getXFormsNSPrefix() + "ref",
+				       ".");
         }
 
         Element hint = createHint(xForm, owner);
@@ -2745,14 +2719,14 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
         int[] occurance = this.getOccurance(owner);
         addSimpleType(xForm,
-                modelSection,
-                formSection,
-                controlType,
-                owner.getName(),
-                owner,
-                pathToRoot,
-                occurance[0],
-                occurance[1]);
+		      modelSection,
+		      formSection,
+		      controlType,
+		      owner.getName(),
+		      owner,
+		      pathToRoot,
+		      occurance[0],
+		      occurance[1]);
     }
 
     private void addSimpleType(Document xForm,
@@ -2763,14 +2737,14 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                                String pathToRoot) {
 
         addSimpleType(xForm,
-                modelSection,
-                formSection,
-                controlType,
-                owningAttribute.getAttrDeclaration().getName(),
-                owningAttribute,
-                pathToRoot,
-                owningAttribute.getRequired() ? 1 : 0,
-                1);
+		      modelSection,
+		      formSection,
+		      controlType,
+		      owningAttribute.getAttrDeclaration().getName(),
+		      owningAttribute,
+		      pathToRoot,
+		      owningAttribute.getRequired() ? 1 : 0,
+		      1);
     }
 
     /**
@@ -3075,19 +3049,13 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
             formControl = createControlForAnyType(xForm, caption, controlType);
         }
 
-        if (formControl == null) {
-            // default situation - use an input control
-            //
-            formControl =
-                    createControlForAtomicType(xForm,
-                            caption,
-                            (XSSimpleTypeDefinition) controlType);
-        }
+        if (formControl == null)
+            formControl = createControlForAtomicType(xForm,
+						     caption,
+						     (XSSimpleTypeDefinition)controlType);
 
         startFormControl(formControl, controlType);
-        formControl.setAttributeNS(XFORMS_NS,
-                getXFormsNSPrefix() + "bind",
-                bindId);
+        formControl.setAttributeNS(XFORMS_NS, getXFormsNSPrefix() + "bind", bindId);
 
         //put the label before
         // no -> put in the "createControlFor..." methods
@@ -3153,11 +3121,13 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
         //if we use XMLSchema types:
         //first check if it is a simple type named in the XMLSchema
-        if (_useSchemaTypes
-                && controlType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE
-                && typeName != null && !typeName.equals("")
-                && schema.getTypeDefinition(typeName, typeNS) != null) { //type is globally defined
-            //use schema type
+        if (_useSchemaTypes &&
+	    controlType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE &&
+	    typeName != null && typeName.length() != 0 && 
+	    schema.getTypeDefinition(typeName, typeNS) != null)
+        { 
+	    //type is globally defined
+	    //use schema type
 
             //local type name
             String localTypeName = typeName;
@@ -3170,12 +3140,15 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
             //completeTypeName = new prefix + local name
             result = localTypeName;
-            if (prefix != null && !prefix.equals(""))
+            if (prefix != null && prefix.length() != 0)
                 result = prefix + ":" + localTypeName;
 
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("getXFormsTypeName: typeName=" + typeName + ", typeNS=" + typeNS + ", result=" + result);
-        } else { //use built in type
+        } 
+	else
+	{
+	    //use built in type
             result = this.getDataTypeName(getBuiltInType(controlType));
         }
         return result;
@@ -3184,8 +3157,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
     private Document createFormTemplate(String formId)
             throws IOException, ParserConfigurationException {
         return createFormTemplate(formId,
-                "Form " + formId,
-                getProperty(CSS_STYLE_PROP, DEFAULT_CSS_STYLE_PROP));
+				  "Form " + formId,
+				  getProperty(CSS_STYLE_PROP, DEFAULT_CSS_STYLE_PROP));
     }
 
     private Document createFormTemplate(String formId,
@@ -3254,7 +3227,10 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                 xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "group");
         groupElement = startFormGroup(groupElement, owner);
 
-        if (groupElement != null) {
+        if (groupElement == null)
+	    groupElement = modelSection;
+	else
+	{
             this.setXFormsId(groupElement);
 
             Element controlsWrapper =
@@ -3268,17 +3244,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                             getXFormsNSPrefix() + "label"));
             this.setXFormsId(captionElement);
             captionElement.appendChild(xForm.createTextNode(createCaption(owner)));
-
-            //no hint in groups
-
-            /*Element hint = createHint(xForm,owner);
-               if (hint != null) {
-                   groupElement.appendChild(hint);
-               }*/
-        } else {
-            groupElement = modelSection;
         }
-
         return groupElement;
     }
 
@@ -3293,7 +3259,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
     private String getElementName(XSElementDeclaration element, Document xForm) {
         String elementName = element.getName();
         String namespace = element.getNamespace();
-        if (namespace != null && !namespace.equals("")) {
+        if (namespace != null && namespace.length() != 0) 
+	{
             String prefix;
             if ((prefix = (String) namespacePrefixes.get(namespace)) == null) {
                 String basePrefix = (namespace.substring(namespace.lastIndexOf('/', namespace.length()-2)+1));

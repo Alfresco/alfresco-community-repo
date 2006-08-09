@@ -77,16 +77,9 @@ public abstract class BaseContentWizard extends BaseWizardBean
    @Override
    public boolean getFinishButtonDisabled()
    {
-      if (this.fileName == null || 
-          this.fileName.length() == 0 ||
-          this.mimeType == null)
-      {
-         return true;
-      }
-      else
-      {
-         return false;
-      }
+       return (this.fileName == null || 
+	       this.fileName.length() == 0 ||
+	       this.mimeType == null);
    }
 
    // ------------------------------------------------------------------------------
@@ -331,7 +324,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
    
    // ------------------------------------------------------------------------------
    // Helper methods
-   
+
    /**
     * Save the specified content using the currently set wizard attributes
     * 
@@ -341,21 +334,12 @@ public abstract class BaseContentWizard extends BaseWizardBean
    protected void saveContent(File fileContent, String strContent) throws Exception
    {
       // get the node ref of the node that will contain the content
-      NodeRef containerNodeRef;
-      String nodeId = this.navigator.getCurrentNodeId();
-      if (nodeId == null)
-      {
-         containerNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-      }
-      else
-      {
-         containerNodeRef = new NodeRef(Repository.getStoreRef(), nodeId);
-      }
+      NodeRef containerNodeRef = this.getContainerNodeRef();
       
-      FileInfo fileInfo = this.fileFolderService.create(
-            containerNodeRef,
-            this.fileName,
-            Repository.resolveToQName(this.objectType));
+      FileInfo fileInfo = 
+	  this.fileFolderService.create(containerNodeRef,
+					this.fileName,
+					Repository.resolveToQName(this.objectType));
       NodeRef fileNodeRef = fileInfo.getNodeRef();
       
       // set the author aspect
@@ -395,13 +379,9 @@ public abstract class BaseContentWizard extends BaseWizardBean
       {
          writer.putContent(fileContent);
       }
-      else if (strContent != null)
+      else 
       {
-         writer.putContent(strContent);
-      }
-      else
-      {
-         writer.putContent("");
+	  writer.putContent(strContent == null ? "" : strContent);
       }
       
       // remember the created node now

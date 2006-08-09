@@ -17,6 +17,7 @@
 package org.alfresco.web.templating;
 
 import org.w3c.dom.Document;
+import java.util.List;
 
 public interface TemplateType
 {
@@ -27,7 +28,9 @@ public interface TemplateType
 
     public Document getSampleXml(final String rootTagName);
 
-    public TemplateInputMethod[] getInputMethods();
+    public List<TemplateInputMethod> getInputMethods();
 
-    public TemplateOutputMethod[] getOutputMethods();
+    public void addOutputMethod(TemplateOutputMethod output);
+
+    public List<TemplateOutputMethod> getOutputMethods();
 }

@@ -241,14 +241,13 @@ public class BaseSchemaFormBuilder
         Element control;
 
         //remove while select1 do not work correctly in repeats
-        if ((controlType.getName() != null)
-                && controlType.getName().equals("boolean")) {
-            control =
-                    xForm.createElementNS(XFORMS_NS,
-                            getXFormsNSPrefix() + "select1");
+        if ("boolean".equals(controlType.getName()))
+	{
+            control = xForm.createElementNS(XFORMS_NS,
+					    getXFormsNSPrefix() + "select1");
             control.setAttributeNS(XFORMS_NS,
-                    getXFormsNSPrefix() + "appearance",
-                    "full");
+				   getXFormsNSPrefix() + "appearance",
+				   "full");
             this.setXFormsId(control);
 
             Element item_true =
@@ -286,16 +285,17 @@ public class BaseSchemaFormBuilder
             value_false.appendChild(value_false_text);
             item_false.appendChild(value_false);
             control.appendChild(item_false);
-        } else {
-            control =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "input");
+        } 
+	else 
+	{
+            control = xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "input");
             this.setXFormsId(control);
         }
 
         //label
-        Element captionElement =
-                (Element) control.appendChild(xForm.createElementNS(XFORMS_NS,
-                        getXFormsNSPrefix() + "label"));
+        Element captionElement = (Element)
+	    control.appendChild(xForm.createElementNS(XFORMS_NS,
+						      getXFormsNSPrefix() + "label"));
         this.setXFormsId(captionElement);
         captionElement.appendChild(xForm.createTextNode(caption));
 

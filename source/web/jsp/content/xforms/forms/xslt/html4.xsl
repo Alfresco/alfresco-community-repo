@@ -78,9 +78,8 @@
             <title>
                 <xsl:value-of select="$form-name"/>
             </title>
-            <link rel="shortcut icon" href="forms/images/favicon.ico.gif"/>
             <xsl:call-template name="getCSS"/>
-
+            <link type="text/css" rel="stylesheet" href="{concat($contextroot,'/css/main.css')}"></link>
             <xsl:if test="$scripted='true'">
                 <!-- PLEASE DON'T CHANGE THE FORMATTING OF THE XSL:TEXT ELEMENTS - THEY PROVIDE CLEAN LINE BREAKS IN THE OUTPUT -->
                 <!-- for DateControl - only included if dates are used in the form -->
@@ -200,80 +199,45 @@
         <!--<xsl:copy-of select="@*"/>-->
         <body>
             <xsl:copy-of select="@*"/>
-            <!--
-            <div>
-                <a href="jsp/forms.jsp">
-                    <img src="forms/images/chiba50t.gif" style="border:none;" alt="Chiba Logo" width="113" height="39" id="chiba-logo"/>
-                </a>
-            </div>
-
-            <table border="0">
-                <tr>
-                    <td></td>
-                    <td>
--->
             <div id="loading">
                 <img src="{concat($contextroot,'/jsp/content/xforms/forms/images/chiba-logo_klein2.gif')}" class="disabled" id="indicator" alt="loading" />
             </div>
-                        <xsl:element name="form">
-                            <xsl:attribute name="name">
-                                <xsl:value-of select="$form-id"/>
-                            </xsl:attribute>
-                            <xsl:attribute name="action">
-                                <xsl:value-of select="$action-url"/>
-                            </xsl:attribute>
-                            <xsl:attribute name="method">POST</xsl:attribute>
-                            <xsl:attribute name="enctype">application/x-www-form-urlencoded</xsl:attribute>
-                            <xsl:if test="$uses-upload">
-                                <xsl:attribute name="enctype">multipart/form-data</xsl:attribute>
-                                <xsl:if test="$scripted = 'true'">
-                                    <iframe id="UploadTarget" name="UploadTarget" src="" style="width:0px;height:0px;border:0"></iframe>
-                                </xsl:if>
-                            </xsl:if>
-                            <xsl:if test="$scripted != 'true'">
-                                <input type="submit" value="refresh page" class="refresh-button"/>
-                            </xsl:if>
+            <xsl:element name="form">
+                <xsl:attribute name="name">
+                    <xsl:value-of select="$form-id"/>
+                </xsl:attribute>
+                <xsl:attribute name="action">
+                    <xsl:value-of select="$action-url"/>
+                </xsl:attribute>
+                <xsl:attribute name="method">POST</xsl:attribute>
+                <xsl:attribute name="enctype">application/x-www-form-urlencoded</xsl:attribute>
+                <xsl:if test="$uses-upload">
+                    <xsl:attribute name="enctype">multipart/form-data</xsl:attribute>
+                    <xsl:if test="$scripted = 'true'">
+                        <iframe id="UploadTarget" name="UploadTarget" src="" style="width:0px;height:0px;border:0"></iframe>
+                    </xsl:if>
+                </xsl:if>
+                <xsl:if test="$scripted != 'true'">
+                    <input type="submit" value="refresh page" class="refresh-button"/>
+                </xsl:if>
 
-                            <xsl:apply-templates/>
-                            <xsl:if test="$scripted != 'true'">
-                                <input type="submit" value="refresh page" class="refresh-button"/>
-                            </xsl:if>
-                        </xsl:element>
-<!--
-                    </td>
-                </tr>
-                <tr>
-                    <td/>
-                    <td>
-                        <table width="100%" border="0">
-                            <tr>
-                                <td>
-
--->
-                                <span id="legend">
-                                    <span style="color:#A42322;">*</span> - required |
-                                    <b>?</b> - help
-                                </span>
-                                <div id="chiba-logo">
-                                    <a href="jsp/forms.jsp">
-                                        <img src="forms/images/poweredby.gif" style="border:none;" alt="powered by Chiba"/>
-                                    </a>
-                                </div>
-                                <div id="copyright">
-                                    <xsl:text disable-output-escaping="yes">&amp;copy; 2001-2005 Chiba Project</xsl:text>
-                                </div>
-<!--
-                                </td>
-                                <td align="right">
--->
-<!--
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
--->
+                <xsl:apply-templates/>
+                <xsl:if test="$scripted != 'true'">
+                    <input type="submit" value="refresh page" class="refresh-button"/>
+                </xsl:if>
+            </xsl:element>
+            <span id="legend">
+                <span style="color:#A42322;">*</span> - required |
+                <b>?</b> - help
+            </span>
+            <div id="chiba-logo">
+                <a href="jsp/forms.jsp">
+                    <img src="forms/images/poweredby.gif" style="border:none;" alt="powered by Chiba"/>
+                </a>
+            </div>
+            <div id="copyright">
+                <xsl:text disable-output-escaping="yes">&amp;copy; 2001-2005 Chiba Project</xsl:text>
+            </div>
             <xsl:if test="$debug-enabled='true' and $scripted='true'">
                 <form id="debugform" name="debugform" action="" onsubmit="return false;">
                     <textarea id="debugarea" name="debugarea" rows="5" cols="15"></textarea>
@@ -359,6 +323,15 @@
     <xsl:template match="xforms:label">
         <xsl:variable name="group-id" select="ancestor::xforms:group[1]/@id"/>
         <xsl:variable name="img" select="@xforms:src"/>
+        <xsl:if test="../chiba:data/@chiba:required='true'">
+	  <xsl:element name="img">
+	    <xsl:attribute name="class">required-symbol</xsl:attribute>
+	    <xsl:attribute name="style">margin-right: 10px;</xsl:attribute>
+	    <xsl:attribute name="src">
+	      <xsl:value-of select="concat($contextroot, '/images/icons/required_field.gif')"/>
+	    </xsl:attribute>
+	  </xsl:element>
+        </xsl:if>
 
         <xsl:choose>
             <!--
@@ -386,7 +359,6 @@
                 <xsl:apply-templates/>
             </xsl:otherwise>
         </xsl:choose>
-        <xsl:if test="../chiba:data/@chiba:required='true'"><span class="required-symbol">*</span></xsl:if>
     </xsl:template>
 
     <!-- ### handle hint ### -->

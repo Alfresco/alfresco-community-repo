@@ -26,7 +26,7 @@
 
     <!-- build input control -->
     <xsl:template name="input">
-
+        <td>
         <xsl:variable name="repeat-id" select="ancestor::*[name(.)='xforms:repeat'][1]/@id" />
         <xsl:variable name="pos" select="position()" />
         <xsl:variable name="id" select="@id" />
@@ -117,38 +117,7 @@
                 </xsl:element>
             </xsl:otherwise>
         </xsl:choose>
-    </xsl:template>
-
-    <!-- build image trigger / submit -->
-    <xsl:template name="image-trigger">
-        <xsl:element name="input">
-            <xsl:variable name="id" select="@id"/>
-            <xsl:variable name="repeat-id" select="ancestor::*[name(.)='xforms:repeat'][1]/@id"/>
-            <xsl:attribute name="id">
-                <xsl:value-of select="concat($id,'-value')"/>
-            </xsl:attribute>
-            <xsl:attribute name="name">
-                <xsl:value-of select="concat($trigger-prefix,$id)"/>
-            </xsl:attribute>
-            <xsl:attribute name="type">image</xsl:attribute>
-            <xsl:attribute name="value">
-                <xsl:value-of select="xforms:label"/>
-            </xsl:attribute>
-            <xsl:attribute name="title">
-                <xsl:value-of select="normalize-space(xforms:hint)"/>
-            </xsl:attribute>
-            <xsl:attribute name="src">
-                <xsl:value-of select="xforms:label/@xlink:href"/>
-            </xsl:attribute>
-            <xsl:attribute name="class">value</xsl:attribute>
-            <xsl:if test="chiba:data/@chiba:readonly='true'">
-                <xsl:attribute name="disabled">disabled</xsl:attribute>
-            </xsl:if>
-            <xsl:if test="$scripted='true'">
-                <xsl:attribute name="onclick">javascript:activate(this);</xsl:attribute>
-            </xsl:if>
-        </xsl:element>
-
+        </td>
     </xsl:template>
 
     <!-- build output -->
@@ -734,16 +703,11 @@
             <xsl:attribute name="name">
                 <xsl:value-of select="concat($trigger-prefix,$id)"/>
             </xsl:attribute>
-
-            <xsl:choose>
-                <xsl:when test="$scripted='true'">
-                    <xsl:attribute name="type">button</xsl:attribute>
-                    <xsl:attribute name="onclick">javascript:activate(this);</xsl:attribute>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:attribute name="type">submit</xsl:attribute>
-                </xsl:otherwise>
-            </xsl:choose>
+            <xsl:attribute name="type">button</xsl:attribute>
+            <xsl:attribute name="src">
+                <xsl:value-of select="concat($contextroot, xforms:label/@xlink:href)"/>
+            </xsl:attribute>
+            <xsl:attribute name="onclick">javascript:activate(this);</xsl:attribute>
             <xsl:attribute name="value">
                 <xsl:value-of select="xforms:label"/>
             </xsl:attribute>

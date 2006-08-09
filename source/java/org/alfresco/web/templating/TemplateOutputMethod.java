@@ -25,5 +25,6 @@ public interface TemplateOutputMethod
 
     public void generate(final Document xmlContent,
 			 final TemplateType tt,
-			 final Writer out);
+			 final Writer out)
+	throws Exception;
 }

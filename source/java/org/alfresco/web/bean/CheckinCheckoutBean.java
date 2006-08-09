@@ -565,7 +565,9 @@ public class CheckinCheckoutBean
                    MimetypeMap.MIMETYPE_JAVASCRIPT.equals(mimetype))
                {
                   // make content available to the editing screen
-                  setEditorOutput(reader.getContentString());
+		   String contentString = reader.getContentString();
+                  setDocumentContent(contentString); 
+		  setEditorOutput(contentString);
                   
                   // navigate to appropriate screen
                   FacesContext fc = FacesContext.getCurrentInstance();

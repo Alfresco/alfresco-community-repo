@@ -33,7 +33,6 @@ form{
 .inactive{
     display:none;
 }
-#legend{padding:3px;}
 
 a.link{color:#444444;}
 a.visited{color:#444444;}
@@ -53,47 +52,24 @@ appearance class 'minimal-group|compact-group|full-group'. */
     background: white;
     margin-bottom:5px;
 }
-/* IE */
-fieldset{
-    margin-bottom:5px;
-}
 
 /*********** used to render group labels ***********/
 fieldset > legend {
     padding: 3px;
+    width: 100%;                    
     border: thin solid rgb(55, 71, 90);
-    background: white; /*#F0F4EA;*/
-    color: rgb( 85, 96, 63 );
+    background-color: #cddbe8;
     margin-top:5px;
     margin-bottom:5px;
+    color: #003366;
+    font-weight: bold;                    
 }
-
-/* IE */
-fieldset legend{
-    padding: 3px;
-    border: thin solid rgb(55, 71, 90);
-    color: rgb( 85, 96, 63 );
-    margin-top:5px;
-    margin-bottom:5px;
-}
-
-/*********** use to render group labels ***********/
-.legend{
-    border:thin groove;
-    color:#888888;
-    text-align:center;
-    }
 
 /*********** nested group ***********/
 fieldset > fieldset {
-    margin:5px;
+/*    margin:5px; */
     background-color: white; /*rgb(82, 90, 99); */
     padding-top:0px;
-}
-
-/* IE */
-fieldset fieldset{
-    margin:5px;
 }
 
 /*********** nested nested group ***********/
@@ -192,8 +168,8 @@ fieldset > fieldset > fieldset {
 
 
 .label{
-    color:rgb(85, 96, 63);
-    padding-right: 5px;
+    color: #003366;
+    padding-right: 10px;
 }
 /*
 .help-symbol{

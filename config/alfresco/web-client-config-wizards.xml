@@ -182,7 +182,7 @@
             <step name="configure_presentation_templates" 
 		  title-id="configure_presentation_templates" 
 		  description-id="create_xml_content_type_step2_desc">
-               <page path="/jsp/content/create-xml-content-type-wizard/configure_presentation_templates.jsp"
+               <page path="/jsp/content/create-xml-content-type-wizard/configure-presentation-templates.jsp"
                      title-id="create_xml_content_type_step2_title"
                      description-id="create_xml_content_type_step2_desc"
                      instruction-id="default_instruction" />

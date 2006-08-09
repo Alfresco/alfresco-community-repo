@@ -298,16 +298,17 @@ public class ChibaServlet extends HttpServlet {
         //set parameters
         uiGenerator.setParameter("contextroot",request.getContextPath());
         uiGenerator.setParameter("action-url",actionURL);
-        uiGenerator.setParameter("debug-enabled", true /*String.valueOf(logger.isDebugEnabled()) */);
-        String selectorPrefix = Config.getInstance().getProperty(HttpRequestHandler.SELECTOR_PREFIX_PROPERTY,
-                                                                 HttpRequestHandler.SELECTOR_PREFIX_DEFAULT);
+        uiGenerator.setParameter("debug-enabled", String.valueOf(logger.isDebugEnabled()));
+        String selectorPrefix = 
+	    Config.getInstance().getProperty(HttpRequestHandler.SELECTOR_PREFIX_PROPERTY,
+					     HttpRequestHandler.SELECTOR_PREFIX_DEFAULT);
         uiGenerator.setParameter("selector-prefix", selectorPrefix);
-        String removeUploadPrefix = Config.getInstance().getProperty(HttpRequestHandler.REMOVE_UPLOAD_PREFIX_PROPERTY,
-                                                                     HttpRequestHandler.REMOVE_UPLOAD_PREFIX_DEFAULT);
+        String removeUploadPrefix = 
+	    Config.getInstance().getProperty(HttpRequestHandler.REMOVE_UPLOAD_PREFIX_PROPERTY,
+					     HttpRequestHandler.REMOVE_UPLOAD_PREFIX_DEFAULT);
         uiGenerator.setParameter("remove-upload-prefix", removeUploadPrefix);
-        if (css != null) {
+        if (css != null)
             uiGenerator.setParameter("css-file", css);
-        }
         String dataPrefix = Config.getInstance().getProperty("chiba.web.dataPrefix");
         uiGenerator.setParameter("data-prefix", dataPrefix);
 

@@ -39,6 +39,12 @@ import org.alfresco.web.templating.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import java.io.OutputStreamWriter;
+
 /**
  * Bean implementation for the "Create Content Wizard" dialog
  * 
@@ -46,11 +52,13 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateContentWizard extends BaseContentWizard
 {
-   protected String content = null;
+    protected String content = null;
     protected String templateType;
-   protected List<SelectItem> createMimeTypes;
-   
-   private static Log logger = LogFactory.getLog(CreateContentWizard.class);
+    protected List<SelectItem> createMimeTypes;
+    
+    private static final Log LOGGER = 
+	LogFactory.getLog(CreateContentWizard.class);
+
     public static final org.alfresco.service.namespace.QName TT_QNAME = 
 	org.alfresco.service.namespace.QName.createQName(org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI, "tt");
 
@@ -61,12 +69,55 @@ public class CreateContentWizard extends BaseContentWizard
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception
    {
+       LOGGER.debug("saving file content to " + this.fileName);
        saveContent(null, this.content);
-       if (templateType != null)
-	   this.nodeService.setProperty(createdNode, TT_QNAME, templateType);
+       if (this.templateType != null)
+       {
+	   LOGGER.debug("generating template output for " + this.templateType);
+	   this.nodeService.setProperty(this.createdNode, TT_QNAME, this.templateType);
+	   TemplatingService ts = TemplatingService.getInstance();
+	   TemplateType tt = ts.getTemplateType(this.templateType);
+	   if (tt.getOutputMethods().size() != 0)
+	   {
+	       try {
+		   // get the node ref of the node that will contain the content
+		   NodeRef containerNodeRef = this.getContainerNodeRef();
+		   final String fileName = this.fileName + "-generated.html";
+		   FileInfo fileInfo = 
+		       this.fileFolderService.create(containerNodeRef,
+						     fileName,
+						     ContentModel.TYPE_CONTENT);
+		   NodeRef fileNodeRef = fileInfo.getNodeRef();
+      
+		   if (LOGGER.isDebugEnabled())
+		       LOGGER.debug("Created file node for file: " + 
+				    fileName);
+	
+		   // get a writer for the content and put the file
+		   ContentWriter writer = contentService.getWriter(fileNodeRef, 
+								   ContentModel.PROP_CONTENT, true);
+		   // set the mimetype and encoding
+		   writer.setMimetype("text/html");
+		   writer.setEncoding("UTF-8");
+		   TemplateOutputMethod tom = tt.getOutputMethods().get(0);
+		   OutputStreamWriter out = 
+		       new OutputStreamWriter(writer.getContentOutputStream());
+		   tom.generate(ts.parseXML(this.content), tt, out);
+		   out.close();
+		   this.nodeService.setProperty(fileNodeRef, TT_QNAME, this.templateType);
 
-      // return the default outcome
-      return outcome;
+		   LOGGER.debug("generated " + fileName + " using " + tom);
+	       }
+	       catch (Exception e)
+               {
+		   e.printStackTrace();
+		   throw e;
+	       }
+	   }
+       }
+
+       // return the default outcome
+       return outcome;
    }
    
    @Override
@@ -189,12 +240,12 @@ public class CreateContentWizard extends BaseContentWizard
             }
             else
             {
-               logger.warn("Could not find 'create-mime-types' configuration element");
+               LOGGER.warn("Could not find 'create-mime-types' configuration element");
             }
          }
          else
          {
-            logger.warn("Could not find 'Content Wizards' configuration section");
+            LOGGER.warn("Could not find 'Content Wizards' configuration section");
          }
          
       }

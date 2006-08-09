@@ -84,16 +84,6 @@
 
 <h:panelGrid id="panel_grid_2"
              columns="3" cellpadding="3" cellspacing="3" border="0">
-<%--
-   <h:graphicImage id="required_image_name"
-                   value="/images/icons/required_field.gif" alt="Required Field" />
-   <h:outputText id="output_text_name"
-                 value="#{msg.name}:"/>
-   <h:inputText id="file-name" value="#{WizardManager.bean.fileName}" 
-                maxlength="1024" size="35" 
-                onkeyup="checkButtonState();" 
-                onchange="checkButtonState();" />
---%>
    <h:graphicImage id="required_image_schema"
                    value="/images/icons/required_field.gif" alt="Required Field" />
    <h:outputText id="output_text_schema"
@@ -101,11 +91,12 @@
    <h:column id="column_schema">
 <%
 FileUploadBean upload = (FileUploadBean)
-   session.getAttribute(FileUploadBean.FILE_UPLOAD_BEAN_NAME);
+   session.getAttribute(FileUploadBean.getKey("schema"));
 if (upload == null || upload.getFile() == null)
 {
 %>
    <f:verbatim>
+     <input type="hidden" name="upload-id" value="schema"/>
      <input type="hidden" name="return-page" value="<%= request.getContextPath() %>/faces<%= request.getServletPath() %>"/>
      <input id="wizard:wizard-body:file-input" type="file" size="35" name="alfFileInput" onchange="javascript:upload_file(this)"/>
    </f:verbatim>
@@ -127,24 +118,4 @@ if (upload == null || upload.getFile() == null)
 }
 %>
    </h:column>
-</h:panelGrid>
-
-
-<h:panelGrid id="panel_grid_3"
-             columns="1" cellpadding="3" cellspacing="3" border="0" style="padding-top: 4px;"
-             width="100%" rowClasses="wizardSectionHeading, paddingRow"
-             rendered="#{WizardManager.bean.otherPropertiesChoiceVisible}">
-   <h:outputText id="panel_grid_3_output_text_1"
-                 value="&nbsp;#{msg.other_properties}" escape="false" />
-   <h:outputText id="panel_grid_3_output_text_2"
-                 value="#{msg.modify_props_help_text}" />
-</h:panelGrid>
-
-<h:panelGrid id="panel_grid_4"
-             style="padding-top: 2px;" columns="2"
-             rendered="#{WizardManager.bean.otherPropertiesChoiceVisible}">
-   <h:selectBooleanCheckbox id="panel_grid_3_select_boolean_checkbox"
-                            value="#{WizardManager.bean.showOtherProperties}" />
-   <h:outputText id="panel_grid_4_output_text_1"
-                 value="#{msg.modify_props_when_wizard_closes}" />
 </h:panelGrid>

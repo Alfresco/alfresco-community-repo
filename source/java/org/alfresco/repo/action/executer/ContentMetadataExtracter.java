@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 Jesper Steen MÃ¸ller
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -43,7 +43,7 @@ import org.alfresco.service.namespace.QName;
  * otherwise they are left as is.<br/>
  * <i>This may change if the action gets parameterized in future</i>.
  * 
- * @author Jesper Steen Møller
+ * @author Jesper Steen MÃ¸ller
  */
 public class ContentMetadataExtracter extends ActionExecuterAbstractBase
 {

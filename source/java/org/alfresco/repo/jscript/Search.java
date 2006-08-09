@@ -81,6 +81,40 @@ public final class Search implements Scopeable
     }
     
     /**
+     * Find a single Node by the Node reference
+     * 
+     * @param ref       The NodeRef of the Node to find
+     * 
+     * @return the Node if found or null if failed to find
+     */
+    public Node findNode(NodeRef ref)
+    {
+        return findNode(ref.toString());
+    }
+    
+    /**
+     * Find a single Node by the Node reference
+     *  
+     * @param ref       The fully qualified NodeRef in String format
+     *  
+     * @return the Node if found or null if failed to find
+     */
+    public Node findNode(String ref)
+    {
+        String query = ref.replace(":", "\\:");
+        query = query.replace("/", "\\/");
+        Node[] result = query("ID:" + query);
+        if (result.length == 1)
+        {
+            return result[0];
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    /**
      * Execute a Lucene search
      * 
      * @param search        Lucene search string to execute

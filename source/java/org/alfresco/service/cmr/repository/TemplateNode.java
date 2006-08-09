@@ -30,6 +30,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.template.LuceneSearchResultsMap;
 import org.alfresco.repo.template.NamePathResultsMap;
+import org.alfresco.repo.template.NodeSearchResultsMap;
 import org.alfresco.repo.template.SavedSearchResultsMap;
 import org.alfresco.repo.template.XPathResultsMap;
 import org.alfresco.service.ServiceRegistry;
@@ -233,6 +234,14 @@ public final class TemplateNode implements Serializable
     public Map getChildrenByLuceneSearch()
     {
         return new LuceneSearchResultsMap(this, this.services);
+    }
+    
+    /**
+     * @return A map capable of returning a TemplateNode for a single specified NodeRef reference.
+     */
+    public Map getNodeByReference()
+    {
+        return new NodeSearchResultsMap(this, this.services);
     }
     
     /**

@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -405,33 +406,8 @@ public final class Node implements Serializable, Scopeable
             {
                 Serializable propValue = props.get(qname);
                 
-                // perform conversions from Java objects to JavaScript scriptable instances
-                if (propValue instanceof NodeRef)
-                {
-                    // NodeRef object properties are converted to new Node objects
-                    // so they can be used as objects within a template
-                    propValue = new Node(
-                            ((NodeRef)propValue), this.services, this.imageResolver, this.scope);
-                }
-                else if (propValue instanceof ContentData)
-                {
-                    // ContentData object properties are converted to ScriptContentData objects
-                    // so the content and other properties of those objects can be accessed
-                    propValue = new ScriptContentData((ContentData)propValue, qname);
-                }
-                else if (propValue instanceof Date)
-                {
-                    // convert Date to JavaScript native Date object
-                    // call the "Date" constructor on the root scope object - passing in the millisecond
-                    // value from the Java date - this will construct a JavaScript Date with the same value
-                    Date date = (Date)propValue;
-                    Object val = ScriptRuntime.newObject(
-                            Context.getCurrentContext(), this.scope, "Date", new Object[] {date.getTime()});
-                    propValue = (Serializable)val;
-                }
-                // simple numbers and strings are handled automatically by Rhino
-                
-                this.properties.put(qname.toString(), propValue);
+                // perform the conversion to a script safe value and store
+                this.properties.put(qname.toString(), convertValueForScript(qname, propValue));
             }
         }
         
@@ -924,7 +900,7 @@ public final class Node implements Serializable, Scopeable
             Serializable value = (Serializable)this.properties.get(key);
             
             // perform the conversion from script wrapper object to repo serializable values
-            value = convertValue(value);
+            value = convertValueForRepo(value);
             
             props.put(createQName(key), value);
         }
@@ -939,9 +915,13 @@ public final class Node implements Serializable, Scopeable
      * 
      * @return valid repo value
      */
-    private static Serializable convertValue(Serializable value)
+    private static Serializable convertValueForRepo(Serializable value)
     {
-        if (value instanceof Node)
+        if (value == null)
+        {
+            return null;
+        }
+        else if (value instanceof Node)
         {
             // convert back to NodeRef
             value = ((Node)value).getNodeRef();
@@ -955,7 +935,7 @@ public final class Node implements Serializable, Scopeable
         {
             // unwrap a Java object from a JavaScript wrapper
             // recursively call this method to convert the unwrapped value
-            value = convertValue((Serializable)((Wrapper)value).unwrap());
+            value = convertValueForRepo((Serializable)((Wrapper)value).unwrap());
         }
         else if (value instanceof ScriptableObject)
         {
@@ -979,7 +959,7 @@ public final class Node implements Serializable, Scopeable
                        // get the value out for the specified key
                        Serializable val = (Serializable)values.get((Integer)propId, values);
                        // recursively call this method to convert the value
-                       propValues.add(convertValue(val));
+                       propValues.add(convertValueForRepo(val));
                    }
                }
                value = (Serializable)propValues;
@@ -994,6 +974,61 @@ public final class Node implements Serializable, Scopeable
                }
             }
         }
+        return value;
+    }
+    
+    /**
+     * Convert an object from any repository serialized value to a valid script object.
+     * This includes converting Collection multi-value properties into JavaScript Array objects.
+     * 
+     * @param qname     QName of the property value for conversion
+     * @param value     Property value
+     * 
+     * @return Value safe for scripting usage
+     */
+    private Serializable convertValueForScript(QName qname, Serializable value)
+    {
+        // perform conversions from Java objects to JavaScript scriptable instances
+        if (value == null)
+        {
+            return null;
+        }
+        else if (value instanceof NodeRef)
+        {
+            // NodeRef object properties are converted to new Node objects
+            // so they can be used as objects within a template
+            value = new Node(((NodeRef)value), this.services, this.imageResolver, this.scope);
+        }
+        else if (value instanceof ContentData)
+        {
+            // ContentData object properties are converted to ScriptContentData objects
+            // so the content and other properties of those objects can be accessed
+            value = new ScriptContentData((ContentData)value, qname);
+        }
+        else if (value instanceof Date)
+        {
+            // convert Date to JavaScript native Date object
+            // call the "Date" constructor on the root scope object - passing in the millisecond
+            // value from the Java date - this will construct a JavaScript Date with the same value
+            Date date = (Date)value;
+            Object val = ScriptRuntime.newObject(
+                    Context.getCurrentContext(), this.scope, "Date", new Object[] {date.getTime()});
+            value = (Serializable)val;
+        }
+        else if (value instanceof Collection)
+        {
+            // recursively convert each value in the collection
+            Collection<Serializable> collection = (Collection<Serializable>)value;
+            Serializable[] array = new Serializable[collection.size()];
+            int index = 0;
+            for (Serializable obj : collection)
+            {
+                array[index++] = convertValueForScript(qname, obj);
+            }
+            value = array;
+        }
+        // simple numbers and strings are wrapped automatically by Rhino
+        
         return value;
     }
     
@@ -1300,7 +1335,7 @@ public final class Node implements Serializable, Scopeable
                         {
                             // get the value out for the specified key - make sure it is Serializable
                             Object value = props.get((String)propId, props);
-                            value = convertValue((Serializable)value);
+                            value = convertValueForRepo((Serializable)value);
                             aspectProps.put(createQName((String)propId), (Serializable)value);
                         }
                     }
@@ -1502,19 +1537,22 @@ public final class Node implements Serializable, Scopeable
         if (reader != null)
         {
             // Copy the content node to a new node
+            String copyName = TransformActionExecuter.transformName(
+                            this.services.getMimetypeService(), getName(), mimetype);
             NodeRef copyNodeRef = this.services.getCopyService().copy(
                     this.nodeRef,
                     destination,
                     ContentModel.ASSOC_CONTAINS,
-                    getPrimaryParentAssoc().getQName(),
+                    QName.createQName(
+                            ContentModel.PROP_CONTENT.getNamespaceURI(),
+                            QName.createValidLocalName(copyName)),
                     false);
             
             // modify the name of the copy to reflect the new mimetype
             this.nodeService.setProperty(
                     copyNodeRef,
                     ContentModel.PROP_NAME,
-                    TransformActionExecuter.transformName(
-                            this.services.getMimetypeService(), getName(), mimetype));
+                    copyName);
             
             // get the writer and set it up
             ContentWriter writer = contentService.getWriter(copyNodeRef, ContentModel.PROP_CONTENT, true);

@@ -157,10 +157,6 @@
       <filter-name>JbpmContextFilter</filter-name>
       <url-pattern>/faces/jsp/dashboards/*</url-pattern>
    </filter-mapping>
-   <filter-mapping>
-      <filter-name>JbpmContextFilter</filter-name>
-      <url-pattern>/upload</url-pattern>
-   </filter-mapping>
 <!-- 
    <filter-mapping>
       <filter-name>JbpmAuthenticationFilter</filter-name>
@@ -241,6 +237,12 @@
       <load-on-startup>5</load-on-startup>
    </servlet>
       
+   <servlet>
+      <servlet-name>JBPMDeployProcessServlet</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.JBPMDeployProcessServlet</servlet-class>
+   </servlet>
+      
+      
    <!--  -->
    <!-- JBPM START -->
    <!-- TODO: Remove this block - just a temporary placement for testing -->
@@ -260,16 +262,6 @@
       <servlet-class>org.jbpm.webapp.servlet.ProcessImageServlet</servlet-class>
    </servlet>
 
-   <!-- jBPM DeployServlet -->
-   <servlet>
-      <servlet-name>DeployServlet</servlet-name>
-      <servlet-class>org.jbpm.webapp.servlet.DeployServlet</servlet-class>
-   </servlet>
-   <servlet>
-      <servlet-name>UploadServlet</servlet-name>
-      <servlet-class>org.jbpm.webapp.servlet.UploadServlet</servlet-class>
-   </servlet>
-      
    <!--  -->
    <!-- JBPM END -->
    <!--  -->
@@ -319,6 +311,11 @@
 		<url-pattern>/webdav/*</url-pattern>
    </servlet-mapping>
 
+   <servlet-mapping>
+      <servlet-name>JBPMDeployProcessServlet</servlet-name>
+      <url-pattern>/jbpm/deployprocess</url-pattern>
+   </servlet-mapping>
+
    <!--  -->
    <!-- JBPM START -->
    <!-- TODO: Remove this block - just a temporary placement for testing -->
@@ -337,16 +334,6 @@
       <url-pattern>/processimage</url-pattern>
    </servlet-mapping>
 
-   <!-- jBPM DeployServlet -->
-   <servlet-mapping>
-      <servlet-name>DeployServlet</servlet-name>
-      <url-pattern>/deploy</url-pattern>
-   </servlet-mapping>
-   <servlet-mapping>
-      <servlet-name>UploadServlet</servlet-name>
-      <url-pattern>/upload</url-pattern>
-   </servlet-mapping>
-      
    <!--  -->
    <!-- JBPM END -->
    <!--  -->

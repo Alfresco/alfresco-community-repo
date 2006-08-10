@@ -97,6 +97,9 @@ public final class TemplateNode implements Serializable
     private ChildAssociationRef primaryParentAssoc = null;
     
     
+    // ------------------------------------------------------------------------------
+    // Construction 
+    
     /**
      * Constructor
      * 
@@ -123,6 +126,10 @@ public final class TemplateNode implements Serializable
         
         this.properties = new QNameMap<String, Object>(this.services.getNamespaceService());
     }
+    
+    
+    // ------------------------------------------------------------------------------
+    // Node API
     
     /**
      * @return The GUID for the node
@@ -199,49 +206,6 @@ public final class TemplateNode implements Serializable
         }
         
         return this.children;
-    }
-    
-    /**
-     * @return A map capable of returning the TemplateNode at the specified Path as a child of this node.
-     */
-    public Map getChildByNamePath()
-    {
-        return new NamePathResultsMap(this, this.services);
-    }
-    
-    /**
-     * @return A map capable of returning a List of TemplateNode objects from an XPath query
-     *         as children of this node.
-     */
-    public Map getChildrenByXPath()
-    {
-        return new XPathResultsMap(this, this.services);
-    }
-    
-    /**
-     * @return A map capable of returning a List of TemplateNode objects from an NodeRef to a Saved Search
-     *         object. The Saved Search is executed and the resulting nodes supplied as a sequence.
-     */
-    public Map getChildrenBySavedSearch()
-    {
-        return new SavedSearchResultsMap(this, this.services);
-    }
-    
-    /**
-     * @return A map capable of returning a List of TemplateNode objects from an NodeRef to a Lucene search
-     *         string. The Saved Search is executed and the resulting nodes supplied as a sequence.
-     */
-    public Map getChildrenByLuceneSearch()
-    {
-        return new LuceneSearchResultsMap(this, this.services);
-    }
-    
-    /**
-     * @return A map capable of returning a TemplateNode for a single specified NodeRef reference.
-     */
-    public Map getNodeByReference()
-    {
-        return new NodeSearchResultsMap(this, this.services);
     }
     
     /**
@@ -377,6 +341,142 @@ public final class TemplateNode implements Serializable
     }
     
     /**
+     * @return true if the node is currently locked
+     */
+    public boolean getIsLocked()
+    {
+        boolean locked = false;
+        
+        if (getAspects().contains(ContentModel.ASPECT_LOCKABLE))
+        {
+            LockStatus lockStatus = this.services.getLockService().getLockStatus(this.nodeRef);
+            if (lockStatus == LockStatus.LOCKED || lockStatus == LockStatus.LOCK_OWNER)
+            {
+                locked = true;
+            }
+        }
+        
+        return locked;
+    }
+    
+    /**
+     * @return the parent node
+     */
+    public TemplateNode getParent()
+    {
+        if (parent == null)
+        {
+            NodeRef parentRef = this.services.getNodeService().getPrimaryParent(nodeRef).getParentRef();
+            // handle root node (no parent!)
+            if (parentRef != null)
+            {
+                parent = new TemplateNode(parentRef, this.services, this.imageResolver);
+            }
+        }
+        
+        return parent;
+    }
+    
+    /**
+     * @return the primary parent association so we can access the association QName and association type QName.
+     */
+    public ChildAssociationRef getPrimaryParentAssoc()
+    {
+        if (primaryParentAssoc == null)
+        {
+            primaryParentAssoc = this.services.getNodeService().getPrimaryParent(nodeRef);
+        }
+        return primaryParentAssoc;
+    }
+    
+    
+    // ------------------------------------------------------------------------------
+    // Content API 
+    
+    /**
+     * @return the content String for this node from the default content property
+     *         (@see ContentModel.PROP_CONTENT)
+     */
+    public String getContent()
+    {
+        ContentService contentService = this.services.getContentService();
+        ContentReader reader = contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
+        return (reader != null && reader.exists()) ? reader.getContentString() : "";
+    }
+    
+    /**
+     * @return For a content document, this method returns the URL to the content stream for
+     *         the default content property (@see ContentModel.PROP_CONTENT)
+     *         <p>
+     *         For a container node, this method return the URL to browse to the folder in the web-client
+     */
+    public String getUrl()
+    {
+        if (getIsDocument() == true)
+        {
+           try
+           {
+               return MessageFormat.format(CONTENT_DEFAULT_URL, new Object[] {
+                       nodeRef.getStoreRef().getProtocol(),
+                       nodeRef.getStoreRef().getIdentifier(),
+                       nodeRef.getId(),
+                       StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") } );
+           }
+           catch (UnsupportedEncodingException err)
+           {
+               throw new TemplateException("Failed to encode content URL for node: " + nodeRef, err);
+           }
+        }
+        else
+        {
+           return MessageFormat.format(FOLDER_BROWSE_URL, new Object[] {
+                       nodeRef.getStoreRef().getProtocol(),
+                       nodeRef.getStoreRef().getIdentifier(),
+                       nodeRef.getId() } );
+        }
+    }
+    
+    /**
+     * @return The mimetype encoding for content attached to the node from the default content property
+     *         (@see ContentModel.PROP_CONTENT)
+     */
+    public String getMimetype()
+    {
+        if (mimetype == null)
+        {
+            TemplateContentData content = (TemplateContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
+            if (content != null)
+            {
+                mimetype = content.getMimetype();
+            }
+        }
+        
+        return mimetype;
+    }
+    
+    /**
+     * @return The size in bytes of the content attached to the node from the default content property
+     *         (@see ContentModel.PROP_CONTENT)
+     */
+    public long getSize()
+    {
+        if (size == null)
+        {
+            TemplateContentData content = (TemplateContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
+            if (content != null)
+            {
+                size = content.getSize();
+            }
+        }
+        
+        return size != null ? size.longValue() : 0L;
+    }
+    
+    
+    // ------------------------------------------------------------------------------
+    // Node Helper API 
+    
+    /**
      * @return FreeMarker NodeModel for the XML content of this node, or null if no parsable XML found
      */
     public NodeModel getXmlNodeModel()
@@ -466,24 +566,9 @@ public final class TemplateNode implements Serializable
         }
     }
     
-    /**
-     * @return true if the node is currently locked
-     */
-    public boolean getIsLocked()
-    {
-        boolean locked = false;
-        
-        if (getAspects().contains(ContentModel.ASPECT_LOCKABLE))
-        {
-            LockStatus lockStatus = this.services.getLockService().getLockStatus(this.nodeRef);
-            if (lockStatus == LockStatus.LOCKED || lockStatus == LockStatus.LOCK_OWNER)
-            {
-                locked = true;
-            }
-        }
-        
-        return locked;
-    }
+    
+    // ------------------------------------------------------------------------------
+    // Security API 
     
     /**
      * @return List of permissions applied to this Node.
@@ -519,114 +604,56 @@ public final class TemplateNode implements Serializable
         return this.services.getPermissionService().getInheritParentPermissions(this.nodeRef);
     }
     
-    /**
-     * @return the parent node
-     */
-    public TemplateNode getParent()
-    {
-        if (parent == null)
-        {
-            NodeRef parentRef = this.services.getNodeService().getPrimaryParent(nodeRef).getParentRef();
-            // handle root node (no parent!)
-            if (parentRef != null)
-            {
-                parent = new TemplateNode(parentRef, this.services, this.imageResolver);
-            }
-        }
         
-        return parent;
+    // ------------------------------------------------------------------------------
+    // Search API
+    
+    /**
+     * @return A map capable of returning the TemplateNode at the specified Path as a child of this node.
+     */
+    public Map getChildByNamePath()
+    {
+        return new NamePathResultsMap(this, this.services);
     }
     
     /**
-     * @return the primary parent association so we can access the association QName and association type QName.
+     * @return A map capable of returning a List of TemplateNode objects from an XPath query
+     *         as children of this node.
      */
-    public ChildAssociationRef getPrimaryParentAssoc()
+    public Map getChildrenByXPath()
     {
-        if (primaryParentAssoc == null)
-        {
-            primaryParentAssoc = this.services.getNodeService().getPrimaryParent(nodeRef);
-        }
-        return primaryParentAssoc;
+        return new XPathResultsMap(this, this.services);
     }
     
     /**
-     * @return the content String for this node from the default content property
-     *         (@see ContentModel.PROP_CONTENT)
+     * @return A map capable of returning a List of TemplateNode objects from an NodeRef to a Saved Search
+     *         object. The Saved Search is executed and the resulting nodes supplied as a sequence.
      */
-    public String getContent()
+    public Map getChildrenBySavedSearch()
     {
-        ContentService contentService = this.services.getContentService();
-        ContentReader reader = contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
-        return (reader != null && reader.exists()) ? reader.getContentString() : "";
+        return new SavedSearchResultsMap(this, this.services);
     }
     
     /**
-     * @return For a content document, this method returns the URL to the content stream for
-     *         the default content property (@see ContentModel.PROP_CONTENT)
-     *         <p>
-     *         For a container node, this method return the URL to browse to the folder in the web-client
+     * @return A map capable of returning a List of TemplateNode objects from an NodeRef to a Lucene search
+     *         string. The Saved Search is executed and the resulting nodes supplied as a sequence.
      */
-    public String getUrl()
+    public Map getChildrenByLuceneSearch()
     {
-        if (getIsDocument() == true)
-        {
-           try
-           {
-               return MessageFormat.format(CONTENT_DEFAULT_URL, new Object[] {
-                       nodeRef.getStoreRef().getProtocol(),
-                       nodeRef.getStoreRef().getIdentifier(),
-                       nodeRef.getId(),
-                       StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") } );
-           }
-           catch (UnsupportedEncodingException err)
-           {
-               throw new TemplateException("Failed to encode content URL for node: " + nodeRef, err);
-           }
-        }
-        else
-        {
-           return MessageFormat.format(FOLDER_BROWSE_URL, new Object[] {
-                       nodeRef.getStoreRef().getProtocol(),
-                       nodeRef.getStoreRef().getIdentifier(),
-                       nodeRef.getId() } );
-        }
+        return new LuceneSearchResultsMap(this, this.services);
     }
     
     /**
-     * @return The mimetype encoding for content attached to the node from the default content property
-     *         (@see ContentModel.PROP_CONTENT)
+     * @return A map capable of returning a TemplateNode for a single specified NodeRef reference.
      */
-    public String getMimetype()
+    public Map getNodeByReference()
     {
-        if (mimetype == null)
-        {
-            TemplateContentData content = (TemplateContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
-            if (content != null)
-            {
-                mimetype = content.getMimetype();
-            }
-        }
-        
-        return mimetype;
+        return new NodeSearchResultsMap(this, this.services);
     }
     
-    /**
-     * @return The size in bytes of the content attached to the node from the default content property
-     *         (@see ContentModel.PROP_CONTENT)
-     */
-    public long getSize()
-    {
-        if (size == null)
-        {
-            TemplateContentData content = (TemplateContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
-            if (content != null)
-            {
-                size = content.getSize();
-            }
-        }
-        
-        return size != null ? size.longValue() : 0L;
-    }
+    
+    // ------------------------------------------------------------------------------
+    // Misc helpers 
     
     /**
      * @return the image resolver instance used by this node
@@ -653,6 +680,9 @@ public final class TemplateNode implements Serializable
         }
     }
     
+    
+    // ------------------------------------------------------------------------------
+    // Inner classes 
     
     /**
      * Inner class wrapping and providing access to a ContentData property 

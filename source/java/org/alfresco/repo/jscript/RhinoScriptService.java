@@ -87,6 +87,11 @@ public class RhinoScriptService implements ScriptService
             throw new IllegalArgumentException("Script ClassPath is mandatory.");
         }
         
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Executing script: " + scriptClasspath);
+        }
+        
         Reader reader = null;
         try
         {
@@ -121,6 +126,11 @@ public class RhinoScriptService implements ScriptService
         if (scriptRef == null)
         {
             throw new IllegalArgumentException("Script NodeRef is mandatory.");
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Executing script: " + scriptRef.toString());
         }
         
         Reader reader = null;
@@ -166,6 +176,11 @@ public class RhinoScriptService implements ScriptService
         if (script == null || script.length() == 0)
         {
             throw new IllegalArgumentException("Script argument is mandatory.");
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Executing script:\n" + script);
         }
         
         Reader reader = null;
@@ -330,6 +345,7 @@ public class RhinoScriptService implements ScriptService
         
         // add other useful util objects
         model.put("search", new Search(services, companyHome.getStoreRef(), resolver));
+        model.put("logger", new ScriptLogger());
         
         return model;
     }

@@ -16,16 +16,6 @@
 		</property>
 	</bean>
 
-	<bean id="contentIssuer" class="org.alfresco.repo.avm.Issuer"
-		depends-on="retryingTransaction,avmContext" init-method="init">
-		<property name="name">
-			<value>content</value>
-		</property>
-		<property name="retryingTransaction">
-			<ref bean="retryingTransaction"/>
-		</property>
-	</bean>
-
 	<bean id="layerIssuer" class="org.alfresco.repo.avm.Issuer"
 		depends-on="retryingTransaction,avmContext" init-method="init">
 		<property name="name">
@@ -59,12 +49,6 @@
 	</bean>
 
 	<bean id="versionRootDAO" class="org.alfresco.repo.avm.VersionRootDAOHibernate">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
-		</property>
-	</bean>
-	
-	<bean id="fileContentDAO" class="org.alfresco.repo.avm.FileContentDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
@@ -124,9 +108,6 @@
 		</property>
 		<property name="versionRootDAO">
 			<ref bean="versionRootDAO"/>
-		</property>
-		<property name="fileContentDAO">
-			<ref bean="fileContentDAO"/>
 		</property>
 		<property name="childEntryDAO">
 			<ref bean="childEntryDAO"/>
@@ -216,9 +197,6 @@
 		</property>
 		<property name="nodeIssuer">
 			<ref bean="nodeIssuer"/>
-		</property>
-		<property name="contentIssuer">
-			<ref bean="contentIssuer"/>
 		</property>
 		<property name="layerIssuer">
 			<ref bean="layerIssuer"/>

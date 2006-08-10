@@ -30,6 +30,9 @@ import java.util.SortedMap;
 
 import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 
@@ -152,30 +155,57 @@ class AVMServiceImpl implements AVMService
     }
 
     /**
-     * Get an InputStream from a particular version of a file.
-     * @param desc The node descriptor.
-     * @return The InputStream.
+     * Get a ContentReader for the given file.
+     * @param version The version to look under.
+     * @param path The path to the file.
+     * @return A ContentReader.
      */
-    public InputStream getFileInputStream(final AVMNodeDescriptor desc)
+    public ContentReader getReader(final int version, final String path)
     {
-        if (desc == null)
+        if (path == null)
         {
-            throw new AVMBadArgumentException("Illegal null argument.");
+            throw new AVMBadArgumentException("Null path.");
         }
         class TxnCallback implements RetryingTransactionCallback
         {
-            public InputStream in = null;
+            public ContentReader reader;
             
             public void perform()
             {
-                in = fAVMRepository.getInputStream(desc);
+                reader = fAVMRepository.getReader(version, path);
             }
         }
         TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, false);
-        return doit.in;
+        return doit.reader;
     }
 
+    /**
+     * Get a ContentWriter to a file.
+     * @param path The path to the file.
+     * @return A ContentWriter.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException if <code>path</code> is not a file.
+     */
+    public ContentWriter getWriter(final String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null path.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public ContentWriter writer;
+            
+            public void perform()
+            {
+                writer = fAVMRepository.getWriter(path);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, true);
+        return doit.writer;
+    }
     /**
      * Get an output stream to a file. Triggers versioning.
      */
@@ -199,34 +229,6 @@ class AVMServiceImpl implements AVMService
         return doit.out;
     }
 
-    /**
-     * Get a random access file to the given file.
-     * @param version The version to look for (read-only)
-     * @param path The path to the file.
-     * @param access The access mode for RandomAccessFile
-     * @return A Random Access File.
-     */
-    public RandomAccessFile getRandomAccess(final int version, final String path, final String access)
-    {
-        if (path == null || access == null)
-        {
-            throw new AVMBadArgumentException("Illegal null argument.");
-        }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public RandomAccessFile file;
-            
-            public void perform()
-            {
-                file = fAVMRepository.getRandomAccess(version, path, access);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
-        return doit.file;
-    }
-
-    
     /**
      * Get a directory listing.
      * @param version The version id to lookup.
@@ -1317,6 +1319,82 @@ class AVMServiceImpl implements AVMService
             public void perform()
             {
                 fAVMRepository.deleteStoreProperty(store, name);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, true);
+    }
+    
+    /**
+     * Get the ContentData for a node. Only applies to a file.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return The ContentData object.
+     */
+    public ContentData getContentDataForRead(final int version, final String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null Path.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public ContentData content;
+            
+            public void perform()
+            {
+                content = fAVMRepository.getContentDataForRead(version, path);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.content;
+    }
+    
+    /**
+     * Get the Content data for writing.
+     * @param path The path to the node.
+     * @return The ContentData object.
+     */
+    public ContentData getContentDataForWrite(final String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null Path.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public ContentData content;
+            
+            public void perform()
+            {
+                content = fAVMRepository.getContentDataForWrite(path);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, true);
+        return doit.content;
+    }
+
+    /**
+     * Set the content data on a file. 
+     * @param path The path to the file.
+     * @param data The ContentData to set.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> does not point
+     * to a file.
+     */
+    public void setContentData(final String path, final ContentData data)
+    {
+        if (path == null || data == null)
+        {
+            throw new AVMBadArgumentException("Null Path.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public void perform()
+            {
+                fAVMRepository.setContentData(path, data);
             }
         }
         TxnCallback doit = new TxnCallback();

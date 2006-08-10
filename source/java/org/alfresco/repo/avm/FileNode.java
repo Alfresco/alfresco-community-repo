@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.avm;
 
+import org.alfresco.service.cmr.repository.ContentData;
+
 /**
  * Interface for the generic idea of a file.
  * @author britt
@@ -23,15 +25,15 @@ package org.alfresco.repo.avm;
 interface FileNode extends AVMNode
 {
     /**
-     * Get the content object associated with this node, for reading.
-     * @return A FileContent object.
+     * Set the ContentData for this file.
+     * @param contentData The value to set.
      */
-    public FileContent getContentForRead();
-
+    public void setContentData(ContentData contentData);
+    
     /**
-     * Get the content object for writing.  This will do COW
-     * as needed.
-     * @return A FileContent object.
+     * Get the ContentData for this file.
+     * @param lPath The Lookup used to get here.
+     * @return The ContentData object for this file.
      */
-    public FileContent getContentForWrite();
+    public ContentData getContentData(Lookup lPath);
 }

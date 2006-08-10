@@ -19,13 +19,15 @@ package org.alfresco.repo.avm;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -102,7 +104,22 @@ interface AVMStore
      * @return An InputStream
      */
     public InputStream getInputStream(int version, String path);
+    
+    /**
+     * Get a ContentReader from a file.
+     * @param version The version to look under.
+     * @param path The path to the file.
+     * @return A ContentReader.
+     */
+    public ContentReader getReader(int version, String path);
 
+    /**
+     * Get a ContentWriter to a file.
+     * @param path The path to the file.
+     * @return A ContentWriter.
+     */
+    public ContentWriter getWriter(String path);
+    
     /**
      * Get a listing of the designated directory.
      * @param version The version to look under.
@@ -134,15 +151,6 @@ interface AVMStore
      */
     public OutputStream getOutputStream(String path);
     
-    /**
-     * Get a random access file to the given file.
-     * @param version The version id (read-only if not -1)
-     * @param path The path to the file.
-     * @param access The access for RandomAccessFile.
-     * @return A RandomAccessFile.
-     */
-    public RandomAccessFile getRandomAccess(int version, String path, String access);
-
     /**
      * Remove a node and all of its contents.
      * @param path The path to the node's parent directory.
@@ -336,4 +344,26 @@ interface AVMStore
      * @param name The name of the property to delete.
      */
     public void deleteProperty(QName name);
+    
+    /**
+     * Get the ContentData on a file.
+     * @param version The version to look under.
+     * @param path The path to the file.
+     * @return The ContentData corresponding to the file.
+     */
+    public ContentData getContentDataForRead(int version, String path);
+    
+    /**
+     * Get the ContentData for writing.
+     * @param path The path to the file.
+     * @return The ContentData object.
+     */
+    public ContentData getContentDataForWrite(String path);
+    
+    /**
+     * Set the ContentData for a file.
+     * @param path The path to the file.
+     * @param data The ContentData to set.
+     */
+    public void setContentData(String path, ContentData data);
 }

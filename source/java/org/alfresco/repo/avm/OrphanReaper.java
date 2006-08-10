@@ -295,17 +295,7 @@ class OrphanReaper implements Runnable
                         } 
                         AVMContext.fgInstance.fAVMNodeDAO.delete(node);
                     }
-                    else if (node.getType() == AVMNodeType.PLAIN_FILE)
-                    {
-                        AVMContext.fgInstance.fAVMNodeDAO.delete(node);
-                        // FileContent should be purged if nobody else references it.
-                        FileContent content = ((PlainFileNode)node).getContent();
-                        if (content.getRefCount() == 1)
-                        {
-                            content.delete();
-                            AVMContext.fgInstance.fFileContentDAO.delete(content);
-                        }
-                    }
+                    // TODO Need to properly clean up deleted files.
                     else
                     {
                         AVMContext.fgInstance.fAVMNodeDAO.delete(node);

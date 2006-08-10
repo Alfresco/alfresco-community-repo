@@ -23,6 +23,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.AVMService;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.content.filestore.FileContentStore;
@@ -44,6 +47,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -66,6 +70,8 @@ public class RoutingContentService implements ContentService
     private TransactionService transactionService;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
+    private AVMService avmService;
+    
     /** a registry of all available content transformers */
     private ContentTransformerRegistry transformerRegistry;
     /** TEMPORARY until we have a map to choose from at runtime */
@@ -121,6 +127,11 @@ public class RoutingContentService implements ContentService
 	{
 		this.policyComponent = policyComponent;
 	}
+    
+    public void setAvmService(AVMService service)
+    {
+        this.avmService = service;
+    }
     
     /**
      * Service initialise 
@@ -304,6 +315,7 @@ public class RoutingContentService implements ContentService
 
     public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update)
     {
+
         // check for an existing URL - the get of the reader will perform type checking
         ContentReader existingContentReader = getReader(nodeRef, propertyQName, false);
         
@@ -313,8 +325,18 @@ public class RoutingContentService implements ContentService
         // can be wherever the store decides.
         ContentWriter writer = store.getWriter(existingContentReader, null);
 
+        // Special case for AVM repository.   
+        Serializable contentValue = null;
+        if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+        {
+            Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+            contentValue = avmService.getContentDataForWrite((String)avmVersionPath[1]);
+        }
+        else
+        {
+            contentValue = nodeService.getProperty(nodeRef, propertyQName);
+        }
         // set extra data on the reader if the property is pre-existing
-        Serializable contentValue = nodeService.getProperty(nodeRef, propertyQName);
         if (contentValue != null && contentValue instanceof ContentData)
         {
             ContentData contentData = (ContentData)contentValue;

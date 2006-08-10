@@ -375,6 +375,7 @@ public class AVMInterpreter
                     out.println("Mod Time: " + new Date(desc.getModDate()));
                 }
             }
+            /*
             else if (command[0].equals("catver"))
             {
                 if (command.length != 4)
@@ -398,6 +399,7 @@ public class AVMInterpreter
                 }
                 reader.close();
             }
+            */
             else if (command[0].equals("ca"))
             {
                 if (command.length != 5)

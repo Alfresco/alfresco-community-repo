@@ -216,8 +216,7 @@ class AVMCrawler implements Runnable
         }
         catch (Exception e)
         {
-            if (e instanceof AVMNotFoundException ||
-                e instanceof AVMExistsException)
+            if (e instanceof AVMException)
             {
                 return;
             }

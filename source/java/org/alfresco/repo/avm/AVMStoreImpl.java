@@ -20,7 +20,6 @@ package org.alfresco.repo.avm;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,6 +32,10 @@ import java.util.TreeMap;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -231,7 +234,12 @@ class AVMStoreImpl implements AVMStore, Serializable
         file.setVersionID(getNextVersionID());
         dir.putChild(name, file);
         dir.updateModTime();
-        return file.getContentForWrite().getOutputStream();
+        file.setContentData(new ContentData(null, 
+                AVMContext.fgInstance.getMimetypeService().guessMimetype(name),
+                -1,
+                "UTF-8"));
+        ContentWriter writer = getWriter(AVMNodeConverter.ExtendAVMPath(path, name));
+        return writer.getContentOutputStream();
     }
 
     /**
@@ -248,10 +256,17 @@ class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMExistsException("Child exists: " + name);
         }
-        PlainFileNodeImpl file = new PlainFileNodeImpl(this, data);
+        PlainFileNodeImpl file = new PlainFileNodeImpl(this);
         file.setVersionID(getNextVersionID());
         dir.putChild(name, file);
         dir.updateModTime();
+        file.setContentData(new ContentData(null, 
+                AVMContext.fgInstance.getMimetypeService().guessMimetype(name),
+                -1,
+                "UTF-8"));
+        ContentWriter writer = getWriter(AVMNodeConverter.ExtendAVMPath(path, name));
+        writer.putContent(data);
+        file.setContentData(writer.getContentData());
     }
 
     /**
@@ -284,6 +299,9 @@ class AVMStoreImpl implements AVMStore, Serializable
      */
     public InputStream getInputStream(int version, String path)
     {
+        ContentReader reader = getReader(version, path);
+        return reader.getContentInputStream();
+        /*
         Lookup lPath = lookup(version, path, false);
         AVMNode node = lPath.getCurrentNode();
         if (node.getType() != AVMNodeType.PLAIN_FILE &&
@@ -294,8 +312,35 @@ class AVMStoreImpl implements AVMStore, Serializable
         FileNode file = (FileNode)node;
         FileContent content = file.getContentForRead();
         return content.getInputStream();
+        */
     }
 
+    /**
+     * Get a ContentReader from a file.
+     * @param version The version to look under.
+     * @param path The path to the file.
+     * @return A ContentReader.
+     */
+    public ContentReader getReader(int version, String path)
+    {
+        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(version, fName + ":" + path);
+        return AVMContext.fgInstance.getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT);
+    }
+
+    /**
+     * Get a ContentWriter to a file.
+     * @param path The path to the file.
+     * @return A ContentWriter.
+     */
+    public ContentWriter getWriter(String path)
+    {
+        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, fName + ":" + path);
+        ContentWriter writer = 
+            AVMContext.fgInstance.getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        setContentData(path, writer.getContentData());
+        return writer;
+    }
+    
     /**
      * Get a listing from a directory.
      * @param version The version to look under.
@@ -368,6 +413,9 @@ class AVMStoreImpl implements AVMStore, Serializable
      */
     public OutputStream getOutputStream(String path)
     {
+        ContentWriter writer = getWriter(path);
+        return writer.getContentOutputStream();
+        /*
         Lookup lPath = lookup(-1, path, true);
         AVMNode node = lPath.getCurrentNode();
         if (node.getType() != AVMNodeType.PLAIN_FILE &&
@@ -379,41 +427,7 @@ class AVMStoreImpl implements AVMStore, Serializable
         FileContent content = file.getContentForWrite();
         file.updateModTime();
         return content.getOutputStream();
-    }
-
-    /**
-     * Get a RandomAccessFile to a file node.
-     * @param version The version.
-     * @param path The path to the file.
-     * @param access The access mode for RandomAccessFile.
-     * @return A RandomAccessFile.
-     */
-    public RandomAccessFile getRandomAccess(int version, String path, String access)
-    {
-        boolean write = access.indexOf("rw") == 0;
-        if (write && version >= 0)
-        {
-            throw new AVMException("Access denied: " + path);
-        }
-        Lookup lPath = lookup(version, path, write);
-        AVMNode node = lPath.getCurrentNode();
-        if (node.getType() != AVMNodeType.PLAIN_FILE &&
-            node.getType() != AVMNodeType.LAYERED_FILE)
-        {
-            throw new AVMWrongTypeException("Not a file: " + path);
-        }
-        FileNode file = (FileNode)node;
-        FileContent content = null;
-        if (write)
-        {
-            content = file.getContentForWrite();
-            file.updateModTime();
-        }
-        else
-        {
-            content = file.getContentForRead();
-        }
-        return content.getRandomAccess(access);
+        */
     }
 
     /**
@@ -967,5 +981,54 @@ class AVMStoreImpl implements AVMStore, Serializable
     public void deleteProperty(QName name)
     {
         AVMContext.fgInstance.fAVMStorePropertyDAO.delete(this, name);
+    }
+    
+    /**
+     * Get the ContentData on a file.
+     * @param version The version to look under.
+     * @param path The path to the file.
+     * @return The ContentData corresponding to the file.
+     */
+    public ContentData getContentDataForRead(int version, String path)
+    {
+        Lookup lPath = lookup(version, path, false);
+        AVMNode node = lPath.getCurrentNode();
+        if (!(node instanceof FileNode))
+        {
+            throw new AVMWrongTypeException("File Expected.");
+        }
+        return ((FileNode)node).getContentData(lPath);
+    }
+    
+    /**
+     * Get the ContentData on a file for writing.
+     * @param path The path to the file.
+     * @return The ContentData corresponding to the file.
+     */
+    public ContentData getContentDataForWrite(String path)
+    {
+        Lookup lPath = lookup(-1, path, true);
+        AVMNode node = lPath.getCurrentNode();
+        if (!(node instanceof FileNode))
+        {
+            throw new AVMWrongTypeException("File Expected.");
+        }
+        return ((FileNode)node).getContentData(lPath);
+    }
+
+    /**
+     * Set the ContentData for a file.
+     * @param path The path to the file.
+     * @param data The ContentData to set.
+     */
+    public void setContentData(String path, ContentData data)
+    {
+        Lookup lPath = lookup(-1, path, true);
+        AVMNode node = lPath.getCurrentNode();
+        if (!(node instanceof FileNode))
+        {
+            throw new AVMWrongTypeException("File Expected.");
+        }
+        ((FileNode)node).setContentData(data);
     }
 }

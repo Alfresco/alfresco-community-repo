@@ -17,6 +17,8 @@
 
 package org.alfresco.repo.avm;
 
+import org.alfresco.service.cmr.repository.ContentData;
+
 /**
  * A LayeredFileNode behaves like a copy on write symlink.
  * @author britt
@@ -81,13 +83,10 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         {
             throw new AVMException("Unbacked layered file node.");
         }
-        // This is a mildly dirty trick.  We use getContentForRead so as not to startle
-        // the ultimate destination content into copying itself prematurely.
-        FileContent content = ((FileNode)indirect).getContentForRead();
-        PlainFileNodeImpl newMe = new PlainFileNodeImpl(this, 
-                                                        content, 
-                                                        lPath.getAVMStore(), 
-                                                        getBasicAttributes());
+        PlainFileNodeImpl newMe = new PlainFileNodeImpl(lPath.getAVMStore(),
+                                                        getBasicAttributes(),
+                                                        getContentData(lPath),
+                                                        getProperties());
         newMe.setAncestor(this);
         return newMe;
     }
@@ -99,33 +98,6 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     public int getType()
     {
         return AVMNodeType.LAYERED_FILE;
-    }
-
-    /**
-     * Get the content of the specified version.
-     * @return A FileContent object.
-     */
-    public FileContent getContentForRead()
-    {
-        Lookup lookup = AVMRepository.GetInstance().lookup(-1, fIndirection);
-        AVMNode node = lookup.getCurrentNode();
-        if (node.getType() != AVMNodeType.LAYERED_FILE &&
-            node.getType() != AVMNodeType.PLAIN_FILE)
-        {
-            throw new AVMException("Missing Link.");
-        }
-        FileNode file = (FileNode)node;
-        return file.getContentForRead();
-    }
-
-    /**
-     * Get File Content for writing.  Should never be called.
-     * @return Always null.
-     */
-    public FileContent getContentForWrite()
-    {
-        assert false : "Never happens";
-        return null;
     }
 
     /**
@@ -255,5 +227,30 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     public void setIndirection(String indirection)
     {
         fIndirection = indirection;
+    }
+
+    /**
+     * Set the ContentData for this file.
+     * @param contentData The value to set.
+     */
+    public void setContentData(ContentData contentData)
+    {
+        throw new AVMException("Should not be called.");
+    }
+    
+    /**
+     * Get the ContentData for this file.
+     * @return The ContentData object for this file.
+     */
+    public ContentData getContentData(Lookup lPath)
+    {
+        Lookup lookup = lPath.getAVMStore().getAVMRepository().lookup(-1, getIndirection());
+        AVMNode node = lookup.getCurrentNode();
+        if (!(node instanceof FileNode))
+        {
+            throw new AVMException("Invalid target.");
+        }
+        FileNode file = (FileNode)node;
+        return file.getContentData(lookup);
     }
 }

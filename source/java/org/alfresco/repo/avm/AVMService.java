@@ -19,13 +19,15 @@ package org.alfresco.repo.avm;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -50,15 +52,6 @@ public interface AVMService
     public InputStream getFileInputStream(int version, String path);
     
     /**
-     * Get an input stream from a particular version of a file.
-     * @param desc The node descriptor pointing at the node.
-     * @return The InputStream.
-     * @throws AVMNotFoundException If <code>desc</code> is dangling or
-     * otherwise invalid.
-     */
-    public InputStream getFileInputStream(AVMNodeDescriptor desc);
-
-    /**
      * Get an output stream to a file node.  The file must already exist.
      * @param path The simple absolute path to the file node.
      * @throws AVMNotFoundException If <code>path</code> is not found.
@@ -68,18 +61,23 @@ public interface AVMService
     public OutputStream getFileOutputStream(String path);
     
     /**
-     * Get a random access file to the given path.
-     * @param version The version to find.
+     * Get a ContentReader for the given file.
+     * @param version The version to look under.
      * @param path The path to the file.
-     * @param access The access mode for RandomAccessFile.
-     * @return A RandomAccessFile
-     * @throws AVMNotFoundException If <code>path</code> is not found.
-     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
-     * component that is not a directory, or if <code>path</code> is not pointing
-     * at a file.
-     * @throws AVMException If trying to write to anything but the head version.
+     * @return A ContentReader.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException if <code>path</code> is not a file.
      */
-    public RandomAccessFile getRandomAccess(int version, String path, String access);
+    public ContentReader getReader(int version, String path);
+    
+    /**
+     * Get a ContentWriter to a file.
+     * @param path The path to the file.
+     * @return A ContentWriter.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException if <code>path</code> is not a file.
+     */
+    public ContentWriter getWriter(String path);
     
     /**
      * Get a listing of a Folder by name.
@@ -545,4 +543,35 @@ public interface AVMService
      * does not exist.
      */
     public void deleteStoreProperty(String store, QName name);
+    
+    /**
+     * Get the ContentData for a node. Only applies to a file.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return The ContentData object.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> does not
+     * point to a file.
+     */
+    public ContentData getContentDataForRead(int version, String path);
+    
+    /**
+     * Get the ContentData for a node.
+     * @param path The path to the node.
+     * @return The ContentData object.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> does not point
+     * to a file.
+     */
+    public ContentData getContentDataForWrite(String path);
+    
+    /**
+     * Set the content data on a file. 
+     * @param path The path to the file.
+     * @param data The ContentData to set.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> does not point
+     * to a file.
+     */
+    public void setContentData(String path, ContentData data);
 }

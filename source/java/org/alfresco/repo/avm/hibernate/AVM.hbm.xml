@@ -77,9 +77,10 @@
 			<!-- Plain files just have a reference to a Content object. -->
 			<subclass discriminator-value="plainfile"
 				name="PlainFileNodeImpl" proxy="PlainFileNode" lazy="true">
-				<many-to-one name="content" column="content_id"
-					class="FileContentImpl" fetch="join" cascade="save-update">
-				</many-to-one>
+				<property name="contentURL" column="content_url" type="string" length="128"/>
+				<property name="mimeType" column="mime_type" type="string" length="32"/>
+				<property name="encoding" column="encoding" type="string" length="16"/>
+				<property name="length" column="length" type="long"/>
 			</subclass>
 			<!-- Layered files are almost exactly copy on write symlinks. -->
 			<subclass name="LayeredFileNodeImpl"
@@ -88,19 +89,6 @@
 					column="indirection" />
 			</subclass>
 		</subclass>
-	</class>
-	<!-- Contents are objects to hang actual bytestreams off. They are explicitly reference
-	     counted. -->
-	<class table="avm_contents" name="FileContentImpl" proxy="FileContent"
-		optimistic-lock="version">
-		<cache usage="read-write" />
-		<id name="id" column="id" type="long"/>
-		<version name="vers" column="vers" type="long"/>
-		<!-- The reference count. Contents are explicitly reference counted for now, 
-			 however it make sense to fold this into a generalized garbage collection
-			 scheme. -->
-		<property name="refCount" column="ref_count" type="int"
-			not-null="true"/>
 	</class>
 	<!-- A store is the what we used to call a virtual repository. 
 		 Each store has it's own branch ids and layer ids but shares node ids

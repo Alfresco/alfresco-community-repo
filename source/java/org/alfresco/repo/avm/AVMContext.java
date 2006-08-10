@@ -3,12 +3,18 @@
  */
 package org.alfresco.repo.avm;
 
+import org.alfresco.repo.content.ContentStore;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 /**
  * This is the (shudder) global context for AVM.  It a rendezvous
  * point for access to needed global instances.
  * @author britt
  */
-class AVMContext
+class AVMContext implements ApplicationContextAware
 {
     /**
      * The single instance of an AVMContext.
@@ -39,11 +45,6 @@ class AVMContext
      * The VersionRootDAO.
      */
     public VersionRootDAO fVersionRootDAO;
-    
-    /**
-     * The FileContentDAO.
-     */
-    public FileContentDAO fFileContentDAO;
     
     /**
      * The ChildEntryDAO.
@@ -81,6 +82,36 @@ class AVMContext
     public AVMStorePropertyDAO fAVMStorePropertyDAO;
     
     /**
+     * The ContentService.
+     */
+    private ContentService fContentService;
+    
+    /**
+     * The Mimetype Service.
+     */
+    private MimetypeService fMimetypeService;
+ 
+    /**
+     * The AVMService.
+     */
+    private AVMService fAVMService;
+    
+    /**
+     * The Content Store.
+     */
+    private ContentStore fContentStore;
+    
+    /**
+     * The application context.
+     */
+    public ApplicationContext fAppContext;
+    
+    public void setApplicationContext(ApplicationContext context)
+    {
+        fAppContext = context;
+    }
+    
+    /**
      * @param nodeDAO the fAVMNodeDAO to set
      */
     public void setNodeDAO(AVMNodeDAO nodeDAO)
@@ -102,14 +133,6 @@ class AVMContext
     public void setDeletedChildDAO(DeletedChildDAO deletedChildDAO)
     {
         fDeletedChildDAO = deletedChildDAO;
-    }
-
-    /**
-     * @param fileContentDAO the fFileContentDAO to set
-     */
-    public void setFileContentDAO(FileContentDAO fileContentDAO)
-    {
-        fFileContentDAO = fileContentDAO;
     }
 
     /**
@@ -168,5 +191,57 @@ class AVMContext
     public void setAvmStorePropertyDAO(AVMStorePropertyDAO avmStorePropertyDAO)
     {
         fAVMStorePropertyDAO = avmStorePropertyDAO;
+    }
+    
+    /**
+     * Get the Content Service.
+     * @return The ContentService object.
+     */
+    public ContentService getContentService()
+    {
+        if (fContentService == null)
+        {
+            fContentService = (ContentService)fAppContext.getBean("contentService");
+        }
+        return fContentService;
+    }
+    
+    /**
+     * Get the mime type service.
+     * @return The mime type service.
+     */
+    public MimetypeService getMimetypeService()
+    {
+        if (fMimetypeService == null)
+        {
+            fMimetypeService = (MimetypeService)fAppContext.getBean("mimetypeService");
+        }
+        return fMimetypeService;
+    }
+    
+    /**
+     * Get the AVM Service.
+     * @return The AVMService instance.
+     */
+    public AVMService getAVMService()
+    {
+        if (fAVMService == null)
+        {
+            fAVMService = (AVMService)fAppContext.getBean("AVMService");
+        }
+        return fAVMService;
+    }
+    
+    /**
+     * Get the ContentStore.
+     * @return The content store.
+     */
+    public ContentStore getContentStore()
+    {
+        if (fContentStore == null)
+        {
+            fContentStore = (ContentStore)fAppContext.getBean("fileContentStore");
+        }
+        return fContentStore;
     }
 }

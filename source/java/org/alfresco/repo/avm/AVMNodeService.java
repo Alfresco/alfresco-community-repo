@@ -27,8 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.Auditable;
@@ -39,6 +37,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -78,6 +77,15 @@ public class AVMNodeService implements NodeService
     public void setAvmService(AVMService service)
     {
         fAVMService = service;
+    }
+    
+    /**
+     * Set the DictionaryService. For Spring.
+     * @param dictionaryService The DictionaryService instance.
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        fDictionaryService = dictionaryService;
     }
     
     /**
@@ -281,6 +289,10 @@ public class AVMNodeService implements NodeService
         Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>();
         for (QName qname : properties.keySet())
         {
+            if (isBuiltInProperty(qname))
+            {
+                continue;
+            }
             props.put(qname, new PropertyValue(null, properties.get(qname)));
         }
         fAVMService.setNodeProperties(newAVMPath, props);
@@ -645,6 +657,19 @@ public class AVMNodeService implements NodeService
         result.put(ContentModel.PROP_MODIFIED, new Date(desc.getModDate()));
         result.put(ContentModel.PROP_MODIFIER, desc.getLastModifier());
         result.put(ContentModel.PROP_OWNER, desc.getOwner());
+        if (desc.isFile())
+        {
+            try
+            {
+                ContentData contentData = fAVMService.getContentDataForRead((Integer)avmVersionPath[0],
+                                                                            (String)avmVersionPath[1]);
+                result.put(ContentModel.PROP_CONTENT, contentData);
+            }
+            catch (AVMException e)
+            {
+                // TODO For now ignore.
+            }
+        }
         return result;
     }
     
@@ -690,6 +715,21 @@ public class AVMNodeService implements NodeService
                                             QName qName,
                                             NodeRef nodeRef)
     {
+        if (qName.equals(ContentModel.PROP_CONTENT))
+        {
+            try
+            {
+                ContentData contentData = 
+                    fAVMService.getContentDataForRead((Integer)avmVersionPath[0],
+                                                      (String)avmVersionPath[1]);
+                return contentData;
+            }
+            catch (AVMException e)
+            {
+                // TODO For now, ignore.
+                return null;
+            }
+        }
         AVMNodeDescriptor desc = null;
         try
         {
@@ -778,7 +818,8 @@ public class AVMNodeService implements NodeService
                qName.equals(ContentModel.PROP_CREATOR) ||
                qName.equals(ContentModel.PROP_MODIFIED) ||
                qName.equals(ContentModel.PROP_MODIFIER) ||
-               qName.equals(ContentModel.PROP_OWNER);
+               qName.equals(ContentModel.PROP_OWNER) ||
+               qName.equals(ContentModel.PROP_CONTENT);
     }
     
     /**
@@ -795,12 +836,15 @@ public class AVMNodeService implements NodeService
      */
     public void setProperty(NodeRef nodeRef, QName qname, Serializable value) throws InvalidNodeRefException
     {
+        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         // TODO Just until we can set built in properties on AVM Nodes.
         if (isBuiltInProperty(qname))
         {
+            if (qname.equals(ContentModel.PROP_CONTENT))
+            {
+            }
             return;
         }
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         if ((Integer)avmVersionPath[0] >= 0)
         {
             throw new InvalidNodeRefException("Read only store.", nodeRef);

@@ -6,5 +6,4 @@ package org.alfresco.repo.avm;
  */
 interface PlainFileNode extends FileNode
 {
-    public FileContent getContent();
 }

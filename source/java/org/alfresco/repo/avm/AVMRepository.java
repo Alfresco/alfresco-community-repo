@@ -20,7 +20,6 @@ package org.alfresco.repo.avm;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,6 +27,10 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -51,11 +54,6 @@ class AVMRepository
      * The node id issuer.
      */
     private Issuer fNodeIssuer;
-    
-    /**
-     * The content id issuer;
-     */
-    private Issuer fContentIssuer;
     
     /**
      * The layer id issuer.
@@ -94,15 +92,6 @@ class AVMRepository
         fNodeIssuer = nodeIssuer;
     }
 
-    /**
-     * Set the content issuer. For Spring.
-     * @param contentIssuer The issuer.
-     */
-    public void setContentIssuer(Issuer contentIssuer)
-    {
-        fContentIssuer = contentIssuer;
-    }
-    
     /**
      * Set the layer issuer. For Spring.
      * @param layerIssuer The issuer.
@@ -281,21 +270,6 @@ class AVMRepository
         return rep.getOutputStream(pathParts[1]);
     }
     
-    /**
-     * Get a random access file from a file node.
-     * @param version The version id (read-only if not -1)
-     * @param path The path to the file.
-     * @param access The access mode for RandomAccessFile.
-     * @return A RandomAccessFile.
-     */
-    public RandomAccessFile getRandomAccess(int version, String path, String access)
-    {
-        fLookupCount.set(1);
-        String[] pathParts = SplitPath(path);
-        AVMStore rep = getAVMStoreByName(pathParts[0]);
-        return rep.getRandomAccess(version, pathParts[1], access);
-    }
-
     /**
      * Rename a node.
      * @param srcPath Source containing directory.
@@ -524,25 +498,30 @@ class AVMRepository
     }
 
     /**
-     * Get an InputStream from a given version of a file.
-     * @param desc The node descriptor.
-     * @return The InputStream.
+     * Get a ContentReader from a file.
+     * @param version The version to look under.
+     * @param path The path to the file.
+     * @return A ContentReader
      */
-    public InputStream getInputStream(AVMNodeDescriptor desc)
+    public ContentReader getReader(int version, String path)
     {
         fLookupCount.set(1);
-        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(desc.getId());
-        if (node == null)
-        {
-            throw new AVMNotFoundException("Not found.");
-        }
-        if (node.getType() != AVMNodeType.PLAIN_FILE &&
-            node.getType() != AVMNodeType.LAYERED_FILE)
-        {
-            throw new AVMWrongTypeException("Not a file.");
-        }
-        FileNode file = (FileNode)node;
-        return file.getContentForRead().getInputStream();
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        return store.getReader(version, pathParts[1]);
+    }
+    
+    /**
+     * Get a ContentWriter to a file.
+     * @param path The path to the file.
+     * @return A ContentWriter.
+     */
+    public ContentWriter getWriter(String path)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        return store.getWriter(pathParts[1]);
     }
     
     /**
@@ -664,15 +643,6 @@ class AVMRepository
     public long issueID()
     {
         return fNodeIssuer.issue();
-    }
-
-    /**
-     * Issue a content id.
-     * @return The new id.
-     */
-    public long issueContentID()
-    {
-        return fContentIssuer.issue();
     }
 
     /**
@@ -1112,6 +1082,46 @@ class AVMRepository
         return null;
     }
 
+    /**
+     * Get the ContentData for a file.
+     * @param version The version to look under.
+     * @param path The path to the file.
+     * @return The ContentData for the file.
+     */
+    public ContentData getContentDataForRead(int version, String path)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        return store.getContentDataForRead(version, pathParts[1]);
+    }
+    
+    /**
+     * Get the ContentData for a file for writing.
+     * @param path The path to the file.
+     * @return The ContentData object.
+     */
+    public ContentData getContentDataForWrite(String path)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        return store.getContentDataForWrite(pathParts[1]);
+    }
+
+    /**
+     * Set the ContentData on a file.
+     * @param path The path to the file.
+     * @param data The content data to set.
+     */
+    public void setContentData(String path, ContentData data)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        store.setContentData(pathParts[1], data);
+    }
+    
     /**
      * Get the single instance of AVMRepository.
      * @return The single instance.

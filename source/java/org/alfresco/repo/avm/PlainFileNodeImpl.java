@@ -17,7 +17,12 @@
 
 package org.alfresco.repo.avm;
 
-import java.io.File;
+import java.util.Map;
+
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.namespace.QName;
 
 
 /**
@@ -29,9 +34,24 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     static final long serialVersionUID = 8720376837929735294L;
 
     /**
-     * The file content.
+     * The Content URL.
      */
-    private FileContent fContent;
+    private String fContentURL;
+    
+    /**
+     * The Mime type.
+     */
+    private String fMimeType;
+    
+    /**
+     * The character encoding.
+     */
+    private String fEncoding;
+    
+    /**
+     * The length of the file.
+     */
+    private long fLength;
     
     /**
      * Default constructor.
@@ -48,22 +68,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     public PlainFileNodeImpl(AVMStore store)
     {
         super(store.getAVMRepository().issueID(), store);
-        fContent = new FileContentImpl(AVMRepository.GetInstance().issueContentID());
         // AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fAVMNodeDAO.save(this);
-        AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
-    }
-    
-    /**
-     * Create a new plain file with given content.
-     * @param store The store.
-     * @param content The content to set.
-     */
-    public PlainFileNodeImpl(AVMStore store, File content)
-    {
-        super(store.getAVMRepository().issueID(), store);
-        fContent = new FileContentImpl(AVMRepository.GetInstance().issueContentID(), content);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
@@ -78,8 +83,9 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                              AVMStore store)
     {
         super(store.getAVMRepository().issueID(), store);
-        fContent = other.getContent();
-        fContent.setRefCount(fContent.getRefCount() + 1);
+        // The null is OK because the Lookup argument is only use by
+        // layered files.
+        setContentData(other.getContentData(null));
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
@@ -87,24 +93,26 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     }
 
     /**
-     * Constructor that takes a FileContent to share. Called by LayeredFileNodeImpl.copy().
-     * @param content The FileContent to share.
-     * @param store The AVMStore.
+     * Construct a new one. This is called when a LayeredFileNode
+     * is copied.
+     * @param store
+     * @param attrs
+     * @param content
      */
-    public PlainFileNodeImpl(LayeredFileNode other,
-                             FileContent content,
-                             AVMStore store,
-                             BasicAttributes oAttrs)
+    public PlainFileNodeImpl(AVMStore store,
+                             BasicAttributes attrs,
+                             ContentData content,
+                             Map<QName, PropertyValue> props)
     {
         super(store.getAVMRepository().issueID(), store);
-        fContent = content;
-        fContent.setRefCount(fContent.getRefCount() + 1);
+        setContentData(content);
+        setBasicAttributes(attrs);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
+        this.setProperties(props);
         AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
-        copyProperties(other);
     }
-
+    
     /**
      * Copy on write logic.
      * @param lPath The lookup path. 
@@ -123,25 +131,6 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     public int getType()
     {
         return AVMNodeType.PLAIN_FILE;
-    }
-
-    /**
-     * Get content for reading.
-     */
-    public FileContent getContentForRead()
-    {
-        return fContent;
-    }
-    /**
-     * Get content for writing.
-     */
-    public FileContent getContentForWrite()
-    {
-        if (fContent.getRefCount() > 1)
-        {
-            fContent = new FileContentImpl(fContent, AVMRepository.GetInstance().issueContentID());
-        }
-        return fContent;
     }
 
     /**
@@ -187,7 +176,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      false,
                                      -1,
                                      false,
-                                     getContentForRead().getLength());
+                                     getLength());
     }
 
     /**
@@ -214,7 +203,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      false,
                                      -1,
                                      false,
-                                     getContentForRead().getLength());
+                                     getFileLength());
     }
 
     /**
@@ -243,25 +232,115 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      false,
                                      -1,
                                      false,
-                                     getContentForRead().getLength());
+                                     getFileLength());
     }
 
     /**
-     * Get the file content of this node.
-     * @return The file content object.
+     * Get the Content URL.
+     * @return The content URL.
      */
-    public FileContent getContent()
+    public String getContentURL()
     {
-        return fContent;
+        return fContentURL;
+    }
+
+    /**
+     * Set the Content URL.
+     * @param contentURL
+     */
+    protected void setContentURL(String contentURL)
+    {
+        fContentURL = contentURL;
+    }
+
+    /**
+     * Get the character encoding.
+     * @return The encoding.
+     */
+    public String getEncoding()
+    {
+        return fEncoding;
+    }
+
+    /**
+     * Set the character encoding.
+     * @param encoding The encoding to set.
+     */
+    protected void setEncoding(String encoding)
+    {
+        fEncoding = encoding;
+    }
+
+    /**
+     * Get the file length.
+     * @return The file length or null if unknown.
+     */
+    public long getLength()
+    {
+        return fLength;
     }
     
     /**
-     * Set the FileContent for this file.
-     * @param content
+     * Get the actual file length.
+     * @return The actual file length;
      */
-    protected void setContent(FileContent content)
+    private long getFileLength()
     {
-        fContent = content;
+        ContentReader reader = AVMContext.fgInstance.getContentStore().getReader(fContentURL);
+        return reader.getSize();
+    }
+
+    /**
+     * Set the file length.
+     * @param length The length of the file.
+     */
+    protected void setLength(long length)
+    {
+        fLength = length;
+    }
+
+    /**
+     * Get the mime type of the content.
+     * @return The Mime Type of the content.
+     */
+    public String getMimeType()
+    {
+        return fMimeType;
+    }
+
+    /**
+     * Set the Mime Type of the content.
+     * @param mimeType The Mime Type to set.
+     */
+    protected void setMimeType(String mimeType)
+    {
+        fMimeType = mimeType;
+    }
+    
+    /**
+     * Set the ContentData for this file.
+     * @param contentData The value to set.
+     */
+    public void setContentData(ContentData contentData)
+    {
+        fContentURL = contentData.getContentUrl();
+        fMimeType = contentData.getMimetype();
+        if (fMimeType == null)
+        {
+            throw new AVMException("Null mime type.");
+        }
+        fEncoding = contentData.getEncoding();
+        fLength = contentData.getSize();
+    }
+
+    /**
+     * Get the ContentData for this file.
+     * @param lPath The lookup path used to get here.  Unused here.
+     * @return The ContentData object for this file.
+     */
+    public ContentData getContentData(Lookup lPath)
+    {
+        return new ContentData(fContentURL, fMimeType, fLength, fEncoding);
     }
 }
 

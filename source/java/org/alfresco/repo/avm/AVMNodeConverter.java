@@ -25,7 +25,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
  * the <code>StoreRef</code>, <code>NodeRef</code> world.
  * @author britt
  */
-class AVMNodeConverter
+public class AVMNodeConverter
 {
     /**
      * Get a NodeRef corresponding to the given path and version.

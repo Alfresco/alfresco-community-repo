@@ -1890,6 +1890,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     /**
      * The random access.
      */
+    /*
     public void testRandomAccess()
     {
         try
@@ -1914,6 +1915,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fail();
         }
     }
+    */
     
     /**
      * Test COW during long operations.

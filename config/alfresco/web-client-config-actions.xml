@@ -27,13 +27,16 @@
             <style>padding:4px</style>
             <style-class>inlineAction</style-class>
             <image>/images/icons/edit_icon.gif</image>
-            <!-- action, action-listener, onclick, href and target action attributes supported -->
+            <!-- action, action-listener, onclick, href and target action attributes are supported -->
             <action-listener>#{CheckinCheckoutBean.editFile}</action-listener>
             <action>editDocument</action>
             <href>http://...</href>
             <target>new</target>
             <onclick>javascript:myhandler</onclick>
-            <!-- params specify the f:param tags to be generated as children of the action component -->
+            <!-- script attribute for specifying a javascript file to execute - by Path or NodeRef -->
+            <script>/Company Home/Data Dictionary/Scripts/myjavascript.js</script>
+            <!-- params specify the <f:param> tags to be generated as children of the action component -->
+            <!-- accessable by an ActionEvent handler or passed directly as href/script URL arguments -->
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>

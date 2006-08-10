@@ -17,7 +17,9 @@
 package org.alfresco.web.ui.common.renderer;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URLEncoder;
 import java.util.Map;
 
 import javax.faces.component.UIComponent;
@@ -133,13 +135,44 @@ public class ActionLinkRenderer extends BaseRenderer
       else
       {
          String href = link.getHref();
-         if (href.startsWith("http") == false && href.startsWith("file") == false)
+         
+         // prefix the web context path if required
+         linkBuf.append("<a href=\"");
+         if (href.startsWith("/"))
          {
-            href = context.getExternalContext().getRequestContextPath() + href;
+            linkBuf.append(context.getExternalContext().getRequestContextPath());
          }
-         linkBuf.append("<a href=\"")
-                .append(href)
-                .append('"');
+         linkBuf.append(href);
+         
+         // append arguments if specified
+         Map<String, String> actionParams = getParameterComponents(link);
+         if (actionParams != null)
+         {
+            boolean first = (href.indexOf('?') == -1);
+            for (String name : actionParams.keySet())
+            {
+               String paramValue = actionParams.get(name);
+               if (first)
+               {
+                  linkBuf.append('?');
+                  first = false;
+               }
+               else
+               {
+                  linkBuf.append('&');
+               }
+               try
+               {
+                  linkBuf.append(name).append("=").append(URLEncoder.encode(paramValue, "UTF-8"));
+               }
+               catch (UnsupportedEncodingException err)
+               {
+                  // if this happens we have bigger problems than a missing URL parameter...!
+               }
+            }
+         }
+         
+         linkBuf.append('"');
          
          // output href 'target' attribute if supplied
          if (link.getTarget() != null)

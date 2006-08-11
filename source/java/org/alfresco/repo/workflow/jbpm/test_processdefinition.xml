@@ -9,8 +9,22 @@
           <variable name="testNode" access="write,required" />
         </controller>
       </task>
-      <transition name="" to="Review"></transition>
-      <transition name="end" to="end"></transition>
+      <transition name="" to="Review">
+         <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+            <script>
+               <expression>
+                  function result()
+                  {
+                     return ("Process instance = " + executionContext.processInstance.id + ", testNode children = " + testNode.children.length);
+                  }
+                  result();
+               </expression>
+               <variable name="scriptResult" access="write"/>
+            </script>
+         </action>
+      </transition>
+      <transition name="end" to="end">
+      </transition>
    </start-state>
    <swimlane name="Reviewer">
       <assignment actor-id="#{reviewer}"></assignment>
@@ -20,6 +34,7 @@
          <script>
             System.out.println("the reviewer is " + reviewer);
             System.out.println("node " + testNode.name + " contains " + testNode.children.length + " children");
+            System.out.println("scriptResult = " + scriptResult);
          </script>
       </event>
       <task name="Review" duedate="1 business day" blocking="true" swimlane="Reviewer">
@@ -27,7 +42,7 @@
             <variable name="comment" access="read,write,required"></variable>
          </controller>
       </task>
-      <transition name="" to="publish"></transition>
+      <transition name="" to="end"></transition>
    </task-node>
    <end-state name="end"></end-state>
 </process-definition>

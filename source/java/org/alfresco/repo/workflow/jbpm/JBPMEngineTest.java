@@ -59,7 +59,7 @@ public class JBPMEngineTest extends BaseSpringTest
     WorkflowDefinition testWorkflowDef;
     NodeRef testNodeRef;
 
-    
+        
     //@Override
     protected void onSetUpInTransaction() throws Exception
     {
@@ -308,6 +308,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowDefinition workflowDef = getTestDefinition();
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
         assertNotNull(path);
@@ -331,6 +332,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowDefinition workflowDef = getTestDefinition();
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
         assertNotNull(path);
@@ -359,7 +361,22 @@ public class JBPMEngineTest extends BaseSpringTest
         assertEquals(WorkflowTaskState.IN_PROGRESS, tasks1.get(0).state);
         WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).id, null);
         assertNotNull(updatedTask);
-        assertEquals(WorkflowTaskState.COMPLETED, updatedTask.state);
+    }        
+
+    
+    public void testScript()
+    {
+        WorkflowDefinition workflowDef = getTestDefinition();
+        Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
+        assertNotNull(path);
+        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
+        assertNotNull(tasks1);
+        assertEquals(1, tasks1.size());
+        WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).id, path.node.transitions[0]);
+        assertNotNull(updatedTask);
     }        
     
     

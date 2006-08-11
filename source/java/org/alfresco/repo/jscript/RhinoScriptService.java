@@ -38,6 +38,7 @@ import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ImporterTopLevel;
+import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
@@ -252,6 +253,12 @@ public class RhinoScriptService implements ScriptService
             // execute the script
             Object result = cx.evaluateReader(scope, reader, "AlfrescoScript", 1, null);
             
+            // extract java object result if wrapped by rhinoscript 
+            if (result != null && result.getClass().equals(NativeJavaObject.class))
+            {
+                result = Context.jsToJava(result, Object.class);
+            }
+            
             return result;
         }
         catch (Throwable err)
@@ -260,7 +267,7 @@ public class RhinoScriptService implements ScriptService
         }
         finally
         {
-            cx.exit();
+            Context.exit();
             
             if (logger.isDebugEnabled())
             {

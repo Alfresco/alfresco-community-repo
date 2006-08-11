@@ -271,6 +271,7 @@ public interface AVMService
      * as needing to be copied, so that further modifications will trigger copy on write
      * semantics.
      * @param stores The names of the AVMStores to snapshot.
+     * @return A List of the version ids of the newly created snapshots.
      * @throws AVMNotFoundException If any of the stores do not exist.
      */
     public List<Integer> createSnapshot(List<String> stores);

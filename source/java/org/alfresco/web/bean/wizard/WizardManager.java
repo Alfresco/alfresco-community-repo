@@ -187,6 +187,18 @@ public class WizardManager
    {
       return Integer.toString(this.currentStep);
    }
+   
+   /**
+    * Returns the name of the current step, wizards should use
+    * the name of the step rather than the step number to discover
+    * the position as extra steps can be added via configuration.
+    * 
+    * @return The name of the current step
+    */
+   public String getCurrentStepName()
+   {
+      return ((StepConfig)this.steps.get(this.currentStep-1)).getName();
+   }
 
    /**
     * Returns a list of UIListItems representing the steps of the wizard

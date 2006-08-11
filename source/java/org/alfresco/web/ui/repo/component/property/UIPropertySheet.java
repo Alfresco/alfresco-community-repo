@@ -35,6 +35,7 @@ import org.alfresco.config.Config;
 import org.alfresco.config.ConfigLookupContext;
 import org.alfresco.config.ConfigService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
@@ -626,8 +627,13 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
          // create the property component
          UIProperty propComp = (UIProperty)context.getApplication().
                createComponent(RepoConstants.ALFRESCO_FACES_PROPERTY);
-         FacesHelper.setupComponentId(context, propComp, PROP_ID_PREFIX + propertyName);
-         propComp.setName(propertyName);
+         
+         // get the property name in it's prefix form
+         QName qname = QName.createQName(propertyName);
+         String prefixPropName = qname.toPrefixString();
+         
+         FacesHelper.setupComponentId(context, propComp, PROP_ID_PREFIX + prefixPropName);
+         propComp.setName(prefixPropName);
          
          // if this property sheet is set as read only, set all properties to read only
          if (isReadOnly())
@@ -642,7 +648,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
          if (logger.isDebugEnabled())
             logger.debug("Created property component " + propComp + "(" + 
                    propComp.getClientId(context) + 
-                   ") for '" + propertyName +
+                   ") for '" + prefixPropName +
                    "' and added it to property sheet " + this);
       }
       
@@ -654,8 +660,13 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
          String assocName = (String)iter.next();
          UIAssociation assocComp = (UIAssociation)context.getApplication().
                createComponent(RepoConstants.ALFRESCO_FACES_ASSOCIATION);
-         FacesHelper.setupComponentId(context, assocComp, ASSOC_ID_PREFIX + assocName);
-         assocComp.setName(assocName);
+         
+         // get the association name in it's prefix form
+         QName qname = QName.createQName(assocName);
+         String prefixAssocName = qname.toPrefixString();
+         
+         FacesHelper.setupComponentId(context, assocComp, ASSOC_ID_PREFIX + prefixAssocName);
+         assocComp.setName(prefixAssocName);
          
          // if this property sheet is set as read only, set all properties to read only
          if (isReadOnly())
@@ -670,7 +681,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
          if (logger.isDebugEnabled())
             logger.debug("Created association component " + assocComp + "(" + 
                    assocComp.getClientId(context) + 
-                   ") for '" + assocName +
+                   ") for '" + prefixAssocName +
                    "' and added it to property sheet " + this);
       }
       

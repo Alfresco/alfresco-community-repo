@@ -16,15 +16,11 @@
  */
 package org.alfresco.web.bean.repository;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QNameMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A extension of the repo QNameMap to provide custom property resolving support for Node wrappers.
@@ -86,6 +82,7 @@ public final class QNameNodeMap<K,V> extends QNameMap implements Map, Cloneable
    /**
     * @see java.util.Map#get(java.lang.Object)
     */
+   @SuppressWarnings("unchecked")
    public Object get(Object key)
    {
       String qnameKey = Repository.resolveToQNameString(key.toString());
@@ -120,6 +117,7 @@ public final class QNameNodeMap<K,V> extends QNameMap implements Map, Cloneable
    /**
     * Shallow copy the map by copying keys and values into a new QNameNodeMap
     */
+   @SuppressWarnings("unchecked")
    public Object clone()
    {
       QNameNodeMap map = new QNameNodeMap(this.resolver, this.parent);

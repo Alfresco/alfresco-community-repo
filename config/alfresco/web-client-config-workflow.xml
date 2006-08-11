@@ -1,0 +1,40 @@
+<alfresco-config>
+   
+   <!--            -->
+   <!-- Properties -->
+   <!--            -->
+   
+   <config evaluator="node-type" condition="wf:submitReviewTask">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wf:reviewDueDate" ignore-if-missing="false" />
+         <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+         <show-association name="wf:reviewer" ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+   
+   <!--         -->
+   <!-- Actions -->
+   <!--         -->
+   
+   <config>
+      <actions>
+         <action id="start-workflow">
+            <label-id>start_workflow</label-id>
+            <image>/images/icons/create_forum.gif</image>
+            <action>wizard:startWorkflow</action>
+            <action-listener>#{WizardManager.setupParameters}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- 
+         <action-group id="document_browse_menu">
+            <action idref="start-workflow" />
+         </action-group>
+         -->
+      </actions>
+   </config>
+   
+</alfresco-config>

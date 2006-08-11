@@ -1739,6 +1739,44 @@
       </managed-property>
    </managed-bean>
    
+   <managed-bean>
+      <managed-bean-name>StartWorkflowWizard</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.workflow.StartWorkflowWizard</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
+      </managed-property>
+   </managed-bean>
+   
    <!-- ==================== COMPONENT GENERATOR BEANS ==================== -->
    <managed-bean>
       <description>

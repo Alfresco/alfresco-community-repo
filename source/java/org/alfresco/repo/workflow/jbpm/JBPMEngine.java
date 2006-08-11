@@ -910,16 +910,23 @@ public class JBPMEngine extends BPMEngine
             
             // perform data conversions
             // NOTE: Only convert Authority name to NodeRef for now
-            QName qname = QName.createQName(key);
+            QName qname = QName.createQName(key, this.namespaceService);
             AssociationDefinition assocDef = taskAssocs.get(qname);
             if (assocDef != null && assocDef.getTargetClass().equals(ContentModel.TYPE_PERSON))
             {
                 // TODO: Also support group authorities
-                if (!(value instanceof String[]))
+                if (value instanceof String[])
+                {
+                    value = mapNameToAuthority((String[])value);
+                }
+                else if (value instanceof String)
+                {
+                   value = mapNameToAuthority(new String[] {(String)value});
+                }
+                else
                 {
                     throw new WorkflowException("Task variable '" + qname + "' value is invalid format");
                 }
-                value = mapNameToAuthority((String[])value);
             }    
 
             // place task variable in map to return
@@ -1020,9 +1027,10 @@ public class JBPMEngine extends BPMEngine
                 {
                     // if association is to people, map them to authority names
                     // TODO: support group authorities
-                    if (assocDef.getTargetClass().equals(ContentModel.TYPE_PERSON))
+                    if (assocDef.getTargetClass().getName().equals(ContentModel.TYPE_PERSON))
                     {
-                        value = mapAuthorityToName((List<NodeRef>)value);
+                        String[] authorityNames = mapAuthorityToName((List<NodeRef>)value);
+                        value = ((assocDef.isTargetMany()) ? authorityNames : authorityNames[0]);
                     }
                     
                     // map association to specific jBPM task instance field
@@ -1043,7 +1051,7 @@ public class JBPMEngine extends BPMEngine
             }
             else
             {
-                name = key.toString();
+                name = key.toPrefixString(this.namespaceService);
             }
             instance.setVariableLocally(name, value);
         }

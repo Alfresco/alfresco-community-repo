@@ -36,6 +36,7 @@ import org.alfresco.repo.workflow.TaskComponent;
 import org.alfresco.repo.workflow.WorkflowComponent;
 import org.alfresco.repo.workflow.WorkflowDefinitionComponent;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -86,6 +87,7 @@ public class JBPMEngine extends BPMEngine
     protected DictionaryService dictionaryService;
     protected NamespaceService namespaceService;
     protected NodeService nodeService;
+    protected ServiceRegistry serviceRegistry;
     protected PersonService personService;
     private JbpmTemplate jbpmTemplate;
 
@@ -139,6 +141,16 @@ public class JBPMEngine extends BPMEngine
         this.personService = personService;
     }
     
+    /**
+     * Sets the Service Registry
+     *  
+     * @param serviceRegistry
+     */
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+        this.serviceRegistry = serviceRegistry;
+    }
+
     
     //
     // Workflow Definition...
@@ -907,9 +919,18 @@ public class JBPMEngine extends BPMEngine
         {
             String key = entry.getKey();
             Object value = entry.getValue();
-            
+
+            //
             // perform data conversions
-            // NOTE: Only convert Authority name to NodeRef for now
+            //
+            
+            // Convert Nodes to NodeRefs
+            if (value instanceof org.alfresco.repo.jscript.Node)
+            {
+                value = ((org.alfresco.repo.jscript.Node)value).getNodeRef();
+            }
+            
+            // Convert Authority name to NodeRefs
             QName qname = QName.createQName(key, this.namespaceService);
             AssociationDefinition assocDef = taskAssocs.get(qname);
             if (assocDef != null && assocDef.getTargetClass().equals(ContentModel.TYPE_PERSON))
@@ -1030,13 +1051,29 @@ public class JBPMEngine extends BPMEngine
                     if (assocDef.getTargetClass().getName().equals(ContentModel.TYPE_PERSON))
                     {
                         String[] authorityNames = mapAuthorityToName((List<NodeRef>)value);
-                        value = ((assocDef.isTargetMany()) ? authorityNames : authorityNames[0]);
+                        if (authorityNames != null && authorityNames.length > 0)
+                        {
+                            value = (Serializable) (assocDef.isTargetMany() ? authorityNames : authorityNames[0]);
+                        }
                     }
                     
                     // map association to specific jBPM task instance field
                     if (key.equals(WorkflowModel.ASSOC_POOLED_ACTORS))
                     {
-                        instance.setPooledActors((String[])value);
+                        String[] pooledActors = null;
+                        if (value instanceof String[])
+                        {
+                            pooledActors = (String[])value;
+                        }
+                        else if (value instanceof String)
+                        {
+                            pooledActors = new String[] {(String)value};
+                        }
+                        else
+                        {
+                            throw new WorkflowException("Pooled actors value '" + value + "' is invalid");
+                        }
+                        instance.setPooledActors(pooledActors);
                         continue;
                     }
                 }
@@ -1044,14 +1081,10 @@ public class JBPMEngine extends BPMEngine
             
             // no specific mapping to jBPM task has been established, so place into
             // the generic task variable bag
-            String name = null;
-            if (key.getNamespaceURI().equals(NamespaceService.DEFAULT_URI))
+            String name = key.toPrefixString(this.namespaceService);
+            if (value instanceof NodeRef)
             {
-                name = key.getLocalName();
-            }
-            else
-            {
-                name = key.toPrefixString(this.namespaceService);
+                value = new org.alfresco.repo.jscript.Node((NodeRef)value, serviceRegistry, null);
             }
             instance.setVariableLocally(name, value);
         }

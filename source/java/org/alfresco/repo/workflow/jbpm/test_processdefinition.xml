@@ -6,6 +6,7 @@
      <task name="Submit" swimlane="Initiator">
         <controller>
           <variable name="reviewer" access="write,required" />
+          <variable name="testNode" access="write,required" />
         </controller>
       </task>
       <transition name="" to="Review"></transition>
@@ -15,29 +16,18 @@
       <assignment actor-id="#{reviewer}"></assignment>
    </swimlane>
    <task-node name="Review">
+      <event type="node-enter">
+         <script>
+            System.out.println("the reviewer is " + reviewer);
+            System.out.println("node " + testNode.name + " contains " + testNode.children.length + " children");
+         </script>
+      </event>
       <task name="Review" duedate="1 business day" blocking="true" swimlane="Reviewer">
          <controller>
             <variable name="comment" access="read,write,required"></variable>
          </controller>
       </task>
-      <transition name="reject" to="Rejected"></transition>
-      <transition name="approve" to="Approved"></transition>
-   </task-node>
-   <task-node name="Rejected">
-      <task name="Rejected" swimlane="Initiator">
-         <controller>
-            <variable name="comment" access="read"></variable>
-         </controller>
-      </task>
-      <transition name="" to="end"></transition>
-   </task-node>
-   <task-node name="Approved">
-      <task name="Approved" swimlane="Initiator">
-         <controller>
-            <variable name="comment" access="read"></variable>
-         </controller>
-      </task>
-      <transition name="" to="end"></transition>
+      <transition name="" to="publish"></transition>
    </task-node>
    <end-state name="end"></end-state>
 </process-definition>

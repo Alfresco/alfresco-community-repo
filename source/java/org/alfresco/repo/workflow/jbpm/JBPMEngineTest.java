@@ -30,7 +30,10 @@ import org.alfresco.repo.workflow.TaskComponent;
 import org.alfresco.repo.workflow.WorkflowComponent;
 import org.alfresco.repo.workflow.WorkflowDefinitionComponent;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -54,6 +57,7 @@ public class JBPMEngineTest extends BaseSpringTest
     WorkflowComponent workflowComponent;
     TaskComponent taskComponent;
     WorkflowDefinition testWorkflowDef;
+    NodeRef testNodeRef;
 
     
     //@Override
@@ -72,6 +76,10 @@ public class JBPMEngineTest extends BaseSpringTest
         assertEquals("Test", testWorkflowDef.name);
         assertEquals("1", testWorkflowDef.version);
         assertTrue(workflowDefinitionComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
+        
+        // get valid node ref
+        NodeService nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
+        testNodeRef = nodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "spacesStore"));
     }
 
     
@@ -334,6 +342,25 @@ public class JBPMEngineTest extends BaseSpringTest
         assertNotNull(updatedTask);
         assertEquals(WorkflowTaskState.COMPLETED, updatedTask.state);
     }
+    
+    
+    public void testNodeRef()
+    {
+        WorkflowDefinition workflowDef = getTestDefinition();
+        Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
+        assertNotNull(path);
+        assertNotNull(path);
+        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
+        assertNotNull(tasks1);
+        assertEquals(1, tasks1.size());
+        assertEquals(WorkflowTaskState.IN_PROGRESS, tasks1.get(0).state);
+        WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).id, null);
+        assertNotNull(updatedTask);
+        assertEquals(WorkflowTaskState.COMPLETED, updatedTask.state);
+    }        
     
     
     /**

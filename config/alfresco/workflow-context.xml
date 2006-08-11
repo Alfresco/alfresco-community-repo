@@ -47,7 +47,7 @@
 
    <bean id="jbpm_configuration" class="org.springmodules.workflow.jbpm31.LocalJbpmConfigurationFactoryBean">
       <property name="sessionFactory" ref="sessionFactory"/>
-      <property name="configuration" value="classpath:org/jbpm/default.jbpm.cfg.xml"/>
+      <property name="configuration" value="classpath:org/alfresco/repo/workflow/jbpm/jbpm.cfg.xml"/>
    </bean>
 
    <bean id="jbpm_template" class="org.springmodules.workflow.jbpm31.JbpmTemplate">
@@ -61,6 +61,7 @@
       <property name="namespaceService" ref="NamespaceService"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="personService" ref="personService"/>
+      <property name="serviceRegistry" ref="ServiceRegistry"/>
    </bean>
 
 </beans>

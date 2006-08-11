@@ -178,6 +178,18 @@
          <parent>bpm:task</parent>      
       
          <properties>
+
+            <!--                        -->         
+            <!--  Associated Workflow   -->
+            <!--                        -->         
+            <property name="bpm:workflowDefinitionId">
+               <title>Workflow Definition Id</title>
+               <type>d:text</type>
+            </property>
+            <property name="bpm:workflowInstanceId">
+               <title>Workflow Instance Id</title>
+               <type>d:text</type>
+            </property>
          
             <!--                        -->
             <!--  Task Context          -->
@@ -188,6 +200,8 @@
                <type>d:noderef</type>
             </property>
                         
+            <!--  TODO: Add Package Action Group -->
+            
          </properties>
 
          <associations>
@@ -234,6 +248,8 @@
          <title>Workflow Package</title>
 
          <properties>
+
+            <!--  TODO: Move to Task -->
 
             <!--  Items within package that have been marked as complete -->
             <property name="bpm:completedItems">

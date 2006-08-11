@@ -37,8 +37,8 @@
 
          <associations>
 
-            <association name="wf:reviewers">
-               <title>Reviewers</title>
+            <association name="wf:reviewer">
+               <title>Reviewer</title>
                <source>
                   <mandatory>false</mandatory>
                   <many>false</many>

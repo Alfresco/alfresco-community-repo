@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
@@ -35,6 +36,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -170,6 +172,7 @@ public class DownloadContentServlet extends BaseServlet
       
       // get the services we need to retrieve the content
       ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
+      NodeService nodeService = serviceRegistry.getNodeService();
       ContentService contentService = serviceRegistry.getContentService();
       PermissionService permissionService = serviceRegistry.getPermissionService();
       
@@ -183,6 +186,21 @@ public class DownloadContentServlet extends BaseServlet
             redirectToLoginPage(req, res, getServletContext());
             return;
          }
+         
+         // check If-Modified-Since header and set Last-Modified header as appropriate
+         Date modified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+         long modifiedSince = req.getDateHeader("If-Modified-Since");
+         if (modifiedSince > 0L)
+         {
+             // round the date to the ignore millisecond value which is not supplied by header
+             long modDate = (modified.getTime() / 1000L) * 1000L;
+             if (modDate <= modifiedSince)
+             {
+                 res.setStatus(304);
+                 return;
+             }
+         }
+         res.setDateHeader("Last-Modified", modified.getTime());
          
          if (attachment == true)
          {

@@ -24,6 +24,8 @@ import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.templating.*;
 import org.alfresco.web.templating.xforms.schemabuilder.*;
 import org.chiba.xml.util.DOMUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -31,6 +33,7 @@ import org.w3c.dom.Node;
 public class XFormsInputMethod
     implements TemplateInputMethod
 {
+    private static final Log LOGGER = LogFactory.getLog(XFormsInputMethod.class); 
 
     public XFormsInputMethod()
     {
@@ -122,8 +125,15 @@ public class XFormsInputMethod
     {
 	final TemplatingService ts = TemplatingService.getInstance();
 	final File schemaFile = TempFileProvider.createTempFile("alfresco", ".schema");
-	ts.writeXML(tt.getSchema(), schemaFile);
-
+	try
+        {
+	    ts.writeXML(tt.getSchema(), schemaFile);
+	}
+	catch (IOException ioe)
+        {
+	    assert false : ioe.getMessage();
+	    LOGGER.error(ioe);
+	}
 	final FacesContext fc = FacesContext.getCurrentInstance();
 	final String cp =
 	    fc.getExternalContext().getRequestContextPath();

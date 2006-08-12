@@ -1,11 +1,13 @@
 package org.alfresco.web.templating.xforms.servlet;
 
 import org.alfresco.web.app.Application;
+import org.alfresco.web.templating.xforms.DojoGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.httpclient.Cookie;
 import org.chiba.adapter.ChibaAdapter;
 import org.alfresco.web.templating.xforms.flux.FluxAdapter;
+import org.alfresco.web.templating.TemplatingService;
 import org.chiba.tools.xslt.StylesheetLoader;
 import org.chiba.tools.xslt.UIGenerator;
 import org.chiba.tools.xslt.XSLTGenerator;
@@ -43,7 +45,6 @@ import java.util.Map;
 public class ChibaServlet extends HttpServlet {
     //init-params
     private static Log logger = LogFactory.getLog(ChibaServlet.class); 
-
 
     private static final String FORM_PARAM_NAME = "form";
     private static final String XSL_PARAM_NAME = "xslt";
@@ -164,54 +165,68 @@ public class ChibaServlet extends HttpServlet {
      */
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response)
-            throws ServletException, IOException {
+	throws ServletException, IOException {
 
         ChibaAdapter adapter = null;
         HttpSession session = request.getSession(true);
+	try {
+	    if (request.getParameter("xxx") != null)
+	    {
+		response.setContentType("text/xml");
+		Writer out = response.getWriter();
+		adapter = (ChibaAdapter)session.getAttribute(CHIBA_ADAPTER);
+		TemplatingService.getInstance().writeXML(adapter.getXForms(), out);
+		out.close();
+	    }
+	    else
+	    {
+		logger.info("--------------- new XForms session ---------------");
+		//kill everything that may have lived before
+		session.removeAttribute(CHIBA_ADAPTER);
+		session.removeAttribute(CHIBA_UI_GENERATOR);
 
-        logger.info("--------------- new XForms session ---------------");
-        try {
-            //kill everything that may have lived before
-            session.removeAttribute(CHIBA_ADAPTER);
-            session.removeAttribute(CHIBA_UI_GENERATOR);
+		// determine Form to load
+		String formURI = /*getRequestURI(request) +*/ request.getParameter(FORM_PARAM_NAME);
+		logger.info("formURI: " + formURI);
+		String xslFile = request.getParameter(XSL_PARAM_NAME);
+		String css = request.getParameter(CSS_PARAM_NAME);
+		String actionURL = getActionURL(request, response,true);
+		logger.info("setting up adapeter");
 
-            // determine Form to load
-            String formURI = /*getRequestURI(request) +*/ request.getParameter(FORM_PARAM_NAME);
-	    logger.info("formURI: " + formURI);
-            String xslFile = request.getParameter(XSL_PARAM_NAME);
-            String css = request.getParameter(CSS_PARAM_NAME);
-            String actionURL = getActionURL(request, response,true);
-	    logger.info("setting up adapeter");
+		//setup Adapter
+		adapter = setupAdapter(new FluxAdapter(session), session, formURI);
+		setContextParams(request, adapter);
+		storeCookies(request, adapter);
+		adapter.init();
 
-            //setup Adapter
-            adapter = setupAdapter(new FluxAdapter(session), session, formURI);
-            setContextParams(request, adapter);
-            storeCookies(request, adapter);
-            adapter.init();
+		if (load(adapter, response)) return;
+		if (replaceAll(adapter, response)) return;
 
-            if (load(adapter, response)) return;
-            if (replaceAll(adapter, response)) return;
+		//            response.setContentType("text/html");
+		//	    PrintWriter out = response.getWriter();
 
-            response.setContentType("text/html");
-	    PrintWriter out = response.getWriter();
+		logger.info("generating ui");
 
-	    logger.info("generating ui");
+		UIGenerator uiGenerator = createUIGenerator(request, 
+							    response, 
+							    actionURL, 
+							    xslFile, 
+							    css);
+		uiGenerator.setInputNode(adapter.getXForms());
+		//            uiGenerator.setOutput(out);
+		uiGenerator.generate();
 
-            UIGenerator uiGenerator = createUIGenerator(request, actionURL, xslFile, css);
-            uiGenerator.setInputNode(adapter.getXForms());
-            uiGenerator.setOutput(out);
-            uiGenerator.generate();
+		//store adapter in session
+		session.setAttribute(CHIBA_ADAPTER, adapter);
+		session.setAttribute(CHIBA_UI_GENERATOR,uiGenerator);
 
-            //store adapter in session
-            session.setAttribute(CHIBA_ADAPTER, adapter);
-            session.setAttribute(CHIBA_UI_GENERATOR,uiGenerator);
-
-            out.close();
-	    logger.info("done!");
-        } catch (Exception e) {
+		//            out.close();
+		logger.info("done!");
+	    }
+	} catch (Exception e) {
 	    e.printStackTrace();
-            shutdown(adapter, session, e, response, request);
-        }
+	    shutdown(adapter, session, e, response, request);
+	}
     }
 
     /**
@@ -228,24 +243,24 @@ public class ChibaServlet extends HttpServlet {
      * @return ServletAdapter
      */
     protected ChibaAdapter setupAdapter(ChibaAdapter adapter,
-                                        HttpSession session,
-                                        String formPath) 
+					HttpSession session,
+					String formPath) 
 	throws XFormsException, URISyntaxException {
 
-        adapter.createXFormsProcessor();
+	adapter.createXFormsProcessor();
 
-        if ((configPath != null) && !(configPath.equals(""))) {
-            adapter.setConfigPath(configPath);
-        }
-        adapter.setXForms(new URI(formPath));
-        adapter.setBaseURI(formPath);
-        adapter.setUploadDestination(uploadDir);
+	if ((configPath != null) && !(configPath.equals(""))) {
+	    adapter.setConfigPath(configPath);
+	}
+	adapter.setXForms(new URI(formPath));
+	adapter.setBaseURI(formPath);
+	adapter.setUploadDestination(uploadDir);
 
-        Map servletMap = new HashMap();
-        servletMap.put(ChibaAdapter.SESSION_ID, session.getId());
-        adapter.setContextParam(ChibaAdapter.SUBMISSION_RESPONSE, servletMap);
+	Map servletMap = new HashMap();
+	servletMap.put(ChibaAdapter.SESSION_ID, session.getId());
+	adapter.setContextParam(ChibaAdapter.SUBMISSION_RESPONSE, servletMap);
 
-        return adapter;
+	return adapter;
     }
 
     /**
@@ -257,21 +272,21 @@ public class ChibaServlet extends HttpServlet {
      * @param adapter the Chiba adapter instance
      */
     protected void storeCookies(HttpServletRequest request,ChibaAdapter adapter){
-          javax.servlet.http.Cookie[] cookiesIn = request.getCookies();
-          if (cookiesIn != null) {
-              Cookie[] commonsCookies = new org.apache.commons.httpclient.Cookie[cookiesIn.length];
-              for (int i = 0; i < cookiesIn.length; i += 1) {
-                  javax.servlet.http.Cookie c = cookiesIn[i];
-                  Cookie newCookie = new Cookie(c.getDomain(),
-                                                c.getName(),
-                                                c.getValue(),
-                                                c.getPath(),
-                                                c.getMaxAge(),
-                                                c.getSecure());
-                  commonsCookies[i] = newCookie;
-              }
-              adapter.setContextParam(AbstractHTTPConnector.REQUEST_COOKIE,commonsCookies);
-          }
+	javax.servlet.http.Cookie[] cookiesIn = request.getCookies();
+	if (cookiesIn != null) {
+	    Cookie[] commonsCookies = new org.apache.commons.httpclient.Cookie[cookiesIn.length];
+	    for (int i = 0; i < cookiesIn.length; i += 1) {
+		javax.servlet.http.Cookie c = cookiesIn[i];
+		Cookie newCookie = new Cookie(c.getDomain(),
+					      c.getName(),
+					      c.getValue(),
+					      c.getPath(),
+					      c.getMaxAge(),
+					      c.getSecure());
+		commonsCookies[i] = newCookie;
+	    }
+	    adapter.setContextParam(AbstractHTTPConnector.REQUEST_COOKIE,commonsCookies);
+	}
     }
 
     /**
@@ -285,41 +300,42 @@ public class ChibaServlet extends HttpServlet {
      * @throws XFormsException
      */
     protected UIGenerator createUIGenerator(HttpServletRequest request,
-                                            String actionURL,
-                                            String xslFile,
-                                            String css) 
+					    HttpServletResponse response,
+					    String actionURL,
+					    String xslFile,
+					    String css) 
 	throws XFormsException {
-        StylesheetLoader stylesheetLoader = new StylesheetLoader(stylesPath);
-        if (xslFile != null){
-            stylesheetLoader.setStylesheetFile(xslFile);
-        }
-        UIGenerator uiGenerator = new XSLTGenerator(stylesheetLoader);
+//        StylesheetLoader stylesheetLoader = new StylesheetLoader(stylesPath);
+//        if (xslFile != null){
+//            stylesheetLoader.setStylesheetFile(xslFile);
+//        }
+	UIGenerator uiGenerator = new DojoGenerator(request, response);
 
-        //set parameters
-        uiGenerator.setParameter("contextroot",request.getContextPath());
-        uiGenerator.setParameter("action-url",actionURL);
-        uiGenerator.setParameter("debug-enabled", String.valueOf(logger.isDebugEnabled()));
-        String selectorPrefix = 
+	//set parameters
+	uiGenerator.setParameter("contextroot",request.getContextPath());
+	uiGenerator.setParameter("action-url",actionURL);
+	uiGenerator.setParameter("debug-enabled", String.valueOf(logger.isDebugEnabled()));
+	String selectorPrefix = 
 	    Config.getInstance().getProperty(HttpRequestHandler.SELECTOR_PREFIX_PROPERTY,
 					     HttpRequestHandler.SELECTOR_PREFIX_DEFAULT);
-        uiGenerator.setParameter("selector-prefix", selectorPrefix);
-        String removeUploadPrefix = 
+	uiGenerator.setParameter("selector-prefix", selectorPrefix);
+	String removeUploadPrefix = 
 	    Config.getInstance().getProperty(HttpRequestHandler.REMOVE_UPLOAD_PREFIX_PROPERTY,
 					     HttpRequestHandler.REMOVE_UPLOAD_PREFIX_DEFAULT);
-        uiGenerator.setParameter("remove-upload-prefix", removeUploadPrefix);
-        if (css != null)
-            uiGenerator.setParameter("css-file", css);
-        String dataPrefix = Config.getInstance().getProperty("chiba.web.dataPrefix");
-        uiGenerator.setParameter("data-prefix", dataPrefix);
+	uiGenerator.setParameter("remove-upload-prefix", removeUploadPrefix);
+	if (css != null)
+	    uiGenerator.setParameter("css-file", css);
+	String dataPrefix = Config.getInstance().getProperty("chiba.web.dataPrefix");
+	uiGenerator.setParameter("data-prefix", dataPrefix);
 
-        String triggerPrefix = Config.getInstance().getProperty("chiba.web.triggerPrefix");
-        uiGenerator.setParameter("trigger-prefix", triggerPrefix);
+	String triggerPrefix = Config.getInstance().getProperty("chiba.web.triggerPrefix");
+	uiGenerator.setParameter("trigger-prefix", triggerPrefix);
 
-        uiGenerator.setParameter("user-agent", request.getHeader("User-Agent"));
+	uiGenerator.setParameter("user-agent", request.getHeader("User-Agent"));
 
-	uiGenerator.setParameter("scripted","true");
+	//	uiGenerator.setParameter("scripted","true");
 
-        return uiGenerator;
+	return uiGenerator;
     }
 
     /**
@@ -331,39 +347,39 @@ public class ChibaServlet extends HttpServlet {
      */
     protected void setContextParams(HttpServletRequest request, ChibaAdapter chibaAdapter) {
 
-        //[1] pass user-agent to Adapter for UI-building
-        chibaAdapter.setContextParam(ServletAdapter.USERAGENT, request.getHeader("User-Agent"));
+	//[1] pass user-agent to Adapter for UI-building
+	chibaAdapter.setContextParam(ServletAdapter.USERAGENT, request.getHeader("User-Agent"));
 
-        //[2] read any request params that are *not* Chiba params and pass them into the context map
-        Enumeration params = request.getParameterNames();
-        while (params.hasMoreElements()) {
-            String s = (String) params.nextElement();
-            //store all request-params we don't use in the context map of ChibaBean
-            if (!(s.equals(FORM_PARAM_NAME) ||
-                    s.equals(XSL_PARAM_NAME) ||
-                    s.equals(CSS_PARAM_NAME) ||
-                    s.equals(ACTIONURL_PARAM_NAME))) {
-                String value = request.getParameter(s);
-                //servletAdapter.setContextProperty(s, value);
-                chibaAdapter.setContextParam(s, value);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("added request param '" + s + "' added to context");
-                }
-            }
-        }
+	//[2] read any request params that are *not* Chiba params and pass them into the context map
+	Enumeration params = request.getParameterNames();
+	while (params.hasMoreElements()) {
+	    String s = (String) params.nextElement();
+	    //store all request-params we don't use in the context map of ChibaBean
+	    if (!(s.equals(FORM_PARAM_NAME) ||
+		  s.equals(XSL_PARAM_NAME) ||
+		  s.equals(CSS_PARAM_NAME) ||
+		  s.equals(ACTIONURL_PARAM_NAME))) {
+		String value = request.getParameter(s);
+		//servletAdapter.setContextProperty(s, value);
+		chibaAdapter.setContextParam(s, value);
+		if (logger.isDebugEnabled()) {
+		    logger.debug("added request param '" + s + "' added to context");
+		}
+	    }
+	}
     }
 
     /**
      * @deprecated should be re-implemented using chiba events on adapter
      */
     protected boolean load(ChibaAdapter adapter, HttpServletResponse response) throws XFormsException, IOException {
-        if (adapter.getContextParam(ChibaAdapter.LOAD_URI) != null) {
-            String redirectTo = (String) adapter.removeContextParam(ChibaAdapter.LOAD_URI);
-            adapter.shutdown();
-            response.sendRedirect(response.encodeRedirectURL(redirectTo));
-            return true;
-        }
-        return false;
+	if (adapter.getContextParam(ChibaAdapter.LOAD_URI) != null) {
+	    String redirectTo = (String) adapter.removeContextParam(ChibaAdapter.LOAD_URI);
+	    adapter.shutdown();
+	    response.sendRedirect(response.encodeRedirectURL(redirectTo));
+	    return true;
+	}
+	return false;
     }
 
     /**
@@ -371,79 +387,79 @@ public class ChibaServlet extends HttpServlet {
      */
     protected boolean replaceAll(ChibaAdapter chibaAdapter, HttpServletResponse response)
 	throws XFormsException, IOException {
-            if (chibaAdapter.getContextParam(ChibaAdapter.SUBMISSION_RESPONSE) != null) {
-                Map forwardMap = (Map) chibaAdapter.removeContextParam(ChibaAdapter.SUBMISSION_RESPONSE);
-                if (forwardMap.containsKey(ChibaAdapter.SUBMISSION_RESPONSE_STREAM)) {
-                    forwardResponse(forwardMap, response);
-                    chibaAdapter.shutdown();
-                    return true;
-                }
-            }
-            return false;
+	if (chibaAdapter.getContextParam(ChibaAdapter.SUBMISSION_RESPONSE) != null) {
+	    Map forwardMap = (Map) chibaAdapter.removeContextParam(ChibaAdapter.SUBMISSION_RESPONSE);
+	    if (forwardMap.containsKey(ChibaAdapter.SUBMISSION_RESPONSE_STREAM)) {
+		forwardResponse(forwardMap, response);
+		chibaAdapter.shutdown();
+		return true;
+	    }
+	}
+	return false;
     }
 
     private String getActionURL(HttpServletRequest request, HttpServletResponse response, boolean scripted) {
-        String defaultActionURL = getRequestURI(request) + agent;
-        String encodedDefaultActionURL = response.encodeURL(defaultActionURL);
-        int sessIdx = encodedDefaultActionURL.indexOf(";jsession");
-        String sessionId = null;
-        if (sessIdx > -1) {
-            sessionId = encodedDefaultActionURL.substring(sessIdx);
-        }
-        String actionURL = request.getParameter(ACTIONURL_PARAM_NAME);
-        if (null == actionURL) {
-            actionURL = encodedDefaultActionURL;
-        } else if (null != sessionId) {
-            actionURL += sessionId;
-        }
+	String defaultActionURL = getRequestURI(request) + agent;
+	String encodedDefaultActionURL = response.encodeURL(defaultActionURL);
+	int sessIdx = encodedDefaultActionURL.indexOf(";jsession");
+	String sessionId = null;
+	if (sessIdx > -1) {
+	    sessionId = encodedDefaultActionURL.substring(sessIdx);
+	}
+	String actionURL = request.getParameter(ACTIONURL_PARAM_NAME);
+	if (null == actionURL) {
+	    actionURL = encodedDefaultActionURL;
+	} else if (null != sessionId) {
+	    actionURL += sessionId;
+	}
 
-        logger.info("actionURL: " + actionURL);
-        // encode the URL to allow for session id rewriting
-        return response.encodeURL(actionURL);
+	logger.info("actionURL: " + actionURL);
+	// encode the URL to allow for session id rewriting
+	return response.encodeURL(actionURL);
     }
 
     private String getRequestURI(HttpServletRequest request){
-        StringBuffer buffer = new StringBuffer(request.getScheme());
-        buffer.append("://");
-        buffer.append(request.getServerName());
-        buffer.append(":");
-        buffer.append(request.getServerPort()) ;
-        buffer.append(request.getContextPath());
-        return buffer.toString();
+	StringBuffer buffer = new StringBuffer(request.getScheme());
+	buffer.append("://");
+	buffer.append(request.getServerName());
+	buffer.append(":");
+	buffer.append(request.getServerPort()) ;
+	buffer.append(request.getContextPath());
+	return buffer.toString();
     }
 
     private void forwardResponse(Map forwardMap, HttpServletResponse response) throws IOException {
-        // fetch response stream
-        InputStream responseStream = (InputStream) forwardMap.remove(ChibaAdapter.SUBMISSION_RESPONSE_STREAM);
+	// fetch response stream
+	InputStream responseStream = (InputStream) forwardMap.remove(ChibaAdapter.SUBMISSION_RESPONSE_STREAM);
 
-        // copy header information
-        Iterator iterator = forwardMap.keySet().iterator();
-        while (iterator.hasNext()) {
+	// copy header information
+	Iterator iterator = forwardMap.keySet().iterator();
+	while (iterator.hasNext()) {
         	
-            String name = (String) iterator.next();
+	    String name = (String) iterator.next();
             
-            if ("Transfer-Encoding".equalsIgnoreCase(name)) {
-            	// Some servers (e.g. WebSphere) may set a "Transfer-Encoding"
-            	// with the value "chunked". This may confuse the client since
-            	// ChibaServlet output is not encoded as "chunked", so this
-            	// header is ignored.
-            	continue;
-            }
-            String value = (String) forwardMap.get(name);
-            response.setHeader(name, value);
-        }
+	    if ("Transfer-Encoding".equalsIgnoreCase(name)) {
+		// Some servers (e.g. WebSphere) may set a "Transfer-Encoding"
+		// with the value "chunked". This may confuse the client since
+		// ChibaServlet output is not encoded as "chunked", so this
+		// header is ignored.
+		continue;
+	    }
+	    String value = (String) forwardMap.get(name);
+	    response.setHeader(name, value);
+	}
 
-        // copy stream content
-        OutputStream outputStream = new BufferedOutputStream(response.getOutputStream());
-        for (int b = responseStream.read();
-             b > -1;
-             b = responseStream.read()) {
-            outputStream.write(b);
-        }
+	// copy stream content
+	OutputStream outputStream = new BufferedOutputStream(response.getOutputStream());
+	for (int b = responseStream.read();
+	     b > -1;
+	     b = responseStream.read()) {
+	    outputStream.write(b);
+	}
 
-        // close streams
-        responseStream.close();
-        outputStream.close();
+	// close streams
+	responseStream.close();
+	outputStream.close();
     }
 
     protected void shutdown(ChibaAdapter chibaAdapter,
@@ -452,15 +468,15 @@ public class ChibaServlet extends HttpServlet {
 			    HttpServletResponse response,
 			    HttpServletRequest request) 
 	throws IOException,
-	       ServletException {
-        // attempt to shutdown processor
-        if (chibaAdapter != null) {
-            try {
-                chibaAdapter.shutdown();
-            } catch (XFormsException xfe) {
-                xfe.printStackTrace();
-            }
-        }
+	ServletException {
+	// attempt to shutdown processor
+	if (chibaAdapter != null) {
+	    try {
+		chibaAdapter.shutdown();
+	    } catch (XFormsException xfe) {
+		xfe.printStackTrace();
+	    }
+	}
 	Application.handleServletError(this.getServletContext(),
 				       request,
 				       response,

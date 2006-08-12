@@ -76,21 +76,40 @@ public class TemplatingService
 	return new TemplateTypeImpl(name, schema);
     }
 
-    public void writeXML(final Node d, final File output)
+    public Document newDocument()
+	throws ParserConfigurationException,
+	       SAXException,
+	       IOException
+    {
+	final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+	dbf.setNamespaceAware(true);
+	dbf.setValidating(false);
+	final DocumentBuilder db = dbf.newDocumentBuilder();
+	return db.newDocument();
+    }
+
+    public void writeXML(final Node n, final Writer output)
     {
 	try 
 	{
-	    System.out.println("writing out a document for " + d.getNodeName() + 
+	    System.out.println("writing out a document for " + n.getNodeName() + 
 			       " to " + output);
 	    final TransformerFactory tf = TransformerFactory.newInstance();
 	    final Transformer t = tf.newTransformer();
-	    t.transform(new DOMSource(d), new StreamResult(output));
+	    t.transform(new DOMSource(n), new StreamResult(output));
 	}
 	catch (TransformerException te)
         {
 	    te.printStackTrace();
 	    assert false : te.getMessage();
 	}
+    }
+
+    public void writeXML(final Node n, final File output)
+	throws IOException
+    {
+	
+	this.writeXML(n, new FileWriter(output));
     }
 
     public Document parseXML(final String source)

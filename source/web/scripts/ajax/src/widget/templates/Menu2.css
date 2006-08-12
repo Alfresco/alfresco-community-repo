@@ -1,0 +1,179 @@
+
+.dojoPopupMenu2 {
+	position: absolute;
+	border: 1px solid #7298d0;
+	background:#a9ccfe url(images/soriaMenuBg.gif) repeat-x bottom left !important;
+	padding: 1px;
+	margin-top: 1px;
+	margin-bottom: 1px;
+}
+
+.dojoMenuItem2, .dojoMenuItem2 span span {
+	white-space: nowrap;
+	font: menu;
+	margin: 0;
+}
+
+.dojoMenuItem2 span {
+	margin: 0;
+	padding-right:5px;
+}
+
+.dojoMenuItem2Hover {
+	background-color: #D2E4FD;
+	cursor:pointer;
+	cursor:hand;
+}
+
+.dojoMenuItem2Icon {
+	position: relative;
+	background-position: center center;
+	background-repeat: no-repeat;
+	z-index: 1;
+	width: 16px;
+	height: 16px;
+}
+
+.dojoMenuItem2Label {
+	position: relative;
+	vertical-align: middle;
+	z-index: 1;
+}
+
+/* main label text */
+.dojoMenuItem2Label span {
+	position: relative;
+	vertical-align: middle;
+	z-index: 2;
+}
+
+/* label shadow text */
+.dojoMenuItem2Label span span {
+	position: absolute;
+	display: none;
+	left: 1px;
+	top: 1px;
+	z-index: -2;
+}
+
+.dojoMenuItem2Accel {
+	position: relative;
+	vertical-align: middle;
+	z-index: 1;
+}
+
+/* accelerator string */
+.dojoMenuItem2Accel span {
+	position: relative;
+	vertical-align: middle;
+	z-index: 2;
+}
+
+/* accelerator string shadow */
+.dojoMenuItem2Accel span span {
+	position: absolute;
+	display: none;
+	left: 1px;
+	top: 1px;
+	z-index: -2;
+}
+
+.dojoMenuItem2Disabled .dojoMenuItem2Label span,
+.dojoMenuItem2Disabled .dojoMenuItem2Accel span {
+	color: #607a9e;
+}
+
+.dojoMenuItem2Disabled .dojoMenuItem2Label span span,
+.dojoMenuItem2Disabled .dojoMenuItem2Accel span span {
+	display: block;
+}
+
+.dojoMenuItem2Hover .dojoMenuItem2Label span span,
+.dojoMenuItem2Hover .dojoMenuItem2Accel span span {
+	display: none;
+}
+
+.dojoMenuItem2Submenu {
+	position: relative;
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-image: url(images/submenu_off.gif);
+	width: 5px;
+	height: 9px;
+}
+.dojoMenuItem2Hover .dojoMenuItem2Submenu {
+	background-image: url(images/submenu_on.gif);
+}
+
+.dojoMenuSeparator2 {
+	font-size: 1px;
+	margin: 0;
+}
+
+.dojoMenuSeparator2Top {
+	height: 50%;
+	border-bottom: 1px solid #7996c1;
+	margin: 0px 2px;
+	font-size: 1px;
+}
+
+.dojoMenuSeparator2Bottom {
+	height: 50%;
+	border-top: 1px solid #e3eeff;
+	margin: 0px 2px;
+	font-size: 1px;
+}
+
+.dojoMenuBar2 {
+	/*position: relative;*/
+	background:#a9ccfe url(images/soriaBarBg.gif) repeat-x bottom left;
+	border-bottom:1px solid #405067;
+	border-top:1px solid #708bb3;
+}
+
+.dojoMenuBar2Client {
+	padding: 1px;
+}
+
+.dojoMenuBarItem2 {
+	white-space: nowrap;
+	font: menu;
+	margin: 0;
+	position: relative;
+	vertical-align: middle;
+	z-index: 1;
+	padding: 3px 8px;
+}
+
+.dojoMenuBarItem2 span {
+	margin: 0;
+	position: relative;
+	z-index: 2;
+	cursor:pointer;
+	cursor:hand;
+}
+
+.dojoMenuBarItem2 span span {
+	position: absolute;
+	display: none;
+	left: 1px;
+	top: 1px;
+	z-index: -2;
+}
+
+.dojoMenuBarItem2Hover {
+	background-color:#d2e4fd;
+}
+
+.dojoMenuBarItem2Disabled span {
+	color: #4f6582;
+}
+
+.dojoMenuBarItem2Disabled span span {
+	display: block;
+}
+
+.dojoMenuBarItem2Hover span span,
+.dojoMenuBarItem2Hover span span {
+	display: none;
+}

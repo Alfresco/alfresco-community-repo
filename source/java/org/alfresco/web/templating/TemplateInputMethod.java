@@ -23,5 +23,5 @@ public interface TemplateInputMethod
     public String getInputURL(final Document xmlContent,
 			      final TemplateType tt);
 
-    public String getSchemaInputURL(final TemplateType tt);
+    //    public String getSchemaInputURL(final TemplateType tt);
 }

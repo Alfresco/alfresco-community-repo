@@ -1,0 +1,57 @@
+/* the table holding the input and the button */
+.dojoComboBox {
+	border: 1px solid #afafaf;
+	padding: 0px;
+	line-height: 0px;
+}
+
+.b_ie .dojoComboBox,  .b_safari .dojoComboBox {
+	display: inline;
+}
+
+.b_gecko .dojoComboBox {
+	display: -moz-inline-box;
+}
+
+.b_opera .dojoComboBox {
+	display: inline-table;
+}
+
+/* the input box */
+input.dojoComboBoxInput {
+	/* font-size: 0.8em; */
+	border: 0px;
+	margin: 0px;
+	padding: 0px;
+}
+
+/* the drop down */
+.dojoComboBoxOptions {
+	font-family: Verdana, Helvetica, Garamond, sans-serif;
+	/* font-size: 0.7em; */
+	background-color: white;
+	border: 1px solid #afafaf;
+	position: absolute;
+	z-index: 1000; 
+	overflow: auto;
+	cursor: default;
+}
+
+.dojoComboBoxItem {
+	padding-left: 2px;
+	padding-top: 2px;
+	margin: 0px;
+}
+
+.dojoComboBoxItemEven {
+	background-color: #f4f4f4;
+}
+
+.dojoComboBoxItemOdd {
+	background-color: white;
+}
+
+.dojoComboBoxItemHighlight {
+	background-color: #63709A;
+	color: white;
+}

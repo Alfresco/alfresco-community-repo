@@ -3,11 +3,8 @@
 
 <beans>
     <bean id="scriptService" class="org.alfresco.repo.jscript.RhinoScriptService">
-        <property name="nodeService">
-            <ref bean="NodeService"/>
-        </property>
-        <property name="contentService">
-            <ref bean="ContentService"/>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
         </property>
     </bean>
 </beans>

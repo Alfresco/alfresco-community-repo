@@ -50,30 +50,18 @@ public class RhinoScriptService implements ScriptService
 {
     private static final Logger logger = Logger.getLogger(RhinoScriptService.class);
     
-    /** The permission-safe node service */
-    private NodeService nodeService;
+    /** Repository Service Registry */
+    private ServiceRegistry services;
     
-    /** The Content Service to use */
-    private ContentService contentService;
-    
+
     /**
-     * Set the node service
+     * Set the Service Registry
      * 
-     * @param nodeService       The permission-safe node service
+     * @param  service registry
      */
-    public void setNodeService(NodeService nodeService)
+    public void setServiceRegistry(ServiceRegistry services)
     {
-        this.nodeService = nodeService;
-    }
-    
-    /**
-     * Set the content service
-     * 
-     * @param contentService    The ContentService to use
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
+        this.services = services;
     }
     
     /**
@@ -136,7 +124,7 @@ public class RhinoScriptService implements ScriptService
         Reader reader = null;
         try
         {
-            if (this.nodeService.exists(scriptRef) == false)
+            if (this.services.getNodeService().exists(scriptRef) == false)
             {
                 throw new AlfrescoRuntimeException("Script Node does not exist: " + scriptRef);
             }
@@ -145,7 +133,7 @@ public class RhinoScriptService implements ScriptService
             {
                 contentProp = ContentModel.PROP_CONTENT;
             }
-            ContentReader cr = this.contentService.getReader(scriptRef, contentProp);
+            ContentReader cr = this.services.getContentService().getReader(scriptRef, contentProp);
             if (cr == null || cr.exists() == false)
             {
                 throw new AlfrescoRuntimeException("Script Node content not found: " + scriptRef);
@@ -224,9 +212,18 @@ public class RhinoScriptService implements ScriptService
             // you need one. However, initStandardObjects is an expensive method to call and it
             // allocates a fair amount of memory.
             Scriptable scope = cx.initStandardObjects();
+
+            // there's always a model, if only to hold the util objects
+            if (model == null)
+            {
+                model = new HashMap<String, Object>();
+            }
+            
+            // add useful util objects
+            model.put("actions", new Actions(services));
+            model.put("logger", new ScriptLogger());
             
             // insert supplied object model into root of the default scope
-            if (model != null)
             {
                 for (String key : model.keySet())
                 {
@@ -346,9 +343,7 @@ public class RhinoScriptService implements ScriptService
             model.put("space", new Node(space, services, resolver));
         }
         
-        // add other useful util objects
         model.put("search", new Search(services, companyHome.getStoreRef(), resolver));
-        model.put("logger", new ScriptLogger());
         
         return model;
     }

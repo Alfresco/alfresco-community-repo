@@ -24,6 +24,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAO;
@@ -267,7 +268,114 @@ public class RhinoScriptTest extends TestCase
             });
     }
     
+    public void testScriptActions()
+    {
+        TransactionUtil.executeInUserTransaction(
+            transactionService,
+            new TransactionUtil.TransactionWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
+                    NodeRef root = nodeService.getRootNode(store);
+                    
+                    try
+                    {
+                        // create a content object
+                        ChildAssociationRef childRef = nodeService.createNode(
+                                root,
+                                BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                                QName.createQName(BaseNodeServiceTest.NAMESPACE, "script_content"),
+                                BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT,
+                                null);
+                        NodeRef contentNodeRef = childRef.getChildRef();
+                        ContentWriter writer = contentService.getWriter(
+                                contentNodeRef,
+                                BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT,
+                                true);
+                        writer.setMimetype("application/x-javascript");
+                        writer.putContent(TESTSCRIPT1);
+
+                        
+                        // create an Alfresco scriptable Node object
+                        // the Node object is a wrapper similar to the TemplateNode concept
+                        Map<String, Object> model = new HashMap<String, Object>();
+                        model.put("doc", new Node(childRef.getChildRef(), serviceRegistry, null));
+                        model.put("root", new Node(root, serviceRegistry, null));
+                        
+                        // execute to add aspect via action
+                        Object result = scriptService.executeScript(TESTSCRIPT_CLASSPATH2, model);
+                        System.out.println("Result from TESTSCRIPT_CLASSPATH2: " + result.toString());
+                        assertTrue((Boolean)result);    // we know the result is a boolean
+
+                        // ensure aspect has been added via script
+                        assertTrue(nodeService.hasAspect(childRef.getChildRef(), ContentModel.ASPECT_LOCKABLE));
+                    }
+                    catch (Throwable err)
+                    {
+                        err.printStackTrace();
+                        fail(err.getMessage());
+                    }
+                    
+                    return null;
+                }                
+            });
+    }
+
+    
+    public void xtestScriptActionsMail()
+    {
+        TransactionUtil.executeInUserTransaction(
+            transactionService,
+            new TransactionUtil.TransactionWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
+                    NodeRef root = nodeService.getRootNode(store);
+                    
+                    try
+                    {
+                        // create a content object
+                        ChildAssociationRef childRef = nodeService.createNode(
+                                root,
+                                BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                                QName.createQName(BaseNodeServiceTest.NAMESPACE, "script_content"),
+                                BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT,
+                                null);
+                        NodeRef contentNodeRef = childRef.getChildRef();
+                        ContentWriter writer = contentService.getWriter(
+                                contentNodeRef,
+                                BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT,
+                                true);
+                        writer.setMimetype("application/x-javascript");
+                        writer.putContent(TESTSCRIPT1);
+                        
+                        // create an Alfresco scriptable Node object
+                        // the Node object is a wrapper similar to the TemplateNode concept
+                        Map<String, Object> model = new HashMap<String, Object>();
+                        model.put("doc", new Node(childRef.getChildRef(), serviceRegistry, null));
+                        model.put("root", new Node(root, serviceRegistry, null));
+                        
+                        // execute to add aspect via action
+                        Object result = scriptService.executeScript(TESTSCRIPT_CLASSPATH3, model);
+                        System.out.println("Result from TESTSCRIPT_CLASSPATH3: " + result.toString());
+                        assertTrue((Boolean)result);    // we know the result is a boolean
+                    }
+                    catch (Throwable err)
+                    {
+                        err.printStackTrace();
+                        fail(err.getMessage());
+                    }
+                    
+                    return null;
+                }                
+            });
+    }
+    
     private static final String TESTSCRIPT_CLASSPATH1 = "org/alfresco/repo/jscript/test_script1.js";
+    private static final String TESTSCRIPT_CLASSPATH2 = "org/alfresco/repo/jscript/test_script2.js";
+    private static final String TESTSCRIPT_CLASSPATH3 = "org/alfresco/repo/jscript/test_script3.js";
     
     private static final String TESTSCRIPT1 =
             "var id = root.id;\r\n" + 

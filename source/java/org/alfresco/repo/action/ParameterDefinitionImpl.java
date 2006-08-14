@@ -44,6 +44,11 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
     private QName type;
     
     /**
+     * Is this a multi-valued parameter?
+     */
+    private boolean isMultiValued;
+    
+    /**
      * The display label
      */
     private String displayLabel;
@@ -70,8 +75,30 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
         this.type = type;
         this.displayLabel = displayLabel;
 		this.isMandatory = isMandatory;
+        this.isMultiValued = false;
     }
-    
+
+    /**
+     * Constructor
+     * 
+     * @param name          the name of the parameter
+     * @param type          the type of the parameter
+     * @param displayLabel  the display label
+     */
+    public ParameterDefinitionImpl(
+            String name, 
+            QName type,
+            boolean isMandatory,
+            String displayLabel,
+            boolean isMultiValued)
+    {
+        this.name = name;
+        this.type = type;
+        this.displayLabel = displayLabel;
+        this.isMandatory = isMandatory;
+        this.isMultiValued = isMultiValued;
+    }
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterDefinition#getName()
      */
@@ -96,6 +123,14 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
 		return this.isMandatory;
 	}
 
+    /**
+     * @see org.alfresco.service.cmr.action.ParameterDefinition#isMultiValued()
+     */
+    public boolean isMultiValued()
+    {
+        return this.isMultiValued;
+    }
+    
     /**
      * @see org.alfresco.service.cmr.action.ParameterDefinition#getDisplayLabel()
      */

@@ -24,8 +24,10 @@ import org.mozilla.javascript.Scriptable;
 /**
  * @author Kevin Roast
  */
-public class ScriptableHashMap<K,V> extends LinkedHashMap implements Scriptable
+public class ScriptableHashMap<K,V> extends LinkedHashMap<K, V> implements Scriptable
 {
+    private static final long serialVersionUID = 3664761893203964569L;
+    
     private Scriptable parentScope;
     private Scriptable prototype;
     
@@ -88,10 +90,11 @@ public class ScriptableHashMap<K,V> extends LinkedHashMap implements Scriptable
     /**
      * @see org.mozilla.javascript.Scriptable#put(java.lang.String, org.mozilla.javascript.Scriptable, java.lang.Object)
      */
+    @SuppressWarnings("unchecked")
     public void put(String name, Scriptable start, Object value)
     {
         // add the property to the underlying QName map
-        put(name, value);
+        put((K)name, (V)value);
     }
 
     /**

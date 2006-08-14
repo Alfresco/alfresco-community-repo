@@ -311,7 +311,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_TO, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_TO)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_TO_MANY, DataTypeDefinition.ANY, false, getParamDisplayLabel(PARAM_TO_MANY)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_TO_MANY, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_TO_MANY), true));
         paramList.add(new ParameterDefinitionImpl(PARAM_SUBJECT, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_SUBJECT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_TEXT, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_TEXT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_FROM, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_FROM)));

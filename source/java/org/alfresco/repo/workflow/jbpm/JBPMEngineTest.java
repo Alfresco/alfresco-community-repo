@@ -345,6 +345,23 @@ public class JBPMEngineTest extends BaseSpringTest
         assertEquals(WorkflowTaskState.COMPLETED, updatedTask.state);
     }
     
+    public void testGetTask()
+    {
+        WorkflowDefinition workflowDef = getTestDefinition();
+        Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
+        assertNotNull(path);
+        assertNotNull(path);
+        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
+        assertNotNull(tasks1);
+        assertEquals(1, tasks1.size());
+        WorkflowTask getTask = taskComponent.getTaskById(tasks1.get(0).id);
+        assertNotNull(getTask);
+        assertEquals(getTask.name, tasks1.get(0).name);
+    }
+
     
     public void testNodeRef()
     {

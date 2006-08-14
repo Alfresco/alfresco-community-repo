@@ -749,10 +749,25 @@ public class JBPMEngine extends BPMEngine
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.TaskComponent#getTaskById(java.lang.String)
      */
-    public WorkflowTask getTaskById(String taskId)
+    public WorkflowTask getTaskById(final String taskId)
     {
-        // TODO Auto-generated method stub
-        return null;
+        try
+        {
+            return (WorkflowTask) jbpmTemplate.execute(new JbpmCallback()
+            {
+                public Object doInJbpm(JbpmContext context)
+                {
+                    // retrieve task
+                    TaskMgmtSession taskSession = context.getTaskMgmtSession();
+                    TaskInstance taskInstance = taskSession.loadTaskInstance(getJbpmId(taskId));
+                    return createWorkflowTask(taskInstance);
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to retrieve task '" + taskId + "'", e);
+        }        
     }
     
     

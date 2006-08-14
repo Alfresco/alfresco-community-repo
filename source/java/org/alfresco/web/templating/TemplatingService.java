@@ -129,6 +129,13 @@ public class TemplatingService
 	this.writeXML(n, new FileWriter(output));
     }
 
+    public String writeXMLToString(final Node n)
+    {
+	final StringWriter result = new StringWriter();
+	this.writeXML(n, result);
+	return result.toString();
+    }
+
     public Document parseXML(final String source)
 	throws ParserConfigurationException,
 	       SAXException,

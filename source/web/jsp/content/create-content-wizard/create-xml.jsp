@@ -21,12 +21,33 @@
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.templating.*" %>
 <%@ page import="org.alfresco.web.bean.content.CreateContentWizard" %>
+<%@ page import="org.w3c.dom.Document" %>
 
 <%
-CreateContentWizard wiz = (CreateContentWizard)
+final CreateContentWizard wiz = (CreateContentWizard)
   Application.getWizardManager().getBean();
 TemplateType tt = wiz.getTemplateType();
 TemplateInputMethod tim = tt.getInputMethods().get(0);
-TemplatingService ts = TemplatingService.getInstance();
-tim.generate(wiz.getContent() != null ? ts.parseXML(wiz.getContent()) : null, tt, out);
+final TemplatingService ts = TemplatingService.getInstance();
+final InstanceData instanceData = new InstanceData() {
+
+    public Document getContent()
+    { 
+        try
+	{
+            return wiz.getContent() != null ? ts.parseXML(wiz.getContent()) : null;
+        }
+	catch (Exception e)
+	{
+	    e.printStackTrace();
+	    return null;
+	}
+    }
+    
+    public void setContent(final Document d)
+    {
+        wiz.setContent(ts.writeXMLToString(d));
+    }
+};
+tim.generate(instanceData, tt, out);
 %>

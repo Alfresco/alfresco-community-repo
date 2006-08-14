@@ -110,7 +110,30 @@ function load_body(body, ui_element_stack)
       var nodeRef = document.createElement("div");
       nodeRef.setAttribute("style", "height: 200px; border: solid 1px black;");
       cell.appendChild(nodeRef);
-      var w = dojo.widget.createWidget("Editor", { items: ["|", "bold", "italic", "underline", "strikethrough", "|", "colorGroup", "|", "createLink", "insertImage" ] }, nodeRef);
+      var id = o.getAttribute("id");
+      var initial_value = get_initial_value(o);
+      nodeRef.appendChild(document.createTextNode(initial_value));
+      var w = dojo.widget.createWidget("Editor", 
+				       { 
+					   widgetId: id,
+					   focusOnLoad: false,
+					   items: [ "|", "bold", "italic", "underline", "strikethrough", "|", "colorGroup", "|", "createLink", "insertImage" ] 
+				       }, 
+				       nodeRef);
+      dojo.event.connect(w,
+			 "setRichText", 
+			 function(event)
+			 {
+			     dojo.event.connect(w._richText,
+						"onBlur",
+						function()
+						{
+						    setXFormsValue(w.widgetId, 
+								   w._richText.getEditorContent());
+						});
+						
+			 });
+
       break;
     case "xforms:input":
       var id = o.getAttribute("id");
@@ -266,11 +289,17 @@ function load_body(body, ui_element_stack)
 	for (var i in values)
 	{
 	  var radio = document.createElement("input");
+	  radio.setAttribute("id", o.getAttribute("id"));
 	  radio.setAttribute("name", o.getAttribute("id"));
 	  radio.setAttribute("type", "radio");
 	  radio.setAttribute("value", values[i].value);
 	  if (values[i].value == initial_value)
 	    radio.setAttribute("checked", "true");
+	  radio.onclick = function(event) 
+	  { 
+	      setXFormsValue(this.getAttribute("id"),
+			     this.value);
+	  }
 	  nodeRef.appendChild(radio);
 	  nodeRef.appendChild(document.createTextNode(values[i].label));
 	}
@@ -278,6 +307,7 @@ function load_body(body, ui_element_stack)
       else
       {
         var combobox = document.createElement("select");
+	combobox.setAttribute("id", o.getAttribute("id"));
 	nodeRef.appendChild(combobox);
 	for (var i in values)
 	{
@@ -287,6 +317,11 @@ function load_body(body, ui_element_stack)
 	  if (values[i].value == initial_value)
 	    option.setAttribute("selected", "true");
 	  combobox.appendChild(option);
+	}
+	combobox.onchange = function(event) 
+        { 
+	    setXFormsValue(this.getAttribute("id"),
+			   this.options[this.selectedIndex].value);
 	}
       }
       break;
@@ -414,7 +449,7 @@ function fireAction(id)
   mimetype: "text/xml",
   load: function(type, data, evt)
   {
-    alert("fired action " + id);
+      //    alert("fired action " + id);
   },
   error: function(type, e)
   {

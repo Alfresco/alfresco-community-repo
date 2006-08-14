@@ -44,7 +44,7 @@ public class XFormsInputMethod
     {
     }
 
-    public void generate(final Document xmlContent, 
+    public void generate(final InstanceData instanceData, 
 			 final TemplateType tt,
 			 final Writer out)
     {
@@ -52,7 +52,7 @@ public class XFormsInputMethod
 	final FacesContext fc = FacesContext.getCurrentInstance();
 	final XFormsBean xforms = (XFormsBean)
 	    FacesHelper.getManagedBean(fc, "XFormsBean");
-	xforms.setInstanceData(xmlContent);
+	xforms.setInstanceData(instanceData);
 	xforms.setTemplateType(tt);
 	try
         {

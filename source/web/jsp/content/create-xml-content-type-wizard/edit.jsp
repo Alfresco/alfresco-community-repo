@@ -22,11 +22,15 @@
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.bean.content.CreateXmlContentTypeWizard" %>
 <%@ page import="org.alfresco.web.templating.*" %>
-
+<%@ page import="org.w3c.dom.Document" %>
 <%
 CreateXmlContentTypeWizard wiz = (CreateXmlContentTypeWizard)
   Application.getWizardManager().getBean();
 TemplateType tt = wiz.getTemplateType();
 TemplateInputMethod tim = tt.getInputMethods().get(0);
-tim.generate(null, tt, out);	     
+final InstanceData instanceData = new InstanceData() {
+      public Document getContent() { return null; }
+      public void setContent(Document d) { }
+};
+tim.generate(instanceData, tt, out);	     
 %>

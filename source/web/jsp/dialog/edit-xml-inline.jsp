@@ -27,17 +27,41 @@
                  org.alfresco.service.cmr.repository.*,
 		 org.alfresco.web.bean.content.*,
 		 org.alfresco.web.templating.*" %>
+<%@ page import="java.io.*" %>
+<%@ page import="org.alfresco.web.app.Application" %>
+<%@ page import="org.alfresco.web.bean.content.CreateXmlContentTypeWizard" %>
+<%@ page import="org.alfresco.web.templating.*" %>
+<%@ page import="org.w3c.dom.Document" %>
 <%
-CheckinCheckoutBean ccb = (CheckinCheckoutBean)session.getAttribute("CheckinCheckoutBean");
+final CheckinCheckoutBean ccb = (CheckinCheckoutBean)
+      session.getAttribute("CheckinCheckoutBean");
 NodeRef nr = ccb.getDocument().getNodeRef();
 String ttName = (String)ccb.getNodeService().getProperty(nr, CreateContentWizard.TT_QNAME);
-TemplatingService ts = TemplatingService.getInstance();
-TemplateType tt  = ts.getTemplateType(ttName);
-System.out.println("tt " + tt);
+final TemplatingService ts = TemplatingService.getInstance();
+final TemplateType tt  = ts.getTemplateType(ttName);
 TemplateInputMethod tim = tt.getInputMethods().get(0);
-String url = tim.getInputURL(ts.parseXML(ccb.getDocumentContent()), tt);
-System.out.println("inputurl  " + url);
+final InstanceData instanceData = new InstanceData() {
+
+    public Document getContent()
+    { 
+        try
+	{
+            return ccb.getDocumentContent() != null ? ts.parseXML(ccb.getDocumentContent()) : null;
+        }
+	catch (Exception e)
+	{
+	    e.printStackTrace();
+	    return null;
+	}
+    }
+    
+    public void setContent(final Document d)
+    {
+        ccb.setEditorOutput(ts.writeXMLToString(d));
+    }
+};
 %>
+
 <r:page titleId="title_edit_text_inline">
 
 <f:view>
@@ -152,8 +176,8 @@ System.out.println("inputurl  " + url);
                         <tr>
                            <td width="100%" valign="top" height="360px">
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
-<iframe id="editor" style="width: 100%; height: 360px" src="<%= url %>">
-</iframe>
+<% tim.generate(instanceData, tt, out); %>
+
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
                            </td>
                         </tr>

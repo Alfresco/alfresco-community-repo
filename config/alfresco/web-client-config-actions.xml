@@ -374,6 +374,7 @@
          
          <!-- Manage Deleted Items -->
          <action id="manage_deleted_items">
+            <evaluator>org.alfresco.web.action.evaluator.ShortcutNodeEvaluator</evaluator>
             <label-id>manage_deleted_items</label-id>
             <image>/images/icons/trashcan.gif</image>
             <action>dialog:manageDeletedItems</action>

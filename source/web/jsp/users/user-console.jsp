@@ -97,9 +97,7 @@
                               <%-- wrapper comment used by the panel to add additional component facets --%>
                               <h:panelGroup id="mydetails-panel-facets">
                                  <f:facet name="title">
-                                    <a:booleanEvaluator value="#{NavigationBean.isGuest == false}">
-                                       <a:actionLink value="#{msg.modify}" action="dialog:editUserDetails" showLink="false" image="/images/icons/Change_details.gif" />
-                                    </a:booleanEvaluator>
+                                    <a:actionLink value="#{msg.modify}" action="dialog:editUserDetails" showLink="false" image="/images/icons/Change_details.gif" rendered="#{NavigationBean.isGuest == false}" />
                                  </f:facet>
                               </h:panelGroup>
                               <a:panel label="#{msg.my_details}" id="mydetails-panel" facetsId="mydetails-panel-facets"
@@ -132,15 +130,13 @@
                                  </table>
                                  <div style="padding:4px"></div>
                                  <%-- context for current user is setup on entry to user console --%>
-                                 <a:actionLink id="change-password" value="#{msg.change_password}" action="dialog:changePassword" image="/images/icons/change_password.gif" />
+                                 <a:actionLink id="change-password" value="#{msg.change_password}" action="dialog:changePassword" image="/images/icons/change_password.gif" rendered="#{NavigationBean.isGuest == false}" />
                               </a:panel>
                               <div style="padding:4px"></div>
                               
                               <h:panelGroup id="pref-panel-facets">
                                  <f:facet name="title">
-                                    <a:booleanEvaluator value="#{NavigationBean.isGuest == false}">
-                                       <a:actionLink  value="#{msg.modify}" action="" showLink="false" image="/images/icons/Change_details.gif" />
-                                    </a:booleanEvaluator>
+                                    <a:actionLink  value="#{msg.modify}" action="" showLink="false" image="/images/icons/Change_details.gif" rendered="#{NavigationBean.isGuest == false}" />
                                  </f:facet>
                               </h:panelGroup>
                               <a:panel label="#{msg.general_pref}" id="pref-panel" facetsId="pref-panel-facets"

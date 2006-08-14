@@ -24,7 +24,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Kevin Roast
  */
-public final class UnlockDocEvaluator implements ActionEvaluator
+public class UnlockDocEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)

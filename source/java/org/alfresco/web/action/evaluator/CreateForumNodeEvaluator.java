@@ -25,7 +25,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Kevin Roast
  */
-public final class CreateForumNodeEvaluator implements ActionEvaluator
+public class CreateForumNodeEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -36,6 +36,3 @@ public final class CreateForumNodeEvaluator implements ActionEvaluator
               node.isLocked() == false);
    }
 }
-/*
-<a:booleanEvaluator value="#{r.beingDiscussed == false && r.locked == false}">
-*/

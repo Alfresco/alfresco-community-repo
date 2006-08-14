@@ -30,7 +30,7 @@ import org.alfresco.web.bean.repository.Repository;
  * 
  * @author Kevin Roast
  */
-public final class CheckoutDocEvaluator implements ActionEvaluator
+public class CheckoutDocEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -46,6 +46,3 @@ public final class CheckoutDocEvaluator implements ActionEvaluator
                node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false)));
    }
 }
-/*
-<a:booleanEvaluator value="#{r.locked == false && r.workingCopy == false}">
-*/

@@ -25,7 +25,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Kevin Roast
  */
-public final class DeleteDocEvaluator implements ActionEvaluator
+public class DeleteDocEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -36,6 +36,3 @@ public final class DeleteDocEvaluator implements ActionEvaluator
               node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false);
    }
 }
-/*
-<a:booleanEvaluator value="#{r.locked == false && r.workingCopy == false}">
-*/

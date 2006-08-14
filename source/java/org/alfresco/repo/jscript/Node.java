@@ -945,34 +945,45 @@ public final class Node implements Serializable, Scopeable
             
             if (value instanceof NativeArray)
             {
-               // convert JavaScript array of values to a List of Serializable objects
-               Object[] propIds = values.getIds();
-               List<Serializable> propValues = new ArrayList<Serializable>(propIds.length);
-               for (int i=0; i<propIds.length; i++)
-               {
-                   // work on each key in turn
-                   Object propId = propIds[i];
-                   
-                   // we are only interested in keys that indicate a list of values
-                   if (propId instanceof Integer)
-                   {
-                       // get the value out for the specified key
-                       Serializable val = (Serializable)values.get((Integer)propId, values);
-                       // recursively call this method to convert the value
-                       propValues.add(convertValueForRepo(val));
-                   }
-               }
-               value = (Serializable)propValues;
+                // convert JavaScript array of values to a List of Serializable objects
+                Object[] propIds = values.getIds();
+                List<Serializable> propValues = new ArrayList<Serializable>(propIds.length);
+                for (int i=0; i<propIds.length; i++)
+                {
+                    // work on each key in turn
+                    Object propId = propIds[i];
+                    
+                    // we are only interested in keys that indicate a list of values
+                    if (propId instanceof Integer)
+                    {
+                        // get the value out for the specified key
+                        Serializable val = (Serializable)values.get((Integer)propId, values);
+                        // recursively call this method to convert the value
+                        propValues.add(convertValueForRepo(val));
+                    }
+                }
+                value = (Serializable)propValues;
             }
             else
             {
-               // TODO: add code here to use the dictionary and convert to correct value type
-               Object javaObj = Context.jsToJava(value, Date.class);
-               if (javaObj instanceof Date)
-               {
-                  value = (Date)javaObj;
-               }
+                // TODO: add code here to use the dictionary and convert to correct value type
+                Object javaObj = Context.jsToJava(value, Date.class);
+                if (javaObj instanceof Serializable)
+                {
+                    value = (Serializable)javaObj;
+                }
             }
+        }
+        else if (value instanceof Serializable[])
+        {
+            // convert back a list of Java values
+            Serializable[] array = (Serializable[])value;
+            ArrayList<Serializable> list = new ArrayList<Serializable>(array.length);
+            for (int i=0; i<array.length; i++)
+            {
+                list.add(convertValueForRepo(array[i]));
+            }
+            value = list;
         }
         return value;
     }

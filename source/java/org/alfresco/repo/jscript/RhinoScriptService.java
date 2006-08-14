@@ -37,9 +37,9 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Wrapper;
 
 /**
  * Implementation of the ScriptService using the Rhino JavaScript engine.
@@ -250,9 +250,9 @@ public class RhinoScriptService implements ScriptService
             Object result = cx.evaluateReader(scope, reader, "AlfrescoScript", 1, null);
             
             // extract java object result if wrapped by rhinoscript 
-            if (result != null && result instanceof NativeJavaObject)
+            if (result instanceof Wrapper)
             {
-                result = Context.jsToJava(result, Object.class);
+                result = ((Wrapper)result).unwrap();
             }
             
             return result;

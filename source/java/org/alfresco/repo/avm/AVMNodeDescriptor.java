@@ -17,6 +17,8 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.Serializable;
+
 /**
  * This class describes an AVM node object.  
  * It serves a similar purpose to the data structure
@@ -24,8 +26,10 @@ package org.alfresco.repo.avm;
  *
  * @author britt
  */
-public class AVMNodeDescriptor
+public class AVMNodeDescriptor implements Serializable
 {
+    private static final long serialVersionUID = -7959606980486852184L;
+
     /**
      * The path that this was looked up with.
      */

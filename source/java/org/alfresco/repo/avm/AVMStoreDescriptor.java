@@ -17,14 +17,17 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * A value class for Data about an AVMStore.
  * @author britt
  */
-public class AVMStoreDescriptor
+public class AVMStoreDescriptor implements Serializable
 {
+    private static final long serialVersionUID = -4401863082685362175L;
+
     /**
      * The name.
      */

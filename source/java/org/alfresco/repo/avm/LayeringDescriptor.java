@@ -17,13 +17,17 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.Serializable;
+
 /**
  * A value class containing information about the layering state of a looked up
  * node.
  * @author britt
  */
-public class LayeringDescriptor
+public class LayeringDescriptor implements Serializable
 {
+    private static final long serialVersionUID = -6911813236493434123L;
+
     /**
      * Whether the node is a background node.
      */

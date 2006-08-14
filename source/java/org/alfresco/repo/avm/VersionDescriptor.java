@@ -17,14 +17,17 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * All the information about a particular version.
  * @author britt
  */
-public class VersionDescriptor
+public class VersionDescriptor implements Serializable
 {
+    private static final long serialVersionUID = 9045221398461856268L;
+
     /**
      * The name of the store this version belongs to.
      */

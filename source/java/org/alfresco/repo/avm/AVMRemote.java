@@ -69,10 +69,9 @@ public interface AVMRemote
      * starting at offset <code>offset</code> in <code>buff</code>
      * @param handle The opaque handle to the server side output stream.
      * @param buff The data buffer.
-     * @param offset The offset within the buffer.
      * @param count The number of bytes to write.
      */
-    public void writeOutput(String handle, byte [] buff, int offset, int count);
+    public void writeOutput(String handle, byte [] buff, int count);
     
     /**
      * Close the server side output stream designated by the handle.

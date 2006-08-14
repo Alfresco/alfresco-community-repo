@@ -63,6 +63,7 @@ public class DojoGenerator
     {
 	try 
         {
+	    
 	    request.setAttribute("xform", this.inputNode);
 	    final RequestDispatcher rd = request.getRequestDispatcher("/jsp/content/xforms/dojo-generator.jsp");
 	    rd.include(request, response);
@@ -73,4 +74,3 @@ public class DojoGenerator
 	}
     }
 }
-	       

@@ -19,31 +19,14 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 <%@ page import="java.io.*" %>
-<f:verbatim>
-<script type="text/javascript">
-function set_edit_mode(on)
-{
-  var iframe = document.getElementById("editor");
-  editor.setAttribute("src", 
-                      on ? "</f:verbatim><h:outputText value="not_implemented" escape="false"/><f:verbatim>" 
-                         : "</f:verbatim><h:outputText value="#{WizardManager.bean.formURL}" escape="false"/><f:verbatim>");
-}
-</script>
-<div>
-</f:verbatim>
-<a:actionLink id="edit" 
-              value="#{msg.edit}"
-              rendered="true"
-	      onclick="javascript:set_edit_mode(true)"/>
-<f:verbatim>&nbsp;|&nbsp;</f:verbatim>
-<a:actionLink id="preview" 
-              value="#{msg.preview}"
-	      rendered="true"
-	      onclick="javascript:set_edit_mode(false)"/>
-<h:outputText value="</div>" escape="false"/>
-<h:outputText value="<iframe id=\"editor\" 
-              style=\"width: 100%; height: 360px\" src=\""
-              escape="false"/>
-<h:outputText value="#{WizardManager.bean.formURL}" escape="false"/>
-<h:outputText value="\"/>" escape="false"/>
-<h:outputText value="</iframe>" escape="false"/>
+<%@ page import="org.alfresco.web.app.Application" %>
+<%@ page import="org.alfresco.web.bean.content.CreateXmlContentTypeWizard" %>
+<%@ page import="org.alfresco.web.templating.*" %>
+
+<%
+CreateXmlContentTypeWizard wiz = (CreateXmlContentTypeWizard)
+  Application.getWizardManager().getBean();
+TemplateType tt = wiz.getTemplateType();
+TemplateInputMethod tim = tt.getInputMethods().get(0);
+tim.generate(null, tt, out);	     
+%>

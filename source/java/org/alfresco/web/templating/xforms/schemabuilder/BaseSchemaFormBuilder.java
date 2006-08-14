@@ -42,42 +42,8 @@ import java.util.Vector;
  * @version $Id: BaseSchemaFormBuilder.java,v 1.19 2005/03/29 14:24:34 unl Exp $
  */
 public class BaseSchemaFormBuilder
-        extends AbstractSchemaFormBuilder
-        implements SchemaFormBuilder {
-    /**
-     * Creates a new instance of BaseSchemaForBuilder
-     */
-    public BaseSchemaFormBuilder(String rootTagName) {
-        super(rootTagName);
-    }
-
-    /**
-     * Creates a new BaseSchemaFormBuilder object.
-     *
-     * @param rootTagName    __UNDOCUMENTED__
-     * @param instanceSource __UNDOCUMENTED__
-     * @param action         __UNDOCUMENTED__
-     * @param submitMethod   __UNDOCUMENTED__
-     * @param wrapper        __UNDOCUMENTED__
-     * @param stylesheet     __UNDOCUMENTED__
-     */
-    public BaseSchemaFormBuilder(String rootTagName,
-                                 Source instanceSource,
-                                 String action,
-                                 String submitMethod,
-                                 WrapperElementsBuilder wrapper,
-                                 String stylesheet,
-                                 String base,
-                                 boolean userSchemaTypes) {
-        super(rootTagName,
-                instanceSource,
-                action,
-                submitMethod,
-                wrapper,
-                stylesheet,
-                base,
-                userSchemaTypes);
-    }
+    extends AbstractSchemaFormBuilder
+    implements SchemaFormBuilder {
 
     /**
      * Creates a new BaseSchemaFormBuilder object.
@@ -105,34 +71,6 @@ public class BaseSchemaFormBuilder
 	      stylesheet,
 	      base,
 	      userSchemaTypes);
-    }
-
-    /**
-     * Creates a new BaseSchemaFormBuilder object.
-     *
-     * @param rootTagName  __UNDOCUMENTED__
-     * @param instanceHref __UNDOCUMENTED__
-     * @param action       __UNDOCUMENTED__
-     * @param submitMethod __UNDOCUMENTED__
-     * @param wrapper      __UNDOCUMENTED__
-     * @param stylesheet   __UNDOCUMENTED__
-     */
-    public BaseSchemaFormBuilder(String rootTagName,
-                                 String instanceHref,
-                                 String action,
-                                 String submitMethod,
-                                 WrapperElementsBuilder wrapper,
-                                 String stylesheet,
-                                 String base,
-                                 boolean userSchemaTypes) {
-        super(rootTagName,
-                instanceHref,
-                action,
-                submitMethod,
-                wrapper,
-                stylesheet,
-                base,
-                userSchemaTypes);
     }
 
     /**
@@ -212,15 +150,15 @@ public class BaseSchemaFormBuilder
     public Element createControlForAnyType(Document xForm,
                                            String caption,
                                            XSTypeDefinition controlType) {
-        Element control =
-                xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "textarea");
+        Element control = xForm.createElementNS(XFORMS_NS, 
+						getXFormsNSPrefix() + "textarea");
         this.setXFormsId(control);
         control.setAttributeNS(CHIBA_NS, getChibaNSPrefix() + "height", "3");
 
         //label
-        Element captionElement =
-                (Element) control.appendChild(xForm.createElementNS(XFORMS_NS,
-                        getXFormsNSPrefix() + "label"));
+        Element captionElement = (Element)
+	    control.appendChild(xForm.createElementNS(XFORMS_NS,
+						      getXFormsNSPrefix() + "label"));
         this.setXFormsId(captionElement);
         captionElement.appendChild(xForm.createTextNode(caption));
 
@@ -323,96 +261,87 @@ public class BaseSchemaFormBuilder
         //
         StringList enumFacets = controlType.getLexicalEnumeration();
         int nbFacets = enumFacets.getLength();
-        if (nbFacets > 0) {
-            Vector enumValues = new Vector();
+        if (nbFacets <= 0)
+	    return null;
+        Vector enumValues = new Vector();
 
-            Element control =
-                    xForm.createElementNS(XFORMS_NS,
-                            getXFormsNSPrefix() + "select1");
-            this.setXFormsId(control);
+        Element control = xForm.createElementNS(XFORMS_NS,
+						    getXFormsNSPrefix() + "select1");
+        this.setXFormsId(control);
 
-            //label
-            Element captionElement1 =
-                    (Element) control.appendChild(xForm.createElementNS(XFORMS_NS,
-                            getXFormsNSPrefix() + "label"));
-            this.setXFormsId(captionElement1);
-            captionElement1.appendChild(xForm.createTextNode(caption));
+        //label
+        Element captionElement1 = (Element)
+		control.appendChild(xForm.createElementNS(XFORMS_NS,
+							  getXFormsNSPrefix() + "label"));
+        this.setXFormsId(captionElement1);
+        captionElement1.appendChild(xForm.createTextNode(caption));
 
-            Element choices =
-                    xForm.createElementNS(XFORMS_NS,
-                            getXFormsNSPrefix() + "choices");
-            this.setXFormsId(choices);
+        Element choices = xForm.createElementNS(XFORMS_NS,
+						    getXFormsNSPrefix() + "choices");
+        this.setXFormsId(choices);
 
-            for (int i = 0; i < nbFacets; i++) {
-                String facet = enumFacets.item(i);
-                enumValues.add(facet);
-            }
-
-            if (nbFacets
-                    < Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP))) {
-                control.setAttributeNS(XFORMS_NS,
-                        getXFormsNSPrefix() + "appearance",
-                        getProperty(SELECTONE_UI_CONTROL_SHORT_PROP));
-            } else {
-                control.setAttributeNS(XFORMS_NS,
-                        getXFormsNSPrefix() + "appearance",
-                        getProperty(SELECTONE_UI_CONTROL_LONG_PROP));
-
-                // add the "Please select..." instruction item for the combobox
-                // and set the isValid attribute on the bind element to check for the "Please select..."
-                // item to indicate that is not a valid value
-                //
-                {
-                    String pleaseSelect = "[Select1 " + caption + "]";
-                    Element item =
-                            xForm.createElementNS(XFORMS_NS,
-                                    getXFormsNSPrefix() + "item");
-                    this.setXFormsId(item);
-                    choices.appendChild(item);
-
-                    Element captionElement =
-                            xForm.createElementNS(XFORMS_NS,
-                                    getXFormsNSPrefix() + "label");
-                    this.setXFormsId(captionElement);
-                    item.appendChild(captionElement);
-                    captionElement.appendChild(xForm.createTextNode(pleaseSelect));
-
-                    Element value =
-                            xForm.createElementNS(XFORMS_NS,
-                                    getXFormsNSPrefix() + "value");
-                    this.setXFormsId(value);
-                    item.appendChild(value);
-                    value.appendChild(xForm.createTextNode(pleaseSelect));
-
-                    // not(purchaseOrder/state = '[Choose State]')
-                    //String isValidExpr = "not(" + bindElement.getAttributeNS(XFORMS_NS,"nodeset") + " = '" + pleaseSelect + "')";
-                    // ->no, not(. = '[Choose State]')
-                    String isValidExpr = "not( . = '" + pleaseSelect + "')";
-
-                    //check if there was a constraint
-                    String constraint =
-                            bindElement.getAttributeNS(XFORMS_NS, "constraint");
-
-                    if ((constraint != null) && !constraint.equals("")) {
-                        constraint = constraint + " and " + isValidExpr;
-                    } else {
-                        constraint = isValidExpr;
-                    }
-
-                    bindElement.setAttributeNS(XFORMS_NS,
-                            getXFormsNSPrefix() + "constraint",
-                            constraint);
-                }
-            }
-
-            control.appendChild(choices);
-
-            addChoicesForSelectControl(xForm, choices, enumValues);
-
-            return control;
-        } else {
-            return null;
+        for (int i = 0; i < nbFacets; i++) {
+            String facet = enumFacets.item(i);
+            enumValues.add(facet);
         }
+
+        if (nbFacets < Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP))) {
+            control.setAttributeNS(XFORMS_NS,
+				       getXFormsNSPrefix() + "appearance",
+				       getProperty(SELECTONE_UI_CONTROL_SHORT_PROP));
+        } else {
+            control.setAttributeNS(XFORMS_NS,
+				       getXFormsNSPrefix() + "appearance",
+				       getProperty(SELECTONE_UI_CONTROL_LONG_PROP));
+
+            // add the "Please select..." instruction item for the combobox
+            // and set the isValid attribute on the bind element to check for the "Please select..."
+            // item to indicate that is not a valid value
+            //
+            {
+                String pleaseSelect = "[Select1 " + caption + "]";
+                Element item = xForm.createElementNS(XFORMS_NS,
+							 getXFormsNSPrefix() + "item");
+                this.setXFormsId(item);
+                choices.appendChild(item);
+
+                Element captionElement = 
+			xForm.createElementNS(XFORMS_NS,
+					      getXFormsNSPrefix() + "label");
+                this.setXFormsId(captionElement);
+                item.appendChild(captionElement);
+                captionElement.appendChild(xForm.createTextNode(pleaseSelect));
+
+                Element value =
+                        xForm.createElementNS(XFORMS_NS,
+						  getXFormsNSPrefix() + "value");
+                this.setXFormsId(value);
+                item.appendChild(value);
+                value.appendChild(xForm.createTextNode(pleaseSelect));
+
+                // not(purchaseOrder/state = '[Choose State]')
+                //String isValidExpr = "not(" + bindElement.getAttributeNS(XFORMS_NS,"nodeset") + " = '" + pleaseSelect + "')";
+                // ->no, not(. = '[Choose State]')
+                String isValidExpr = "not( . = '" + pleaseSelect + "')";
+
+                //check if there was a constraint
+                String constraint = bindElement.getAttributeNS(XFORMS_NS, "constraint");
+
+                constraint = ((constraint != null && constraint.length() != 0) 
+				  ? constraint + " and " + isValidExpr
+				  : isValidExpr);
+
+                bindElement.setAttributeNS(XFORMS_NS,
+					       getXFormsNSPrefix() + "constraint",
+					       constraint);
+            }
+        }
+
+        control.appendChild(choices);
+
+        addChoicesForSelectControl(xForm, choices, enumValues);
+
+        return control;
     }
 
     /**
@@ -432,54 +361,50 @@ public class BaseSchemaFormBuilder
 
         StringList enumFacets = controlType.getLexicalEnumeration();
         int nbFacets = enumFacets.getLength();
-        if (nbFacets > 0) {
-            Element control =
-                    xForm.createElementNS(XFORMS_NS,
-                            getXFormsNSPrefix() + "select");
-            this.setXFormsId(control);
+        if (nbFacets <= 0) 
+	    return null;
+        Element control = xForm.createElementNS(XFORMS_NS,
+						getXFormsNSPrefix() + "select");
+        this.setXFormsId(control);
 
-            //label
-            Element captionElement =
-                    (Element) control.appendChild(xForm.createElementNS(XFORMS_NS,
-                            getXFormsNSPrefix() + "label"));
-            this.setXFormsId(captionElement);
-            captionElement.appendChild(xForm.createTextNode(caption));
+        //label
+        Element captionElement = (Element)
+	    control.appendChild(xForm.createElementNS(XFORMS_NS,
+						      getXFormsNSPrefix() + "label"));
+        this.setXFormsId(captionElement);
+        captionElement.appendChild(xForm.createTextNode(caption));
 
-            Vector enumValues = new Vector();
-            for (int i = 0; i < nbFacets; i++) {
-                String facet = enumFacets.item(i);
-                enumValues.add(facet);
-            }
-
-            // TODO: Figure out an intelligent or user determined way to decide between
-            // selectUI style (listbox, menu, combobox, radio) (radio and listbox best apply)
-            // Possibly look for special appInfo section in the schema and if not present default to checkBox...
-            //
-            // For now, use checkbox if there are < DEFAULT_LONG_LIST_MAX_SIZE items, otherwise use long control
-            //
-            if (enumValues.size()
-                    < Long.parseLong(getProperty(SELECTMANY_LONG_LIST_SIZE_PROP))) {
-                control.setAttributeNS(XFORMS_NS,
-                        getXFormsNSPrefix() + "appearance",
-                        getProperty(SELECTMANY_UI_CONTROL_SHORT_PROP));
-            } else {
-                control.setAttributeNS(XFORMS_NS,
-                        getXFormsNSPrefix() + "appearance",
-                        getProperty(SELECTMANY_UI_CONTROL_LONG_PROP));
-            }
-
-            Element choices =
-                    xForm.createElementNS(XFORMS_NS,
-                            getXFormsNSPrefix() + "choices");
-            this.setXFormsId(choices);
-            control.appendChild(choices);
-
-            addChoicesForSelectControl(xForm, choices, enumValues);
-
-            return control;
-        } else {
-            return null;
+        Vector enumValues = new Vector();
+        for (int i = 0; i < nbFacets; i++) {
+            enumValues.add(enumFacets.item(i));
         }
+
+        // TODO: Figure out an intelligent or user determined way to decide between
+        // selectUI style (listbox, menu, combobox, radio) (radio and listbox best apply)
+        // Possibly look for special appInfo section in the schema and if not present default to checkBox...
+        //
+        // For now, use checkbox if there are < DEFAULT_LONG_LIST_MAX_SIZE items, otherwise use long control
+        //
+        if (enumValues.size()
+                < Long.parseLong(getProperty(SELECTMANY_LONG_LIST_SIZE_PROP))) {
+            control.setAttributeNS(XFORMS_NS,
+                    getXFormsNSPrefix() + "appearance",
+                    getProperty(SELECTMANY_UI_CONTROL_SHORT_PROP));
+        } else {
+            control.setAttributeNS(XFORMS_NS,
+                    getXFormsNSPrefix() + "appearance",
+                    getProperty(SELECTMANY_UI_CONTROL_LONG_PROP));
+        }
+
+        Element choices =
+                xForm.createElementNS(XFORMS_NS,
+                        getXFormsNSPrefix() + "choices");
+        this.setXFormsId(choices);
+        control.appendChild(choices);
+
+        addChoicesForSelectControl(xForm, choices, enumValues);
+
+        return control;
     }
 
     /**
@@ -560,24 +485,19 @@ public class BaseSchemaFormBuilder
         //
         // type.getName() may be 'null' for anonymous types, so compare against
         // static string (see bug #1172541 on sf.net)
-        if (!("anyType").equals(controlType.getName())) {
+        if (!"anyType".equals(controlType.getName())) {
             Element enveloppe = bindElement.getOwnerDocument().getDocumentElement();
             String typeName = this.getXFormsTypeName(enveloppe, controlType);
             if (typeName != null && !typeName.equals(""))
                 bindElement.setAttributeNS(XFORMS_NS,
-                        getXFormsNSPrefix() + "type",
-                        typeName);
+					   getXFormsNSPrefix() + "type",
+					   typeName);
         }
 
-        if (minOccurs == 0) {
-            bindElement.setAttributeNS(XFORMS_NS,
-                    getXFormsNSPrefix() + "required",
-                    "false()");
-        } else {
-            bindElement.setAttributeNS(XFORMS_NS,
-                    getXFormsNSPrefix() + "required",
-                    "true()");
-        }
+	bindElement.setAttributeNS(XFORMS_NS,
+				   getXFormsNSPrefix() + "required",
+				   minOccurs == 0 ? "false()" : "true()");
+	
 
         //no more minOccurs & maxOccurs element: add a constraint if maxOccurs>1:
         //count(.) <= maxOccurs && count(.) >= minOccurs
@@ -604,18 +524,17 @@ public class BaseSchemaFormBuilder
             constraint = maxConstraint;
         }
 
-        if ((constraint != null) && !constraint.equals("")) {
+        if (constraint != null && constraint.length() != 0)
             bindElement.setAttributeNS(XFORMS_NS,
-                    getXFormsNSPrefix() + "constraint",
-                    constraint);
-        }
+				       getXFormsNSPrefix() + "constraint",
+				       constraint);
 
-        /*if (minOccurs != 1) {
-           bindElement.setAttributeNS(XFORMS_NS,getXFormsNSPrefix() + "minOccurs",String.valueOf(minOccurs));
-           }
-           if (maxOccurs != 1) {
-               bindElement.setAttributeNS(XFORMS_NS,getXFormsNSPrefix() + "maxOccurs",maxOccurs == -1 ? "unbounded" : String.valueOf((maxOccurs)));
-           }*/
+	//if (minOccurs != 1) {
+	//bindElement.setAttributeNS(XFORMS_NS,getXFormsNSPrefix() + "minOccurs",String.valueOf(minOccurs));
+	//}
+	//if (maxOccurs != 1) {
+	//bindElement.setAttributeNS(XFORMS_NS,getXFormsNSPrefix() + "maxOccurs",maxOccurs == -1 ? "unbounded" : String.valueOf((maxOccurs)));
+	//}
         return bindElement;
     }
 

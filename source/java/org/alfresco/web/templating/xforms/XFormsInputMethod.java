@@ -18,17 +18,22 @@ package org.alfresco.web.templating.xforms;
 
 import java.io.*;
 import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.ServletContext;
 
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.templating.*;
 import org.alfresco.web.templating.xforms.schemabuilder.*;
+import org.alfresco.web.bean.ajax.XFormsBean;
 import org.chiba.xml.util.DOMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.alfresco.web.app.servlet.FacesHelper;
+import org.chiba.xml.xforms.exception.XFormsException;
 
 public class XFormsInputMethod
     implements TemplateInputMethod
@@ -39,47 +44,48 @@ public class XFormsInputMethod
     {
     }
 
-    public String getInputURL(final Document xmlContent, final TemplateType tt)
+    public void generate(final Document xmlContent, 
+			 final TemplateType tt,
+			 final Writer out)
     {
+	final TemplatingService ts = TemplatingService.getInstance();
+	final FacesContext fc = FacesContext.getCurrentInstance();
+	final XFormsBean xforms = (XFormsBean)
+	    FacesHelper.getManagedBean(fc, "XFormsBean");
+	xforms.setInstanceData(xmlContent);
+	xforms.setTemplateType(tt);
 	try
-	{
-	    final Document xform = this.getXForm(xmlContent, tt);
-	    final String id = getDocumentElementNameNoNS(xmlContent);
-	    //	    this.saveInChiba(id, xform);
-	    final File xformFile = TempFileProvider.createTempFile("alfresco", ".xform");
-	    final TemplatingService ts = TemplatingService.getInstance();
-	    ts.writeXML(xform, xformFile);
-	    final FacesContext fc = FacesContext.getCurrentInstance();
-	    final String cp =
-		fc.getExternalContext().getRequestContextPath();
-	    return cp + "/XFormsServlet?form=" + xformFile.toURI().toString();
+        {
+	    xforms.init();
 	}
-	catch (Exception e)
-	{
-	    e.printStackTrace();
-	    return null;
+	catch (XFormsException xfe)
+        {
+	    LOGGER.error(xfe);
 	}
-    }
+ 
+	final String cp = fc.getExternalContext().getRequestContextPath();
 
-    public String getSchemaInputURL(final TemplateType tt)
-    {
-	try
-	{
-//	    final Document xform = this.getXFormForSchema(tt);
-//	    final File xformFile = TempFileProvider.createTempFile("alfresco", ".xform");
-//	    final TemplatingService ts = TemplatingService.getInstance();
-//	    ts.writeXML(tt.getSchema(), xformFile);
-//	    final FacesContext fc = FacesContext.getCurrentInstance();
-//	    final String cp =
-//		fc.getExternalContext().getRequestContextPath();
-//	    return cp + "/XFormsServlet?form=" + xformFile.toURI().toString();
-	    return null;
-	}
-	catch (Exception e)
-	{
-	    e.printStackTrace();
-	    return null;
-	}
+	final Document result = ts.newDocument();
+	final Element div = result.createElement("div");
+	div.setAttribute("id", "alf-ui");
+	div.setAttribute("style", "width: 100%; border: solid 1px orange;");
+	result.appendChild(div);
+
+	Element e = result.createElement("script");
+	e.appendChild(result.createTextNode("djConfig = { isDebug: true };\n" +
+					    "var WEBAPP_CONTEXT = \"" + cp + "\";\n"));
+	div.appendChild(e);
+	e = result.createElement("script");
+	e.setAttribute("type", "text/javascript");
+	e.setAttribute("src", cp + "/scripts/ajax/dojo.js");
+	e.appendChild(result.createTextNode("\n"));
+	div.appendChild(e);
+	e = result.createElement("script");
+	e.setAttribute("type", "text/javascript");
+	e.setAttribute("src", cp + "/scripts/ajax/xforms.js");
+	e.appendChild(result.createTextNode("\n"));
+	div.appendChild(e);
+	ts.writeXML(result, out);
     }
 
     private static String getDocumentElementNameNoNS(final Document d)
@@ -92,37 +98,12 @@ public class XFormsInputMethod
 //	System.out.println("name " + name + " prefix " + prefix + " ns uri " + namespace);
 //	return name.replaceAll(".+\\:", "");
     }
-
-//    public Document getXFormForSchema(final TemplateType tt)
-//	throws FormBuilderException
-//    {
-//	final TemplatingService ts = TemplatingService.getInstance();
-//
-//	final File schemaFile = TempFileProvider.createTempFile("alfresco", ".schema");
-//	ts.writeXML(tt.getSchema(), schemaFile);
-//	final FacesContext fc = FacesContext.getCurrentInstance();
-//	final String cp =
-//	    fc.getExternalContext().getRequestContextPath();
-//
-//	final SchemaFormBuilder builder = 
-//	    new BaseSchemaFormBuilder("schema",
-//				      schemaFile.toURI().toString(),
-//				      cp + "/jsp/content/xforms/form/debug-instance.jsp",
-//				      "post",
-//				      new XHTMLWrapperElementsBuilder(),
-//				      null,
-//				      null,
-//				      true);
-//	System.out.println("building xform for schema " + schemaFile.getPath());
-//	final Document result = builder.buildForm("/Users/arielb/Documents/alfresco/xsd/XMLSchema.xsd");
-//	//	xmlContentFile.delete();
-//	//	schemaFile.delete();
-//	return result;
-//    }
  
-    public Document getXForm(final Document xmlContent, final TemplateType tt) 
+    public Document getXForm(Document xmlContent, final TemplateType tt) 
 	throws FormBuilderException
     {
+	if (xmlContent == null)
+	    xmlContent = tt.getSampleXml(tt.getName());
 	final TemplatingService ts = TemplatingService.getInstance();
 	final File schemaFile = TempFileProvider.createTempFile("alfresco", ".schema");
 	try
@@ -135,33 +116,26 @@ public class XFormsInputMethod
 	    LOGGER.error(ioe);
 	}
 	final FacesContext fc = FacesContext.getCurrentInstance();
-	final String cp =
-	    fc.getExternalContext().getRequestContextPath();
-	
+	final HttpServletRequest request = (HttpServletRequest)
+	    fc.getExternalContext().getRequest();
+	final String baseUrl = (request.getScheme() + "://" + 
+				request.getServerName() + ':' + 
+				request.getServerPort());
+	LOGGER.debug("using baseUrl " + baseUrl + " for schemaformbuilder");
+
 	final SchemaFormBuilder builder = 
 	    new BaseSchemaFormBuilder(getDocumentElementNameNoNS(xmlContent),
 				      xmlContent,
-				      "http://localhost:8080" + cp + "/jsp/content/xforms/debug-instance.jsp",
+				      request.getContextPath() + "/ajax/invoke/XFormsBean.handleAction",
 				      "post",
 				      new XHTMLWrapperElementsBuilder(),
 				      null,
-				      null,
+				      baseUrl,
 				      true);
-	System.out.println("building xform for schema " + schemaFile.getPath());
+	LOGGER.debug("building xform for schema " + schemaFile.getPath());
 	final Document result = builder.buildForm(schemaFile.getPath());
 	//	xmlContentFile.delete();
 	//	schemaFile.delete();
 	return result;
     }
-
-//    private void saveInChiba(final String fileName, final Document d)
-//	throws IOException
-//    {
-//	final ServletContext myContext = (ServletContext)
-//	    FacesContext.getCurrentInstance().getExternalContext().getContext();
-//	final ServletContext chiba = myContext.getContext("/chiba");
-//	final File outputFile = new File(new File(chiba.getRealPath("/forms")),
-//					 fileName + ".xhtml");
-//	TemplatingService.getInstance().writeXML(d.getDocumentElement(), outputFile);
-//    }
 }

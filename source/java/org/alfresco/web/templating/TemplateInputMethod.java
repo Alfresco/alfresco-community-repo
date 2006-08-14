@@ -17,11 +17,13 @@
 package org.alfresco.web.templating;
 
 import org.w3c.dom.Document;
+import java.io.Writer;
 
 public interface TemplateInputMethod
 {
-    public String getInputURL(final Document xmlContent,
-			      final TemplateType tt);
+    public void generate(final Document xmlContent,
+			 final TemplateType tt,
+			 final Writer out);
 
     //    public String getSchemaInputURL(final TemplateType tt);
 }

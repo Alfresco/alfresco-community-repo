@@ -40,7 +40,8 @@ public interface SchemaFormBuilder {
     /**
      * XMLSchema Instance Namespace declaration
      */
-    public static final String XMLSCHEMA_INSTANCE_NAMESPACE_URI = "http://www.w3.org/2001/XMLSchema-instance";
+    public static final String XMLSCHEMA_INSTANCE_NAMESPACE_URI = 
+	"http://www.w3.org/2001/XMLSchema-instance";
 
     /**
      * XMLNS Namespace declaration.
@@ -106,27 +107,6 @@ public interface SchemaFormBuilder {
      * @return __UNDOCUMENTED__
      */
     public String getAction();
-
-    /**
-     * __UNDOCUMENTED__
-     *
-     * @return __UNDOCUMENTED__
-     */
-    public String getInstanceHref();
-
-    /**
-     * __UNDOCUMENTED__
-     *
-     * @return __UNDOCUMENTED__
-     */
-    public int getInstanceMode();
-
-    /**
-     * __UNDOCUMENTED__
-     *
-     * @return __UNDOCUMENTED__
-     */
-    public Source getInstanceSource();
 
     /**
      * __UNDOCUMENTED__

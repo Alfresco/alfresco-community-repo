@@ -31,9 +31,12 @@ import org.alfresco.web.templating.xforms.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class TemplatingService
 {
+    private static final Log LOGGER = LogFactory.getLog(TemplatingService.class);
     private final static TemplatingService INSTANCE = new TemplatingService();
 
     private ArrayList<TemplateType> templateTypes = 
@@ -77,15 +80,29 @@ public class TemplatingService
     }
 
     public Document newDocument()
-	throws ParserConfigurationException,
-	       SAXException,
-	       IOException
     {
-	final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-	dbf.setNamespaceAware(true);
-	dbf.setValidating(false);
-	final DocumentBuilder db = dbf.newDocumentBuilder();
-	return db.newDocument();
+	try
+	{
+	    final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+	    dbf.setNamespaceAware(true);
+	    dbf.setValidating(false);
+	    final DocumentBuilder db = dbf.newDocumentBuilder();
+	    return db.newDocument();
+	}
+	catch (ParserConfigurationException pce)
+	{
+	    assert false : pce;
+	    LOGGER.error(pce);
+	    return null;
+	}
+//	catch (SAXException saxe)
+//	{
+//	    LOGGER.error(saxe);
+//	}
+//	catch (IOException ioe)
+//	{
+//	    LOGGER.error(ioe);
+//	}
     }
 
     public void writeXML(final Node n, final Writer output)

@@ -49,6 +49,7 @@ import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+
 /**
  * Bean implementation for the "Create Content Wizard" dialog
  * 
@@ -292,44 +293,10 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
 	final TemplateType result = ts.newTemplateType(rootTagName, d);
 	if (this.getPresentationTemplateFile() != null)
 	{
-	    result .addOutputMethod(new XSLTOutputMethod(this.getPresentationTemplateFile()));
+	    result.addOutputMethod(new XSLTOutputMethod(this.getPresentationTemplateFile()));
 	}
 	return result;
     }
-
-    public String getFormURL()
-    {
-	try
-        {
-	    final TemplateType tt = this.getTemplateType();
-	    final TemplateInputMethod tim = tt.getInputMethods().get(0);
-	    return tim.getInputURL(tt.getSampleXml(tt.getName()), tt);
-	}
-	catch (Throwable t)
-	{
-	    t.printStackTrace();
-	    return null;
-	}
-    }
-
-//    public String getSchemaFormURL()
-//    {
-//	try
-//        {
-//	    final TemplatingService ts = TemplatingService.getInstance();
-//	    final String rootTagName = 
-//		this.getSchemaFileName().replaceAll("([^\\.])\\..+", "$1");
-//	    final Document d = ts.parseXML(this.getSchemaFile());
-//	    this.tt = ts.newTemplateType(rootTagName, d);
-//	    final TemplateInputMethod tim = tt.getInputMethods()[0];
-//	    return tim.getSchemaInputURL(tt);
-//	}
-//	catch (Throwable t)
-//	{
-//	    t.printStackTrace();
-//	    return null;
-//	}
-//    }
    
    /**
     * @return Returns a list of mime types to allow the user to select from

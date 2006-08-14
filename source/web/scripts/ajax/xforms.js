@@ -1,0 +1,442 @@
+dojo.require("dojo.widget.DebugConsole");
+dojo.require("dojo.widget.Button");
+dojo.require("dojo.widget.validate");
+dojo.require("dojo.widget.ComboBox");
+dojo.require("dojo.widget.Checkbox");
+dojo.require("dojo.widget.Editor");
+dojo.require("dojo.widget.Spinner");
+dojo.require("dojo.html.style");
+dojo.hostenv.writeIncludes();
+dojo.addOnLoad(xforms_init);
+
+var bindings = {};
+var xform = null;
+function xforms_init()
+{
+  var req = {
+  url: WEBAPP_CONTEXT + "/ajax/invoke/XFormsBean.getXForm",
+  content: { },
+  mimetype: "text/xml",
+  load: function(type, data, evt)
+  {
+    xform = data.documentElement;
+    var model = xform.getElementsByTagName("model");
+    load_bindings(model[0]);
+    for (var i in bindings)
+    {
+      dojo.debug("bindings[" + i + "]=" + bindings[i].id + 
+		 ", parent = " + (bindings[i].parent ? bindings[i].parent.id : 'null'));
+    }
+    
+    var body = xform.getElementsByTagName("body");
+    load_body(body[body.length - 1], [ document.getElementById("alf-ui") ]);
+  },
+  error: function(type, e)
+  {
+    alert("error!! " + type + " e = " + e.message);
+  }
+  };
+  dojo.io.bind(req);
+}
+
+function get_instance()
+{
+  var model = xform.getElementsByTagName("model")[0];
+  return model.getElementsByTagName("instance")[0];
+}
+
+function load_bindings(bind, parent)
+{
+  dojo.debug("loading bindings for " + bind.nodeName);
+  dojo.lang.forEach(bind.childNodes, function(b)
+  {
+    if (b.nodeName.toLowerCase() == "xforms:bind")
+    {
+      var id = b.getAttribute("id");
+      dojo.debug("loading binding " + id);
+      bindings[id] = {
+        id: b.getAttribute("id"),
+        required: b.getAttribute("xforms:required"),
+        nodeset: b.getAttribute("xforms:nodeset"),
+        type: b.getAttribute("xforms:type"),
+	parent: parent
+      }
+      load_bindings(b, bindings[id]);
+    }
+  });
+}
+
+function load_body(body, ui_element_stack)
+{
+  dojo.lang.forEach(body.childNodes, function(o)
+  {
+    dojo.debug("loading " + o + " NN " + o.nodeName);
+    switch (o.nodeName.toLowerCase())
+    {
+    case "xforms:group":
+      if (ui_element_stack[ui_element_stack.length - 1].nodeName.toLowerCase() == "table")
+      {
+	var tr = document.createElement("tr");
+	var td = document.createElement("td");
+	td.setAttribute("colspan", "3");
+	tr.appendChild(td);
+	ui_element_stack[ui_element_stack.length - 1].appendChild(tr);
+	ui_element_stack.push(td);
+      }
+      var table = document.createElement("table");
+      table.setAttribute("style", "width:100%; border: 0px solid blue;");
+      ui_element_stack[ui_element_stack.length - 1].appendChild(table);
+      ui_element_stack.push(table);
+      load_body(o, ui_element_stack);
+      ui_element_stack.pop();
+      if (ui_element_stack[ui_element_stack.length - 1].nodeName.toLowerCase() == "td")
+	ui_element_stack.pop();
+      break;
+    case "xforms:textarea":
+      var row = document.createElement("tr");
+      ui_element_stack[ui_element_stack.length - 1].appendChild(row);
+
+      var cell = document.createElement("td");
+      row.appendChild(cell);
+      add_required_cell(cell, o);
+
+      var cell = document.createElement("td");
+      row.appendChild(cell);
+      var label = get_label_node(o);
+      if (label)
+        cell.appendChild(document.createTextNode(dojo.dom.textContent(label)));
+      cell = document.createElement("td");
+      row.appendChild(cell);
+      var nodeRef = document.createElement("div");
+      nodeRef.setAttribute("style", "height: 200px; border: solid 1px black;");
+      cell.appendChild(nodeRef);
+      var w = dojo.widget.createWidget("Editor", { items: ["|", "bold", "italic", "underline", "strikethrough", "|", "colorGroup", "|", "createLink", "insertImage" ] }, nodeRef);
+      break;
+    case "xforms:input":
+      var id = o.getAttribute("id");
+      var row = document.createElement("tr");
+      ui_element_stack[ui_element_stack.length - 1].appendChild(row);
+
+      var cell = document.createElement("td");
+      row.appendChild(cell);
+      add_required_cell(cell, o);
+
+      cell = document.createElement("td");
+      row.appendChild(cell);
+      var label = get_label_node(o);
+      if (label)
+      {
+        cell.appendChild(document.createTextNode(dojo.dom.textContent(label)));
+      }
+
+      cell = document.createElement("td");
+      row.appendChild(cell);
+      var nodeRef = document.createElement("div");
+      cell.appendChild(nodeRef);
+      var value = get_initial_value(o);
+      switch (get_type(o))
+      {
+      case "date":
+	var dateTextBoxDiv = document.createElement("div");
+	nodeRef.appendChild(dateTextBoxDiv);
+	var dateTextBox = dojo.widget.createWidget("DateTextBox", 
+						   {
+						   widgetId: id,
+						   required: is_required(o), 
+ 						   format: "YYYY-MM-DD", 
+						   value: value 
+						   }, 
+						   dateTextBoxDiv);
+	dateTextBox.onfocus = function(o) { 
+	  dateTextBox.hide(); dojo.debug("hiding " + o); 
+	  dateTextBox.picker.show();
+
+	};
+	var datePickerDiv = document.createElement("div");
+	nodeRef.appendChild(datePickerDiv);
+	dateTextBox.picker = dojo.widget.createWidget("DatePicker", 
+						      { 
+						      isHidden: true, 
+						      value : value 
+						      }, 
+						      datePickerDiv);
+	dateTextBox.picker.hide();
+	dojo.event.connect(dateTextBox.picker,
+			   "onSetDate", 
+			   function(event)
+			   {
+			     dateTextBox.picker.hide();
+			     dateTextBox.show();
+			     dateTextBox.setValue(dojo.widget.DatePicker.util.toRfcDate(dateTextBox.picker.date));
+			     setXFormsValue(dateTextBox.widgetId, 
+					    dateTextBox.getValue());
+			   });
+	break;
+      case "integer":
+      case "positiveInteger":
+      case "negativeInteger":
+	var w = dojo.widget.createWidget("SpinnerIntegerTextBox", 
+					 { 
+					 widgetId: id,
+					 required: is_required(o), 
+					 value: value 
+					 }, 
+					 nodeRef);
+	var handler = function(event)
+	{
+	  dojo.debug("value changed " + w.widgetId + 
+		     " value " + w.getValue() + 
+		     " t " + event.target + 
+		     " w " + w + " this " + this);
+	  setXFormsValue(w.widgetId, w.getValue());
+	}
+	dojo.event.connect(w, "adjustValue", handler);
+	dojo.event.connect(w, "onkeyup", handler);
+	break;
+      case "double":
+	var w = dojo.widget.createWidget("SpinnerRealNumberTextBox", 
+					 { 
+					 widgetId: id,
+					 required: is_required(o), 
+					 value: value 
+					 }, 
+					 nodeRef);
+	var handler = function(event)
+	{
+	  dojo.debug("value changed " + w.widgetId + 
+		     " value " + w.getValue() + 
+		     " t " + event.target + 
+		     " w " + w + " this " + this);
+	  setXFormsValue(w.widgetId, w.getValue());
+	}
+	dojo.event.connect(w, "adjustValue", handler);
+	dojo.event.connect(w, "onkeyup", handler);
+	break;
+      case "string":
+      default:
+	var w = dojo.widget.createWidget("ValidationTextBox", 
+					 {
+					 widgetId: id,
+					 required: is_required(o), 
+					 value: value 
+					 }, 
+					 nodeRef);
+	dojo.event.connect(w,
+			   "onkeyup", 
+			   function(event)
+			   {
+			     dojo.debug("value changed " + w.widgetId + " value " + w.getValue() + " t " + event.target + " w " + w + " this " + this);
+			     setXFormsValue(w.widgetId, w.getValue());
+			   });
+
+      }
+      break;
+    case "xforms:select1":
+      var row = document.createElement("tr");
+      ui_element_stack[ui_element_stack.length - 1].appendChild(row);
+      var cell = document.createElement("td");
+      row.appendChild(cell);
+      add_required_cell(cell, o);
+
+      var cell = document.createElement("td");
+      row.appendChild(cell);
+      var label = get_label_node(o);
+      if (label)
+        cell.appendChild(document.createTextNode(dojo.dom.textContent(label)));
+      cell = document.createElement("td");
+      row.appendChild(cell);
+      var nodeRef = document.createElement("div");
+      cell.appendChild(nodeRef);
+      var values = get_select_values(o);
+      for (var i in values)
+      {
+	dojo.debug("values["+ i + "] = " + values[i].id + ", " + values[i].label + ", " + values[i].value);
+      }
+      var initial_value = get_initial_value(o);
+      if (get_type(o) == "boolean")
+      {
+        var w = dojo.widget.createWidget("CheckBox", 
+					 { 
+					 checked: initial_value 
+					 },
+					 nodeRef);
+      }
+      else if (values.length <= 5)
+      {
+	for (var i in values)
+	{
+	  var radio = document.createElement("input");
+	  radio.setAttribute("name", o.getAttribute("id"));
+	  radio.setAttribute("type", "radio");
+	  radio.setAttribute("value", values[i].value);
+	  if (values[i].value == initial_value)
+	    radio.setAttribute("checked", "true");
+	  nodeRef.appendChild(radio);
+	  nodeRef.appendChild(document.createTextNode(values[i].label));
+	}
+      }
+      else
+      {
+        var combobox = document.createElement("select");
+	nodeRef.appendChild(combobox);
+	for (var i in values)
+	{
+	  var option = document.createElement("option");
+	  option.appendChild(document.createTextNode(values[i].label));
+	  option.setAttribute("value", values[i].value);
+	  if (values[i].value == initial_value)
+	    option.setAttribute("selected", "true");
+	  combobox.appendChild(option);
+	}
+      }
+      break;
+    case "xforms:submit":
+      var id = o.getAttribute("id");
+      var row = document.createElement("tr");
+      ui_element_stack[ui_element_stack.length - 1].appendChild(row);
+      var cell = document.createElement("td");
+      cell.setAttribute("colspan", "3");
+      row.appendChild(cell);
+      var nodeRef = document.createElement("div");
+      cell.appendChild(nodeRef);
+      var w = dojo.widget.createWidget("Button", 
+				       {
+				       widgetId: id,
+				       caption: "submit" 
+				       }, 
+				       nodeRef);
+      w.onClick = function()
+      {
+	fireAction(w.widgetId);
+      };
+      break;
+    case "xforms:repeat":
+      dojo.debug("repeat unimplemented");
+      break;
+    default:
+      load_body(o, ui_element_stack);
+    }
+  });
+}
+
+function get_type(o)
+{
+  var binding = bindings[o.getAttribute("xforms:bind")];
+  return binding.type;
+}
+
+function is_required(o)
+{
+  var binding = bindings[o.getAttribute("xforms:bind")];
+  var required = binding.required == "true()";
+  return required;
+}
+
+function add_required_cell(cell, element)
+{
+  if (is_required(element))
+  {
+    var req = document.createElement("img");
+    req.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/required_field.gif");
+    req.setAttribute("style", "margin:5px");
+    cell.appendChild(req);
+  }
+//  else
+//    cell.appendChild(document.createTextNode("&nbsp;"));
+}
+
+function get_label_node(o)
+{
+  var labels = o.getElementsByTagName("label");
+  for (var i = 0; i < labels.length; i++)
+  {
+    dojo.debug("parent " + labels[i].parentNode.nodeName + 
+	       " o " + o.nodeName);
+    if (labels[i].parentNode == o)
+      return labels[i];
+  }
+  return null;
+}
+
+function get_initial_value(o)
+{
+  var b = bindings[o.getAttribute("xforms:bind")];
+  var a = [];
+  do
+  {
+    a.push(b);
+    b = b.parent
+  }
+  while (b);
+  var node = get_instance();
+  for (var i = a.length - 1; i >= 0; i--)
+  {
+    var element_name = (a[i].nodeset.match(/^\//)
+			? a[i].nodeset.replace(/^\/(.+)/, "$1")
+			: a[i].nodeset);
+    dojo.debug("locating " + a[i].nodeset + "(" + element_name + ")" +
+	       " in " + node.nodeName);
+    if (element_name.match(/^@/))
+      return node.getAttribute(a[i].nodeset.replace(/^@(.+)/, "$1"));
+    else if (element_name == '.')
+      break;
+    node = node.getElementsByTagName(element_name)[0];
+    dojo.debug("got node " + node.nodeName);
+  }
+  return dojo.dom.textContent(node);
+}
+    
+function get_select_values(o)
+{
+  var values = o.getElementsByTagName("item");
+  var result = [];
+  for (var v in values)
+  {
+    if (values[v].getElementsByTagName)
+    {
+      var label = values[v].getElementsByTagName("label")[0];
+      var value = values[v].getElementsByTagName("value")[0];
+      result.push({ 
+	id: value.getAttribute("id"), 
+        label: dojo.dom.textContent(label),
+        value: dojo.dom.textContent(value)
+      });
+    }
+  }
+  return result;
+}
+
+function fireAction(id)
+{
+  var req = {
+  url: WEBAPP_CONTEXT + "/ajax/invoke/XFormsBean.fireAction",
+  content: { id: id },
+  mimetype: "text/xml",
+  load: function(type, data, evt)
+  {
+    alert("fired action " + id);
+  },
+  error: function(type, e)
+  {
+    alert("error!! " + type + " e = " + e.message);
+  }
+  };
+  dojo.io.bind(req);
+}
+
+function setXFormsValue(id, value)
+{
+  var req = {
+  url: WEBAPP_CONTEXT + "/ajax/invoke/XFormsBean.setXFormsValue",
+  content: { id: id, value: value },
+  mimetype: "text/xml",
+  load: function(type, data, evt)
+  {
+  },
+  error: function(type, e)
+  {
+    alert("error!! " + type + " e = " + e.message);
+  }
+  };
+  dojo.io.bind(req);
+}

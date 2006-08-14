@@ -31,8 +31,10 @@ import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -55,7 +57,8 @@ public class UploadFileServlet extends BaseServlet
    {
       String uploadId = null;
       String returnPage = null;
-      boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+      final RequestContext requestContext = new ServletRequestContext(request);
+      boolean isMultipart = ServletFileUpload.isMultipartContent(requestContext);
       
       try
       {

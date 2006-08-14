@@ -36,6 +36,7 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.templating.*;
+import org.alfresco.web.bean.ajax.XFormsBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,6 +45,8 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import java.io.OutputStreamWriter;
+import org.alfresco.web.app.servlet.FacesHelper;
+import org.chiba.xml.xforms.exception.XFormsException;
 
 /**
  * Bean implementation for the "Create Content Wizard" dialog
@@ -53,7 +56,7 @@ import java.io.OutputStreamWriter;
 public class CreateContentWizard extends BaseContentWizard
 {
     protected String content = null;
-    protected String templateType;
+    protected String templateTypeName;
     protected List<SelectItem> createMimeTypes;
     
     private static final Log LOGGER = 
@@ -71,12 +74,12 @@ public class CreateContentWizard extends BaseContentWizard
    {
        LOGGER.debug("saving file content to " + this.fileName);
        saveContent(null, this.content);
-       if (this.templateType != null)
+       if (this.templateTypeName != null)
        {
-	   LOGGER.debug("generating template output for " + this.templateType);
-	   this.nodeService.setProperty(this.createdNode, TT_QNAME, this.templateType);
+	   LOGGER.debug("generating template output for " + this.templateTypeName);
+	   this.nodeService.setProperty(this.createdNode, TT_QNAME, this.templateTypeName);
 	   TemplatingService ts = TemplatingService.getInstance();
-	   TemplateType tt = ts.getTemplateType(this.templateType);
+	   TemplateType tt = this.getTemplateType();
 	   if (tt.getOutputMethods().size() != 0)
 	   {
 	       try {
@@ -104,7 +107,7 @@ public class CreateContentWizard extends BaseContentWizard
 		       new OutputStreamWriter(writer.getContentOutputStream());
 		   tom.generate(ts.parseXML(this.content), tt, out);
 		   out.close();
-		   this.nodeService.setProperty(fileNodeRef, TT_QNAME, this.templateType);
+		   this.nodeService.setProperty(fileNodeRef, TT_QNAME, this.templateTypeName);
 
 		   LOGGER.debug("generated " + fileName + " using " + tom);
 	       }
@@ -127,7 +130,7 @@ public class CreateContentWizard extends BaseContentWizard
       
       this.content = null;
       this.inlineEdit = true;
-      this.templateType = null;
+      this.templateTypeName = null;
       this.mimeType = MimetypeMap.MIMETYPE_HTML;
    }
    
@@ -253,17 +256,23 @@ public class CreateContentWizard extends BaseContentWizard
       return this.createMimeTypes;
    }
 
-   public String getTemplateType()
+   public String getTemplateTypeName()
    {
-      return this.templateType;
+      return this.templateTypeName;
    }
+
+    public TemplateType getTemplateType()
+    {
+	final TemplatingService ts = TemplatingService.getInstance();
+	return ts.getTemplateType(this.getTemplateTypeName());
+    }
 
    /**
     * @param templateType Sets the currently selected template type
     */
-   public void setTemplateType(String templateType)
+   public void setTemplateTypeName(final String templateTypeName)
    {
-      this.templateType = templateType;
+      this.templateTypeName = templateTypeName;
    }
    
    /**

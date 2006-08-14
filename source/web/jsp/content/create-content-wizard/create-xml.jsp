@@ -18,24 +18,15 @@
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
+<%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.templating.*" %>
-<%@ page import="javax.faces.context.FacesContext" %>
-<%@ page import="org.alfresco.web.app.servlet.FacesHelper" %>
 <%@ page import="org.alfresco.web.bean.content.CreateContentWizard" %>
 
 <%
+CreateContentWizard wiz = (CreateContentWizard)
+  Application.getWizardManager().getBean();
+TemplateType tt = wiz.getTemplateType();
+TemplateInputMethod tim = tt.getInputMethods().get(0);
 TemplatingService ts = TemplatingService.getInstance();
-CreateContentWizard ccw = (CreateContentWizard)
-    FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "CreateContentWizard");
-
-TemplateType tt = ts.getTemplateType(ccw.getTemplateType());
-final TemplateInputMethod tim = tt.getInputMethods().get(0);
-String url = tim.getInputURL(tt.getSampleXml(tt.getName()), tt);
+tim.generate(wiz.getContent() != null ? ts.parseXML(wiz.getContent()) : null, tt, out);
 %>
-<f:verbatim>
-<div style='width:100%; height:360px'>
-<iframe src="<%= url %>"
-        style="overflow: auto;width: 100%; height: 100%">
-</iframe>
-</div>
-</f:verbatim>

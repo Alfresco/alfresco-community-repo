@@ -226,26 +226,6 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 	"urlencoded-post";
 
     /**
-     * possible instance modes
-     */
-    public static final int INSTANCE_MODE_NONE = 0;
-
-    /**
-     * __UNDOCUMENTED__
-     */
-    public static final int INSTANCE_MODE_INCLUDED = 1;
-
-    /**
-     * __UNDOCUMENTED__
-     */
-    public static final int INSTANCE_MODE_HREF = 2;
-
-    /**
-     * __UNDOCUMENTED__
-     */
-    protected Source _instanceSource;
-
-    /**
      * __UNDOCUMENTED__
      */
     protected Document _instanceDocument;
@@ -254,11 +234,6 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
      * __UNDOCUMENTED__
      */
     protected String _action;
-
-    /**
-     * __UNDOCUMENTED__
-     */
-    protected String _instanceHref;
 
     /**
      * Properties choosed by the user
@@ -288,11 +263,6 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
     /**
      * __UNDOCUMENTED__
      */
-    protected int _instanceMode = 0;
-
-    /**
-     * __UNDOCUMENTED__
-     */
     protected boolean _useSchemaTypes = false;
 
     private DocumentBuilder documentBuilder;
@@ -318,61 +288,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
     // can be used as a substituted type using xsi:type
     // In order for it to be compatible, it cannot be abstract, and
     // it must be derived by extension.
-// The ArrayList does not contain its own type + has the other types only once
-    //
+    // The ArrayList does not contain its own type + has the other types only once
     private final TreeMap typeTree = new TreeMap();
-
-    /**
-     * Creates a new instance of AbstractSchemaFormBuilder
-     */
-    public AbstractSchemaFormBuilder(String rootTagName) {
-        this._rootTagName = rootTagName;
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-
-        try {
-            factory.setNamespaceAware(true);
-            factory.setValidating(false);
-            documentBuilder = factory.newDocumentBuilder();
-        } catch (ParserConfigurationException x) {
-            x.printStackTrace();
-        }
-
-        reset();
-    }
-
-    /**
-     * Creates a new AbstractSchemaFormBuilder object.
-     *
-     * @param rootTagName    __UNDOCUMENTED__
-     * @param instanceSource __UNDOCUMENTED__
-     * @param action         __UNDOCUMENTED__
-     * @param submitMethod   __UNDOCUMENTED__
-     * @param wrapper        __UNDOCUMENTED__
-     * @param stylesheet     __UNDOCUMENTED__
-     */
-    public AbstractSchemaFormBuilder(String rootTagName,
-                                     Source instanceSource,
-                                     String action,
-                                     String submitMethod,
-                                     WrapperElementsBuilder wrapper,
-                                     String stylesheet,
-                                     String base,
-                                     boolean userSchemaTypes) {
-        this(rootTagName);
-        this._instanceSource = instanceSource;
-
-        if (instanceSource != null) 
-            this._instanceMode = AbstractSchemaFormBuilder.INSTANCE_MODE_INCLUDED;
-
-        this._action = action;
-        this._stylesheet = stylesheet;
-        this._base = base;
-        this._useSchemaTypes = userSchemaTypes;
-
-        //control if it is one of the SUBMIT_METHOD attributes?
-        this._submitMethod = submitMethod;
-        this._wrapper = wrapper;
-    }
 
     /**
      * Creates a new AbstractSchemaFormBuilder object.
@@ -392,12 +309,20 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                                      String stylesheet,
                                      String base,
                                      boolean userSchemaTypes) {
-        this(rootTagName);
+        this._rootTagName = rootTagName;
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+        try {
+            factory.setNamespaceAware(true);
+            factory.setValidating(false);
+            documentBuilder = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException x) {
+            x.printStackTrace();
+        }
+
+        reset();
         this._instanceDocument = instanceDocument;
 
-        if (instanceDocument != null)
-            this._instanceMode = AbstractSchemaFormBuilder.INSTANCE_MODE_INCLUDED;
-
         this._action = action;
         this._stylesheet = stylesheet;
         this._base = base;
@@ -406,41 +331,6 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         //control if it is one of the SUBMIT_METHOD attributes?
         this._submitMethod = submitMethod;
         this._wrapper = wrapper;
-    }
-
-    /**
-     * Creates a new AbstractSchemaFormBuilder object.
-     *
-     * @param rootTagName  __UNDOCUMENTED__
-     * @param instanceHref __UNDOCUMENTED__
-     * @param action       __UNDOCUMENTED__
-     * @param submitMethod __UNDOCUMENTED__
-     * @param wrapper      __UNDOCUMENTED__
-     * @param stylesheet   __UNDOCUMENTED__
-     */
-    public AbstractSchemaFormBuilder(String rootTagName,
-                                     String instanceHref,
-                                     String action,
-                                     String submitMethod,
-                                     WrapperElementsBuilder wrapper,
-                                     String stylesheet,
-                                     String base,
-                                     boolean userSchemaTypes) {
-        this(rootTagName);
-        this._instanceHref = instanceHref;
-
-        if ((instanceHref != null) && !"".equals(instanceHref)) 
-            this._instanceMode = AbstractSchemaFormBuilder.INSTANCE_MODE_HREF;
-
-        this._action = action;
-        this._stylesheet = stylesheet;
-        this._base = base;
-        this._useSchemaTypes = userSchemaTypes;
-
-        //control if it is one of the SUBMIT_METHOD attributes?
-        this._submitMethod = submitMethod;
-        this._wrapper = wrapper;
-
     }
 
     /**
@@ -450,33 +340,6 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
      */
     public String getAction() {
         return _action;
-    }
-
-    /**
-     * __UNDOCUMENTED__
-     *
-     * @return __UNDOCUMENTED__
-     */
-    public String getInstanceHref() {
-        return _instanceHref;
-    }
-
-    /**
-     * __UNDOCUMENTED__
-     *
-     * @return __UNDOCUMENTED__
-     */
-    public int getInstanceMode() {
-        return _instanceMode;
-    }
-
-    /**
-     * __UNDOCUMENTED__
-     *
-     * @return __UNDOCUMENTED__
-     */
-    public Source getInstanceSource() {
-        return _instanceSource;
     }
 
     /**
@@ -589,18 +452,19 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
      * @return __UNDOCUMENTED__
      * @throws FormBuilderException __UNDOCUMENTED__
      */
-    public Document buildForm(String inputFile) throws FormBuilderException {
+    public Document buildForm(String inputFile) 
+	throws FormBuilderException {
         try {
             this.loadSchema(new File(inputFile).toURI().toString());
-            buildTypeTree(schema);
+            this.buildTypeTree(schema);
 
             //refCounter = 0;
             counter = new HashMap();
 
-            Document xForm =
-		createFormTemplate(_rootTagName,
-				   _rootTagName + " Form",
-				   getProperty(CSS_STYLE_PROP, DEFAULT_CSS_STYLE_PROP));
+            Document xForm = createFormTemplate(_rootTagName,
+						_rootTagName + " Form",
+						getProperty(CSS_STYLE_PROP, 
+							    DEFAULT_CSS_STYLE_PROP));
 
             //this.buildInheritenceTree(schema);
             Element envelopeElement = xForm.getDocumentElement();
@@ -682,83 +546,31 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
             this.setXFormsId(instanceElement);
 
             Element rootElement;
-
-            if (_instanceMode == AbstractSchemaFormBuilder.INSTANCE_MODE_NONE) 
+	    if (_instanceDocument != null)
 	    {
-                rootElement = (Element) instanceElement.appendChild(xForm.createElementNS(targetNamespace, getElementName(rootElementDecl, xForm)));
-
-                String prefix = xmlSchemaInstancePrefix.substring(0, xmlSchemaInstancePrefix.length() - 1);
-                rootElement.setAttributeNS(XMLNS_NAMESPACE_URI, "xmlns:" + prefix, XMLSCHEMA_INSTANCE_NAMESPACE_URI);
-
-            }
-	    else if (_instanceMode == AbstractSchemaFormBuilder.INSTANCE_MODE_INCLUDED)
-            {
-		//get the instance element
-                boolean ok = true;
-                try 
-		{
-		    if (_instanceDocument == null)
-		    {
-			DocumentBuilderFactory docFact = DocumentBuilderFactory.newInstance();
-			docFact.setNamespaceAware(true);
-			docFact.setValidating(false);
-			DocumentBuilder parser = docFact.newDocumentBuilder();
-			_instanceDocument = parser.parse(new InputSource(_instanceSource.getSystemId()));
-		    }
-		    //possibility abandonned for the moment:
-		    //modify the instance to add the correct "xsi:type" attributes wherever needed
-		    //Document instanceDoc=this.setXMLSchemaAndPSVILoad(inputURI, _instanceSource, targetNamespace);
-		    
-                    if (_instanceDocument == null) 
-		    {
-			LOGGER.debug("instanceDocument is null");
-			ok = false;
-		    }
-		    else
-		    {
-                        Element instanceInOtherDoc = _instanceDocument.getDocumentElement();
-                        if (!instanceInOtherDoc.getNodeName().equals(_rootTagName)) 
-			    throw new IllegalArgumentException("instance document root tag name invalid.  " +
-							       "expected " + _rootTagName +
-							       ", got " + instanceInOtherDoc.getNodeName());
-			else
-			{
-			    LOGGER.debug("importing rootElement from other document");
-                            rootElement = (Element)xForm.importNode(instanceInOtherDoc, true);
-                            instanceElement.appendChild(rootElement);
-
-			    //add XMLSchema instance NS
-                            String prefix = xmlSchemaInstancePrefix.substring(0, xmlSchemaInstancePrefix.length() - 1);
-                            if (!rootElement.hasAttributeNS(XMLNS_NAMESPACE_URI, prefix))
-                                rootElement.setAttributeNS(XMLNS_NAMESPACE_URI, "xmlns:" + prefix, XMLSCHEMA_INSTANCE_NAMESPACE_URI);
-
-			    //possibility abandonned for the moment:
-			    //modify the instance to add the correct "xsi:type" attributes wherever needed
-			    //this.addXSITypeAttributes(rootElement);
-			}
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace(); 
-
-                    //if there is an exception we put the empty root element
-                    ok = false;
-                }
-
-                //if there was a problem
-                if (!ok) 
-		{
-		    LOGGER.debug("using empty root for " + _rootTagName);
-                    rootElement = (Element)
-			instanceElement.appendChild(xForm.createElement(_rootTagName));
-                }
-            } 
-	    else if (_instanceMode == AbstractSchemaFormBuilder.INSTANCE_MODE_HREF)
-            //add the xlink:href attribute
-            {
-                instanceElement.setAttributeNS(SchemaFormBuilder.XLINK_NS,
-					       this.getXLinkNSPrefix() + "href",
-					       _instanceHref);
-            }
+		Element instanceDocumentElement = _instanceDocument.getDocumentElement();
+		if (!instanceDocumentElement.getNodeName().equals(_rootTagName)) 
+		    throw new IllegalArgumentException("instance document root tag name invalid.  " +
+						       "expected " + _rootTagName +
+						       ", got " + instanceDocumentElement.getNodeName());
+		LOGGER.debug("importing rootElement from other document");
+		rootElement = (Element)xForm.importNode(instanceDocumentElement, true);
+		instanceElement.appendChild(rootElement);
+		
+		//add XMLSchema instance NS
+		String prefix = xmlSchemaInstancePrefix.substring(0, xmlSchemaInstancePrefix.length() - 1);
+		if (!rootElement.hasAttributeNS(XMLNS_NAMESPACE_URI, prefix))
+		    rootElement.setAttributeNS(XMLNS_NAMESPACE_URI, "xmlns:" + prefix, XMLSCHEMA_INSTANCE_NAMESPACE_URI);
+		
+		//possibility abandonned for the moment:
+		//modify the instance to add the correct "xsi:type" attributes wherever needed
+		//this.addXSITypeAttributes(rootElement);
+	    }
+	    else
+	    {
+		rootElement = (Element)
+		    instanceElement.appendChild(xForm.createElement(_rootTagName));
+	    }
 
             Element formContentWrapper =
                     _wrapper.createGroupContentWrapper(formSection);
@@ -2518,12 +2330,12 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
         // add xforms:repeat section if this element re-occurs
         //
-        if (maxOccurs != 1) {
-
+        if (maxOccurs != 1) 
+	{
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("DEBUG: AddRepeatIfNecessary for multiple element for type "
-                        + controlType.getName()
-                        + ", maxOccurs=" + maxOccurs);
+			     + controlType.getName()
+			     + ", maxOccurs=" + maxOccurs);
 
             //repeatSection = (Element) formSection.appendChild(xForm.createElementNS(XFORMS_NS,getXFormsNSPrefix() + "repeat"));
             repeatSection = xForm.createElementNS(XFORMS_NS,
@@ -2535,24 +2347,23 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
             Element bind = DOMUtil.getLastChildElement(modelSection);
             String bindId = null;
 
-            if ((bind != null)
-                    && (bind.getLocalName() != null)
-                    && bind.getLocalName().equals("bind")) {
+            if (bind != null && 
+		bind.getLocalName() != null && 
+		"bind".equals(bind.getLocalName())) {
                 bindId = bind.getAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
             } else {
                 LOGGER.warn("addRepeatIfNecessary: bind not found: "
-                        + bind
-                        + " (model selection name="
-                        + modelSection.getNodeName()
-                        + ")");
+			    + bind
+			    + " (model selection name="
+			    + modelSection.getNodeName()
+			    + ")");
 
                 //if no bind is found -> modelSection is already a bind, get its parent last child
-                bind =
-                        DOMUtil.getLastChildElement(modelSection.getParentNode());
+                bind = DOMUtil.getLastChildElement(modelSection.getParentNode());
 
-                if ((bind != null) &&
-		    (bind.getLocalName() != null) && 
-		    bind.getLocalName().equals("bind")) {
+                if (bind != null &&
+		    bind.getLocalName() != null && 
+		    "bind".equals(bind.getLocalName())) {
                     bindId = bind.getAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
                 } else {
                     LOGGER.warn("addRepeatIfNecessary: bind really not found");
@@ -3164,47 +2975,36 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
     private Document createFormTemplate(String formId,
                                         String formName,
                                         String stylesheet)
-            throws ParserConfigurationException {
+	throws ParserConfigurationException {
         Document xForm = documentBuilder.newDocument();
 
         Element envelopeElement = _wrapper.createEnvelope(xForm);
 
         // set required namespace attributes
         envelopeElement.setAttributeNS(XMLNS_NAMESPACE_URI,
-                "xmlns:"
-                + getChibaNSPrefix().substring(0,
-                        getChibaNSPrefix().length() - 1),
-                CHIBA_NS);
+				       "xmlns:" + getChibaNSPrefix().substring(0, getChibaNSPrefix().length() - 1),
+				       CHIBA_NS);
         envelopeElement.setAttributeNS(XMLNS_NAMESPACE_URI,
-                "xmlns:"
-                + getXFormsNSPrefix().substring(0,
-                        getXFormsNSPrefix().length() - 1),
-                XFORMS_NS);
+				       "xmlns:" + getXFormsNSPrefix().substring(0, getXFormsNSPrefix().length() - 1),
+				       XFORMS_NS);
         envelopeElement.setAttributeNS(XMLNS_NAMESPACE_URI,
-                "xmlns:"
-                + getXLinkNSPrefix().substring(0,
-                        getXLinkNSPrefix().length() - 1),
-                XLINK_NS);
-//XMLEvent
+				       "xmlns:" + getXLinkNSPrefix().substring(0, getXLinkNSPrefix().length() - 1),
+				       XLINK_NS);
+	//XMLEvent
         envelopeElement.setAttributeNS(XMLNS_NAMESPACE_URI,
-                "xmlns:" +
-                xmleventsNSPrefix.substring(0, xmleventsNSPrefix.length() - 1),
-                XMLEVENTS_NS);
-//XML Schema Instance
+				       "xmlns:" + xmleventsNSPrefix.substring(0, xmleventsNSPrefix.length() - 1), 
+				       XMLEVENTS_NS);
+	//XML Schema Instance
         envelopeElement.setAttributeNS(XMLNS_NAMESPACE_URI,
-                "xmlns:" +
-                xmlSchemaInstancePrefix.substring(0, xmlSchemaInstancePrefix.length() - 1),
-                XMLSCHEMA_INSTANCE_NAMESPACE_URI);
-//base
-        if (_base != null && !_base.equals("")) {
-            envelopeElement.setAttributeNS(XML_NAMESPACE_URI,
-                    "xml:base",
-                    _base);
-        }
+				       "xmlns:" + xmlSchemaInstancePrefix.substring(0, xmlSchemaInstancePrefix.length() - 1),
+				       XMLSCHEMA_INSTANCE_NAMESPACE_URI);
+	//base
+        if (_base != null && _base.length() != 0)
+            envelopeElement.setAttributeNS(XML_NAMESPACE_URI, "xml:base", _base);
 
         //model element
-        Element modelElement =
-                xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "model");
+        Element modelElement = xForm.createElementNS(XFORMS_NS, 
+						     getXFormsNSPrefix() + "model");
         this.setXFormsId(modelElement);
         Element modelWrapper = _wrapper.createModelWrapper(modelElement);
         envelopeElement.appendChild(modelWrapper);

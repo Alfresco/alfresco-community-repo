@@ -603,6 +603,10 @@
          <from-outcome>changePassword</from-outcome>
          <to-view-id>/jsp/users/change-my-password.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>editUserDetails</from-outcome>
+         <to-view-id>/jsp/users/edit-user-details.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <!-- navigation rules for the New User wizard -->

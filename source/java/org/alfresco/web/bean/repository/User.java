@@ -65,6 +65,16 @@ public final class User
    }
    
    /**
+    * Forces a clear of any cached or calcluated values
+    */
+   public void reset()
+   {
+      this.fullName = null;
+      this.administrator = null;
+      this.preferences = null;
+   }
+   
+   /**
     * @return The user name
     */
    public String getUserName()
@@ -114,7 +124,6 @@ public final class User
    {
       return this.ticket;
    }
-
    
    /**
     * @return Returns the person NodeRef

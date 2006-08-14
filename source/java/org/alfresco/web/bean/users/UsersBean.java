@@ -16,6 +16,7 @@
  */
 package org.alfresco.web.bean.users;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
@@ -265,10 +267,10 @@ public class UsersBean implements IContextListener
             // create the node ref, then our node representation
             NodeRef ref = new NodeRef(Repository.getStoreRef(), id);
             Node node = new Node(ref);
-
+            
             // remember the Person node
             setPerson(node);
-
+            
             // clear the UI state in preparation for finishing the action
             // and returning to the main page
             contextUpdated();
@@ -388,7 +390,39 @@ public class UsersBean implements IContextListener
       
       return outcome;
    }
-
+   
+   /**
+    * Action handler called for the OK button press 
+    */
+   public String changeUserDetails()
+   {
+      String outcome = DIALOG_CLOSE;
+      
+      FacesContext context = FacesContext.getCurrentInstance();
+      try
+      {
+         Map<QName, Serializable> props = this.nodeService.getProperties(getPerson().getNodeRef());
+         props.put(ContentModel.PROP_FIRSTNAME,
+               (String)getPerson().getProperties().get(ContentModel.PROP_FIRSTNAME));
+         props.put(ContentModel.PROP_LASTNAME,
+               (String)getPerson().getProperties().get(ContentModel.PROP_LASTNAME));
+         props.put(ContentModel.PROP_EMAIL,
+               (String)getPerson().getProperties().get(ContentModel.PROP_EMAIL));
+         
+         // persist changes
+         this.nodeService.setProperties(getPerson().getNodeRef(), props);
+         
+         // if the above call was successful, then reset Person Node in the session
+         Application.getCurrentUser(context).reset();
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               context, Repository.ERROR_GENERIC), err.getMessage()), err );
+      }
+      
+      return outcome;
+   }
 
    /**
     * Event handler called when the user wishes to search for a user

@@ -24,14 +24,40 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
-<r:page titleId="title_user_console">
+<r:page titleId="title_edit_user_details">
+
+<script language="JavaScript1.2">
+
+   window.onload = pageLoaded;
+   
+   function pageLoaded()
+   {
+      document.getElementById("edit-user:first-name").focus();
+      updateButtonState();
+   }
+   
+   function updateButtonState()
+   {
+      if (document.getElementById("edit-user:first-name").value.length == 0 ||
+          document.getElementById("edit-user:last-name").value.length == 0 ||
+          document.getElementById("edit-user:email").value.length == 0)
+      {
+         document.getElementById("edit-user:ok-button").disabled = true;
+      }
+      else
+      {
+         document.getElementById("edit-user:ok-button").disabled = false;
+      }
+   }
+</script>
 
 <f:view>
    
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
-   <h:form acceptCharset="UTF-8" id="user-console">
+   <%-- set the form name here --%>
+   <h:form acceptCharset="UTF-8" id="edit-user">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
@@ -65,12 +91,12 @@
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
                      <table cellspacing="4" cellpadding="0" width="100%">
                         <tr>
-                           <td width=32>
-                              <h:graphicImage id="logo" url="/images/icons/user_console_large.gif" width="32" height="32" />
+                           <td width="32">
+                              <h:graphicImage id="wizard-logo" url="/images/icons/edituser_large.gif" />
                            </td>
                            <td>
-                              <div class="mainTitle"><h:outputText value="#{msg.user_console_info}" /></div>
-                              <div class="mainSubText"><h:outputText value="#{msg.user_console_description}" /></div>
+                              <div class="mainTitle"><h:outputText value="#{msg.edit_user_details}" /></div>
+                              <div class="mainSubText"><h:outputText value="#{msg.edit_user_details_description}" /></div>
                            </td>
                         </tr>
                      </table>
@@ -89,65 +115,39 @@
                <%-- Details --%>
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width="4"></td>
-                  <td valign=top>
-                     
-                     <table cellspacing=0 cellpadding=3 border=0 width=100%>
+                  <td>
+                     <table cellspacing="0" cellpadding="3" border="0" width="100%">
                         <tr>
                            <td width="100%" valign="top">
-                              <%-- wrapper comment used by the panel to add additional component facets --%>
-                              <h:panelGroup id="mydetails-panel-facets">
-                                 <f:facet name="title">
-                                    <a:booleanEvaluator value="#{NavigationBean.isGuest == false}">
-                                       <a:actionLink value="#{msg.modify}" action="dialog:editUserDetails" showLink="false" image="/images/icons/Change_details.gif" />
-                                    </a:booleanEvaluator>
-                                 </f:facet>
-                              </h:panelGroup>
-                              <a:panel label="#{msg.my_details}" id="mydetails-panel" facetsId="mydetails-panel-facets"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE">
-                                 <table cellspacing=2 cellpadding=2 border=0>
-                                    <tr>
-                                       <td class="propertiesLabel">
-                                          <h:outputText value="#{msg.first_name}" />:
-                                       </td>
-                                       <td>
-                                          <h:outputText value="#{UsersBean.person.properties.firstName}" />
-                                       </td>
-                                    </tr>
-                                    <tr>
-                                       <td class="propertiesLabel">
-                                          <h:outputText value="#{msg.last_name}" />:
-                                       </td>
-                                       <td>
-                                          <h:outputText value="#{UsersBean.person.properties.lastName}" />
-                                       </td>
-                                    </tr>
-                                    <tr>
-                                       <td class="propertiesLabel">
-                                          <h:outputText value="#{msg.email}" />:
-                                       </td>
-                                       <td>
-                                          <h:outputText value="#{UsersBean.person.properties.email}" />
-                                       </td>
-                                    </tr>
-                                 </table>
-                                 <div style="padding:4px"></div>
-                                 <%-- context for current user is setup on entry to user console --%>
-                                 <a:actionLink id="change-password" value="#{msg.change_password}" action="dialog:changePassword" image="/images/icons/change_password.gif" />
-                              </a:panel>
-                              <div style="padding:4px"></div>
                               
-                              <h:panelGroup id="pref-panel-facets">
-                                 <f:facet name="title">
-                                    <a:booleanEvaluator value="#{NavigationBean.isGuest == false}">
-                                       <a:actionLink  value="#{msg.modify}" action="" showLink="false" image="/images/icons/Change_details.gif" />
-                                    </a:booleanEvaluator>
-                                 </f:facet>
-                              </h:panelGroup>
-                              <a:panel label="#{msg.general_pref}" id="pref-panel" facetsId="pref-panel-facets"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE">
-                                 <table width=100% cellspacing=2 cellpadding=2 border=0>
-                                 </table>
-                              </a:panel>
+                              <a:errors message="#{msg.error_wizard}" styleClass="errorMessage" />
+                              
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
+                              <table cellpadding="2" cellspacing="2" border="0" width="100%">
+                                 <tr>
+                                    <td colspan="2"><h:outputText value="#{msg.person_properties}" /></td>
+                                 </tr>
+                                 <tr><td colspan="2" class="paddingRow"></td></tr>
+                                 <tr>
+                                    <td><h:outputText value="#{msg.first_name}"/>:</td>
+                                    <td>
+                                       <h:inputText id="first-name" value="#{UsersBean.person.properties.firstName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;*
+                                    </td>
+                                 </tr>
+                                 <tr>
+                                    <td><h:outputText value="#{msg.last_name}"/>:</td>
+                                    <td>
+                                       <h:inputText id="last-name" value="#{UsersBean.person.properties.lastName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;*
+                                    </td>
+                                 </tr>
+                                 <tr>
+                                    <td><h:outputText value="#{msg.email}"/>:</td>
+                                    <td>
+                                       <h:inputText id="email" value="#{UsersBean.person.properties.email}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;*
+                                    </td>
+                                 </tr>
+                              </table>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
                            </td>
                            
                            <td valign="top">
@@ -155,16 +155,20 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.close}" action="dialog:close" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.finish_button}" id="ok-button" action="#{UsersBean.changeUserDetails}" styleClass="wizardButton" disabled="true" />
+                                    </td>
+                                 </tr>
+                                 <tr><td class="wizardButtonSpacing"></td></tr>
+                                 <tr>
+                                    <td align="center">
+                                       <h:commandButton value="#{msg.cancel_button}" action="dialog:close" styleClass="wizardButton" immediate="true" />
                                     </td>
                                  </tr>
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
                            </td>
-                        
                         </tr>
                      </table>
-                     
                   </td>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width="4"></td>
                </tr>
@@ -184,5 +188,9 @@
     </h:form>
     
 </f:view>
+
+<script>
+   updateButtonState();
+</script>
 
 </r:page>

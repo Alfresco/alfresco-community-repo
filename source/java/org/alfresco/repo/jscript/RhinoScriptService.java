@@ -223,11 +223,8 @@ public class RhinoScriptService implements ScriptService
         {
             // The easiest way to embed Rhino is just to create a new scope this way whenever
             // you need one. However, initStandardObjects is an expensive method to call and it
-            // allocates a fair amount of memory.  ImporterTopLevel provides a scope allowing 
-            // the import of java classes and packages.
-            Scriptable topLevelScope = new ImporterTopLevel(cx);
+            // allocates a fair amount of memory.
             Scriptable scope = cx.initStandardObjects();
-            scope.setParentScope(topLevelScope);
             
             // insert supplied object model into root of the default scope
             if (model != null)
@@ -254,7 +251,7 @@ public class RhinoScriptService implements ScriptService
             Object result = cx.evaluateReader(scope, reader, "AlfrescoScript", 1, null);
             
             // extract java object result if wrapped by rhinoscript 
-            if (result != null && result.getClass().equals(NativeJavaObject.class))
+            if (result != null && result instanceof NativeJavaObject)
             {
                 result = Context.jsToJava(result, Object.class);
             }

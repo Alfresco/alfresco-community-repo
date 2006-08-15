@@ -20,7 +20,6 @@ package org.alfresco.repo.avm;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -148,6 +147,7 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
             {
                 // Do nothing.
             }
+            /*
             long now = System.currentTimeMillis();
             List<String> toClose = new ArrayList<String>();
             for (String handle : fInputLastAccessTimes.keySet())
@@ -201,6 +201,7 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
                 fOutputLastAccessTimes.remove(handle);
                 fOutputBusy.remove(handle);
             }
+            */
         }
     }
     
@@ -268,7 +269,7 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
         try
         {
             int read;
-            while ((read = in.read(buff, off, count - off)) != -1)
+            while ((read = in.read(buff, off, count - off)) != -1 && read != 0)
             {
                 off += read;
             }

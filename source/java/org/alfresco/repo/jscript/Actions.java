@@ -91,7 +91,7 @@ public final class Actions implements Scopeable
      * @param actionName  the action name
      * @return  the action
      */
-    public ScriptAction createAction(String actionName)
+    public ScriptAction create(String actionName)
     {
         ScriptAction scriptAction = null;
         ActionService actionService = services.getActionService();
@@ -148,6 +148,21 @@ public final class Actions implements Scopeable
         }
         
         /**
+         * Returns the action name
+         * 
+         * @return  action name
+         */
+        public String getName()
+        {
+            return this.actionDef.getName();
+        }
+        
+        public String jsGet_name()
+        {
+            return getName();
+        }
+        
+        /**
          * Return all the properties known about this node.
          * 
          * The Map returned implements the Scriptable interface to allow access to the properties via
@@ -174,7 +189,7 @@ public final class Actions implements Scopeable
             return this.parameters;
         }        
         
-        public Map<String, Serializable>jsGet_parameters()
+        public Map<String, Serializable> jsGet_parameters()
         {
             return getParameters();
         }

@@ -211,8 +211,13 @@ public interface WorkflowService
      */
     public WorkflowTask endTask(String taskId, String transition);
     
-    
-    // todo: workflow package apis
-    // createPackage
+    /**
+     * Create a Workflow Package (a container of content to route through the Workflow)
+     * 
+     * @param workflowDefinitionId  workflow definition id
+     * @param container  (optional) a pre-created container (e.g. folder, versioned folder or layered folder)
+     * @return  the workflow package
+     */
+    public NodeRef createPackage(String workflowDefinitionId, NodeRef container);
     
 }

@@ -1,5 +1,5 @@
 // create add action
-var addAspectAction = actions.createAction("add-features");
+var addAspectAction = actions.create("add-features");
 addAspectAction.parameters["aspect-name"] = "cm:lockable";
 
 // execute action against passed in node    

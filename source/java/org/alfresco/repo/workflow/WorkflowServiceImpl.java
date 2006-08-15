@@ -246,10 +246,19 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public WorkflowTask getTaskById(String taskId)
     {
+        String engineId = BPMEngineRegistry.getEngineId(taskId);
+        TaskComponent component = getTaskComponent(engineId);
+        return component.getTaskById(taskId);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#createPackage(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public NodeRef createPackage(String workflowDefinitionId, NodeRef container)
+    {
         // TODO
         throw new UnsupportedOperationException();
     }
-
     
     /**
      * Gets the Workflow Definition Component registered against the specified BPM Engine Id

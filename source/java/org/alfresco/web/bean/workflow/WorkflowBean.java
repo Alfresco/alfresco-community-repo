@@ -34,12 +34,19 @@ public class WorkflowBean
 {
    protected WorkflowService workflowService;
    protected List<Node> workItems;
+   protected List<Node> completedWorkItems;
    
    private static final Log logger = LogFactory.getLog(WorkflowBean.class);
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
    
+   /**
+    * Returns a list of nodes representing the to do work items the 
+    * current user has.
+    * 
+    * @return List of to do work items
+    */
    public List<Node> getWorkItemsToDo()
    {
       // get the current username
@@ -59,6 +66,33 @@ public class WorkflowBean
       }
       
       return this.workItems;
+   }
+   
+   /**
+    * Returns a list of nodes representing the completed work items the 
+    * current user has.
+    * 
+    * @return List of completed work items
+    */
+   public List<Node> getWorkItemsCompleted()
+   {
+      // get the current username
+      FacesContext fc = FacesContext.getCurrentInstance();
+      User user = Application.getCurrentUser(fc);
+      String userName = ISO9075.encode(user.getUserName());
+      
+      // get the current in progress tasks for the current user
+      List<WorkflowTask> tasks = this.workflowService.getAssignedTasks(
+            userName, WorkflowTaskState.COMPLETED);
+      
+      // create a list of transient nodes to represent
+      this.completedWorkItems = new ArrayList<Node>(tasks.size());
+      for (WorkflowTask task : tasks)
+      {
+         createWorkItem(task);
+      }
+      
+      return this.completedWorkItems;
    }
    
    /**

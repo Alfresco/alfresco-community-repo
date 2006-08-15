@@ -16,11 +16,15 @@
  */
 package org.alfresco.filesys.smb.server.repo.pseudo;
 
+import java.util.Enumeration;
+
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.TreeConnection;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
+import org.alfresco.filesys.smb.server.repo.DesktopAction;
+import org.alfresco.filesys.smb.server.repo.DesktopActionTable;
 import org.alfresco.filesys.smb.server.repo.FileState;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -126,27 +130,40 @@ public class ContentPseudoFileImpl implements PseudoFileInterface
         
         boolean isCIFS = sess instanceof SMBSrvSession;
         
-        // Add the drag and drop pseudo file, if enabled
+        // Add the desktop action pseudo files
         
-        if ( isCIFS && ctx.hasDragAndDropApp())
+        if ( isCIFS && ctx.numberOfDesktopActions() > 0)
         {
             // If the file state is null create a file state for the path
 
             if ( fstate == null)
                 ctx.getStateTable().findFileState( path, true, true);
             
-            // Enable the drag and drop pseudo file
+            // Add the desktop action pseudo files
             
-            fstate.addPseudoFile( ctx.getDragAndDropApp());
+            DesktopActionTable actions = ctx.getDesktopActions();
+            Enumeration<String> actionNames = actions.enumerateActionNames();
+            
+            while(actionNames.hasMoreElements())
+            {
+            	// Get the current desktop action
+            	
+            	String name = actionNames.nextElement();
+            	DesktopAction action = actions.getAction(name);
+            	
+            	// Add the pseudo file for the desktop action
+            	
+            	if ( action.hasPseudoFile())
+            	{
+            		fstate.addPseudoFile( action.getPseudoFile());
+            		pseudoCnt++;
 
-            // Update the count of pseudo files added
-            
-            pseudoCnt++;
-            
-            // DEBUG
-            
-            if ( logger.isInfoEnabled())
-                logger.info("Added drag/drop pseudo file for " + path);
+            		// DEBUG
+                    
+                    if ( logger.isInfoEnabled())
+                        logger.info("Added desktop action " + action.getName() + " for " + path);
+            	}
+            }
         }
 
         // Add the URL link pseudo file, if enabled

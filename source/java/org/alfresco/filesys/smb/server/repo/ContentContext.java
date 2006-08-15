@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -16,8 +16,11 @@
  */
 package org.alfresco.filesys.smb.server.repo;
 
+import java.util.Enumeration;
+
 import org.alfresco.filesys.server.filesys.*;
-import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
+import org.alfresco.filesys.smb.server.repo.pseudo.ContentPseudoFileImpl;
+import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileInterface;
 import org.alfresco.service.cmr.repository.*;
 
 /**
@@ -42,14 +45,22 @@ public class ContentContext extends DiskDeviceContext
     
     private FileStateTable m_stateTable;
     
-    // Drag and drop pseudo file
-    
-    private PseudoFile m_dragAndDropApp;
-    
     // URL pseudo file web path prefix (server/port/webapp) and link file name
     
     private String m_urlPathPrefix;
     private String m_urlFileName;
+    
+    // Pseudo file interface
+    
+    private PseudoFileInterface m_pseudoFileInterface;
+
+    // Desktop actions
+    
+    private DesktopActionTable m_desktopActions;
+    
+    // I/O control handler
+    
+    private IOControlHandler m_ioHandler;
     
     /**
      * Class constructor
@@ -146,25 +157,108 @@ public class ContentContext extends DiskDeviceContext
     }
     
     /**
-     * Determine if the drag and drop pseudo file has been configured
+     * Determine if the pseudo file interface is enabled
      * 
      * @return boolean
      */
-    public final boolean hasDragAndDropApp()
+    public final boolean hasPseudoFileInterface()
     {
-        return m_dragAndDropApp != null ? true : false;
+    	return m_pseudoFileInterface != null ? true : false;
     }
     
     /**
-     * Return the drag and drop pseudo file
+     * Return the pseudo file interface
      * 
-     * @return PseudoFile
+     * @return PseudoFileInterface
      */
-    public final PseudoFile getDragAndDropApp()
+    public final PseudoFileInterface getPseudoFileInterface()
     {
-        return m_dragAndDropApp;
+    	return m_pseudoFileInterface;
     }
 
+    /**
+     * Enable the pseudo file interface for this filesystem
+     */
+    public final void enabledPseudoFileInterface()
+    {
+    	if ( m_pseudoFileInterface == null)
+    		m_pseudoFileInterface = new ContentPseudoFileImpl();
+    }
+    
+    /**
+     * Determine if there are desktop actins configured
+     * 
+     * @return boolean
+     */
+    public final boolean hasDesktopActions()
+    {
+    	return m_desktopActions != null ? true : false;
+    }
+    
+    /**
+     * Return the desktop actions table
+     * 
+     * @return DesktopActionTable
+     */
+    public final DesktopActionTable getDesktopActions()
+    {
+    	return m_desktopActions;
+    }
+    
+    /**
+     * Return the count of desktop actions
+     * 
+     * @return int
+     */
+    public final int numberOfDesktopActions()
+    {
+    	return m_desktopActions != null ? m_desktopActions.numberOfActions() : 0;
+    }
+
+    /**
+     * Add a desktop action
+     * 
+     * @param action DesktopAction
+     * @return boolean
+     */
+    public final boolean addDesktopAction(DesktopAction action)
+    {
+    	// Check if the desktop actions table has been created
+    	
+    	if ( m_desktopActions == null)
+    	{
+    		m_desktopActions = new DesktopActionTable();
+    		
+    		// Enable pseudo files
+    		
+    		enabledPseudoFileInterface();
+    	}
+    	
+    	// Add the action
+    	
+    	return m_desktopActions.addAction(action);
+    }
+
+    /**
+     * Determine if custom I/O control handling is enabled for this filesystem
+     * 
+     * @return boolean
+     */
+    public final boolean hasIOHandler()
+    {
+    	return m_ioHandler != null ? true : false;
+    }
+    
+    /**
+     * Return the custom I/O control handler
+     * 
+     * @return IOControlHandler
+     */
+    public final IOControlHandler getIOHandler()
+    {
+    	return m_ioHandler;
+    }
+    
     /**
      * Determine if the URL pseudo file is enabled
      * 
@@ -198,16 +292,6 @@ public class ContentContext extends DiskDeviceContext
     }
     
     /**
-     * Set the drag and drop application details
-     * 
-     * @param dragDropApp PseudoFile
-     */
-    public final void setDragAndDropApp(PseudoFile dragDropApp)
-    {
-        m_dragAndDropApp = dragDropApp;
-    }
-    
-    /**
      * Set the URL path prefix
      * 
      * @param urlPrefix String
@@ -215,6 +299,9 @@ public class ContentContext extends DiskDeviceContext
     public final void setURLPrefix(String urlPrefix)
     {
         m_urlPathPrefix = urlPrefix;
+        
+        if ( urlPrefix != null)
+        	enabledPseudoFileInterface();
     }
     
     /**
@@ -225,8 +312,43 @@ public class ContentContext extends DiskDeviceContext
     public final void setURLFileName(String urlFileName)
     {
         m_urlFileName = urlFileName;
+        
+        if ( urlFileName != null)
+        	enabledPseudoFileInterface();
     }
 
+    /**
+     * Set the desktop actions
+     * 
+     * @param desktopActions DesktopActionTable
+     * @param filesysDriver DiskInterface
+     */
+    public final void setDesktopActions(DesktopActionTable desktopActions, DiskInterface filesysDriver)
+    {
+    	// Enumerate the desktop actions and add to this filesystem
+    	
+    	Enumeration<String> names = desktopActions.enumerateActionNames();
+    	
+    	while ( names.hasMoreElements())
+    	{
+    		addDesktopAction( desktopActions.getAction(names.nextElement()));
+    	}
+    	
+    	// If there are desktop actions then create the custom I/O control handler
+    	
+    	if ( numberOfDesktopActions() > 0)
+    	{
+    		// Access the filesystem driver
+    		
+    		ContentDiskDriver contentDriver = (ContentDiskDriver) filesysDriver; 
+    		
+    		// Create the custom I/O control handler
+    	
+    		m_ioHandler = new ContentIOControlHandler();
+    		m_ioHandler.initialize(contentDriver, this);
+    	}
+    }
+    
     /**
      * Close the filesystem context
      */

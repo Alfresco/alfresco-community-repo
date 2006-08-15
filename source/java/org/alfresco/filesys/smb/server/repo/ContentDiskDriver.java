@@ -16,12 +16,8 @@
  */
 package org.alfresco.filesys.smb.server.repo;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLDecoder;
 import java.util.List;
 
 import javax.transaction.UserTransaction;
@@ -52,8 +48,6 @@ import org.alfresco.filesys.smb.SMBStatus;
 import org.alfresco.filesys.smb.SharingMode;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
 import org.alfresco.filesys.smb.server.repo.FileState.FileStateStatus;
-import org.alfresco.filesys.smb.server.repo.pseudo.ContentPseudoFileImpl;
-import org.alfresco.filesys.smb.server.repo.pseudo.LocalPseudoFile;
 import org.alfresco.filesys.smb.server.repo.pseudo.MemoryNetworkFile;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileInterface;
@@ -105,17 +99,9 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     private SearchService searchService;
     private ContentService contentService;
     private PermissionService permissionService;
-    private CheckOutCheckInService checkInOutService;
+    private CheckOutCheckInService checkOutInService;
     
     private AuthenticationComponent authComponent;
-    
-    // I/O control handler
-    
-    private IOControlHandler m_ioHandler;
-    
-    // Pseudo files interface
-    
-    private PseudoFileInterface m_pseudoFiles;
     
     /**
      * Class constructor
@@ -127,6 +113,75 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
         this.cifsHelper = cifsHelper;
     }
 
+    /**
+     * Return the CIFS helper
+     * 
+     * @return CifsHelper
+     */
+    public final CifsHelper getCifsHelper()
+    {
+    	return this.cifsHelper;
+    }
+    
+    /**
+     * Return the transaction service
+     * 
+     * @return TransactionService
+     */
+    public final TransactionService getTransactionService()
+    {
+    	return this.transactionService;
+    }
+    
+    /**
+     * Return the node service
+     * 
+     * @return NodeService
+     */
+    public final NodeService getNodeService()
+    {
+    	return this.nodeService;
+    }
+    
+    /**
+     * Return the content service
+     * 
+     * @return ContentService
+     */
+    public final ContentService getContentService()
+    {
+    	return this.contentService;
+    }
+
+    /**
+     * Return the namespace service
+     * 
+     * @return NamespaceService
+     */
+    public final NamespaceService getNamespaceService()
+    {
+    	return this.namespaceService;
+    }
+    
+    /**
+     * Return the search service
+     * 
+     * @return SearchService
+     */
+    public final SearchService getSearchService(){
+    	return this.searchService;
+    }
+
+    /**
+     * Return the check in/out service
+     * 
+     * @return CheckOutInService
+     */
+    public final CheckOutCheckInService getCheckInOutService()
+    {
+    	return this.checkOutInService;
+    }
+    
     /**
      * @param contentService the content service
      */
@@ -158,7 +213,6 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     {
         this.searchService = searchService;
     }
-
     
     /**
      * @param transactionService the transaction service
@@ -181,11 +235,11 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     /**
      * Set the check in/out service
      * 
-     * @param checkInOutService CheckOutCheckInService
+     * @param checkInService CheckOutInService
      */
-    public void setCheckInOutService(CheckOutCheckInService checkInOutService)
+    public void setCheckInOutService(CheckOutCheckInService checkInService)
     {
-        this.checkInOutService = checkInOutService;
+    	this.checkOutInService = checkInService;
     }
     
     /**
@@ -337,67 +391,6 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             }
         }
 
-        // Check if the client side drag and drop appliction has been enabled
-        
-        ConfigElement dragDropElem = cfg.getChild( "dragAndDrop");
-        if ( dragDropElem != null)
-        {
-            // Get the pseudo file name and path to the actual file on the local filesystem
-            
-            ConfigElement pseudoName = dragDropElem.getChild( "filename");
-            ConfigElement appPath    = dragDropElem.getChild( "path");
-            
-            if ( pseudoName != null && appPath != null)
-            {
-                // Check that the application exists on the local filesystem
-                
-                URL appURL = this.getClass().getClassLoader().getResource(appPath.getValue());
-                if ( appURL == null)
-                    throw new DeviceContextException("Failed to find drag and drop application, " + appPath.getValue());
-                
-                // Decode the URL path, it might contain escaped characters
-                
-                String appURLPath = null;
-                try
-                {
-                	appURLPath = URLDecoder.decode( appURL.getFile(), "UTF-8");
-                }
-                catch ( UnsupportedEncodingException ex)
-                {
-                	throw new DeviceContextException("Failed to decode drag/drop path, " + ex.getMessage());
-                }
-
-                // Check that the drag/drop file exists
-                
-                File appFile = new File(appURLPath);
-                if ( appFile.exists() == false)
-                    throw new DeviceContextException("Drag and drop application not found, " + appPath.getValue());
-                
-                // Create the pseudo file for the drag and drop application
-                
-                PseudoFile dragDropPseudo = new LocalPseudoFile( pseudoName.getValue(), appFile.getAbsolutePath());
-                context.setDragAndDropApp( dragDropPseudo);
-            }
-            
-            // Initialize the custom I/O handler
-
-            try
-            {
-            	m_ioHandler = new ContentIOControlHandler();
-            	m_ioHandler.initialize( this, cifsHelper, transactionService, nodeService, checkInOutService);
-            }
-            catch (Exception ex)
-            {
-            	// Log the error
-            	
-            	logger.error("Failed to initialize I/O control handler", ex);
-            	
-            	//	Rethrow the exception
-            	
-            	throw new DeviceContextException("Failed to initialize I/O control handler");
-            }
-        }
-
         // Check if URL link files are enabled
         
         ConfigElement urlFileElem = cfg.getChild( "urlFile");
@@ -428,15 +421,6 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             }
         }
         
-        // Enable pseudo file support if the drag and drop app and/or URL link files are enabled
-
-        if ( context.hasDragAndDropApp() || context.hasURLFile())
-        {
-            // Create the pseudo file handler
-            
-            m_pseudoFiles = new ContentPseudoFileImpl();
-        }
-        
         // Check if locked files should be marked as offline
         
         ConfigElement offlineFiles = cfg.getChild( "offlineFiles");
@@ -459,21 +443,23 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     /**
      * Check if pseudo file support is enabled
      * 
+     * @param context ContentContext
      * @return boolean
      */
-    public final boolean hasPseudoFileInterface()
+    public final boolean hasPseudoFileInterface(ContentContext context)
     {
-        return m_pseudoFiles != null ? true : false;
+    	return context.hasPseudoFileInterface();
     }
     
     /**
      * Return the pseudo file support implementation
-     * 
+     *
+     * @param context ContentContext
      * @return PseudoFileInterface
      */
-    public final PseudoFileInterface getPseudoFileInterface()
+    public final PseudoFileInterface getPseudoFileInterface(ContentContext context)
     {
-        return m_pseudoFiles;
+        return context.getPseudoFileInterface();
     }
     
     /**
@@ -523,11 +509,11 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
 
             FileInfo finfo = null;
             
-            if ( hasPseudoFileInterface())
+            if ( hasPseudoFileInterface(ctx))
             {
                 // Get the pseudo file
                 
-                PseudoFile pfile = getPseudoFileInterface().getPseudoFile( session, tree, path);
+                PseudoFile pfile = getPseudoFileInterface(ctx).getPseudoFile( session, tree, path);
                 if ( pfile != null)
                 {
                     // DEBUG
@@ -707,8 +693,8 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                     
                     // Add pseudo files to the folder being searched
 
-                    if ( hasPseudoFileInterface())
-                        getPseudoFileInterface().addPseudoFilesToFolder( sess, tree, paths[0]);
+                    if ( hasPseudoFileInterface(ctx))
+                        getPseudoFileInterface(ctx).addPseudoFilesToFolder( sess, tree, paths[0]);
 
                     // Set the search node and file spec
                     
@@ -908,11 +894,11 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             // Check if pseudo files are enabled
             
-            if ( hasPseudoFileInterface())
+            if ( hasPseudoFileInterface(ctx))
             {
                 // Check if the path is to a pseudo file
                 
-                PseudoFile pfile = getPseudoFileInterface().getPseudoFile( sess, tree, params.getPath());
+                PseudoFile pfile = getPseudoFileInterface(ctx).getPseudoFile( sess, tree, params.getPath());
                 if ( pfile != null)
                 {
                     // Create a network file to access the pseudo file data
@@ -1425,11 +1411,11 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             {
                 // Delete the pseudo file
                 
-                if ( hasPseudoFileInterface())
+                if ( hasPseudoFileInterface(ctx))
                 {
                     // Delete the pseudo file
                     
-                    getPseudoFileInterface().deletePseudoFile( sess, tree, file.getFullName());
+                    getPseudoFileInterface(ctx).deletePseudoFile( sess, tree, file.getFullName());
                 }
             }
         }
@@ -1698,10 +1684,14 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     {
         try
         {
+            // Get the device context
+            
+            ContentContext ctx = (ContentContext) tree.getContext();
+            
             // Check if pseudo files are enabled
             
-            if ( hasPseudoFileInterface() &&
-                    getPseudoFileInterface().isPseudoFile( sess, tree, name))
+            if ( hasPseudoFileInterface(ctx) &&
+                    getPseudoFileInterface(ctx).isPseudoFile( sess, tree, name))
             {
                 // Allow the file information to be changed
                 
@@ -1997,8 +1987,9 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
         
         // Check if the I/O control handler is enabled
         
-        if ( m_ioHandler != null)
-            return m_ioHandler.processIOControl( sess, tree, ctrlCode, fid, dataBuf, isFSCtrl, filter);
+        ContentContext ctx = (ContentContext) tree.getContext();
+        if ( ctx.hasIOHandler())
+            return ctx.getIOHandler().processIOControl( sess, tree, ctrlCode, fid, dataBuf, isFSCtrl, filter);
         else
             throw new IOControlNotImplementedException();
     }

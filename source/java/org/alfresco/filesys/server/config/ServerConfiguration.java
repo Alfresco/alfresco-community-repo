@@ -64,12 +64,15 @@ import org.alfresco.filesys.server.core.ShareType;
 import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.server.core.SharedDeviceList;
 import org.alfresco.filesys.server.filesys.DefaultShareMapper;
-import org.alfresco.filesys.server.filesys.DiskDeviceContext;
 import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
 import org.alfresco.filesys.server.filesys.HomeShareMapper;
 import org.alfresco.filesys.smb.ServerType;
 import org.alfresco.filesys.smb.TcpipSMB;
+import org.alfresco.filesys.smb.server.repo.ContentContext;
+import org.alfresco.filesys.smb.server.repo.DesktopAction;
+import org.alfresco.filesys.smb.server.repo.DesktopActionException;
+import org.alfresco.filesys.smb.server.repo.DesktopActionTable;
 import org.alfresco.filesys.util.IPAddress;
 import org.alfresco.filesys.util.X64;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -1582,7 +1585,7 @@ public class ServerConfiguration implements ApplicationListener
             }
         }
         
-        // Get the top level filesystems confgiruation element
+        // Get the top level filesystems configuration element
         
         ConfigElement filesystems = config.getConfigElement("filesystems");
         
@@ -1633,8 +1636,9 @@ public class ServerConfiguration implements ApplicationListener
                 {
                     // Create a new filesystem driver instance and create a context for
                     // the new filesystem
+                	
                     DiskInterface filesysDriver = this.diskInterface;
-                    DiskDeviceContext filesysContext = (DiskDeviceContext) filesysDriver.createContext(elem);
+                    ContentContext filesysContext = (ContentContext) filesysDriver.createContext(elem);
 
                     // Check if an access control list has been specified
 
@@ -1664,6 +1668,18 @@ public class ServerConfiguration implements ApplicationListener
 
                     DiskSharedDevice filesys = new DiskSharedDevice(filesysName, filesysDriver, filesysContext);
 
+                    // Attach desktop actions to the filesystem
+                    
+                    ConfigElement deskActionsElem = elem.getChild("desktopActions");
+                    if ( deskActionsElem != null)
+                    {
+                    	// Get the desktop actions list
+                    	
+                    	DesktopActionTable desktopActions = processDesktopActions(deskActionsElem, filesys);
+                    	if ( desktopActions != null)
+                    		filesysContext.setDesktopActions( desktopActions, filesysDriver);
+                    }
+                    
                     // Add any access controls to the share
 
                     filesys.setAccessControlList(acls);
@@ -1897,6 +1913,99 @@ public class ServerConfiguration implements ApplicationListener
         // Return the access control list
 
         return acls;
+    }
+
+    /**
+     * Process a desktop actions sub-section and return the desktop action table
+     * 
+     * @param deskActionElem ConfigElement
+     * @param fileSys DiskSharedDevice
+     */
+    private final DesktopActionTable processDesktopActions(ConfigElement deskActionElem, DiskSharedDevice fileSys)
+    {
+        // Get the desktop action configuration elements
+
+    	DesktopActionTable desktopActions = null;
+        List<ConfigElement> actionElems = deskActionElem.getChildren();
+        
+        if ( actionElems != null)
+        {
+        	// Check for the global configuration section
+        	
+        	ConfigElement globalConfig = deskActionElem.getChild("global");
+        	
+        	// Allocate the actions table
+        	
+        	desktopActions = new DesktopActionTable();
+        	
+        	// Process the desktop actions list
+        	
+        	for ( ConfigElement actionElem : actionElems)
+        	{
+        		if ( actionElem.getName().equals("action"))
+        		{
+        			// Get the desktop action class name or bean id
+        			
+        			ConfigElement className = actionElem.getChild("class");
+        			if ( className != null)
+        			{
+        				// Load the desktop action class, create a new instance
+        				
+        				Object actionObj = null;
+        				
+        				try
+        				{
+        					// Create a new desktop action instance
+        					
+        					actionObj = Class.forName(className.getValue()).newInstance();
+        					
+        					// Make sure the object is a desktop action
+        					
+        					if ( actionObj instanceof DesktopAction)
+        					{
+        						// Initialize the desktop action
+        						
+        						DesktopAction deskAction = (DesktopAction) actionObj;
+        						deskAction.initializeAction(globalConfig, actionElem, fileSys);
+        						
+        						// Add the action to the list of desktop actions
+        						
+        						desktopActions.addAction(deskAction);
+        						
+        						// DEBUG
+        						
+        						if ( logger.isDebugEnabled())
+        							logger.debug("Added desktop action " + deskAction.getName());
+        					}
+        					else
+        						throw new AlfrescoRuntimeException("Desktop action does not extend DesktopAction class, " + className.getValue());
+        				}
+        				catch ( ClassNotFoundException ex)
+        				{
+        					throw new AlfrescoRuntimeException("Desktop action class not found, " + className.getValue());
+        				}
+        				catch (IllegalAccessException ex)
+        				{
+        					throw new AlfrescoRuntimeException("Failed to create desktop action instance, " + className.getValue(), ex);
+        				}
+         				catch ( InstantiationException ex)
+        				{
+        					throw new AlfrescoRuntimeException("Failed to create desktop action instance, " + className.getValue(), ex);
+        				}
+         				catch (DesktopActionException ex)
+         				{
+         					throw new AlfrescoRuntimeException("Failed to initialize desktop action", ex);
+         				}
+        			}
+        		}
+        		else if ( actionElem.getName().equals("global") == false)
+        			throw new AlfrescoRuntimeException("Invalid configuration element in desktopActions section, " + actionElem.getName());
+        	}
+        }
+    
+        // Return the desktop actions list
+        
+        return desktopActions;
     }
 
     /**

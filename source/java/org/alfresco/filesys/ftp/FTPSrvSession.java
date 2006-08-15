@@ -1839,7 +1839,23 @@ public class FTPSrvSession extends SrvSession implements Runnable
 	
 	                netFile = disk.openFile(this, tree, params);
 	            }
-	
+
+	            // Commit any current transaction
+	            
+                try
+                {
+                    // Commit or rollback the transaction
+
+                    endTransaction();
+                }
+                catch ( Exception ex)
+                {
+                    // Debug
+                    
+                    if ( logger.isDebugEnabled())
+                        logger.debug("Error committing transaction", ex);
+                }
+	            
 	            // Check if the file has been opened
 	
 	            if (netFile == null)
@@ -1898,7 +1914,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
 	            m_dataSess = null;
 	
 	            // Close the network file
-	
+
 	            disk.closeFile(this, tree, netFile);
 	            netFile = null;
 	
@@ -2078,6 +2094,22 @@ public class FTPSrvSession extends SrvSession implements Runnable
 	                netFile = disk.createFile(this, tree, params);
 	            }
 	
+	            // Commit any current transaction
+	            
+                try
+                {
+                    // Commit or rollback the transaction
+
+                    endTransaction();
+                }
+                catch ( Exception ex)
+                {
+                    // Debug
+                    
+                    if ( logger.isDebugEnabled())
+                        logger.debug("Error committing transaction", ex);
+                }
+	            
 	            // Notify change listeners that a new file has been created
 	
 	            DiskDeviceContext diskCtx = (DiskDeviceContext) tree.getContext();

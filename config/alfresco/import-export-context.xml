@@ -255,6 +255,7 @@
                 <prop key="spaces.guest_home.childname">${spaces.guest_home.childname}</prop>
                 <prop key="system.system_container.childname">${system.system_container.childname}</prop>
                 <prop key="system.people_container.childname">${system.people_container.childname}</prop>
+                <prop key="system.workflow_container.childname">${system.workflow_container.childname}</prop>
                 <prop key="spaces.dictionary.childname">${spaces.dictionary.childname}</prop>
                 <prop key="spaces.templates.childname">${spaces.templates.childname}</prop>
                 <prop key="spaces.templates.content.childname">${spaces.templates.content.childname}</prop>

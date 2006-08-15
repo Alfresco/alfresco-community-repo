@@ -62,10 +62,6 @@ public class BPMEngine implements InitializingBean
             throw new WorkflowException("Engine Id not specified");
         }
         
-        if (this instanceof WorkflowDefinitionComponent)
-        {
-            registry.registerWorkflowDefinitionComponent(engineId, (WorkflowDefinitionComponent)this);
-        }
         if (this instanceof WorkflowComponent)
         {
             registry.registerWorkflowComponent(engineId, (WorkflowComponent)this);

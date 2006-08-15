@@ -16,10 +16,12 @@
  */
 package org.alfresco.repo.workflow;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -34,6 +36,62 @@ import org.alfresco.service.namespace.QName;
 public interface WorkflowComponent
 {
 
+    //
+    // Workflow Definition Support
+    //
+
+    
+    /**
+     * Deploy a Workflow Definition
+     * 
+     * @param workflowDefinition  the content object containing the definition
+     * @param mimetype (optional)  the mime type of the workflow definition
+     * @return workflow definition
+     */
+    public WorkflowDefinition deployDefinition(InputStream workflowDefinition, String mimetype);
+
+    /**
+     * Is the specified Workflow Definition already deployed?
+     * 
+     * Note: the notion of "already deployed" may differ between bpm engines. For example,
+     *       different versions of the same process may be considered equal.
+     *       
+     * @param workflowDefinition  the definition to check
+     * @param mimetype  the mimetype of the definition
+     * @return  true => already deployed
+     */
+    public boolean isDefinitionDeployed(InputStream workflowDefinition, String mimetype);
+    
+    /**
+     * Undeploy an exisiting Workflow Definition
+     * 
+     * TODO: Determine behaviour when "in-flight" workflow instances exist
+     *  
+     * @param workflowDefinitionId  the id of the definition to undeploy
+     */
+    public void undeployDefinition(String workflowDefinitionId);
+    
+    /**
+     * Gets all deployed Workflow Definitions
+     * 
+     * @return  the deployed workflow definitions
+     */
+    public List<WorkflowDefinition> getDefinitions();
+    
+    /**
+     * Gets a Workflow Definition by unique Id
+     * 
+     * @param workflowDefinitionId  the workflow definition id
+     * @return  the deployed workflow definition
+     */
+    public WorkflowDefinition getDefinitionById(String workflowDefinitionId);
+    
+
+    //
+    // Workflow Instance Support
+    //
+    
+    
     /**
      * Start a Workflow Instance
      * 

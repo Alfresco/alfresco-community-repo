@@ -30,7 +30,6 @@ import org.apache.commons.logging.LogFactory;
  * Responsible for managing the list of registered BPM Engines for the
  * following components:
  * 
- * - Workflow Definition Component
  * - Workflow Component
  * - Task Component
  * 
@@ -44,7 +43,6 @@ public class BPMEngineRegistry
     /** Logging support */
     private static Log logger = LogFactory.getLog("org.alfresco.repo.workflow");
 
-    private Map<String, WorkflowDefinitionComponent> workflowDefinitionComponents;
     private Map<String, WorkflowComponent> workflowComponents;
     private Map<String, TaskComponent> taskComponents;
 
@@ -54,48 +52,8 @@ public class BPMEngineRegistry
      */
     public BPMEngineRegistry()
     {
-        workflowDefinitionComponents = new HashMap<String, WorkflowDefinitionComponent>();
         workflowComponents = new HashMap<String, WorkflowComponent>();
         taskComponents = new HashMap<String, TaskComponent>();
-    }
-    
-    /**
-     * Register a BPM Engine Workflow Definition Component
-     * 
-     * @param engineId  engine id
-     * @param engine  implementing engine
-     */
-    public void registerWorkflowDefinitionComponent(String engineId, WorkflowDefinitionComponent engine)
-    {
-        if (workflowDefinitionComponents.containsKey(engineId))
-        {
-            throw new WorkflowException("Workflow Definition Component already registered for engine id '" + engineId + "'");
-        }
-        workflowDefinitionComponents.put(engineId, engine);
-        
-        if (logger.isInfoEnabled())
-            logger.info("Registered Workflow Definition Component '" + engineId + "' (" + engine.getClass() + ")");
-    }
-
-    /**
-     * Gets all registered Workflow Definition Components
-     * 
-     * @return  array of engine ids
-     */
-    public String[] getWorkflowDefinitionComponents()
-    {
-        return workflowDefinitionComponents.keySet().toArray(new String[workflowDefinitionComponents.keySet().size()]);
-    }
-
-    /**
-     * Gets a specific BPM Engine Workflow Definition Component
-     * 
-     * @param engineId  engine id
-     * @return  the Workflow Definition Component
-     */
-    public WorkflowDefinitionComponent getWorkflowDefinitionComponent(String engineId)
-    {
-        return workflowDefinitionComponents.get(engineId);
     }
     
     /**

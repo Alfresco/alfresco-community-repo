@@ -28,6 +28,15 @@
 
    <bean id="workflowServiceImpl" class="org.alfresco.repo.workflow.WorkflowServiceImpl">
       <property name="BPMEngineRegistry" ref="bpm_engineRegistry"/>
+      <property name="workflowPackageComponent" ref="workflowPackageImpl"/>
+   </bean>
+
+   <bean id="workflowPackageImpl" class="org.alfresco.repo.workflow.WorkflowPackageImpl">
+      <property name="importerBootstrap" ref="spacesBootstrap"/>
+      <property name="fileFolderService" ref="fileFolderService"/>
+      <property name="searchService" ref="searchService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="namespaceService" ref="namespaceService"/>
    </bean>
 
    <!--                       -->

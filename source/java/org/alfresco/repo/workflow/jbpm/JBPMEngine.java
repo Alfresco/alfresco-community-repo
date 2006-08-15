@@ -34,7 +34,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.BPMEngine;
 import org.alfresco.repo.workflow.TaskComponent;
 import org.alfresco.repo.workflow.WorkflowComponent;
-import org.alfresco.repo.workflow.WorkflowDefinitionComponent;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -55,6 +54,8 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.hibernate.Query;
+import org.hibernate.Session;
 import org.hibernate.proxy.HibernateProxy;
 import org.jbpm.JbpmContext;
 import org.jbpm.JbpmException;
@@ -81,7 +82,7 @@ import org.springmodules.workflow.jbpm31.JbpmTemplate;
  * @author davidc
  */
 public class JBPMEngine extends BPMEngine
-    implements WorkflowDefinitionComponent, WorkflowComponent, TaskComponent
+    implements WorkflowComponent, TaskComponent
 {
     // Implementation dependencies
     protected DictionaryService dictionaryService;
@@ -91,6 +92,16 @@ public class JBPMEngine extends BPMEngine
     protected PersonService personService;
     private JbpmTemplate jbpmTemplate;
 
+    // Note: jBPM query which is not provided out-of-the-box
+    // TODO: Check jBPM 3.2 and get this implemented in jBPM
+    private final static String COMPLETED_TASKS_QUERY =     
+        "select ti " + 
+        "from org.jbpm.taskmgmt.exe.TaskInstance as ti " +
+        "where ti.actorId = :actorId " +
+        "and ti.isOpen = false " +
+        "and ti.end is not null";
+    
+    
     /**
      * Sets the JBPM Template used for accessing JBoss JBPM in the correct context
      * 
@@ -528,27 +539,61 @@ public class JBPMEngine extends BPMEngine
                 public List<WorkflowTask> doInJbpm(JbpmContext context)
                 {
                     // retrieve tasks assigned to authority
-                    TaskMgmtSession taskSession = context.getTaskMgmtSession();
-                    List<TaskInstance> tasks = taskSession.findTaskInstances(authority);
+                    List<TaskInstance> tasks;
+                    if (state.equals(WorkflowTaskState.IN_PROGRESS))
+                    {
+                        TaskMgmtSession taskSession = context.getTaskMgmtSession();
+                        tasks = taskSession.findTaskInstances(authority);
+                    }
+                    else
+                    {
+                        // Note: This method is not implemented by jBPM
+                        tasks = findCompletedTaskInstances(context, authority);
+                    }
+                    
+                    // convert tasks to appropriate service response format 
                     List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>(tasks.size());
                     for (TaskInstance task : tasks)
                     {
-                        if (getWorkflowTaskState(task).equals(state))
-                        {
-                            WorkflowTask workflowTask = createWorkflowTask(task);
-                            workflowTasks.add(workflowTask);
-                        }
+                        WorkflowTask workflowTask = createWorkflowTask(task);
+                        workflowTasks.add(workflowTask);
                     }
                     return workflowTasks;
+                }
+                
+                /**
+                 * Gets the completed task list for the specified actor
+                 * 
+                 * TODO: This method provides a query that's not in JBPM!  Look to have JBPM implement this.
+                 * 
+                 * @param jbpmContext  the jbpm context
+                 * @param actorId  the actor to retrieve tasks for
+                 * @return  the tasks
+                 */
+                private List findCompletedTaskInstances(JbpmContext jbpmContext, String actorId)
+                {
+                    List result = null;
+                    try
+                    {
+                        Session session = jbpmContext.getSession();
+                        Query query = session.createQuery(COMPLETED_TASKS_QUERY);
+                        query.setString("actorId", actorId);
+                        result = query.list();
+                    }
+                    catch (Exception e)
+                    {
+                        throw new JbpmException("Couldn't get completed task instances list for actor '" + actorId + "'", e);
+                    }
+                    return result;
                 }
             });
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve tasks assigned to authority '" + authority + "'", e);
+            throw new WorkflowException("Failed to retrieve tasks assigned to authority '" + authority + "' in state '" + state + "'", e);
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.TaskComponent#getPooledTasks(java.util.List)
      */

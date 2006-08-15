@@ -43,6 +43,7 @@ import org.alfresco.service.namespace.QName;
 public class WorkflowServiceImpl implements WorkflowService
 {
     private BPMEngineRegistry registry;
+    private WorkflowPackageComponent workflowPackageComponent;
     
 
     /**
@@ -55,13 +56,23 @@ public class WorkflowServiceImpl implements WorkflowService
         this.registry = registry;
     }
     
+    /**
+     * Sets the Workflow Package Component
+     * 
+     * @param workflowPackage  workflow package component
+     */
+    public void setWorkflowPackageComponent(WorkflowPackageComponent workflowPackageComponent)
+    {
+        this.workflowPackageComponent = workflowPackageComponent;
+    }
+    
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.workflow.WorkflowService#deployDefinition(java.lang.String, java.io.InputStream, java.lang.String)
      */
     public WorkflowDefinition deployDefinition(String engineId, InputStream workflowDefinition, String mimetype)
     {
-        WorkflowDefinitionComponent component = getWorkflowDefinitionComponent(engineId);
+        WorkflowComponent component = getWorkflowComponent(engineId);
         return component.deployDefinition(workflowDefinition, mimetype);
     }
 
@@ -70,7 +81,7 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public boolean isDefinitionDeployed(String engineId, InputStream workflowDefinition, String mimetype)
     {
-        WorkflowDefinitionComponent component = getWorkflowDefinitionComponent(engineId);
+        WorkflowComponent component = getWorkflowComponent(engineId);
         return component.isDefinitionDeployed(workflowDefinition, mimetype);
     }
 
@@ -89,7 +100,7 @@ public class WorkflowServiceImpl implements WorkflowService
     public void undeployDefinition(String workflowDefinitionId)
     {
         String engineId = BPMEngineRegistry.getEngineId(workflowDefinitionId);
-        WorkflowDefinitionComponent component = getWorkflowDefinitionComponent(engineId);
+        WorkflowComponent component = getWorkflowComponent(engineId);
         component.undeployDefinition(workflowDefinitionId);
     }
 
@@ -99,10 +110,10 @@ public class WorkflowServiceImpl implements WorkflowService
     public List<WorkflowDefinition> getDefinitions()
     {
         List<WorkflowDefinition> definitions = new ArrayList<WorkflowDefinition>(10);
-        String[] ids = registry.getWorkflowDefinitionComponents();
+        String[] ids = registry.getWorkflowComponents();
         for (String id: ids)
         {
-            WorkflowDefinitionComponent component = registry.getWorkflowDefinitionComponent(id);
+            WorkflowComponent component = registry.getWorkflowComponent(id);
             definitions.addAll(component.getDefinitions());
         }
         return Collections.unmodifiableList(definitions);
@@ -114,7 +125,7 @@ public class WorkflowServiceImpl implements WorkflowService
     public WorkflowDefinition getDefinitionById(String workflowDefinitionId)
     {
         String engineId = BPMEngineRegistry.getEngineId(workflowDefinitionId);
-        WorkflowDefinitionComponent component = getWorkflowDefinitionComponent(engineId);
+        WorkflowComponent component = getWorkflowComponent(engineId);
         return component.getDefinitionById(workflowDefinitionId);
     }
 
@@ -254,25 +265,9 @@ public class WorkflowServiceImpl implements WorkflowService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.workflow.WorkflowService#createPackage(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
      */
-    public NodeRef createPackage(String workflowDefinitionId, NodeRef container)
+    public NodeRef createPackage(NodeRef container)
     {
-        // TODO
-        throw new UnsupportedOperationException();
-    }
-    
-    /**
-     * Gets the Workflow Definition Component registered against the specified BPM Engine Id
-     * 
-     * @param engineId  engine id
-     */
-    private WorkflowDefinitionComponent getWorkflowDefinitionComponent(String engineId)
-    {
-        WorkflowDefinitionComponent component = registry.getWorkflowDefinitionComponent(engineId);
-        if (component == null)
-        {
-            throw new WorkflowException("Workflow Definition Component for engine id '" + engineId + "' is not registered");
-        }
-        return component;
+        return workflowPackageComponent.createPackage(container);
     }
     
     /**

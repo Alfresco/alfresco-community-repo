@@ -25,9 +25,12 @@
 
 #include <vector>
 #include <algorithm>
+
 #include "util\Exception.h"
 #include "util\String.h"
 #include "util\DataBuffer.h"
+
+#include "alfresco\Desktop.hpp"
 
 //	Classes defined in this header file
 
@@ -35,7 +38,9 @@ namespace Alfresco {
 	class AlfrescoInterface;
 	class AlfrescoFileInfo;
 	class AlfrescoFileInfoList;
+	class AlfrescoActionInfo;
 	typedef std::auto_ptr<AlfrescoFileInfo> PTR_AlfrescoFileInfo;
+	typedef std::auto_ptr<AlfrescoActionInfo> PTR_AlfrescoActionInfo;
 }
 
 // Constants
@@ -44,10 +49,12 @@ namespace Alfresco {
 
 	// Alfresco I/O control codes
 
-	#define FSCTL_ALFRESCO_PROBE	CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
-	#define FSCTL_ALFRESCO_FILESTS 	CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 0x801, METHOD_BUFFERED, FILE_ANY_ACCESS)
-	#define FSCTL_ALFRESCO_CHECKOUT	CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 0x802, METHOD_BUFFERED, FILE_WRITE_DATA)
-	#define FSCTL_ALFRESCO_CHECKIN	CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 0x803, METHOD_BUFFERED, FILE_WRITE_DATA)
+	#define FSCTL_ALFRESCO_PROBE			CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
+	#define FSCTL_ALFRESCO_FILESTS 			CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 0x801, METHOD_BUFFERED, FILE_ANY_ACCESS)
+	// Version 1 FSCTL_ALFRESCO_CHECKOUT - 0x802
+	// Version 1 FSCTL_ALFRESCO_CHECKIN  - 0x803
+	#define FSCTL_ALFRESCO_GETACTIONINFO	CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 0x804, METHOD_BUFFERED, FILE_WRITE_DATA)
+	#define FSCTL_ALFRESCO_RUNACTION		CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 0x805, METHOD_BUFFERED, FILE_WRITE_DATA)
 
 	// Request signature bytes
 
@@ -68,6 +75,9 @@ namespace Alfresco {
 	#define StsAccessDenied     3
 	#define StsBadParameter		4
 	#define StsNotWorkingCopy	5
+	#define StsNoSuchAction		6
+	#define StsLaunchURL		7
+	#define StsCommandLine		8
 
 	// Boolean field values
 
@@ -86,6 +96,26 @@ namespace Alfresco {
 	#define LockNone            0
 	#define LockRead            1
 	#define LockWrite           2
+
+	// Desktop action attributes
+
+	#define AttrTargetFiles		0x0001
+	#define AttrTargetFolders	0x0002
+	#define AttrClientFiles		0x0004
+	#define AttrClientFolders	0x0008
+	#define AttrAlfrescoFiles	0x0010
+	#define AttrAlfrescoFolders 0x0020
+	#define	AttrMultiplePaths	0x0040
+
+	#define AttrAnyFiles		(AttrTargetFiles + AttrClientFiles + AttrAlfrescoFiles)
+	#define AttrAnyFolders		(AttrTargetFolders + AttrClientFolders + AttrAlfrescoFolders)
+	#define AttrAnyFilesFolders (AttrAnyFiles + AttrAnyFolders)
+
+	// Desktop action pre-processing actions
+
+	#define PreCopyToTarget			0x0001
+	#define	PreConfirmAction		0x0002
+	#define PreLocalToWorkingCopy	0x0004
 }
 
 // Define Alfresco interface exceptions
@@ -122,17 +152,21 @@ public:
 
 	bool isAlfrescoFolder( void);
 
+	// Return the protocol version of the server
+
+	inline const unsigned int isProtocolVersion( void) const { return m_protocolVersion; }
+
 	// Return the Alfresco file information for a file/folder within the current folder
 
 	PTR_AlfrescoFileInfo getFileInformation(const wchar_t* fileName);
 
-	// Check in a working copy file
+	// Get action information, map the executable name to a server action
 
-	void checkIn( const wchar_t* fileName, bool keepCheckedOut = false);
+	AlfrescoActionInfo getActionInformation(const wchar_t* exeName);
 
-	// Check out a file
+	// Run a desktop action and return the server response
 
-	void checkOut( const wchar_t* fileName, String& workingCopy);
+	DesktopResponse runAction(AlfrescoActionInfo& action, DesktopParams& params);
 
 private:
 	// Send an I/O control request, receive and validate the response
@@ -160,6 +194,9 @@ private:
 
 	HANDLE m_handle;
 
+	// Protocol version
+
+	unsigned int m_protocolVersion;
 };
 
 /**
@@ -290,6 +327,84 @@ private:
 	//	List of file information objects
 
 	std::vector<AlfrescoFileInfo*>	m_list;
+};
+
+/**
+ * Alfresco Action Info Class
+ */
+class Alfresco::AlfrescoActionInfo {
+public:
+	//  Default constructor
+
+	AlfrescoActionInfo(void);
+
+	//	Class constructor
+
+	AlfrescoActionInfo( const String& name, const unsigned int attr, const unsigned int preActions);
+
+	// Return the action name, pseudo file name
+
+	inline const String& getName(void) const { return m_name; }
+	inline const String& getPseudoName(void) const { return m_pseudoName; }
+
+	// Return the action attributes, action pre-processing flags
+
+	inline unsigned int getAttributes(void) const { return m_attributes; }
+	inline unsigned int getPreProcessActions(void) const { return m_clientPreActions; }
+
+	// Check if the action has the specifed attribute/pre-processing action
+
+	inline bool hasAttribute(const unsigned int attr) const { return (m_attributes & attr) != 0 ? true : false; }
+	inline bool hasPreProcessAction(const unsigned int pre) const { return (m_clientPreActions & pre) != 0 ? true : false; }
+
+	// Check if the confirmation message is valid, return the confirmation message
+
+	inline bool hasConfirmationMessage(void) const { return m_confirmMsg.length() > 0 ? true : false; }
+	inline const String& getConfirmationMessage(void) const { return m_confirmMsg; }
+
+	// Check if the action supports file or folder paths
+
+	inline bool supportsFiles(void) const { return hasAttribute(AttrTargetFiles+AttrClientFiles+AttrAlfrescoFiles); }
+	inline bool supportsFolders(void) const { return hasAttribute(AttrTargetFolders+AttrClientFolders+AttrAlfrescoFolders); }
+
+	// Set the action name, pseudo name, set the confirmation message
+
+	inline void setName(const String& name) { m_name = name; }
+	inline void setPseudoName(const String& pseudo) { m_pseudoName = pseudo; }
+	inline void setConfirmationMessage(const String& msg) { m_confirmMsg = msg; }
+
+	// Set the action attributes and pre-processing actions
+
+	inline void setAttributes(const unsigned int attr) { m_attributes = attr; }
+	inline void setPreProcessActions(const unsigned int pre) { m_clientPreActions = pre; }
+
+	// Return the action information as a string
+
+	const String toString(void) const;
+
+	// Assignment operator
+
+	AlfrescoActionInfo& operator=( const AlfrescoActionInfo& actionInfo);
+
+private:
+	// Instance variables
+	//
+	// Action name
+
+	String m_name;
+
+	// Pseudo file name
+
+	String m_pseudoName;
+
+	// Action attributes and pre-processing flags
+
+	unsigned int m_attributes;
+	unsigned int m_clientPreActions;
+
+	// Action confirmation message
+
+	String m_confirmMsg;
 };
 
 #endif

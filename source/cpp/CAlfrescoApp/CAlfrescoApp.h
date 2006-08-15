@@ -26,6 +26,7 @@
 // Includes
 
 #include "alfresco\Alfresco.hpp"
+#include "alfresco\Desktop.hpp"
 
 using namespace Alfresco;
 
@@ -49,10 +50,15 @@ public:
 private:
 	// Main Alfresco interface functions
 
-	bool doFolderStatus( AlfrescoInterface& alfresco, const wchar_t* fileSpec = L"*.*");
-	bool doCheckInOut( AlfrescoInterface& alfresco, StringList& files);
-	bool doCheckIn( AlfrescoInterface& alfresco, PTR_AlfrescoFileInfo& fileInfo);
-	bool doCheckOut( AlfrescoInterface& alfresco, PTR_AlfrescoFileInfo& fileInfo);
+	bool buildDesktopParameters( AlfrescoInterface& alfresco, StringList& paths, AlfrescoActionInfo& actionInfo, DesktopParams& params);
+
+	// Copy files/folders using the Windows shell
+
+	bool copyFilesUsingShell(const String& fromPath, const String& toPath, bool& aborted);
+
+	// Run the action
+
+	bool runAction( AlfrescoInterface& alfresco, StringList& pathList, AlfrescoActionInfo& actionInfo);
 };
 
 extern CCAlfrescoAppApp theApp;

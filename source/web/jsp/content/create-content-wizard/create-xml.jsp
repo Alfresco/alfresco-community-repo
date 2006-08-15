@@ -51,3 +51,29 @@ final InstanceData instanceData = new InstanceData() {
 };
 tim.generate(instanceData, tt, out);
 %>
+<script type="text/javascript">
+dojo.addOnLoad(function()
+{
+//alert('foo');
+var b = document.getElementById("wizard:next-button");
+var baseOnClick = b.onclick;
+b.onclick = function()
+{
+ if (!document.submitTrigger.done)
+ {
+   document.submitTrigger.buttonClick(); 
+   return false;
+ }
+ else
+ {	
+   return baseOnClick();
+ }
+}
+});
+function doSubmit()
+{
+var b = document.getElementById("wizard:next-button");
+b.click();
+}
+	
+</script>

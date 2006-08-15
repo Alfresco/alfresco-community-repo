@@ -9,6 +9,30 @@ dojo.require("dojo.html.style");
 dojo.hostenv.writeIncludes();
 dojo.addOnLoad(xforms_init);
 
+//dojo.provide("alfresco.xforms.textarea");
+//
+//dojo.declare("alfresco.xforms.Widget",
+//	     null,
+//	     function(node) 
+//	     {
+//	       this.node = node;
+//	     },
+//	     id: "",
+//	     isRequired: function()
+//	     {
+//	     },
+//	     getInitialValue: function()
+//	     {
+//	     });
+//
+//dojo.declae("alfresco.xforms.TextArea",
+//	     alfresco.xforms.Widget,
+//	     function() { },
+//	     
+//{
+//  alert(element);
+//}
+
 var bindings = {};
 var xform = null;
 function xforms_init()
@@ -93,6 +117,7 @@ function load_body(body, ui_element_stack)
 	ui_element_stack.pop();
       break;
     case "xforms:textarea":
+      //      new alfresco.xforms.textarea(o);
       var row = document.createElement("tr");
       ui_element_stack[ui_element_stack.length - 1].appendChild(row);
 
@@ -340,6 +365,9 @@ function load_body(body, ui_element_stack)
 				       caption: "submit" 
 				       }, 
 				       nodeRef);
+      w.hide();
+      document.submitTrigger = w;
+      document.submitTrigger.done = false;
       w.onClick = function()
       {
 	fireAction(w.widgetId);
@@ -449,7 +477,8 @@ function fireAction(id)
   mimetype: "text/xml",
   load: function(type, data, evt)
   {
-      //    alert("fired action " + id);
+      document.submitTrigger.done = true;
+      doSubmit();
   },
   error: function(type, e)
   {

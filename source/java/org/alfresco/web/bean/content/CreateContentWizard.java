@@ -36,7 +36,6 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.templating.*;
-import org.alfresco.web.bean.ajax.XFormsBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -46,7 +45,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import java.io.OutputStreamWriter;
 import org.alfresco.web.app.servlet.FacesHelper;
-import org.chiba.xml.xforms.exception.XFormsException;
 
 /**
  * Bean implementation for the "Create Content Wizard" dialog

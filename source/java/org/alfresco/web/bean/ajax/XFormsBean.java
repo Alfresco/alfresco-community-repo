@@ -103,17 +103,8 @@ public class XFormsBean
 	LOGGER.debug(this + " building xform");
 	final FacesContext context = FacesContext.getCurrentInstance();
 	final ResponseWriter out = context.getResponseWriter();
-	
 	final Map requestParameters = context.getExternalContext().getRequestParameterMap();
-	//	    final String templateTypeName = (String)requestParameters.get("template_type_name");
-	
-	LOGGER.debug("building xform for " + this.tt.getName()); 	    //templateTypeName);
-	
-	//	    final TemplatingService ts = TemplatingService.getInstance();
-	//	    final TemplateType tt = ts.getTemplateType(templateTypeName);
-	//	    final XFormsInputMethod tim = (XFormsInputMethod)
-	//		tt.getInputMethods().get(0);
-	//	    final Document form = tim.getXForm(tt);
+	LOGGER.debug("building xform for " + this.tt.getName());
 	final Node form = this.chibaBean.getXMLContainer();
 	final TemplatingService ts = TemplatingService.getInstance();
 	ts.writeXML(form, out);

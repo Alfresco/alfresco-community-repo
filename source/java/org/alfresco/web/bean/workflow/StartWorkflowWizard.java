@@ -1,6 +1,5 @@
 package org.alfresco.web.bean.workflow;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,18 +9,14 @@ import java.util.ResourceBundle;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.apache.commons.logging.Log;
@@ -74,7 +69,8 @@ public class StartWorkflowWizard extends BaseWizardBean
          logger.debug("Starting workflow with params: " + this.startTaskNode.getProperties());
       
       // start the workflow to get access to the start task
-      WorkflowPath path = this.workflowService.startWorkflow(this.selectedWorkflow, prepareTaskParams());
+      WorkflowPath path = this.workflowService.startWorkflow(this.selectedWorkflow, 
+            WorkflowBean.prepareWorkItemParams(this.startTaskNode));
       if (path != null)
       {
          // extract the start task
@@ -238,49 +234,5 @@ public class StartWorkflowWizard extends BaseWizardBean
    public void setWorkflowService(WorkflowService workflowService)
    {
       this.workflowService = workflowService;
-   }
-   
-   protected Map<QName, Serializable> prepareTaskParams()
-   {
-      Map<QName, Serializable> params = new HashMap<QName, Serializable>();
-      
-      // marshal the properties and associations captured by the property sheet
-      // back into a Map to pass to the workflow service
-
-      // go through all the properties in the transient node and add them to
-      // params map
-      Map<String, Object> props = this.startTaskNode.getProperties();
-      for (String propName : props.keySet())
-      {
-         QName propQName = Repository.resolveToQName(propName);
-         params.put(propQName, (Serializable)props.get(propName));
-      }
-      
-      // go through any associations that have been added to the start task
-      // and build a list of NodeRefs representing the targets
-      Map<String, Map<String, AssociationRef>> assocs = this.startTaskNode.getAddedAssociations();
-      for (String assocName : assocs.keySet())
-      {
-         QName assocQName = Repository.resolveToQName(assocName);
-         
-         // get the associations added and create list of targets
-         Map<String, AssociationRef> addedAssocs = assocs.get(assocName);
-         List<NodeRef> targets = new ArrayList<NodeRef>(addedAssocs.size());
-         for (AssociationRef assoc : addedAssocs.values())
-         {
-            targets.add(assoc.getTargetRef());
-         }
-         
-         // add the targets for this particular association
-         params.put(assocQName, (Serializable)targets);
-      }
-      
-      //      String reviewer = (String)this.startTaskNode.getProperties().get(
-//            ContentModel.PROP_NAME);
-//      Map<QName, Serializable> params = new HashMap<QName, Serializable>(1);
-//      params.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), reviewer);
-
-      
-      return params;
    }
 }

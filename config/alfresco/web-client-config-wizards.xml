@@ -182,31 +182,6 @@
             </step>
          </wizard>
          
-         <wizard name="startWorkflow" managed-bean="StartWorkflowWizard"
-                 title-id="start_workflow_wizard" description-id="start_workflow_desc"
-                 icon="/images/icons/users_large.gif">
-            <step name="choose-workflow" title-id="step_choose_workflow" 
-                  description-id="start_workflow_choose_desc">
-               <page path="/jsp/workflow/start-workflow-wizard/choose-workflow.jsp" 
-                     title-id="start_workflow_choose_title" 
-                     description-id="start_workflow_choose_desc" 
-                     instruction-id="default_instruction" />
-            </step>
-            <step name="options" title-id="step_workflow_options"
-                  description-id="start_workflow_options_desc">
-               <page path="/jsp/workflow/start-workflow-wizard/workflow-options.jsp" 
-                     title-id="start_workflow_options_title"
-                     description-id="start_workflow_options_desc"
-                     instruction-id="default_instruction" />
-            </step>
-            <step name="summary" title-id="summary" description-id="summary_step_description">
-               <page path="/jsp/wizard/summary.jsp"
-                     title-id="summary" 
-                     description-id="summary_desc" 
-                     instruction-id="start_workflow_finish_instruction" />
-            </step>
-         </wizard>
-         
       </wizards>
    </config>
    

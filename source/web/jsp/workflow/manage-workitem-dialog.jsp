@@ -1,5 +1,5 @@
 <%--
-  Copyright (C) 2006 Alfresco, Inc.
+  Copyright (C) 2005 Alfresco, Inc.
  
   Licensed under the Mozilla Public License version 1.1 
   with a permitted attribution clause. You may obtain a
@@ -19,4 +19,5 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<h:graphicImage value="/jsp/dashboards/dashlets/my-tasks-todo.png" />
+<r:propertySheetGrid id="work-item-props" value="#{DialogManager.bean.workItemNode}" 
+                     var="workItemProps" columns="1" externalConfig="true" />

@@ -188,14 +188,14 @@
             <dashlet id="getting-started" label-id="dashlet_gettingstarted_label"
                   description-id="dashlet_gettingstarted_desc"
                   jsp="/jsp/dashboards/dashlets/getting-started.jsp" allow-narrow="false" />
+            <dashlet id="workitems-todo" label-id="my_workitems_todo_title" description-id="my_workitems_todo_desc"
+                  jsp="/jsp/workflow/workitems-todo-dashlet.jsp" allow-narrow="false" />
             <!-- TEMP! -->
+            <dashlet id="process-list" label="Workflows" description="List of workflows you may start"
+                  jsp="/jbpm/process_list.jsp" allow-narrow="true" />
             <dashlet id="my-docs-template" label="My Documents"
                   description="My Documents Template Page"
                   jsp="/jsp/dashboards/dashlets/my-docs.jsp" allow-narrow="true" />
-            <dashlet id="task-list" label="My Tasklist To-do" description="List of your tasks still to complete"
-                  jsp="/jbpm/task_list.jsp" allow-narrow="true" />
-            <dashlet id="process-list" label="Workflows" description="List of workflows you may start"
-                  jsp="/jbpm/process_list.jsp" allow-narrow="true" />
             <dashlet id="task-list-complete" label="My Tasks Completed" description="List of your completed tasks"
                   jsp="/jsp/dashboards/dashlets/tasklist-completed.jsp" allow-narrow="false" />
             <dashlet id="content-checkedout" label="My Checkedout Content" description="List of the content checked out to you"

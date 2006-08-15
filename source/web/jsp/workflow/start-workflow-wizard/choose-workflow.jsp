@@ -19,7 +19,7 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<h:panelGrid columns="1" style="border: 1px solid #676767; background-color: #efefef; padding: 6px;">
+<h:panelGrid columns="1" style="border: 1px solid #676767; background-color: #efefef; padding: 6px 12px 12px 6px;">
    <h:outputText value="#{msg.available_workflows}:"/>
    <h:selectOneRadio id="selected-workflow" value="#{WizardManager.bean.selectedWorkflow}" 
                      layout="pageDirection">

@@ -1737,6 +1737,10 @@
          <property-name>namespaceService</property-name>
          <value>#{NamespaceService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -1771,6 +1775,16 @@
          <property-name>namespaceService</property-name>
          <value>#{NamespaceService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <managed-bean-name>WorkflowBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.workflow.WorkflowBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>workflowService</property-name>
          <value>#{WorkflowService}</value>

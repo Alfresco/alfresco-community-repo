@@ -4,6 +4,18 @@
    <!-- Properties -->
    <!--            -->
    
+   <config evaluator="node-type" condition="bpm:workflowTask">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" ignore-if-missing="false" read-only="true" />
+         <show-property name="bpm:dueDate" ignore-if-missing="false" />
+         <!-- Need to show a text field not a drop down even though there are constraints!
+         <show-property name="bpm:status" ignore-if-missing="false" />  -->
+         <!-- Need to make sure that we can handle int/long based constraints!
+         <show-property name="bpm:priority" ignore-if-missing="false" /> -->
+      </property-sheet>
+   </config>
+   
    <config evaluator="node-type" condition="wf:submitReviewTask">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
@@ -29,12 +41,66 @@
             </params>
          </action>
          
-         <!-- 
+         <action id="reassign-workflow">
+            <label-id>reassign</label-id>
+            <image>/images/icons/create_forum.gif</image>
+            <action>null</action>
+         </action>
+         
          <action-group id="document_browse_menu">
             <action idref="start-workflow" />
          </action-group>
-         -->
+         
+         <action-group id="workitem_actions">
+            <action idref="reassign-workflow" />
+         </action-group>
       </actions>
+   </config>
+   
+   <!--         -->
+   <!-- Wizards -->
+   <!--         -->
+   
+   <config>
+      <wizards>
+         <wizard name="startWorkflow" managed-bean="StartWorkflowWizard"
+                 title-id="start_workflow_wizard" description-id="start_workflow_desc"
+                 icon="/images/icons/users_large.gif">
+            <step name="choose-workflow" title-id="step_choose_workflow" 
+                  description-id="start_workflow_choose_desc">
+               <page path="/jsp/workflow/start-workflow-wizard/choose-workflow.jsp" 
+                     title-id="start_workflow_choose_title" 
+                     description-id="start_workflow_choose_desc" 
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="options" title-id="step_workflow_options"
+                  description-id="start_workflow_options_desc">
+               <page path="/jsp/workflow/start-workflow-wizard/workflow-options.jsp" 
+                     title-id="start_workflow_options_title"
+                     description-id="start_workflow_options_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary" 
+                     description-id="summary_desc" 
+                     instruction-id="start_workflow_finish_instruction" />
+            </step>
+         </wizard>
+      </wizards>
+   </config>
+   
+   <!--         -->
+   <!-- Dialogs -->
+   <!--         -->
+   
+   <config>
+      <dialogs>
+         <dialog name="manageWorkItem" page="/jsp/workflow/manage-workitem-dialog.jsp"
+                 managed-bean="ManageWorkItemDialog" icon="/images/icons/create_space_large.gif" 
+                 title-id="manage_workitem_title" description-id="manage_workitem_desc" 
+                 actions-config-id="workitem_actions" />
+      </dialogs>
    </config>
    
 </alfresco-config>

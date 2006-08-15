@@ -20,6 +20,7 @@ import org.alfresco.util.GUID;
  * This type of node is typically used to drive the property sheet when data collection
  * is required for a type but the node does not need to be stored in the repository. An
  * example use is the workflow, transient nodes are used to collect workitem metadata.
+ * </p>
  * 
  * @author gavinc
  */
@@ -33,6 +34,7 @@ public class TransientNode extends Node
     * NOTE: The name is NOT automatically added to the map of properties,
     * if you need the name of this node to be in the map then add it to
     * the map passed in to this constructor.
+    * </p>
     * 
     * @param type The type this node will represent
     * @param name The name of the node

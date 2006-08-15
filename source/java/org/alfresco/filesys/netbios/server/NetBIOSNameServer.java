@@ -43,10 +43,6 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
 {
     private static final Log logger = LogFactory.getLog("org.alfresco.smb.protocol.netbios");
 
-    // Server version
-
-    private static final String ServerVersion = "3.5.0";
-
     // Various NetBIOS packet sizes
 
     public static final int AddNameSize = 256;
@@ -700,11 +696,6 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
      */
     private final void commonConstructor() throws SocketException
     {
-
-        // Set the server version
-
-        setVersion(ServerVersion);
-
         // Allocate the local and remote name tables
 
         m_localNames = new Vector<NetBIOSName>();

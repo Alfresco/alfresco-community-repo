@@ -19,7 +19,7 @@
                  description-id="editspace_description" />
          
          <!-- Definition of the delete space dialog -->
-         <dialog name="deleteSpace" page="/jsp/dialog/delete.jsp" managed-bean="DeleteSpaceDialog" 
+         <dialog name="deleteSpace" page="/jsp/dialog/delete-space.jsp" managed-bean="DeleteSpaceDialog" 
                  icon="/images/icons/delete_large.gif" title-id="delete_space" 
                  description-id="delete_space_info" />
          

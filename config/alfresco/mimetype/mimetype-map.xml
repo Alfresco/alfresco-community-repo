@@ -138,6 +138,9 @@
             <extension>jpeg</extension>
             <extension>jpe</extension>
          </mimetype>
+         <mimetype mimetype="image/svg" display="Scalable Vector Graphics Image">
+            <extension>svg</extension>
+         </mimetype>
          <mimetype mimetype="application/x-javascript" display="Java Script">
             <extension>js</extension>
          </mimetype>

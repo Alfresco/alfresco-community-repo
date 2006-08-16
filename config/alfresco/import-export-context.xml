@@ -260,6 +260,7 @@
                 <prop key="spaces.templates.childname">${spaces.templates.childname}</prop>
                 <prop key="spaces.templates.content.childname">${spaces.templates.content.childname}</prop>
                 <prop key="spaces.templates.email.childname">${spaces.templates.email.childname}</prop>
+                <prop key="spaces.templates.rss.childname">${spaces.templates.rss.childname}</prop>
                 <prop key="spaces.savedsearches.childname">${spaces.savedsearches.childname}</prop>
                 <prop key="spaces.scripts.childname">${spaces.scripts.childname}</prop>
             </props>

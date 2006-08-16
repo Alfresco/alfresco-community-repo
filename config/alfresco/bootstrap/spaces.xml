@@ -45,6 +45,19 @@
                   <cm:title>${spaces.templates.email.name}</cm:title>
                   <cm:description>${spaces.templates.email.description}</cm:description>
                </cm:folder>
+               <cm:folder view:childName="${spaces.templates.rss.childname}">
+                  <view:acl>
+                     <view:ace view:access="ALLOWED">
+                        <view:authority>guest</view:authority>
+                        <view:permission>Consumer</view:permission>
+                     </view:ace>
+                  </view:acl>
+                  <app:uifacets />
+                  <cm:name>${spaces.templates.rss.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.templates.rss.name}</cm:title>
+                  <cm:description>${spaces.templates.rss.description}</cm:description>
+               </cm:folder>
                <cm:folder view:childName="${spaces.savedsearches.childname}">
                   <view:acl view:inherit="false">
                      <view:ace view:access="ALLOWED">

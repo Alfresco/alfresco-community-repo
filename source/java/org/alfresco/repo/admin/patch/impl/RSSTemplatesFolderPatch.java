@@ -39,7 +39,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.core.io.ClassPathResource;
 
 /**
- * Ensures that the <b>scripts</b> folder is present.
+ * Ensures that the <b>RSS Templates</b> folder is present.
  * <p>
  * This uses the bootstrap importer to get the paths to look for.  If not present,
  * the required structures are created.
@@ -51,16 +51,16 @@ import org.springframework.core.io.ClassPathResource;
  * 
  * @author Kevin Roast
  */
-public class ScriptsFolderPatch extends AbstractPatch
+public class RSSTemplatesFolderPatch extends AbstractPatch
 {
-    private static final String MSG_EXISTS = "patch.scriptsFolder.result.exists";
-    private static final String MSG_CREATED = "patch.scriptsFolder.result.created";
+    private static final String MSG_EXISTS = "patch.rssTemplatesFolder.result.exists";
+    private static final String MSG_CREATED = "patch.rssTemplatesFolder.result.created";
     
     public static final String PROPERTY_COMPANY_HOME_CHILDNAME = "spaces.company_home.childname";
     public static final String PROPERTY_DICTIONARY_CHILDNAME = "spaces.dictionary.childname";
-    public static final String PROPERTY_SCRIPTS_FOLDER_CHILDNAME = "spaces.scripts.childname";
-    private static final String PROPERTY_SCRIPTS_FOLDER_NAME = "spaces.scripts.name";
-    private static final String PROPERTY_SCRIPTS_FOLDER_DESCRIPTION = "spaces.scripts.description";
+    public static final String PROPERTY_RSS_FOLDER_CHILDNAME = "spaces.templates.rss.childname";
+    private static final String PROPERTY_RSS_FOLDER_NAME = "spaces.templates.rss.name";
+    private static final String PROPERTY_RSS_FOLDER_DESCRIPTION = "spaces.templates.rss.description";
     private static final String PROPERTY_ICON = "space-icon-default";
     
     private ImporterBootstrap importerBootstrap;
@@ -69,9 +69,9 @@ public class ScriptsFolderPatch extends AbstractPatch
     
     protected NodeRef dictionaryNodeRef;
     protected Properties configuration;
-    protected NodeRef scriptsFolderNodeRef;
+    protected NodeRef rssFolderNodeRef;
     
-    private String scriptsACP;
+    private String rssTemplatesACP;
     
     public void setImporterBootstrap(ImporterBootstrap importerBootstrap)
     {
@@ -88,9 +88,9 @@ public class ScriptsFolderPatch extends AbstractPatch
         this.messageSource = messageSource;
     }
 
-    public void setScriptsACP(String scriptsACP)
+    public void setRssTemplatesACP(String rssTemplatesACP)
     {
-        this.scriptsACP = scriptsACP;
+        this.rssTemplatesACP = rssTemplatesACP;
     }
 
    /**
@@ -113,7 +113,7 @@ public class ScriptsFolderPatch extends AbstractPatch
         {
             throw new PatchException("'nodeService' property has not been set");
         }
-        checkPropertyNotNull(scriptsACP, "scriptsACP");
+        checkPropertyNotNull(rssTemplatesACP, "rssTemplatesACP");
     }
     
     /**
@@ -142,10 +142,10 @@ public class ScriptsFolderPatch extends AbstractPatch
         {
             throw new PatchException("Bootstrap property '" + PROPERTY_DICTIONARY_CHILDNAME + "' is not present");
         }
-        String scriptsChildName = configuration.getProperty(PROPERTY_SCRIPTS_FOLDER_CHILDNAME);
-        if (scriptsChildName == null || scriptsChildName.length() == 0)
+        String rssChildName = configuration.getProperty(PROPERTY_RSS_FOLDER_CHILDNAME);
+        if (rssChildName == null || rssChildName.length() == 0)
         {
-            throw new PatchException("Bootstrap property '" + PROPERTY_SCRIPTS_FOLDER_CHILDNAME + "' is not present");
+            throw new PatchException("Bootstrap property '" + PROPERTY_RSS_FOLDER_CHILDNAME + "' is not present");
         }
         
         // build the search string to get the dictionary node
@@ -171,8 +171,8 @@ public class ScriptsFolderPatch extends AbstractPatch
         }
         this.dictionaryNodeRef = nodeRefs.get(0);
         
-        // Now we have the optional part.  Check for the existence of the scripts folder
-        xpath = scriptsChildName;
+        // Now we have the optional part - check for the existence of the RSS Templates folder
+        xpath = rssChildName;
         nodeRefs = searchService.selectNodes(dictionaryNodeRef, xpath, null, namespaceService, false);
         if (nodeRefs.size() > 1)
         {
@@ -184,12 +184,12 @@ public class ScriptsFolderPatch extends AbstractPatch
         else if (nodeRefs.size() == 0)
         {
             // the node does not exist
-            this.scriptsFolderNodeRef = null;
+            this.rssFolderNodeRef = null;
         }
         else
         {
-            // we have the scripts folder noderef
-            this.scriptsFolderNodeRef = nodeRefs.get(0);
+            // we have the RSS Templates folder noderef
+            this.rssFolderNodeRef = nodeRefs.get(0);
         }
     }
     
@@ -207,7 +207,7 @@ public class ScriptsFolderPatch extends AbstractPatch
         setUp();
         
         String msg = null;
-        if (scriptsFolderNodeRef == null)
+        if (rssFolderNodeRef == null)
         {
             // create it
             createFolder();
@@ -224,12 +224,12 @@ public class ScriptsFolderPatch extends AbstractPatch
                authenticationComponent.clearCurrentSecurityContext();
             }
             
-            msg = I18NUtil.getMessage(MSG_CREATED, scriptsFolderNodeRef);
+            msg = I18NUtil.getMessage(MSG_CREATED, rssFolderNodeRef);
         }
         else
         {
             // it already exists
-            msg = I18NUtil.getMessage(MSG_EXISTS, scriptsFolderNodeRef);
+            msg = I18NUtil.getMessage(MSG_EXISTS, rssFolderNodeRef);
         }
         // done
         return msg;
@@ -238,30 +238,30 @@ public class ScriptsFolderPatch extends AbstractPatch
     private void createFolder()
     {
         // get required properties
-        String scriptsChildName = configuration.getProperty(PROPERTY_SCRIPTS_FOLDER_CHILDNAME);
-        if (scriptsChildName == null)
+        String rssChildName = configuration.getProperty(PROPERTY_RSS_FOLDER_CHILDNAME);
+        if (rssChildName == null)
         {
-            throw new PatchException("Bootstrap property '" + PROPERTY_SCRIPTS_FOLDER_CHILDNAME + "' is not present");
+            throw new PatchException("Bootstrap property '" + PROPERTY_RSS_FOLDER_CHILDNAME + "' is not present");
         }
         
         String folderName = messageSource.getMessage(
-                PROPERTY_SCRIPTS_FOLDER_NAME,
+                PROPERTY_RSS_FOLDER_NAME,
                 null,
                 I18NUtil.getLocale());
         if (folderName == null || folderName.length() == 0)
         {
-            throw new PatchException("Bootstrap property '" + PROPERTY_SCRIPTS_FOLDER_NAME + "' is not present");
+            throw new PatchException("Bootstrap property '" + PROPERTY_RSS_FOLDER_NAME + "' is not present");
         }
 
         String folderDescription = messageSource.getMessage(
-                PROPERTY_SCRIPTS_FOLDER_DESCRIPTION,
+                PROPERTY_RSS_FOLDER_DESCRIPTION,
                 null,
                 I18NUtil.getLocale());
         if (folderDescription == null || folderDescription.length() == 0)
         {
-            throw new PatchException("Bootstrap property '" + PROPERTY_SCRIPTS_FOLDER_DESCRIPTION + "' is not present");
+            throw new PatchException("Bootstrap property '" + PROPERTY_RSS_FOLDER_DESCRIPTION + "' is not present");
         }
-
+        
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(7);
         properties.put(ContentModel.PROP_NAME, folderName);
         properties.put(ContentModel.PROP_TITLE, folderName);
@@ -272,21 +272,21 @@ public class ScriptsFolderPatch extends AbstractPatch
         ChildAssociationRef childAssocRef = nodeService.createNode(
                 dictionaryNodeRef,
                 ContentModel.ASSOC_CONTAINS,
-                QName.resolveToQName(namespaceService, scriptsChildName),
+                QName.resolveToQName(namespaceService, rssChildName),
                 ContentModel.TYPE_FOLDER,
                 properties);
-        scriptsFolderNodeRef = childAssocRef.getChildRef();
+        this.rssFolderNodeRef = childAssocRef.getChildRef();
         
         // finally add the required aspects
-        nodeService.addAspect(scriptsFolderNodeRef, ContentModel.ASPECT_UIFACETS, null);
+        nodeService.addAspect(rssFolderNodeRef, ContentModel.ASPECT_UIFACETS, null);
     }
     
     private void importContent() throws IOException
     {
         // import the content
-        ClassPathResource acpResource = new ClassPathResource(this.scriptsACP);
+        ClassPathResource acpResource = new ClassPathResource(this.rssTemplatesACP);
         ACPImportPackageHandler acpHandler = new ACPImportPackageHandler(acpResource.getFile(), null);
-        Location importLocation = new Location(this.scriptsFolderNodeRef);
+        Location importLocation = new Location(this.rssFolderNodeRef);
         importerService.importView(acpHandler, importLocation, null, null);
     }
 }

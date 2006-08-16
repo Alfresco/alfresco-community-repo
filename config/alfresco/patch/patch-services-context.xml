@@ -388,5 +388,23 @@
         <property name="workflowPackageImpl" ref="workflowPackageImpl"/>
     </bean>
     
+    <bean id="patch.rssTemplatesFolderPatch" class="org.alfresco.repo.admin.patch.impl.RSSTemplatesFolderPatch" parent="basePatch">
+        <property name="id"><value>patch.rssFolder</value></property>
+        <property name="description"><value>patch.rssTemplatesFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>16</value></property>
+        <property name="targetSchema"><value>17</value></property>
+        <property name="rssTemplatesACP"><value>alfresco/templates/rss_templates.acp</value></property>
+        <!-- helper beans for execution -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="messageSource">
+            <ref bean="bootstrapSpacesMessageSource" />
+        </property>
+        <property name="importerService">
+            <ref bean="importerComponent" />
+        </property>
+    </bean>
     
 </beans>

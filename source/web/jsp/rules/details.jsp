@@ -106,6 +106,16 @@
    </tr>
    <tr>
       <td colspan="2">
+         </f:verbatim>
+         <h:panelGrid columns="2">
+            <h:selectBooleanCheckbox value="#{WizardManager.bean.ruleDisabled}" />
+            <h:outputText value="#{msg.rule_disabled}" />
+         </h:panelGrid>
+         <f:verbatim>
+      </td>
+   </tr>
+   <tr>
+      <td colspan="2">
          <div id="rule-info" style="padding-left: 26px;">
             </f:verbatim>
             <h:graphicImage alt="" value="/images/icons/info_icon.gif" style="vertical-align: middle;" />

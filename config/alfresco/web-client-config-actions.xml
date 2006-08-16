@@ -480,6 +480,12 @@
             <action-listener>#{RulesBean.reapplyRules}</action-listener>
          </action>
          
+         <!-- Ignore Inherited Rules -->
+         <action id="ignore-inherited-rules">
+         	<label>#{RulesBean.ignoreInheritedRulesLabelId}</label>
+            <image>/images/icons/reapply_rules.gif</image>
+            <action-listener>#{RulesBean.ignoreInheritedRules}</action-listener>
+         </action>         
          
          <!-- the 'action-group' elements define unique blocks of actions that reference the actions
               as defined above and can override or supply display elements for the group of actions -->
@@ -622,6 +628,7 @@
          <!-- Actions Menu for Manage Rules screen -->
          <action-group id="rules_actions_menu">
          	<action idref="reapply-rules" />
+         	<action idref="ignore-inherited-rules" />
          </action-group>
          
       </actions>

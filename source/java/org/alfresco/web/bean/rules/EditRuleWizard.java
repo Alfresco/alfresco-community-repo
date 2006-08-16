@@ -52,6 +52,7 @@ public class EditRuleWizard extends CreateRuleWizard
       this.description = rule.getDescription();
       this.applyToSubSpaces = rule.isAppliedToChildren();
       this.runInBackground = rule.getExecuteAsynchronously();
+      this.ruleDisabled = rule.getRuleDisabled();
       
       FacesContext context = FacesContext.getCurrentInstance();
       

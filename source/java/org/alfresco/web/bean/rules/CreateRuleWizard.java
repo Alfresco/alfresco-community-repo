@@ -68,6 +68,7 @@ public class CreateRuleWizard extends BaseActionWizard
    protected boolean runInBackground;
    protected boolean applyToSubSpaces;
    protected boolean editingCondition;
+   protected boolean ruleDisabled;
    
    private static final Log logger = LogFactory.getLog(CreateRuleWizard.class);
 
@@ -85,6 +86,7 @@ public class CreateRuleWizard extends BaseActionWizard
       this.condition = null;
       this.applyToSubSpaces = false;
       this.runInBackground = false;
+      this.ruleDisabled = false;
       this.conditions = null;
       
       this.allConditionsProperties = new ArrayList<Map<String, Serializable>>();
@@ -192,12 +194,13 @@ public class CreateRuleWizard extends BaseActionWizard
       
       String backgroundYesNo = this.runInBackground ? bundle.getString("yes") : bundle.getString("no");
       String subSpacesYesNo = this.applyToSubSpaces ? bundle.getString("yes") : bundle.getString("no");
+      String ruleDisabledYesNo = this.ruleDisabled ? bundle.getString("yes") : bundle.getString("no");
       
       return buildSummary(
             new String[] {bundle.getString("rule_type"), bundle.getString("name"), bundle.getString("description"),
-                          bundle.getString("apply_to_sub_spaces"), bundle.getString("run_in_background"),
+                          bundle.getString("apply_to_sub_spaces"), bundle.getString("run_in_background"), bundle.getString("rule_disabled"),
                           bundle.getString("conditions"), bundle.getString("actions")},
-            new String[] {this.type, this.title, this.description, subSpacesYesNo, backgroundYesNo, 
+            new String[] {this.type, this.title, this.description, subSpacesYesNo, backgroundYesNo, ruleDisabledYesNo,
                           conditionsSummary.toString(), actionsSummary.toString()});
    }
    
@@ -456,6 +459,22 @@ public class CreateRuleWizard extends BaseActionWizard
    }
 
    /**
+    * @return Returns whether the rule is disabled or not.
+    */
+   public boolean getRuleDisabled()
+   {
+       return this.ruleDisabled;
+   }
+   
+   /**
+    * @param ruleDisabled Sets whether the rule is disabled or not
+    */
+   public void setRuleDisabled(boolean ruleDisabled)
+   {
+       this.ruleDisabled = ruleDisabled;
+   }
+   
+   /**
     * @return Returns the type.
     */
    public String getType()
@@ -668,6 +687,7 @@ public class CreateRuleWizard extends BaseActionWizard
       rule.setDescription(this.description);
       rule.applyToChildren(this.applyToSubSpaces);
       rule.setExecuteAsynchronously(this.runInBackground);
+      rule.setRuleDisabled(this.ruleDisabled);
       
       CompositeAction compositeAction = this.actionService.createCompositeAction();
       rule.setAction(compositeAction);

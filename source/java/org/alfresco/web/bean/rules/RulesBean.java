@@ -29,6 +29,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -57,6 +58,8 @@ public class RulesBean implements IContextListener
 {
    private static final String MSG_ERROR_DELETE_RULE = "error_delete_rule";
    private static final String MSG_REAPPLY_RULES_SUCCESS = "reapply_rules_success";
+   private static final String MSG_IGNORE_INHERTIED_RULES = "ignore_inherited_rules";
+   private static final String MSG_INCLUDE_INHERITED_RULES = "include_inherited_rules";
    private static final String LOCAL = "local";
    private static final String INHERITED = "inherited";
    
@@ -198,6 +201,52 @@ public class RulesBean implements IContextListener
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                fc, Repository.ERROR_GENERIC), e.getMessage()), e);
       }
+   }
+   
+   /**
+    * Gets the label id from the ignore inhertied action
+    * 
+    * @return   the message id  
+    */
+   public String getIgnoreInheritedRulesLabelId()
+   {
+       FacesContext fc = FacesContext.getCurrentInstance();
+       String result = Application.getMessage(fc, MSG_IGNORE_INHERTIED_RULES);
+       
+       if (this.nodeService.hasAspect(this.getSpace().getNodeRef(), RuleModel.ASPECT_IGNORE_INHERITED_RULES) == true)
+       {
+           result = Application.getMessage(fc, MSG_INCLUDE_INHERITED_RULES);
+       }
+       return result;
+   }
+   
+   public boolean getIgnoreInheritedRules()
+   {
+       return this.nodeService.hasAspect(this.getSpace().getNodeRef(), RuleModel.ASPECT_IGNORE_INHERITED_RULES);
+   }
+   
+   /**
+    * Action listener to ignore (or include) inherited rules.
+    * 
+    * @param event  the action event object  
+    */
+   public void ignoreInheritedRules(ActionEvent event)
+   {
+       NodeRef nodeRef = this.getSpace().getNodeRef();
+       if (this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == true)
+       {
+           this.nodeService.removeAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES);
+       }
+       else
+       {
+           this.nodeService.addAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
+       }
+       
+       // force the list to be re-queried when the page is refreshed
+       if (this.richList != null)
+       {
+          this.richList.setValue(null);
+       }
    }
    
    /**

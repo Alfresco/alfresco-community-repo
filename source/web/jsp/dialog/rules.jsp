@@ -102,7 +102,38 @@
                <tr>
                   <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_7.gif" width="4" height="9"></td>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_8.gif)"></td>
-                  <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_9.gif" width="4" height="9"></td>
+                  <td><img src="<%=request.getContextPath()%>/images/parts/whitepanel_6.gif" width="4" height="9"></td>
+               </tr>
+               
+               <%-- infomation panel --%> 
+               <tr>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width="4"></td> 
+                  <td>
+               
+	               <h:panelGroup rendered="#{RulesBean.ignoreInheritedRules}">
+	               <tr height='5'><td></td></tr>
+	               <tr>
+	                  <td>               
+					   <f:verbatim>
+					      <%PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc");%>
+					      <table><tr><td>
+					   </f:verbatim>
+					   <h:graphicImage url="/images/icons/info_icon.gif" />
+					   <f:verbatim>
+					      </td><td>
+					   </f:verbatim>
+					   <h:outputText value="#{msg.inherited_rules_being_ignored}" />
+					   <f:verbatim>
+					      </td></tr></table>
+					      <%PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner");%>
+					   </f:verbatim>
+	   				  </td>
+	               </tr>	               
+	               <tr height='5'><td></td></tr>
+	               </h:panelGroup>
+               
+                  </td>               
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width="4"></td>
                </tr>
                
                <%-- Details --%>

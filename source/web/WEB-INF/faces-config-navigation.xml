@@ -272,6 +272,10 @@
          <to-view-id>/jsp/dialog/apply-space-template.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
+         <from-outcome>applyRSSTemplate</from-outcome>
+         <to-view-id>/jsp/dialog/apply-rss-template.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
          <from-outcome>previewSpace</from-outcome>
          <to-view-id>/jsp/dialog/preview-space.jsp</to-view-id>
       </navigation-case>
@@ -282,6 +286,14 @@
       <navigation-case>
          <from-outcome>editCategories</from-outcome>
          <to-view-id>/jsp/dialog/edit-space-category.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
+      <from-view-id>/jsp/dialog/apply-rss-template.jsp</from-view-id>
+         <navigation-case>
+         <from-outcome>manageInvitedUsers</from-outcome>
+         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

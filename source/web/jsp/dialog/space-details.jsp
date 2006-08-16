@@ -108,8 +108,8 @@
                               <h:panelGroup id="dashboard-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write" id="evalChange">
-                                       <a:actionLink id="actModify" value="#{msg.modify}" action="applyTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
-                                       <a:actionLink id="actRemove" value="#{msg.remove}" action="#{SpaceDetailsBean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
+                                       <a:actionLink id="actModify" value="#{msg.modify}" action="dialog:applyTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
+                                       <a:actionLink id="actRemove" value="#{msg.remove}" actionListener="#{SpaceDetailsBean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
                                     </r:permissionEvaluator>
                                  </f:facet>
                               </h:panelGroup>
@@ -120,8 +120,7 @@
                                     <tr>
                                        <td align=left>
                                           <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write" id="evalApply">
-                                             <a:actionLink id="actDashboard" value="#{msg.apply_dashboard}" rendered="#{SpaceDetailsBean.templatable == false}"
-                                                   action="applyTemplate" />
+                                             <a:actionLink id="actDashboard" value="#{msg.apply_dashboard}" rendered="#{SpaceDetailsBean.templatable == false}" action="dialog:applyTemplate" />
                                           </r:permissionEvaluator>
                                           <a:panel id="template-panel" rendered="#{SpaceDetailsBean.templatable == true}">
                                              <div style="padding:4px;border: 1px dashed #cccccc">
@@ -294,6 +293,31 @@
                                     
                                     <a:dataPager styleClass="pager" />
                                  </a:richList>
+                              </a:panel>
+                              
+                              <div style="padding:4px"></div>
+                              
+                              <h:panelGroup id="rss-panel-facets">
+                                 <f:facet name="title">
+                                    <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write" id="evalChange2">
+                                       <a:actionLink id="actModify2" value="#{msg.modify}" action="dialog:applyRSSTemplate" showLink="false" image="/images/icons/rss.gif" style="padding-right:8px" />
+                                       <a:actionLink id="actRemove2" value="#{msg.remove}" actionListener="#{SpaceDetailsBean.removeRSSTemplate}" showLink="false" image="/images/icons/delete.gif" />
+                                    </r:permissionEvaluator>
+                                 </f:facet>
+                              </h:panelGroup>
+                              <a:panel label="#{msg.rss_feed}" id="rss-panel" progressive="true" facetsId="rss-panel-facets"
+                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       expanded='#{SpaceDetailsBean.panels["rss-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
+                                 <table width=100% cellspacing=0 cellpadding=0 border=0>
+                                    <tr>
+                                       <td align=left>
+                                          <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write" id="evalApply2">
+                                             <a:actionLink id="actApplyRSS" value="#{msg.apply_rss_feed}" rendered="#{SpaceDetailsBean.RSSFeed == false}" action="dialog:applyRSSTemplate" />
+                                          </r:permissionEvaluator>
+                                          <a:actionLink id="actRSS" value="#{msg.rss_feed_link}" href="#{SpaceDetailsBean.RSSFeedURL}" image="/images/icons/rss.gif" rendered="#{SpaceDetailsBean.RSSFeed == true}" padding="2" />
+                                       </td>
+                                    </tr>
+                                 </table>
                               </a:panel>
                               
                               <%-- TODO: implement this - but READONLY details only! Manage Space Users for edits...

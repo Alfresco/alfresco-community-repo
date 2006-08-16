@@ -31,7 +31,7 @@
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
-   <h:form acceptCharset="UTF-8" id="apply-template">
+   <h:form acceptCharset="UTF-8" id="apply-rss">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
@@ -66,11 +66,11 @@
                      <table cellspacing="4" cellpadding="0" width="100%">
                         <tr>
                            <td width="32">
-                              <h:graphicImage url="/images/icons/preview_large.gif"/>
+                              <h:graphicImage url="/images/icons/rss_large.gif"/>
                            </td>
                            <td>
-                              <div class="mainTitle"><h:outputText value="#{msg.apply_dashboard}" /> '<h:outputText value="#{SpaceDetailsBean.name}" />'</div>
-                              <div class="mainSubText"><h:outputText value="#{msg.apply_dashboard_info}" /></div>
+                              <div class="mainTitle"><h:outputText value="#{msg.apply_rss_feed}" /> '<h:outputText value="#{SpaceDetailsBean.name}" />'</div>
+                              <div class="mainSubText"><h:outputText value="#{msg.apply_rss_feed_info}" /></div>
                            </td>
                         </tr>
                      </table>
@@ -92,15 +92,33 @@
                   <td>
                      <table cellspacing="0" cellpadding="3" border="0" width="100%">
                         <tr>
+                           <%-- TODO: check for Guest user access and hide panel? --%>
                            <td width="100%" valign="top">
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
+                              <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                 <tr>
+                                    <td valign=top style="padding-top:2px" width=20><h:graphicImage url="/images/icons/info_icon.gif" width="16" height="16"/></td>
+                                    <td class="mainSubText">
+                                       <h:outputText value="#{msg.apply_rss_feed_warning1}" />
+                                       <a:actionLink value="#{msg.manage_invited_users}" actionListener="#{BrowseBean.setupSpaceAction}" action="dialog:manageInvitedUsers">
+                                          <f:param name="id" value="#{SpaceDetailsBean.id}" />
+                                       </a:actionLink>
+                                       <h:outputText value="#{msg.apply_rss_feed_warning2}" />
+                                    </td>
+                                 </tr>
+                              </table>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
+                              
+                              <div style="padding:4px"></div>
+                              
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <table cellpadding="2" cellspacing="2" border="0" width="100%">
                                  <tr>
-                                    <td><h:outputText value="#{msg.template}"/>:</td>
+                                    <td><nobr><h:outputText value="#{msg.rss_template}"/>:</nobr></td>
                                     <td width=100%>
                                        <%-- Templates drop-down selector --%>
-                                       <h:selectOneMenu value="#{SpaceDetailsBean.template}">
-                                          <f:selectItems value="#{TemplateSupportBean.contentTemplates}" />
+                                       <h:selectOneMenu value="#{SpaceDetailsBean.RSSTemplate}">
+                                          <f:selectItems value="#{TemplateSupportBean.RSSTemplates}" />
                                        </h:selectOneMenu>
                                     </td>
                                  </tr>
@@ -113,7 +131,7 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.ok}" actionListener="#{SpaceDetailsBean.applyTemplate}" action="dialog:close" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.ok}" actionListener="#{SpaceDetailsBean.applyRSSTemplate}" action="dialog:close" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                                  <tr>

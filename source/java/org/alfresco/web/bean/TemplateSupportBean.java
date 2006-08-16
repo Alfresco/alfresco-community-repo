@@ -64,6 +64,9 @@ public class TemplateSupportBean
    /** cache of email templates that lasts 30 seconds - enough for a few page refreshes */
    private ExpiringValueCache<List<SelectItem>> emailTemplates = new ExpiringValueCache<List<SelectItem>>(1000*30);
    
+   /** cache of RSS templates that lasts 30 seconds - enough for a few page refreshes */
+   private ExpiringValueCache<List<SelectItem>> rssTemplates = new ExpiringValueCache<List<SelectItem>>(1000*30);
+   
    /** cache of JavaScript files that lasts 30 seconds - enough for a few page refreshes */ 
    private ExpiringValueCache<List<SelectItem>> scriptFiles = new ExpiringValueCache<List<SelectItem>>(1000*30);
    
@@ -123,6 +126,28 @@ public class TemplateSupportBean
          templates = selectDictionaryNodes(fc, xpath, MSG_SELECT_TEMPLATE);
          
          emailTemplates.put(templates);
+      }
+      
+      return templates;
+   }
+   
+   /**
+    * @return the list of available RSS Templates.
+    */
+   public List<SelectItem> getRSSTemplates()
+   {
+      List<SelectItem> templates = rssTemplates.get();
+      if (templates == null)
+      {
+         // get the template from the special Email Templates folder
+         FacesContext fc = FacesContext.getCurrentInstance();
+         String xpath = Application.getRootPath(fc) + "/" + 
+               Application.getGlossaryFolderName(fc) + "/" +
+               Application.getRSSTemplatesFolderName(fc) + "//*";
+         
+         templates = selectDictionaryNodes(fc, xpath, MSG_SELECT_TEMPLATE);
+         
+         rssTemplates.put(templates);
       }
       
       return templates;

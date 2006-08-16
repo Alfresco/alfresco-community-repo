@@ -256,7 +256,7 @@ public abstract class BaseDetailsBean
    /**
     * Action handler to apply the selected Template and Templatable aspect to the current Space
     */
-   public String applyTemplate()
+   public void applyTemplate(ActionEvent event)
    {
       if (this.template != null && this.template.equals(TemplateSupportBean.NO_SELECTION) == false)
       {
@@ -283,13 +283,12 @@ public abstract class BaseDetailsBean
                   FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
          }
       }
-      return getReturnOutcome();
    }
    
    /**
     * Action handler to remove a dashboard template from the current Space
     */
-   public String removeTemplate()
+   public void removeTemplate(ActionEvent event)
    {
       try
       {
@@ -305,13 +304,7 @@ public abstract class BaseDetailsBean
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
       }
-      return getReturnOutcome();
    }
-   
-   /**
-    * @return return to details page JSF navigation outcome
-    */
-   protected abstract String getReturnOutcome();
    
    /**
     * Action Handler to take Ownership of the current Space

@@ -120,8 +120,8 @@
                               <h:panelGroup id="dashboard-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write" id="evalChange">
-                                       <a:actionLink id="actModify" value="#{msg.modify}" action="applyTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
-                                       <a:actionLink id="actRemove" value="#{msg.remove}" action="#{DocumentDetailsBean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
+                                       <a:actionLink id="actModify" value="#{msg.modify}" action="dialog:applyTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
+                                       <a:actionLink id="actRemove" value="#{msg.remove}" actionListener="#{DocumentDetailsBean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
                                     </r:permissionEvaluator>
                                  </f:facet>
                               </h:panelGroup>
@@ -132,8 +132,7 @@
                                     <tr>
                                        <td align=left>
                                           <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write" id="evalApply">
-                                             <a:actionLink id="actDashboard" value="#{msg.apply_dashboard}" rendered="#{DocumentDetailsBean.templatable == false}"
-                                                   action="applyTemplate" />
+                                             <a:actionLink id="actDashboard" value="#{msg.apply_dashboard}" rendered="#{DocumentDetailsBean.templatable == false}" action="dialog:applyTemplate" />
                                           </r:permissionEvaluator>
                                           <a:panel id="template-panel" rendered="#{DocumentDetailsBean.templatable == true}">
                                              <div style="padding:4px;border: 1px dashed #cccccc">

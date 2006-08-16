@@ -989,14 +989,6 @@ public class DocumentDetailsBean extends BaseDetailsBean
    {
       return "document-props";
    }
-
-   /**
-    * @see org.alfresco.web.bean.BaseDetailsBean#getReturnOutcome()
-    */
-   protected String getReturnOutcome()
-   {
-      return OUTCOME_RETURN;
-   }
    
    /**
     * Returns a model for use by a template on the Document Details page.

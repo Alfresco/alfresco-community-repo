@@ -113,12 +113,12 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.ok}" action="#{DocumentDetailsBean.applyTemplate}" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.ok}" actionListener="#{DocumentDetailsBean.applyTemplate}" action="dialog:close" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel}" action="showDocDetails" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.cancel}" action="dialog:close" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

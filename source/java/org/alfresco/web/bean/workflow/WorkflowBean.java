@@ -62,7 +62,7 @@ public class WorkflowBean
       this.workItems = new ArrayList<Node>(tasks.size());
       for (WorkflowTask task : tasks)
       {
-         createWorkItem(task);
+         this.workItems.add(createWorkItem(task));
       }
       
       return this.workItems;
@@ -89,7 +89,7 @@ public class WorkflowBean
       this.completedWorkItems = new ArrayList<Node>(tasks.size());
       for (WorkflowTask task : tasks)
       {
-         createWorkItem(task);
+         this.completedWorkItems.add(createWorkItem(task));
       }
       
       return this.completedWorkItems;
@@ -152,7 +152,7 @@ public class WorkflowBean
     * 
     * @param task The task to create a representation of
     */
-   protected void createWorkItem(WorkflowTask task)
+   protected TransientMapNode createWorkItem(WorkflowTask task)
    {
       // get the type of the task
       WorkflowTaskDefinition taskDef = task.definition;
@@ -169,6 +169,6 @@ public class WorkflowBean
       if (logger.isDebugEnabled())
          logger.debug("Created node for work item with id '" + task.id + "' " + node);
       
-      this.workItems.add(node);
+      return node;
    }
 }

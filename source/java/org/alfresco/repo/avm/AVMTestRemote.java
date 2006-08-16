@@ -17,7 +17,6 @@
 
 package org.alfresco.repo.avm;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -104,6 +103,34 @@ public class AVMTestRemote extends TestCase
         }
     }
 
+    /**
+     * Another test of reading.
+     */
+    public void testRead()
+    {
+        try
+        {
+            // Create a file.
+            byte [] buff = new byte[64];
+            for (int i = 0; i < 64; i++)
+            {
+                buff[i] = (byte)i;
+            }
+            String outHandle = fAVMRemote.createFile("main:/", "foo.dat");
+            fAVMRemote.writeOutput(outHandle, buff, 64);
+            fAVMRemote.closeOutputHandle(outHandle);
+            // Read it back in.
+            String inHandle = fAVMRemote.getInputHandle(-1, "main:/foo.dat");
+            buff = fAVMRemote.readInput(inHandle, 64);
+            fAVMRemote.closeInputHandle(inHandle);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
     /**
      * Test a call that should throw an exception.
      */

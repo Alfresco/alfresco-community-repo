@@ -13,6 +13,9 @@
 		<property name="serviceInterface">
 			<value>org.alfresco.repo.avm.AVMRemote</value>
 		</property>
+		<property name="refreshStubOnConnectFailure">
+			<value>true</value>
+		</property>
 	</bean>
 
 </beans>

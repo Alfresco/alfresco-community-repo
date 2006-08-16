@@ -729,7 +729,7 @@ class AVMRepository
         }
         if (fLookupCount.get() > 50)
         {
-            throw new AVMCycleException("Cycle in lookup.");
+            // throw new AVMCycleException("Cycle in lookup.");
         }
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0]);
@@ -789,10 +789,18 @@ class AVMRepository
      */
     public Lookup lookupDirectory(int version, String path)
     {
-        fLookupCount.set(fLookupCount.get() + 1);
+        Integer count = fLookupCount.get();
+        if (count == null)
+        {
+            fLookupCount.set(1);
+        }
+        else
+        {
+            fLookupCount.set(count + 1);
+        }
         if (fLookupCount.get() > 50)
         {
-            throw new AVMCycleException("Cycle in lookup.");
+            // throw new AVMCycleException("Cycle in lookup.");
         }
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0]);

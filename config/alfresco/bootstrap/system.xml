@@ -42,7 +42,7 @@
                     </cm:person>
                 </sys:children>
             </sys:container>
-            <sys:container view:childName="${system.workflow_container.childname}"/>
+            <cm:folder view:childName="${system.workflow_container.childname}"/>
         </sys:children>
     </sys:container>
 

@@ -11,6 +11,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
@@ -32,7 +33,7 @@ public class ManageWorkItemDialog extends BaseDialogBean
    protected WorkflowService workflowService;
    protected Node workItemNode;
    protected WorkflowTask workItem;
-   protected String[] transitions;
+   protected WorkflowTransition[] transitions;
 
    protected static final String ID_PREFIX = "transition_";
    protected static final String CLIENT_ID_PREFIX = "dialog:" + ID_PREFIX;
@@ -93,16 +94,9 @@ public class ManageWorkItemDialog extends BaseDialogBean
          {
             buttons = new ArrayList<DialogButtonConfig>(this.transitions.length);
             
-            for (String trans : this.transitions)
+            for (WorkflowTransition trans : this.transitions)
             {
-               // TODO: Tidy this up when the service returns the list of labels
-               String label = trans;
-               if (label.length() == 0)
-               {
-                  label = "Done";
-               }
-               
-               buttons.add(new DialogButtonConfig(ID_PREFIX + trans, label, null,
+               buttons.add(new DialogButtonConfig(ID_PREFIX + trans, trans.title, null,
                      "#{DialogManager.bean.transition}", "false", null));
             }
          }
@@ -138,13 +132,13 @@ public class ManageWorkItemDialog extends BaseDialogBean
       Map reqParams = context.getExternalContext().getRequestParameterMap();
       
       String selectedTransition = null;
-      for (String trans : this.transitions)
+      for (WorkflowTransition trans : this.transitions)
       {
          Object result = reqParams.get(CLIENT_ID_PREFIX + trans);
          if (result != null)
          {
             // this was the button that was pressed
-            selectedTransition = trans;
+            selectedTransition = trans.id;
             break;
          }
       }

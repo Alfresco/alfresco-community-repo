@@ -159,10 +159,10 @@ public class WorkflowBean
       
       // create the basic transient node
       TransientMapNode node = new TransientMapNode(taskDef.metadata.getName(),
-            task.name, task.properties);
+            task.title, task.properties);
       
       // add properties for the other useful metadata
-      node.getProperties().put(ContentModel.PROP_NAME.toString(), task.name);
+      node.getProperties().put(ContentModel.PROP_NAME.toString(), task.title);
       node.getProperties().put("type", taskDef.metadata.getTitle());
       node.getProperties().put("id", task.id);
       

@@ -58,7 +58,7 @@ public class JBPMDeployProcessServlet extends HttpServlet
             response.setContentType("text/html");
             InputStream deploymentArchive = getDeploymentArchive(request);
             WorkflowDefinition workflowDef = deployArchive(deploymentArchive);
-            response.getWriter().println("Deployed archive " + workflowDef.name + " successfully");
+            response.getWriter().println("Deployed archive " + workflowDef.title + " successfully");
         }
         catch(IOException e)
         {

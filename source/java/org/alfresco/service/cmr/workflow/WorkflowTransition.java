@@ -16,31 +16,31 @@
  */
 package org.alfresco.service.cmr.workflow;
 
-import org.alfresco.service.cmr.dictionary.TypeDefinition;
-
 
 /**
- * Workflow Task Definition Data Object.
- * 
- * Represents meta-data for a Workflow Task.  The meta-data is described in terms
- * of the Alfresco Data Dictionary.
+ * Workflow Transition.
  * 
  * @author davidc
  */
-public class WorkflowTaskDefinition
+public class WorkflowTransition
 {
-    /** Unique id of Workflow Task Definition */
+    /** Transition Id */
     public String id;
-    
-    /** Task Metadata */
-    public TypeDefinition metadata;
 
+    /** Transition Title (Localised) */
+    public String title;
+    
+    /** Transition Description (Localised) */
+    public String description;
+    
+    /** Is this the default transition */
+    public boolean isDefault;
     
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
     public String toString()
     {
-        return "WorkflowTaskDefinition[id=" + id + ",metadata=" + metadata + "]";
+        return "WorkflowTransition[id=" + id + ",title=" + title + "]";
     }
 }

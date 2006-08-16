@@ -151,7 +151,7 @@ public interface WorkflowService
      * @param transition  the transition to follow (or null, for the default transition)
      * @return  the updated workflow path
      */
-    public WorkflowPath signal(String pathId, String transition);
+    public WorkflowPath signal(String pathId, String transitionId);
 
     /**
      * Gets all Tasks associated with the specified path
@@ -209,7 +209,7 @@ public interface WorkflowService
      * @param transition  the task transition to take on completion (or null, for the default transition)
      * @return  the updated task
      */
-    public WorkflowTask endTask(String taskId, String transition);
+    public WorkflowTask endTask(String taskId, String transitionId);
     
     /**
      * Create a Workflow Package (a container of content to route through the Workflow).

@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="Test">
-   <swimlane name="Initiator"></swimlane>
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="test">
+   <swimlane name="initiator"></swimlane>
+
    <start-state name="start">
-     <task name="Submit" swimlane="Initiator">
+     <task name="submit" swimlane="initiator">
         <controller>
           <variable name="reviewer" access="write,required" />
           <variable name="testNode" access="write,required" />
         </controller>
       </task>
-      <transition name="" to="Review">
+      <transition name="" to="review">
          <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
             <script>
                <expression>
@@ -23,13 +24,14 @@
             </script>
          </action>
       </transition>
-      <transition name="end" to="end">
-      </transition>
+      <transition name="end" to="end"/>
    </start-state>
-   <swimlane name="Reviewer">
+   
+   <swimlane name="reviewer">
       <assignment actor-id="#{reviewer}"></assignment>
    </swimlane>
-   <task-node name="Review">
+   
+   <task-node name="review">
       <event type="node-enter">
          <script>
             System.out.println("the reviewer is " + reviewer);
@@ -37,12 +39,14 @@
             System.out.println("scriptResult = " + scriptResult);
          </script>
       </event>
-      <task name="Review" duedate="1 business day" blocking="true" swimlane="Reviewer">
+      <task name="review" duedate="1 business day" blocking="true" swimlane="reviewer">
          <controller>
             <variable name="comment" access="read,write,required"></variable>
          </controller>
       </task>
       <transition name="" to="end"></transition>
    </task-node>
+   
    <end-state name="end"></end-state>
+   
 </process-definition>

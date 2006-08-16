@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
@@ -58,19 +59,22 @@ public class JBPMEngineTest extends BaseSpringTest
     NodeRef testNodeRef;
 
         
-    //@Override
+    @Override
     protected void onSetUpInTransaction() throws Exception
     {
         BPMEngineRegistry registry = (BPMEngineRegistry)applicationContext.getBean("bpm_engineRegistry");
         workflowComponent = registry.getWorkflowComponent("jbpm");
         taskComponent = registry.getTaskComponent("jbpm");
         
+        // deploy test process messages
+        I18NUtil.registerResourceBundle("org/alfresco/repo/workflow/jbpm/test-messages");
+        
         // deploy test process definition
         ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/test_processdefinition.xml");
         assertFalse(workflowComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
         testWorkflowDef = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML);
         assertNotNull(testWorkflowDef);
-        assertEquals("Test", testWorkflowDef.name);
+        assertEquals("Test", testWorkflowDef.title);
         assertEquals("1", testWorkflowDef.version);
         assertTrue(workflowComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
         
@@ -93,7 +97,7 @@ public class JBPMEngineTest extends BaseSpringTest
         ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/test_processdefinition.xml");
         testWorkflowDef = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML);
         assertNotNull(testWorkflowDef);
-        assertEquals("Test", testWorkflowDef.name);
+        assertEquals("Test", testWorkflowDef.title);
         assertEquals("2", testWorkflowDef.version);
     }
     
@@ -295,7 +299,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowDefinition workflowDef = getTestDefinition();
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, null);
         assertNotNull(path);
-        WorkflowPath updatedPath = workflowComponent.signal(path.id, path.node.transitions[1]);
+        WorkflowPath updatedPath = workflowComponent.signal(path.id, path.node.transitions[1].id);
         assertNotNull(updatedPath);
     }
     
@@ -312,15 +316,17 @@ public class JBPMEngineTest extends BaseSpringTest
         List<WorkflowTask> tasks = workflowComponent.getTasksForWorkflowPath(path.id);
         assertNotNull(tasks);
         assertEquals(1, tasks.size());
-        WorkflowTask updatedTask = taskComponent.endTask(tasks.get(0).id, path.node.transitions[0]);
+        WorkflowTask updatedTask = taskComponent.endTask(tasks.get(0).id, path.node.transitions[0].id);
         assertNotNull(updatedTask);
-        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks("admin", WorkflowTaskState.COMPLETED);
+        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks("System", WorkflowTaskState.COMPLETED);
         assertNotNull(completedTasks);
-        assertEquals(0, completedTasks.size());
+        completedTasks = filterTasksByWorkflowInstance(completedTasks, path.instance.id);
+        assertEquals(1, completedTasks.size());
         List<WorkflowTask> assignedTasks = taskComponent.getAssignedTasks("admin", WorkflowTaskState.IN_PROGRESS);
         assertNotNull(assignedTasks);
+        assignedTasks = filterTasksByWorkflowInstance(assignedTasks, path.instance.id);
         assertEquals(1, assignedTasks.size());
-        assertEquals("Review", assignedTasks.get(0).name);
+        assertEquals("Review", assignedTasks.get(0).title);
     }
 
     
@@ -342,6 +348,7 @@ public class JBPMEngineTest extends BaseSpringTest
         assertEquals(WorkflowTaskState.COMPLETED, updatedTask.state);
         List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks("System", WorkflowTaskState.COMPLETED);
         assertNotNull(completedTasks);
+        completedTasks = filterTasksByWorkflowInstance(completedTasks, path.instance.id);
         assertEquals(1, completedTasks.size());
         assertEquals(WorkflowTaskState.COMPLETED, completedTasks.get(0).state);
     }
@@ -361,7 +368,7 @@ public class JBPMEngineTest extends BaseSpringTest
         assertEquals(1, tasks1.size());
         WorkflowTask getTask = taskComponent.getTaskById(tasks1.get(0).id);
         assertNotNull(getTask);
-        assertEquals(getTask.name, tasks1.get(0).name);
+        assertEquals(getTask.title, tasks1.get(0).title);
     }
 
     
@@ -394,7 +401,7 @@ public class JBPMEngineTest extends BaseSpringTest
         List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
         assertNotNull(tasks1);
         assertEquals(1, tasks1.size());
-        WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).id, path.node.transitions[0]);
+        WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).id, path.node.transitions[0].id);
         assertNotNull(updatedTask);
     }        
     
@@ -407,6 +414,27 @@ public class JBPMEngineTest extends BaseSpringTest
     private WorkflowDefinition getTestDefinition()
     {
         return testWorkflowDef;
+    }
+    
+
+    /**
+     * Filter task list by workflow instance
+     * 
+     * @param tasks
+     * @param processInstanceId
+     * @return
+     */
+    private List<WorkflowTask> filterTasksByWorkflowInstance(List<WorkflowTask> tasks, String workflowInstanceId)
+    {
+        List<WorkflowTask> filteredTasks = new ArrayList<WorkflowTask>();
+        for (WorkflowTask task : tasks)
+        {
+            if (task.path.instance.id.equals(workflowInstanceId))
+            {
+                filteredTasks.add(task);
+            }
+        }
+        return filteredTasks;
     }
     
 }

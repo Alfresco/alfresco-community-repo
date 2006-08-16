@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<model name="wf:workflowsmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+<model name="wf:workflowmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
    <description>Content-oriented Workflows Model</description>
    <author>Alfresco</author>

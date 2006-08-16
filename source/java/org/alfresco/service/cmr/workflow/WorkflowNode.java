@@ -26,9 +26,12 @@ package org.alfresco.service.cmr.workflow;
  */
 public class WorkflowNode
 {
-    /** Name of the Workflow Node */
-    public String name;
+    /** Workflow Node Title (Localised) */
+    public String title;
     
+    /** Workflow Node Description (Localised) */
+    public String description;
+
     /** Type of the Workflow Node (typically this is BPM engine specific - informational only */
     public String type;
 
@@ -36,7 +39,7 @@ public class WorkflowNode
     public boolean isTaskNode;
     
     /** The transitions leaving this node (or null, if none) */
-    public String[] transitions;
+    public WorkflowTransition[] transitions;
     
     
     /* (non-Javadoc)
@@ -50,6 +53,6 @@ public class WorkflowNode
             transitionsArray += ((i == 0) ? "" : ",") + "'" + transitions[i] + "'";  
         }
         transitionsArray += "}";
-        return "WorkflowNode[name=" + name + ",type=" + type + ",transitions=" + transitionsArray + "]";
+        return "WorkflowNode[title=" + title + ",type=" + type + ",transitions=" + transitionsArray + "]";
     }
 }

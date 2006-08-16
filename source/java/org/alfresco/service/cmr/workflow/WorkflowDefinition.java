@@ -30,8 +30,11 @@ public class WorkflowDefinition
     /** Workflow Definition version */
     public String version;
     
-    /** Workflow Definition name */
-    public String name;
+    /** Workflow Definition Title (Localised) */
+    public String title;
+    
+    /** Workflow Definition Description (Localised) */
+    public String description;
     
     /** Task Definition for Workflow Start Task (Optional) */
     public WorkflowTaskDefinition startTaskDefinition;
@@ -42,6 +45,6 @@ public class WorkflowDefinition
      */
     public String toString()
     {
-        return "WorkflowDefinition[id=" + id + ",version=" + version + ",name=" + name + ",startTask=" + startTaskDefinition.toString() + "]";
+        return "WorkflowDefinition[id=" + id + ",version=" + version + ",title=" + title + ",startTask=" + startTaskDefinition.toString() + "]";
     }
 }

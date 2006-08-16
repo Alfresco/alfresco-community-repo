@@ -96,7 +96,7 @@ public interface TaskComponent
      * @param transition  the task transition to take on completion (or null, for the default transition)
      * @return  the updated task
      */    
-    public WorkflowTask endTask(String taskId, String transition);
+    public WorkflowTask endTask(String taskId, String transitionId);
         
 }
 

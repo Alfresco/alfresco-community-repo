@@ -133,7 +133,7 @@ public interface WorkflowComponent
      * @param transition  the transition to follow (or null, for the default transition)
      * @return  the updated workflow path
      */
-    public WorkflowPath signal(String pathId, String transition);
+    public WorkflowPath signal(String pathId, String transitionId);
     
     /**
      * Gets all Tasks associated with the specified path

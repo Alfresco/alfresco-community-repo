@@ -157,7 +157,7 @@ public class WorkflowDeployer implements ApplicationListener
                         WorkflowDefinition def = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), mimetype);
                         if (logger.isInfoEnabled())
                         {
-                            logger.info("Workflow deployer: Deployed process definition '" + def.name + "' (version " + def.version + ") from '" + location + "'");
+                            logger.info("Workflow deployer: Deployed process definition '" + def.title + "' (version " + def.version + ") from '" + location + "'");
                         }
                     }
                 }

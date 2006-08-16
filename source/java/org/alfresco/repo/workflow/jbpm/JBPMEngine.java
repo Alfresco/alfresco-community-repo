@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.zip.ZipInputStream;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -52,6 +53,7 @@ import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
+import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.hibernate.Query;
@@ -68,6 +70,7 @@ import org.jbpm.graph.exe.ProcessInstance;
 import org.jbpm.graph.exe.Token;
 import org.jbpm.taskmgmt.def.Task;
 import org.jbpm.taskmgmt.exe.TaskInstance;
+import org.springframework.util.StringUtils;
 import org.springmodules.workflow.jbpm31.JbpmCallback;
 import org.springmodules.workflow.jbpm31.JbpmTemplate;
 
@@ -100,6 +103,11 @@ public class JBPMEngine extends BPMEngine
         "where ti.actorId = :actorId " +
         "and ti.isOpen = false " +
         "and ti.end is not null";
+    
+    // I18N labels
+    private final static String TITLE_LABEL = "title";
+    private final static String DESC_LABEL = "description";
+    private final static String DEFAULT_TRANSITION_LABEL = "bpm_businessprocessmodel.transition";    
     
     
     /**
@@ -1196,6 +1204,22 @@ public class JBPMEngine extends BPMEngine
         return authorities;
     }
 
+    /**
+     * Get an I18N Label for a workflow item
+     * 
+     * @param displayId  message resource id lookup
+     * @param labelKey  label to lookup (title or description)
+     * @param defaultLabel  default value if not found in message resource bundle
+     * @return  the label
+     */
+    private String getLabel(String displayId, String labelKey, String defaultLabel)
+    {
+        String key = StringUtils.replace(displayId, ":", "_");
+        key += "." + labelKey;
+        String label = I18NUtil.getMessage(key);
+        return (label == null) ? defaultLabel : label;
+    }
+    
 
     //
     // Workflow Data Object Creation...
@@ -1226,8 +1250,11 @@ public class JBPMEngine extends BPMEngine
     @SuppressWarnings("unchecked")
     protected WorkflowNode createWorkflowNode(Node node)
     {
+        String name = node.getName();
+        String processName = node.getProcessDefinition().getName();
         WorkflowNode workflowNode = new WorkflowNode();
-        workflowNode.name = node.getName();
+        workflowNode.title = getLabel(processName + ".node." + name, TITLE_LABEL, name);
+        workflowNode.description = getLabel(processName + ".node." + name, DESC_LABEL, workflowNode.title);
         if (node instanceof HibernateProxy)
         {
             Node realNode = (Node)((HibernateProxy)node).getHibernateLazyInitializer().getImplementation();        
@@ -1240,18 +1267,45 @@ public class JBPMEngine extends BPMEngine
         // TODO: Is there a formal way of determing if task node?
         workflowNode.isTaskNode = workflowNode.type.equals("TaskNode");
         List transitions = node.getLeavingTransitions();
-        workflowNode.transitions = new String[(transitions == null) ? 0 : transitions.size()];
+        workflowNode.transitions = new WorkflowTransition[(transitions == null) ? 0 : transitions.size()];
         if (transitions != null)
         {
             int i = 0;
             for (Transition transition : (List<Transition>)transitions)
             {
-                workflowNode.transitions[i++] = transition.getName();
+                workflowNode.transitions[i++] = createWorkflowTransition(transition);
             }
         }
         return workflowNode;
     }
     
+    /**
+     * Create a Workflow Transition
+     * 
+     * @param transition  JBoss JBPM Transition
+     * @return  Workflow Transition
+     */
+    protected WorkflowTransition createWorkflowTransition(Transition transition)
+    {
+        WorkflowTransition workflowTransition = new WorkflowTransition();
+        workflowTransition.id = transition.getName();
+        Node node = transition.getFrom();
+        workflowTransition.isDefault = node.getDefaultLeavingTransition().equals(transition);
+        if (workflowTransition.id.length() == 0)
+        {
+            workflowTransition.title = getLabel(DEFAULT_TRANSITION_LABEL, TITLE_LABEL, workflowTransition.id);
+            workflowTransition.description = getLabel(DEFAULT_TRANSITION_LABEL, DESC_LABEL, workflowTransition.title);
+        }
+        else
+        {
+            String nodeName = node.getName();
+            String processName = node.getProcessDefinition().getName();
+            workflowTransition.title = getLabel(processName + ".node." + nodeName + ".transition." + workflowTransition.id, TITLE_LABEL, workflowTransition.id);
+            workflowTransition.description = getLabel(processName + ".node." + nodeName + ".transition." + workflowTransition.id, DESC_LABEL, workflowTransition.title);
+        }
+        return workflowTransition;
+    }
+        
     /**
      * Creates a Workflow Instance
      * 
@@ -1276,15 +1330,16 @@ public class JBPMEngine extends BPMEngine
     protected WorkflowDefinition createWorkflowDefinition(ProcessDefinition definition)
     {
         WorkflowDefinition workflowDef = new WorkflowDefinition();
+        String name = definition.getName();
+        workflowDef.title = getLabel(name + ".workflow", TITLE_LABEL, name);
+        workflowDef.description = getLabel(name + ".workflow", DESC_LABEL, workflowDef.title);
         workflowDef.id = createGlobalId(new Long(definition.getId()).toString());
         workflowDef.version = new Integer(definition.getVersion()).toString();
-        workflowDef.name = definition.getName();
         Task startTask = definition.getTaskMgmtDefinition().getStartTask();
         if (startTask != null)
         {
             workflowDef.startTaskDefinition = createWorkflowTaskDefinition(startTask);
         }
-        
         return workflowDef;
     }
     
@@ -1298,11 +1353,27 @@ public class JBPMEngine extends BPMEngine
     {
         WorkflowTask workflowTask = new WorkflowTask();
         workflowTask.id = createGlobalId(new Long(task.getId()).toString());
-        workflowTask.name = task.getName();
         workflowTask.path = createWorkflowPath(task.getToken());
         workflowTask.state = getWorkflowTaskState(task);
         workflowTask.definition = createWorkflowTaskDefinition(task.getTask());
         workflowTask.properties = getTaskProperties(task);
+        String name = task.getName();
+        String processName = task.getTask().getProcessDefinition().getName();
+        workflowTask.title = getLabel(processName + ".node." + name, TITLE_LABEL, name);
+        if (workflowTask.title == null)
+        {
+            workflowTask.title = workflowTask.definition.metadata.getTitle();
+            if (workflowTask.title == null)
+            {
+                workflowTask.title = name;
+            }
+        }
+        workflowTask.description = getLabel(processName + ".node." + name, DESC_LABEL, workflowTask.title);
+        if (workflowTask.description == null)
+        {
+            String description = workflowTask.definition.metadata.getDescription();
+            workflowTask.description = (description == null) ? workflowTask.title : description;
+        }
         return workflowTask;
     }
  

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="Review and Approve">
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:review">
    <swimlane name="Initiator"></swimlane>
    <start-state name="start">
      <task name="wf:submitReviewTask" swimlane="Initiator" blocking="true">
@@ -14,7 +14,7 @@
    <swimlane name="Reviewer">
       <assignment actor-id="#{reviewer}"></assignment>
    </swimlane>
-   <task-node name="Review">
+   <task-node name="review">
       <task name="Review" duedate="1 business day" blocking="true" swimlane="Reviewer">
          <controller>
             <variable name="comment" access="read,write,required"></variable>

@@ -25,7 +25,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * Workflow Task Data Object
  * 
- * Represents a human-oriented task within an "in-fligth" workflow instance
+ * Represents a human-oriented task within an "in-flight" workflow instance
  * 
  * @author davidc
  */
@@ -34,8 +34,11 @@ public class WorkflowTask
     /** Unique id of Task */
     public String id;
     
-    /** Name of Task */
-    public String name;
+    /** Task Title (Localised) */
+    public String title;
+
+    /** Task Description (Localised) */
+    public String description;
     
     /** Task State */
     public WorkflowTaskState state;
@@ -55,7 +58,6 @@ public class WorkflowTask
     public String toString()
     {
         String propCount = (properties == null) ? "null" : "" + properties.size();
-        return "WorkflowTask[id=" + id + ",name=" + name + ",state=" + state + ",props=" + propCount + ",def=" + definition + ",path=" + path.toString() + "]";
+        return "WorkflowTask[id=" + id + ",title=" + title + ",state=" + state + ",props=" + propCount + ",def=" + definition + ",path=" + path.toString() + "]";
     }
-
 }

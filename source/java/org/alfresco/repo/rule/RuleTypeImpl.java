@@ -21,7 +21,6 @@ import java.util.List;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.action.CommonResourceAbstractBase;
 import org.alfresco.repo.rule.ruletrigger.RuleTrigger;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -99,7 +98,7 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
     /**
      * @see org.alfresco.service.cmr.rule.RuleType#triggerRuleType(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
-	public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef)
+	public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef, boolean executeRuleImmediately)
 	{
         if (this.ruleService.isEnabled() == true)
         {
@@ -121,8 +120,20 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
                         }
                     }
                     
-                    // Queue the rule to be executed at the end of the transaction (but still in the transaction)
-                    ((RuntimeRuleService)this.ruleService).addRulePendingExecution(nodeRef, actionedUponNodeRef, rule);
+                    // Only queue if the rule is not disabled
+                    if (rule.getRuleDisabled() == false)
+                    {
+                        if (executeRuleImmediately == false)
+                        {
+                            // Queue the rule to be executed at the end of the transaction (but still in the transaction)
+                            ((RuntimeRuleService)this.ruleService).addRulePendingExecution(nodeRef, actionedUponNodeRef, rule);
+                        }
+                        else
+                        {
+                            // Execute the rule now
+                            ((RuntimeRuleService)this.ruleService).executeRule(rule, actionedUponNodeRef, null);
+                        }
+                    }
                 }
             }
             else

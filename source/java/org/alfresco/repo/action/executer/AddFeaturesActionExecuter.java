@@ -41,7 +41,6 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
      */
 	public static final String NAME = "add-features";
 	public static final String PARAM_ASPECT_NAME = "aspect-name";
-    public static final String PARAM_ASPECT_PROPERTIES = "aspect_properties";
 	
 	/**
 	 * The node service

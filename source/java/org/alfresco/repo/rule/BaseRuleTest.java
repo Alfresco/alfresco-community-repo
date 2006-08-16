@@ -157,6 +157,11 @@ public class BaseRuleTest extends BaseSpringTest
     
     protected Rule createTestRule(boolean isAppliedToChildren)
     {
+        return createTestRule(isAppliedToChildren, TITLE);
+    }
+    
+    protected Rule createTestRule(boolean isAppliedToChildren, String title)
+    {
         // Rule properties
         Map<String, Serializable> conditionProps = new HashMap<String, Serializable>();
         conditionProps.put(COND_PROP_NAME_1, COND_PROP_VALUE_1);
@@ -178,7 +183,7 @@ public class BaseRuleTest extends BaseSpringTest
         // Create the rule
         Rule rule = new Rule();
         rule.setRuleTypes(ruleTypes);
-        rule.setTitle(TITLE);
+        rule.setTitle(title);
         rule.setDescription(DESCRIPTION);
         rule.applyToChildren(isAppliedToChildren);        
         rule.setAction(action);

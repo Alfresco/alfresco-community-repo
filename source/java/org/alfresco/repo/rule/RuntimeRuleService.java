@@ -16,6 +16,9 @@
  */
 package org.alfresco.repo.rule;
 
+import java.util.Set;
+
+import org.alfresco.repo.rule.RuleServiceImpl.ExecutedRuleData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleType;
@@ -25,6 +28,8 @@ import org.alfresco.service.cmr.rule.RuleType;
  */
 public interface RuntimeRuleService 
 {
+    void executeRule(Rule rule, NodeRef actionedUponNodeRef, Set<ExecutedRuleData> executedRules);
+    
 	void addRulePendingExecution(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule);
     
     void addRulePendingExecution(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule, boolean executeAtEnd);

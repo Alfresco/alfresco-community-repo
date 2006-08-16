@@ -16,7 +16,6 @@
       <namespace uri="http://www.alfresco.org/model/rule/1.0" prefix="rule"/>
    </namespaces>
 
-   
    <types>
    
 	  <type name="rule:rule">
@@ -35,6 +34,11 @@
             <property name="rule:executeAsynchronously">
                <type>d:boolean</type>
                <mandatory>true</mandatory>
+            </property>
+            <property name="rule:disabled">
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+               <default>false</default>
             </property>
          </properties>          
          <associations>
@@ -67,6 +71,10 @@
                </target>
             </child-association>
          </associations>  
+      </aspect>
+      
+      <aspect name="rule:ignoreInheritedRules">
+         <title>Ignore Inherited Rules</title>           
       </aspect>
          
 	</aspects>

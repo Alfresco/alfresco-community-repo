@@ -129,7 +129,7 @@ public class RuleTypeImplTest extends BaseSpringTest
 		}
 		
 		@Override
-		public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef)
+		public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef, boolean executeRuleImmediately)
 		{
 			this.rulesTriggered = true;
 		}

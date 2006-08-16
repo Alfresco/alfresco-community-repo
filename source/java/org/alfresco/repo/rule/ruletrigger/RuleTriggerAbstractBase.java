@@ -56,6 +56,12 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     /** The dictionary service */
     protected DictionaryService dictionaryService;
     
+    /** 
+     * Indicates whether the rule should be executed immediately or at the end of the transaction.
+     * By default this is false as all rules are executed at the end of the transaction.
+     */
+    protected boolean executeRuleImmediately = false;
+    
     /**
      * Set the policy component
      * 
@@ -97,6 +103,17 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     }
     
     /**
+     * Sets the values that indicates whether the rule should be executed immediately
+     * or not.
+     * 
+     * @param executeRuleImmediately    true execute the rule immediaely, false otherwise
+     */
+    public void setExecuteRuleImmediately(boolean executeRuleImmediately)
+    {
+        this.executeRuleImmediately = executeRuleImmediately;
+    }
+    
+    /**
      * Registration of an interested rule type
      */
     public void registerRuleType(RuleType ruleType)
@@ -117,7 +134,7 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     {
         for (RuleType ruleType : this.ruleTypes)
         {
-            ruleType.triggerRuleType(nodeRef, actionedUponNodeRef);
+            ruleType.triggerRuleType(nodeRef, actionedUponNodeRef, this.executeRuleImmediately);
         }
     }
 }

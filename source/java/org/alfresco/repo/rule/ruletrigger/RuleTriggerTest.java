@@ -35,7 +35,6 @@ public class RuleTriggerTest extends BaseSpringTest
 {
 	private static final String ON_CREATE_NODE_TRIGGER = "on-create-node-trigger";
 	private static final String ON_UPDATE_NODE_TRIGGER = "on-update-node-trigger";
-	private static final String ON_DELETE_NODE_TRIGGER = "on-delete-node-trigger";
 	private static final String ON_CREATE_CHILD_ASSOCIATION_TRIGGER = "on-create-child-association-trigger";
 	private static final String ON_DELETE_CHILD_ASSOCIATION_TRIGGER = "on-delete-child-association-trigger";
 	private static final String ON_CREATE_ASSOCIATION_TRIGGER = "on-create-association-trigger";
@@ -287,7 +286,7 @@ public class RuleTriggerTest extends BaseSpringTest
 			return "displayLabel";
 		}
 
-		public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef)
+		public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef, boolean executeRuleImmediately)
 		{
 			// Indicate that the rules have been triggered
 			this.rulesTriggered = true;

@@ -85,9 +85,7 @@ import org.springframework.util.StopWatch;
  */
 public class RuleServiceCoverageTest extends TestCase
 {
-    //private static final ContentData CONTENT_DATA_TEXT = new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, "UTF-8");
-    
-	/**
+    /**
 	 * Application context used during the test
 	 */
 	static ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:alfresco/application-context.xml");
@@ -342,6 +340,46 @@ public class RuleServiceCoverageTest extends TestCase
         
         // System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.testStoreRef));        
     }   
+    
+    public void testDisableIndividualRules()
+    {
+        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        params.put("aspect-name", ContentModel.ASPECT_CONFIGURABLE);        
+        
+        Rule rule = createRule(
+                RuleType.INBOUND, 
+                AddFeaturesActionExecuter.NAME, 
+                params, 
+                NoConditionEvaluator.NAME, 
+                null);
+        rule.setRuleDisabled(true);
+        
+        this.ruleService.saveRule(this.nodeRef, rule);
+
+        NodeRef newNodeRef = this.nodeService.createNode(
+                this.nodeRef,
+                ContentModel.ASSOC_CHILDREN,                
+                QName.createQName(TEST_NAMESPACE, "children"),
+                ContentModel.TYPE_CONTENT,
+                getContentProperties()).getChildRef();         
+        addContentToNode(newNodeRef);
+        assertFalse(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_CONFIGURABLE));  
+        
+        Rule rule2 = this.ruleService.getRule(rule.getNodeRef());
+        rule2.setRuleDisabled(false);
+        this.ruleService.saveRule(this.nodeRef, rule2);
+        
+        // Re-try the test now the rule has been re-enabled
+        NodeRef newNodeRef2 = this.nodeService.createNode(
+                this.nodeRef,
+                ContentModel.ASSOC_CHILDREN,                
+                QName.createQName(TEST_NAMESPACE, "children"),
+                ContentModel.TYPE_CONTENT,
+                getContentProperties()).getChildRef();         
+        addContentToNode(newNodeRef2);
+        assertTrue(this.nodeService.hasAspect(newNodeRef2, ContentModel.ASPECT_CONFIGURABLE));  
+        
+    }
     
     public void testDisableRule()
     {
@@ -1597,36 +1635,8 @@ public class RuleServiceCoverageTest extends TestCase
     			
     			tx.commit();
     	        
-    			Thread.sleep(10000);
-    	        //System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.testStoreRef));
-    	        
-                //AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
-                //authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-                
-    	        // Check that the created node is still there
-    	        //List<ChildAssociationRef> origRefs = this.nodeService.getChildAssocs(
-    	        //        this.nodeRef, 
-    	        //        RegexQNamePattern.MATCH_ALL, QName.createQName(TEST_NAMESPACE, "origional"));
-    	        //assertNotNull(origRefs);
-    	        //assertEquals(1, origRefs.size());
-    	        //NodeRef origNodeRef = origRefs.get(0).getChildRef();
-    	        //assertEquals(newNodeRef, origNodeRef);
-    	
-    	        // Check that the created node has been copied
-    	        //List<ChildAssociationRef> copyChildAssocRefs = this.nodeService.getChildAssocs(
-    	        //                                            this.rootNodeRef, 
-    	        //                                            RegexQNamePattern.MATCH_ALL, QName.createQName(TEST_NAMESPACE, "transformed"));
-    	        //assertNotNull(copyChildAssocRefs);
-    	        //assertEquals(1, copyChildAssocRefs.size());
-    	        //NodeRef copyNodeRef = copyChildAssocRefs.get(0).getChildRef();
-    	        //assertTrue(this.nodeService.hasAspect(copyNodeRef, ContentModel.ASPECT_COPIEDFROM));
-    	        //NodeRef source = (NodeRef)this.nodeService.getProperty(copyNodeRef, ContentModel.PROP_COPY_REFERENCE);
-    	        //assertEquals(newNodeRef, source);
-    	        
-    	        // Check the transformed content
-                //ContentData contentData = (ContentData) nodeService.getProperty(copyNodeRef, ContentModel.PROP_CONTENT);
-    			//assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentData.getMimetype());
-    			
+                // Sleep to ensure work is done b4 execution is canceled
+    			Thread.sleep(10000);    			
     		}
     		catch (Exception exception)
     		{

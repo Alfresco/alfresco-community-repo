@@ -18,11 +18,11 @@
         <property name="runtimeActionService">
 		    <ref bean="actionService"/>
 	    </property>	
-	    <property name="searchService">
-		    <ref bean="SearchService"/>
-	    </property>
 	    <property name="dictionaryService">
 		    <ref bean="dictionaryService"/>
+	    </property>
+	    <property name="rulesDisabled">
+	    	<value>false</value>
 	    </property>
    </bean>
    
@@ -81,6 +81,7 @@
       <constructor-arg>
          <list>
          	<ref bean="on-delete-child-association-trigger"/>
+         	<ref bean="on-delete-node-trigger"/>
          </list>
       </constructor-arg>
    </bean>
@@ -131,7 +132,19 @@
    
    <bean id="on-delete-child-association-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleChildAssocRefPolicyRuleTrigger" parent="rule-trigger-base">
       <property name="policyName">
-         <value>onDeleteChildAssociation</value>
+         <value>beforeDeleteChildAssociation</value>
+      </property>
+      <property name="executeRuleImmediately">
+      	<value>true</value>
+      </property>
+   </bean>
+      
+   <bean id="on-delete-node-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleNodeRefPolicyRuleTrigger" parent="rule-trigger-base">
+      <property name="policyName">
+         <value>beforeDeleteNode</value>
+      </property>
+      <property name="executeRuleImmediately">
+      	<value>true</value>
       </property>
    </bean>
    

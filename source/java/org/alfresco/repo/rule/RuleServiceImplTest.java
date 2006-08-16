@@ -148,6 +148,127 @@ public class RuleServiceImplTest extends BaseRuleTest
         assertEquals(1, conditions.size());                
     }
     
+    /** Ensure the rules are retrieved in the correct order **/
+    public void testGetRulesOrder()
+    {
+        for (int index = 0; index < 10; index++)
+        {         
+            Rule newRule = createTestRule(true, Integer.toString(index));        
+            this.ruleService.saveRule(this.nodeRef, newRule);
+        }
+        
+        // Check that they are all returned in the correct order
+        List<Rule> rules = this.ruleService.getRules(this.nodeRef);
+        int index = 0;
+        for (Rule rule : rules)
+        {
+            assertEquals(Integer.toString(index), rule.getTitle());
+            index++;
+        }
+        
+        // Create a child node
+        NodeRef level1 = createNewNode(this.nodeRef);
+        for (int index2 = 10; index2 < 20; index2++)
+        {         
+            Rule newRule = createTestRule(true, Integer.toString(index2));        
+            this.ruleService.saveRule(level1, newRule);
+        }
+        
+        // Check that they are all returned in the correct order
+        List<Rule> rules2 = this.ruleService.getRules(level1);
+        int index2 = 0;
+        for (Rule rule : rules2)
+        {
+            assertEquals(Integer.toString(index2), rule.getTitle());
+            index2++;
+        }
+        
+        // Create a child node
+        NodeRef level2 = createNewNode(level1);
+        for (int index3 = 20; index3 < 30; index3++)
+        {         
+            Rule newRule = createTestRule(true, Integer.toString(index3));        
+            this.ruleService.saveRule(level2, newRule);
+        }
+        
+        // Check that they are all returned in the correct order
+        List<Rule> rules3 = this.ruleService.getRules(level2);
+        int index3 = 0;
+        for (Rule rule : rules3)
+        {
+            //System.out.println(rule.getTitle());
+            assertEquals(Integer.toString(index3), rule.getTitle());
+            index3++;
+        }
+        
+        // Update a couple of the rules
+        Rule rule1 = rules3.get(2);
+        rule1.setDescription("This has been changed");
+        this.ruleService.saveRule(this.nodeRef, rule1);
+        Rule rule2 = rules3.get(12);
+        rule2.setDescription("This has been changed");
+        this.ruleService.saveRule(level1, rule2);
+        Rule rule3 = rules3.get(22);
+        rule3.setDescription("This has been changed");
+        this.ruleService.saveRule(level2, rule3);
+        
+        // Check that they are all returned in the correct order
+        List<Rule> rules4 = this.ruleService.getRules(level2);
+        int index4 = 0;
+        for (Rule rule : rules4)
+        {
+            assertEquals(Integer.toString(index4), rule.getTitle());
+            index4++;
+        }
+    }
+    
+    public void testIgnoreInheritedRules()
+    {
+        // Create the nodes and rules
+        this.ruleService.saveRule(this.nodeRef, createTestRule(true, "rule1"));
+        this.ruleService.saveRule(this.nodeRef, createTestRule(false, "rule2"));
+        NodeRef nodeRef1 = createNewNode(this.nodeRef);
+        this.ruleService.saveRule(nodeRef1, createTestRule(true, "rule3"));
+        this.ruleService.saveRule(nodeRef1, createTestRule(false, "rule4"));
+        NodeRef nodeRef2 = createNewNode(nodeRef1);
+        this.ruleService.saveRule(nodeRef2, createTestRule(true, "rule5"));
+        this.ruleService.saveRule(nodeRef2, createTestRule(false, "rule6"));
+        
+        // Apply the ignore aspect    
+        this.nodeService.addAspect(nodeRef1, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
+        
+        // Get the rules
+        List<Rule> rules1 = this.ruleService.getRules(nodeRef2);
+        assertNotNull(rules1);
+        assertEquals(3, rules1.size());
+        assertEquals("rule3", rules1.get(0).getTitle());
+        assertEquals("rule5", rules1.get(1).getTitle());
+        assertEquals("rule6", rules1.get(2).getTitle());
+        
+        // Apply the ignore aspect
+        this.nodeService.addAspect(nodeRef2, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
+        
+        // Get the rules
+        List<Rule> rules2 = this.ruleService.getRules(nodeRef2);
+        assertNotNull(rules2);
+        assertEquals(2, rules2.size());
+        assertEquals("rule5", rules2.get(0).getTitle());
+        assertEquals("rule6", rules2.get(1).getTitle());
+        
+        // Remove the ignore aspect
+        this.nodeService.removeAspect(nodeRef1, RuleModel.ASPECT_IGNORE_INHERITED_RULES);
+        this.nodeService.removeAspect(nodeRef2, RuleModel.ASPECT_IGNORE_INHERITED_RULES);
+        
+        // Get the rules
+        List<Rule> rules3 = this.ruleService.getRules(nodeRef2);
+        assertNotNull(rules3);
+        assertEquals(4, rules3.size());
+        assertEquals("rule1", rules3.get(0).getTitle());
+        assertEquals("rule3", rules3.get(1).getTitle());
+        assertEquals("rule5", rules3.get(2).getTitle());
+        assertEquals("rule6", rules3.get(3).getTitle());        
+    }
+    
     /**
      * Test disabling the rules
      */
@@ -167,13 +288,12 @@ public class RuleServiceImplTest extends BaseRuleTest
      * @param parent        the parent node
      * @param isActionable  indicates whether the node is actionable or not
      */
-    private NodeRef createNewNode(NodeRef parent, boolean isActionable)
+    private NodeRef createNewNode(NodeRef parent)
     {
-        NodeRef newNodeRef = this.nodeService.createNode(parent,
+        return this.nodeService.createNode(parent,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}testnode"),
-                ContentModel.TYPE_CONTAINER).getChildRef();                
-        return newNodeRef;
+                ContentModel.TYPE_CONTAINER).getChildRef();
     }
     
     /**
@@ -184,21 +304,21 @@ public class RuleServiceImplTest extends BaseRuleTest
     {
         // Create the nodes and rules
         
-        NodeRef rootWithRules = createNewNode(this.rootNodeRef, true);
+        NodeRef rootWithRules = createNewNode(this.rootNodeRef);
         Rule rule1 = createTestRule();
         this.ruleService.saveRule(rootWithRules, rule1);
         Rule rule2 = createTestRule(true);
         this.ruleService.saveRule(rootWithRules, rule2);
         
-        NodeRef nonActionableChild = createNewNode(rootWithRules, false);
+        NodeRef nonActionableChild = createNewNode(rootWithRules);
         
-        NodeRef childWithRules = createNewNode(nonActionableChild, true);
+        NodeRef childWithRules = createNewNode(nonActionableChild);
         Rule rule3 = createTestRule();
         this.ruleService.saveRule(childWithRules, rule3);
         Rule rule4 = createTestRule(true);
         this.ruleService.saveRule(childWithRules, rule4);
         
-        NodeRef rootWithRules2 = createNewNode(this.rootNodeRef, true);
+        NodeRef rootWithRules2 = createNewNode(this.rootNodeRef);
         this.nodeService.addChild(
                 rootWithRules2, 
                 childWithRules, 
@@ -211,7 +331,7 @@ public class RuleServiceImplTest extends BaseRuleTest
                         
         // Check that the rules are inherited in the correct way
         
-        List<? extends Rule> allRules = this.ruleService.getRules(childWithRules, true);
+        List<? extends Rule> allRules = this.ruleService.getRules(childWithRules);
         assertNotNull(allRules);
         assertEquals(4, allRules.size());
         assertTrue(allRules.contains(rule2));
@@ -432,9 +552,9 @@ public class RuleServiceImplTest extends BaseRuleTest
     public void testCyclicGraphWithInheritedRules()
         throws Exception
     {
-        NodeRef nodeRef1 = createNewNode(this.rootNodeRef, true);
-        NodeRef nodeRef2 = createNewNode(nodeRef1, true);
-        NodeRef nodeRef3 = createNewNode(nodeRef2, true);
+        NodeRef nodeRef1 = createNewNode(this.rootNodeRef);
+        NodeRef nodeRef2 = createNewNode(nodeRef1);
+        NodeRef nodeRef3 = createNewNode(nodeRef2);
         try
         {
             this.nodeService.addChild(nodeRef3, nodeRef1, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}loop"));
@@ -480,10 +600,10 @@ public class RuleServiceImplTest extends BaseRuleTest
      */
     public void testRuleDuplication()
     {
-        NodeRef nodeRef1 = createNewNode(this.rootNodeRef, true);
-        NodeRef nodeRef2 = createNewNode(nodeRef1, true);
-        NodeRef nodeRef3 = createNewNode(nodeRef2, true);
-        NodeRef nodeRef4 = createNewNode(nodeRef1, true);
+        NodeRef nodeRef1 = createNewNode(this.rootNodeRef);
+        NodeRef nodeRef2 = createNewNode(nodeRef1);
+        NodeRef nodeRef3 = createNewNode(nodeRef2);
+        NodeRef nodeRef4 = createNewNode(nodeRef1);
         this.nodeService.addChild(nodeRef4, nodeRef3, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}test"));
         
         Rule rule1 = createTestRule(true);
@@ -527,7 +647,7 @@ public class RuleServiceImplTest extends BaseRuleTest
     
     public void testCyclicAsyncRules() throws Exception
     {
-        NodeRef nodeRef = createNewNode(this.rootNodeRef, true);
+        NodeRef nodeRef = createNewNode(this.rootNodeRef);
         
         // Create the first rule
         

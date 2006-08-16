@@ -330,7 +330,6 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 		// Edit the properties of the action		
 		Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
 		properties.put(ContentModel.PROP_NAME, "testName");
-		action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_PROPERTIES, (Serializable)properties);
 		action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_AUDITABLE);
 		
 		// Set the compensating action
@@ -342,12 +341,8 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 		Action savedAction2 = this.actionService.getAction(this.nodeRef, actionId);
 		
 		// Check the updated properties
-		assertEquals(2, savedAction2.getParameterValues().size());
+		assertEquals(1, savedAction2.getParameterValues().size());
 		assertEquals(ContentModel.ASPECT_AUDITABLE, savedAction2.getParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME));
-		Map<QName, Serializable> temp = (Map<QName, Serializable>)savedAction2.getParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_PROPERTIES);
-		assertNotNull(temp);
-		assertEquals(1, temp.size());
-		assertEquals("testName", temp.get(ContentModel.PROP_NAME));
 		
 		// Check the compensating action
 		Action savedCompensatingAction = savedAction2.getCompensatingAction();
@@ -393,14 +388,8 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         // Save the action
         this.actionService.saveAction(this.nodeRef, action);
         
-        // Check the owning node ref
-        //assertEquals(this.nodeRef, action.getOwningNodeRef());
-        
         // Get the action
-        Action savedAction = this.actionService.getAction(this.nodeRef, actionId);
-        
-        // Check the owning node ref
-        //assertEquals(this.nodeRef, savedAction.getOwningNodeRef());;
+        this.actionService.getAction(this.nodeRef, actionId);        
     }
 
 	/**
@@ -414,9 +403,6 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 		
 		// Set the parameters of the action
 		action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);
-		Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
-		properties.put(ContentModel.PROP_NAME, "testName");
-		action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_PROPERTIES, (Serializable)properties);
 		
 		// Set the conditions of the action
 		ActionCondition actionCondition = this.actionService.createActionCondition(NoConditionEvaluator.NAME);
@@ -439,10 +425,6 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 		// Check the properties
 		assertEquals(action.getParameterValues().size(), savedAction.getParameterValues().size());
 		assertEquals(ContentModel.ASPECT_VERSIONABLE, savedAction.getParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME));
-		Map<QName, Serializable> temp = (Map<QName, Serializable>)savedAction.getParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_PROPERTIES);
-		assertNotNull(temp);
-		assertEquals(1, temp.size());
-		assertEquals("testName", temp.get(ContentModel.PROP_NAME));
 		
 		// Check the conditions
 		assertNotNull(savedAction.getActionConditions());

@@ -410,4 +410,19 @@
         </property>
     </bean>
     
+    <bean id="patch.uifacetsTemplatesPatch" class="org.alfresco.repo.admin.patch.impl.UIFacetsAspectRemovalPatch" parent="basePatch">
+        <property name="id"><value>patch.uifacetsTemplates</value></property>
+        <property name="description"><value>patch.uifacetsAspectRemovalPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>17</value></property>
+        <property name="targetSchema"><value>18</value></property>
+        <!-- helper beans for execution -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="messageSource">
+            <ref bean="bootstrapSpacesMessageSource" />
+        </property>
+    </bean>
+    
 </beans>

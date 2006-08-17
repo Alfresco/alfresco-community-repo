@@ -330,7 +330,7 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
         
         if (this.runtimeNodeService.exists(nodeRef) == true && checkNodeType(nodeRef) == true)
         {
-            if (includeInherited == true && this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == false)
+            if (includeInherited == true && this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == false)
             {
                 // Get any inherited rules
                 for (Rule rule : getInheritedRules(nodeRef, ruleTypeName, null))
@@ -441,7 +441,7 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
 	{
 		List<Rule> inheritedRules = new ArrayList<Rule>();
         
-        if (this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == false)
+        if (this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == false)
         {		
     		// Create the visited nodes set if it has not already been created
     		if (visitedNodeRefs == null)

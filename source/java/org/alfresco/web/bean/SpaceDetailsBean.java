@@ -471,18 +471,41 @@ public class SpaceDetailsBean extends BaseDetailsBean
     */
    public boolean isRSSFeed()
    {
-      return (getSpace().hasAspect(ContentModel.ASPECT_FEEDSOURCE) &&
-              getSpace().getProperties().get(ContentModel.PROP_FEEDTEMPLATE) != null);
+      return hasRSSFeed(getSpace());
    }
    
+   /**
+    * @return true if the current space has an RSS feed applied
+    */
+   public static boolean hasRSSFeed(Node space)
+   {
+      return (space.hasAspect(ContentModel.ASPECT_FEEDSOURCE) &&
+              space.getProperties().get(ContentModel.PROP_FEEDTEMPLATE) != null);
+   }
+   
+   /**
+    * @return RSS Feed URL for the current space
+    */
    public String getRSSFeedURL()
    {
-      // build RSS feed template URL from selected template and current space NodeRef and
+      return buildRSSFeedURL(getSpace());
+   }
+   
+   /**
+    * Build URL for an RSS space based on the 'feedsource' aspect property.
+    *  
+    * @param space  Node to build RSS template URL for
+    *  
+    * @return URL for the RSS feed for a space
+    */
+   public static String buildRSSFeedURL(Node space)
+   {
+      // build RSS feed template URL from selected template and the space NodeRef and
       // add the guest=true URL parameter - this is required for no login access and
       // add the mimetype=text/xml URL parameter - required to return correct stream type
-      return TemplateContentServlet.generateURL(getSpace().getNodeRef(),
-                (NodeRef)getSpace().getProperties().get(ContentModel.PROP_FEEDTEMPLATE))
-                    + "?guest=true" + "&mimetype=text%2Fxml";
+      return TemplateContentServlet.generateURL(space.getNodeRef(),
+                (NodeRef)space.getProperties().get(ContentModel.PROP_FEEDTEMPLATE))
+                    + "/rss.xml?guest=true" + "&mimetype=text%2Fxml";
    }
 
    /**

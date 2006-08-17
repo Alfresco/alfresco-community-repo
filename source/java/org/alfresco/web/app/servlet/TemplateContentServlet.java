@@ -142,7 +142,7 @@ public class TemplateContentServlet extends BaseServlet
          
          templateRef = pathInfo.NodeRef;
       }
-      else if (tokenCount == 7)
+      else if (tokenCount >= 7)
       {
          StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
          templateRef = new NodeRef(storeRef, t.nextToken());
@@ -157,7 +157,7 @@ public class TemplateContentServlet extends BaseServlet
       
       if (nodeRef == null)
       {
-         throw new TemplateException("Not enough arguments supplied in URL.");
+         throw new TemplateException("Not enough elements supplied in URL or no 'path' argument specified.");
       }
       
       // get the services we need to retrieve the content

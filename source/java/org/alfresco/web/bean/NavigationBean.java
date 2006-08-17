@@ -698,6 +698,22 @@ public class NavigationBean
       return this.cifsServerPath;
    }
    
+   /**
+    * @return true if the current space has an RSS feed applied
+    */
+   public boolean isRSSFeed()
+   {
+      return SpaceDetailsBean.hasRSSFeed(getCurrentNode());
+   }
+   
+   /**
+    * @return RSS Feed URL for the current space
+    */
+   public String getRSSFeedURL()
+   {
+      return SpaceDetailsBean.buildRSSFeedURL(getCurrentNode());
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Private helpers

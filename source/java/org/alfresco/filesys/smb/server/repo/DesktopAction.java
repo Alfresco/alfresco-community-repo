@@ -65,6 +65,8 @@ public abstract class DesktopAction {
     public static final int AttrMultiplePaths		= 0x0040;	// run action using multiple paths
     															// default is to run the action against a single path with the client app calling the action
     															// multiple times
+    public static final int AttrAllowNoParams		= 0x0080;	// allow action to run without parameters
+    															// used when files/folder parameters are optional
     
     public static final int AttrAnyFiles			= AttrTargetFiles + AttrClientFiles + AttrAlfrescoFiles;
     public static final int AttrAnyFolders			= AttrTargetFolders + AttrClientFolders + AttrAlfrescoFolders;
@@ -117,7 +119,7 @@ public abstract class DesktopAction {
 	/**
 	 * Default constructor
 	 */
-	public DesktopAction()
+	protected DesktopAction()
 	{
 	}
 	
@@ -127,7 +129,7 @@ public abstract class DesktopAction {
 	 * @param attr int
 	 * @param preActions int
 	 */
-	public DesktopAction(int attr, int preActions)
+	protected DesktopAction(int attr, int preActions)
 	{
 		setAttributes(attr);
 		setPreProcessActions(preActions);
@@ -138,7 +140,7 @@ public abstract class DesktopAction {
 	 *
 	 * @param name String
 	 */
-	public DesktopAction(String name)
+	protected DesktopAction(String name)
 	{
 		m_name = name;
 	}

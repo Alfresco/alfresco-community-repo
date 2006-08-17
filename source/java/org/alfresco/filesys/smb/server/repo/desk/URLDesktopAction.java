@@ -34,7 +34,7 @@ public class URLDesktopAction extends DesktopAction {
 	 */
 	public URLDesktopAction()
 	{
-		super( 0, DesktopAction.PreConfirmAction);
+		super( 0, PreConfirmAction);
 	}
 	
 	@Override

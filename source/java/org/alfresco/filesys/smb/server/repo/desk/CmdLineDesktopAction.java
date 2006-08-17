@@ -34,7 +34,7 @@ public class CmdLineDesktopAction extends DesktopAction {
 	 */
 	public CmdLineDesktopAction()
 	{
-		super( 0, DesktopAction.PreConfirmAction);
+		super( 0, PreConfirmAction);
 	}
 	
 	@Override

@@ -36,7 +36,7 @@ public class EchoDesktopAction extends DesktopAction {
 	 */
 	public EchoDesktopAction()
 	{
-		super( 0, DesktopAction.PreConfirmAction);
+		super( 0, PreConfirmAction);
 	}
 	
 	@Override

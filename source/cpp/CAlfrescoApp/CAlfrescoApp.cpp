@@ -148,7 +148,7 @@ BOOL CCAlfrescoAppApp::InitInstance()
 
 			// Action does not use targets, just run the action
 
-			else {
+			else if ( actionInfo.allowsNoParameters()) {
 
 				// Run the action
 
@@ -464,6 +464,13 @@ bool CCAlfrescoAppApp::runAction( AlfrescoInterface& alfresco, StringList& pathL
 	DesktopParams desktopParams;
 	
 	if ( buildDesktopParameters( alfresco, pathList, actionInfo, desktopParams)) {
+
+		// Check if the action requires parameters
+
+		if ( actionInfo.allowsNoParameters() == false && desktopParams.numberOfTargets() == 0) {
+			AfxMessageBox( L"No parameters for action", MB_OK | MB_ICONEXCLAMATION);
+			return false;
+		}
 
 		// Run the desktop action
 

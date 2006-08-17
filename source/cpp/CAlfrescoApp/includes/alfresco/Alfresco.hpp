@@ -106,6 +106,7 @@ namespace Alfresco {
 	#define AttrAlfrescoFiles	0x0010
 	#define AttrAlfrescoFolders 0x0020
 	#define	AttrMultiplePaths	0x0040
+	#define AttrAllowNoParams   0x0080
 
 	#define AttrAnyFiles		(AttrTargetFiles + AttrClientFiles + AttrAlfrescoFiles)
 	#define AttrAnyFolders		(AttrTargetFolders + AttrClientFolders + AttrAlfrescoFolders)
@@ -366,6 +367,10 @@ public:
 
 	inline bool supportsFiles(void) const { return hasAttribute(AttrTargetFiles+AttrClientFiles+AttrAlfrescoFiles); }
 	inline bool supportsFolders(void) const { return hasAttribute(AttrTargetFolders+AttrClientFolders+AttrAlfrescoFolders); }
+
+	// Check if the action allows no parameters
+
+	inline bool allowsNoParameters(void) const { return hasAttribute(AttrAllowNoParams) || hasAttribute(AttrAnyFilesFolders) == false; }
 
 	// Set the action name, pseudo name, set the confirmation message
 

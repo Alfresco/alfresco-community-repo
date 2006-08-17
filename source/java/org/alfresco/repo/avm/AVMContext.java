@@ -14,7 +14,7 @@ import org.springframework.context.ApplicationContextAware;
  * point for access to needed global instances.
  * @author britt
  */
-class AVMContext implements ApplicationContextAware
+public class AVMContext implements ApplicationContextAware
 {
     /**
      * The single instance of an AVMContext.

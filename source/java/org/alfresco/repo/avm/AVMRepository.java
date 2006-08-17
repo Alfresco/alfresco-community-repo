@@ -719,26 +719,32 @@ class AVMRepository
     public Lookup lookup(int version, String path)
     {
         Integer count = fLookupCount.get();
-        if (count == null)
+        try
         {
-            fLookupCount.set(1);
+            if (count == null)
+            {
+                fLookupCount.set(1);
+            }
+            else
+            {
+                fLookupCount.set(count + 1);
+            }
+            if (fLookupCount.get() > 50)
+            {
+                throw new AVMCycleException("Cycle in lookup.");
+            }
+            String [] pathParts = SplitPath(path);
+            AVMStore store = getAVMStoreByName(pathParts[0]);
+            Lookup result = store.lookup(version, pathParts[1], false);
+            return result;
         }
-        else
+        finally
         {
-            fLookupCount.set(count + 1);
+            if (count == null)
+            {
+                fLookupCount.set(null);
+            }
         }
-        if (fLookupCount.get() > 50)
-        {
-            // throw new AVMCycleException("Cycle in lookup.");
-        }
-        String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0]);
-        Lookup result = store.lookup(version, pathParts[1], false);
-        if (count == null)
-        {
-            fLookupCount.set(null);
-        }
-        return result;
     }
     
     /**
@@ -789,18 +795,9 @@ class AVMRepository
      */
     public Lookup lookupDirectory(int version, String path)
     {
-        Integer count = fLookupCount.get();
-        if (count == null)
-        {
-            fLookupCount.set(1);
-        }
-        else
-        {
-            fLookupCount.set(count + 1);
-        }
         if (fLookupCount.get() > 50)
         {
-            // throw new AVMCycleException("Cycle in lookup.");
+            throw new AVMCycleException("Cycle in lookup.");
         }
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0]);

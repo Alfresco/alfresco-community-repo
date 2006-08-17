@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
@@ -66,12 +67,18 @@ public class RSSTemplatesFolderPatch extends AbstractPatch
     private ImporterBootstrap importerBootstrap;
     private ImporterService importerService;
     private MessageSource messageSource;
+    private PermissionService permissionService;
     
     protected NodeRef dictionaryNodeRef;
     protected Properties configuration;
     protected NodeRef rssFolderNodeRef;
     
     private String rssTemplatesACP;
+    
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
     
     public void setImporterBootstrap(ImporterBootstrap importerBootstrap)
     {
@@ -211,6 +218,13 @@ public class RSSTemplatesFolderPatch extends AbstractPatch
         {
             // create it
             createFolder();
+            
+            // apply Guest permission to the folder
+            permissionService.setPermission(
+                rssFolderNodeRef,
+                PermissionService.GUEST_AUTHORITY,
+                PermissionService.CONSUMER,
+                true);
             
             // import the content
             try

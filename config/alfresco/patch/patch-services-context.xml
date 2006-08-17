@@ -405,6 +405,9 @@
         <property name="importerService">
             <ref bean="importerComponent" />
         </property>
+        <property name="permissionService">
+            <ref bean="permissionService"/>
+        </property>
     </bean>
     
 </beans>

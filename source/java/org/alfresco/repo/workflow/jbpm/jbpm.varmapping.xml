@@ -123,7 +123,7 @@
     <jbpm-type>
       <matcher>
         <bean class="org.jbpm.context.exe.matcher.ClassNameMatcher">
-          <field name="className"><string value="org.alfresco.repo.jscript.Node" /></field>
+          <field name="className"><string value="org.alfresco.repo.workflow.jbpm.JBPMNode" /></field>
         </bean>
       </matcher>
       <converter class="org.alfresco.repo.workflow.jbpm.NodeConverter" />

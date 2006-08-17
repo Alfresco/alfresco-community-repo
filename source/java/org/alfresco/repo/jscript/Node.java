@@ -74,7 +74,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Kevin Roast
  */
-public final class Node implements Serializable, Scopeable
+public class Node implements Serializable, Scopeable
 {
     private static Log logger = LogFactory.getLog(Node.class);
     
@@ -155,7 +155,6 @@ public final class Node implements Serializable, Scopeable
         this.nodeService = services.getNodeService();
         this.imageResolver = resolver;
         this.scope = scope;
-        this.converter = new NodeValueConverter();
     }
     
     /**
@@ -405,7 +404,8 @@ public final class Node implements Serializable, Scopeable
                 Serializable propValue = props.get(qname);
                 
                 // perform the conversion to a script safe value and store
-                this.properties.put(qname.toString(), converter.convertValueForScript(qname, propValue));
+                
+                this.properties.put(qname.toString(), getValueConverter().convertValueForScript(qname, propValue));
             }
         }
         
@@ -891,14 +891,14 @@ public final class Node implements Serializable, Scopeable
      */
     public void save()
     {
-        // persist properties back to the node in the DB 
+        // persist properties back to the node in the DB
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(getProperties().size());
         for (String key : this.properties.keySet())
         {
             Serializable value = (Serializable)this.properties.get(key);
             
             // perform the conversion from script wrapper object to repo serializable values
-            value = converter.convertValueForRepo(value);
+            value = getValueConverter().convertValueForRepo(value);
             
             props.put(createQName(key), value);
         }
@@ -1209,7 +1209,7 @@ public final class Node implements Serializable, Scopeable
                         {
                             // get the value out for the specified key - make sure it is Serializable
                             Object value = props.get((String)propId, props);
-                            value = converter.convertValueForRepo((Serializable)value);
+                            value = getValueConverter().convertValueForRepo((Serializable)value);
                             aspectProps.put(createQName((String)propId), (Serializable)value);
                         }
                     }
@@ -1635,12 +1635,37 @@ public final class Node implements Serializable, Scopeable
     
     // ------------------------------------------------------------------------------
     // Value Conversion
+
+    /**
+     * Gets the node value converter
+     * 
+     * @return  the node value converter
+     */
+    protected NodeValueConverter getValueConverter()
+    {
+        if (converter == null)
+        {
+            converter = createValueConverter();
+        }
+        return converter;
+    }
+
+    
+    /**
+     * Constructs the node value converter
+     * 
+     * @return the node value converter
+     */
+    protected NodeValueConverter createValueConverter()
+    {
+        return new NodeValueConverter();
+    }
     
     
     /**
      * Value converter with knowledge of Node specific value types 
      */
-    private final class NodeValueConverter extends ValueConverter
+    public class NodeValueConverter extends ValueConverter
     {
         /**
          * Convert an object from any repository serialized value to a valid script object.

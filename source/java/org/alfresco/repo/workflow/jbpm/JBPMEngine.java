@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowNode;
@@ -68,11 +69,15 @@ import org.jbpm.graph.def.ProcessDefinition;
 import org.jbpm.graph.def.Transition;
 import org.jbpm.graph.exe.ProcessInstance;
 import org.jbpm.graph.exe.Token;
+import org.jbpm.jpdl.par.ProcessArchive;
+import org.jbpm.jpdl.xml.JpdlXmlReader;
+import org.jbpm.jpdl.xml.Problem;
 import org.jbpm.taskmgmt.def.Task;
 import org.jbpm.taskmgmt.exe.TaskInstance;
 import org.springframework.util.StringUtils;
 import org.springmodules.workflow.jbpm31.JbpmCallback;
 import org.springmodules.workflow.jbpm31.JbpmTemplate;
+import org.xml.sax.InputSource;
 
 
 /**
@@ -178,23 +183,23 @@ public class JBPMEngine extends BPMEngine
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.WorkflowDefinitionComponent#deployDefinition(java.io.InputStream)
      */
-    public WorkflowDefinition deployDefinition(final InputStream workflowDefinition, final String mimetype)
+    public WorkflowDeployment deployDefinition(final InputStream workflowDefinition, final String mimetype)
     {
         try
         {
-            return (WorkflowDefinition)jbpmTemplate.execute(new JbpmCallback()
+            return (WorkflowDeployment)jbpmTemplate.execute(new JbpmCallback()
             {
                 public Object doInJbpm(JbpmContext context)
                 {
                     // construct process definition
-                    ProcessDefinition def = createProcessDefinition(workflowDefinition, mimetype);
+                    CompiledProcessDefinition compiledDef = compileProcessDefinition(workflowDefinition, mimetype);
                     
                     // deploy the parsed definition
-                    context.deployProcessDefinition(def);
+                    context.deployProcessDefinition(compiledDef.def);
                     
                     // return deployed definition
-                    WorkflowDefinition workflowDef = createWorkflowDefinition(def);
-                    return workflowDef;
+                    WorkflowDeployment workflowDeployment = createWorkflowDeployment(compiledDef);
+                    return workflowDeployment;
                 }
             });
         }
@@ -217,11 +222,11 @@ public class JBPMEngine extends BPMEngine
                 public Boolean doInJbpm(JbpmContext context)
                 {
                     // create process definition from input stream
-                    ProcessDefinition processDefinition = createProcessDefinition(workflowDefinition, mimetype);
+                    CompiledProcessDefinition processDefinition = compileProcessDefinition(workflowDefinition, mimetype);
                     
                     // retrieve process definition from Alfresco Repository
                     GraphSession graphSession = context.getGraphSession();
-                    ProcessDefinition existingDefinition = graphSession.findLatestProcessDefinition(processDefinition.getName());
+                    ProcessDefinition existingDefinition = graphSession.findLatestProcessDefinition(processDefinition.def.getName());
                     return (existingDefinition == null) ? false : true;
                 }
             });
@@ -828,6 +833,53 @@ public class JBPMEngine extends BPMEngine
     // Helpers...
     //
     
+
+    /**
+     * Process Definition with accompanying problems
+     */
+    private static class CompiledProcessDefinition
+    {
+        public CompiledProcessDefinition(ProcessDefinition def, List<Problem> problems)
+        {
+            this.def = def;
+            this.problems = new String[problems.size()];
+            int i = 0;
+            for (Problem problem : problems)
+            {
+                this.problems[i++] = problem.toString();
+            }
+        }
+        
+        protected ProcessDefinition def;
+        protected String[] problems;
+    }
+
+    /**
+     * JpdlXmlReader with access to problems encountered during compile.
+     * 
+     * @author davidc
+     */
+    private static class JBPMEngineJpdlXmlReader extends JpdlXmlReader
+    {
+        private static final long serialVersionUID = -753730152120696221L;
+
+        public JBPMEngineJpdlXmlReader(InputStream inputStream)
+        {
+            super(new InputSource(inputStream));
+        }
+
+        /**
+         * Gets the problems
+         * 
+         * @return  problems
+         */
+        public List getProblems()
+        {
+            return problems;
+        }
+    }
+    
+    
     /**
      * Construct a Process Definition from the provided Process Definition stream
      * 
@@ -835,10 +887,11 @@ public class JBPMEngine extends BPMEngine
      * @param mimetype  mimetype of stream
      * @return  process definition
      */
-    protected ProcessDefinition createProcessDefinition(InputStream definitionStream, String mimetype)
+    @SuppressWarnings("unchecked")
+    protected CompiledProcessDefinition compileProcessDefinition(InputStream definitionStream, String mimetype)
     {
         String actualMimetype = (mimetype == null) ? MimetypeMap.MIMETYPE_ZIP : mimetype;
-        ProcessDefinition def = null;
+        CompiledProcessDefinition compiledDef = null;
         
         // parse process definition from jBPM process archive file
         
@@ -848,7 +901,9 @@ public class JBPMEngine extends BPMEngine
             try
             {
                 zipInputStream = new ZipInputStream(definitionStream);
-                def = ProcessDefinition.parseParZipInputStream(zipInputStream);  
+                ProcessArchive reader = new ProcessArchive(zipInputStream);
+                ProcessDefinition def = reader.parseProcessDefinition();
+                compiledDef = new CompiledProcessDefinition(def, reader.getProblems());
             }
             catch(Exception e)
             {
@@ -869,15 +924,17 @@ public class JBPMEngine extends BPMEngine
         {
             try
             {
-                def = ProcessDefinition.parseXmlInputStream(definitionStream);
+                JBPMEngineJpdlXmlReader jpdlReader = new JBPMEngineJpdlXmlReader(definitionStream); 
+                ProcessDefinition def = jpdlReader.readProcessDefinition();
+                compiledDef = new CompiledProcessDefinition(def, jpdlReader.getProblems());
             }
             catch(Exception e)
             {
                 throw new JbpmException("Failed to parse process definition from jBPM xml stream", e);
             }
         }
-        
-        return def;
+
+        return compiledDef;
     }
 
     /**
@@ -1152,11 +1209,12 @@ public class JBPMEngine extends BPMEngine
             String name = key.toPrefixString(this.namespaceService);
             if (value instanceof NodeRef)
             {
-                value = new org.alfresco.repo.jscript.Node((NodeRef)value, serviceRegistry, null);
+                value = new JBPMNode((NodeRef)value, serviceRegistry);
             }
             instance.setVariableLocally(name, value);
         }
     }
+    
     
     /**
      * Convert a list of Alfresco Authorities to a list of authority Names
@@ -1389,6 +1447,20 @@ public class JBPMEngine extends BPMEngine
         taskDef.id = task.getName();
         taskDef.metadata = getTaskDefinition(task);
         return taskDef;
+    }
+    
+    /**
+     * Creates a Workflow Deployment
+     * 
+     * @param compiledDef  compiled JBPM process definition
+     * @return  workflow deployment
+     */
+    protected WorkflowDeployment createWorkflowDeployment(CompiledProcessDefinition compiledDef)
+    {
+        WorkflowDeployment deployment = new WorkflowDeployment();
+        deployment.definition = createWorkflowDefinition(compiledDef.def);
+        deployment.problems = compiledDef.problems;
+        return deployment;
     }
     
     /**

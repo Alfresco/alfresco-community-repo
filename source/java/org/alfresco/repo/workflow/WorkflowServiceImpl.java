@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
@@ -32,6 +33,8 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -42,6 +45,10 @@ import org.alfresco.service.namespace.QName;
  */
 public class WorkflowServiceImpl implements WorkflowService
 {
+    // Logging support
+    private static Log logger = LogFactory.getLog("org.alfresco.repo.workflow");
+
+    // Dependent services
     private BPMEngineRegistry registry;
     private WorkflowPackageComponent workflowPackageComponent;
     
@@ -70,10 +77,20 @@ public class WorkflowServiceImpl implements WorkflowService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.workflow.WorkflowService#deployDefinition(java.lang.String, java.io.InputStream, java.lang.String)
      */
-    public WorkflowDefinition deployDefinition(String engineId, InputStream workflowDefinition, String mimetype)
+    public WorkflowDeployment deployDefinition(String engineId, InputStream workflowDefinition, String mimetype)
     {
         WorkflowComponent component = getWorkflowComponent(engineId);
-        return component.deployDefinition(workflowDefinition, mimetype);
+        WorkflowDeployment deployment = component.deployDefinition(workflowDefinition, mimetype);
+        
+        if (logger.isDebugEnabled() && deployment.problems.length > 0)
+        {
+            for (String problem : deployment.problems)
+            {
+                logger.debug("Workflow definition '" + deployment.definition.title + "' problem: " + problem);
+            }
+        }
+        
+        return deployment;
     }
 
     /* (non-Javadoc)
@@ -88,7 +105,7 @@ public class WorkflowServiceImpl implements WorkflowService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.workflow.WorkflowService#deployDefinition(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public WorkflowDefinition deployDefinition(NodeRef definitionContent)
+    public WorkflowDeployment deployDefinition(NodeRef definitionContent)
     {
         // TODO
         throw new UnsupportedOperationException();

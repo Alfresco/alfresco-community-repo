@@ -16,7 +16,6 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
-import org.alfresco.repo.jscript.Node;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.jbpm.context.exe.Converter;
@@ -46,7 +45,7 @@ public class NodeConverter implements Converter
         {
             return true;
         }
-        return (value.getClass() == Node.class);
+        return (value.getClass() == JBPMNode.class);
     }
 
     /* (non-Javadoc)
@@ -57,7 +56,7 @@ public class NodeConverter implements Converter
         Object converted = null;
         if (o != null)
         {
-            converted = ((Node)o).getNodeRef().toString();
+            converted = ((JBPMNode)o).getNodeRef().toString();
         }
         return converted;
     }
@@ -72,7 +71,7 @@ public class NodeConverter implements Converter
         {
             BeanFactoryReference factory = jbpmFactoryLocator.useBeanFactory(null);
             ServiceRegistry serviceRegistry = (ServiceRegistry)factory.getFactory().getBean(ServiceRegistry.SERVICE_REGISTRY);
-            reverted = new Node(new NodeRef((String)o), serviceRegistry, null);
+            reverted = new JBPMNode(new NodeRef((String)o), serviceRegistry);
         }
         return reverted;
     }

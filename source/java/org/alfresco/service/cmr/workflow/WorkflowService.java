@@ -43,11 +43,22 @@ public interface WorkflowService
      * 
      * @param  engineId  the bpm engine id
      * @param  workflowDefinition  the workflow definition
-     * @param  overwrite  true => redeploy, if process definition already exists
-     * @return  mimetype  the mimetype of the workflow definition
+     * @param  mimetype  the mimetype of the workflow definition
+     * @return  workflow deployment descriptor
      */
-    public WorkflowDefinition deployDefinition(String engineId, InputStream workflowDefinition, String mimetype);
+    public WorkflowDeployment deployDefinition(String engineId, InputStream workflowDefinition, String mimetype);
     
+    /**
+     * Deploy a Workflow Definition to the Alfresco Repository
+     * 
+     * Note: The specified content object must be of type bpm:workflowdefinition.
+     *       This type describes for which BPM engine the definition is appropriate. 
+     * 
+     * @param workflowDefinition  the content object containing the definition
+     * @return  workflow deployment descriptor
+     */
+    public WorkflowDeployment deployDefinition(NodeRef workflowDefinition);
+
     /**
      * Is the specified Workflow Definition already deployed?
      * 
@@ -61,17 +72,6 @@ public interface WorkflowService
      */
     public boolean isDefinitionDeployed(String engineId, InputStream workflowDefinition, String mimetype);
     
-    /**
-     * Deploy a Workflow Definition to the Alfresco Repository
-     * 
-     * Note: The specified content object must be of type bpm:workflowdefinition.
-     *       This type describes for which BPM engine the definition is appropriate. 
-     * 
-     * @param workflowDefinition  the content object containing the definition
-     * @return  workflow definition
-     */
-    public WorkflowDefinition deployDefinition(NodeRef workflowDefinition);
-
     /**
      * Undeploy an exisiting Workflow Definition
      * 

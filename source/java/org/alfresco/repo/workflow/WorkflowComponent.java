@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -46,9 +47,9 @@ public interface WorkflowComponent
      * 
      * @param workflowDefinition  the content object containing the definition
      * @param mimetype (optional)  the mime type of the workflow definition
-     * @return workflow definition
+     * @return workflow deployment descriptor
      */
-    public WorkflowDefinition deployDefinition(InputStream workflowDefinition, String mimetype);
+    public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype);
 
     /**
      * Is the specified Workflow Definition already deployed?

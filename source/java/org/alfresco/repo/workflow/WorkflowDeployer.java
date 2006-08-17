@@ -24,7 +24,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.view.ImporterException;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.transaction.TransactionService;
@@ -148,17 +148,13 @@ public class WorkflowDeployer implements ApplicationListener
                     if (workflowService.isDefinitionDeployed(engineId, workflowResource.getInputStream(), mimetype))
                     {
                         if (logger.isDebugEnabled())
-                        {
                             logger.debug("Workflow deployer: Definition '" + location + "' already deployed");
-                        }
                     }
                     else
                     {
-                        WorkflowDefinition def = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), mimetype);
+                        WorkflowDeployment deployment = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), mimetype);
                         if (logger.isInfoEnabled())
-                        {
-                            logger.info("Workflow deployer: Deployed process definition '" + def.title + "' (version " + def.version + ") from '" + location + "'");
-                        }
+                            logger.info("Workflow deployer: Deployed process definition '" + deployment.definition.title + "' (version " + deployment.definition.version + ") from '" + location + "' with " + deployment.problems.length + " problems");
                     }
                 }
             }

@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
@@ -72,7 +73,8 @@ public class JBPMEngineTest extends BaseSpringTest
         // deploy test process definition
         ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/test_processdefinition.xml");
         assertFalse(workflowComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
-        testWorkflowDef = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML);
+        WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
+        testWorkflowDef = deployment.definition; 
         assertNotNull(testWorkflowDef);
         assertEquals("Test", testWorkflowDef.title);
         assertEquals("1", testWorkflowDef.version);
@@ -95,7 +97,8 @@ public class JBPMEngineTest extends BaseSpringTest
     public void testDeployWorkflow() throws Exception
     {
         ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/test_processdefinition.xml");
-        testWorkflowDef = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML);
+        WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
+        testWorkflowDef = deployment.definition; 
         assertNotNull(testWorkflowDef);
         assertEquals("Test", testWorkflowDef.title);
         assertEquals("2", testWorkflowDef.version);

@@ -5,12 +5,12 @@
 
     <view:reference view:pathref="${bootstrap.location.path}">
         <!-- Apply Read access to Everyone on root node of Spaces Store -->
-		<view:acl>
-		   <view:ace view:access="ALLOWED">
-		      <view:authority>GROUP_EVERYONE</view:authority>
-		      <view:permission>Read</view:permission>
-		   </view:ace>
-		</view:acl>
+        <view:acl>
+        <view:ace view:access="ALLOWED">
+            <view:authority>GROUP_EVERYONE</view:authority>
+            <view:permission>Read</view:permission>
+            </view:ace>
+        </view:acl>
     </view:reference>
                
     <sys:container view:childName="${system.system_container.childname}">

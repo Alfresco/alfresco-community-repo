@@ -14,7 +14,7 @@
    <swimlane name="Reviewer">
       <assignment actor-id="#{reviewer}"></assignment>
    </swimlane>
-   <task-node name="review">
+   <task-node name="Review">
       <task name="Review" duedate="1 business day" blocking="true" swimlane="Reviewer">
          <controller>
             <variable name="comment" access="read,write,required"></variable>

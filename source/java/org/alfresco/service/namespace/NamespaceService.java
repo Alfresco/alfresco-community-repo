@@ -72,6 +72,12 @@ public interface NamespaceService extends NamespacePrefixResolver
     /** Business Process Model Prefix */
     public static final String BPM_MODEL_PREFIX = "bpm";
 
+    /** Workflow Model URI */
+    public static final String WORKFLOW_MODEL_1_0_URI = "http://www.alfresco.org/model/workflow/1.0";
+
+    /** Workflow Model Prefix */
+    public static final String WORKFLOW_MODEL_PREFIX = "wf";
+
     /** Alfresco View Namespace URI */
     public static final String REPOSITORY_VIEW_1_0_URI = "http://www.alfresco.org/view/repository/1.0";
     

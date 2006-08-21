@@ -1258,7 +1258,8 @@ public class JBPMEngine extends BPMEngine
             }
             else
             {
-                value = new JBPMNode((NodeRef)value, serviceRegistry);
+                List<NodeRef> nodeRefs = (List<NodeRef>)value;
+                value = (nodeRefs.size() == 0 ? null : new JBPMNode(nodeRefs.get(0), serviceRegistry));
             }
         }
         
@@ -1440,7 +1441,7 @@ public class JBPMEngine extends BPMEngine
         workflowTask.properties = getTaskProperties(task);
         String name = task.getName();
         String processName = task.getTask().getProcessDefinition().getName();
-        workflowTask.title = getLabel(processName + ".node." + name, TITLE_LABEL, name);
+        workflowTask.title = getLabel(processName + ".task." + name, TITLE_LABEL, null);
         if (workflowTask.title == null)
         {
             workflowTask.title = workflowTask.definition.metadata.getTitle();
@@ -1449,7 +1450,7 @@ public class JBPMEngine extends BPMEngine
                 workflowTask.title = name;
             }
         }
-        workflowTask.description = getLabel(processName + ".node." + name, DESC_LABEL, workflowTask.title);
+        workflowTask.description = getLabel(processName + ".task." + name, DESC_LABEL, null);
         if (workflowTask.description == null)
         {
             String description = workflowTask.definition.metadata.getDescription();

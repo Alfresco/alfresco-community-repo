@@ -394,12 +394,6 @@ public class JBPMEngineTest extends BaseSpringTest
     }        
 
     
-    public void testWorkflowPackageNodeRef()
-    {
-        
-    }
-    
-    
     public void testScript()
         throws IOException
     {

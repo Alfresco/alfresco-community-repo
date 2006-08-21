@@ -153,21 +153,6 @@
       </type>
 
 
-      <!--                                                    -->
-      <!--  The base for all Ad-hoc Tasks as created by Users -->
-      <!--                                                    -->
-      
-      <type name="bpm:adhocTask">
-         <title>Ad-hoc Task</title>
-         <description>Task assigned by User</description>
-         <parent>bpm:task</parent>
-
-         <mandatory-aspects>
-            <aspect>cm:attachable</aspect>
-         </mandatory-aspects>
-      </type>
-      
-      
       <!--                                                 -->
       <!--  The base for all Tasks assigned via a Workflow -->
       <!--                                                 -->
@@ -200,6 +185,12 @@
                <type>d:noderef</type>
             </property>
                         
+            <!--  Items within package marked as complete -->
+            <property name="bpm:completedItems">
+               <type>d:noderef</type>
+               <multiple>true</multiple>
+            </property>
+                        
             <!--  TODO: Add Package Action Group -->
             
          </properties>
@@ -223,16 +214,6 @@
          
       </type>
 
-
-      <!--                                             -->
-      <!-- An Alfresco Space for managing ad-hoc Tasks -->
-      <!--                                             -->
-
-      <type name="bpm:taskspace">
-         <title>Task Space</title>
-         <parent>cm:folder</parent>
-      </type>      
-      
     </types>
     
     <aspects>
@@ -249,14 +230,6 @@
 
          <properties>
 
-            <!--  TODO: Move to Task -->
-
-            <!--  Items within package that have been marked as complete -->
-            <property name="bpm:completedItems">
-               <type>d:noderef</type>
-               <multiple>true</multiple>
-            </property>
-         
             <!--  TODO: Define properties (replicated from Workflow/Task Engine) for -->
             <!--        search within Alfresco e.g. task info, workflow info ...     -->
          
@@ -270,27 +243,6 @@
          
       </aspect>
 
-
-      <!-- Capability for adding a task management space to any entity in the system, -->
-      <!-- in particular, folders and content                                         -->
-      
-      <aspect name="bpm:tasks">
-         <associations>
-            <child-association name="bpm:tasks"> 
-               <source>
-                  <mandatory>false</mandatory>
-                  <many>false</many>
-               </source>
-               <target>
-                  <class>bpm:taskspace</class>
-                  <mandatory>true</mandatory>
-                  <many>false</many>
-               </target>
-               <duplicate>false</duplicate>
-            </child-association>
-         </associations>
-      </aspect>
-      
    </aspects>
    
 </model>

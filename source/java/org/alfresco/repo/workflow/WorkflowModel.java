@@ -26,6 +26,10 @@ import org.alfresco.service.namespace.QName;
 public interface WorkflowModel
 {
     
+    //
+    // Base Business Process Management Definitions
+    //
+    
     // task constants
     static final QName TYPE_TASK = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "task");
     static final QName PROP_TASK_ID = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "taskId");
@@ -35,14 +39,28 @@ public interface WorkflowModel
     static final QName PROP_PRIORITY = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "priority");
     static final QName PROP_STATUS = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "status");
     static final QName PROP_PERCENT_COMPLETE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "percentComplete");
+    static final QName PROP_COMPLETED_ITEMS = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "completedItems");
     static final QName ASSOC_POOLED_ACTORS = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "pooledActors");
 
     // workflow task contstants
     static final QName TYPE_WORKFLOW_TASK = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowTask");
     static final QName PROP_CONTEXT = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "context");
+    static final QName PROP_WORKFLOW_DEFINITION_ID = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowDefinitionId");
+    static final QName PROP_WORKFLOW_INSTANCE_ID = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowInstanceId");
     static final QName ASSOC_PACKAGE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package");
  
     // workflow package
     static final QName ASPECT_WORKFLOW_PACKAGE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowPackage");
+ 
+
+    //
+    // Workflow Models
+    //
+    
+    // review & approve
+    static final QName TYPE_SUBMITREVIEW_TASK = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "submitReviewTask");
+    static final QName PROP_REVIEW_PRIORITY = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "reviewPriority");
+    static final QName PROP_REVIEW_DUE_DATE = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "reviewDueDate");
+    static final QName ASSOC_REVIEWER = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "reviewer");
     
 }

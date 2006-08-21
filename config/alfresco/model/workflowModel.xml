@@ -32,6 +32,14 @@
                <title>Review Due Date</title>
                <type>d:date</type>
             </property>
+
+            <property name="wf:reviewPriority">
+               <title>Review Priority</title>
+               <type>d:int</type>
+               <constraints>
+                  <constraint ref="bpm:allowedPriority"/>
+               </constraints>
+            </property>
          
          </properties>
 

@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
@@ -69,18 +68,7 @@ public class ReviewAndApproveTest extends BaseSpringTest
         workflowComponent = registry.getWorkflowComponent("jbpm");
         taskComponent = registry.getTaskComponent("jbpm");
         
-        // retrieve review and approve process definition
-//        ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/review_and_approve_processdefinition.xml");
-//        assertTrue(workflowComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
-//        List<WorkflowDefinition> definitions = workflowComponent.getDefinitions();
-//        for (WorkflowDefinition definition : definitions)
-//        {
-//            if (definition.title.equals("Review & Approve"))
-//            {
-//                testWorkflowDef = definition;
-//                break;
-//            }
-//        }
+        // deploy latest review and approve process definition
         ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/review_and_approve_processdefinition.xml");
         WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
         testWorkflowDef = deployment.definition; 
@@ -93,7 +81,6 @@ public class ReviewAndApproveTest extends BaseSpringTest
         // get valid node ref
         NodeService nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
         testNodeRef = nodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "spacesStore"));
-        nodeService.setProperty(testNodeRef, ContentModel.PROP_CREATED, new Date());
     }
 
     @Override
@@ -103,12 +90,14 @@ public class ReviewAndApproveTest extends BaseSpringTest
     }
 
     
-    public void testWorkflowPackage()
+    public void testSubmitForReview()
     {
         WorkflowDefinition workflowDef = testWorkflowDef;
         
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(WorkflowModel.ASSOC_PACKAGE, testNodeRef);
+        Date reviewDueDate = new Date();
+        params.put(QName.createQName("http://www.alfresco.org/model/workflow/1.0", "reviewDueDate"), reviewDueDate);
         NodeRef reviewer = personService.getPerson("admin");
         params.put(QName.createQName("http://www.alfresco.org/model/workflow/1.0", "reviewer"), reviewer);
         
@@ -127,6 +116,7 @@ public class ReviewAndApproveTest extends BaseSpringTest
         assignedTasks = filterTasksByWorkflowInstance(assignedTasks, path.instance.id);
         
         assertEquals(testNodeRef, assignedTasks.get(0).properties.get(WorkflowModel.ASSOC_PACKAGE));
+        assertEquals(reviewDueDate, assignedTasks.get(0).properties.get(WorkflowModel.PROP_DUE_DATE));
     }
 
     /**

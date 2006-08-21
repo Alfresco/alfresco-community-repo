@@ -30,9 +30,13 @@
       <event type="node-enter">
       <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
          <script>
+              <!-- following line fails as it attempts to convert properties of children to javascript objects -->
+              <!-- except the beanshell line above has already pre-created the children without the javascript scope -->
+              <!-- object -->
+              <!-- var result = "testNode.created: " + testNode.properties["cm:created"] + ", testNode.children.length: " + testNode.children[0].properties["cm:name"]; -->
             <expression>
-              var result = "testNode.created: " + testNode.properties["cm:created"];
-              result;
+               var result = "testNode.created: " + testNode.properties["cm:created"] + ", testNode.children.length: " + testNode.children.length;
+               result;
             </expression>
             <variable name="testNode" access="read"/>
             <variable name="alfrescoScriptResult" access="write"/>
@@ -45,7 +49,7 @@
    <end-state name="end">
      <event type="node-enter">
       <script>
-            System.out.println("javascript: " + alfrescoScriptResult);
+         System.out.println("javascript: " + alfrescoScriptResult);
       </script>
      </event>   
    </end-state>

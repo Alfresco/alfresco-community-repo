@@ -19,5 +19,60 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<r:propertySheetGrid id="work-item-props" value="#{DialogManager.bean.workItemNode}" 
-                     var="workItemProps" columns="1" externalConfig="true" />
+<a:panel id="props-panel" label="#{msg.workitem_properties}" 
+         border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+   
+   <r:propertySheetGrid id="work-item-props" value="#{DialogManager.bean.workItemNode}" 
+                       var="workItemProps" columns="1" externalConfig="true" />
+</a:panel>
+
+<h:outputText styleClass="paddingRow" value="&nbsp;" escape="false" />
+
+<a:panel id="resources-panel" label="#{msg.resources}"
+         border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+   
+   <a:richList id="resources-list" viewMode="details" value="#{DialogManager.bean.resources}" var="r"
+               styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" 
+               altRowStyleClass="recordSetRowAlt" width="100%" pageSize="10"
+               initialSortColumn="name" initialSortDescending="true">
+   
+      <%-- Primary column for details view mode --%>
+      <a:column primary="true" width="200" style="padding:2px;text-align:left">
+         <f:facet name="header">
+            <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
+         </f:facet>
+         <f:facet name="small-icon">
+            <h:graphicImage url="/images/icons/post.gif" />
+         </f:facet>
+         <h:outputText value="#{r.name}" />
+      </a:column>
+      
+      <%-- Description column --%>
+      <a:column style="text-align:left">
+         <f:facet name="header">
+            <a:sortLink label="#{msg.description}" value="description" styleClass="header"/>
+         </f:facet>
+         <h:outputText value="#{r.description}" />
+      </a:column>
+      
+      <%-- Path column --%>
+      <a:column style="text-align:left">
+         <f:facet name="header">
+            <a:sortLink label="#{msg.path}" value="path" styleClass="header"/>
+         </f:facet>
+         <h:outputText value="#{r.path}" />
+      </a:column>
+      
+      <%-- Actions column --%>
+      <a:column actions="true" style="text-align:left">
+         <f:facet name="header">
+            <h:outputText value="#{msg.actions}"/>
+         </f:facet>
+         
+         <%-- actions are configured in web-client-config-actions.xml --%>
+         <r:actions id="actions-col-actions" value="workflow_actions" context="#{r}" showLink="false" styleClass="inlineAction" />
+      </a:column>
+      
+      <a:dataPager styleClass="pager" />
+   </a:richList>
+</a:panel>

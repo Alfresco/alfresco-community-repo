@@ -1,20 +1,29 @@
 package org.alfresco.web.bean.workflow;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
@@ -34,6 +43,7 @@ public class ManageWorkItemDialog extends BaseDialogBean
    protected Node workItemNode;
    protected WorkflowTask workItem;
    protected WorkflowTransition[] transitions;
+   protected List<Node> resources;
 
    protected static final String ID_PREFIX = "transition_";
    protected static final String CLIENT_ID_PREFIX = "dialog:" + ID_PREFIX;
@@ -57,9 +67,6 @@ public class ManageWorkItemDialog extends BaseDialogBean
          WorkflowTaskDefinition taskDef = this.workItem.definition;
          this.workItemNode = new TransientNode(taskDef.metadata.getName(),
                   "task_" + System.currentTimeMillis(), this.workItem.properties);
-               
-         if (logger.isDebugEnabled())
-            logger.debug("Created node for work item: " + this.workItemNode);
       }
    }
    
@@ -68,7 +75,7 @@ public class ManageWorkItemDialog extends BaseDialogBean
          throws Exception
    {
       if (logger.isDebugEnabled())
-         logger.debug("Saving work item with params: " + this.workItemNode.getProperties());
+         logger.debug("Saving work item: " + this.workItemNode.getId());
       
       // prepare the edited parameters for saving
       Map<QName, Serializable> params = WorkflowBean.prepareWorkItemParams(this.workItemNode);
@@ -96,7 +103,7 @@ public class ManageWorkItemDialog extends BaseDialogBean
             
             for (WorkflowTransition trans : this.transitions)
             {
-               buttons.add(new DialogButtonConfig(ID_PREFIX + trans, trans.title, null,
+               buttons.add(new DialogButtonConfig(ID_PREFIX + trans.title, trans.title, null,
                      "#{DialogManager.bean.transition}", "false", null));
             }
          }
@@ -125,6 +132,9 @@ public class ManageWorkItemDialog extends BaseDialogBean
    {
       String outcome = getDefaultFinishOutcome();
       
+      if (logger.isDebugEnabled())
+         logger.debug("Transitioning work item: " + this.workItemNode.getId());
+      
       // to find out which transition button was pressed we need
       // to look for the button's id in the request parameters,
       // the first non-null result is the button that was pressed.
@@ -134,7 +144,7 @@ public class ManageWorkItemDialog extends BaseDialogBean
       String selectedTransition = null;
       for (WorkflowTransition trans : this.transitions)
       {
-         Object result = reqParams.get(CLIENT_ID_PREFIX + trans);
+         Object result = reqParams.get(CLIENT_ID_PREFIX + trans.title);
          if (result != null)
          {
             // this was the button that was pressed
@@ -193,6 +203,88 @@ public class ManageWorkItemDialog extends BaseDialogBean
    public Node getWorkItemNode()
    {
       return this.workItemNode;
+   }
+   
+   /**
+    * Returns a list of resources associated with this work item
+    * i.e. the children of the workflow package
+    * 
+    * @return The list of nodes
+    */
+   public List<Node> getResources()
+   {
+      NodeRef workflowPackage = (NodeRef)this.workItem.properties.get(WorkflowModel.ASSOC_PACKAGE);
+      
+      this.resources = new ArrayList<Node>(4);
+      
+      if (workflowPackage != null)
+      {
+         UserTransaction tx = null;
+         try
+         {
+            FacesContext context = FacesContext.getCurrentInstance();
+            tx = Repository.getUserTransaction(context, true);
+            tx.begin();
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Found workflow package for work item '" + 
+                     this.workItem.id + "': " + workflowPackage );
+            
+            List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(workflowPackage, 
+                     ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);   
+            
+            for (ChildAssociationRef ref: childRefs)
+            {
+               // create our Node representation from the NodeRef
+               NodeRef nodeRef = ref.getChildRef();
+               
+               if (this.nodeService.exists(nodeRef))
+               {
+                  // find it's type so we can see if it's a node we are interested in
+                  QName type = this.nodeService.getType(nodeRef);
+                  
+                  // make sure the type is defined in the data dictionary
+                  TypeDefinition typeDef = this.dictionaryService.getType(type);
+                  
+                  if (typeDef != null)
+                  {
+                     // look for content nodes or links to content
+                     // NOTE: folders within workflow packages are ignored for now
+                     if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
+                         ContentModel.TYPE_FILELINK.equals(type))
+                     {
+                        // create our Node representation
+                        MapNode node = new MapNode(nodeRef, this.nodeService, true);
+                        this.browseBean.setupCommonBindingProperties(node);
+                        
+                        this.resources.add(node);
+                     }
+                  }
+                  else
+                  {
+                     if (logger.isWarnEnabled())
+                        logger.warn("Found invalid object in database: id = " + nodeRef + ", type = " + type);
+                  }
+               }
+            }
+            
+            // commit the transaction
+            tx.commit();
+         }
+         catch (Throwable err)
+         {
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+            this.resources = Collections.<Node>emptyList();
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
+      }
+      else if (logger.isDebugEnabled())
+      {
+         logger.debug("Failed to find workflow package for work item: " + this.workItem.id);
+      }
+      
+      return this.resources;
    }
    
    /**

@@ -84,12 +84,17 @@ public class TextFieldGenerator extends BaseComponentGenerator
       
       if (propertySheet.inEditMode())
       {
-         // if the field has the list of values constraint a
-         // SelectOne component is required otherwise create
-         // the standard edit component
+         // if the field has the list of values constraint 
+         // and it is editable a SelectOne component is 
+         // required otherwise create the standard edit component
          ListOfValuesConstraint constraint = getListOfValuesConstraint(
                context, propertySheet, item);
-         if (constraint != null)
+         
+         PropertyDefinition propDef = this.getPropertyDefinition(context, 
+               propertySheet.getNode(), item.getName());
+         
+         if (constraint != null && item.isReadOnly() == false &&
+             propDef != null && propDef.isProtected() == false)
          {
             component = context.getApplication().createComponent(
                   UISelectOne.COMPONENT_TYPE);

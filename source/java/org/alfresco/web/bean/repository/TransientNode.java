@@ -13,6 +13,8 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Represents a transient node i.e. it is not and will not be present in the repository.
@@ -27,6 +29,8 @@ import org.alfresco.util.GUID;
 public class TransientNode extends Node
 {
    private static final long serialVersionUID = 2140554155948154106L;
+   
+   private static final Log logger = LogFactory.getLog(TransientNode.class);
 
    /**
     * Constructor.
@@ -50,6 +54,9 @@ public class TransientNode extends Node
       
       // initialise the node
       initNode(data);
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Constructed transient node: " + this);
    }
 
    /**

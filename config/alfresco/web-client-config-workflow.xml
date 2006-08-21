@@ -7,18 +7,18 @@
    <config evaluator="node-type" condition="bpm:workflowTask">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="bpm:taskId" ignore-if-missing="false" read-only="true" />
+         <show-property name="bpm:taskId" ignore-if-missing="false" />
+         <show-property name="bpm:startDate" ignore-if-missing="false" />
+         <show-property name="bpm:status" ignore-if-missing="false" />
          <show-property name="bpm:dueDate" ignore-if-missing="false" />
-         <!-- Need to show a text field not a drop down even though there are constraints!
-         <show-property name="bpm:status" ignore-if-missing="false" />  -->
-         <!-- Need to make sure that we can handle int/long based constraints!
-         <show-property name="bpm:priority" ignore-if-missing="false" /> -->
+         <show-property name="bpm:priority" ignore-if-missing="false" />
       </property-sheet>
    </config>
    
    <config evaluator="node-type" condition="wf:submitReviewTask">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <!-- <show-property name="bpm:priority" ignore-if-missing="false" /> -->
          <show-property name="wf:reviewDueDate" ignore-if-missing="false" />
          <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
          <show-association name="wf:reviewer" ignore-if-missing="false" />
@@ -37,7 +37,7 @@
             <action>wizard:startWorkflow</action>
             <action-listener>#{WizardManager.setupParameters}</action-listener>
             <params>
-               <param name="id">#{actionContext.id}</param>
+               <param name="item-to-workflow">#{actionContext.id}</param>
             </params>
          </action>
          
@@ -48,6 +48,10 @@
          </action>
          
          <action-group id="document_browse_menu">
+            <action idref="start-workflow" />
+         </action-group>
+         
+         <action-group id="doc_details_actions">
             <action idref="start-workflow" />
          </action-group>
          

@@ -1,5 +1,6 @@
 package org.alfresco.web.bean.workflow;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,14 +10,20 @@ import java.util.ResourceBundle;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.apache.commons.logging.Log;
@@ -66,11 +73,41 @@ public class StartWorkflowWizard extends BaseWizardBean
       // TODO: Deal with workflows that don't require any data
       
       if (logger.isDebugEnabled())
-         logger.debug("Starting workflow with params: " + this.startTaskNode.getProperties());
+         logger.debug("Starting workflow: " + this.selectedWorkflow);
+      
+      // prepare the parameters from the current state of the property sheet
+      Map<QName, Serializable> params = WorkflowBean.prepareWorkItemParams(this.startTaskNode);
+      
+      // create a workflow package for the attached items and add them
+      String itemToWorkflowId = this.parameters.get("item-to-workflow");
+      if (itemToWorkflowId != null && itemToWorkflowId.length() > 0)
+      {
+         // create the node ref for the item and determine its type
+         NodeRef itemToWorkflow = new NodeRef(Repository.getStoreRef(), itemToWorkflowId);
+         QName type = this.nodeService.getType(itemToWorkflow);
+         
+         NodeRef workflowPackage = null;
+         if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) || 
+             this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDERLINK))
+         {
+            throw new UnsupportedOperationException("Workflow on a folder is not supported yet!");
+         }
+         else
+         {
+            // create a workflow package and add the given item to workflow as a child
+            workflowPackage = this.workflowService.createPackage(null);
+            this.nodeService.addChild(workflowPackage, itemToWorkflow, 
+                  ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                  QName.createValidLocalName((String)this.nodeService.getProperty(
+                        itemToWorkflow, ContentModel.PROP_NAME))));
+         }
+         
+         // add the workflow package to the parameter map
+         params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
+      }
       
       // start the workflow to get access to the start task
-      WorkflowPath path = this.workflowService.startWorkflow(this.selectedWorkflow, 
-            WorkflowBean.prepareWorkItemParams(this.startTaskNode));
+      WorkflowPath path = this.workflowService.startWorkflow(this.selectedWorkflow, params);
       if (path != null)
       {
          // extract the start task
@@ -111,7 +148,7 @@ public class StartWorkflowWizard extends BaseWizardBean
          WorkflowDefinition flowDef = this.workflows.get(this.selectedWorkflow);        
          
          if (logger.isDebugEnabled())
-            logger.debug("Starting workflow: "+ flowDef);
+            logger.debug("Selected workflow: "+ flowDef);
 
          WorkflowTaskDefinition taskDef = flowDef.startTaskDefinition;
          if (taskDef != null)
@@ -122,9 +159,6 @@ public class StartWorkflowWizard extends BaseWizardBean
             // create an instance of a task from the data dictionary
             this.startTaskNode = new TransientNode(taskDef.metadata.getName(),
                   "task_" + System.currentTimeMillis(), null);
-               
-            if (logger.isDebugEnabled())
-               logger.debug("Created node for task: " + this.startTaskNode);
          }
       }
 

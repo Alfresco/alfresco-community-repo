@@ -143,6 +143,9 @@ public class WorkflowBean
          params.put(assocQName, (Serializable)targets);
       }
       
+      if (logger.isDebugEnabled())
+         logger.debug("Prepared parameters: " + params);
+      
       return params;
    }
    
@@ -165,9 +168,6 @@ public class WorkflowBean
       node.getProperties().put(ContentModel.PROP_NAME.toString(), task.title);
       node.getProperties().put("type", taskDef.metadata.getTitle());
       node.getProperties().put("id", task.id);
-      
-      if (logger.isDebugEnabled())
-         logger.debug("Created node for work item with id '" + task.id + "' " + node);
       
       return node;
    }

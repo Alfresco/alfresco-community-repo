@@ -4,6 +4,7 @@ import java.util.Date;
 
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIOutput;
+import javax.faces.component.UISelectOne;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 
@@ -13,6 +14,7 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.converter.XMLDateConverter;
 import org.alfresco.web.ui.repo.RepoConstants;
+import org.alfresco.web.ui.repo.component.UIMultiValueEditor;
 import org.alfresco.web.ui.repo.component.property.PropertySheetItem;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
 
@@ -97,8 +99,26 @@ public class DatePickerGenerator extends BaseComponentGenerator
          UIPropertySheet propertySheet, PropertySheetItem item, 
          UIComponent component, boolean realTimeChecking, String idSuffix)
    {
-      // a date picker will always have a date value so there
-      // is no need to create a mandatory validation rule
+      if (component instanceof UIMultiValueEditor)
+      {
+         // Override the setup of the mandatory validation 
+         // so we can send the _current_value id suffix.
+         // We also enable real time so the page load
+         // check disables the ok button if necessary, as the user
+         // adds or removes items from the multi value list the 
+         // page will be refreshed and therefore re-check the status.
+         
+         super.setupMandatoryValidation(context, propertySheet, item, 
+               component, true, "_current_value");
+      }
+      else
+      {
+         // setup the client validation rule with real time validation enabled
+         // so that the initial page load checks the state of the date
+         super.setupMandatoryValidation(context, propertySheet, item, 
+               component, true, idSuffix);
+      }
+      
    }
    
    /**

@@ -92,6 +92,9 @@ public final class TemplatingService
     public static final org.alfresco.service.namespace.QName TT_QNAME = 
 	org.alfresco.service.namespace.QName.createQName(org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI, "tt");
 
+    public static final org.alfresco.service.namespace.QName TT_GENERATED_OUTPUT_QNAME = 
+	org.alfresco.service.namespace.QName.createQName(org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI, "tt_generated_output");
+
     private static final Log LOGGER = LogFactory.getLog(TemplatingService.class);
     private static TemplatingService INSTANCE;
 

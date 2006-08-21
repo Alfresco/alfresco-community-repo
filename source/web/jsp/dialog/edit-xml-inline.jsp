@@ -36,7 +36,7 @@
 final CheckinCheckoutBean ccb = (CheckinCheckoutBean)
       session.getAttribute("CheckinCheckoutBean");
 NodeRef nr = ccb.getDocument().getNodeRef();
-String ttName = (String)ccb.getNodeService().getProperty(nr, CreateContentWizard.TT_QNAME);
+String ttName = (String)ccb.getNodeService().getProperty(nr, TemplatingService.TT_QNAME);
 final TemplatingService ts = TemplatingService.getInstance();
 final TemplateType tt  = ts.getTemplateType(ttName);
 TemplateInputMethod tim = tt.getInputMethods().get(0);
@@ -158,7 +158,7 @@ final InstanceData instanceData = new InstanceData() {
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.save}" action="#{CheckinCheckoutBean.editInlineOK}" styleClass="dialogControls" />
+                                       <h:commandButton id="save-button" value="#{msg.save}" action="#{CheckinCheckoutBean.editInlineOK}" styleClass="dialogControls" />
                                     </td>
                                  </tr>
                                  <tr><td class="dialogButtonSpacing"></td></tr>
@@ -211,5 +211,31 @@ final InstanceData instanceData = new InstanceData() {
     </h:form>
     
 </f:view>
+<script type="text/javascript">
+dojo.addOnLoad(function()
+{
+//alert('foo');
+var b = document.getElementById("edit-file:save-button");
+var baseOnClick = b.onclick;
+b.onclick = function()
+{
+ if (!document.submitTrigger.done)
+ {
+   document.submitTrigger.buttonClick(); 
+   return false;
+ }
+ else
+ {	
+   return baseOnClick();
+ }
+}
+});
+function doSubmit()
+{
+var b = document.getElementById("edit-file:save-button");
+b.click();
+}
+	
+</script>
 
 </r:page>

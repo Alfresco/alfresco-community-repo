@@ -78,16 +78,14 @@ public class CreateContentWizard extends BaseContentWizard
 					this.templateTypeName);
 	   TemplatingService ts = TemplatingService.getInstance();
 	   TemplateType tt = this.getTemplateType();
-	   if (tt.getOutputMethods().size() != 0)
-	   {
-	       OutputUtil.generate(ts.parseXML(this.content),
-				   tt,
-				   this.fileName,
-				   this.getContainerNodeRef(),
-				   this.fileFolderService,
-				   this.contentService,
-				   this.nodeService);
-	   }
+	   OutputUtil.generate(this.createdNode,
+			       ts.parseXML(this.content),
+			       tt,
+			       this.fileName,
+			       this.getContainerNodeRef(),
+			       this.fileFolderService,
+			       this.contentService,
+			       this.nodeService);
        }
 
        // return the default outcome

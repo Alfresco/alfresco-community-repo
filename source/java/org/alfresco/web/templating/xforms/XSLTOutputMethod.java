@@ -35,16 +35,17 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 public class XSLTOutputMethod
     implements TemplateOutputMethod
 {
 
-    private final File file;
+    private final NodeRef nodeRef;
 
-    public XSLTOutputMethod(final File f)
+    public XSLTOutputMethod(final NodeRef nodeRef)
     {
-	this.file = f;
+	this.nodeRef = nodeRef;
     }
 
     public void generate(final Document xmlContent,
@@ -58,7 +59,7 @@ public class XSLTOutputMethod
     {
 	TransformerFactory tf = TransformerFactory.newInstance();
 	TemplatingService ts = TemplatingService.getInstance();
-	DOMSource source = new DOMSource(ts.parseXML(this.file));
+	DOMSource source = new DOMSource(ts.parseXML(this.nodeRef));
 	final Templates templates = tf.newTemplates(source);
 	final Transformer t = templates.newTransformer();
 	final StreamResult result = new StreamResult(out);

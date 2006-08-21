@@ -18,13 +18,20 @@ package org.alfresco.web.templating;
 
 import org.w3c.dom.Document;
 import java.util.List;
+import java.io.Serializable;
+//import org.alfresco.service.cmr.repository.NodeRef;
 
 public interface TemplateType
+    extends Serializable
 {
 
     public String getName();
 
     public Document getSchema();
+
+//    public void setSchemaNodeRef(final NodeRef nodeRef);
+//    
+//    public NodeRef getSchemaNodeRef();
 
     public Document getSampleXml(final String rootTagName);
 

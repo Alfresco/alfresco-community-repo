@@ -17,9 +17,11 @@
 package org.alfresco.web.templating;
 
 import org.w3c.dom.Document;
+import java.io.Serializable;
 import java.io.Writer;
 
 public interface TemplateInputMethod
+    extends Serializable
 {
     public void generate(final InstanceData instanceData,
 			 final TemplateType tt,

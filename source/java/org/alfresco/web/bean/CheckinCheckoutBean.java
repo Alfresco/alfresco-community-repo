@@ -566,16 +566,16 @@ public class CheckinCheckoutBean
                {
                   // make content available to the editing screen
 		   String contentString = reader.getContentString();
-                  setDocumentContent(contentString); 
-		  setEditorOutput(contentString);
-                  
-                  // navigate to appropriate screen
-                  FacesContext fc = FacesContext.getCurrentInstance();
-                  this.navigator.setupDispatchContext(node);
-		  String s = (MimetypeMap.MIMETYPE_XML.equals(mimetype)
-			      ? "editXmlInline"
-			      : "editTextInline");
-                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, s);
+		   setDocumentContent(contentString); 
+		   setEditorOutput(contentString);
+		   
+		   // navigate to appropriate screen
+		   FacesContext fc = FacesContext.getCurrentInstance();
+		   this.navigator.setupDispatchContext(node);
+		   String s = (MimetypeMap.MIMETYPE_XML.equals(mimetype)
+			       ? "editXmlInline"
+			       : "editTextInline");
+		   fc.getApplication().getNavigationHandler().handleNavigation(fc, null, s);
                }
                else
                {

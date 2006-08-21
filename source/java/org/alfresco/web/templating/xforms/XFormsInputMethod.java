@@ -21,7 +21,6 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.ServletContext;
 
-import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.templating.*;
 import org.alfresco.web.templating.xforms.schemabuilder.*;
 import org.alfresco.web.bean.ajax.XFormsBean;
@@ -105,16 +104,6 @@ public class XFormsInputMethod
 	if (xmlContent == null)
 	    xmlContent = tt.getSampleXml(tt.getName());
 	final TemplatingService ts = TemplatingService.getInstance();
-	final File schemaFile = TempFileProvider.createTempFile("alfresco", ".schema");
-	try
-        {
-	    ts.writeXML(tt.getSchema(), schemaFile);
-	}
-	catch (IOException ioe)
-        {
-	    assert false : ioe.getMessage();
-	    LOGGER.error(ioe);
-	}
 	final FacesContext fc = FacesContext.getCurrentInstance();
 	final HttpServletRequest request = (HttpServletRequest)
 	    fc.getExternalContext().getRequest();
@@ -124,16 +113,16 @@ public class XFormsInputMethod
 	LOGGER.debug("using baseUrl " + baseUrl + " for schemaformbuilder");
 
 	final SchemaFormBuilder builder = 
-	    new BaseSchemaFormBuilder(getDocumentElementNameNoNS(xmlContent),
+	    new BaseSchemaFormBuilder(tt.getName(),
 				      xmlContent,
 				      request.getContextPath() + "/ajax/invoke/XFormsBean.handleAction",
-				      "post",
+				      SchemaFormBuilder.SUBMIT_METHOD_POST,
 				      new XHTMLWrapperElementsBuilder(),
 				      null,
 				      baseUrl,
 				      true);
-	LOGGER.debug("building xform for schema " + schemaFile.getPath());
-	final Document result = builder.buildForm(schemaFile.getPath());
+	LOGGER.debug("building xform for schema " + tt.getName());
+	final Document result = builder.buildForm(tt); //schemaFile.getPath());
 	//	xmlContentFile.delete();
 	//	schemaFile.delete();
 	return result;

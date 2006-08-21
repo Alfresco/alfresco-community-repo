@@ -60,8 +60,6 @@ public class CreateContentWizard extends BaseContentWizard
     private static final Log LOGGER = 
 	LogFactory.getLog(CreateContentWizard.class);
 
-    public static final org.alfresco.service.namespace.QName TT_QNAME = 
-	org.alfresco.service.namespace.QName.createQName(org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI, "tt");
 
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -75,45 +73,20 @@ public class CreateContentWizard extends BaseContentWizard
        if (this.templateTypeName != null)
        {
 	   LOGGER.debug("generating template output for " + this.templateTypeName);
-	   this.nodeService.setProperty(this.createdNode, TT_QNAME, this.templateTypeName);
+	   this.nodeService.setProperty(this.createdNode, 
+					TemplatingService.TT_QNAME, 
+					this.templateTypeName);
 	   TemplatingService ts = TemplatingService.getInstance();
 	   TemplateType tt = this.getTemplateType();
 	   if (tt.getOutputMethods().size() != 0)
 	   {
-	       try {
-		   // get the node ref of the node that will contain the content
-		   NodeRef containerNodeRef = this.getContainerNodeRef();
-		   final String fileName = this.fileName + "-generated.html";
-		   FileInfo fileInfo = 
-		       this.fileFolderService.create(containerNodeRef,
-						     fileName,
-						     ContentModel.TYPE_CONTENT);
-		   NodeRef fileNodeRef = fileInfo.getNodeRef();
-      
-		   if (LOGGER.isDebugEnabled())
-		       LOGGER.debug("Created file node for file: " + 
-				    fileName);
-	
-		   // get a writer for the content and put the file
-		   ContentWriter writer = contentService.getWriter(fileNodeRef, 
-								   ContentModel.PROP_CONTENT, true);
-		   // set the mimetype and encoding
-		   writer.setMimetype("text/html");
-		   writer.setEncoding("UTF-8");
-		   TemplateOutputMethod tom = tt.getOutputMethods().get(0);
-		   OutputStreamWriter out = 
-		       new OutputStreamWriter(writer.getContentOutputStream());
-		   tom.generate(ts.parseXML(this.content), tt, out);
-		   out.close();
-		   this.nodeService.setProperty(fileNodeRef, TT_QNAME, this.templateTypeName);
-
-		   LOGGER.debug("generated " + fileName + " using " + tom);
-	       }
-	       catch (Exception e)
-               {
-		   e.printStackTrace();
-		   throw e;
-	       }
+	       OutputUtil.generate(ts.parseXML(this.content),
+				   tt,
+				   this.fileName,
+				   this.getContainerNodeRef(),
+				   this.fileFolderService,
+				   this.contentService,
+				   this.nodeService);
 	   }
        }
 

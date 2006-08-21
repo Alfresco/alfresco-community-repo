@@ -24,7 +24,7 @@ import org.chiba.xml.xforms.NamespaceCtx;
 import org.w3c.dom.*;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.xml.sax.InputSource;
-
+import org.alfresco.web.templating.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,7 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
-
+import org.alfresco.util.TempFileProvider;
 /*
  * Search for TODO for things remaining to-do in this implementation.
  *
@@ -198,32 +198,6 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
     public static final String GROUP_BORDER_PROP =
             PROPERTY_PREFIX + "group@border";
     private static final String DEFAULT_GROUP_BORDER = "0";
-
-    /**
-     * Prossible values of the "@method" on the "submission" element
-     */
-    public static final String SUBMIT_METHOD_POST = "post";
-
-    /**
-     * __UNDOCUMENTED__
-     */
-    public static final String SUBMIT_METHOD_PUT = "put";
-
-    /**
-     * __UNDOCUMENTED__
-     */
-    public static final String SUBMIT_METHOD_GET = "get";
-
-    /**
-     * __UNDOCUMENTED__
-     */
-    public static final String SUBMIT_METHOD_FORM_DATA_POST = "form-data-post";
-
-    /**
-     * __UNDOCUMENTED__
-     */
-    public static final String SUBMIT_METHOD_URLENCODED_POST =
-	"urlencoded-post";
 
     /**
      * __UNDOCUMENTED__
@@ -418,33 +392,6 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         return _submitMethod;
     }
 
-    private void loadSchema(String inputURI)
-	throws ClassNotFoundException,
-	       InstantiationException,
-	       IllegalAccessException 
-    {
-
-	// Get DOM Implementation using DOM Registry
-        System.setProperty(DOMImplementationRegistry.PROPERTY,
-			   "org.apache.xerces.dom.DOMXSImplementationSourceImpl");
-        DOMImplementationRegistry registry =
-                DOMImplementationRegistry.newInstance();
-        Object o = registry.getDOMImplementation("XS-Loader");
-        if (o instanceof XSImplementation) 
-	{
-            XSImplementation impl = (XSImplementation) o;
-            XSLoader schemaLoader = impl.createXSLoader(null);
-            this.schema = schemaLoader.loadURI(inputURI);
-        } 
-	else if (o != null) 
-	{
-            if (LOGGER.isDebugEnabled()) 
-                LOGGER.debug("DOMImplementation is not a XSImplementation: "
-			     + o.getClass().getName());
-            throw new RuntimeException(o.getClass().getName() + " is not a XSImplementation");
-        }
-    }
-
     /**
      * builds a form from a XML schema.
      *
@@ -452,37 +399,62 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
      * @return __UNDOCUMENTED__
      * @throws FormBuilderException __UNDOCUMENTED__
      */
-    public Document buildForm(String inputFile) 
+    public Document buildForm(final TemplateType tt) 
 	throws FormBuilderException {
         try {
-            this.loadSchema(new File(inputFile).toURI().toString());
-            this.buildTypeTree(schema);
+	    // Get DOM Implementation using DOM Registry
+	    System.setProperty(DOMImplementationRegistry.PROPERTY,
+			       "org.apache.xerces.dom.DOMXSImplementationSourceImpl");
+	    final DOMImplementationRegistry registry =
+                DOMImplementationRegistry.newInstance();
+	    final XSImplementation xsImpl = (XSImplementation)
+		registry.getDOMImplementation("XS-Loader");
+	    //	final DOMImplementationLS lsImpl = (DOMImplementationLS)
+	    //	    registry.getDOMImplementation("XML 1.0 LS 3.0");
+	    //	LSInput in = lsImpl.createLSInput();
+	    //	in.setCharacterStrea
+	    final TemplatingService ts = TemplatingService.getInstance();
+	    final File schemaFile = TempFileProvider.createTempFile("alfresco", ".schema");
+	    try
+	    {
+		ts.writeXML(tt.getSchema(), schemaFile);
+	    }
+	    catch (IOException ioe)
+	    {
+		assert false : ioe.getMessage();
+		LOGGER.error(ioe);
+	    }
+
+	    final String inputURI = schemaFile.toURI().toString();
+	    final XSLoader schemaLoader = xsImpl.createXSLoader(null);
+	    this.schema = schemaLoader.loadURI(inputURI);
+            this.buildTypeTree(this.schema);
 
             //refCounter = 0;
-            counter = new HashMap();
+            this.counter = new HashMap();
 
-            Document xForm = createFormTemplate(_rootTagName,
-						_rootTagName + " Form",
-						getProperty(CSS_STYLE_PROP, 
-							    DEFAULT_CSS_STYLE_PROP));
-
+            final Document xForm = createFormTemplate(_rootTagName,
+						      _rootTagName + " Form",
+						      getProperty(CSS_STYLE_PROP, 
+								  DEFAULT_CSS_STYLE_PROP));
+	    
             //this.buildInheritenceTree(schema);
             Element envelopeElement = xForm.getDocumentElement();
 
             //Element formSection = (Element) envelopeElement.getElementsByTagNameNS(CHIBA_NS, "form").item(0);
             //Element formSection =(Element) envelopeElement.getElementsByTagName("body").item(0);
             //find form element: last element created
-            NodeList children = xForm.getDocumentElement().getChildNodes();
+            final NodeList children = xForm.getDocumentElement().getChildNodes();
 
-            Element formSection = (Element)children.item(children.getLength() - 1);
-            Element modelSection = (Element)
+            final Element formSection = (Element)children.item(children.getLength() - 1);
+            final Element modelSection = (Element)
 		envelopeElement.getElementsByTagNameNS(XFORMS_NS, "model").item(0);
 
             //add XMLSchema if we use schema types
             if (_useSchemaTypes && modelSection != null)
                 modelSection.setAttributeNS(XFORMS_NS,
 					    this.getXFormsNSPrefix() + "schema",
-					    new File(inputFile).toURI().toString());
+					    inputURI);
 
             //change stylesheet
             String stylesheet = this.getStylesheet();
@@ -502,7 +474,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
             //TODO: find a better way to find the targetNamespace
             try 
 	    {
-                Document domDoc = DOMUtil.parseXmlFile(inputFile, true, false);
+                final Document domDoc = tt.getSchema();
                 if (domDoc != null) 
 		{
                     Element root = domDoc.getDocumentElement();
@@ -1167,14 +1139,14 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         int[] occurance = this.getOccurance(owner);
 
         addSimpleType(xForm,
-                modelSection,
-                formSection,
-                controlType,
-                owner.getName(),
-                owner,
-                pathToRoot,
-                occurance[0],
-                occurance[1]);
+		      modelSection,
+		      formSection,
+		      controlType,
+		      owner.getName(),
+		      owner,
+		      pathToRoot,
+		      occurance[0],
+		      occurance[1]);
     }
 
     private void addAttributeSet(Document xForm,
@@ -1189,20 +1161,22 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         if (attrUses != null) {
             int nbAttr = attrUses.getLength();
             for (int i = 0; i < nbAttr; i++) {
-                XSAttributeUse currentAttributeUse =
-                        (XSAttributeUse) attrUses.item(i);
+                XSAttributeUse currentAttributeUse = (XSAttributeUse)attrUses.item(i);
                 XSAttributeDeclaration currentAttribute =
-                        currentAttributeUse.getAttrDeclaration();
+		    currentAttributeUse.getAttrDeclaration();
 
 //test if extended !
-                if (checkIfExtension && this.doesAttributeComeFromExtension(currentAttributeUse, controlType)) {
-                    if (LOGGER.isDebugEnabled()) {
+                if (checkIfExtension && 
+		    this.doesAttributeComeFromExtension(currentAttributeUse, controlType)) 
+		{
+                    if (LOGGER.isDebugEnabled()) 
+		    {
                         LOGGER.debug("This attribute comes from an extension: recopy form controls. \n Model section: ");
                         DOMUtil.prettyPrintDOM(modelSection);
                     }
 
                     String attributeName = currentAttributeUse.getName();
-                    if (attributeName == null || attributeName.equals(""))
+                    if (attributeName == null || attributeName.length() == 0)
                         attributeName = currentAttributeUse.getAttrDeclaration().getName();
 
 //find the existing bind Id
@@ -1248,7 +1222,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                 } else {
                     String newPathToRoot;
 
-                    if ((pathToRoot == null) || pathToRoot.equals("")) {
+                    if (pathToRoot == null || pathToRoot.length() == 0) {
                         newPathToRoot = "@" + currentAttribute.getName();
                     } else if (pathToRoot.endsWith("/")) {
                         newPathToRoot =
@@ -1266,11 +1240,11 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                     }*/
 
                     addSimpleType(xForm,
-                            modelSection,
-                            formSection,
-                            simpleType,
-                            currentAttributeUse,
-                            newPathToRoot);
+				  modelSection,
+				  formSection,
+				  simpleType,
+				  currentAttributeUse,
+				  newPathToRoot);
                 }
             }
         }
@@ -1411,12 +1385,12 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
             //attributes
             addAttributeSet(xForm,
-                    modelSection,
-                    formSection,
-                    controlType,
-                    owner,
-                    pathToRoot,
-                    checkIfExtension);
+			    modelSection,
+			    formSection,
+			    controlType,
+			    owner,
+			    pathToRoot,
+			    checkIfExtension);
 
             //process group
             XSParticle particle = controlType.getParticle();

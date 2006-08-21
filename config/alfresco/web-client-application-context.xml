@@ -30,5 +30,12 @@
          <ref bean="DictionaryService" />
       </constructor-arg>
    </bean>
+
+   <!-- NOTE: This references a bean in the repository Spring configuration -->
+   <bean id="templatingSerivce" class="org.alfresco.web.templating.TemplatingService">
+      <constructor-arg>
+         <ref bean="ContentService" />
+      </constructor-arg>
+   </bean>
    
 </beans>

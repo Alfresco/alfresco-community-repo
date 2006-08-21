@@ -173,12 +173,14 @@
                      description-id="create_xml_content_type_step1_desc"
                      instruction-id="default_instruction" />
             </step>
+<!--
             <step name="edit_schema" title-id="edit_xml_schema" description-id="create_xml_content_type_step2_desc">
                <page path="/jsp/content/create-xml-content-type-wizard/edit.jsp"
                      title-id="create_xml_content_type_step2_title"
                      description-id="create_xml_content_type_step2_desc"
                      instruction-id="default_instruction" />
             </step>
+-->
             <step name="configure_presentation_templates" 
 		  title-id="configure_presentation_templates" 
 		  description-id="create_xml_content_type_step2_desc">

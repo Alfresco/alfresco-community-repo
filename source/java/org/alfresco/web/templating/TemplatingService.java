@@ -34,16 +34,86 @@ import org.xml.sax.SAXException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class TemplatingService
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.model.ContentModel;
+import org.alfresco.util.TempFileProvider;
+
+public final class TemplatingService
+    implements Serializable
 {
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    private static class Configuration
+    {
+	private final static File CONFIG_FILE  = 
+	    new File(TempFileProvider.getTempDir(), "templating_configuration.xml");
+	
+	public static void load()
+	    throws IOException
+	{
+	    if (!CONFIG_FILE.exists())
+		return;
+	    final TemplatingService ts = TemplatingService.getInstance();
+	    final ObjectInputStream out = new ObjectInputStream(new FileInputStream(CONFIG_FILE));
+	    try
+	    {
+		final List<TemplateType> tt = (List<TemplateType>)out.readObject();
+		for (TemplateType t : tt)
+		    {
+			ts.registerTemplateType(t);
+		    }
+		out.close();
+	    }
+	    catch (ClassNotFoundException cnfe)
+	    {
+		assert false : cnfe;
+		TemplatingService.LOGGER.error(cnfe);
+	    }
+	}
+	
+	public static void save()
+	    throws IOException
+	{
+	    if (!CONFIG_FILE.exists())
+		CONFIG_FILE.createNewFile();
+	    final TemplatingService ts = TemplatingService.getInstance();
+	    final ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(CONFIG_FILE));
+	    out.writeObject(ts.getTemplateTypes());
+	    out.close();
+	}
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+
+    public static final org.alfresco.service.namespace.QName TT_QNAME = 
+	org.alfresco.service.namespace.QName.createQName(org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI, "tt");
+
     private static final Log LOGGER = LogFactory.getLog(TemplatingService.class);
-    private final static TemplatingService INSTANCE = new TemplatingService();
+    private static TemplatingService INSTANCE;
 
     private ArrayList<TemplateType> templateTypes = 
 	new ArrayList<TemplateType>();
+    private final ContentService contentService;
 
-    private TemplatingService()
+    public TemplatingService(final ContentService contentService)
     {
+	this.contentService = contentService;
+	if (INSTANCE == null)
+	{
+	    INSTANCE = this;
+	    try
+	    {
+		Configuration.load();
+	    }
+	    catch (IOException ioe)
+	    {
+		LOGGER.error(ioe);
+	    }
+	}
     }
 
     public static TemplatingService getInstance()
@@ -71,12 +141,20 @@ public class TemplatingService
     public void registerTemplateType(final TemplateType tt)
     {
 	this.templateTypes.add(tt);
+	try
+	{
+	    Configuration.save();
+	}
+	catch (IOException ioe)
+	{
+	    LOGGER.error(ioe);
+	}
     }
 
     public TemplateType newTemplateType(final String name,
-					final Document schema)
+					final NodeRef schemaNodeRef)
     {
-	return new TemplateTypeImpl(name, schema);
+	return new TemplateTypeImpl(name, schemaNodeRef);
     }
 
     public Document newDocument()
@@ -125,7 +203,6 @@ public class TemplatingService
     public void writeXML(final Node n, final File output)
 	throws IOException
     {
-	
 	this.writeXML(n, new FileWriter(output));
     }
 
@@ -142,6 +219,17 @@ public class TemplatingService
 	       IOException
     {
 	return this.parseXML(new ByteArrayInputStream(source.getBytes()));
+    }
+
+    public Document parseXML(final NodeRef nodeRef)
+	throws ParserConfigurationException,
+	       SAXException,
+	       IOException
+    {
+	final ContentReader contentReader = 
+	    this.contentService.getReader(nodeRef, ContentModel.TYPE_CONTENT);
+	final InputStream in = contentReader.getContentInputStream();
+	return this.parseXML(in);
     }
 
     public Document parseXML(final File source)

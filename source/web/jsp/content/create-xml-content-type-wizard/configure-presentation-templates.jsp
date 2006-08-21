@@ -41,12 +41,14 @@
 <h:panelGrid id="panel_grid_3"
              columns="3" cellpadding="3" cellspacing="3" border="0"
              width="100%">
+<%--
    <h:graphicImage value="/images/icons/required_field.gif" alt="Required Field" />
    <h:outputText id="panel_grid_3_output_text_1"
                  value="Presentation Template Type:" escape="false" />
    <h:selectOneRadio value="#{WizardManager.bean.presentationTemplateType}">
      <f:selectItems value="#{WizardManager.bean.createPresentationTemplateTypes}"/>
    </h:selectOneRadio>
+--%>
 
    <h:graphicImage id="required_image_pt"
                    value="/images/icons/required_field.gif" alt="Required Field" />

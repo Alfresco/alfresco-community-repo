@@ -1,4 +1,5 @@
 dojo.require("dojo.widget.DebugConsole");
+dojo.require("dojo.widget.DatePicker");
 dojo.require("dojo.widget.Button");
 dojo.require("dojo.widget.validate");
 dojo.require("dojo.widget.ComboBox");
@@ -136,7 +137,7 @@ function load_body(body, ui_element_stack)
       nodeRef.setAttribute("style", "height: 200px; border: solid 1px black;");
       cell.appendChild(nodeRef);
       var id = o.getAttribute("id");
-      var initial_value = get_initial_value(o);
+      var initial_value = get_initial_value(o)  || "";
       nodeRef.appendChild(document.createTextNode(initial_value));
       var w = dojo.widget.createWidget("Editor", 
 				       { 
@@ -181,10 +182,11 @@ function load_body(body, ui_element_stack)
       row.appendChild(cell);
       var nodeRef = document.createElement("div");
       cell.appendChild(nodeRef);
-      var value = get_initial_value(o);
+      var initial_value = get_initial_value(o);
       switch (get_type(o))
       {
       case "date":
+        initial_value = initial_value || dojo.widget.DatePicker.util.toRfcDate();
 	var dateTextBoxDiv = document.createElement("div");
 	nodeRef.appendChild(dateTextBoxDiv);
 	var dateTextBox = dojo.widget.createWidget("DateTextBox", 
@@ -192,7 +194,7 @@ function load_body(body, ui_element_stack)
 						   widgetId: id,
 						   required: is_required(o), 
  						   format: "YYYY-MM-DD", 
-						   value: value 
+						   value: initial_value 
 						   }, 
 						   dateTextBoxDiv);
 	dateTextBox.onfocus = function(o) { 
@@ -205,7 +207,7 @@ function load_body(body, ui_element_stack)
 	dateTextBox.picker = dojo.widget.createWidget("DatePicker", 
 						      { 
 						      isHidden: true, 
-						      value : value 
+						      value : initial_value 
 						      }, 
 						      datePickerDiv);
 	dateTextBox.picker.hide();
@@ -223,11 +225,12 @@ function load_body(body, ui_element_stack)
       case "integer":
       case "positiveInteger":
       case "negativeInteger":
+        initial_value = initial_value || "";
 	var w = dojo.widget.createWidget("SpinnerIntegerTextBox", 
 					 { 
 					 widgetId: id,
 					 required: is_required(o), 
-					 value: value 
+					 value: initial_value 
 					 }, 
 					 nodeRef);
 	var handler = function(event)
@@ -242,11 +245,12 @@ function load_body(body, ui_element_stack)
 	dojo.event.connect(w, "onkeyup", handler);
 	break;
       case "double":
+        initial_value = initial_value || "0";
 	var w = dojo.widget.createWidget("SpinnerRealNumberTextBox", 
 					 { 
 					 widgetId: id,
 					 required: is_required(o), 
-					 value: value 
+					 value: initial_value 
 					 }, 
 					 nodeRef);
 	var handler = function(event)
@@ -262,11 +266,12 @@ function load_body(body, ui_element_stack)
 	break;
       case "string":
       default:
+        initial_value = initial_value || "";
 	var w = dojo.widget.createWidget("ValidationTextBox", 
 					 {
 					 widgetId: id,
 					 required: is_required(o), 
-					 value: value 
+					 value: initial_value 
 					 }, 
 					 nodeRef);
 	dojo.event.connect(w,
@@ -303,11 +308,20 @@ function load_body(body, ui_element_stack)
       var initial_value = get_initial_value(o);
       if (get_type(o) == "boolean")
       {
+        initial_value = initial_value || false;
         var w = dojo.widget.createWidget("CheckBox", 
 					 { 
-					 checked: initial_value 
+					   widgetId: o.getAttribute('id'),
+					   checked: initial_value 
 					 },
 					 nodeRef);
+	dojo.event.connect(w,
+			   "onClick",
+			   function(event)
+			   {
+			     setXFormsValue(w.widgetId, w.checked);
+			   });
+
       }
       else if (values.length <= 5)
       {
@@ -444,7 +458,10 @@ function get_initial_value(o)
     else if (element_name == '.')
       break;
     node = node.getElementsByTagName(element_name)[0];
-    dojo.debug("got node " + node.nodeName);
+    if (node)
+	dojo.debug("got node " + node.nodeName);
+    else
+	return null;
   }
   return dojo.dom.textContent(node);
 }

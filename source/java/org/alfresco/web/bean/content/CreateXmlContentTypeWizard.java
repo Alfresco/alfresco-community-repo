@@ -78,14 +78,14 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
 	    this.fileFolderService.create(containerNodeRef,
 					  this.getSchemaFileName(),
 					  ContentModel.TYPE_CONTENT);
-	NodeRef fileNodeRef = fileInfo.getNodeRef();
-      
+	final NodeRef schemaFileNodeRef = fileInfo.getNodeRef();
+	
 	if (LOGGER.isDebugEnabled())
 	    LOGGER.debug("Created file node for file: " + 
 			 this.getSchemaFileName());
 	
 	// get a writer for the content and put the file
-	ContentWriter writer = contentService.getWriter(fileNodeRef, 
+	ContentWriter writer = contentService.getWriter(schemaFileNodeRef, 
 							ContentModel.PROP_CONTENT, true);
 	// set the mimetype and encoding
 	writer.setMimetype("text/xml");
@@ -95,14 +95,14 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
 	fileInfo = this.fileFolderService.create(containerNodeRef,
 						 this.getPresentationTemplateFileName(),
 						 ContentModel.TYPE_CONTENT);
-	fileNodeRef = fileInfo.getNodeRef();
+	final NodeRef presentationTemplateFileNodeRef = fileInfo.getNodeRef();
       
 	if (LOGGER.isDebugEnabled())
 	    LOGGER.debug("Created file node for file: " + 
 			 this.getPresentationTemplateFileName());
 	
 	// get a writer for the content and put the file
-	writer = contentService.getWriter(fileNodeRef, 
+	writer = contentService.getWriter(presentationTemplateFileNodeRef, 
 					  ContentModel.PROP_CONTENT, true);
 	// set the mimetype and encoding
 	writer.setMimetype("text/xml");
@@ -110,7 +110,14 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
 	writer.putContent(this.getPresentationTemplateFile());
 
 	final TemplatingService ts = TemplatingService.getInstance();
-	ts.registerTemplateType(this.getTemplateType());
+	final String rootTagName = 
+	    this.getSchemaFileName().replaceAll("([^\\.])\\..+", "$1");
+	final TemplateType tt = ts.newTemplateType(rootTagName, schemaFileNodeRef);
+	if (this.getPresentationTemplateFile() != null)
+	{
+	    tt.addOutputMethod(new XSLTOutputMethod(presentationTemplateFileNodeRef));
+	}
+	ts.registerTemplateType(tt);
 
 	// return the default outcome
 	return outcome;
@@ -277,25 +284,6 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
     public File getPresentationTemplateFile()
     {
 	return this.getFile("pt");
-    }
-
-    public TemplateType getTemplateType()
-	throws ParserConfigurationException,
-	       SAXException,
-	       IOException
-    {
-	if (this.getSchemaFile() == null)
-	    return null;
-	final TemplatingService ts = TemplatingService.getInstance();
-	final String rootTagName = 
-	    this.getSchemaFileName().replaceAll("([^\\.])\\..+", "$1");
-	final Document d = ts.parseXML(this.getSchemaFile());
-	final TemplateType result = ts.newTemplateType(rootTagName, d);
-	if (this.getPresentationTemplateFile() != null)
-	{
-	    result.addOutputMethod(new XSLTOutputMethod(this.getPresentationTemplateFile()));
-	}
-	return result;
     }
    
    /**

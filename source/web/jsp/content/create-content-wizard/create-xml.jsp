@@ -35,7 +35,9 @@ final InstanceData instanceData = new InstanceData() {
     { 
         try
 	{
-            return wiz.getContent() != null ? ts.parseXML(wiz.getContent()) : null;
+            return (wiz.getContent() != null 
+	            ? ts.parseXML(wiz.getContent()) 
+		    : null);
         }
 	catch (Exception e)
 	{

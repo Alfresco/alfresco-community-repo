@@ -19,6 +19,7 @@ package org.alfresco.web.templating.xforms;
 import java.io.*;
 import java.util.*;
 import javax.xml.parsers.ParserConfigurationException;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.templating.*;
@@ -27,23 +28,35 @@ import org.alfresco.web.templating.xforms.schemabuilder.FormBuilderException;
 import org.apache.xmlbeans.*;
 import org.apache.xmlbeans.impl.xsd2inst.SampleXmlUtil;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
+import org.alfresco.model.ContentModel;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class TemplateTypeImpl 
     implements TemplateType
 {
+    private static final Log LOGGER = LogFactory.getLog(TemplateTypeImpl.class);
 
-    private final Document schema;
+    private transient Document schema;
+    private final NodeRef schemaNodeRef;
     private final String name;
-    private final LinkedList outputMethods = new LinkedList();
+    private final LinkedList<TemplateOutputMethod> outputMethods = 
+	new LinkedList<TemplateOutputMethod>();
+    private final static LinkedList<TemplateInputMethod> INPUT_METHODS = 
+	new LinkedList<TemplateInputMethod>();
 
+    static 
+    {
+	INPUT_METHODS.add(new XFormsInputMethod());
+    }
+    
     public TemplateTypeImpl(final String name,
-			    final Document schema) 
+			    final NodeRef schemaNodeRef) 
     {
 	this.name = name;
-	this.schema = schema;
+	this.schemaNodeRef = schemaNodeRef;
     }
 
     public String getName()
@@ -53,6 +66,18 @@ public class TemplateTypeImpl
 
     public Document getSchema()
     {
+	if (this.schema == null)
+	{
+	    final TemplatingService ts = TemplatingService.getInstance();
+	    try
+	    {
+		this.schema = ts.parseXML(this.schemaNodeRef);
+	    }
+	    catch (Exception e)
+	    {
+		LOGGER.error(e);
+	    }
+	}
 	return this.schema;
     }
 
@@ -63,15 +88,11 @@ public class TemplateTypeImpl
 	final XmlObject[] schemas = new XmlObject[1];
 	try
 	{
-	    final File schemaFile = TempFileProvider.createTempFile("alfresco", ".schema");
-	    TemplatingService.getInstance().writeXML(this.schema, schemaFile);
-	    schemas[0] = XmlObject.Factory.parse(schemaFile, xmlOptions);
-	    schemaFile.delete();
+	    schemas[0] = XmlObject.Factory.parse(this.getSchema(), xmlOptions);
 	}
-	catch (Exception e)
+	catch (XmlException xmle)
 	{
-	    System.err.println("Can not load schema file: " + schema + ": ");
-	    e.printStackTrace();
+	    LOGGER.error(xmle);
 	}
 
 	final XmlOptions compileOptions = new XmlOptions();
@@ -88,8 +109,7 @@ public class TemplateTypeImpl
 	}
 	catch (XmlException xmle)
         {
-	    xmle.printStackTrace();
-	    return null;
+	    LOGGER.error(xmle);
 	}
 	    
 	if (sts == null)
@@ -110,11 +130,18 @@ public class TemplateTypeImpl
 	if (elem == null)
 	    throw new NullPointerException("Could not find a global element with name \"" + rootTagName + "\"");
         
-	final String result = SampleXmlUtil.createSampleForType(elem);
+	final String xmlString = SampleXmlUtil.createSampleForType(elem);
 	try
 	{
 	    final TemplatingService ts = TemplatingService.getInstance();
-	    return ts.parseXML(new ByteArrayInputStream(result.getBytes()));
+	    final Document d = ts.parseXML(new ByteArrayInputStream(xmlString.getBytes()));
+	    System.out.println("sample xml:");
+	    System.out.println(ts.writeXMLToString(d));
+
+	    TemplateTypeImpl.cleanUpSampleXml(d.getDocumentElement());
+	    System.out.println("cleaned up xml:");
+	    System.out.println(ts.writeXMLToString(d));
+	    return d;
 	}
 	catch (ParserConfigurationException pce)
 	{
@@ -133,11 +160,32 @@ public class TemplateTypeImpl
 	}
     }
 
+    private static void cleanUpSampleXml(final Node n)
+    {
+	if (n instanceof CharacterData)
+	{
+	    //	    System.out.println("replacing data " + ((CharacterData)n).getData());
+	    ((CharacterData)n).setData(" ");
+	}
+	else if (n instanceof Element)
+	{
+	    final NamedNodeMap attrs = n.getAttributes();
+	    for (int i = 0; i < attrs.getLength(); i++)
+	    {
+		//		System.out.println("not replacing data " + ((Attr)n).getValue());
+		//		((Attr)attrs.item(i)).setValue("");
+	    }
+	}
+	final NodeList nl = n.getChildNodes();
+	for (int i = 0; i < nl.getLength(); i++)
+        {
+	    TemplateTypeImpl.cleanUpSampleXml(nl.item(i));
+	}
+    }
+
     public List<TemplateInputMethod> getInputMethods()
     {
-	return (List<TemplateInputMethod>)Arrays.asList(new TemplateInputMethod[] {
-		new XFormsInputMethod()
-	    });
+	return INPUT_METHODS;
     }
 
     public void addOutputMethod(TemplateOutputMethod output)

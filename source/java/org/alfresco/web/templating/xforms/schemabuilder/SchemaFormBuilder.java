@@ -25,6 +25,8 @@ import org.w3c.dom.Element;
 import javax.xml.transform.Source;
 import java.util.Properties;
 
+import org.alfresco.web.templating.*;
+
 /**
  * An object that implements this interface can build an XForm that conforms to
  * the elements and attributes declared in an XML Schema.
@@ -102,6 +104,32 @@ public interface SchemaFormBuilder {
     public static final String xmleventsNSPrefix = "ev:";
 
     /**
+     * Prossible values of the "@method" on the "submission" element
+     */
+    public static final String SUBMIT_METHOD_POST = "post";
+
+    /**
+     * __UNDOCUMENTED__
+     */
+    public static final String SUBMIT_METHOD_PUT = "put";
+
+    /**
+     * __UNDOCUMENTED__
+     */
+    public static final String SUBMIT_METHOD_GET = "get";
+
+    /**
+     * __UNDOCUMENTED__
+     */
+    public static final String SUBMIT_METHOD_FORM_DATA_POST = "form-data-post";
+
+    /**
+     * __UNDOCUMENTED__
+     */
+    public static final String SUBMIT_METHOD_URLENCODED_POST =
+	"urlencoded-post";
+
+    /**
      * __UNDOCUMENTED__
      *
      * @return __UNDOCUMENTED__
@@ -174,7 +202,8 @@ public interface SchemaFormBuilder {
      * @throws org.chiba.tools.schemabuilder.FormBuilderException
      *          If an error occurs building the XForm.
      */
-    public Document buildForm(String inputURI) throws FormBuilderException;
+    public Document buildForm(final TemplateType tt) 
+	throws FormBuilderException;
 
     /**
      * Creates a caption for the provided text extracted from the XML Schema.

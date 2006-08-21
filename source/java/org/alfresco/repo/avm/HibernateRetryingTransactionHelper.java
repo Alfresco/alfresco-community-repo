@@ -96,12 +96,16 @@ class HibernateRetryingTransactionHelper extends HibernateTemplate implements Re
                     t.printStackTrace(System.err);
                     throw new AVMException("Unrecoverable error.", t);
                 }
-                if (!status.isCompleted())
+                if (newTxn && !status.isCompleted())
                 {
                     fTransactionManager.rollback(status);
                 }
                 if (!newTxn)
                 {
+                    if (t instanceof AVMException)
+                    {
+                        throw (AVMException)t;
+                    }
                     throw new AVMException("Unrecoverable error.", t);
                 }
                 // If we've lost a race or we've deadlocked, retry.

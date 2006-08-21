@@ -356,7 +356,7 @@ public class AVMNodeService implements NodeService
             throw new InvalidNodeRefException("Invalid src path.", nodeToMoveRef);
         }
         String srcParent = splitSrc[0];
-        if (srcParent.endsWith(":"))
+        if (srcParent == null)
         {
             throw new InvalidNodeRefException("Cannot rename root node.", nodeToMoveRef);
         }
@@ -549,7 +549,7 @@ public class AVMNodeService implements NodeService
             throw new InvalidNodeRefException("Read only store.", nodeRef);
         }
         String [] avmPathBase = AVMNodeConverter.SplitBase((String)avmVersionPath[1]);
-        if (avmPathBase[0].endsWith(":"))
+        if (avmPathBase[0] == null)
         {
             throw new InvalidNodeRefException("Cannot delete root node.", nodeRef);
         }
@@ -609,7 +609,7 @@ public class AVMNodeService implements NodeService
         String parentPath = (String)parentVersionPath[1];
         String childPath = (String)childVersionPath[1];
         String [] childPathBase = AVMNodeConverter.SplitBase(childPath);
-        if (!childPathBase[0].equals(parentPath))
+        if (childPathBase[0] == null || !childPathBase[0].equals(parentPath))
         {
             throw new InvalidNodeRefException("Not a child.", childRef);
         }
@@ -875,7 +875,10 @@ public class AVMNodeService implements NodeService
         String path = (String)avmVersionPath[1];
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
         String [] splitPath = AVMNodeConverter.SplitBase(path);
-        if (splitPath[0].endsWith(":"))
+        // TODO Remove when you figure this out.
+        fgLogger.error(splitPath[0]);
+        fgLogger.error(splitPath[1]);
+        if (splitPath[0] == null)
         {
             return result;
         }
@@ -1029,7 +1032,7 @@ public class AVMNodeService implements NodeService
         List<ChildAssociationRef> parents = getParentAssocs(nodeRef);
         if (parents.size() == 0)
         {
-            return null;
+            return new ChildAssociationRef(null, null, null, nodeRef);
         }
         return parents.get(0);
     }
@@ -1123,6 +1126,8 @@ public class AVMNodeService implements NodeService
             String [] splitPath = AVMNodeConverter.SplitBase(currPath);
             String parentPath = splitPath[0];
             String name = splitPath[1];
+            // TODO Remove when understood.
+            fgLogger.error("parentpath = " + parentPath);
             ChildAssociationRef caRef =
                 new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
                                         AVMNodeConverter.ToNodeRef(version, parentPath),
@@ -1132,7 +1137,14 @@ public class AVMNodeService implements NodeService
                                         true,
                                         -1);
             path.prepend(new Path.ChildAssocElement(caRef));
+            currPath = parentPath;
         }
+        ChildAssociationRef caRef = new ChildAssociationRef(null, null, null, 
+                                                            AVMNodeConverter.ToNodeRef(version, 
+                                                                                       currPath));
+        path.prepend(new Path.ChildAssocElement(caRef));
+        // TODO Get rid of this when you figure this out.
+        fgLogger.error(path);
         return path;
     }
     

@@ -57,6 +57,9 @@
       <property name="storeArchiveMap">
          <ref bean="storeArchiveMap"/>
       </property>
+      <property name="avmNodeService">
+         <ref bean="avmNodeService"/>
+      </property>
    </bean>
    
    <!-- AVMNodeService -->

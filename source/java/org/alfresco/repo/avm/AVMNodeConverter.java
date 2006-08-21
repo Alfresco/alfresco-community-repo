@@ -99,6 +99,13 @@ public class AVMNodeConverter
      */
     public static String [] SplitBase(String path)
     {
+        if (path.endsWith(":/"))
+        {
+            String [] res = new String[2];
+            res[0] = null;
+            res[1] = "";
+            return res;
+        }
         int off = path.lastIndexOf("/");
         if (off == -1)
         {
@@ -106,6 +113,10 @@ public class AVMNodeConverter
         }
         String [] decomposed = new String[2];
         decomposed[0] = path.substring(0, off);
+        if (decomposed[0].endsWith(":"))
+        {
+            decomposed[0] = decomposed[0] + "/";
+        }
         decomposed[1] = path.substring(off + 1);
         return decomposed;
     }

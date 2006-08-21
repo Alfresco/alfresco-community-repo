@@ -30,6 +30,12 @@ import org.alfresco.service.namespace.NamespaceService;
  */
 public interface QuerySession extends Serializable
 {
+    /** System column namess */
+    public static String SYS_COL_ASSOC_TYPE = "associationType";
+    public static String SYS_COL_ASSOC_NAME = "associationName";
+    public static String SYS_COL_IS_PRIMARY = "isPrimary";
+    public static String SYS_COL_NTH_SIBLING = "nthSibling";
+    
    /**
     * Retrieves the id this query session can be identified as
     * 

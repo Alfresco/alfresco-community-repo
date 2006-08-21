@@ -97,13 +97,22 @@ public class ParentsQuerySession extends AbstractQuerySession
             // create columns for all the properties of the node
             // get the data for the row and build up the columns structure
             Map<QName, Serializable> props = nodeService.getProperties(parentNodeRef);
-            NamedValue[] columns = new NamedValue[props.size()];
+            NamedValue[] columns = new NamedValue[props.size()+4];
             int col = 0;
             for (QName propName : props.keySet())
             {
                columns[col] = Utils.createNamedValue(dictionaryService, propName, props.get(propName));
                col++;
             }
+            
+            // Now add the system columns containing the association details
+            columns[col] = new NamedValue(SYS_COL_ASSOC_TYPE, Boolean.FALSE, assoc.getTypeQName().toString(), null);
+            col++;
+            columns[col] = new NamedValue(SYS_COL_ASSOC_NAME, Boolean.FALSE, assoc.getQName().toString(), null);
+            col++;
+            columns[col] = new NamedValue(SYS_COL_IS_PRIMARY, Boolean.FALSE, Boolean.toString(assoc.isPrimary()), null);
+            col++;
+            columns[col] = new NamedValue(SYS_COL_NTH_SIBLING, Boolean.FALSE, Integer.toString(assoc.getNthSibling()), null);
             
             ResultSetRow row = new ResultSetRow();
             row.setRowIndex(x);

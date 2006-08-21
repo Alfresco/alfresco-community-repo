@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
@@ -98,7 +99,7 @@ public class JBPMEngine extends BPMEngine
     protected NodeService nodeService;
     protected ServiceRegistry serviceRegistry;
     protected PersonService personService;
-    private JbpmTemplate jbpmTemplate;
+    protected JbpmTemplate jbpmTemplate;
 
     // Note: jBPM query which is not provided out-of-the-box
     // TODO: Check jBPM 3.2 and get this implemented in jBPM
@@ -1033,10 +1034,6 @@ public class JBPMEngine extends BPMEngine
     @SuppressWarnings("unchecked")
     protected Map<QName, Serializable> getTaskProperties(TaskInstance instance)
     {
-        // establish task definition
-        TypeDefinition taskDef = getAnonymousTaskDefinition(getTaskDefinition(instance.getTask()));
-        Map<QName, AssociationDefinition> taskAssocs = taskDef.getAssociations();
-
         // map arbitrary task variables
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(10);
         Map<String, Object> vars = instance.getVariablesLocally();
@@ -1050,32 +1047,23 @@ public class JBPMEngine extends BPMEngine
             //
             
             // Convert Nodes to NodeRefs
-            if (value instanceof org.alfresco.repo.jscript.Node)
+            if (value instanceof JBPMNode)
             {
-                value = ((org.alfresco.repo.jscript.Node)value).getNodeRef();
+                value = ((JBPMNode)value).getNodeRef();
+            }
+            else if (value instanceof JBPMNodeList)
+            {
+                JBPMNodeList nodes = (JBPMNodeList)value;
+                List<NodeRef> nodeRefs = new ArrayList<NodeRef>(nodes.size());
+                for (JBPMNode node : nodes)
+                {
+                    nodeRefs.add(node.getNodeRef());
+                }
+                value = (Serializable)nodeRefs;
             }
             
-            // Convert Authority name to NodeRefs
-            QName qname = QName.createQName(key, this.namespaceService);
-            AssociationDefinition assocDef = taskAssocs.get(qname);
-            if (assocDef != null && assocDef.getTargetClass().equals(ContentModel.TYPE_PERSON))
-            {
-                // TODO: Also support group authorities
-                if (value instanceof String[])
-                {
-                    value = mapNameToAuthority((String[])value);
-                }
-                else if (value instanceof String)
-                {
-                   value = mapNameToAuthority(new String[] {(String)value});
-                }
-                else
-                {
-                    throw new WorkflowException("Task variable '" + qname + "' value is invalid format");
-                }
-            }    
-
             // place task variable in map to return
+            QName qname = QName.createQName(key, this.namespaceService);
             properties.put(qname, (Serializable)value);
         }
 
@@ -1091,10 +1079,16 @@ public class JBPMEngine extends BPMEngine
         Set pooledActors = instance.getPooledActors();
         if (pooledActors != null)
         {
-            String[] pooledActorIds = new String[pooledActors.size()]; 
-            pooledActors.toArray(pooledActorIds);
-            List<NodeRef> pooledActorNodeRefs = mapNameToAuthority(pooledActorIds);
-            properties.put(WorkflowModel.ASSOC_POOLED_ACTORS, (Serializable)pooledActorNodeRefs);
+            List<NodeRef> pooledNodeRefs = new ArrayList<NodeRef>(pooledActors.size());
+            for (String pooledActor : (Set<String>)pooledActors)
+            {
+                NodeRef pooledNodeRef = mapNameToAuthority(pooledActor);
+                if (pooledNodeRef != null)
+                {
+                    pooledNodeRefs.add(pooledNodeRef);
+                }
+            }
+            properties.put(WorkflowModel.ASSOC_POOLED_ACTORS, (Serializable)pooledNodeRefs);
         }
 
         return properties;
@@ -1136,6 +1130,13 @@ public class JBPMEngine extends BPMEngine
                     continue;
                 }
                 
+                // convert property value
+                value = (Serializable)DefaultTypeConverter.INSTANCE.convert(propDef.getDataType(), value);
+                if (value instanceof NodeRef)
+                {
+                    value = new JBPMNode((NodeRef)value, serviceRegistry);
+                }
+                
                 // map property to specific jBPM task instance field
                 if (key.equals(WorkflowModel.PROP_DUE_DATE))
                 {
@@ -1171,28 +1172,26 @@ public class JBPMEngine extends BPMEngine
                 AssociationDefinition assocDef = taskAssocs.get(key);
                 if (assocDef != null)
                 {
-                    // if association is to people, map them to authority names
-                    // TODO: support group authorities
-                    if (assocDef.getTargetClass().getName().equals(ContentModel.TYPE_PERSON))
-                    {
-                        String[] authorityNames = mapAuthorityToName((List<NodeRef>)value);
-                        if (authorityNames != null && authorityNames.length > 0)
-                        {
-                            value = (Serializable) (assocDef.isTargetMany() ? authorityNames : authorityNames[0]);
-                        }
-                    }
+                    // convert association to JBPMNodes
+                    value = convertAssociation(assocDef, value);
                     
                     // map association to specific jBPM task instance field
                     if (key.equals(WorkflowModel.ASSOC_POOLED_ACTORS))
                     {
                         String[] pooledActors = null;
-                        if (value instanceof String[])
+                        if (value instanceof JBPMNodeList[])
                         {
-                            pooledActors = (String[])value;
+                            JBPMNodeList actors = (JBPMNodeList)value;
+                            pooledActors = new String[actors.size()];
+                            int i = 0;
+                            for (JBPMNode actor : actors)
+                            {
+                                pooledActors[i++] = actor.getName();
+                            }
                         }
-                        else if (value instanceof String)
+                        else if (value instanceof JBPMNode)
                         {
-                            pooledActors = new String[] {(String)value};
+                            pooledActors = new String[] {((JBPMNode)value).getName()};
                         }
                         else
                         {
@@ -1202,64 +1201,88 @@ public class JBPMEngine extends BPMEngine
                         continue;
                     }
                 }
+                
+                // untyped value, perform minimal conversion
+                else
+                {
+                    if (value instanceof NodeRef)
+                    {
+                        value = new JBPMNode((NodeRef)value, serviceRegistry);
+                    }
+                }
             }
             
             // no specific mapping to jBPM task has been established, so place into
             // the generic task variable bag
             String name = key.toPrefixString(this.namespaceService);
-            if (value instanceof NodeRef)
-            {
-                value = new JBPMNode((NodeRef)value, serviceRegistry);
-            }
             instance.setVariableLocally(name, value);
         }
     }
     
-    
     /**
-     * Convert a list of Alfresco Authorities to a list of authority Names
-     *  
-     * @param authorities  the authorities to convert
-     * @return  the authority names
+     * Convert a Repository association to JBPMNodeList or JBPMNode
+     * 
+     * @param assocDef   association definition
+     * @param value  value to convert
+     * @return  JBPMNodeList or JBPMNode
      */
-    private String[] mapAuthorityToName(List<NodeRef> authorities)
+    private Serializable convertAssociation(AssociationDefinition assocDef, Serializable value)
     {
-        String[] names = null;
-        if (authorities != null)
+        boolean isMany = assocDef.isTargetMany();
+        
+        if (value instanceof NodeRef)
         {
-            names = new String[authorities.size()];
-            int i = 0;
-            for (NodeRef person : authorities)
+            if (isMany)
             {
-                String name = (String)nodeService.getProperty(person, ContentModel.PROP_USERNAME);
-                names[i++] = name;
+                // convert single node ref to list of node refs
+                JBPMNodeList values = new JBPMNodeList(); 
+                values.add(new JBPMNode((NodeRef)value, serviceRegistry));
+                value = (Serializable)values;
+            }
+            else
+            {
+                value = new JBPMNode((NodeRef)value, serviceRegistry);
             }
         }
-        return names;
+        
+        if (value instanceof List)
+        {
+            if (isMany)
+            {
+                JBPMNodeList values = new JBPMNodeList();
+                for (NodeRef nodeRef : (List<NodeRef>)value)
+                {
+                    values.add(new JBPMNode(nodeRef, serviceRegistry));
+                }
+                value = (Serializable)values;
+            }
+            else
+            {
+                value = new JBPMNode((NodeRef)value, serviceRegistry);
+            }
+        }
+        
+        return value;
     }
     
     /**
-     * Convert a list of authority Names to Alfresco Authorities
+     * Convert authority name to an Alfresco Authority
      * 
      * @param names  the authority names to convert
      * @return  the Alfresco authorities
      */
-    private List<NodeRef> mapNameToAuthority(String[] names)
+    private NodeRef mapNameToAuthority(String name)
     {
-        List<NodeRef> authorities = null; 
-        if (names != null)
+        NodeRef authority = null;
+        if (name != null)
         {
-            authorities = new ArrayList<NodeRef>(names.length);
-            for (String name : names)
+            // TODO: Should this be an exception?
+            if (personService.personExists(name))
             {
-                // TODO: Should this be an exception?
-                if (personService.personExists(name))
-                {
-                    authorities.add(personService.getPerson(name));
-                }
+                authority = personService.getPerson(name);
             }
         }
-        return authorities;
+        return authority;
     }
 
     /**

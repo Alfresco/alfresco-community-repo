@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -79,10 +80,11 @@ public class JBPMEngineTest extends BaseSpringTest
         assertEquals("Test", testWorkflowDef.title);
         assertEquals("1", testWorkflowDef.version);
         assertTrue(workflowComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
-        
+
         // get valid node ref
         NodeService nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
         testNodeRef = nodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "spacesStore"));
+        nodeService.setProperty(testNodeRef, ContentModel.PROP_CREATED, new Date());
     }
 
     
@@ -383,7 +385,6 @@ public class JBPMEngineTest extends BaseSpringTest
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
-        assertNotNull(path);
         List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
         assertNotNull(tasks1);
         assertEquals(1, tasks1.size());
@@ -393,18 +394,31 @@ public class JBPMEngineTest extends BaseSpringTest
     }        
 
     
-    public void testScript()
+    public void testWorkflowPackageNodeRef()
     {
-        WorkflowDefinition workflowDef = getTestDefinition();
+        
+    }
+    
+    
+    public void testScript()
+        throws IOException
+    {
+        // deploy test script definition
+        ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/test_script.xml");
+        assertFalse(workflowComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
+        WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
+        assertNotNull(deployment);
+        
+        WorkflowDefinition workflowDef = deployment.definition;
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
-        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
         List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
         assertNotNull(tasks1);
         assertEquals(1, tasks1.size());
-        WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).id, path.node.transitions[0].id);
+        assertEquals(WorkflowTaskState.IN_PROGRESS, tasks1.get(0).state);
+        WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).id, null);
         assertNotNull(updatedTask);
     }        
     

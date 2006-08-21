@@ -19,6 +19,7 @@ package org.alfresco.repo.workflow.jbpm;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.alfresco.repo.jscript.Node;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -79,7 +80,11 @@ public class JBPMNode extends org.alfresco.repo.jscript.Node
         @Override
         public Serializable convertValueForScript(ServiceRegistry services, Scriptable scope, QName qname, Serializable value)
         {
-            if (value instanceof Date)
+            if (value instanceof NodeRef)
+            {
+                return new JBPMNode(((NodeRef)value), services);
+            }
+            else if (value instanceof Date)
             {
                 return value;
             }

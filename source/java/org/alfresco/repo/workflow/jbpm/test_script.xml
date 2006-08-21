@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="test_script">
+   <swimlane name="initiator"></swimlane>
+
+   <start-state name="start">
+      <task name="submit" swimlane="initiator">
+         <event type="task-assign">
+            <script>
+               System.out.println("taskInstance.create: " + taskInstance.create);
+            </script>
+         </event>
+         <controller>
+            <variable name="testNode" access="write,required" />
+         </controller>
+      </task>
+      <transition name="" to="doit"/>
+   </start-state>
+   
+   <node name="doit">
+      <event type="node-enter">
+      <script>
+         <expression>
+            System.out.println("testNode.created: " + testNode.properties{"cm:created"});
+            System.out.println("test node " + testNode.name + " contains " + testNode.children.length + " children");
+         </expression>
+         <variable name="testNode" access="read"/>
+      </script>
+      </event>
+      <event type="node-enter">
+      <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+         <script>
+            <expression>
+              var result = "testNode.created: " + testNode.properties["cm:created"];
+              result;
+            </expression>
+            <variable name="testNode" access="read"/>
+            <variable name="alfrescoScriptResult" access="write"/>
+         </script>
+      </action>
+      </event>
+      <transition name="" to="end"/>
+   </node>
+   
+   <end-state name="end">
+     <event type="node-enter">
+      <script>
+            System.out.println("javascript: " + alfrescoScriptResult);
+      </script>
+     </event>   
+   </end-state>
+   
+</process-definition>

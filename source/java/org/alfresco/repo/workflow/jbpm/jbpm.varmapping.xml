@@ -119,7 +119,7 @@
       <variable-instance class="org.jbpm.context.exe.variableinstance.DateInstance" />
     </jbpm-type>
 
-    <!-- org.alfresco.repo.jscript.Node -->
+    <!-- org.alfresco.repo.workflow.jbpm.JBPMNode -->
     <jbpm-type>
       <matcher>
         <bean class="org.jbpm.context.exe.matcher.ClassNameMatcher">
@@ -130,6 +130,17 @@
       <variable-instance class="org.jbpm.context.exe.variableinstance.StringInstance" />
     </jbpm-type>
   
+    <!-- org.alfresco.repo.workflow.jbpm.JBPMNodeList -->
+    <jbpm-type>
+      <matcher>
+        <bean class="org.jbpm.context.exe.matcher.ClassNameMatcher">
+          <field name="className"><string value="org.alfresco.repo.workflow.jbpm.JBPMNodeList" /></field>
+        </bean>
+      </matcher>
+      <converter class="org.alfresco.repo.workflow.jbpm.NodeListConverter" />
+      <variable-instance class="org.jbpm.context.exe.variableinstance.ByteArrayInstance" />
+    </jbpm-type>
+
     <!-- byte[] -->
     <jbpm-type>
       <matcher>

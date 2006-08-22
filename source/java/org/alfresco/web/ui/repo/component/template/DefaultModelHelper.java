@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.template.DateCompareMethod;
+import org.alfresco.repo.template.FreeMarkerProcessor;
 import org.alfresco.repo.template.HasAspectMethod;
 import org.alfresco.repo.template.I18NMessageMethod;
 import org.alfresco.service.ServiceRegistry;
@@ -69,37 +70,11 @@ public class DefaultModelHelper
          throw new IllegalArgumentException("Current User is mandatory.");
       }
       
-      // create FreeMarker default model and merge
-      Map<String, Object> root = new HashMap<String, Object>(16, 1.0f);
-      
-      // supply the CompanyHome space as "companyhome"
       NodeRef companyRootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
-      TemplateNode companyRootNode = new TemplateNode(companyRootRef, services, imageResolver);
-      root.put("companyhome", companyRootNode);
-      
-      // supply the users Home Space as "userhome"
       NodeRef userRootRef = new NodeRef(Repository.getStoreRef(), user.getHomeSpaceId());
-      TemplateNode userRootNode = new TemplateNode(userRootRef, services, imageResolver);
-      root.put("userhome", userRootNode);
       
-      // supply the current user Node as "person"
-      root.put("person", new TemplateNode(user.getPerson(), services, imageResolver));
-      
-      // add the template itself as "template" if it comes from content on a node
-      if (template != null)
-      {
-         root.put("template", new TemplateNode(template, services, imageResolver));
-      }
-      
-      // current date/time is useful to have and isn't supplied by FreeMarker by default
-      root.put("date", new Date());
-      
-      // add custom method objects
-      root.put("hasAspect", new HasAspectMethod());
-      root.put("message", new I18NMessageMethod());
-      root.put("dateCompare", new DateCompareMethod());
-      
-      return root;
+      return FreeMarkerProcessor.buildDefaultModel(
+              services, user.getPerson(), companyRootRef, userRootRef, template, imageResolver);
    }
    
    /** Template Image resolver helper */

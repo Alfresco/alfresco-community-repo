@@ -17,12 +17,10 @@
 package org.alfresco.web.templating.xforms.schemabuilder;
 
 import org.apache.xerces.xs.*;
-import org.chiba.util.StringUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
-import javax.xml.transform.Source;
 import java.util.Vector;
 
 /*
@@ -80,7 +78,20 @@ public class BaseSchemaFormBuilder
      * @return __UNDOCUMENTED__
      */
     public String createCaption(String text) {
-        return StringUtil.capitalizeIdentifier(text);
+        // if the word is all upper case, then set to lower case and continue
+        if (text.equals(text.toUpperCase()))
+            text = text.toLowerCase();
+	String[] s = text.split("/[-_\\ ]/");
+	StringBuffer result = new StringBuffer();
+	for (int i = 0; i < s.length; i++)
+        {
+	    if (i != 0)
+		result.append(' ');
+	    result.append(Character.toUpperCase(s[i].charAt(0)) + 
+			  s[i].substring(1, s[i].length() - 1));
+	}
+	
+        return result.toString();
     }
 
     /**

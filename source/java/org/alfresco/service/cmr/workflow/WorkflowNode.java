@@ -26,6 +26,9 @@ package org.alfresco.service.cmr.workflow;
  */
 public class WorkflowNode
 {
+    /** Workflow Node Name */
+    public String name;
+    
     /** Workflow Node Title (Localised) */
     public String title;
     

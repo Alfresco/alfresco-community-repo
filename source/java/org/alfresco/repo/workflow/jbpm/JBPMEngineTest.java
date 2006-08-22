@@ -77,7 +77,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
         testWorkflowDef = deployment.definition; 
         assertNotNull(testWorkflowDef);
-        assertEquals("Test", testWorkflowDef.title);
+        assertEquals("test", testWorkflowDef.name);
         assertEquals("1", testWorkflowDef.version);
         assertTrue(workflowComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
 
@@ -102,7 +102,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
         testWorkflowDef = deployment.definition; 
         assertNotNull(testWorkflowDef);
-        assertEquals("Test", testWorkflowDef.title);
+        assertEquals("test", testWorkflowDef.name);
         assertEquals("2", testWorkflowDef.version);
     }
     
@@ -331,7 +331,7 @@ public class JBPMEngineTest extends BaseSpringTest
         assertNotNull(assignedTasks);
         assignedTasks = filterTasksByWorkflowInstance(assignedTasks, path.instance.id);
         assertEquals(1, assignedTasks.size());
-        assertEquals("Review", assignedTasks.get(0).title);
+        assertEquals("review", assignedTasks.get(0).name);
     }
 
     
@@ -373,7 +373,7 @@ public class JBPMEngineTest extends BaseSpringTest
         assertEquals(1, tasks1.size());
         WorkflowTask getTask = taskComponent.getTaskById(tasks1.get(0).id);
         assertNotNull(getTask);
-        assertEquals(getTask.title, tasks1.get(0).title);
+        assertEquals(getTask.id, tasks1.get(0).id);
     }
 
     

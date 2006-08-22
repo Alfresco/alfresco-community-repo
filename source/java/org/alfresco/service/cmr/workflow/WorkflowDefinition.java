@@ -27,6 +27,9 @@ public class WorkflowDefinition
     /** Workflow Definition unique id */
     public String id;
     
+    /** Workflow Definition name */
+    public String name;
+    
     /** Workflow Definition version */
     public String version;
     

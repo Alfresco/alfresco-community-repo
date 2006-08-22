@@ -1332,11 +1332,11 @@ public class JBPMEngine extends BPMEngine
     @SuppressWarnings("unchecked")
     protected WorkflowNode createWorkflowNode(Node node)
     {
-        String name = node.getName();
         String processName = node.getProcessDefinition().getName();
         WorkflowNode workflowNode = new WorkflowNode();
-        workflowNode.title = getLabel(processName + ".node." + name, TITLE_LABEL, name);
-        workflowNode.description = getLabel(processName + ".node." + name, DESC_LABEL, workflowNode.title);
+        workflowNode.name = node.getName();
+        workflowNode.title = getLabel(processName + ".node." + workflowNode.name, TITLE_LABEL, workflowNode.name);
+        workflowNode.description = getLabel(processName + ".node." + workflowNode.name, DESC_LABEL, workflowNode.title);
         if (node instanceof HibernateProxy)
         {
             Node realNode = (Node)((HibernateProxy)node).getHibernateLazyInitializer().getImplementation();        
@@ -1412,10 +1412,10 @@ public class JBPMEngine extends BPMEngine
     protected WorkflowDefinition createWorkflowDefinition(ProcessDefinition definition)
     {
         WorkflowDefinition workflowDef = new WorkflowDefinition();
-        String name = definition.getName();
-        workflowDef.title = getLabel(name + ".workflow", TITLE_LABEL, name);
-        workflowDef.description = getLabel(name + ".workflow", DESC_LABEL, workflowDef.title);
         workflowDef.id = createGlobalId(new Long(definition.getId()).toString());
+        workflowDef.name = definition.getName();
+        workflowDef.title = getLabel(workflowDef.name + ".workflow", TITLE_LABEL, workflowDef.name);
+        workflowDef.description = getLabel(workflowDef.name + ".workflow", DESC_LABEL, workflowDef.title);
         workflowDef.version = new Integer(definition.getVersion()).toString();
         Task startTask = definition.getTaskMgmtDefinition().getStartTask();
         if (startTask != null)
@@ -1433,24 +1433,25 @@ public class JBPMEngine extends BPMEngine
      */
     protected WorkflowTask createWorkflowTask(TaskInstance task)
     {
+        String processName = task.getTask().getProcessDefinition().getName();
+
         WorkflowTask workflowTask = new WorkflowTask();
         workflowTask.id = createGlobalId(new Long(task.getId()).toString());
+        workflowTask.name = task.getName();
         workflowTask.path = createWorkflowPath(task.getToken());
         workflowTask.state = getWorkflowTaskState(task);
         workflowTask.definition = createWorkflowTaskDefinition(task.getTask());
         workflowTask.properties = getTaskProperties(task);
-        String name = task.getName();
-        String processName = task.getTask().getProcessDefinition().getName();
-        workflowTask.title = getLabel(processName + ".task." + name, TITLE_LABEL, null);
+        workflowTask.title = getLabel(processName + ".task." + workflowTask.name, TITLE_LABEL, null);
         if (workflowTask.title == null)
         {
             workflowTask.title = workflowTask.definition.metadata.getTitle();
             if (workflowTask.title == null)
             {
-                workflowTask.title = name;
+                workflowTask.title = workflowTask.name;
             }
         }
-        workflowTask.description = getLabel(processName + ".task." + name, DESC_LABEL, null);
+        workflowTask.description = getLabel(processName + ".task." + workflowTask.name, DESC_LABEL, null);
         if (workflowTask.description == null)
         {
             String description = workflowTask.definition.metadata.getDescription();

@@ -34,6 +34,9 @@ public class WorkflowTask
     /** Unique id of Task */
     public String id;
     
+    /** Task Name */
+    public String name;
+    
     /** Task Title (Localised) */
     public String title;
 

@@ -132,7 +132,10 @@
                 <value>org/jbpm/taskmgmt/log/TaskEndLog.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/log/SwimlaneLog.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/log/SwimlaneCreateLog.hbm.xml</value>
-                <value>org/jbpm/taskmgmt/log/SwimlaneAssignLog.hbm.xml</value>                
+                <value>org/jbpm/taskmgmt/log/SwimlaneAssignLog.hbm.xml</value>     
+                
+                <!--  Alfresco TaskInstance sub-type -->
+                <value>org/alfresco/repo/workflow/jbpm/WorkflowTaskInstance.hbm.xml</value>           
             </list>
         </property>
         <property name="hibernateProperties" ref="hibernateConfigProperties" />

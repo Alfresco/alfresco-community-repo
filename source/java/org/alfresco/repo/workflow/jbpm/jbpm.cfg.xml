@@ -21,7 +21,7 @@
   <long   name="jbpm.msg.wait.timout" value="5000" singleton="true" />
   <int    name="jbpm.byte.block.size" value="1024" singleton="true" />
   <string name="mail.smtp.host" value="localhost" />
-  <bean   name="jbpm.task.instance.factory" class="org.jbpm.taskmgmt.impl.DefaultTaskInstanceFactoryImpl" singleton="true" />
+  <bean   name="jbpm.task.instance.factory" class="org.alfresco.repo.workflow.jbpm.WorkflowTaskInstanceFactory" singleton="true" />
   <bean   name="jbpm.variable.resolver" class="org.jbpm.jpdl.el.impl.JbpmVariableResolver" singleton="true" />
   <bean   name="jbpm.mail.address.resolver" class="org.jbpm.identity.mail.IdentityAddressResolver" singleton="true" />
   

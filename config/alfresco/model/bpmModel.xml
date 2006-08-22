@@ -103,7 +103,6 @@
             <property name="bpm:status">
                <title>Status</title>
                <type>d:text</type>
-               <protected>true</protected>
                <mandatory>true</mandatory>
                <default>Not Yet Started</default>
                <constraints>
@@ -171,18 +170,6 @@
       
          <properties>
 
-            <!--                        -->         
-            <!--  Associated Workflow   -->
-            <!--                        -->         
-            <property name="bpm:workflowDefinitionId">
-               <title>Workflow Definition Id</title>
-               <type>d:text</type>
-            </property>
-            <property name="bpm:workflowInstanceId">
-               <title>Workflow Instance Id</title>
-               <type>d:text</type>
-            </property>
-         
             <!--  Task Context          -->
             <!--  e.g. Space, Document  -->
             <property name="bpm:context">
@@ -249,6 +236,22 @@
 
          <properties>
 
+            <!--                        -->         
+            <!--  Associated Workflow   -->
+            <!--                        -->         
+            <property name="bpm:workflowDefinitionId">
+               <title>Workflow Definition Id</title>
+               <type>d:text</type>
+            </property>
+            <property name="bpm:workflowDefinitionName">
+               <title>Workflow Definition Name</title>
+               <type>d:text</type>
+            </property>
+            <property name="bpm:workflowInstanceId">
+               <title>Workflow Instance Id</title>
+               <type>d:text</type>
+            </property>
+         
             <!--  TODO: Define properties (replicated from Workflow/Task Engine) for -->
             <!--        search within Alfresco e.g. task info, workflow info ...     -->
          

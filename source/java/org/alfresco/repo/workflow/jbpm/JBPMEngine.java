@@ -40,6 +40,7 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -748,8 +749,8 @@ public class JBPMEngine extends BPMEngine
      */
     public WorkflowTask startTask(String taskId)
     {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO:
+        throw new UnsupportedOperationException();
     }
 
     /* (non-Javadoc)
@@ -757,8 +758,8 @@ public class JBPMEngine extends BPMEngine
      */
     public WorkflowTask suspendTask(String taskId)
     {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO:
+        throw new UnsupportedOperationException();
     }
 
     /* (non-Javadoc)
@@ -882,7 +883,6 @@ public class JBPMEngine extends BPMEngine
         }
     }
     
-    
     /**
      * Construct a Process Definition from the provided Process Definition stream
      * 
@@ -974,11 +974,27 @@ public class JBPMEngine extends BPMEngine
     {
         List<AspectDefinition> aspects = typeDef.getDefaultAspects();
         List<QName> aspectNames = new ArrayList<QName>(aspects.size());
-        for (AspectDefinition aspect : aspects)
-        {
-            aspectNames.add(aspect.getName());
-        }
+        getMandatoryAspects(typeDef, aspectNames);
         return dictionaryService.getAnonymousType(typeDef.getName(), aspectNames);
+    }
+
+    /**
+     * Gets a flattened list of all mandatory aspects for a given class
+     * 
+     * @param classDef  the class
+     * @param aspects  a list to hold the mandatory aspects
+     */
+    private void getMandatoryAspects(ClassDefinition classDef, List<QName> aspects)
+    {
+        for (AspectDefinition aspect : classDef.getDefaultAspects())
+        {
+            QName aspectName = aspect.getName();
+            if (!aspects.contains(aspectName))
+            {
+                aspects.add(aspect.getName());
+                getMandatoryAspects(aspect, aspects);
+            }
+        }
     }
     
     /**
@@ -1075,6 +1091,7 @@ public class JBPMEngine extends BPMEngine
         properties.put(WorkflowModel.PROP_DUE_DATE, instance.getDueDate());
         properties.put(WorkflowModel.PROP_COMPLETION_DATE, instance.getEnd());
         properties.put(WorkflowModel.PROP_PRIORITY, instance.getPriority());
+        properties.put(ContentModel.PROP_CREATED, instance.getCreate());
         properties.put(ContentModel.PROP_OWNER, instance.getActorId());
         
         // map jBPM task instance collections to associations
@@ -1229,6 +1246,57 @@ public class JBPMEngine extends BPMEngine
             String name = key.toPrefixString(this.namespaceService);
             instance.setVariableLocally(name, value);
         }
+    }
+
+    /**
+     * Sets Default Properties of Task
+     * 
+     * @param instance  task instance
+     */
+    protected void setDefaultTaskProperties(TaskInstance instance)
+    {
+        Map<QName, Serializable> existingValues = null;
+        Map<QName, Serializable> defaultValues = new HashMap<QName, Serializable>();
+
+        // construct an anonymous type that flattens all mandatory aspects
+        ClassDefinition classDef = getAnonymousTaskDefinition(getTaskDefinition(instance.getTask()));
+        Map<QName, PropertyDefinition> propertyDefs = classDef.getProperties(); 
+
+        // for each property, determine if it has a default value
+        for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet())
+        {
+            String defaultValue = entry.getValue().getDefaultValue();
+            if (defaultValue != null)
+            {
+                if (existingValues == null)
+                {
+                    existingValues = getTaskProperties(instance);
+                }
+                if (existingValues.get(entry.getKey()) == null)
+                {
+                    defaultValues.put(entry.getKey(), defaultValue);
+                }
+            }
+        }
+
+        // assign the default values to the task
+        if (defaultValues.size() > 0)
+        {
+            setTaskProperties(instance, defaultValues);
+        }
+    }
+
+    /**
+     * Set Task Outcome based on specified Transition
+     * 
+     * @param instance  task instance
+     * @param transition  transition
+     */
+    protected void setTaskOutcome(TaskInstance instance, Transition transition)
+    {
+        Map<QName, Serializable> outcome = new HashMap<QName, Serializable>();
+        outcome.put(WorkflowModel.PROP_OUTCOME, transition.getName());
+        setTaskProperties(instance, outcome);
     }
     
     /**
@@ -1479,6 +1547,8 @@ public class JBPMEngine extends BPMEngine
     {
         WorkflowTaskDefinition taskDef = new WorkflowTaskDefinition();
         taskDef.id = task.getName();
+        Node node = (task.getStartState() == null ? task.getTaskNode() : task.getStartState());
+        taskDef.node = createWorkflowNode(node);
         taskDef.metadata = getTaskDefinition(task);
         return taskDef;
     }

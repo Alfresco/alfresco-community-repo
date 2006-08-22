@@ -109,7 +109,10 @@ public class ReviewAndApproveTest extends BaseSpringTest
 
         WorkflowTask task = tasks1.get(0);
         assertTrue(task.properties.containsKey(WorkflowModel.ASSOC_PACKAGE));
-        taskComponent.endTask(task.id, null);
+        WorkflowTask endedTask = taskComponent.endTask(task.id, null);
+        assertNotNull(endedTask);
+        assertTrue(endedTask.properties.containsKey(WorkflowModel.PROP_OUTCOME));
+        assertEquals("", endedTask.properties.get(WorkflowModel.PROP_OUTCOME));
         
         List<WorkflowTask> assignedTasks = taskComponent.getAssignedTasks("admin", WorkflowTaskState.IN_PROGRESS);
         assertNotNull(assignedTasks);

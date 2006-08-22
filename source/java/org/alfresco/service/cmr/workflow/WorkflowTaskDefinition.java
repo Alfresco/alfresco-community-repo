@@ -31,6 +31,9 @@ public class WorkflowTaskDefinition
 {
     /** Unique id of Workflow Task Definition */
     public String id;
+
+    /** Workflow Node this task created from */
+    public WorkflowNode node;
     
     /** Task Metadata */
     public TypeDefinition metadata;

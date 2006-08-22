@@ -25,7 +25,7 @@
          <event type="task-create">
             <script>
                taskInstance.dueDate = reviewduedate;
-               // taskInstance.priority = reviewpriority;
+               taskInstance.priority = reviewpriority;
             </script>
          </event>
          <controller>

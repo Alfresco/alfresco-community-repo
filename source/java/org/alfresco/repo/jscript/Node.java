@@ -1185,7 +1185,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return true if the aspect was added successfully, false if an error occured.
      */
-    public boolean addAspect(String type, ScriptableObject properties)
+    public boolean addAspect(String type, Object props)
     {
         boolean success = false;
         
@@ -1194,8 +1194,10 @@ public class Node implements Serializable, Scopeable
             try
             {
                 Map<QName, Serializable> aspectProps = null;
-                if (properties != null)
+                if (props instanceof ScriptableObject)
                 {
+                    ScriptableObject properties = (ScriptableObject)props;
+                    
                     // we need to get all the keys to the properties provided
                     // and convert them to a Map of QName to Serializable objects
                     Object[] propIds = properties.getIds();
@@ -1546,9 +1548,9 @@ public class Node implements Serializable, Scopeable
      * 
      * @return output of the template execution 
      */
-    public String processTemplate(Node template, ScriptableObject args)
+    public String processTemplate(Node template, Object args)
     {
-        return processTemplate(template.getContent(), null, args);
+        return processTemplate(template.getContent(), null, (ScriptableObject)args);
     }
     
     /**
@@ -1572,9 +1574,9 @@ public class Node implements Serializable, Scopeable
      * 
      * @return output of the template execution 
      */
-    public String processTemplate(String template, ScriptableObject args)
+    public String processTemplate(String template, Object args)
     {
-        return processTemplate(template, null, args);
+        return processTemplate(template, null, (ScriptableObject)args);
     }
     
     private String processTemplate(String template, NodeRef templateRef, ScriptableObject args)

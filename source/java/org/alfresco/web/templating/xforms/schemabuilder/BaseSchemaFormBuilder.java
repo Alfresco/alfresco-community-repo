@@ -81,16 +81,22 @@ public class BaseSchemaFormBuilder
         // if the word is all upper case, then set to lower case and continue
         if (text.equals(text.toUpperCase()))
             text = text.toLowerCase();
-	String[] s = text.split("/[-_\\ ]/");
+	String[] s = text.split("[-_\\ ]");
 	StringBuffer result = new StringBuffer();
 	for (int i = 0; i < s.length; i++)
         {
 	    if (i != 0)
 		result.append(' ');
-	    result.append(Character.toUpperCase(s[i].charAt(0)) + 
-			  s[i].substring(1, s[i].length() - 1));
+	    if (s[i].length() > 1)
+	    {
+		result.append(Character.toUpperCase(s[i].charAt(0)) +  
+			      s[i].substring(1, s[i].length()));
+	    }
+	    else
+	    {
+		result.append(s[i]);
+	    }
 	}
-	
         return result.toString();
     }
 

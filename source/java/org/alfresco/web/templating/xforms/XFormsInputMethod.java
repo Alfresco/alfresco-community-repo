@@ -67,11 +67,11 @@ public class XFormsInputMethod
 	final Document result = ts.newDocument();
 	final Element div = result.createElement("div");
 	div.setAttribute("id", "alf-ui");
-	div.setAttribute("style", "width: 100%; border: solid 1px orange;");
+	div.setAttribute("style", "width: 100%; border: solid 0px orange;");
 	result.appendChild(div);
 
 	Element e = result.createElement("script");
-	e.appendChild(result.createTextNode("djConfig = { isDebug: true };\n" +
+	e.appendChild(result.createTextNode("djConfig = { isDebug: false };\n" +
 					    "var WEBAPP_CONTEXT = \"" + cp + "\";\n"));
 	div.appendChild(e);
 	e = result.createElement("script");

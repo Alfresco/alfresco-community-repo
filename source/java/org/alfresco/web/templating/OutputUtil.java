@@ -171,7 +171,7 @@ public class OutputUtil
 	    LOGGER.debug("generated " + fileName + " using " + tom);
 
 	    AVMService avmService = AVMContext.fgInstance.getAVMService();
-	    String parentPath = "repo-1:/repo-1/alice/appBase/avm_webapps/my_webapp";
+	    String parentPath = "repo-1:/repo-1/alice/appBase/avm_webapps/ROOT/home-insurance";
 	    try 
 	    {
 		out =  new OutputStreamWriter(avmService.createFile(parentPath, generatedFileName));

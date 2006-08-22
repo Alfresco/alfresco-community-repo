@@ -31,6 +31,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.template.FreeMarkerProcessor;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -49,6 +50,7 @@ import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
@@ -60,6 +62,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Wrapper;
 import org.springframework.util.StringUtils;
 
 /**
@@ -632,7 +635,7 @@ public class Node implements Serializable, Scopeable
     {
         if (parent == null)
         {
-            NodeRef parentRef = this.nodeService.getPrimaryParent(nodeRef).getParentRef();
+            NodeRef parentRef = getPrimaryParentAssoc().getParentRef();
             // handle root node (no parent!)
             if (parentRef != null)
             {
@@ -905,7 +908,6 @@ public class Node implements Serializable, Scopeable
         this.nodeService.setProperties(this.nodeRef, props);
     }
 
-    
     /**
      * Re-sets the type of the node. Can be called in order specialise a node to a sub-type.
      * 
@@ -1178,12 +1180,12 @@ public class Node implements Serializable, Scopeable
      * Add an aspect to the Node.
      * 
      * @param type      Type name of the aspect to add
-     * @param props     Object (generally an assocative array) providing the named properties
+     * @param props     ScriptableObject (generally an assocative array) providing the named properties
      *                  for the aspect - any mandatory properties for the aspect must be provided!
-     *                  
+     * 
      * @return true if the aspect was added successfully, false if an error occured.
      */
-    public boolean addAspect(String type, Object properties)
+    public boolean addAspect(String type, ScriptableObject properties)
     {
         boolean success = false;
         
@@ -1192,12 +1194,11 @@ public class Node implements Serializable, Scopeable
             try
             {
                 Map<QName, Serializable> aspectProps = null;
-                if (properties instanceof ScriptableObject)
+                if (properties != null)
                 {
-                    ScriptableObject props = (ScriptableObject)properties;
                     // we need to get all the keys to the properties provided
                     // and convert them to a Map of QName to Serializable objects
-                    Object[] propIds = props.getIds();
+                    Object[] propIds = properties.getIds();
                     aspectProps = new HashMap<QName, Serializable>(propIds.length);
                     for (int i=0; i<propIds.length; i++)
                     {
@@ -1208,7 +1209,7 @@ public class Node implements Serializable, Scopeable
                         if (propId instanceof String)
                         {
                             // get the value out for the specified key - make sure it is Serializable
-                            Object value = props.get((String)propId, props);
+                            Object value = properties.get((String)propId, properties);
                             value = getValueConverter().convertValueForRepo((Serializable)value);
                             aspectProps.put(createQName((String)propId), (Serializable)value);
                         }
@@ -1522,6 +1523,113 @@ public class Node implements Serializable, Scopeable
         };
         
         return transformNode(transformer, mimetype, destination);
+    }
+    
+    /**
+     * Process a FreeMarker Template against the current node.
+     * 
+     * @param template      Node of the template to execute
+     * 
+     * @return output of the template execution
+     */
+    public String processTemplate(Node template)
+    {
+        return processTemplate(template.getContent(), null, null);
+    }
+    
+    /**
+     * Process a FreeMarker Template against the current node.
+     * 
+     * @param template      Node of the template to execute
+     * @param args          Scriptable object (generally an associative array) containing the
+     *                      name/value pairs of arguments to be passed to the template
+     * 
+     * @return output of the template execution 
+     */
+    public String processTemplate(Node template, ScriptableObject args)
+    {
+        return processTemplate(template.getContent(), null, args);
+    }
+    
+    /**
+     * Process a FreeMarker Template against the current node.
+     * 
+     * @param template      The template to execute
+     * 
+     * @return output of the template execution
+     */
+    public String processTemplate(String template)
+    {
+        return processTemplate(template, null, null);
+    }
+    
+    /**
+     * Process a FreeMarker Template against the current node.
+     * 
+     * @param template      The template to execute
+     * @param args          Scriptable object (generally an associative array) containing the
+     *                      name/value pairs of arguments to be passed to the template
+     * 
+     * @return output of the template execution 
+     */
+    public String processTemplate(String template, ScriptableObject args)
+    {
+        return processTemplate(template, null, args);
+    }
+    
+    private String processTemplate(String template, NodeRef templateRef, ScriptableObject args)
+    {
+        // build default model for the template processing
+        Map<String, Object> model = FreeMarkerProcessor.buildDefaultModel(services,
+                ((Node)((Wrapper)scope.get("person", scope)).unwrap()).getNodeRef(),
+                ((Node)((Wrapper)scope.get("companyhome", scope)).unwrap()).getNodeRef(),
+                ((Node)((Wrapper)scope.get("userhome", scope)).unwrap()).getNodeRef(),
+                templateRef,
+                this.imageResolver);
+        
+        // add the current node as either the document/space as appropriate
+        if (this.isDocument())
+        {
+            model.put("document", new TemplateNode(this.nodeRef, this.services, this.imageResolver));
+            model.put("space", new TemplateNode(getPrimaryParentAssoc().getParentRef(), this.services, this.imageResolver));
+        }
+        else
+        {
+            model.put("space", new TemplateNode(this.nodeRef, this.services, this.imageResolver));
+        }
+        
+        // add the supplied args to the 'args' root object
+        if (args != null)
+        {
+            // we need to get all the keys to the properties provided
+            // and convert them to a Map of QName to Serializable objects
+            Object[] propIds = args.getIds();
+            Map<String, String> templateArgs = new HashMap<String, String>(propIds.length);
+            for (int i=0; i<propIds.length; i++)
+            {
+                // work on each key in turn
+                Object propId = propIds[i];
+                
+                // we are only interested in keys that are formed of Strings i.e. QName.toString()
+                if (propId instanceof String)
+                {
+                    // get the value out for the specified key - make sure it is Serializable
+                    Object value = args.get((String)propId, args);
+                    value = getValueConverter().convertValueForRepo((Serializable)value);
+                    if (value != null)
+                    {
+                        templateArgs.put((String)propId, value.toString());
+                    }
+                }
+            }
+            // add the args to the model as the 'args' root object
+            model.put("args", templateArgs);
+        }
+        
+        // execute template!
+        // TODO: check that script modified nodes are reflected...
+        return this.services.getTemplateService().processTemplateString(
+                null, template, model);
     }
     
     

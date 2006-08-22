@@ -8,7 +8,7 @@
 
    <!-- Imports are required to allow references to definitions in other models -->   
    <imports>
-        <!-- Import Alfresco Dictionary Definitions -->
+      <!-- Import Alfresco Dictionary Definitions -->
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
       <!-- Import Alfresco Content Domain Model Definitions -->
       <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
@@ -76,6 +76,7 @@
                <title>Task Identifier</title>
                <type>d:long</type>
                <protected>true</protected>
+               <mandatory>true</mandatory>
             </property>
          
             <!--             -->   
@@ -103,6 +104,8 @@
                <title>Status</title>
                <type>d:text</type>
                <protected>true</protected>
+               <mandatory>true</mandatory>
+               <default>Not Yet Started</default>
                <constraints>
                   <constraint ref="bpm:allowedStatus"/>
                </constraints>
@@ -110,6 +113,8 @@
             <property name="bpm:priority">
                <title>Priority</title>
                <type>d:int</type>
+               <mandatory>true</mandatory>
+               <default>2</default>
                <constraints>
                   <constraint ref="bpm:allowedPriority"/>
                </constraints>
@@ -117,6 +122,8 @@
             <property name="bpm:percentComplete">
                <title>Percentage Complete</title>
                <type>d:int</type>
+               <mandatory>true</mandatory>
+               <default>0</default>
                <constraints>
                   <constraint ref="bpm:percentage"/>
                </constraints>
@@ -176,23 +183,35 @@
                <type>d:text</type>
             </property>
          
-            <!--                        -->
             <!--  Task Context          -->
             <!--  e.g. Space, Document  -->
-            <!--                        -->
             <property name="bpm:context">
                <title>Task Context</title>
                <type>d:noderef</type>
             </property>
                         
+            <!--  Task Outcome -->
+            <property name="bpm:outcome">
+               <title>Task Outcome</title>
+               <type>d:text</type>   <!-- Transition id -->
+            </property>
+
             <!--  Items within package marked as complete -->
             <property name="bpm:completedItems">
                <type>d:noderef</type>
                <multiple>true</multiple>
             </property>
-                        
-            <!--  TODO: Add Package Action Group -->
-            
+
+            <!--  Applicable actions for workflow package -->
+            <property name="bpm:packageActionGroup">
+               <type>d:text</type>
+            </property>
+
+            <!--  Applicable actions for workflow package item -->
+            <property name="bpm:packageItemActionGroup">
+               <type>d:text</type>
+               <default>workflow_item_read_actions</default>
+            </property>
          </properties>
 
          <associations>

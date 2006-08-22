@@ -119,6 +119,34 @@ public class ReviewAndApproveTest extends BaseSpringTest
         assertEquals(reviewDueDate, assignedTasks.get(0).properties.get(WorkflowModel.PROP_DUE_DATE));
     }
 
+    public void testCompletedItems()
+    {
+        WorkflowDefinition workflowDef = testWorkflowDef;
+        
+        List<NodeRef> nodeRefs = new ArrayList<NodeRef>();
+        nodeRefs.add(testNodeRef);
+        nodeRefs.add(testNodeRef);
+        
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        params.put(WorkflowModel.ASSOC_PACKAGE, testNodeRef);
+        params.put(WorkflowModel.PROP_COMPLETED_ITEMS, (Serializable)nodeRefs);
+        Date reviewDueDate = new Date();
+        params.put(QName.createQName("http://www.alfresco.org/model/workflow/1.0", "reviewDueDate"), reviewDueDate);
+        NodeRef reviewer = personService.getPerson("admin");
+        params.put(QName.createQName("http://www.alfresco.org/model/workflow/1.0", "reviewer"), reviewer);
+        
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, params);
+        assertNotNull(path);
+        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
+        assertNotNull(tasks1);
+        assertEquals(1, tasks1.size());
+
+        WorkflowTask task = tasks1.get(0);
+        assertTrue(task.properties.containsKey(WorkflowModel.PROP_COMPLETED_ITEMS));
+        assertEquals(2, ((List)task.properties.get(WorkflowModel.PROP_COMPLETED_ITEMS)).size());
+    }
+    
+    
     /**
      * Filter task list by workflow instance
      * 

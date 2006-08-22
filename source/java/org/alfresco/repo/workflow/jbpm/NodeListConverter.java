@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.jbpm.context.exe.Converter;
+import org.jbpm.context.exe.converter.SerializableToByteArrayConverter;
 import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.beans.factory.access.BeanFactoryReference;
 import org.springmodules.workflow.jbpm31.JbpmFactoryLocator;
@@ -32,7 +32,7 @@ import org.springmodules.workflow.jbpm31.JbpmFactoryLocator;
  * 
  * @author davidc
  */
-public class NodeListConverter implements Converter
+public class NodeListConverter extends SerializableToByteArrayConverter
 {
 
     private static final long serialVersionUID = 1L;
@@ -65,7 +65,7 @@ public class NodeListConverter implements Converter
             {
                 values.add(node.getNodeRef());
             }
-            converted = values;
+            converted = super.convert(values);
         }
         return converted;
     }
@@ -79,10 +79,10 @@ public class NodeListConverter implements Converter
         Object reverted = null;
         if (o != null)
         {
+            List<NodeRef> nodeRefs = (List<NodeRef>)super.revert(o);
             BeanFactoryReference factory = jbpmFactoryLocator.useBeanFactory(null);
             ServiceRegistry serviceRegistry = (ServiceRegistry)factory.getFactory().getBean(ServiceRegistry.SERVICE_REGISTRY);
             
-            List<NodeRef> nodeRefs = (List<NodeRef>)o;
             JBPMNodeList nodes = new JBPMNodeList();
             for (NodeRef nodeRef : nodeRefs)
             {

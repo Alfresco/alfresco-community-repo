@@ -36,6 +36,7 @@
             <property name="wf:reviewPriority">
                <title>Review Priority</title>
                <type>d:int</type>
+               <default>2</default>
                <constraints>
                   <constraint ref="bpm:allowedPriority"/>
                </constraints>
@@ -59,6 +60,37 @@
             </association>
 
          </associations>
+
+         <overrides>
+
+            <property name="wf:packageActionGroup">
+               <default>workflow_collection_actions</default>
+            </property>
+
+            <property name="wf:packageItemActionGroup">
+               <default>workflow_item_collection_actions</default>
+            </property>
+
+         </overrides>
+
+      </type>
+
+
+      <!--                               -->
+      <!--  Basic Review & Approve Tasks -->               
+      <!--                               -->
+      
+      <type name="wf:reviewTask">
+         <title>Review Task</title>
+         <parent>bpm:workflowTask</parent>
+         
+         <overrides>
+         
+            <property name="wf:packageItemActionGroup">
+               <default>workflow_item_edit_actions</default>
+            </property>
+            
+         </overrides>
 
       </type>
    

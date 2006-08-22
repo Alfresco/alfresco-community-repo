@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -1131,10 +1133,20 @@ public class JBPMEngine extends BPMEngine
                 }
                 
                 // convert property value
-                value = (Serializable)DefaultTypeConverter.INSTANCE.convert(propDef.getDataType(), value);
-                if (value instanceof NodeRef)
+                if (value instanceof Collection)
                 {
-                    value = new JBPMNode((NodeRef)value, serviceRegistry);
+                    value = (Serializable)DefaultTypeConverter.INSTANCE.convert(propDef.getDataType(), (Collection)value);
+                }
+                else
+                {
+                    value = (Serializable)DefaultTypeConverter.INSTANCE.convert(propDef.getDataType(), value);
+                }
+
+                // convert NodeRefs to JBPMNodes
+                DataTypeDefinition dataTypeDef = propDef.getDataType();
+                if (dataTypeDef.getName().equals(DataTypeDefinition.NODE_REF))
+                {
+                    value = convertNodeRefs(propDef.isMultiValued(), value);
                 }
                 
                 // map property to specific jBPM task instance field
@@ -1173,7 +1185,7 @@ public class JBPMEngine extends BPMEngine
                 if (assocDef != null)
                 {
                     // convert association to JBPMNodes
-                    value = convertAssociation(assocDef, value);
+                    value = convertNodeRefs(assocDef.isTargetMany(), value);
                     
                     // map association to specific jBPM task instance field
                     if (key.equals(WorkflowModel.ASSOC_POOLED_ACTORS))
@@ -1222,14 +1234,12 @@ public class JBPMEngine extends BPMEngine
     /**
      * Convert a Repository association to JBPMNodeList or JBPMNode
      * 
-     * @param assocDef   association definition
+     * @param isMany true => force conversion to list
      * @param value  value to convert
-     * @return  JBPMNodeList or JBPMNode
+     * @return JBPMNodeList or JBPMNode
      */
-    private Serializable convertAssociation(AssociationDefinition assocDef, Serializable value)
+    private Serializable convertNodeRefs(boolean isMany, Serializable value)
     {
-        boolean isMany = assocDef.isTargetMany();
-        
         if (value instanceof NodeRef)
         {
             if (isMany)
@@ -1244,8 +1254,7 @@ public class JBPMEngine extends BPMEngine
                 value = new JBPMNode((NodeRef)value, serviceRegistry);
             }
         }
-        
-        if (value instanceof List)
+        else if (value instanceof List)
         {
             if (isMany)
             {

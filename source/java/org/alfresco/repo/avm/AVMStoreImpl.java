@@ -31,7 +31,9 @@ import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -1030,5 +1032,78 @@ class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMWrongTypeException("File Expected.");
         }
         ((FileNode)node).setContentData(data);
+    }
+    
+    /**
+     * Add an aspect to a node.
+     * @param path The path to the node.
+     * @param aspectName The name of the aspect.
+     */
+    public void addAspect(String path, QName aspectName)
+    {
+        Lookup lPath = lookup(-1, path, true);
+        AVMNode node = lPath.getCurrentNode();
+        if (AVMContext.fgInstance.fAVMAspectNameDAO.exists(node, aspectName))
+        {
+            throw new AVMExistsException("Aspect exists.");
+        }
+        AVMAspectName newName = 
+            new AVMAspectNameImpl();
+        newName.setNode(node);
+        newName.setName(aspectName);
+        AVMContext.fgInstance.fAVMAspectNameDAO.save(newName);
+    }
+    
+    /**
+     * Get all aspects on a given node.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return A List of the QNames of the aspects.
+     */
+    public List<QName> getAspects(int version, String path)
+    {
+        Lookup lPath = lookup(version, path, false);
+        AVMNode node = lPath.getCurrentNode();
+        List<AVMAspectName> names = 
+            AVMContext.fgInstance.fAVMAspectNameDAO.get(node);
+        ArrayList<QName> result = new ArrayList<QName>();
+        for (AVMAspectName name : names)
+        {
+            result.add(name.getName());
+        }
+        return result;
+    }
+
+    /**
+     * Remove an aspect and all its properties from a node.
+     * @param path The path to the node.
+     * @param aspectName The name of the aspect.
+     */
+    public void removeAspect(String path, QName aspectName)
+    {
+        Lookup lPath = lookup(-1, path, true);
+        AVMNode node = lPath.getCurrentNode();
+        AVMContext.fgInstance.fAVMAspectNameDAO.delete(node, aspectName);
+        AspectDefinition def = AVMContext.fgInstance.getDictionaryService().getAspect(aspectName);
+        Map<QName, PropertyDefinition> properties =
+            def.getProperties();
+        for (QName name : properties.keySet())
+        {
+            AVMContext.fgInstance.fAVMNodePropertyDAO.delete(node, name);
+        }
+    }
+    
+    /**
+     * Does a given node have a given aspect.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @param aspectName The name of the aspect.
+     * @return Whether the node has the aspect.
+     */
+    public boolean hasAspect(int version, String path, QName aspectName)
+    {
+        Lookup lPath = lookup(version, path, false);
+        AVMNode node = lPath.getCurrentNode();
+        return AVMContext.fgInstance.fAVMAspectNameDAO.exists(node, aspectName);
     }
 }

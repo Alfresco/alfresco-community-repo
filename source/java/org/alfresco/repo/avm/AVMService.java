@@ -575,4 +575,37 @@ public interface AVMService
      * to a file.
      */
     public void setContentData(String path, ContentData data);
+    
+    /**
+     * Add an aspect to an AVM node.
+     * @param path The path to the node.
+     * @param aspectName The QName of the aspect.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMExistsException If the aspect already exists.
+     */
+    public void addAspect(String path, QName aspectName);
+    
+    /**
+     * Get all the aspects on an AVM node.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return A List of the QNames of the aspects.
+     */
+    public List<QName> getAspects(int version, String path);
+    
+    /**
+     * Remove an aspect and its properties from a node.
+     * @param path The path to the node.
+     * @param aspectName The name of the aspect.
+     */
+    public void removeAspect(String path, QName aspectName);
+    
+    /**
+     * Does a node have a particular aspect.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @param aspectName The aspect name to check.
+     * @return Whether the given node has the given aspect.
+     */
+    public boolean hasAspect(int version, String path, QName aspectName);
 }

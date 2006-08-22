@@ -37,7 +37,7 @@ import org.alfresco.service.namespace.QName;
  * the implementors of the operations specified by AVMService.
  * @author britt
  */
-class AVMRepository
+public class AVMRepository
 {
     /**
      * The single instance of AVMRepository.
@@ -67,7 +67,7 @@ class AVMRepository
     /**
      * Create a new one.
      */
-    AVMRepository()
+    public AVMRepository()
     {
         fLookupCount = new ThreadLocal<Integer>();
         fgInstance = this;
@@ -100,7 +100,7 @@ class AVMRepository
         fLayerIssuer = layerIssuer;
     }
 
-    void init()
+    public void init()
     {
         File storageDir = new File(fStorage);
         storageDir.mkdirs();
@@ -1133,5 +1133,60 @@ class AVMRepository
     public static AVMRepository GetInstance()
     {
         return fgInstance;
+    }
+    
+    /**
+     * Add an aspect to an AVM Node.
+     * @param path The path to the node.
+     * @param aspectName The name of the aspect.
+     */
+    public void addAspect(String path, QName aspectName)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        store.addAspect(pathParts[1], aspectName);
+    }
+    
+    /**
+     * Get all the aspects on an AVM node.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return A List of the QNames of the Aspects.
+     */
+    public List<QName> getAspects(int version, String path)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        return store.getAspects(version, pathParts[1]);
+    }
+    
+    /**
+     * Remove an aspect and all associated properties from a node.
+     * @param path The path to the node.
+     * @param aspectName The name of the aspect.
+     */
+    public void removeAspect(String path, QName aspectName)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        store.removeAspect(pathParts[1], aspectName);
+    }
+    
+    /**
+     * Does a node have a particular aspect.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @param aspectName The name of the aspect.
+     * @return Whether the node has the aspect.
+     */
+    public boolean hasAspect(int version, String path, QName aspectName)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        return store.hasAspect(version, pathParts[1], aspectName);
     }
 }

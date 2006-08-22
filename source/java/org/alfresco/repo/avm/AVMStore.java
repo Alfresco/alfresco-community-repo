@@ -366,4 +366,35 @@ interface AVMStore
      * @param data The ContentData to set.
      */
     public void setContentData(String path, ContentData data);
+    
+    /**
+     * Add an aspect to a node.
+     * @param path The path to the node.
+     * @param aspectName The name of the aspect.
+     */
+    public void addAspect(String path, QName aspectName);
+    
+    /**
+     * Get all aspects on a given node.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return A List of the QNames of the aspects.
+     */
+    public List<QName> getAspects(int version, String path);
+    
+    /**
+     * Remove an aspect and all its properties from a node.
+     * @param path The path to the node.
+     * @param aspectName The name of the aspect.
+     */
+    public void removeAspect(String path, QName aspectName);
+    
+    /**
+     * Does a given node have a given aspect.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @param aspectName The name of the aspect.
+     * @return Whether the node has the aspect.
+     */
+    public boolean hasAspect(int version, String path, QName aspectName);
 }

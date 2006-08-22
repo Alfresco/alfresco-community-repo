@@ -102,7 +102,6 @@
 		<property type="int" name="nextVersionID"
 			column="next_version_id" not-null="true"/>
 		<!-- Every AVMStore has a root directory that is the current root directory. -->
-		<!-- This should be not-null but hibernate (or my own idiocy) makes that difficult. -->
 		<many-to-one name="root" class="DirectoryNodeImpl"
 			column="current_root_id" unique="true" cascade="save-update">
 		</many-to-one>
@@ -199,7 +198,14 @@
             <property name="stringValue" column="string_value" type="string" length="1024"/>
             <property name="serializableValue" column="serializable_value" type="serializable" length="16384"/>
        </component>
-	</class>		
+	</class>
+	<!-- Aspect name table for AVM Nodes. -->		
+	<class name="AVMAspectNameImpl" proxy="AVMAspectName" table="avm_aspects">
+		<composite-id>
+			<key-many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
+			<key-property name="name" column="qname" type="QName" length="200"/>
+		</composite-id>
+	</class>
 	<query name="ChildEntry.ByNameParent">
 	<![CDATA[
 		from ChildEntryImpl ce

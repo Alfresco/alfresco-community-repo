@@ -4,6 +4,7 @@
 package org.alfresco.repo.avm;
 
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.springframework.context.ApplicationContext;
@@ -82,6 +83,11 @@ public class AVMContext implements ApplicationContextAware
     public AVMStorePropertyDAO fAVMStorePropertyDAO;
     
     /**
+     * The AVMAspectNameDAO
+     */
+    public AVMAspectNameDAO fAVMAspectNameDAO;
+    
+    /**
      * The ContentService.
      */
     private ContentService fContentService;
@@ -100,6 +106,11 @@ public class AVMContext implements ApplicationContextAware
      * The Content Store.
      */
     private ContentStore fContentStore;
+    
+    /**
+     * The DictionaryService
+     */
+    private DictionaryService fDictionaryService;
     
     /**
      * The application context.
@@ -193,6 +204,11 @@ public class AVMContext implements ApplicationContextAware
         fAVMStorePropertyDAO = avmStorePropertyDAO;
     }
     
+    public void setAvmAspectNameDAO(AVMAspectNameDAO avmAspectNameDAO)
+    {
+        fAVMAspectNameDAO = avmAspectNameDAO;
+    }
+    
     /**
      * Get the Content Service.
      * @return The ContentService object.
@@ -243,5 +259,19 @@ public class AVMContext implements ApplicationContextAware
             fContentStore = (ContentStore)fAppContext.getBean("fileContentStore");
         }
         return fContentStore;
+    }
+    
+    /**
+     * Get the DictionaryService.
+     * @return The dictionary service.
+     */
+    public DictionaryService getDictionaryService()
+    {
+        if (fDictionaryService == null)
+        {
+            // TODO Should this be DictionaryService or dictionaryService.
+            fDictionaryService = (DictionaryService)fAppContext.getBean("dictionaryService");
+        }
+        return fDictionaryService;
     }
 }

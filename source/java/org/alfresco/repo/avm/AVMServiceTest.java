@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.namespace.QName;
@@ -2189,6 +2190,32 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.deleteStoreProperty("main", name);
             props = fService.getStoreProperties("main");
             assertEquals(5, props.size());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
+     * Test Aspect Name storage.
+     */
+    public void testAspectNames()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.addAspect("main:/a/b/c/foo", ContentModel.ASPECT_TITLED);
+            fService.addAspect("main:/a/b/c/foo", ContentModel.ASPECT_AUDITABLE);
+            fService.createSnapshot("main");
+            List<QName> names = fService.getAspects(-1, "main:/a/b/c/foo");
+            assertEquals(2, names.size());
+            assertTrue(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_TITLED));
+            assertFalse(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_AUTHOR));
+            fService.removeAspect("main:/a/b/c/foo", ContentModel.ASPECT_TITLED);
+            fService.createSnapshot("main");
+            assertFalse(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_TITLED));
         }
         catch (Exception e)
         {

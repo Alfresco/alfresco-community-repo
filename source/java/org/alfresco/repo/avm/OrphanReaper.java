@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
  * in the AVM repository.  These orphans arise from purge operations.
  * @author britt
  */
-class OrphanReaper implements Runnable
+public class OrphanReaper implements Runnable
 {
     private Log fgLogger = LogFactory.getLog(OrphanReaper.class);
     /**
@@ -80,7 +80,7 @@ class OrphanReaper implements Runnable
     /**
      * Create one with default parameters.
      */
-    OrphanReaper()
+    public OrphanReaper()
     {
         fInactiveBaseSleep = 30000;
         fActiveBaseSleep = 1000;
@@ -140,7 +140,7 @@ class OrphanReaper implements Runnable
     /**
      * Start things up after configuration is complete.
      */
-    void init()
+    public void init()
     {
         fThread = new Thread(this);
         fThread.start();
@@ -150,7 +150,7 @@ class OrphanReaper implements Runnable
      * Shutdown the reaper. This needs to be called when 
      * the application shuts down.
      */
-    void shutDown()
+    public void shutDown()
     {
         synchronized (this)
         {
@@ -282,6 +282,8 @@ class OrphanReaper implements Runnable
                     }
                     // Get rid of all properties belonging to this node.
                     AVMContext.fgInstance.fAVMNodePropertyDAO.deleteAll(node);
+                    // Get rid of all aspects belonging to this node.
+                    AVMContext.fgInstance.fAVMAspectNameDAO.delete(node);
                     // Extra work for directories.
                     if (node.getType() == AVMNodeType.PLAIN_DIRECTORY ||
                         node.getType() == AVMNodeType.LAYERED_DIRECTORY)

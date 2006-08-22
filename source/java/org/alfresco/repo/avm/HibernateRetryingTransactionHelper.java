@@ -32,7 +32,7 @@ import org.springframework.transaction.TransactionStatus;
  * Helper for DAOs.
  * @author britt
  */
-class HibernateRetryingTransactionHelper extends HibernateTemplate implements RetryingTransactionHelper
+public class HibernateRetryingTransactionHelper extends HibernateTemplate implements RetryingTransactionHelper
 {
     private static Logger fgLogger = Logger.getLogger(HibernateRetryingTransactionHelper.class);
     
@@ -60,7 +60,7 @@ class HibernateRetryingTransactionHelper extends HibernateTemplate implements Re
      * Make one up.
      * @param sessionFactory The SessionFactory.
      */
-    HibernateRetryingTransactionHelper()
+    public HibernateRetryingTransactionHelper()
     {
         fRandom = new Random();
     }

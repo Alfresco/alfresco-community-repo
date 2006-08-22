@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
  * Implements the AVMService.  Stub.
  * @author britt
  */
-class AVMServiceImpl implements AVMService
+public class AVMServiceImpl implements AVMService
 {
     private static Logger fgLogger = Logger.getLogger(AVMServiceImpl.class);
     
@@ -66,7 +66,7 @@ class AVMServiceImpl implements AVMService
     /**
      * Basic constructor for the service.
      */
-    AVMServiceImpl()
+    public AVMServiceImpl()
     {
     }
     
@@ -83,7 +83,7 @@ class AVMServiceImpl implements AVMService
      * Final initialization of the service.  Must be called only on a 
      * fully initialized instance.
      */
-    void init()
+    public void init()
     {
         if (fInitialize)
         {
@@ -1398,5 +1398,104 @@ class AVMServiceImpl implements AVMService
         }
         TxnCallback doit = new TxnCallback();
         fTransaction.perform(doit, true);
+    }
+
+    /**
+     * Add an aspect to an AVM node.
+     * @param path The path to the node.
+     * @param aspectName The QName of the aspect.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMExistsException If the aspect already exists.
+     */
+    public void addAspect(final String path, final QName aspectName)
+    {
+        if (path == null || aspectName == null)
+        {
+            throw new AVMBadArgumentException("Illegal Null Argument.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public void perform()
+            {
+                fAVMRepository.addAspect(path, aspectName);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, true);
+    }
+    
+    /**
+     * Get all the aspects on an AVM node.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return A List of the QNames of the aspects.
+     */
+    public List<QName> getAspects(final int version, final String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null path.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public List<QName> aspects;
+            
+            public void perform()
+            {
+                aspects = fAVMRepository.getAspects(version, path);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.aspects;
+    }
+
+    /**
+     * Remove an aspect and its properties from a node.
+     * @param path The path to the node.
+     * @param aspectName The name of the aspect.
+     */
+    public void removeAspect(final String path, final QName aspectName)
+    {
+        if (path == null || aspectName == null)
+        {
+            throw new AVMBadArgumentException("Null path.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public void perform()
+            {
+                fAVMRepository.removeAspect(path, aspectName);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, true);
+    }
+    
+    /**
+     * Does a node have a particular aspect.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @param aspectName The aspect name to check.
+     * @return Whether the given node has the given aspect.
+     */
+    public boolean hasAspect(final int version, final String path, final QName aspectName)
+    {
+        if (path == null || aspectName == null)
+        {
+            throw new AVMBadArgumentException("Illegal Null Argument.");
+        }
+        class TxnCallback implements RetryingTransactionCallback
+        {
+            public boolean has;
+            
+            public void perform()
+            {
+                has = fAVMRepository.hasAspect(version, path, aspectName);
+            }
+        }
+        TxnCallback doit = new TxnCallback();
+        fTransaction.perform(doit, false);
+        return doit.has;
     }
 }

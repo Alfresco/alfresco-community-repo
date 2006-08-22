@@ -96,6 +96,12 @@
 		</property>
 	</bean>
 	
+	<bean id="avmAspectNameDAO" class="org.alfresco.repo.avm.AVMAspectNameDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
 	<bean id="avmContext" class="org.alfresco.repo.avm.AVMContext">
 		<property name="issuerDAO">
 			<ref bean="issuerDAO"/>
@@ -129,6 +135,9 @@
 		</property>
 		<property name="avmStorePropertyDAO">
 			<ref bean="avmStorePropertyDAO"/>
+		</property>
+		<property name="avmAspectNameDAO">
+			<ref bean="avmAspectNameDAO"/>
 		</property>
 	</bean>
 	

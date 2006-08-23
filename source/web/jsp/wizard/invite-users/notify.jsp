@@ -141,7 +141,7 @@
                                  <tr>
                                     <td></td>
                                     <td valign="top">
-                                       <table cellspacing=0 cellpadding=2 border=0
+                                       <table cellspacing=0 cellpadding=2 border=0>
                                           <tr>
                                              <td><h:outputText value="#{msg.action_mail_template}"/>:</td>
                                              <td>

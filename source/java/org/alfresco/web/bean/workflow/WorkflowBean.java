@@ -244,7 +244,7 @@ public class WorkflowBean
          String transition = (String)task.properties.get(WorkflowModel.PROP_OUTCOME);
          if (transition != null)
          {
-            WorkflowTransition[] transitions = task.path.node.transitions;
+            WorkflowTransition[] transitions = task.definition.node.transitions;
             for (WorkflowTransition trans : transitions)
             {
                if (trans.id.equals(transition))

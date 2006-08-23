@@ -37,8 +37,10 @@
    </f:verbatim>
 </h:panelGroup>
 
-<h:panelGroup rendered="#{not empty WizardManager.bean.taskMetadataNode}">
+<a:panel id="props-panel" label="#{msg.properties}" rendered="#{not empty WizardManager.bean.taskMetadataNode}"
+      border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+      
    <r:propertySheetGrid id="task-props" value="#{WizardManager.bean.taskMetadataNode}" 
                         var="taskProps" columns="1" externalConfig="true" />
-</h:panelGroup>
+</a:panel>
          

@@ -15,10 +15,21 @@
       </property-sheet>
    </config>
    
+   <config evaluator="node-type" condition="wf:reviewTask">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" ignore-if-missing="false" />
+         <show-property name="bpm:startDate" ignore-if-missing="false" />
+         <show-property name="bpm:status" ignore-if-missing="false" />
+         <show-property name="bpm:dueDate" ignore-if-missing="false" />
+         <show-property name="bpm:priority" ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+   
    <config evaluator="node-type" condition="wf:submitReviewTask">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
-         <!-- <show-property name="bpm:priority" ignore-if-missing="false" /> -->
+         <show-property name="wf:reviewPriority" ignore-if-missing="false" />
          <show-property name="wf:reviewDueDate" ignore-if-missing="false" />
          <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
          <show-association name="wf:reviewer" ignore-if-missing="false" />
@@ -43,8 +54,23 @@
          
          <action id="reassign-workflow">
             <label-id>reassign</label-id>
-            <image>/images/icons/create_forum.gif</image>
+            <image>/images/icons/recover.gif</image>
             <action>null</action>
+         </action>
+         
+         <action id="cancel-workflow">
+            <label-id>cancel_workflow</label-id>
+            <image>/images/icons/reject.gif</image>
+            <action>null</action>
+         </action>
+         
+         <action id="remove-package-item">
+            <label-id>remove</label-id>
+            <image>/images/icons/delete.gif</image>
+            <action-listener>#{DialogManager.bean.removePackageItem}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
          </action>
          
          <action-group id="document_browse_menu">
@@ -55,8 +81,31 @@
             <action idref="start-workflow" />
          </action-group>
          
-         <action-group id="workitem_actions">
+         <action-group id="manage_workitem_actions">
             <action idref="reassign-workflow" />
+         </action-group>
+         
+         <action-group id="completed_workitem_actions">
+            <action idref="cancel-workflow" />
+         </action-group>
+         
+         <action-group id="workflow_item_read_actions">
+            <action idref="details_doc" />
+         </action-group>
+         
+         <action-group id="workflow_item_collection_actions">
+            <action idref="details_doc" />
+            <action idref="remove-package-item" />
+         </action-group>
+         
+         <action-group id="workflow_item_edit_actions">
+            <!-- edit, checkout, checkin -->
+            <action idref="details_doc" />
+            <action idref="remove-package-item" />
+         </action-group>
+         
+         <action-group id="workflow_package_collection_actions">
+            <action idref="add-package-item" />
          </action-group>
       </actions>
    </config>
@@ -103,7 +152,7 @@
          <dialog name="manageWorkItem" page="/jsp/workflow/manage-workitem-dialog.jsp"
                  managed-bean="ManageWorkItemDialog" icon="/images/icons/create_space_large.gif" 
                  title-id="manage_workitem_title" description-id="manage_workitem_desc" 
-                 actions-config-id="workitem_actions" />
+                 actions-config-id="manage_workitem_actions" />
       </dialogs>
    </config>
    

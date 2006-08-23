@@ -87,12 +87,8 @@ public class StartWorkflowWizard extends BaseWizardBean
          QName type = this.nodeService.getType(itemToWorkflow);
          
          NodeRef workflowPackage = null;
-         if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) || 
-             this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDERLINK))
-         {
-            throw new UnsupportedOperationException("Workflow on a folder is not supported yet!");
-         }
-         else
+         if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
+             this.dictionaryService.isSubClass(type, ContentModel.TYPE_FILELINK))
          {
             // create a workflow package and add the given item to workflow as a child
             workflowPackage = this.workflowService.createPackage(null);
@@ -104,6 +100,13 @@ public class StartWorkflowWizard extends BaseWizardBean
          
          // add the workflow package to the parameter map
          params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
+      }
+      
+      // setup the context for the workflow (this is the space the workflow was launched from)
+      Node workflowContext = this.navigator.getCurrentNode();
+      if (workflowContext != null)
+      {
+         params.put(WorkflowModel.PROP_CONTEXT, (Serializable)workflowContext.getNodeRef());
       }
       
       // start the workflow to get access to the start task

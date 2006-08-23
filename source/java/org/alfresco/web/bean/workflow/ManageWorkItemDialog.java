@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
@@ -25,10 +26,13 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,6 +48,8 @@ public class ManageWorkItemDialog extends BaseDialogBean
    protected WorkflowTask workItem;
    protected WorkflowTransition[] transitions;
    protected List<Node> resources;
+   protected WorkItemCompleteResolver completeResolver = new WorkItemCompleteResolver();
+   protected UIRichList packageItemsRichList;
 
    protected static final String ID_PREFIX = "transition_";
    protected static final String CLIENT_ID_PREFIX = "dialog:" + ID_PREFIX;
@@ -179,22 +185,124 @@ public class ManageWorkItemDialog extends BaseDialogBean
          }
          catch (Throwable e)
          {
-            // reset the flag so we can re-attempt the operation
-            isFinished = false;
-            
             // rollback the transaction
             try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-            Utils.addErrorMessage(formatErrorMessage(e));
+            Utils.addErrorMessage(formatErrorMessage(e), e);
             outcome = this.getErrorOutcome(e);
          }
       }
       
       return outcome;
    }
+
+   /**
+    * Removes an item from the workflow package
+    * 
+    * @param event The event containing a reference to the item to remove
+    */
+   public void removePackageItem(ActionEvent event)
+   {
+      logger.info("remove package item: " + event);
+   }
+   
+   /**
+    * Toggles the complete flag for a workflow package item
+    * 
+    * @param event The event containing a reference to the item to toggle the status for
+    */
+   public void togglePackageItemComplete(ActionEvent event)
+   {
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context);
+         tx.begin();
+         
+         UIActionLink link = (UIActionLink)event.getComponent();
+         Map<String, String> params = link.getParameterMap();
+         
+         // create the node ref for the item we are toggling
+         NodeRef nodeRef = new NodeRef(Repository.getStoreRef(),
+               (String)params.get("id"));
+   
+         // get the existing list of completed items
+         List<NodeRef> completedItems = (List<NodeRef>)this.workItem.properties.get(
+               WorkflowModel.PROP_COMPLETED_ITEMS);
+         
+         if (completedItems == null)
+         {
+            // if it doesn't exist yet create the list and add the noderef
+            completedItems = new ArrayList<NodeRef>(1);
+            completedItems.add(nodeRef);
+            this.workItem.properties.put(WorkflowModel.PROP_COMPLETED_ITEMS, 
+                  (Serializable)completedItems);
+         }
+         else
+         {
+            if (completedItems.contains(nodeRef))
+            {
+               // the item is already in the list remove it
+               completedItems.remove(nodeRef);
+               
+               // NOTE: There is a bug somwehere which causes the list to be
+               //       returned as a byte array instead of a list if an empty
+               //       list is persisted, therefore if the list is now empty
+               //       set the completed items back to null
+               if (completedItems.size() == 0)
+               {
+                  this.workItem.properties.put(WorkflowModel.PROP_COMPLETED_ITEMS, null);
+               }
+            }
+            else
+            {
+               // the noderef is not in the list yet so just add it
+               completedItems.add(nodeRef);
+            }
+         }
+      
+         // update the task with the updated parameters
+         this.workflowService.updateTask(this.workItem.id, this.workItem.properties, 
+               null, null);
+         
+         // commit the transaction
+         tx.commit();
+         
+         // reset the rich list if the change was successful
+         this.packageItemsRichList.setValue(null);
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         this.resources = Collections.<Node>emptyList();
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
+   }
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
 
+   /**
+    * Sets the rich list being used for the workflow package items
+    * 
+    * @param richList The rich list instance
+    */
+   public void setPackageItemsRichList(UIRichList richList)
+   {
+      this.packageItemsRichList = richList;
+   }
+   
+   /**
+    * Returns the rich list being used for the workflow package items
+    * 
+    * @return The rich list instance
+    */
+   public UIRichList getPackageItemsRichList()
+   {
+      return this.packageItemsRichList;
+   }
+   
    /**
     * Returns the Node representing the work item
     * 
@@ -213,7 +321,17 @@ public class ManageWorkItemDialog extends BaseDialogBean
     */
    public List<Node> getResources()
    {
-      NodeRef workflowPackage = (NodeRef)this.workItem.properties.get(WorkflowModel.ASSOC_PACKAGE);
+      NodeRef workflowPackage = null;
+      Serializable obj = this.workItem.properties.get(WorkflowModel.ASSOC_PACKAGE);
+      // TODO: remove this workaroud where JBPM may return a String and not the NodeRef
+      if (obj instanceof NodeRef)
+      {
+         workflowPackage = (NodeRef)obj;
+      }
+      else if (obj instanceof String)
+      {
+         workflowPackage = new NodeRef((String)obj);
+      }
       
       this.resources = new ArrayList<Node>(4);
       
@@ -257,6 +375,13 @@ public class ManageWorkItemDialog extends BaseDialogBean
                         MapNode node = new MapNode(nodeRef, this.nodeService, true);
                         this.browseBean.setupCommonBindingProperties(node);
                         
+                        // add property resolvers to show path information
+                        node.addPropertyResolver("path", this.browseBean.resolverPath);
+                        node.addPropertyResolver("displayPath", this.browseBean.resolverDisplayPath);
+                        
+                        // add a property resolver to indicate whether the item has been completed or not
+                        node.addPropertyResolver("completed", this.completeResolver);
+                        
                         this.resources.add(node);
                      }
                   }
@@ -296,5 +421,34 @@ public class ManageWorkItemDialog extends BaseDialogBean
    public void setWorkflowService(WorkflowService workflowService)
    {
       this.workflowService = workflowService;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Helper methods
+   
+   
+   // ------------------------------------------------------------------------------
+   // Inner classes
+   
+   /**
+    * Property resolver to determine if the given node has been flagged as complete
+    */
+   protected class WorkItemCompleteResolver implements NodePropertyResolver
+   {
+      public Object get(Node node)
+      {
+         String result = Application.getMessage(FacesContext.getCurrentInstance(), "no");
+         
+         List<NodeRef> completedItems = (List<NodeRef>)workItem.properties.get(
+               WorkflowModel.PROP_COMPLETED_ITEMS);
+         
+         if (completedItems != null && completedItems.size() > 0 && 
+             completedItems.contains(node.getNodeRef()))
+         {
+            result = Application.getMessage(FacesContext.getCurrentInstance(), "yes");
+         }
+         
+         return result;
+      }
    }
 }

@@ -97,7 +97,7 @@ public abstract class BaseDialogBean implements IDialogBean
             
             // rollback the transaction
             try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-            Utils.addErrorMessage(formatErrorMessage(e));
+            Utils.addErrorMessage(formatErrorMessage(e), e);
             outcome = getErrorOutcome(e);
          }
       }

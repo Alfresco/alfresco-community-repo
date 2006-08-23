@@ -32,19 +32,21 @@
          border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
    
    <a:richList id="resources-list" viewMode="details" value="#{DialogManager.bean.resources}" var="r"
+               binding="#{DialogManager.bean.packageItemsRichList}"
                styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" 
                altRowStyleClass="recordSetRowAlt" width="100%" pageSize="10"
                initialSortColumn="name" initialSortDescending="true">
-   
-      <%-- Primary column for details view mode --%>
-      <a:column primary="true" width="200" style="padding:2px;text-align:left">
+      
+      <%-- Name column --%>
+      <a:column primary="true" width="200" style="padding:2px; text-align:left">
          <f:facet name="header">
             <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
          </f:facet>
          <f:facet name="small-icon">
-            <h:graphicImage url="/images/icons/post.gif" />
+               <a:actionLink value="#{r.name}" href="#{r.url}" target="new" image="#{r.fileType16}" 
+                             showLink="false" styleClass="inlineAction" />
          </f:facet>
-         <h:outputText value="#{r.name}" />
+         <a:actionLink value="#{r.name}" href="#{r.url}" target="new" />
       </a:column>
       
       <%-- Description column --%>
@@ -60,19 +62,51 @@
          <f:facet name="header">
             <a:sortLink label="#{msg.path}" value="path" styleClass="header"/>
          </f:facet>
-         <h:outputText value="#{r.path}" />
+         <r:nodePath value="#{r.path}" />
       </a:column>
       
+      <%-- Created Date column --%>
+      <a:column style="text-align:left">
+         <f:facet name="header">
+            <a:sortLink label="#{msg.created}" value="created" styleClass="header"/>
+         </f:facet>
+         <h:outputText value="#{r.created}">
+            <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
+         </h:outputText>
+      </a:column>
+      
+      <%-- Modified Date column --%>
+      <a:column style="text-align:left">
+         <f:facet name="header">
+            <a:sortLink label="#{msg.modified}" value="modified" styleClass="header"/>
+         </f:facet>
+         <h:outputText value="#{r.modified}">
+            <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
+         </h:outputText>
+      </a:column>
+                        
       <%-- Actions column --%>
       <a:column actions="true" style="text-align:left">
          <f:facet name="header">
             <h:outputText value="#{msg.actions}"/>
          </f:facet>
-         
-         <%-- actions are configured in web-client-config-actions.xml --%>
-         <r:actions id="actions-col-actions" value="workflow_actions" context="#{r}" showLink="false" styleClass="inlineAction" />
+         <r:actions id="actions-col-actions" value="workflow_item_collection_actions" 
+                    context="#{r}" showLink="false" styleClass="inlineAction" />
       </a:column>
       
-      <a:dataPager styleClass="pager" />
+      <%-- Completed column --%>
+      <%--
+      <a:column style="text-align:left">
+         <f:facet name="header">
+            <h:outputText value="#{msg.completed}" />
+         </f:facet>
+         <a:actionLink value="#{r.completed}" actionListener="#{DialogManager.bean.togglePackageItemComplete}">
+            <f:param name="id" value="#{r.id}" />
+         </a:actionLink>
+      </a:column>
+      --%>
    </a:richList>
+   
+   <%-- Put the package actions here --%>
+   
 </a:panel>

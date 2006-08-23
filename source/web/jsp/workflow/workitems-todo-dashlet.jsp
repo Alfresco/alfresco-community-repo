@@ -43,6 +43,14 @@
       <h:outputText value="#{r.type}" />
    </a:column>
    
+   <%-- Source column --%>
+   <a:column style="text-align:left">
+      <f:facet name="header">
+         <a:sortLink label="#{msg.source}" value="sourceSpaceName" styleClass="header"/>
+      </f:facet>
+      <h:outputText value="#{r.sourceSpaceName}" />
+   </a:column>
+   
    <%-- Due date column --%>
    <a:column style="text-align:left">
       <f:facet name="header">
@@ -61,26 +69,22 @@
       <h:outputText value="#{r['bpm:status']}" />
    </a:column>
    
+   <%-- Priority column --%>
+   <a:column style="text-align:left">
+      <f:facet name="header">
+         <a:sortLink label="#{msg.priority}" value="bpm:priority" styleClass="header"/>
+      </f:facet>
+      <h:outputText value="#{r['bpm:priority']}" />
+   </a:column>
+   
    <%-- Actions column --%>
-   <%--
    <a:column actions="true" style="text-align:left">
       <f:facet name="header">
          <h:outputText value="#{msg.actions}"/>
       </f:facet>
-      <a:booleanEvaluator value="#{r.local}">
-         <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" showLink="false" 
-                       styleClass="inlineAction"
-                       actionListener="#{RulesBean.setupRuleAction}" action="deleteRule">
-            <f:param name="id" value="#{r.id}" />
-         </a:actionLink>
-         <a:actionLink value="#{msg.change_details}" image="/images/icons/change_rule.gif" 
-                       showLink="false" styleClass="inlineAction"
-                       actionListener="#{RulesBean.setupRuleAction}" action="wizard:editRule">
-            <f:param name="id" value="#{r.id}" />
-         </a:actionLink>
-      </a:booleanEvaluator>
+      <r:actions value="manage_workitem_actions" context="#{r}" showLink="false" 
+                 styleClass="inlineAction" />
    </a:column>
-   --%>
    
    <a:dataPager styleClass="pager" />
 </a:richList>

@@ -331,16 +331,16 @@ public class FileFolderPerformanceTester extends TestCase
 //                100,
 //                new double[] {0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
 //    }
-    public void test_1_shuffled_10_400() throws Exception
-    {
-        buildStructure(
-                rootFolderRef,
-                1,
-                true,
-                10,
-                400,
-                new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
-    }
+//    public void test_1_shuffled_10_400() throws Exception
+//    {
+//        buildStructure(
+//                rootFolderRef,
+//                1,
+//                true,
+//                10,
+//                400,
+//                new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+//    }
     public void test_4_shuffled_10_100() throws Exception
     {
         buildStructure(
@@ -351,4 +351,14 @@ public class FileFolderPerformanceTester extends TestCase
                 100,
                 new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
     }
+//    public void test_1_ordered_1_50000() throws Exception
+//    {
+//        buildStructure(
+//                rootFolderRef,
+//                1,
+//                false,
+//                1,
+//                50000,
+//                new double[] {0.01, 0.02, 0.03, 0.04, 0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+//    }
 }

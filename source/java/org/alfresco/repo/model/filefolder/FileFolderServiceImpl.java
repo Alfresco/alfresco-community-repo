@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CopyService;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -206,27 +207,6 @@ public class FileFolderServiceImpl implements FileFolderService
     }
 
     /**
-     * Ensure that a file or folder with the given name does not already exist
-     * 
-     * @throws FileExistsException if a same-named file or folder already exists
-     */
-    private void checkExists(NodeRef parentFolderRef, String name)
-            throws FileExistsException
-    {
-        // the name is never a wildcard, so we can perform an exact search
-        List<NodeRef> nodeRefs = searchInternal(parentFolderRef, name, true, true, false);
-        if (nodeRefs.size() == 0)
-        {
-            // no match
-            return;
-        }
-        // we found a match, so raise the exception
-        NodeRef duplicateNodeRef = nodeRefs.get(0);
-        FileInfo duplicateFileInfo = toFileInfo(duplicateNodeRef);
-        throw new FileExistsException(duplicateFileInfo);
-    }
-
-    /**
      * Exception when the type is not a valid File or Folder type
      * 
      * @see ContentModel#TYPE_CONTENT
@@ -321,6 +301,20 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         return results;
     }
+    
+    public NodeRef searchSimple(NodeRef contextNodeRef, String name)
+    {
+        NodeRef childNodeRef = nodeService.getChildByName(contextNodeRef, ContentModel.ASSOC_CONTAINS, name);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Simple name search results: \n" +
+                    "   parent: " + contextNodeRef + "\n" +
+                    "   name: " + name + "\n" +
+                    "   result: " + childNodeRef);
+        }
+        return childNodeRef;
+    }
 
     /**
      * @see #search(NodeRef, String, boolean, boolean, boolean)
@@ -378,7 +372,7 @@ public class FileFolderServiceImpl implements FileFolderService
      * file info objects.  This allows {@link #checkExists(NodeRef, String)} to
      * bypass the retrieval of node properties.
      */
-    public List<NodeRef> searchInternal(
+    private List<NodeRef> searchInternal(
             NodeRef contextNodeRef,
             String namePattern,
             boolean fileSearch,
@@ -547,7 +541,6 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         
         // there is nothing to do if both the name and parent folder haven't changed
-        boolean checkExists = true;
         if (targetParentRef.equals(assocRef.getParentRef()))
         {
             if (newName.equals(beforeFileInfo.getName()))
@@ -563,14 +556,7 @@ public class FileFolderServiceImpl implements FileFolderService
             }
             else if (newName.equalsIgnoreCase(beforeFileInfo.getName()))
             {
-                checkExists = false;
             }
-        }
-        
-        // check for existing file or folder
-        if (checkExists)
-        {
-            checkExists(targetParentRef, newName);
         }
         
         QName qname = QName.createQName(
@@ -613,8 +599,15 @@ public class FileFolderServiceImpl implements FileFolderService
         String currentName = (String)nodeService.getProperty(targetNodeRef, ContentModel.PROP_NAME);
         if (currentName.equals(newName) == false)
         {
-            // changed the name property
-            nodeService.setProperty(targetNodeRef, ContentModel.PROP_NAME, newName);
+            try
+            {
+                // changed the name property
+                nodeService.setProperty(targetNodeRef, ContentModel.PROP_NAME, newName);
+            }
+            catch (DuplicateChildNodeNameException e)
+            {
+                throw new FileExistsException(targetParentRef, newName);
+            }
         }
         
         // get the details after the operation
@@ -658,9 +651,6 @@ public class FileFolderServiceImpl implements FileFolderService
             throw new AlfrescoRuntimeException("The type is not supported by this service: " + typeQName);
         }
         
-        // check for existing file or folder
-        checkExists(parentNodeRef, name);
-        
         // set up initial properties
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(11);
         properties.put(ContentModel.PROP_NAME, (Serializable) name);
@@ -676,12 +666,21 @@ public class FileFolderServiceImpl implements FileFolderService
         QName qname = QName.createQName(
                 NamespaceService.CONTENT_MODEL_1_0_URI,
                 QName.createValidLocalName(name));
-        ChildAssociationRef assocRef = nodeService.createNode(
-                parentNodeRef,
-                ContentModel.ASSOC_CONTAINS,
-                qname,
-                typeQName,
-                properties);
+        ChildAssociationRef assocRef = null;
+        try
+        {
+            assocRef = nodeService.createNode(
+                    parentNodeRef,
+                    ContentModel.ASSOC_CONTAINS,
+                    qname,
+                    typeQName,
+                    properties);
+        }
+        catch (DuplicateChildNodeNameException e)
+        {
+            throw new FileExistsException(parentNodeRef, name);
+        }
+        
         NodeRef nodeRef = assocRef.getChildRef();
         FileInfo fileInfo = toFileInfo(nodeRef);
         // done
@@ -716,31 +715,25 @@ public class FileFolderServiceImpl implements FileFolderService
         
         NodeRef currentParentRef = parentNodeRef;
         // just loop and create if necessary
-        FileInfo lastFileInfo = null;
         for (String pathElement : pathElements)
         {
-            try
+            // does it exist?
+            NodeRef nodeRef = searchSimple(currentParentRef, pathElement);
+            if (nodeRef == null)
             {
                 // not present - make it
                 FileInfo createdFileInfo = create(currentParentRef, pathElement, folderTypeQName);
                 currentParentRef = createdFileInfo.getNodeRef();
-                lastFileInfo = createdFileInfo;
             }
-            catch (FileExistsException e)
+            else
             {
-                // it exists - just get it
-                List<FileInfo> fileInfos = search(currentParentRef, pathElement, false, true, false);
-                if (fileInfos.size() == 0)
-                {
-                    // ? It must have been removed
-                    throw new AlfrescoRuntimeException("Path element has just been removed: " + pathElement);
-                }
-                currentParentRef = fileInfos.get(0).getNodeRef();
-                lastFileInfo = fileInfos.get(0);
+                // it exists
+                currentParentRef = nodeRef;
             }
         }
         // done
-        return lastFileInfo;
+        FileInfo fileInfo = toFileInfo(currentParentRef);
+        return fileInfo;
     }
 
     public List<FileInfo> getNamePath(NodeRef rootNodeRef, NodeRef nodeRef) throws FileNotFoundException

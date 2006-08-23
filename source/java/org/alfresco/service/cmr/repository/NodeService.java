@@ -418,6 +418,21 @@ public interface NodeService
             throws InvalidNodeRefException;
     
     /**
+     * Get the node with the given name within the context of the parent node.  The name
+     * is case-insensitive as Alfresco has to support case-insensitive clients as standard.
+     * 
+     * @param nodeRef the parent node - usuall a <b>container</b>
+     * @param assocTypeQName the type of the association
+     * @param childName the name of the node as per the property <b>cm:name</b>
+     * @return Returns the child node or null if not found
+     */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "assocTypeQName", "childName"})
+    public NodeRef getChildByName(
+            NodeRef nodeRef,
+            QName assocTypeQName,
+            String childName);
+    
+    /**
      * Fetches the primary parent-child relationship.
      * <p>
      * For a root node, the parent node reference will be null.

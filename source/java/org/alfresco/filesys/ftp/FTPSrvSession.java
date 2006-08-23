@@ -137,7 +137,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
     // Flag to control whether data transfers use a seperate thread
     
-    private static boolean UseThreadedDataTransfer = true;
+    private static boolean UseThreadedDataTransfer = false;
     
     // Session socket
 

@@ -443,6 +443,15 @@ public class NodeServiceImpl implements NodeService, VersionModel
     }
     
     /**
+     * @throws UnsupportedOperationException always
+     */
+    public NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName)
+    {
+        // This operation is not supported for a verion store
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
+
+    /**
      * Simulates the node begin attached ot the root node of the version store. 
      */
     public ChildAssociationRef getPrimaryParent(NodeRef nodeRef) throws InvalidNodeRefException

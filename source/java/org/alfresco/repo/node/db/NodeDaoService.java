@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.node.db;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.repo.domain.ChildAssoc;
@@ -24,6 +25,7 @@ import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -129,6 +131,30 @@ public interface NodeDaoService
             QName qname);
 
     /**
+     * Change the name of the child node.
+     * 
+     * @param childAssoc the child association to change
+     * @param childName the name to put on the association
+     */
+    public void setChildNameUnique(ChildAssoc childAssoc, String childName);
+    
+    /**
+     * Get all child associations for a given node
+     * 
+     * @param parentNode the parent of the child associations
+     * @return Returns all child associations for the given node
+     */
+    public Collection<ChildAssoc> getChildAssocs(final Node parentNode);
+    
+    /**
+     * Get a collection of all child association references for a given parent node.
+     * 
+     * @param parentNode the parent node
+     * @return Returns a collection of association references
+     */
+    public Collection<ChildAssociationRef> getChildAssocRefs(Node parentNode);
+    
+    /**
      * @return Returns a matching association or null if one was not found
      * 
      * @see ChildAssoc
@@ -138,7 +164,12 @@ public interface NodeDaoService
             Node childNode,
             QName assocTypeQName,
             QName qname);
-            
+
+    /**
+     * @return Returns an association matching the given parent, type and child name - or null
+     *      if not found
+     */
+    public ChildAssoc getChildAssoc(Node parentNode, QName assocTypeQName, String childName);
     
     /**
      * @param assoc the child association to remove
@@ -165,12 +196,27 @@ public interface NodeDaoService
             QName assocTypeQName);
     
     /**
+     * @return Returns a list of all node associations associated with the given node
+     */
+    public List<NodeAssoc> getNodeAssocsToAndFrom(final Node node);
+
+    /**
      * @return Returns the node association or null if not found
      */
     public NodeAssoc getNodeAssoc(
             Node sourceNode,
             Node targetNode,
             QName assocTypeQName);
+    
+    /**
+     * @return Returns all the node associations where the node is the <b>source</b>
+     */
+    public List<NodeAssoc> getTargetNodeAssocs(Node sourceNode);
+    
+    /**
+     * @return Returns all the node associations where the node is the </b>target</b>
+     */
+    public List<NodeAssoc> getSourceNodeAssocs(Node targetNode);
     
     /**
      * @param assoc the node association to remove

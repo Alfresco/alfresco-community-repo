@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +42,8 @@ import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -63,8 +66,10 @@ import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.util.Assert;
 
 /**
@@ -278,29 +283,35 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         String newId = generateGuid(properties);
         
         // create the node instance
-        Node node = nodeDaoService.newNode(store, newId, nodeTypeQName);
+        Node childNode = nodeDaoService.newNode(store, newId, nodeTypeQName);
         
         // get the parent node
         Node parentNode = getNodeNotNull(parentRef);
-        
-        // create the association - invoke policy behaviour
-        ChildAssoc childAssoc = nodeDaoService.newChildAssoc(parentNode, node, true, assocTypeQName, assocQName);
-        ChildAssociationRef childAssocRef = childAssoc.getChildAssocRef();
         
         // Set the default property values
         addDefaultPropertyValues(nodeTypeDef, properties);
         
         // Add the default aspects to the node
-        addDefaultAspects(nodeTypeDef, node, childAssocRef.getChildRef(), properties);                
+        addDefaultAspects(nodeTypeDef, childNode, properties);                
         
         // set the properties - it is a new node so only set properties if there are any
-        Map<QName, Serializable> propertiesBefore = getProperties(childAssocRef.getChildRef());
+        Map<QName, Serializable> propertiesBefore = getPropertiesImpl(childNode);
         Map<QName, Serializable> propertiesAfter = null;
         if (properties.size() > 0)
         {
-            propertiesAfter = setPropertiesImpl(childAssocRef.getChildRef(), properties);
+            propertiesAfter = setPropertiesImpl(childNode, properties);
         }        
 
+        // create the association
+        ChildAssoc childAssoc = nodeDaoService.newChildAssoc(
+                parentNode,
+                childNode,
+                true,
+                assocTypeQName,
+                assocQName);
+        setChildUniqueName(childNode);         // ensure uniqueness
+        ChildAssociationRef childAssocRef = childAssoc.getChildAssocRef();
+        
         // Invoke policy behaviour
 		invokeOnCreateNode(childAssocRef);
         invokeOnUpdateNode(parentRef);
@@ -318,8 +329,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * 
      * @param nodeTypeDef
      */
-    private void addDefaultAspects(ClassDefinition classDefinition, Node node, NodeRef nodeRef, Map<QName, Serializable> properties)
+    private void addDefaultAspects(ClassDefinition classDefinition, Node node, Map<QName, Serializable> properties)
     {
+        NodeRef nodeRef = node.getNodeRef();
+        
         // get the mandatory aspects for the node type
         List<AspectDefinition> defaultAspectDefs = classDefinition.getDefaultAspects();
         
@@ -333,7 +346,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             invokeOnAddAspect(nodeRef, defaultAspectDef.getName());
             
             // Now add any default aspects for this aspect
-            addDefaultAspects(defaultAspectDef, node, nodeRef, properties);
+            addDefaultAspects(defaultAspectDef, node, properties);
         }
     }
     
@@ -432,8 +445,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // remove the child assoc from the old parent
         // don't cascade as we will still need the node afterwards
         nodeDaoService.deleteChildAssoc(oldAssoc, false);
+
         // create a new assoc
-        ChildAssoc newAssoc = nodeDaoService.newChildAssoc(newParentNode, nodeToMove, true, assocTypeQName, assocQName);
+        ChildAssoc newAssoc = nodeDaoService.newChildAssoc(
+                newParentNode,
+                nodeToMove,
+                true,
+                assocTypeQName,
+                assocQName);
+        setChildUniqueName(nodeToMove);         // ensure uniqueness
         ChildAssociationRef newAssocRef = newAssoc.getChildAssocRef();
         
         // If the node is moving stores, then drag the node hierarchy with it
@@ -521,8 +541,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         node.setTypeQName(typeQName);
         
         // Add the default aspects to the node (update the properties with any new default values)
-        Map<QName, Serializable> properties = this.getProperties(nodeRef);
-        addDefaultAspects(nodeTypeDef, node, nodeRef, properties);
+        Map<QName, Serializable> properties = this.getPropertiesImpl(node);
+        addDefaultAspects(nodeTypeDef, node, properties);
         this.setProperties(nodeRef, properties);
         
         // Invoke policies
@@ -552,7 +572,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Node node = getNodeNotNull(nodeRef);
         
         // attach the properties to the current node properties
-        Map<QName, Serializable> nodeProperties = getProperties(nodeRef);
+        Map<QName, Serializable> nodeProperties = getPropertiesImpl(node);
         
         if (aspectProperties != null)
         {
@@ -563,7 +583,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         addDefaultPropertyValues(aspectDef, nodeProperties);
         
         // Add any dependant aspect
-        addDefaultAspects(aspectDef, node, nodeRef, nodeProperties);
+        addDefaultAspects(aspectDef, node, nodeProperties);
         
         // Set the property values back on the node
         setProperties(nodeRef, nodeProperties);
@@ -705,21 +725,19 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 		invokeBeforeUpdateNode(parentRef);
         invokeBeforeCreateChildAssociation(parentRef, childRef, assocTypeQName, assocQName);
 		
-        // check that both nodes belong to the same store
-        if (!parentRef.getStoreRef().equals(childRef.getStoreRef()))
-        {
-            throw new InvalidNodeRefException("Parent and child nodes must belong to the same store: \n" +
-                    "   parent: " + parentRef + "\n" +
-                    "   child: " + childRef,
-                    childRef);
-        }
-
         // get the parent node and ensure that it is a container node
         Node parentNode = getNodeNotNull(parentRef);
         // get the child node
         Node childNode = getNodeNotNull(childRef);
         // make the association
-        ChildAssoc assoc = nodeDaoService.newChildAssoc(parentNode, childNode, false, assocTypeQName, assocQName);
+        ChildAssoc assoc = nodeDaoService.newChildAssoc(
+                parentNode,
+                childNode,
+                false,
+                assocTypeQName,
+                assocQName);
+        // ensure name uniqueness
+        setChildUniqueName(childNode);
         ChildAssociationRef assocRef = assoc.getChildAssocRef();
         NodeRef childNodeRef = assocRef.getChildRef();
         
@@ -742,7 +760,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // get all the child assocs
         ChildAssociationRef primaryAssocRef = null;
-        Collection<ChildAssoc> assocs = parentNode.getChildAssocs();
+        Collection<ChildAssoc> assocs = nodeDaoService.getChildAssocs(parentNode);
         assocs = new HashSet<ChildAssoc>(assocs);   // copy set as we will be modifying it
         for (ChildAssoc assoc : assocs)
         {
@@ -780,6 +798,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
     {
         Node node = getNodeNotNull(nodeRef);
+        return getPropertiesImpl(node);
+    }
+    
+    private Map<QName, Serializable> getPropertiesImpl(Node node) throws InvalidNodeRefException
+    {
+        NodeRef nodeRef = node.getNodeRef();
+        
         Map<QName, PropertyValue> nodeProperties = node.getProperties();
         Map<QName, Serializable> ret = new HashMap<QName, Serializable>(nodeProperties.size());
         // copy values
@@ -849,12 +874,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     public void setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
-		// Invoke policy behaviours
+        Node node = getNodeNotNull(nodeRef);
+        
+        // Invoke policy behaviours
 		invokeBeforeUpdateNode(nodeRef);
 
         // Do the set properties
-        Map<QName, Serializable> propertiesBefore = getProperties(nodeRef);
-        Map<QName, Serializable> propertiesAfter = setPropertiesImpl(nodeRef, properties);
+        Map<QName, Serializable> propertiesBefore = getPropertiesImpl(node);
+        Map<QName, Serializable> propertiesAfter = setPropertiesImpl(node, properties);
+
+        setChildUniqueName(node);         // ensure uniqueness
 
 		// Invoke policy behaviours
 		invokeOnUpdateNode(nodeRef);
@@ -865,24 +894,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * Does the work of setting the property values.  Returns a map containing the state of the properties after the set 
      * operation is complete.
      * 
-     * @param nodeRef           the node reference
+     * @param node              the node
      * @param properties        the map of property values
      * @return                  the map of property values after the set operation is complete
      * @throws InvalidNodeRefException
      */
-    private Map<QName, Serializable> setPropertiesImpl(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
+    private Map<QName, Serializable> setPropertiesImpl(Node node, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
-        if (properties == null)
-        {
-            throw new IllegalArgumentException("Properties may not be null");
-        }
+        ParameterCheck.mandatory("properties", properties);
         
         // remove referencable properties
         removeReferencableProperties(properties);
         
-        // find the node
-        Node node = getNodeNotNull(nodeRef);
-
         // copy properties onto node
         Map<QName, PropertyValue> nodeProperties = node.getProperties();
         nodeProperties.clear();
@@ -898,6 +921,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         
         // update the node status
+        NodeRef nodeRef = node.getNodeRef();
         nodeDaoService.recordChangeId(nodeRef);
         
         // Return the properties after
@@ -917,10 +941,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Invoke policy behaviours
 		invokeBeforeUpdateNode(nodeRef);
 		
-        // Do the set operation
-        Map<QName, Serializable> propertiesBefore = getProperties(nodeRef);
-        Map<QName, Serializable> propertiesAfter = setPropertyImpl(nodeRef, qname, value);
+        // get the node
+        Node node = getNodeNotNull(nodeRef);
         
+        // Do the set operation
+        Map<QName, Serializable> propertiesBefore = getPropertiesImpl(node);
+        Map<QName, Serializable> propertiesAfter = setPropertyImpl(node, qname, value);
+        
+        if (qname.equals(ContentModel.PROP_NAME))
+        {
+            setChildUniqueName(node);         // ensure uniqueness
+        }
+
 		// Invoke policy behaviours
 		invokeOnUpdateNode(nodeRef);
         invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
@@ -930,16 +962,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * Does the work of setting a property value.  Returns the values of the properties after the set operation is
      * complete.
      * 
-     * @param nodeRef       the node reference
+     * @param node          the node
      * @param qname         the qname of the property
      * @param value         the value of the property
      * @return              the values of the properties after the set operation is complete
      * @throws InvalidNodeRefException
      */
-    public Map<QName, Serializable> setPropertyImpl(NodeRef nodeRef, QName qname, Serializable value) throws InvalidNodeRefException
+    public Map<QName, Serializable> setPropertyImpl(Node node, QName qname, Serializable value) throws InvalidNodeRefException
     {
-        // get the node
-        Node node = getNodeNotNull(nodeRef);
+        NodeRef nodeRef = node.getNodeRef();
         
         Map<QName, PropertyValue> properties = node.getProperties();
         PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
@@ -950,7 +981,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // update the node status
         nodeDaoService.recordChangeId(nodeRef);
         
-        return getProperties(nodeRef);    
+        return getPropertiesImpl(node);    
     }
     
     /**
@@ -1009,36 +1040,50 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         Node node = getNodeNotNull(nodeRef);
         // get the assocs pointing from it
-        Collection<ChildAssoc> childAssocs = node.getChildAssocs();
+        Collection<ChildAssociationRef> childAssocRefs = nodeDaoService.getChildAssocRefs(node);
         // shortcut if there are no assocs
-        if (childAssocs.size() == 0)
+        if (childAssocRefs.size() == 0)
         {
             return Collections.emptyList();
         }
         // sort results
-        ArrayList<ChildAssoc> orderedList = new ArrayList<ChildAssoc>(childAssocs);
+        ArrayList<ChildAssociationRef> orderedList = new ArrayList<ChildAssociationRef>(childAssocRefs);
         Collections.sort(orderedList);
         
         // list of results
-        List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(childAssocs.size());
         int nthSibling = 0;
-        for (ChildAssoc assoc : orderedList)
+        Iterator<ChildAssociationRef> iterator = orderedList.iterator();
+        while(iterator.hasNext())
         {
+            ChildAssociationRef childAssocRef = iterator.next();
             // does the qname match the pattern?
-            if (!qnamePattern.isMatch(assoc.getQname()) || !typeQNamePattern.isMatch(assoc.getTypeQName()))
+            if (!qnamePattern.isMatch(childAssocRef.getQName()) || !typeQNamePattern.isMatch(childAssocRef.getTypeQName()))
             {
-                // no match - ignore
-                continue;
+                // no match - remove
+                iterator.remove();
             }
-            ChildAssociationRef assocRef = assoc.getChildAssocRef();
-            // slot the value in the right spot
-            assocRef.setNthSibling(nthSibling);
-            nthSibling++;
-            // get the child
-            results.add(assoc.getChildAssocRef());
+            else
+            {
+                childAssocRef.setNthSibling(nthSibling);
+                nthSibling++;
+            }
         }
         // done
-        return results;
+        return orderedList;
+    }
+
+    public NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName)
+    {
+        Node node = getNodeNotNull(nodeRef);
+        ChildAssoc childAssoc = nodeDaoService.getChildAssoc(node, assocTypeQName, childName);
+        if (childAssoc != null)
+        {
+            return childAssoc.getChild().getNodeRef();
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public ChildAssociationRef getPrimaryParent(NodeRef nodeRef) throws InvalidNodeRefException
@@ -1111,11 +1156,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
 
     public List<AssociationRef> getTargetAssocs(NodeRef sourceRef, QNamePattern qnamePattern)
-            throws InvalidNodeRefException
     {
         Node sourceNode = getNodeNotNull(sourceRef);
         // get all assocs to target
-        Collection<NodeAssoc> assocs = sourceNode.getTargetNodeAssocs();
+        Collection<NodeAssoc> assocs = nodeDaoService.getTargetNodeAssocs(sourceNode);
         List<AssociationRef> nodeAssocRefs = new ArrayList<AssociationRef>(assocs.size());
         for (NodeAssoc assoc : assocs)
         {
@@ -1131,11 +1175,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
 
     public List<AssociationRef> getSourceAssocs(NodeRef targetRef, QNamePattern qnamePattern)
-            throws InvalidNodeRefException
     {
-        Node sourceNode = getNodeNotNull(targetRef);
+        Node targetNode = getNodeNotNull(targetRef);
         // get all assocs to source
-        Collection<NodeAssoc> assocs = sourceNode.getSourceNodeAssocs();
+        Collection<NodeAssoc> assocs = nodeDaoService.getSourceNodeAssocs(targetNode);
         List<AssociationRef> nodeAssocRefs = new ArrayList<AssociationRef>(assocs.size());
         for (NodeAssoc assoc : assocs)
         {
@@ -1437,7 +1480,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // add the node to the map
         nodesById.put(id, node);
         // recurse into the primary children
-        Collection<ChildAssoc> childAssocs = node.getChildAssocs();
+        Collection<ChildAssoc> childAssocs = nodeDaoService.getChildAssocs(node);
         for (ChildAssoc childAssoc : childAssocs)
         {
             // cascade into primary associations
@@ -1464,7 +1507,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         List<ChildAssoc> childAssocsToDelete = new ArrayList<ChildAssoc>(5);
         // child associations
         ArrayList<ChildAssociationRef> archivedChildAssocRefs = new ArrayList<ChildAssociationRef>(5);
-        for (ChildAssoc assoc : node.getChildAssocs())
+        Collection<ChildAssoc> childAssocs = nodeDaoService.getChildAssocs(node);
+        for (ChildAssoc assoc : childAssocs)
         {
             Long relatedNodeId = assoc.getChild().getId();
             if (nodesById.containsKey(relatedNodeId))
@@ -1497,7 +1541,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         List<NodeAssoc> nodeAssocsToDelete = new ArrayList<NodeAssoc>(5);
         // source associations
         ArrayList<AssociationRef> archivedSourceAssocRefs = new ArrayList<AssociationRef>(5);
-        for (NodeAssoc assoc : node.getSourceNodeAssocs())
+        for (NodeAssoc assoc : nodeDaoService.getSourceNodeAssocs(node))
         {
             Long relatedNodeId = assoc.getSource().getId();
             if (nodesById.containsKey(relatedNodeId))
@@ -1510,7 +1554,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // target associations
         ArrayList<AssociationRef> archivedTargetAssocRefs = new ArrayList<AssociationRef>(5);
-        for (NodeAssoc assoc : node.getTargetNodeAssocs())
+        for (NodeAssoc assoc : nodeDaoService.getTargetNodeAssocs(node))
         {
             Long relatedNodeId = assoc.getTarget().getId();
             if (nodesById.containsKey(relatedNodeId))
@@ -1669,10 +1713,21 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                     continue;
                 }
                 Node parentNode = getNodeNotNull(parentNodeRef);
-                nodeDaoService.newChildAssoc(parentNode, node, assocRef.isPrimary(), assocRef.getTypeQName(), assocRef.getQName());
+                // get the name to use for the unique child check
+                QName assocTypeQName = assocRef.getTypeQName();
+                nodeDaoService.newChildAssoc(
+                        parentNode,
+                        node,
+                        assocRef.isPrimary(),
+                        assocTypeQName,
+                        assocRef.getQName());
             }
             properties.remove(ContentModel.PROP_ARCHIVED_PARENT_ASSOCS);
         }
+        
+        // make sure that the node name uniqueness is enforced
+        setChildUniqueName(node);
+        
         // restore child associations
         Collection<ChildAssociationRef> childAssocRefs = (Collection<ChildAssociationRef>) getProperty(
                 nodeRef,
@@ -1687,7 +1742,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                     continue;
                 }
                 Node childNode = getNodeNotNull(childNodeRef);
-                nodeDaoService.newChildAssoc(node, childNode, assocRef.isPrimary(), assocRef.getTypeQName(), assocRef.getQName());
+                QName assocTypeQName = assocRef.getTypeQName();
+                // get the name to use for the unique child check
+                nodeDaoService.newChildAssoc(
+                        node,
+                        childNode,
+                        assocRef.isPrimary(),
+                        assocTypeQName,
+                        assocRef.getQName());
+                // ensure that the name uniqueness is enforced for the child node
+                setChildUniqueName(childNode);
             }
             properties.remove(ContentModel.PROP_ARCHIVED_CHILD_ASSOCS);
         }
@@ -1729,5 +1793,57 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // remove the aspect
         node.getAspects().remove(ContentModel.ASPECT_ARCHIVED_ASSOCS);
+    }
+    
+    /**
+     * Checks the dictionary's definition of the association to assign a unique name to the child node.
+     * 
+     * @param assocTypeQName the type of the child association
+     * @param childNode the child node being added.  The name will be extracted from it, if necessary.
+     * @return Returns the value to be put on the child association for uniqueness, or null if
+     */
+    private void setChildUniqueName(Node childNode)
+    {
+        // get the name property
+        Map<QName, PropertyValue> properties = childNode.getProperties();
+        PropertyValue nameValue = properties.get(ContentModel.PROP_NAME);
+        String useName = null;
+        if (nameValue == null)
+        {
+            // no name has been assigned, so assign the ID of the child node
+            useName = childNode.getUuid();
+        }
+        else
+        {
+            useName = (String) nameValue.getValue(DataTypeDefinition.TEXT);
+        }
+        // get all the parent assocs
+        Collection<ChildAssoc> parentAssocs = childNode.getParentAssocs();
+        for (ChildAssoc assoc : parentAssocs)
+        {
+            QName assocTypeQName = assoc.getTypeQName();
+            AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQName);
+            if (!assocDef.isChild())
+            {
+                throw new DataIntegrityViolationException("Child association has non-child type: " + assoc.getId());
+            }
+            ChildAssociationDefinition childAssocDef = (ChildAssociationDefinition) assocDef;
+            if (childAssocDef.getDuplicateChildNamesAllowed())
+            {
+                // the name is irrelevant, so it doesn't need to be put into the unique key
+                nodeDaoService.setChildNameUnique(assoc, null);
+            }
+            else
+            {
+                nodeDaoService.setChildNameUnique(assoc, useName);
+            }
+        }
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Unique name set for all " + parentAssocs.size() + " parent associations: \n" +
+                    "   name: " + useName);
+        }
     }
 }

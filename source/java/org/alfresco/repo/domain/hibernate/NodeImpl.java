@@ -29,7 +29,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -52,12 +51,8 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
     private Store store;
     private String uuid;
     private QName typeQName;
-//    private NodeStatus status;
     private Set<QName> aspects;
-    private Collection<NodeAssoc> sourceNodeAssocs;
-    private Collection<NodeAssoc> targetNodeAssocs;
     private Collection<ChildAssoc> parentAssocs;
-    private Collection<ChildAssoc> childAssocs;
     private Map<QName, PropertyValue> properties;
     private DbAccessControlList accessControlList;
     
@@ -68,10 +63,7 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
     public NodeImpl()
     {
         aspects = new HashSet<QName>(5);
-        sourceNodeAssocs = new HashSet<NodeAssoc>(5);
-        targetNodeAssocs = new HashSet<NodeAssoc>(5);
         parentAssocs = new HashSet<ChildAssoc>(5);
-        childAssocs = new HashSet<ChildAssoc>(11);
         properties = new HashMap<QName, PropertyValue>(5);
         
         ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
@@ -227,16 +219,6 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
         this.typeQName = typeQName;
     }
 
-//    public NodeStatus getStatus()
-//    {
-//        return status;
-//    }
-//
-//    public void setStatus(NodeStatus status)
-//    {
-//        this.status = status;
-//    }
-//
     public Set<QName> getAspects()
     {
         return aspects;
@@ -251,34 +233,6 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
         this.aspects = aspects;
     }
 
-    public Collection<NodeAssoc> getSourceNodeAssocs()
-    {
-        return sourceNodeAssocs;
-    }
-
-    /**
-     * For Hibernate use
-     */
-    @SuppressWarnings("unused")
-    private void setSourceNodeAssocs(Collection<NodeAssoc> sourceNodeAssocs)
-    {
-        this.sourceNodeAssocs = sourceNodeAssocs;
-    }
-
-    public Collection<NodeAssoc> getTargetNodeAssocs()
-    {
-        return targetNodeAssocs;
-    }
-
-    /**
-     * For Hibernate use
-     */
-    @SuppressWarnings("unused")
-    private void setTargetNodeAssocs(Collection<NodeAssoc> targetNodeAssocs)
-    {
-        this.targetNodeAssocs = targetNodeAssocs;
-    }
-    
     public Collection<ChildAssoc> getParentAssocs()
     {
         return parentAssocs;
@@ -291,20 +245,6 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
     private void setParentAssocs(Collection<ChildAssoc> parentAssocs)
     {
         this.parentAssocs = parentAssocs;
-    }
-
-    public Collection<ChildAssoc> getChildAssocs()
-    {
-        return childAssocs;
-    }
-
-    /**
-     * For Hibernate use
-     */
-    @SuppressWarnings("unused")
-    private void setChildAssocs(Collection<ChildAssoc> childAssocs)
-    {
-        this.childAssocs = childAssocs;
     }
 
     public Map<QName, PropertyValue> getProperties()

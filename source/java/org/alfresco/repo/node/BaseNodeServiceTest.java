@@ -32,6 +32,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.domain.hibernate.ChildAssocImpl;
 import org.alfresco.repo.domain.hibernate.NodeImpl;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -47,6 +48,7 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -107,6 +109,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName PROP_QNAME_PROP1 = QName.createQName(NAMESPACE, "prop1");
     public static final QName PROP_QNAME_PROP2 = QName.createQName(NAMESPACE, "prop2");
     public static final QName ASSOC_TYPE_QNAME_TEST_CHILDREN = ContentModel.ASSOC_CHILDREN;
+    public static final QName ASSOC_TYPE_QNAME_TEST_CONTAINS = ContentModel.ASSOC_CONTAINS;
     public static final QName ASSOC_TYPE_QNAME_TEST_NEXT = QName.createQName(NAMESPACE, "next");
     
     public static final QName TYPE_QNAME_TEST_MULTIPLE_TESTER = QName.createQName(NAMESPACE, "multiple-tester");
@@ -730,9 +733,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     private int countChildrenOfNode(NodeRef nodeRef)
     {
         String query =
-                "select node.childAssocs" +
+                "select childAssoc" +
                 " from " +
-                NodeImpl.class.getName() + " node" +
+                ChildAssocImpl.class.getName() + " childAssoc" +
+                " join childAssoc.parent node" +
                 " where node.uuid = ? and node.store.key.protocol = ? and node.store.key.identifier = ?";
         Session session = getSession();
         List results = session.createQuery(query)
@@ -761,17 +765,24 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     
     public void testAddChild() throws Exception
     {
-        NodeRef childNodeRef = nodeService.createNode(
+        NodeRef childNodeRef1 = nodeService.createNode(
                 rootNodeRef,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                QName.createQName("pathA"),
+                QName.createQName("C1"),
                 ContentModel.TYPE_CONTAINER).getChildRef();
-         int countBefore = countChildrenOfNode(rootNodeRef);
-         assertEquals("Root children count incorrect", 1, countBefore);
+         int count = countChildrenOfNode(rootNodeRef);
+         assertEquals("Root children count incorrect", 1, count);
+         NodeRef childNodeRef2 = nodeService.createNode(
+                 childNodeRef1,
+                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                 QName.createQName("C2"),
+                 ContentModel.TYPE_CONTAINER).getChildRef();
+          count = countChildrenOfNode(rootNodeRef);
+          assertEquals("Root children count incorrect", 1, count);
         // associate the two nodes
         nodeService.addChild(
                 rootNodeRef,
-                childNodeRef,
+                childNodeRef2,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("pathB"));
         // there should now be 2 child assocs on the root
@@ -782,7 +793,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
          try
          {
              nodeService.addChild(
-                     childNodeRef,
+                     childNodeRef1,
                      rootNodeRef,
                      ASSOC_TYPE_QNAME_TEST_CHILDREN,
                      QName.createQName("backToRoot"));
@@ -807,10 +818,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 QName.createQName("pathA"),
                 ContentModel.TYPE_CONTAINER);
         NodeRef childARef = pathARef.getChildRef();
-        ChildAssociationRef pathBRef = nodeService.addChild(
-                parentRef, childARef, ASSOC_TYPE_QNAME_TEST_CHILDREN, QName.createQName("pathB"));
-        ChildAssociationRef pathCRef = nodeService.addChild(
-                parentRef, childARef, ASSOC_TYPE_QNAME_TEST_CHILDREN, QName.createQName("pathC"));
         AssociationRef pathDRef = nodeService.createAssociation(
                 parentRef, childARef, ASSOC_TYPE_QNAME_TEST_NEXT);
         // remove the child - this must cascade
@@ -824,24 +831,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                         new RegexQNamePattern(".*", "path*")).size());
         assertEquals("Node assoc not removed",
                 0, nodeService.getTargetAssocs(parentRef, RegexQNamePattern.MATCH_ALL).size());
-    }
-    
-    public void testAddAndRemoveChild() throws Exception
-    {
-        ChildAssociationRef pathARef = nodeService.createNode(
-                rootNodeRef,
-                ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                QName.createQName("pathA"),
-                ContentModel.TYPE_CONTAINER);
-        NodeRef childRef = pathARef.getChildRef();
-        // make a duplication, but non-primary, child associaton
-        nodeService.addChild(
-                rootNodeRef,
-                pathARef.getChildRef(),
-                pathARef.getTypeQName(),
-                pathARef.getQName());
-        // now remove the association - it will cascade to the child
-        nodeService.removeChild(rootNodeRef, childRef);
     }
     
     public enum TestEnum
@@ -1520,5 +1509,138 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 "   nodes per graph: " + nodesPerGraph + "\n" +
                 "   total nodes: " + totalNodes + "\n" +
                 "   total assocs: " + totalAssocs);
+    }
+    
+    /**
+     * Check that the duplicate child name is detected and thrown correctly
+     */
+    public void testDuplicateCatch() throws Exception
+    {
+        NodeRef parentRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("parent_child"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        ChildAssociationRef pathARef = nodeService.createNode(
+                parentRef,
+                ASSOC_TYPE_QNAME_TEST_CONTAINS,
+                QName.createQName("pathA"),
+                ContentModel.TYPE_CONTENT);
+        // no issue with this
+        ChildAssociationRef pathBRef = nodeService.createNode(
+                parentRef,
+                ASSOC_TYPE_QNAME_TEST_CONTAINS,
+                QName.createQName("pathB"),
+                ContentModel.TYPE_CONTENT);
+        AlfrescoTransactionSupport.flush();
+        // there should be no issue with a duplicate association names any more
+        ChildAssociationRef pathBDuplicateRef = nodeService.createNode(
+                parentRef,
+                ASSOC_TYPE_QNAME_TEST_CONTAINS,
+                QName.createQName("pathB"),
+                ContentModel.TYPE_CONTENT);
+        AlfrescoTransactionSupport.flush();
+        // Now create nodes with duplicate cm:name properties
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(5);
+        props.put(ContentModel.PROP_NAME, "ABC");
+        ChildAssociationRef pathAbcRef = nodeService.createNode(
+                parentRef,
+                ASSOC_TYPE_QNAME_TEST_CONTAINS,
+                QName.createQName("ABC"),
+                ContentModel.TYPE_CONTENT,
+                props);
+        AlfrescoTransactionSupport.flush();
+        try
+        {
+            // now check that the duplicate is detected with attention to being case-insensitive
+            props.put(ContentModel.PROP_NAME, "abc");
+            ChildAssociationRef pathAbcDuplicateRef = nodeService.createNode(
+                    parentRef,
+                    ASSOC_TYPE_QNAME_TEST_CONTAINS,
+                    QName.createQName("ABC-duplicate"),
+                    ContentModel.TYPE_CONTENT,
+                    props);
+            fail("Failed to throw duplicate child name exception");
+        }
+        catch (DuplicateChildNodeNameException e)
+        {
+            // expected
+        }
+    }
+    
+    /**
+     * Checks that the unique constraint doesn't break delete and create within the same
+     * transaction.
+     */
+    public void testDeleteAndAddSameName() throws Exception
+    {
+        NodeRef parentRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("parent_child"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        // create node ABC
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(5);
+        props.put(ContentModel.PROP_NAME, "ABC");
+        ChildAssociationRef pathAbcRef = nodeService.createNode(
+                parentRef,
+                ASSOC_TYPE_QNAME_TEST_CONTAINS,
+                QName.createQName("ABC"),
+                ContentModel.TYPE_CONTENT,
+                props);
+        NodeRef abcRef = pathAbcRef.getChildRef();
+        AlfrescoTransactionSupport.flush();
+        // delete ABC
+        nodeService.deleteNode(abcRef);
+        // create it again
+        pathAbcRef = nodeService.createNode(
+                parentRef,
+                ASSOC_TYPE_QNAME_TEST_CONTAINS,
+                QName.createQName("ABC"),
+                ContentModel.TYPE_CONTENT,
+                props);
+        // there should not be any failure when doing this in the same transaction
+    }
+    
+    public void testGetByName() throws Exception
+    {
+        NodeRef parentRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("parent_child"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        // create node ABC
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(5);
+        props.put(ContentModel.PROP_NAME, "ABC");
+        ChildAssociationRef pathAbcRef = nodeService.createNode(
+                parentRef,
+                ASSOC_TYPE_QNAME_TEST_CONTAINS,
+                QName.createQName("ABC"),
+                ContentModel.TYPE_CONTENT,
+                props);
+        NodeRef abcRef = pathAbcRef.getChildRef();
+        // create node DEF
+        props.put(ContentModel.PROP_NAME, "DEF");
+        ChildAssociationRef pathDefRef = nodeService.createNode(
+                abcRef,
+                ASSOC_TYPE_QNAME_TEST_CONTAINS,
+                QName.createQName("DEF"),
+                ContentModel.TYPE_CONTENT,
+                props);
+        NodeRef defRef = pathDefRef.getChildRef();
+        
+        // now browse down using the node service
+        NodeRef checkParentRef = nodeService.getChildByName(rootNodeRef, ASSOC_TYPE_QNAME_TEST_CHILDREN, parentRef.getId());
+        assertNotNull("First level, non-named node not found", checkParentRef);
+        assertEquals(parentRef, checkParentRef);
+        NodeRef checkAbcRef = nodeService.getChildByName(checkParentRef, ASSOC_TYPE_QNAME_TEST_CONTAINS, "abc");
+        assertNotNull("Second level, named node 'ABC' not found", checkAbcRef);
+        assertEquals(abcRef, checkAbcRef);
+        NodeRef checkDefRef = nodeService.getChildByName(checkAbcRef, ASSOC_TYPE_QNAME_TEST_CONTAINS, "def");
+        assertNotNull("Third level, named node 'DEF' not found", checkDefRef);
+        assertEquals(defRef, checkDefRef);
+        // check that we get null where not present
+        NodeRef checkHijRef = nodeService.getChildByName(checkAbcRef, ASSOC_TYPE_QNAME_TEST_CONTAINS, "hij");
+        assertNull("Third level, named node 'HIJ' should not have been found", checkHijRef);
     }
 }

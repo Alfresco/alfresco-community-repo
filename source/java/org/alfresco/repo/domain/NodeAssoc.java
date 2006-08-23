@@ -42,12 +42,6 @@ public interface NodeAssoc
      */
     public void buildAssociation(Node sourceNode, Node targetNode);
 
-    /**
-     * Performs the necessary work on the {@link #getSource()() source} and
-     * {@link #getTarget()() target} nodes to maintain the inverse association sets
-     */
-    public void removeAssociation();
-
     public AssociationRef getNodeAssocRef();
     
     public Node getSource();

@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,9 +27,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.ChildAssoc;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.NodeKey;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.domain.PropertyValue;
@@ -215,52 +212,6 @@ public class HibernateNodeTest extends BaseSpringTest
         assertEquals("Not all aspects persisted", 4, aspects.size());
     }
     
-    public void testNodeAssoc() throws Exception
-    {
-        // make a source node
-        Node sourceNode = new NodeImpl();
-        sourceNode.setStore(store);
-        sourceNode.setUuid(GUID.generate());
-        sourceNode.setTypeQName(ContentModel.TYPE_CMOBJECT);
-        Serializable realNodeId = getSession().save(sourceNode);
-        
-        // make a container node
-        Node targetNode = new NodeImpl();
-        targetNode.setStore(store);
-        targetNode.setStore(store);
-        targetNode.setUuid(GUID.generate());
-        targetNode.setTypeQName(ContentModel.TYPE_CONTAINER);
-        Serializable containerNodeId = getSession().save(targetNode);
-        
-        // create an association between them
-        NodeAssoc assoc = new NodeAssocImpl();
-        assoc.setTypeQName(QName.createQName("next"));
-        assoc.buildAssociation(sourceNode, targetNode);
-        getSession().save(assoc);
-        
-        // make another association between the same two nodes
-        assoc = new NodeAssocImpl();
-        assoc.setTypeQName(QName.createQName("helper"));
-        assoc.buildAssociation(sourceNode, targetNode);
-        getSession().save(assoc);
-        
-        // flush and clear the session
-        getSession().flush();
-        getSession().clear();
-        
-        // reload the source
-        sourceNode = (Node) getSession().get(NodeImpl.class, realNodeId);
-        assertNotNull("Source node not found", sourceNode);
-        // check that the associations are present
-        assertEquals("Expected exactly 2 target assocs", 2, sourceNode.getTargetNodeAssocs().size());
-        
-        // reload the target
-        targetNode = (Node) getSession().get(NodeImpl.class, containerNodeId);
-        assertNotNull("Target node not found", targetNode);
-        // check that the associations are present
-        assertEquals("Expected exactly 2 source assocs", 2, targetNode.getSourceNodeAssocs().size());
-    }
-
     public void testChildAssoc() throws Exception
     {
         // make a content node
@@ -287,7 +238,7 @@ public class HibernateNodeTest extends BaseSpringTest
         // make another association between the same two parent and child nodes
         ChildAssoc assoc2 = new ChildAssocImpl();
         assoc2.setIsPrimary(true);
-        assoc2.setTypeQName(QName.createQName(null, "type1"));
+        assoc2.setTypeQName(QName.createQName(null, "type2"));
         assoc2.setQname(QName.createQName(null, "number2"));
         assoc2.buildAssociation(containerNode, contentNode);
         getSession().save(assoc2);
@@ -295,21 +246,9 @@ public class HibernateNodeTest extends BaseSpringTest
         assertFalse("Hashcode incorrent", assoc2.hashCode() == 0);
         assertNotSame("Assoc equals failure", assoc1, assoc2);
 
-//        flushAndClear();
-
         // reload the container
         containerNode = (Node) getSession().get(NodeImpl.class, containerNodeId);
         assertNotNull("Node not found", containerNode);
-        // check
-        assertEquals("Expected exactly 2 children", 2, containerNode.getChildAssocs().size());
-        for (Iterator iterator = containerNode.getChildAssocs().iterator(); iterator.hasNext(); /**/)
-        {
-            ChildAssoc assoc = (ChildAssoc) iterator.next();
-            // the node id must be known
-            assertNotNull("Node not populated on assoc", assoc.getChild());
-            assertEquals("Node key on child assoc is incorrect",
-                    contentNodeId, assoc.getChild().getId());
-        }
 
         // check that we can traverse the association from the child
         Collection<ChildAssoc> parentAssocs = contentNode.getParentAssocs();
@@ -362,7 +301,6 @@ public class HibernateNodeTest extends BaseSpringTest
         Map<QName, PropertyValue> checkProperties = checkNode.getProperties();
         assertTrue("Propery map retrieved was not the same instance", checkProperties == properties);
         assertTrue("Property not found", checkProperties.containsKey(ContentModel.PROP_NAME));
-//        assertTrue("Property value instance retrieved not the same", checkProperties)
 
         flushAndClear();
         // commit the transaction
@@ -380,8 +318,6 @@ public class HibernateNodeTest extends BaseSpringTest
             assertNotNull(checkNode);
             checkAspects = checkNode.getAspects();
     
-//            assertTrue("Node retrieved was not same instance", checkNode == node);
-            
             txn.commit();
         }
         catch (Throwable e)
@@ -465,37 +401,10 @@ public class HibernateNodeTest extends BaseSpringTest
         // now read the structure back in from the container down
         containerNodeStatus = (NodeStatus) getSession().get(NodeStatusImpl.class, containerNodeKey);
         containerNode = containerNodeStatus.getNode();
-        Collection<ChildAssoc> assocs = containerNode.getChildAssocs();
-        for (ChildAssoc assoc : assocs)
-        {
-            Node childNode = assoc.getChild();
-            Store store = childNode.getStore();
-            childNode.getAspects().size();
-            childNode.getProperties().size();
-            childNode.getParentAssocs().size();
-            childNode.getChildAssocs().size();
-            childNode.getSourceNodeAssocs().size();
-            childNode.getTargetNodeAssocs().size();
-            DbAccessControlList acl = childNode.getAccessControlList();
-            if (acl != null)
-            {
-                acl.getEntries().size();
-            }
-        }
         
         // clear out again
         getSession().clear();
 
-        // now remove a property from each child
-        containerNodeStatus = (NodeStatus) getSession().get(NodeStatusImpl.class, containerNodeKey);
-        containerNode = containerNodeStatus.getNode();
-        assocs = containerNode.getChildAssocs();
-        for (ChildAssoc assoc : assocs)
-        {
-            Node childNode = assoc.getChild();
-            PropertyValue removed = childNode.getProperties().remove(ContentModel.PROP_ARCHIVED_BY);
-            assertNotNull("Property was not present", removed);
-        }
         // expect that just the specific property gets removed in the delete statement
         getSession().flush();
         getSession().clear();

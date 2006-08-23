@@ -343,7 +343,6 @@
             <ref bean="searchService"/>
         </property>
     </bean>
-    
     <bean id="patch.scriptsFolder" class="org.alfresco.repo.admin.patch.impl.ScriptsFolderPatch" parent="basePatch">
         <property name="id"><value>patch.scriptsFolder</value></property>
         <property name="description"><value>patch.scriptsFolder.description</value></property>
@@ -362,7 +361,7 @@
             <ref bean="importerComponent" />
         </property>
     </bean>
-        
+
     <bean id="patch.topLevelGroupParentChildAssociationTypePatch" class="org.alfresco.repo.admin.patch.impl.TopLevelGroupParentChildAssociationTypePatch" parent="basePatch">
         <property name="id"><value>patch.topLevelGroupParentChildAssociationTypePatch</value></property>
         <property name="description"><value>patch.topLevelGroupParentChildAssociationTypePatch.description</value></property>
@@ -440,4 +439,38 @@
         </property>
     </bean>
     
+    <bean id="patch.schemaUpdateScript-V1.4-1" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.schemaUpdateScript-V1.4-1</value></property>
+        <property name="description"><value>patch.patch.schemaUpgradeScriptPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>19</value></property>
+        <property name="targetSchema"><value>20</value></property>
+        <property name="scriptName">
+            <value>AlfrescoSchemaUpdate-1.4-1-xxx.sql</value>
+        </property>
+    </bean>
+    <bean id="patch.uniqueChildName" class="org.alfresco.repo.admin.patch.impl.UniqueChildNamePatch" parent="basePatch" >
+        <property name="id"><value>patch.uniqueChildName</value></property>
+        <property name="description"><value>patch.uniqueChildName.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>19</value></property>
+        <property name="targetSchema"><value>20</value></property>
+        <!-- helper beans -->
+        <property name="sessionFactory">
+            <ref bean="sessionFactory" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="nodeDaoService">
+            <ref bean="nodeDaoService" />
+        </property>
+        <!-- dependent on upgrade script 1.4-1 having being run -->
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.schemaUpdateScript-V1.4-1" />
+            </list>
+        </property>
+    </bean>
+
 </beans>

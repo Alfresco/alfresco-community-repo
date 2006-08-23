@@ -31,6 +31,7 @@ import org.alfresco.filesys.server.filesys.FileAttribute;
 import org.alfresco.filesys.server.filesys.FileExistsException;
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.FileName;
+import org.alfresco.filesys.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -402,11 +403,7 @@ public class CifsHelper
     }
     
     /**
-     * Performs an XPath query to get the first-level descendents matching the given path
-     * 
-     * @param pathRootNodeRef
-     * @param pathElement
-     * @return
+     * Searches for the node or nodes that match the path element for the given parent node
      */
     private List<NodeRef> getDirectDescendents(NodeRef pathRootNodeRef, String pathElement)
     {
@@ -416,18 +413,36 @@ public class CifsHelper
                     "   Path Root: " + pathRootNodeRef + "\n" +
                     "   Path Element: " + pathElement);
         }
-        // escape for the Lucene syntax search
-        String escapedPathElement = SearchLanguageConversion.convertCifsToLucene(pathElement);
-        // do the lookup
-        List<org.alfresco.service.cmr.model.FileInfo> childInfos = fileFolderService.search(
-                pathRootNodeRef,
-                escapedPathElement,
-                false);
-        // convert to noderefs
-        List<NodeRef> results = new ArrayList<NodeRef>(childInfos.size());
-        for (org.alfresco.service.cmr.model.FileInfo info : childInfos)
+        List<NodeRef> results = null;
+        // if this contains no wildcards, then we can fasttrack it
+        if (!WildCard.containsWildcards(pathElement))
         {
-            results.add(info.getNodeRef());
+            // a specific name is required
+            NodeRef foundNodeRef = fileFolderService.searchSimple(pathRootNodeRef, pathElement);
+            if (foundNodeRef == null)
+            {
+                results = Collections.emptyList();
+            }
+            else
+            {
+                results = Collections.singletonList(foundNodeRef);
+            }
+        }
+        else
+        {
+            // escape for the Lucene syntax search
+            String escapedPathElement = SearchLanguageConversion.convertCifsToLucene(pathElement);
+            // do the lookup
+            List<org.alfresco.service.cmr.model.FileInfo> childInfos = fileFolderService.search(
+                    pathRootNodeRef,
+                    escapedPathElement,
+                    false);
+            // convert to noderefs
+            results = new ArrayList<NodeRef>(childInfos.size());
+            for (org.alfresco.service.cmr.model.FileInfo info : childInfos)
+            {
+                results.add(info.getNodeRef());
+            }
         }
         // done
         return results;

@@ -38,6 +38,8 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
     private Node parent;
     private Node child;
     private QName typeQName;
+    private String childNodeName;
+    private long childNodeNameCrc;
     private QName qName;
     private boolean isPrimary;
     private int index;
@@ -60,15 +62,11 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         // add the forward associations
         this.setParent(parentNode);
         this.setChild(childNode);
-        // add the inverse associations
-        parentNode.getChildAssocs().add(this);
         childNode.getParentAssocs().add(this);
     }
     
     public void removeAssociation()
     {
-        // maintain inverse assoc from parent node to this instance
-        this.getParent().getChildAssocs().remove(this);
         // maintain inverse assoc from child node to this instance
         this.getChild().getParentAssocs().remove(this);
     }
@@ -128,7 +126,8 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         sb.append("ChildAssoc")
           .append("[ parent=").append(parent)
           .append(", child=").append(child)
-          .append(", name=").append(getQname())
+          .append(", child name crc=").append(childNodeNameCrc)
+          .append(", assoc name=").append(getQname())
           .append(", isPrimary=").append(isPrimary)
           .append("]");
         return sb.toString();
@@ -281,6 +280,26 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         }
     }
     
+    public String getChildNodeName()
+    {
+        return childNodeName;
+    }
+
+    public void setChildNodeName(String childNodeName)
+    {
+        this.childNodeName = childNodeName;
+    }
+
+    public long getChildNodeNameCrc()
+    {
+        return childNodeNameCrc;
+    }
+
+    public void setChildNodeNameCrc(long crc)
+    {
+        this.childNodeNameCrc = crc;
+    }
+
     public QName getQname()
     {
         return qName;

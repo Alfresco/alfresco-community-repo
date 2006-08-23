@@ -67,15 +67,6 @@
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         />
-    <!-- approx 20MB memory required -->
-    <cache 
-        name="org.alfresco.repo.domain.hibernate.NodeImpl.childAssocs" 
-        maxElementsInMemory="10000"
-        eternal="true"
-        timeToIdleSeconds="0" 
-        timeToLiveSeconds="0" 
-        overflowToDisk="false" 
-        />
     <!-- approx 10MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.parentAssocs" 
@@ -89,24 +80,6 @@
     <cache 
         name="org.alfresco.repo.domain.hibernate.ChildAssocImpl" 
         maxElementsInMemory="200000"
-        eternal="true"
-        timeToIdleSeconds="0" 
-        timeToLiveSeconds="0" 
-        overflowToDisk="false" 
-        />
-    <!-- approx 10MB memory required -->
-    <cache 
-        name="org.alfresco.repo.domain.hibernate.NodeImpl.sourceNodeAssocs" 
-        maxElementsInMemory="10000"
-        eternal="true"
-        timeToIdleSeconds="0" 
-        timeToLiveSeconds="0" 
-        overflowToDisk="false" 
-        />
-    <!-- approx 10MB memory required -->
-    <cache 
-        name="org.alfresco.repo.domain.hibernate.NodeImpl.targetNodeAssocs" 
-        maxElementsInMemory="10000"
         eternal="true"
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 

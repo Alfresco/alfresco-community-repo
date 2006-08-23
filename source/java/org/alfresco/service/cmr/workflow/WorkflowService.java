@@ -95,7 +95,15 @@ public interface WorkflowService
      * @return  the deployed workflow definition
      */
     public WorkflowDefinition getDefinitionById(String workflowDefinitionId);
-    
+
+    /**
+     * Gets a Workflow Definition by unique name
+     * 
+     * @param workflowName  workflow name e.g. jbpm://review
+     * @return  the deployed workflow definition
+     */
+    public WorkflowDefinition getDefinitionByName(String workflowName);
+
     
     //
     // Workflow Instance Management

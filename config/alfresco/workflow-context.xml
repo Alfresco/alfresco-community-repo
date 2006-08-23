@@ -45,6 +45,22 @@
       <property name="namespaceService" ref="namespaceService"/>
    </bean>
 
+   <!--                 -->
+   <!-- Workflow Action -->
+   <!--                 -->
+
+   <bean id="start-workflow" class="org.alfresco.repo.workflow.StartWorkflowActionExecuter" parent="action-executer">
+      <property name="namespaceService">
+         <ref bean="NamespaceService" />
+      </property>
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
+      <property name="workflowService">
+         <ref bean="WorkflowService" />
+      </property>
+   </bean>
+
    <!--                       -->
    <!-- Alfresco BPM Registry -->
    <!--                       -->

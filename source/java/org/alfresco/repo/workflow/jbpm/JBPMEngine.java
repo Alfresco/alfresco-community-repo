@@ -312,6 +312,30 @@ public class JBPMEngine extends BPMEngine
         throw new UnsupportedOperationException();
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowComponent#getDefinitionByName(java.lang.String)
+     */
+    public WorkflowDefinition getDefinitionByName(final String workflowName)
+    {
+        try
+        {
+            return (WorkflowDefinition)jbpmTemplate.execute(new JbpmCallback()
+            {
+                @SuppressWarnings("synthetic-access")
+                public Object doInJbpm(JbpmContext context)
+                {
+                    GraphSession graphSession = context.getGraphSession();
+                    ProcessDefinition processDef = graphSession.findLatestProcessDefinition(createLocalId(workflowName));
+                    return createWorkflowDefinition(processDef);
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to retrieve workflow definition '" + workflowName + "'", e);
+        }
+    }
+    
     
     //
     // Workflow Instance Management...

@@ -11,6 +11,7 @@
           <variable name="reviewduedate" access="write" mapped-name="wf:reviewDueDate"/>
           <variable name="reviewpriority" access="write" mapped-name="wf:reviewPriority"/>
           <variable name="package" access="write" mapped-name="bpm:package"/>
+          <variable name="context" access="write" mapped-name="bpm:context"/>
         </controller>
       </task>
       <transition name="" to="review"/>
@@ -29,8 +30,8 @@
             </script>
          </event>
          <controller>
-            <variable name="comment" access="read,write,required"/>
             <variable name="package" access="read,required" mapped-name="bpm:package"/>
+            <variable name="context" access="read,required" mapped-name="bpm:context"/>
          </controller>
       </task>
       <transition name="reject" to="rejected"/>
@@ -40,8 +41,8 @@
    <task-node name="rejected">
       <task name="wf:rejectedTask" swimlane="initiator">
          <controller>
-            <variable name="comment" access="read"/>
             <variable name="package" access="read,required" mapped-name="bpm:package"/>
+            <variable name="context" access="read,required" mapped-name="bpm:context"/>
          </controller>
       </task>
       <transition name="" to="end"/>
@@ -50,8 +51,8 @@
    <task-node name="approved">
       <task name="wf:approvedTask" swimlane="initiator">
          <controller>
-            <variable name="comment" access="read"/>
             <variable name="package" access="read,required" mapped-name="bpm:package"/>
+            <variable name="context" access="read,required" mapped-name="bpm:context"/>
          </controller>
       </task>
       <transition name="" to="end"/>

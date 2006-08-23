@@ -38,7 +38,8 @@ import org.apache.commons.logging.LogFactory;
 public class BPMEngineRegistry
 {
     /** ID seperator used in global Ids */
-    private static final String ID_SEPERATOR = "-"; 
+    private static final String ID_SEPERATOR = "$"; 
+    private static final String ID_SEPERATOR_REGEX = "\\$"; 
     
     /** Logging support */
     private static Log logger = LogFactory.getLog("org.alfresco.repo.workflow");
@@ -159,7 +160,7 @@ public class BPMEngineRegistry
      */
     public static String[] getGlobalIdParts(String globalId)
     {
-        String[] parts = globalId.split(ID_SEPERATOR);
+        String[] parts = globalId.split(ID_SEPERATOR_REGEX);
         if (parts.length != 2)
         {
             throw new WorkflowException("Invalid Global Id '" + globalId + "'");

@@ -114,7 +114,7 @@ public class JBPMEngine extends BPMEngine
         "and ti.end is not null";
     
     // Workflow Path Seperators
-    private final static String WORKFLOW_PATH_SEPERATOR = "--";
+    private final static String WORKFLOW_PATH_SEPERATOR = "-";
     private final static String WORKFLOW_TOKEN_SEPERATOR = "@";
     
     // I18N labels
@@ -1198,7 +1198,7 @@ public class JBPMEngine extends BPMEngine
                 // map property to specific jBPM task instance field
                 if (key.equals(WorkflowModel.PROP_DUE_DATE))
                 {
-                    if (!(value instanceof Date))
+                    if (value != null && !(value instanceof Date))
                     {
                         throw new WorkflowException("Task due date '" + value + "' is invalid");
                     }
@@ -1216,7 +1216,7 @@ public class JBPMEngine extends BPMEngine
                 }
                 else if (key.equals(ContentModel.PROP_OWNER))
                 {
-                    if (!(value instanceof String))
+                    if (value != null && !(value instanceof String))
                     {
                         throw new WorkflowException("Task owner '" + value + "' is invalid");
                     }

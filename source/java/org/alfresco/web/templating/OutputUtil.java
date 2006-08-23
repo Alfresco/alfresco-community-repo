@@ -58,6 +58,11 @@ public class OutputUtil
     private static final String PARENT_AVM_PATH = 
 	"repo-1:/repo-1/alice/appBase/avm_webapps/ROOT/home-insurance";
 
+    private static String stripExtension(String s)
+    {
+	return s.replaceAll("(.+)\\..*", "$1");
+    }
+
     public static void generate(NodeRef createdNode,
 				Document xml, 
 				TemplateType tt, 
@@ -71,7 +76,7 @@ public class OutputUtil
 	try 
 	{
 	    // get the node ref of the node that will contain the content
-	    fileName = fileName + "-generated.html";
+	    fileName = stripExtension(fileName) + ".html";
 	    FileInfo fileInfo = 
 		fileFolderService.create(containerNodeRef,
 					 fileName,

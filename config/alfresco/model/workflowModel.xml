@@ -63,11 +63,11 @@
 
          <overrides>
 
-            <property name="wf:packageActionGroup">
+            <property name="bpm:packageActionGroup">
                <default>workflow_collection_actions</default>
             </property>
 
-            <property name="wf:packageItemActionGroup">
+            <property name="bpm:packageItemActionGroup">
                <default>workflow_item_collection_actions</default>
             </property>
 
@@ -86,7 +86,7 @@
          
          <overrides>
          
-            <property name="wf:packageItemActionGroup">
+            <property name="bpm:packageItemActionGroup">
                <default>workflow_item_edit_actions</default>
             </property>
             

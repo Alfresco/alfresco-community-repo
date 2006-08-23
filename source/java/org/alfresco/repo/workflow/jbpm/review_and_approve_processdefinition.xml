@@ -21,7 +21,7 @@
    </swimlane>
    
    <task-node name="review">
-      <task name="wf:review" swimlane="reviewer">
+      <task name="wf:reviewTask" swimlane="reviewer">
          <event type="task-create">
             <script>
                taskInstance.dueDate = reviewduedate;
@@ -38,7 +38,7 @@
    </task-node>
    
    <task-node name="rejected">
-      <task name="wf:rejected" swimlane="initiator">
+      <task name="wf:rejectedTask" swimlane="initiator">
          <controller>
             <variable name="comment" access="read"/>
             <variable name="package" access="read,required" mapped-name="bpm:package"/>
@@ -48,7 +48,7 @@
    </task-node>
    
    <task-node name="approved">
-      <task name="wf:approved" swimlane="initiator">
+      <task name="wf:approvedTask" swimlane="initiator">
          <controller>
             <variable name="comment" access="read"/>
             <variable name="package" access="read,required" mapped-name="bpm:package"/>

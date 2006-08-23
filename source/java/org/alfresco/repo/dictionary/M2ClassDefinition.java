@@ -191,6 +191,15 @@ import org.alfresco.service.namespace.QName;
         {
             ((M2AssociationDefinition)def).resolveDependencies(query);
         }
+
+        for (Map.Entry<QName, M2PropertyOverride> override : propertyOverrides.entrySet())
+        {
+            PropertyDefinition propDef = query.getProperty(override.getKey());
+            if (propDef == null)
+            {
+                throw new DictionaryException("Class " + name.toPrefixString() + " attempting to override property " + override.getKey().toPrefixString() + " which does not exist");
+            }
+        }
         
         for (QName aspectName : defaultAspectNames)
         {

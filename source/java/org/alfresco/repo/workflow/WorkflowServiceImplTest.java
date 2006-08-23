@@ -70,7 +70,6 @@ public class WorkflowServiceImplTest extends BaseSpringTest
         NodeRef nodeRef = workflowService.createPackage(null);
         assertNotNull(nodeRef);
         assertTrue(nodeService.hasAspect(nodeRef, WorkflowModel.ASPECT_WORKFLOW_PACKAGE));
-        setComplete();
     }
     
 }

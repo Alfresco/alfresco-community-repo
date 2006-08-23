@@ -140,6 +140,7 @@
       <!-- which match the name are forwared to the class instance -->
       <command-servlet>
          <command-processor name="workflow" class="org.alfresco.web.app.servlet.command.WorkflowCommandProcessor" />
+         <command-processor name="task" class="org.alfresco.web.app.servlet.command.TaskCommandProcessor" />
          <command-processor name="script" class="org.alfresco.web.app.servlet.command.ScriptCommandProcessor" />
       </command-servlet>
    </config>

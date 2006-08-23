@@ -10,6 +10,21 @@ dojo.require("dojo.html.style");
 dojo.hostenv.writeIncludes();
 dojo.addOnLoad(xforms_init);
 
+tinyMCE.init({
+  theme : "advanced",
+  mode : "exact",
+      //	elements : "editor",
+  save_callback : "saveContent",
+  add_unload_trigger: false,
+  add_form_submit_trigger: false,
+  theme_advanced_toolbar_location : "top",
+  theme_advanced_toolbar_align : "left",
+  theme_advanced_buttons1_add : "fontselect,fontsizeselect",
+  theme_advanced_buttons2_add : "separator,forecolor,backcolor",
+  theme_advanced_disable: "styleselect",
+  extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style]"
+});
+
 //dojo.provide("alfresco.xforms.textarea");
 //
 //dojo.declare("alfresco.xforms.Widget",
@@ -134,32 +149,34 @@ function load_body(body, ui_element_stack)
       cell = document.createElement("td");
       row.appendChild(cell);
       var nodeRef = document.createElement("div");
-      nodeRef.setAttribute("style", "height: 200px; border: solid 1px black;");
+      nodeRef.setAttribute("style", "height: 200px; width: 100%; border: solid 1px black;");
       cell.appendChild(nodeRef);
       var id = o.getAttribute("id");
+      nodeRef.setAttribute("id", id);
       var initial_value = get_initial_value(o)  || "";
-      nodeRef.appendChild(document.createTextNode(initial_value));
-      var w = dojo.widget.createWidget("Editor", 
-				       { 
-					   widgetId: id,
-					   focusOnLoad: false,
-					   items: [ "|", "bold", "italic", "underline", "strikethrough", "|", "colorGroup", "|", "createLink", "insertImage" ] 
-				       }, 
-				       nodeRef);
-      dojo.event.connect(w,
-			 "setRichText", 
-			 function(event)
-			 {
-			     dojo.event.connect(w._richText,
-						"onBlur",
-						function()
-						{
-						    setXFormsValue(w.widgetId, 
-								   w._richText.getEditorContent());
-						});
-						
-			 });
-
+      nodeRef.innerHTML = initial_value;
+      tinyMCE.addMCEControl(nodeRef, id);
+//      var w = dojo.widget.createWidget("Editor", 
+//				       { 
+//					   widgetId: id,
+//					   focusOnLoad: false,
+//					   items: [ "|", "bold", "italic", "underline", "strikethrough", "|", "colorGroup", "|", "createLink", "insertImage" ] 
+//				       }, 
+//				       nodeRef);
+//      dojo.event.connect(w,
+//			 "setRichText", 
+//			 function(event)
+//			 {
+//			     dojo.event.connect(w._richText,
+//						"onBlur",
+//						function()
+//						{
+//						    setXFormsValue(w.widgetId, 
+//								   w._richText.getEditorContent());
+//						});
+//						
+//			 });
+//
       break;
     case "xforms:input":
       var id = o.getAttribute("id");
@@ -495,7 +512,8 @@ function fireAction(id)
   load: function(type, data, evt)
   {
       document.submitTrigger.done = true;
-      doSubmit();
+      document.submitTrigger.currentButton.click();
+      document.submitTrigger.currentButton = null;
   },
   error: function(type, e)
   {
@@ -520,4 +538,33 @@ function setXFormsValue(id, value)
   }
   };
   dojo.io.bind(req);
+}
+
+function addSubmitHandlerToButton(b)
+{
+  var baseOnClick = b.onclick;
+  b.onclick = function(event)
+  {
+//    alert("submitting xform from " + b.getAttribute("id") + 
+//	  " b " + b +
+//	  " this " + this );
+    if (!document.submitTrigger.done)
+    {
+      //      alert("not done, resubmitting");
+      tinyMCE.triggerSave();
+      document.submitTrigger.currentButton = this;
+      document.submitTrigger.buttonClick(); 
+      return false;
+    }
+    else
+    {
+      //     alert("done - doing base click");
+      return baseOnClick(event);
+    }
+  }
+}
+
+function saveContent(id, content)
+{
+  setXFormsValue(id, content);
 }

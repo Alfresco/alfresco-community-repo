@@ -214,27 +214,8 @@ final InstanceData instanceData = new InstanceData() {
 <script type="text/javascript">
 dojo.addOnLoad(function()
 {
-//alert('foo');
-var b = document.getElementById("edit-file:save-button");
-var baseOnClick = b.onclick;
-b.onclick = function()
-{
- if (!document.submitTrigger.done)
- {
-   document.submitTrigger.buttonClick(); 
-   return false;
- }
- else
- {	
-   return baseOnClick();
- }
-}
+  addSubmitHandlerToButton(document.getElementById("edit-file:save-button"));
 });
-function doSubmit()
-{
-var b = document.getElementById("edit-file:save-button");
-b.click();
-}
 	
 </script>
 

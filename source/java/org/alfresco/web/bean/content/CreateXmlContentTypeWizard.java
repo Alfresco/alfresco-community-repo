@@ -212,6 +212,12 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
     */
     public String getPresentationTemplateType()
     {
+	if (this.getPresentationTemplateFileName() != null)
+	{
+	    //	    String s = this.getPresentationTemplateFileName();
+	    //	    String extension = 
+	    this.presentationTemplateType = "XSL";
+	}
 	return this.presentationTemplateType;
     }
     

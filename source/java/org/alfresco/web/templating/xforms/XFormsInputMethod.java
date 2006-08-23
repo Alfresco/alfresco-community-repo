@@ -74,16 +74,25 @@ public class XFormsInputMethod
 	e.appendChild(result.createTextNode("djConfig = { isDebug: false };\n" +
 					    "var WEBAPP_CONTEXT = \"" + cp + "\";\n"));
 	div.appendChild(e);
+
+	e = result.createElement("script");
+	e.setAttribute("type", "text/javascript");
+	e.setAttribute("src", cp + "/scripts/tiny_mce/tiny_mce_src.js");
+	e.appendChild(result.createTextNode("\n"));
+	div.appendChild(e);
+ 
 	e = result.createElement("script");
 	e.setAttribute("type", "text/javascript");
 	e.setAttribute("src", cp + "/scripts/ajax/dojo.js");
 	e.appendChild(result.createTextNode("\n"));
 	div.appendChild(e);
+
 	e = result.createElement("script");
 	e.setAttribute("type", "text/javascript");
 	e.setAttribute("src", cp + "/scripts/ajax/xforms.js");
 	e.appendChild(result.createTextNode("\n"));
 	div.appendChild(e);
+
 	ts.writeXML(result, out);
     }
 

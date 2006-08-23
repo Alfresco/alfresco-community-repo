@@ -27,7 +27,7 @@
                     </cm:person>
                     <!-- Guest needs to read their own person information -->
                     <cm:person view:childName="cm:person">
-                        <view:acl view:inherit="false">
+                        <view:acl>
                            <view:ace view:access="ALLOWED">
                               <view:authority>guest</view:authority>
                               <view:permission>Read</view:permission>

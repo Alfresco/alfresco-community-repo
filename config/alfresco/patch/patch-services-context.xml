@@ -425,4 +425,19 @@
         </property>
     </bean>
     
+    <bean id="patch.guestPersonPermission2" class="org.alfresco.repo.admin.patch.impl.GuestPersonPermissionPatch2" parent="basePatch" >
+        <property name="id"><value>patch.guestPersonPermission2</value></property>
+        <property name="description"><value>patch.guestPersonPermission2.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>18</value></property>
+        <property name="targetSchema"><value>19</value></property>
+        <!-- helper beans for execution -->
+        <property name="permissionService">
+            <ref bean="permissionService"/>
+        </property>
+        <property name="personService">
+            <ref bean="personService"/>
+        </property>
+    </bean>
+    
 </beans>

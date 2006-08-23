@@ -262,7 +262,7 @@ public class DocumentPropertiesBean
          String statusMsg = MessageFormat.format(
                Application.getMessage(
                      FacesContext.getCurrentInstance(), "error_exists"), 
-                     e.getExisting().getName());
+                     e.getName());
          Utils.addErrorMessage(statusMsg);
          // no outcome
          outcome = null;

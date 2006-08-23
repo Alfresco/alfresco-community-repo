@@ -38,7 +38,7 @@ import org.apache.commons.logging.LogFactory;
 public class BPMEngineRegistry
 {
     /** ID seperator used in global Ids */
-    private static final String ID_SEPERATOR = "://"; 
+    private static final String ID_SEPERATOR = "-"; 
     
     /** Logging support */
     private static Log logger = LogFactory.getLog("org.alfresco.repo.workflow");

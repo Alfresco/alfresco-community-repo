@@ -113,6 +113,10 @@ public class JBPMEngine extends BPMEngine
         "and ti.isOpen = false " +
         "and ti.end is not null";
     
+    // Workflow Path Seperators
+    private final static String WORKFLOW_PATH_SEPERATOR = "--";
+    private final static String WORKFLOW_TOKEN_SEPERATOR = "@";
+    
     // I18N labels
     private final static String TITLE_LABEL = "title";
     private final static String DESC_LABEL = "description";
@@ -1050,7 +1054,7 @@ public class JBPMEngine extends BPMEngine
     protected Token getWorkflowToken(GraphSession session, String pathId)
     {
         // extract process id and token path within process
-        String[] path = pathId.split("::");
+        String[] path = pathId.split(WORKFLOW_PATH_SEPERATOR);
         if (path.length != 2)
         {
             throw new WorkflowException("Invalid workflow path '" + pathId + "'");
@@ -1058,7 +1062,8 @@ public class JBPMEngine extends BPMEngine
 
         // retrieve jBPM token for workflow position
         ProcessInstance processInstance = session.loadProcessInstance(getJbpmId(path[0]));
-        Token token = processInstance.findToken(path[1]);
+        String tokenId = path[1].replace(WORKFLOW_TOKEN_SEPERATOR, "/");
+        Token token = processInstance.findToken(tokenId);
         if (token == null)
         {
             throw new WorkflowException("Workflow path '" + pathId + "' does not exist");
@@ -1417,7 +1422,8 @@ public class JBPMEngine extends BPMEngine
     protected WorkflowPath createWorkflowPath(Token token)
     {
         WorkflowPath path = new WorkflowPath();
-        path.id = createGlobalId(token.getProcessInstance().getId() + "::" + token.getFullName());
+        String tokenId = token.getFullName().replace("/", WORKFLOW_TOKEN_SEPERATOR);
+        path.id = createGlobalId(token.getProcessInstance().getId() + WORKFLOW_PATH_SEPERATOR + tokenId);
         path.instance = createWorkflowInstance(token.getProcessInstance());
         path.node = createWorkflowNode(token.getNode());
         path.active = !token.hasEnded();

@@ -131,7 +131,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowDefinition workflowDef = getTestDefinition();
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, null);
         assertNotNull(path);
-        assertTrue(path.id.endsWith("::/"));
+        assertTrue(path.id.endsWith("--@"));
         assertNotNull(path.node);
         assertNotNull(path.instance);
         assertEquals(workflowDef.id, path.instance.definition.id);
@@ -154,7 +154,7 @@ public class JBPMEngineTest extends BaseSpringTest
         
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, params);
         assertNotNull(path);
-        assertTrue(path.id.endsWith("::/"));
+        assertTrue(path.id.endsWith("--@"));
         assertNotNull(path.node);
         assertNotNull(path.instance);
         assertEquals(workflowDef.id, path.instance.definition.id);
@@ -187,7 +187,7 @@ public class JBPMEngineTest extends BaseSpringTest
         
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, params);
         assertNotNull(path);
-        assertTrue(path.id.endsWith("::/"));
+        assertTrue(path.id.endsWith("--@"));
         assertNotNull(path.node);
         assertNotNull(path.instance);
         assertEquals(workflowDef.id, path.instance.definition.id);
@@ -279,7 +279,7 @@ public class JBPMEngineTest extends BaseSpringTest
         assertNotNull(paths);
         assertEquals(1, paths.size());
         assertEquals(instances.get(0).id, paths.get(0).instance.id);
-        assertTrue(paths.get(0).id.endsWith("::/"));
+        assertTrue(paths.get(0).id.endsWith("--@"));
     }
 
     

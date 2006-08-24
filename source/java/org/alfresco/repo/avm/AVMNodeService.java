@@ -29,8 +29,10 @@ import java.util.SortedMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.service.Auditable;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -56,7 +58,7 @@ import org.apache.log4j.Logger;
  * NodeService implementing facade over AVMService.
  * @author britt
  */
-public class AVMNodeService implements NodeService
+public class AVMNodeService extends AbstractNodeServiceImpl implements NodeService
 {
     private static Logger fgLogger = Logger.getLogger(AVMNodeService.class);
     
@@ -66,26 +68,12 @@ public class AVMNodeService implements NodeService
     private AVMService fAVMService;
     
     /**
-     * Reference to DictionaryService.
-     */
-    private DictionaryService fDictionaryService;
-    
-    /**
      * Set the AVMService. For Spring.
      * @param service The AVMService instance.
      */
     public void setAvmService(AVMService service)
     {
         fAVMService = service;
-    }
-    
-    /**
-     * Set the DictionaryService. For Spring.
-     * @param dictionaryService The DictionaryService instance.
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        fDictionaryService = dictionaryService;
     }
     
     /**
@@ -484,7 +472,68 @@ public class AVMNodeService implements NodeService
             Map<QName, Serializable> aspectProperties)
             throws InvalidNodeRefException, InvalidAspectException
     {
-        throw new UnsupportedOperationException("AVM Nodes cannot be advised yet.");
+        // Check that the aspect exists.
+        AspectDefinition aspectDef = this.dictionaryService.getAspect(aspectTypeQName);
+        if (aspectDef == null)
+        {
+            throw new InvalidAspectException("The aspect is invalid: " + aspectTypeQName, 
+                                             aspectTypeQName);
+        }
+        // Crack the nodeRef.
+        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = (Integer)avmVersionPath[0];
+        if (version >= 0)
+        {
+            throw new InvalidNodeRefException("Read Only node.", nodeRef);
+        }
+        String avmPath = (String)avmVersionPath[1];
+        // Get the current node properties.
+        Map<QName, Serializable> properties = getProperties(nodeRef);
+        // Add the supplied properties.
+        if (aspectProperties != null)
+        {
+            properties.putAll(aspectProperties);
+        }
+        // Now set any unspecified default properties for the aspect.
+        addDefaultPropertyValues(aspectDef, properties);
+        // Now add any cascading aspects.
+        addDefaultAspects(aspectDef, avmPath, properties);
+        // Set the property values on the AVM Node.
+        setProperties(nodeRef, properties);
+        if (isBuiltinAspect(aspectTypeQName))
+        {
+            // No more work to do in this case.
+            return;
+        }
+        try
+        {
+            fAVMService.addAspect(avmPath, aspectTypeQName);
+        }
+        catch (AVMNotFoundException e)
+        {
+            throw new InvalidNodeRefException(nodeRef);
+        }
+    }
+    
+    /**
+     * Add any aspects that are mandatory for the ClassDefinition.
+     * @param classDef The ClassDefinition.
+     * @param path The path to the AVMNode.
+     * @param properties The in/out map of accumulated properties.
+     */
+    private void addDefaultAspects(ClassDefinition classDef, String path, 
+                                   Map<QName, Serializable> properties)
+    {
+        // Get mandatory aspects.
+        List<AspectDefinition> defaultAspectDefs = classDef.getDefaultAspects();
+        // add all the aspects (and there dependent aspects recursively).
+        for (AspectDefinition def : defaultAspectDefs)
+        {
+            fAVMService.addAspect(path, def.getName());
+            addDefaultPropertyValues(def, properties);
+            // recurse
+            addDefaultAspects(def, path, properties);
+        }
     }
     
     /**
@@ -499,7 +548,39 @@ public class AVMNodeService implements NodeService
     public void removeAspect(NodeRef nodeRef, QName aspectTypeQName)
             throws InvalidNodeRefException, InvalidAspectException
     {
-        throw new UnsupportedOperationException("AVM Nodes do not yet have aspects.");
+        AspectDefinition def = dictionaryService.getAspect(aspectTypeQName);
+        if (def == null)
+        {
+            throw new InvalidAspectException(aspectTypeQName);
+        }
+        if (isBuiltinAspect(aspectTypeQName))
+        {
+            // TODO shouldn't we be throwing some kind of exception here.
+            return;
+        }
+        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = (Integer)avmVersionPath[0];
+        if (version >= 0)
+        {
+            throw new InvalidNodeRefException("Read Only Node.", nodeRef);
+        }
+        String path = (String)avmVersionPath[1];
+        try
+        {
+            if (fAVMService.hasAspect(-1, path, aspectTypeQName))
+            {
+                fAVMService.removeAspect(path, aspectTypeQName);
+                Map<QName, PropertyDefinition> propDefs = def.getProperties();
+                for (QName propertyName : propDefs.keySet())
+                {
+                    fAVMService.deleteNodeProperty(path, propertyName);
+                }
+            }
+        }
+        catch (AVMNotFoundException e)
+        {
+            throw new InvalidNodeRefException(nodeRef);
+        }
     }
     
     /**
@@ -516,9 +597,38 @@ public class AVMNodeService implements NodeService
     public boolean hasAspect(NodeRef nodeRef, QName aspectTypeQName)
             throws InvalidNodeRefException, InvalidAspectException
     {
-        return false;
+        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = (Integer)avmVersionPath[0];
+        String path = (String)avmVersionPath[1];
+        if (isBuiltinAspect(aspectTypeQName))
+        {
+            return true;
+        }
+        try
+        {
+            return fAVMService.hasAspect(version, path, aspectTypeQName);
+        }
+        catch (AVMNotFoundException e)
+        {
+            throw new InvalidNodeRefException(nodeRef);
+        }
     }
 
+    private static QName [] fgBuiltinAspects = new QName[] { ContentModel.ASPECT_AUDITABLE, 
+                                                             ContentModel.ASPECT_REFERENCEABLE };
+    
+    private boolean isBuiltinAspect(QName aspectQName)
+    {
+        for (QName builtin : fgBuiltinAspects)
+        {
+            if (builtin.equals(aspectQName))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * @param nodeRef
      * @return Returns a set of all aspects applied to the node, including mandatory
@@ -527,8 +637,28 @@ public class AVMNodeService implements NodeService
      */
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
-        // TODO This is almost certainly not the right thing to do.
-        return new HashSet<QName>();
+        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = (Integer)avmVersionPath[0];
+        String path = (String)avmVersionPath[1];
+        Set<QName> result = new HashSet<QName>();
+        // Add the builtin ones.
+        for (QName name : fgBuiltinAspects)
+        {
+            result.add(name);
+        }
+        try
+        {
+            List<QName> aspects = fAVMService.getAspects(version, path);
+            for (QName name : aspects)
+            {
+                result.add(name);
+            }
+            return result;
+        }
+        catch (AVMNotFoundException e)
+        {
+            throw new InvalidNodeRefException(nodeRef);
+        }
     }
     
     /**
@@ -648,7 +778,7 @@ public class AVMNodeService implements NodeService
         for (QName qName : props.keySet())
         {
             PropertyValue value = props.get(qName);
-            PropertyDefinition def = fDictionaryService.getProperty(qName);
+            PropertyDefinition def = this.dictionaryService.getProperty(qName);
             result.put(qName, value.getValue(def.getDataType().getName()));
         }
         // Now spoof properties that are built in.
@@ -695,7 +825,7 @@ public class AVMNodeService implements NodeService
             {
                 return null;
             }
-            PropertyDefinition def = fDictionaryService.getProperty(qname);
+            PropertyDefinition def = this.dictionaryService.getProperty(qname);
             return value.getValue(def.getDataType().getName());
         }
         catch (AVMNotFoundException e)
@@ -726,7 +856,8 @@ public class AVMNodeService implements NodeService
             }
             catch (AVMException e)
             {
-                // TODO For now, ignore.
+                // TODO This seems very wrong. Do something better
+                // sooner rather than later.
                 return null;
             }
         }
@@ -807,6 +938,16 @@ public class AVMNodeService implements NodeService
         }
     }
     
+    static QName [] fgBuiltinProperties = new QName [] 
+    { 
+        ContentModel.PROP_CREATED,
+        ContentModel.PROP_CREATOR,
+        ContentModel.PROP_MODIFIED,
+        ContentModel.PROP_MODIFIER,
+        ContentModel.PROP_OWNER,
+        ContentModel.PROP_CONTENT
+    };
+    
     /**
      * Helper to distinguish built-in from generic properties.
      * @param qName The name of the property to check.
@@ -814,12 +955,14 @@ public class AVMNodeService implements NodeService
      */
     private boolean isBuiltInProperty(QName qName)
     {
-        return qName.equals(ContentModel.PROP_CREATED) ||
-               qName.equals(ContentModel.PROP_CREATOR) ||
-               qName.equals(ContentModel.PROP_MODIFIED) ||
-               qName.equals(ContentModel.PROP_MODIFIER) ||
-               qName.equals(ContentModel.PROP_OWNER) ||
-               qName.equals(ContentModel.PROP_CONTENT);
+        for (QName name : fgBuiltinProperties)
+        {
+            if (name.equals(qName))
+            {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
@@ -875,9 +1018,6 @@ public class AVMNodeService implements NodeService
         String path = (String)avmVersionPath[1];
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
         String [] splitPath = AVMNodeConverter.SplitBase(path);
-        // TODO Remove when you figure this out.
-        fgLogger.error(splitPath[0]);
-        fgLogger.error(splitPath[1]);
         if (splitPath[0] == null)
         {
             return result;

@@ -30,13 +30,12 @@ import java.util.SortedMap;
 import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.TempFileProvider;
 import org.apache.log4j.Logger;
 
 /**
- * Implements the AVMService.  Stub.
+ * Implements the AVMService.
  * @author britt
  */
 public class AVMServiceImpl implements AVMService
@@ -54,29 +53,10 @@ public class AVMServiceImpl implements AVMService
     private AVMRepository fAVMRepository;
     
     /**
-     * The storage directory.
-     */
-    private String fStorage;
-    
-    /**
-     * Whether the tables should be dropped and created.
-     */
-    private boolean fInitialize;
-    
-    /**
      * Basic constructor for the service.
      */
     public AVMServiceImpl()
     {
-    }
-    
-    /**
-     * Set the storage directory.
-     * @param storage The full path to the storage directory.
-     */
-    public void setStorage(String storage)
-    {
-        fStorage = storage;
     }
     
     /**
@@ -85,17 +65,14 @@ public class AVMServiceImpl implements AVMService
      */
     public void init()
     {
-        if (fInitialize)
+        try
         {
-            try
-            {
-                createAVMStore("main");
-                fgLogger.info("Created new main AVMStore");
-            }
-            catch (AVMExistsException e)
-            {
-                fgLogger.info("AVMStore main already exists");
-            }
+            createAVMStore("main");
+            fgLogger.info("Created new main AVMStore");
+        }
+        catch (AVMExistsException e)
+        {
+            fgLogger.info("AVMStore main already exists");
         }
     }
     
@@ -108,15 +85,6 @@ public class AVMServiceImpl implements AVMService
         fTransaction = txn;
     }
     
-    /**
-     * Set whether we should create an initial AVMStore.
-     * @param initialize
-     */
-    public void setInitialize(boolean initialize)
-    {
-        fInitialize = initialize;
-    }
-
     /**
      * Set the repository reference. For Spring.
      * @param avmRepository The repository reference.
@@ -153,58 +121,6 @@ public class AVMServiceImpl implements AVMService
         return doit.in;
     }
 
-    /**
-     * Get a ContentReader for the given file.
-     * @param version The version to look under.
-     * @param path The path to the file.
-     * @return A ContentReader.
-     */
-    public ContentReader getReader(final int version, final String path)
-    {
-        if (path == null)
-        {
-            throw new AVMBadArgumentException("Null path.");
-        }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public ContentReader reader;
-            
-            public void perform()
-            {
-                reader = fAVMRepository.getReader(version, path);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.reader;
-    }
-
-    /**
-     * Get a ContentWriter to a file.
-     * @param path The path to the file.
-     * @return A ContentWriter.
-     * @throws AVMNotFoundException If <code>path</code> does not exist.
-     * @throws AVMWrongTypeException if <code>path</code> is not a file.
-     */
-    public ContentWriter getWriter(final String path)
-    {
-        if (path == null)
-        {
-            throw new AVMBadArgumentException("Null path.");
-        }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public ContentWriter writer;
-            
-            public void perform()
-            {
-                writer = fAVMRepository.getWriter(path);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
-        return doit.writer;
-    }
     /**
      * Get an output stream to a file. Triggers versioning.
      */
@@ -365,6 +281,7 @@ public class AVMServiceImpl implements AVMService
         return doit.out;
     }
 
+    // TODO Eliminate this.
     /**
      * Create a file with content specified by the InputStream.
      * Guaranteed to be created atomically.
@@ -379,11 +296,10 @@ public class AVMServiceImpl implements AVMService
             throw new AVMBadArgumentException("Illegal null argument.");
         }
         // Save the contents to temp space.
-        File dir = new File(fStorage);
         final File temp;
         try
         {
-            temp = File.createTempFile("alf", "tmp", dir);
+            temp = TempFileProvider.createTempFile("alf", "tmp");
             OutputStream out = new FileOutputStream(temp);
             byte [] buff = new byte[8192];
             int read;

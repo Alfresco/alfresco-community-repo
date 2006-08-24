@@ -102,9 +102,9 @@ public class HibernateRetryingTransactionHelper extends HibernateTemplate implem
                 }
                 if (!newTxn)
                 {
-                    if (t instanceof AVMException)
+                    if (t instanceof RuntimeException)
                     {
-                        throw (AVMException)t;
+                        throw (RuntimeException)t;
                     }
                     throw new AVMException("Unrecoverable error.", t);
                 }

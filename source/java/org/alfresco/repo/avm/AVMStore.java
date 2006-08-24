@@ -26,8 +26,6 @@ import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -104,21 +102,6 @@ interface AVMStore
      * @return An InputStream
      */
     public InputStream getInputStream(int version, String path);
-    
-    /**
-     * Get a ContentReader from a file.
-     * @param version The version to look under.
-     * @param path The path to the file.
-     * @return A ContentReader.
-     */
-    public ContentReader getReader(int version, String path);
-
-    /**
-     * Get a ContentWriter to a file.
-     * @param path The path to the file.
-     * @return A ContentWriter.
-     */
-    public ContentWriter getWriter(String path);
     
     /**
      * Get a listing of the designated directory.

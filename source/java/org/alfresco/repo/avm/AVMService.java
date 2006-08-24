@@ -26,8 +26,6 @@ import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -59,25 +57,6 @@ public interface AVMService
      * component that is not a directory, or if it is not pointing to a file.
      */
     public OutputStream getFileOutputStream(String path);
-    
-    /**
-     * Get a ContentReader for the given file.
-     * @param version The version to look under.
-     * @param path The path to the file.
-     * @return A ContentReader.
-     * @throws AVMNotFoundException If <code>path</code> does not exist.
-     * @throws AVMWrongTypeException if <code>path</code> is not a file.
-     */
-    public ContentReader getReader(int version, String path);
-    
-    /**
-     * Get a ContentWriter to a file.
-     * @param path The path to the file.
-     * @return A ContentWriter.
-     * @throws AVMNotFoundException If <code>path</code> does not exist.
-     * @throws AVMWrongTypeException if <code>path</code> is not a file.
-     */
-    public ContentWriter getWriter(String path);
     
     /**
      * Get a listing of a Folder by name.

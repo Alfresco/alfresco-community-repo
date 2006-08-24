@@ -938,12 +938,6 @@
     <!-- The AVMService -->
     
     <bean id="AVMService" class="org.alfresco.repo.avm.AVMServiceImpl" init-method="init">
-	    <property name="storage">
-	    	<value>${avm.storage}</value>
-	    </property>
-	    <property name="initialize">
-	    	<value>${avm.initialize}</value>
-	    </property>
 	    <property name="retryingTransaction">
 	    	<ref bean="retryingTransaction"/>
 	    </property>

@@ -28,8 +28,6 @@ import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -60,26 +58,12 @@ public class AVMRepository
     private Issuer fLayerIssuer;
 
     /**
-     * The file storage directory.
-     */
-    private String fStorage;
-    
-    /**
      * Create a new one.
      */
     public AVMRepository()
     {
         fLookupCount = new ThreadLocal<Integer>();
         fgInstance = this;
-    }
-    
-    /**
-     * Set the storage directory.
-     * @param storage The absolute path to content storage directory.
-     */
-    public void setStorage(String storage)
-    {
-        fStorage = storage;
     }
     
     /**
@@ -100,12 +84,6 @@ public class AVMRepository
         fLayerIssuer = layerIssuer;
     }
 
-    public void init()
-    {
-        File storageDir = new File(fStorage);
-        storageDir.mkdirs();
-    }
-    
     /**
      * Create a file.
      * @param path The path to the containing directory.
@@ -497,33 +475,6 @@ public class AVMRepository
     }
 
     /**
-     * Get a ContentReader from a file.
-     * @param version The version to look under.
-     * @param path The path to the file.
-     * @return A ContentReader
-     */
-    public ContentReader getReader(int version, String path)
-    {
-        fLookupCount.set(1);
-        String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0]);
-        return store.getReader(version, pathParts[1]);
-    }
-    
-    /**
-     * Get a ContentWriter to a file.
-     * @param path The path to the file.
-     * @return A ContentWriter.
-     */
-    public ContentWriter getWriter(String path)
-    {
-        fLookupCount.set(1);
-        String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0]);
-        return store.getWriter(pathParts[1]);
-    }
-    
-    /**
      * Get a listing of a directory.
      * @param version The version to look under.
      * @param path The path to the directory.
@@ -819,15 +770,6 @@ public class AVMRepository
         return pathParts;
     }
 
-    /**
-     * Get the path to file storage.
-     * @return The root path of file storage.
-     */
-    public String getStorageRoot()
-    {
-        return fStorage;
-    }
-    
     /**
      * Make a directory into a primary indirection.
      * @param path The full path.

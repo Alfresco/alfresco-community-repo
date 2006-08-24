@@ -199,11 +199,7 @@
 		</property>
 	</bean>
 
-	<bean id="avmRepository" class="org.alfresco.repo.avm.AVMRepository"
-		init-method="init">
-		<property name="storage">
-			<value>${avm.storage}</value>
-		</property>
+	<bean id="avmRepository" class="org.alfresco.repo.avm.AVMRepository">
 		<property name="nodeIssuer">
 			<ref bean="nodeIssuer"/>
 		</property>

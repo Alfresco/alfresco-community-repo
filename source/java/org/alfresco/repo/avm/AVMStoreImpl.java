@@ -268,7 +268,6 @@ class AVMStoreImpl implements AVMStore, Serializable
                 "UTF-8"));
         ContentWriter writer = getWriter(AVMNodeConverter.ExtendAVMPath(path, name));
         writer.putContent(data);
-        file.setContentData(writer.getContentData());
     }
 
     /**
@@ -302,6 +301,12 @@ class AVMStoreImpl implements AVMStore, Serializable
     public InputStream getInputStream(int version, String path)
     {
         ContentReader reader = getReader(version, path);
+        if (reader == null)
+        {
+            // TODO This is wrong, wrong, wrong. Do something about it
+            // sooner rather than later.
+            throw new AVMNotFoundException(path + " has no content.");
+        }
         return reader.getContentInputStream();
         /*
         Lookup lPath = lookup(version, path, false);
@@ -323,7 +328,7 @@ class AVMStoreImpl implements AVMStore, Serializable
      * @param path The path to the file.
      * @return A ContentReader.
      */
-    public ContentReader getReader(int version, String path)
+    private ContentReader getReader(int version, String path)
     {
         NodeRef nodeRef = AVMNodeConverter.ToNodeRef(version, fName + ":" + path);
         return AVMContext.fgInstance.getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT);
@@ -334,11 +339,12 @@ class AVMStoreImpl implements AVMStore, Serializable
      * @param path The path to the file.
      * @return A ContentWriter.
      */
-    public ContentWriter getWriter(String path)
+    private ContentWriter getWriter(String path)
     {
         NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, fName + ":" + path);
         ContentWriter writer = 
             AVMContext.fgInstance.getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        // TODO This can't perform very well.
         setContentData(path, writer.getContentData());
         return writer;
     }

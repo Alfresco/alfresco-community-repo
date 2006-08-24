@@ -1507,6 +1507,8 @@ public class JBPMEngine extends BPMEngine
         workflowInstance.id = createGlobalId(new Long(instance.getId()).toString());
         workflowInstance.definition = createWorkflowDefinition(instance.getProcessDefinition());
         workflowInstance.active = !instance.hasEnded();
+        workflowInstance.startDate = instance.getStart();
+        workflowInstance.endDate = instance.getEnd();
         return workflowInstance;
     }
 

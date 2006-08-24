@@ -50,6 +50,7 @@ public class WorkflowDeployer implements ApplicationListener
     public static final String ENGINE_ID = "engineId";
     public static final String LOCATION = "location";
     public static final String MIMETYPE = "mimetype";
+    public static final String REDEPLOY = "redeploy";
     
     // Dependencies
     private TransactionService transactionService;
@@ -139,13 +140,14 @@ public class WorkflowDeployer implements ApplicationListener
                     {
                         throw new WorkflowException("Workflow definition location must be provided");
                     }
+                    Boolean redeploy = Boolean.valueOf(workflowDefinition.getProperty(REDEPLOY));
                     String mimetype = workflowDefinition.getProperty(MIMETYPE);
 
                     // retrieve input stream on workflow definition
                     ClassPathResource workflowResource = new ClassPathResource(location);
                     
                     // deploy workflow definition
-                    if (workflowService.isDefinitionDeployed(engineId, workflowResource.getInputStream(), mimetype))
+                    if (!redeploy && workflowService.isDefinitionDeployed(engineId, workflowResource.getInputStream(), mimetype))
                     {
                         if (logger.isDebugEnabled())
                             logger.debug("Workflow deployer: Definition '" + location + "' already deployed");

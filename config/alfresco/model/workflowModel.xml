@@ -2,10 +2,6 @@
 
 <model name="wf:workflowmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
-   <description>Content-oriented Workflows Model</description>
-   <author>Alfresco</author>
-   <version>0.1</version>
-
    <imports>
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
       <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
@@ -75,10 +71,6 @@
 
       </type>
 
-
-      <!--                               -->
-      <!--  Basic Review & Approve Tasks -->               
-      <!--                               -->
       
       <type name="wf:reviewTask">
          <title>Review Task</title>
@@ -92,6 +84,75 @@
             
          </overrides>
 
+      </type>
+
+
+
+      <!--                               -->
+      <!--  Adhoc Tasks -->               
+      <!--                               -->
+      
+      
+      <type name="wf:baseAdhocTask">
+         <parent>bpm:workflowTask</parent>
+
+         <properties>
+            <property name="wf:adhocDescription">
+               <title>Description</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="wf:submitAdhocTask">
+         <title>Submit Adhoc Task</title>
+         <parent>wf:baseAdhocTask</parent>
+         
+         <properties>
+            <property name="wf:adhocDueDate">
+               <title>Due Date</title>
+               <type>d:date</type>
+            </property>
+
+            <property name="wf:adhocPriority">
+               <title>Priority</title>
+               <type>d:int</type>
+               <default>2</default>
+               <constraints>
+                  <constraint ref="bpm:allowedPriority"/>
+               </constraints>
+            </property>
+         
+            <property name="wf:notifyMe">
+               <title>Email Notification</title>
+               <type>d:boolean</type>
+            </property>
+         </properties>
+
+         <associations>
+            <association name="wf:assignee">
+               <title>Assignee</title>
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:person</class>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+         </associations>
+      </type>
+
+      <type name="wf:adhocTask">
+         <title>Adhoc Task</title>
+         <parent>wf:baseAdhocTask</parent>
+      </type>
+
+      <type name="wf:completedTask">
+         <title>Completed Adhoc Task</title>
+         <parent>wf:baseAdhocTask</parent>
       </type>
    
    </types>

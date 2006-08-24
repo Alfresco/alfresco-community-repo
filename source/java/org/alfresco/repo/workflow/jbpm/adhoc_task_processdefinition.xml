@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:adhoc">
+
+   <swimlane name="initiator"/>
+
+   <start-state name="start">
+      <task name="wf:submitAdhocTask" swimlane="initiator">
+        <controller>
+          <variable name="assignee" access="write" mapped-name="wf:assignee"/>
+          <variable name="adhocduedate" access="write" mapped-name="wf:adhocDueDate"/>
+          <variable name="adhocpriority" access="write" mapped-name="wf:adhocPriority"/>
+          <variable name="adhocdescription" access="write" mapped-name="wf:adhocDescription"/>
+          <variable name="notify" access="write" mapped-name="wf:notifyMe"/>
+          <variable name="package" access="write" mapped-name="bpm:package"/>
+          <variable name="context" access="write" mapped-name="bpm:context"/>
+        </controller>
+      </task>
+      <transition name="" to="adhoc"/>
+   </start-state>
+
+   <swimlane name="assignee">
+      <assignment actor-id="#{assignee.properties['cm:userName']}"/>
+   </swimlane>
+   
+   <task-node name="adhoc">
+      <event type="task-create">
+         <script>
+            taskInstance.dueDate = adhocduedate;
+            taskInstance.priority = adhocpriority;
+         </script>
+      </event>
+      <task name="wf:adhocTask" swimlane="assignee">
+         <controller>
+            <variable name="adhocdescription" access="read" mapped-name="wf:adhocDescription"/>
+         </controller>
+      </task>
+      <transition name="" to="completed">
+         <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+           <script>
+              if (notify)
+              {
+                 var mail = actions.create("mail");
+                 mail.parameters.to = initiator.properties["cm:email"];
+                 mail.parameters.subject = "Adhoc Task " + adhocDescription;
+                 mail.parameters.from = assignee.properties["cm:email"];
+                 mail.parameters.text = "It's done";
+                 mail.execute(package);
+              }
+           </script>
+         </action>
+      </transition>
+   </task-node>
+   
+   <task-node name="completed">
+      <task name="wf:completedTask" swimlane="initiator">
+         <controller>
+            <variable name="adhocdescription" access="read" mapped-name="wf:adhocDescription"/>
+         </controller>
+      </task>
+      <transition name="" to="end"/>
+   </task-node>
+      
+   <end-state name="end"/>
+   
+</process-definition>

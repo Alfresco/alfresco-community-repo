@@ -16,6 +16,8 @@
  */
 package org.alfresco.service.cmr.workflow;
 
+import java.util.Date;
+
 
 /**
  * Workflow Instance Data Object
@@ -35,6 +37,15 @@ public class WorkflowInstance
     /** Workflow Definition */
     public WorkflowDefinition definition;
 
+    /** Start Task Instance (optional) */
+    public WorkflowTask startTask;
+
+    /** Workflow Start Date */
+    public Date startDate;
+    
+    /** Workflow End Date */
+    public Date endDate;
+    
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */

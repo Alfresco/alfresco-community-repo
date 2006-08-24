@@ -17,9 +17,7 @@
 package org.alfresco.web.templating;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import javax.xml.parsers.*;
 
@@ -110,10 +108,18 @@ public final class TemplatingService
 	    final ObjectInputStream in = new ObjectInputStream(contentIn);
 	    try
 	    {
-		final List<TemplateType> tt = (List<TemplateType>)in.readObject();
-		for (TemplateType t : tt)
+		while (true)
 		{
-		    TemplatingService.INSTANCE.registerTemplateType(t);
+		    try
+		    {
+			final TemplateType tt = (TemplateType)in.readObject();
+			TemplatingService.INSTANCE.registerTemplateType(tt);
+		    }
+		    catch (EOFException eof)
+		    {
+			break;
+		    }
+
 		}
 		in.close();
 	    }
@@ -135,7 +141,10 @@ public final class TemplatingService
 	    if (!CONFIG_FILE.exists())
 		CONFIG_FILE.createNewFile();
 	    final ObjectOutputStream out = new ObjectOutputStream(contentOut);
-	    out.writeObject(TemplatingService.INSTANCE.getTemplateTypes());
+	    for (TemplateType tt : TemplatingService.INSTANCE.getTemplateTypes())
+	    {
+		out.writeObject(tt);
+	    }
 	    out.close();
 	}
     }
@@ -152,8 +161,8 @@ public final class TemplatingService
     private static final Log LOGGER = LogFactory.getLog(TemplatingService.class);
     private static TemplatingService INSTANCE;
 
-    private ArrayList<TemplateType> templateTypes = 
-	new ArrayList<TemplateType>();
+    private HashMap<String, TemplateType> templateTypes = 
+	new HashMap<String, TemplateType>();
     private final ContentService contentService;
     private final NodeService nodeService;
     private final FileFolderService fileFolderService;
@@ -192,32 +201,26 @@ public final class TemplatingService
 	    catch (Throwable t)
 	    {
 		LOGGER.error(t);
+		t.printStackTrace();
 	    }
 	}
 
 	return TemplatingService.INSTANCE;
     }
 
-    public List<TemplateType> getTemplateTypes()
+    public Collection<TemplateType> getTemplateTypes()
     {
-	return this.templateTypes;
+	return this.templateTypes.values();
     }
 
     public TemplateType getTemplateType(final String name)
     {
-	final Iterator it = this.templateTypes.iterator();
-	while (it.hasNext())
-	{
-	    final TemplateType tt = (TemplateType)it.next();
-	    if (tt.getName().equals(name))
-		return tt;
-	}
-	return null;
+	return this.templateTypes.get(name);
     }
 
     public void registerTemplateType(final TemplateType tt)
     {
-	this.templateTypes.add(tt);
+	this.templateTypes.put(tt.getName(), tt);
 	try
 	{
 	    Configuration.save();

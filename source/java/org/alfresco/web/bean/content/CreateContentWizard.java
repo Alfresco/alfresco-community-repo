@@ -17,7 +17,7 @@
 package org.alfresco.web.bean.content;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -165,14 +165,15 @@ public class CreateContentWizard extends BaseContentWizard
 
     public List<SelectItem> getCreateTemplateTypes()
     {
-	List<TemplateType> ttl = TemplatingService.getInstance().getTemplateTypes();
+	Collection<TemplateType> ttl = TemplatingService.getInstance().getTemplateTypes();
 	List<SelectItem> sil = new ArrayList<SelectItem>(ttl.size());
-	Iterator it = ttl.iterator();
-	while (it.hasNext())
+	for (TemplateType tt : ttl)
 	{
-	    TemplateType tt = (TemplateType)it.next();
 	    sil.add(new SelectItem(tt.getName(), tt.getName()));
 	}
+	
+	QuickSort sorter = new QuickSort(sil, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+	sorter.sort();
 	return sil;
     }
    

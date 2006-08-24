@@ -197,4 +197,9 @@ public class TemplateTypeImpl
     {
 	return this.outputMethods;
     }
+
+    public int hashCode() 
+    {
+	return this.getName().hashCode();
+    }
 }

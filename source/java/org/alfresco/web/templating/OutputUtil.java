@@ -52,6 +52,11 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.w3c.dom.Document;
 import org.alfresco.repo.avm.*;
 
+/**
+ * temporary home of generate and regenerate functionality until i figure
+ * out a more general way of triggering generate in TemplateOutputMethod
+ * every time the xml file is saved.
+ */
 public class OutputUtil
 {
     private static final Log LOGGER = LogFactory.getLog(OutputUtil.class);

@@ -43,6 +43,8 @@ import org.w3c.dom.events.EventTarget;
 import org.chiba.xml.xforms.connector.http.AbstractHTTPConnector;
 
 /**
+ * Bean for interacting with the chiba processor from the ui using ajax requests.
+ * Manages the chiba bean lifecycle.
  */
 public class XFormsBean
     implements EventListener
@@ -53,21 +55,28 @@ public class XFormsBean
     private InstanceData instanceData = null;
     private ChibaBean chibaBean;
 
+    /** @return the template type */
     public TemplateType getTemplateType()
     {
 	return this.tt;
     }
 
+    /** @param tt the template type */
     public void setTemplateType(final TemplateType tt)
     {
 	this.tt = tt;
     }
 
+    /** @param instanceData the instance data being modified. */
     public void setInstanceData(final InstanceData instanceData)
     {
 	this.instanceData = instanceData;
     }
 
+    /**
+     * Initializes the chiba process with the xform and registers any necessary
+     * event listeners.
+     */
     public void init()
 	throws XFormsException
     {
@@ -81,6 +90,7 @@ public class XFormsBean
         {
 	    LOGGER.debug("initializing " + this + 
 			 " with tt " + tt.getName());
+	    //XXXarielb generalize this
 	    final XFormsInputMethod tim = (XFormsInputMethod)
 		tt.getInputMethods().get(0);
 	    final Document form = tim.getXForm(instanceData.getContent(), tt);
@@ -88,6 +98,8 @@ public class XFormsBean
 	    this.chibaBean.init();
 	    EventTarget et = (EventTarget)
 		this.chibaBean.getXMLContainer().getDocumentElement();
+	    //XXXarielb register more listener for to do validation and do something
+	    //with the results.
 	    et.addEventListener(XFormsEventFactory.SUBMIT_ERROR, this, true);
 	}
 	catch (FormBuilderException fbe)
@@ -96,6 +108,10 @@ public class XFormsBean
 	}
     }
 
+    /**
+     * Writes the xform out to the http servlet response.  This allows
+     * us to use the browser to parse the xform using XMLHttpRequest.
+     */
     public void getXForm() 
 	throws IOException,
 	       XFormsException
@@ -133,11 +149,9 @@ public class XFormsBean
     }
 
     /**
-     * sets the value of a control in the processor.
+     * fires an action associated with a trigger.
      *
      * @param id the id of the control in the host document
-     * @param value the new value
-     * @return the list of events that may result through this action
      */
     public void fireAction() 
 	throws XFormsException, IOException
@@ -154,11 +168,7 @@ public class XFormsBean
     }
 
     /**
-     * sets the value of a control in the processor.
-     *
-     * @param id the id of the control in the host document
-     * @param value the new value
-     * @return the list of events that may result through this action
+     * handles submits and sets the instance data.
      */
     public void handleAction() 
 	throws Exception
@@ -175,6 +185,7 @@ public class XFormsBean
 	out.close();
     }
 
+    //XXXarielb placeholder for error handling
     public void handleEvent(Event e)
     {
 	LOGGER.debug("handleEvent " + e);
@@ -184,9 +195,6 @@ public class XFormsBean
      * stores cookies that may exist in request and passes them on to processor for usage in
      * HTTPConnectors. Instance loading and submission then uses these cookies. Important for
      * applications using auth.
-     *
-     * @param request the servlet request
-     * @param adapter the Chiba adapter instance
      */
     private static void storeCookies(final javax.servlet.http.Cookie[] cookiesIn,
 				     final ChibaBean chibaBean){

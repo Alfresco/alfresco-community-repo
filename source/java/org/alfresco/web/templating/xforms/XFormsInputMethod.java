@@ -43,12 +43,17 @@ public class XFormsInputMethod
     {
     }
 
+    /**
+     * Generates html text which bootstraps the JavaScript code that will
+     * call back into the XFormsBean and get the xform and build the ui.
+     */
     public void generate(final InstanceData instanceData, 
 			 final TemplateType tt,
 			 final Writer out)
     {
 	final TemplatingService ts = TemplatingService.getInstance();
 	final FacesContext fc = FacesContext.getCurrentInstance();
+	//make the XFormsBean available for this session
 	final XFormsBean xforms = (XFormsBean)
 	    FacesHelper.getManagedBean(fc, "XFormsBean");
 	xforms.setInstanceData(instanceData);
@@ -65,16 +70,20 @@ public class XFormsInputMethod
 	final String cp = fc.getExternalContext().getRequestContextPath();
 
 	final Document result = ts.newDocument();
+
+	// this div is where the ui will write to
 	final Element div = result.createElement("div");
 	div.setAttribute("id", "alf-ui");
 	div.setAttribute("style", "width: 100%; border: solid 0px orange;");
 	result.appendChild(div);
 
+	// a script with config information and globals.
 	Element e = result.createElement("script");
 	e.appendChild(result.createTextNode("djConfig = { isDebug: false };\n" +
 					    "var WEBAPP_CONTEXT = \"" + cp + "\";\n"));
 	div.appendChild(e);
 
+	// include all our scripts, order is significant
 	e = result.createElement("script");
 	e.setAttribute("type", "text/javascript");
 	e.setAttribute("src", cp + "/scripts/tiny_mce/tiny_mce_src.js");
@@ -107,6 +116,9 @@ public class XFormsInputMethod
 //	return name.replaceAll(".+\\:", "");
     }
  
+    /**
+     * Generates the xforms based on the schema.
+     */
     public Document getXForm(Document xmlContent, final TemplateType tt) 
 	throws FormBuilderException
     {

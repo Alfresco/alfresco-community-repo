@@ -18,6 +18,10 @@ package org.alfresco.web.templating;
 
 import org.w3c.dom.Document;
 
+/**
+ * An abstraction layer around the xml content which allows
+ * for reseting the xml content being collected by the input method.
+ */
 public interface InstanceData
 {
     public Document getContent();

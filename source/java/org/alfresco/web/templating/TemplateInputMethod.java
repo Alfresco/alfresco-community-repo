@@ -20,12 +20,21 @@ import org.w3c.dom.Document;
 import java.io.Serializable;
 import java.io.Writer;
 
+/**
+ * Generates a user interface for inputing data into a template.
+ */
 public interface TemplateInputMethod
     extends Serializable
 {
+
+    /**
+     * Generates a user interface for inputing data into this template.
+     *
+     * @param instanceData provides the xml instance data if available.
+     * @param tt the template type to generate for
+     * @param out the writer to write the output to.
+     */
     public void generate(final InstanceData instanceData,
 			 final TemplateType tt,
 			 final Writer out);
-
-    //    public String getSchemaInputURL(final TemplateType tt);
 }

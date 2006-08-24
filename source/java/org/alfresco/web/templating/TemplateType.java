@@ -21,23 +21,41 @@ import java.util.List;
 import java.io.Serializable;
 //import org.alfresco.service.cmr.repository.NodeRef;
 
+/**
+ * Encapsulation of a template type.
+ */
 public interface TemplateType
     extends Serializable
 {
 
+    /** the name of the template, which must be unique within the TemplatingService */
     public String getName();
 
+    /** the xml schema for this template type */
     public Document getSchema();
 
 //    public void setSchemaNodeRef(final NodeRef nodeRef);
 //    
 //    public NodeRef getSchemaNodeRef();
 
+    /** Provides a sample xml file for the schema */
     public Document getSampleXml(final String rootTagName);
 
+    //XXXarielb not used currently and not sure if it's necessary...
+    //    public void addInputMethod(final TemplateInputMethod in);
+
+    /**
+     * Provides a set of input methods for this template.
+     */
     public List<TemplateInputMethod> getInputMethods();
 
+    /**
+     * adds an output method to this template type.
+     */
     public void addOutputMethod(TemplateOutputMethod output);
 
+    /**
+     * Provides the set of output methods for this template.
+     */
     public List<TemplateOutputMethod> getOutputMethods();
 }

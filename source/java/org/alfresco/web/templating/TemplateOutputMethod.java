@@ -20,10 +20,20 @@ import java.io.Serializable;
 import java.io.Writer;
 import org.w3c.dom.Document;
 
+/**
+ * Serializes the xml data to a writer.
+ */
 public interface TemplateOutputMethod
     extends Serializable
 {
 
+    /**
+     * Serializes the xml data in to a presentation format.
+     *
+     * @param xmlContent the xml content to serialize
+     * @param tt the template type that collected the xml content.
+     * @param out the writer to serialize to.
+     */
     public void generate(final Document xmlContent,
 			 final TemplateType tt,
 			 final Writer out)

@@ -47,19 +47,31 @@ import javax.faces.context.FacesContext;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 
+/**
+ * Provides management of template types.
+ */
 public final class TemplatingService
     implements Serializable
 {
 
     ////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Encapsulation of configuration file management.
+     */
     private static class Configuration
     {
-	private final static File CONFIG_FILE  = 
-	    new File(TempFileProvider.getTempDir(), "templating_configuration.xml");
 	
+	/** indicates whether or not the configuration file has been loaded */
 	public static boolean loaded = false;
 
+	/**
+	 * locate the configuration file.  currently it is stored as 
+	 * <tt>templating_config.xml</tt> at the root of the data dictionary.
+	 *
+	 * @return the configuration file, which is currently all the
+	 * <tt>TemplateTypes</tt> serialized using object serialization.
+	 */
 	private static NodeRef getConfigFile()
 	{
 	    final TemplatingService ts = TemplatingService.INSTANCE;
@@ -98,13 +110,18 @@ public final class TemplatingService
 	    return configFileNodeRef;
 	}
 
+	/**
+	 * Load the configuration file into the templating service.
+	 */
 	public static void load()
 	    throws IOException
 	{
 	    final TemplatingService ts = TemplatingService.INSTANCE;
 	    final NodeRef configFileNodeRef = getConfigFile();
 	    FacesContext fc = FacesContext.getCurrentInstance();
-	    final InputStream contentIn = ts.contentService.getReader(configFileNodeRef, ContentModel.TYPE_CONTENT).getContentInputStream();
+	    final InputStream contentIn = 
+		ts.contentService.getReader(configFileNodeRef, 
+					    ContentModel.TYPE_CONTENT).getContentInputStream();
 	    final ObjectInputStream in = new ObjectInputStream(contentIn);
 	    try
 	    {
@@ -125,12 +142,14 @@ public final class TemplatingService
 	    }
 	    catch (ClassNotFoundException cnfe)
 	    {
-	    assert false : cnfe;
 		TemplatingService.LOGGER.error(cnfe);
 	    }
 	    loaded = true;
 	}
 	
+        /**
+	 * Save the current state of the templating service to the configuration file.
+	 */
 	public static void save()
 	    throws IOException
 	{
@@ -138,8 +157,6 @@ public final class TemplatingService
 	    FacesContext fc = FacesContext.getCurrentInstance();
 	    final NodeRef configFileNodeRef = getConfigFile();
 	    final OutputStream contentOut = ts.contentService.getWriter(configFileNodeRef, ContentModel.TYPE_CONTENT, true).getContentOutputStream();
-	    if (!CONFIG_FILE.exists())
-		CONFIG_FILE.createNewFile();
 	    final ObjectOutputStream out = new ObjectOutputStream(contentOut);
 	    for (TemplateType tt : TemplatingService.INSTANCE.getTemplateTypes())
 	    {
@@ -151,18 +168,28 @@ public final class TemplatingService
 
     ////////////////////////////////////////////////////////////////////////////
 
-
+    /**
+     * temporary location of the property on nodes that are xml files created
+     * by templating.
+     */
     public static final org.alfresco.service.namespace.QName TT_QNAME = 
 	org.alfresco.service.namespace.QName.createQName(org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI, "tt");
 
+    /**
+     * temporary location of the property on nodes generated from xml assets.
+     */
     public static final org.alfresco.service.namespace.QName TT_GENERATED_OUTPUT_QNAME = 
 	org.alfresco.service.namespace.QName.createQName(org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI, "tt_generated_output");
 
     private static final Log LOGGER = LogFactory.getLog(TemplatingService.class);
+
+    /** the single instance initialized using spring */
     private static TemplatingService INSTANCE;
 
+    /** internal storage of template types, keyed by the template name */
     private HashMap<String, TemplateType> templateTypes = 
 	new HashMap<String, TemplateType>();
+
     private final ContentService contentService;
     private final NodeService nodeService;
     private final FileFolderService fileFolderService;
@@ -170,6 +197,7 @@ public final class TemplatingService
     private final NamespaceService namespaceService;
     private final SearchService searchService;
 
+    /** instantiated using spring */
     public TemplatingService(final ContentService contentService,
 			     final NodeService nodeService,
 			     final FileFolderService fileFolderService,
@@ -184,11 +212,10 @@ public final class TemplatingService
 	this.namespaceService = namespaceService;
 	this.searchService = searchService;
 	if (INSTANCE == null)
-	{
 	    INSTANCE = this;
-	}
     }
 
+    /** Provides the templating service instance, loads config if necessary */
     public static TemplatingService getInstance()
     {
 	if (!Configuration.loaded)
@@ -208,16 +235,19 @@ public final class TemplatingService
 	return TemplatingService.INSTANCE;
     }
 
+    /** returns all registered template types */
     public Collection<TemplateType> getTemplateTypes()
     {
 	return this.templateTypes.values();
     }
 
+    /** return the template type by name or <tt>null</tt> if not found */
     public TemplateType getTemplateType(final String name)
     {
 	return this.templateTypes.get(name);
     }
 
+    /** registers a template type.  if one exists with the same name, it is replaced */
     public void registerTemplateType(final TemplateType tt)
     {
 	this.templateTypes.put(tt.getName(), tt);
@@ -231,12 +261,19 @@ public final class TemplatingService
 	}
     }
 
+    /** 
+     * instantiate a template type.  for now this will always generate the
+     * xforms implementation, but will at some point be configurable such that
+     * the template type implementation can be configured for the system,
+     * or specified in the gui.
+     */
     public TemplateType newTemplateType(final String name,
 					final NodeRef schemaNodeRef)
     {
 	return new TemplateTypeImpl(name, schemaNodeRef);
     }
 
+    /** utility function for creating a document */
     public Document newDocument()
     {
 	try
@@ -263,6 +300,7 @@ public final class TemplatingService
 //	}
     }
 
+    /** utility function for serializing a node */
     public void writeXML(final Node n, final Writer output)
     {
 	try 
@@ -280,12 +318,14 @@ public final class TemplatingService
 	}
     }
 
+    /** utility function for serializing a node */
     public void writeXML(final Node n, final File output)
 	throws IOException
     {
 	this.writeXML(n, new FileWriter(output));
     }
 
+    /** utility function for serializing a node */
     public String writeXMLToString(final Node n)
     {
 	final StringWriter result = new StringWriter();
@@ -293,6 +333,7 @@ public final class TemplatingService
 	return result.toString();
     }
 
+    /** utility function for parsing xml */
     public Document parseXML(final String source)
 	throws ParserConfigurationException,
 	SAXException,
@@ -301,6 +342,7 @@ public final class TemplatingService
 	return this.parseXML(new ByteArrayInputStream(source.getBytes()));
     }
 
+    /** utility function for parsing xml */
     public Document parseXML(final NodeRef nodeRef)
 	throws ParserConfigurationException,
 	SAXException,
@@ -312,6 +354,7 @@ public final class TemplatingService
 	return this.parseXML(in);
     }
 
+    /** utility function for parsing xml */
     public Document parseXML(final File source)
 	throws ParserConfigurationException,
 	SAXException,
@@ -320,6 +363,7 @@ public final class TemplatingService
 	return this.parseXML(new FileInputStream(source));
     }
 
+    /** utility function for parsing xml */
     public Document parseXML(final InputStream source)
 	throws ParserConfigurationException,
 	SAXException,

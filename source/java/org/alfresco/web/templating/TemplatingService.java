@@ -39,6 +39,15 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.model.ContentModel;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.model.*;
+import org.alfresco.service.namespace.NamespaceService;
+import javax.faces.context.FacesContext;
+import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.repository.Repository;
 
 public final class TemplatingService
     implements Serializable
@@ -51,37 +60,82 @@ public final class TemplatingService
 	private final static File CONFIG_FILE  = 
 	    new File(TempFileProvider.getTempDir(), "templating_configuration.xml");
 	
+	public static boolean loaded = false;
+
+	private static NodeRef getConfigFile()
+	{
+	    final TemplatingService ts = TemplatingService.INSTANCE;
+	    LOGGER.debug("loading config file");
+	    // get the template from the special Email Templates folder
+	    FacesContext fc = FacesContext.getCurrentInstance();
+	    String xpath = (Application.getRootPath(fc) + "/" + 
+			    Application.getGlossaryFolderName(fc));
+	    NodeRef rootNodeRef = ts.nodeService.getRootNode(Repository.getStoreRef());
+	    List<NodeRef> results = ts.searchService.selectNodes(rootNodeRef, xpath, null, ts.namespaceService, false);
+	    if (results.size() != 1)
+		throw new RuntimeException("expected one result for " + xpath);
+	    NodeRef dataDictionaryNodeRef =  results.get(0);
+	    LOGGER.debug("loaded data dictionary " + dataDictionaryNodeRef);
+	    NodeRef configFileNodeRef = null;
+	    try
+	    {
+		configFileNodeRef = ts.fileFolderService.create(dataDictionaryNodeRef,
+								"templating_configuration.xml",
+								ContentModel.TYPE_CONTENT).getNodeRef();
+	    }
+	    catch (FileExistsException fee)
+	    {
+		List<FileInfo> l = ts.fileFolderService.search(dataDictionaryNodeRef,
+							       "templating_configuration.xml",
+							       true,
+							       false,
+							       false);
+		if (l.size() != 1)
+		{
+		    throw new RuntimeException("expected one templating_configuration.xml in " + dataDictionaryNodeRef);
+		}
+		configFileNodeRef= l.get(0).getNodeRef();
+	    }
+	    LOGGER.debug("loaded config file " + configFileNodeRef);
+	    return configFileNodeRef;
+	}
+
 	public static void load()
 	    throws IOException
 	{
-	    if (!CONFIG_FILE.exists())
-		return;
-	    final TemplatingService ts = TemplatingService.getInstance();
-	    final ObjectInputStream out = new ObjectInputStream(new FileInputStream(CONFIG_FILE));
+	    final TemplatingService ts = TemplatingService.INSTANCE;
+	    final NodeRef configFileNodeRef = getConfigFile();
+	    FacesContext fc = FacesContext.getCurrentInstance();
+	    final InputStream contentIn = ts.contentService.getReader(configFileNodeRef, ContentModel.TYPE_CONTENT).getContentInputStream();
+	    final ObjectInputStream in = new ObjectInputStream(contentIn);
 	    try
 	    {
-		final List<TemplateType> tt = (List<TemplateType>)out.readObject();
+		final List<TemplateType> tt = (List<TemplateType>)in.readObject();
 		for (TemplateType t : tt)
-		    {
-			ts.registerTemplateType(t);
-		    }
-		out.close();
+		{
+		    TemplatingService.INSTANCE.registerTemplateType(t);
+		}
+		in.close();
 	    }
 	    catch (ClassNotFoundException cnfe)
 	    {
-		assert false : cnfe;
+	    assert false : cnfe;
 		TemplatingService.LOGGER.error(cnfe);
 	    }
+	    loaded = true;
 	}
 	
 	public static void save()
 	    throws IOException
 	{
+	    final TemplatingService ts = TemplatingService.INSTANCE;
+	    FacesContext fc = FacesContext.getCurrentInstance();
+	    final NodeRef configFileNodeRef = getConfigFile();
+	    final OutputStream contentOut = ts.contentService.getWriter(configFileNodeRef, ContentModel.TYPE_CONTENT, true).getContentOutputStream();
 	    if (!CONFIG_FILE.exists())
 		CONFIG_FILE.createNewFile();
-	    final TemplatingService ts = TemplatingService.getInstance();
-	    final ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(CONFIG_FILE));
-	    out.writeObject(ts.getTemplateTypes());
+	    final ObjectOutputStream out = new ObjectOutputStream(contentOut);
+	    out.writeObject(TemplatingService.INSTANCE.getTemplateTypes());
 	    out.close();
 	}
     }
@@ -101,26 +155,46 @@ public final class TemplatingService
     private ArrayList<TemplateType> templateTypes = 
 	new ArrayList<TemplateType>();
     private final ContentService contentService;
+    private final NodeService nodeService;
+    private final FileFolderService fileFolderService;
+    private final DictionaryService dictionaryService;
+    private final NamespaceService namespaceService;
+    private final SearchService searchService;
 
-    public TemplatingService(final ContentService contentService)
+    public TemplatingService(final ContentService contentService,
+			     final NodeService nodeService,
+			     final FileFolderService fileFolderService,
+			     final DictionaryService dictionaryService,
+			     final NamespaceService namespaceService,
+			     final SearchService searchService)
     {
 	this.contentService = contentService;
+	this.nodeService = nodeService;
+	this.fileFolderService = fileFolderService;
+	this.dictionaryService = dictionaryService;
+	this.namespaceService = namespaceService;
+	this.searchService = searchService;
 	if (INSTANCE == null)
 	{
 	    INSTANCE = this;
-	    try
-	    {
-		Configuration.load();
-	    }
-	    catch (IOException ioe)
-	    {
-		LOGGER.error(ioe);
-	    }
 	}
     }
 
     public static TemplatingService getInstance()
     {
+	if (!Configuration.loaded)
+	{
+	    LOGGER.debug("loading configuration");
+	    try
+	    {
+		Configuration.load();
+	    }
+	    catch (Throwable t)
+	    {
+		LOGGER.error(t);
+	    }
+	}
+
 	return TemplatingService.INSTANCE;
     }
 
@@ -172,7 +246,7 @@ public final class TemplatingService
 	}
 	catch (ParserConfigurationException pce)
 	{
-	    assert false : pce;
+	assert false : pce;
 	    LOGGER.error(pce);
 	    return null;
 	}
@@ -199,7 +273,7 @@ public final class TemplatingService
 	catch (TransformerException te)
         {
 	    te.printStackTrace();
-	    assert false : te.getMessage();
+	assert false : te.getMessage();
 	}
     }
 
@@ -218,16 +292,16 @@ public final class TemplatingService
 
     public Document parseXML(final String source)
 	throws ParserConfigurationException,
-	       SAXException,
-	       IOException
+	SAXException,
+	IOException
     {
 	return this.parseXML(new ByteArrayInputStream(source.getBytes()));
     }
 
     public Document parseXML(final NodeRef nodeRef)
 	throws ParserConfigurationException,
-	       SAXException,
-	       IOException
+	SAXException,
+	IOException
     {
 	final ContentReader contentReader = 
 	    this.contentService.getReader(nodeRef, ContentModel.TYPE_CONTENT);
@@ -237,16 +311,16 @@ public final class TemplatingService
 
     public Document parseXML(final File source)
 	throws ParserConfigurationException,
-	       SAXException,
-	       IOException
+	SAXException,
+	IOException
     {
 	return this.parseXML(new FileInputStream(source));
     }
 
     public Document parseXML(final InputStream source)
 	throws ParserConfigurationException,
-	       SAXException,
-	       IOException
+	SAXException,
+	IOException
     {
 	final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 	dbf.setNamespaceAware(true);

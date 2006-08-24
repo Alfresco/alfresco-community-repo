@@ -14,15 +14,16 @@ tinyMCE.init({
   theme : "advanced",
   mode : "exact",
       //	elements : "editor",
+      encoding: null,
   save_callback : "saveContent",
   add_unload_trigger: false,
   add_form_submit_trigger: false,
   theme_advanced_toolbar_location : "top",
   theme_advanced_toolbar_align : "left",
   theme_advanced_buttons1_add : "fontselect,fontsizeselect",
-  theme_advanced_buttons2_add : "separator,forecolor,backcolor",
-  theme_advanced_disable: "styleselect",
-  extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style]"
+  theme_advanced_buttons2_add : "separator,forecolor,backcolor"//,
+      //      theme_advanced_disable: "styleselect"//,
+      //  extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style]"
 });
 
 //dojo.provide("alfresco.xforms.textarea");

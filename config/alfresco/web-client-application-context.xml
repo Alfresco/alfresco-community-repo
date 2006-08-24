@@ -36,6 +36,21 @@
       <constructor-arg>
          <ref bean="ContentService" />
       </constructor-arg>
+      <constructor-arg>
+         <ref bean="NodeService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="FileFolderService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="DictionaryService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="NamespaceService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="SearchService" />
+      </constructor-arg>
    </bean>
    
 </beans>

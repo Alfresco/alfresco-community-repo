@@ -293,7 +293,12 @@ public class StartWorkflowWizard extends BaseWizardBean
          List<WorkflowDefinition> workflowDefs =  this.workflowService.getDefinitions();
          for (WorkflowDefinition workflowDef : workflowDefs)
          {
-            this.availableWorkflows.add(new SelectItem(workflowDef.id, workflowDef.title));
+            String label = workflowDef.title;
+            if (workflowDef.description != null && workflowDef.description.length() > 0)
+            {
+               label = label + " (" + workflowDef.description + ")";
+            }
+            this.availableWorkflows.add(new SelectItem(workflowDef.id, label));
             this.workflows.put(workflowDef.id, workflowDef);
          }
          

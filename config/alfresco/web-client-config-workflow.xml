@@ -4,22 +4,24 @@
    <!-- Properties -->
    <!--            -->
    
+   <!-- Generic workflow task -->
+   
    <config evaluator="node-type" condition="bpm:workflowTask">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
          <show-property name="bpm:taskId" ignore-if-missing="false" />
-         <show-property name="bpm:startDate" ignore-if-missing="false" />
          <show-property name="bpm:status" ignore-if-missing="false" />
          <show-property name="bpm:dueDate" ignore-if-missing="false" />
          <show-property name="bpm:priority" ignore-if-missing="false" />
       </property-sheet>
    </config>
    
+   <!-- Review and Approve workflow tasks -->
+   
    <config evaluator="node-type" condition="wf:reviewTask">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
          <show-property name="bpm:taskId" ignore-if-missing="false" />
-         <show-property name="bpm:startDate" ignore-if-missing="false" />
          <show-property name="bpm:status" ignore-if-missing="false" />
          <show-property name="bpm:dueDate" ignore-if-missing="false" />
          <show-property name="bpm:priority" ignore-if-missing="false" />
@@ -33,6 +35,41 @@
          <show-property name="wf:reviewDueDate" ignore-if-missing="false" />
          <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
          <show-association name="wf:reviewer" ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+   
+   <!-- Ad hoc workflow tasks -->
+
+   <config evaluator="node-type" condition="wf:submitAdhocTask">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wf:adhocDescription" ignore-if-missing="false" />
+         <show-property name="wf:adhocPriority" ignore-if-missing="false" />
+         <show-property name="wf:adhocDueDate" ignore-if-missing="false" />
+         <show-property name="wf:notifyMe" />
+         <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+         <show-association name="wf:assignee" ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wf:adhocTask">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" ignore-if-missing="false" />
+         <show-property name="wf:adhocDescription" ignore-if-missing="false" />
+         <show-property name="bpm:status" ignore-if-missing="false" />
+         <show-property name="bpm:dueDate" ignore-if-missing="false" />
+         <show-property name="bpm:priority" ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wf:completedAdhocTask">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" ignore-if-missing="false" />
+         <show-property name="wf:adhocDescription" ignore-if-missing="false" />
+         <show-property name="bpm:dueDate" ignore-if-missing="false" />
+         <show-property name="bpm:priority" ignore-if-missing="false" />
       </property-sheet>
    </config>
    
@@ -117,7 +154,6 @@
             <action idref="details_doc" />
             <action idref="checkout_doc" />
             <action idref="cancelcheckout_doc" />
-            <action idref="remove_package_item" />
          </action-group>
          
          <action-group id="workflow_collection_actions">

@@ -265,6 +265,8 @@ public class RepositoryWebService extends AbstractWebService implements
             return queryResult;
         } catch (Throwable e)
         {
+            e.printStackTrace();
+            
             // rollback the transaction
             try
             {

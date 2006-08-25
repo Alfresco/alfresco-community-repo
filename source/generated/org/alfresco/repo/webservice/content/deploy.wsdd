@@ -248,14 +248,6 @@
         encodingStyle=""
       />
       <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:>Store>address"
-        type="java:java.lang.String"
-        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/service/content/1.0"
         qname="ns:ContentFault"
         type="java:org.alfresco.repo.webservice.content.ContentFault"

@@ -202,14 +202,14 @@ public class CMLAddAspect  implements java.io.Serializable {
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/cml/1.0", "where"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "Predicate"));
         elemField.setMinOccurs(0);
-        elemField.setNillable(false);
+        elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("where_id");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/cml/1.0", "where_id"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setMinOccurs(0);
-        elemField.setNillable(false);
+        elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
     }
 

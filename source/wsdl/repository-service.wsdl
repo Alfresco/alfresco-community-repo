@@ -192,6 +192,7 @@
             <sequence>
                <element name="statement" type="xsd:string"/>
                <element name="updateCount" type="cms:ResultSet" nillable="true"/>
+               <element name="sourceId" type="xsd:string" nillable="true"/>
                <element name="source" type="cms:Reference" nillable="true"/>
                <element name="destination" type="cms:Reference" nillable="true"/>
             </sequence>

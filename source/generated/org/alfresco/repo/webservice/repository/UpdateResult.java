@@ -12,6 +12,8 @@ public class UpdateResult  implements java.io.Serializable {
 
     private org.alfresco.repo.webservice.types.ResultSet updateCount;
 
+    private java.lang.String sourceId;
+
     private org.alfresco.repo.webservice.types.Reference source;
 
     private org.alfresco.repo.webservice.types.Reference destination;
@@ -22,10 +24,12 @@ public class UpdateResult  implements java.io.Serializable {
     public UpdateResult(
            java.lang.String statement,
            org.alfresco.repo.webservice.types.ResultSet updateCount,
+           java.lang.String sourceId,
            org.alfresco.repo.webservice.types.Reference source,
            org.alfresco.repo.webservice.types.Reference destination) {
            this.statement = statement;
            this.updateCount = updateCount;
+           this.sourceId = sourceId;
            this.source = source;
            this.destination = destination;
     }
@@ -68,6 +72,26 @@ public class UpdateResult  implements java.io.Serializable {
      */
     public void setUpdateCount(org.alfresco.repo.webservice.types.ResultSet updateCount) {
         this.updateCount = updateCount;
+    }
+
+
+    /**
+     * Gets the sourceId value for this UpdateResult.
+     * 
+     * @return sourceId
+     */
+    public java.lang.String getSourceId() {
+        return sourceId;
+    }
+
+
+    /**
+     * Sets the sourceId value for this UpdateResult.
+     * 
+     * @param sourceId
+     */
+    public void setSourceId(java.lang.String sourceId) {
+        this.sourceId = sourceId;
     }
 
 
@@ -128,6 +152,9 @@ public class UpdateResult  implements java.io.Serializable {
             ((this.updateCount==null && other.getUpdateCount()==null) || 
              (this.updateCount!=null &&
               this.updateCount.equals(other.getUpdateCount()))) &&
+            ((this.sourceId==null && other.getSourceId()==null) || 
+             (this.sourceId!=null &&
+              this.sourceId.equals(other.getSourceId()))) &&
             ((this.source==null && other.getSource()==null) || 
              (this.source!=null &&
               this.source.equals(other.getSource()))) &&
@@ -150,6 +177,9 @@ public class UpdateResult  implements java.io.Serializable {
         }
         if (getUpdateCount() != null) {
             _hashCode += getUpdateCount().hashCode();
+        }
+        if (getSourceId() != null) {
+            _hashCode += getSourceId().hashCode();
         }
         if (getSource() != null) {
             _hashCode += getSource().hashCode();
@@ -177,6 +207,12 @@ public class UpdateResult  implements java.io.Serializable {
         elemField.setFieldName("updateCount");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/repository/1.0", "updateCount"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "ResultSet"));
+        elemField.setNillable(true);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("sourceId");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/repository/1.0", "sourceId"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();

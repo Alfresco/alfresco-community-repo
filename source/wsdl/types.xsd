@@ -243,8 +243,8 @@
 			<xsd:element name="nodes" type="cms:Reference" maxOccurs="unbounded" minOccurs="0" nillable="true">
 			</xsd:element>
 			<xsd:sequence>
-				<xsd:element name="store" type="cms:Store" minOccurs="0" nillable="true"></xsd:element>
-				<xsd:element name="query" type="cms:Query" minOccurs="0" nillable="true"></xsd:element>
+				<xsd:element name="store" type="cms:Store" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
+				<xsd:element name="query" type="cms:Query" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
 			</xsd:sequence>
 		</xsd:choice>
 	</xsd:complexType>

@@ -94,8 +94,8 @@
 				<xsd:complexType>
 					<xsd:sequence>
 						<xsd:choice>
-							<xsd:element name="from" type="cms:Reference"></xsd:element>
-							<xsd:element name="from_id" type="xsd:string"></xsd:element>
+							<xsd:element name="from" type="cms:Reference" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
+							<xsd:element name="from_id" type="xsd:string" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
 						</xsd:choice>
 						<xsd:group ref="cml:Where"></xsd:group>
 					</xsd:sequence>
@@ -159,31 +159,31 @@
 	
 	<xsd:group name="Where">
 		<xsd:choice>
-			<xsd:element name="where" type="cms:Predicate"></xsd:element>
-			<xsd:element name="where_id" type="xsd:string"></xsd:element>
+			<xsd:element name="where" type="cms:Predicate" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
+			<xsd:element name="where_id" type="xsd:string" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
 		</xsd:choice>
 	</xsd:group>
 	
 	<xsd:group name="From">
 		<xsd:choice>
-			<xsd:element name="from" type="cms:Predicate"></xsd:element>
-			<xsd:element name="from_id" type="xsd:string"></xsd:element>
+			<xsd:element name="from" type="cms:Predicate" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
+			<xsd:element name="from_id" type="xsd:string" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
 		</xsd:choice>
 	</xsd:group>
 
 	<xsd:group name="To">
 		<xsd:choice>
-			<xsd:element name="to" type="cms:Predicate"></xsd:element>
-			<xsd:element name="to_id" type="xsd:string"></xsd:element>
+			<xsd:element name="to" type="cms:Predicate" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
+			<xsd:element name="to_id" type="xsd:string" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
 		</xsd:choice>
 	</xsd:group>
 
 	<xsd:group name="ToParent">
 		<xsd:choice>
-			<xsd:element name="to" type="cms:ParentReference"></xsd:element>
+			<xsd:element name="to" type="cms:ParentReference" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
 			<xsd:sequence>
-				<xsd:element name="to_id" type="xsd:string"></xsd:element>
-				<xsd:group ref="cms:ChildAssociation"></xsd:group>
+				<xsd:element name="to_id" type="xsd:string" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
+				<xsd:group ref="cms:ChildAssociation" maxOccurs="1" minOccurs="0" nillable="true"></xsd:group>
 			</xsd:sequence>
 		</xsd:choice>
 	</xsd:group>							

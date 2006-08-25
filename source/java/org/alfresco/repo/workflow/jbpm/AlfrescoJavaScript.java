@@ -17,6 +17,7 @@
 package org.alfresco.repo.workflow.jbpm;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -74,7 +75,21 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         // extract action configuration
         String expression = null;
         List<VariableAccess> variableAccesses = null;        
-        if (script.isTextOnly())
+
+        // is the script specified as text only, or as explicit expression, variable elements
+        boolean isTextOnly = true;
+        Iterator<Element> iter = script.elementIterator();
+        while (iter.hasNext())
+        {
+           Element element = iter.next();
+           if (element.getNodeType() == Element.ELEMENT_NODE)
+           {
+              isTextOnly = false;
+           }
+        }
+        
+        // extract script and variables
+        if (isTextOnly)
         {
             expression = script.getTextTrim();
         }

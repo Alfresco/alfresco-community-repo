@@ -12,8 +12,8 @@
           <variable name="adhocpriority" access="write" mapped-name="wf:adhocPriority"/>
           <variable name="adhocdescription" access="write" mapped-name="wf:adhocDescription"/>
           <variable name="notify" access="write" mapped-name="wf:notifyMe"/>
-          <variable name="package" access="write" mapped-name="bpm:package"/>
-          <variable name="context" access="write" mapped-name="bpm:context"/>
+          <variable name="workflowpackage" access="write" mapped-name="bpm:package"/>
+          <variable name="workflowcontext" access="write" mapped-name="bpm:context"/>
         </controller>
       </task>
       <transition name="" to="adhoc"/>
@@ -33,6 +33,8 @@
       <task name="wf:adhocTask" swimlane="assignee">
          <controller>
             <variable name="adhocdescription" access="read" mapped-name="wf:adhocDescription"/>
+            <variable name="workflowpackage" access="read" mapped-name="bpm:package"/>
+            <variable name="workflowcontext" access="read" mapped-name="bpm:context"/>
          </controller>
       </task>
       <transition name="" to="completed">
@@ -42,10 +44,10 @@
               {
                  var mail = actions.create("mail");
                  mail.parameters.to = initiator.properties["cm:email"];
-                 mail.parameters.subject = "Adhoc Task " + adhocDescription;
+                 mail.parameters.subject = "Adhoc Task " + adhocdescription;
                  mail.parameters.from = assignee.properties["cm:email"];
                  mail.parameters.text = "It's done";
-                 mail.execute(package);
+                 mail.execute(workflowpackage);
               }
            </script>
          </action>
@@ -53,9 +55,11 @@
    </task-node>
    
    <task-node name="completed">
-      <task name="wf:completedTask" swimlane="initiator">
+      <task name="wf:completedAdhocTask" swimlane="initiator">
          <controller>
             <variable name="adhocdescription" access="read" mapped-name="wf:adhocDescription"/>
+            <variable name="workflowpackage" access="read" mapped-name="bpm:package"/>
+            <variable name="workflowcontext" access="read" mapped-name="bpm:context"/>
          </controller>
       </task>
       <transition name="" to="end"/>

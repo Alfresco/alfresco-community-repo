@@ -150,7 +150,7 @@
          <parent>wf:baseAdhocTask</parent>
       </type>
 
-      <type name="wf:completedTask">
+      <type name="wf:completedAdhocTask">
          <title>Completed Adhoc Task</title>
          <parent>wf:baseAdhocTask</parent>
       </type>

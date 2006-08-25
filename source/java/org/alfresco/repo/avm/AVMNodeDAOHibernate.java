@@ -130,6 +130,17 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
     }
 
     /**
+     * Get all content urls in he AVM Repository.
+     * @return A List of URL Strings.
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> getContentUrls()
+    {
+        Query query = getSession().getNamedQuery("PlainFileNode.GetContentUrls");
+        return (List<String>)query.list();
+    }
+
+    /**
      * Inappropriate hack to get Hibernate to play nice.
      */
     public void flush()

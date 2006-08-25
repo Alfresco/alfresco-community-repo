@@ -22,7 +22,7 @@ import java.util.List;
  * DAO for AVMNodes interface.
  * @author britt
  */
-interface AVMNodeDAO
+public interface AVMNodeDAO
 {
     /**
      * Save the given node, having never been saved before.
@@ -75,6 +75,12 @@ interface AVMNodeDAO
      * @return A List of orphaned AVMNodes.
      */
     public List<AVMNode> getOrphans(int batchSize);
+    
+    /**
+     * Get all content urls in he AVM Repository.
+     * @return A List of URL Strings.
+     */
+    public List<String> getContentUrls();
     
     /**
      * Inappropriate hack to get Hibernate to play nice.

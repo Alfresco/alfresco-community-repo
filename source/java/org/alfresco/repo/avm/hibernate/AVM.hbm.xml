@@ -309,4 +309,14 @@
 		    and an.isRoot = false
     ]]>
     </query>
+    <query name="PlainFileNode.GetContentUrls">
+    <![CDATA[
+    	select
+    		pfn.contentURL
+    	from
+    		PlainFileNodeImpl pfn
+    	where pfn.contentURL is not null
+    ]]>
+    </query>
+    		
 </hibernate-mapping>

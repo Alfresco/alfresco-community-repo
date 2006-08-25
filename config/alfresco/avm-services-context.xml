@@ -36,7 +36,7 @@
 		</property>
 	</bean>
 	
-	<bean id="nodeDAO" class="org.alfresco.repo.avm.AVMNodeDAOHibernate">
+	<bean id="avmNodeDAO" class="org.alfresco.repo.avm.AVMNodeDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
@@ -107,7 +107,7 @@
 			<ref bean="issuerDAO"/>
 		</property>
 		<property name="nodeDAO">
-			<ref bean="nodeDAO"/>
+			<ref bean="avmNodeDAO"/>
 		</property>
 		<property name="avmStoreDAO">
 			<ref bean="avmStoreDAO"/>

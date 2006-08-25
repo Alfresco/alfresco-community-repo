@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.repo.avm.AVMNodeDAO;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.node.db.NodeDaoService;
@@ -56,6 +57,7 @@ public class ContentStoreCleanerTest extends TestCase
         TransactionService transactionService = serviceRegistry.getTransactionService();
         DictionaryService dictionaryService = serviceRegistry.getDictionaryService();
         NodeDaoService nodeDaoService = (NodeDaoService) ctx.getBean("nodeDaoService");
+        AVMNodeDAO avmNodeDAO = (AVMNodeDAO) ctx.getBean("avmNodeDAO");
         
         // we need a store
         store = new FileContentStore(TempFileProvider.getTempDir().getAbsolutePath());
@@ -69,6 +71,7 @@ public class ContentStoreCleanerTest extends TestCase
         cleaner.setTransactionService(transactionService);
         cleaner.setDictionaryService(dictionaryService);
         cleaner.setNodeDaoService(nodeDaoService);
+        cleaner.setAvmNodeDAO(avmNodeDAO);
         cleaner.setStores(Collections.singletonList(store));
         cleaner.setListeners(Collections.singletonList(listener));
     }

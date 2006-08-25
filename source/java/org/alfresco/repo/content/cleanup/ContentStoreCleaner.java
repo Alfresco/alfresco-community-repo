@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.avm.AVMNodeDAO;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.transaction.TransactionUtil;
@@ -49,6 +50,7 @@ public class ContentStoreCleaner
     private DictionaryService dictionaryService;
     private NodeDaoService nodeDaoService;
     private TransactionService transactionService;
+    private AVMNodeDAO avmNodeDAO;
     private List<ContentStore> stores;
     private List<ContentStoreCleanerListener> listeners;
     private int protectDays;
@@ -76,6 +78,15 @@ public class ContentStoreCleaner
         this.nodeDaoService = nodeDaoService;
     }
 
+    /**
+     * Setter for Spring.
+     * @param avmNodeDAO The AVM Node DAO to get urls with.
+     */
+    public void setAvmNodeDAO(AVMNodeDAO avmNodeDAO)
+    {
+        this.avmNodeDAO = avmNodeDAO;
+    }
+    
     /**
      * @param transactionService the component to ensure proper transactional wrapping
      */
@@ -152,6 +163,7 @@ public class ContentStoreCleaner
     
     private Set<String> getValidUrls()
     {
+        // This does the work for the regular Alfresco repository.
         // wrap to make the request in a transaction
         TransactionWork<List<String>> getUrlsWork = new TransactionWork<List<String>>()
         {
@@ -166,6 +178,20 @@ public class ContentStoreCleaner
                 getUrlsWork,
                 true);
         
+        // Do the same for the AVM repository.
+        TransactionWork<List<String>> getAVMUrlsWork = new TransactionWork<List<String>>()
+        {
+            public List<String> doWork() throws Exception
+            {
+                return avmNodeDAO.getContentUrls();
+            }
+        };
+        
+        List<String> avmContentUrls = TransactionUtil.executeInUserTransaction(
+                transactionService,
+                getAVMUrlsWork,
+                true);
+        
         // get all valid URLs
         Set<String> validUrls = new HashSet<String>(contentDataStrings.size());
         // convert the strings to objects and extract the URL
@@ -178,6 +204,12 @@ public class ContentStoreCleaner
                 validUrls.add(contentData.getContentUrl());
             }
         }
+        // put all the avm urls into validUrls.
+        for (String url : avmContentUrls)
+        {
+            validUrls.add(url);
+        }
+        
         // done
         if (logger.isDebugEnabled())
         {

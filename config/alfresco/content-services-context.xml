@@ -29,6 +29,9 @@
       <property name="nodeDaoService" >
          <ref bean="nodeDaoService" />
       </property>
+      <property name="avmNodeDAO">
+      	  <ref bean="avmNodeDAO"/>
+      </property>
       <property name="transactionService" >
          <ref bean="transactionComponent" />
       </property>

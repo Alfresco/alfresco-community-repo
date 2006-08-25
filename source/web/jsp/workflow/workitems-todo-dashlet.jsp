@@ -15,7 +15,7 @@
       </f:facet>
       <f:facet name="small-icon">
          <h:panelGroup>
-            <a:actionLink value="#{r.name}" image="/images/icons/View_details.gif" showLink="false"
+            <a:actionLink value="#{r.name}" image="/images/icons/workflow_item.gif" showLink="false"
                           actionListener="#{DialogManager.setupParameters}" action="dialog:manageWorkItem">
                <f:param name="id" value="#{r.id}" />
             </a:actionLink>
@@ -82,7 +82,7 @@
       <f:facet name="header">
          <h:outputText value="#{msg.actions}"/>
       </f:facet>
-      <r:actions value="manage_workitem_actions" context="#{r}" showLink="false" 
+      <r:actions value="dashlet_todo_actions" context="#{r}" showLink="false" 
                  styleClass="inlineAction" />
    </a:column>
    

@@ -74,7 +74,11 @@ public class WorkflowBean
          this.workItems = new ArrayList<Node>(tasks.size());
          for (WorkflowTask task : tasks)
          {
-            this.workItems.add(createWorkItem(task));
+            Node node = createWorkItem(task);
+            this.workItems.add(node);
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Added to do work item: " + node);
          }
          
          // commit the changes
@@ -117,7 +121,11 @@ public class WorkflowBean
          this.completedWorkItems = new ArrayList<Node>(tasks.size());
          for (WorkflowTask task : tasks)
          {
-            this.completedWorkItems.add(createWorkItem(task));
+            Node node = createWorkItem(task);
+            this.completedWorkItems.add(node);
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Added completed work item: " + node);
          }
          
          // commit the changes
@@ -237,9 +245,10 @@ public class WorkflowBean
          node.getProperties().put("sourceSpaceId", context.getId());
       }
       
-      // add the outcome label for any completed task
+      // add extra properties for completed tasks
       if (task.state.equals(WorkflowTaskState.COMPLETED))
       {
+         // add the outcome label for any completed task
          String outcome = null;
          String transition = (String)task.properties.get(WorkflowModel.PROP_OUTCOME);
          if (transition != null)
@@ -259,6 +268,10 @@ public class WorkflowBean
                node.getProperties().put("outcome", outcome);
             }
          }
+         
+         // add the workflow instance id and name this taks belongs to
+         node.getProperties().put("workflowInstanceId", task.path.instance.id);
+         node.getProperties().put("workflowInstanceName", task.path.instance.definition.title);
       }
       
       return node;

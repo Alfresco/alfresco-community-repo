@@ -314,6 +314,28 @@ public class ManageWorkItemDialog extends BaseDialogBean
    }
    
    /**
+    * Returns the action group the current task uses for the workflow package
+    * 
+    * @return action group id
+    */
+   public String getPackageActionGroup()
+   {
+      return (String)this.workItem.properties.get(
+            WorkflowModel.PROP_PACKAGE_ACTION_GROUP);
+   }
+   
+   /**
+    * Returns the action group the current task uses for each workflow package item
+    * 
+    * @return action group id
+    */
+   public String getPackageItemActionGroup()
+   {
+      return (String)this.workItem.properties.get(
+            WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP);
+   }
+   
+   /**
     * Returns a list of resources associated with this work item
     * i.e. the children of the workflow package
     * 

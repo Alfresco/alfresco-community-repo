@@ -196,7 +196,12 @@ public abstract class BaseActionWizard extends BaseWizardBean
          this.actions = new ArrayList<SelectItem>();
          for (ActionDefinition ruleActionDef : ruleActions)
          {
-            this.actions.add(new SelectItem(ruleActionDef.getName(), ruleActionDef.getTitle()));
+            String title = ruleActionDef.getTitle();
+            if (title == null || title.length() == 0)
+            {
+               title = ruleActionDef.getName();
+            }
+            this.actions.add(new SelectItem(ruleActionDef.getName(), title));
          }
          
          // make sure the list is sorted by the label

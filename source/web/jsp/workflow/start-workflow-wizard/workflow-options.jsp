@@ -21,7 +21,7 @@
 
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
-<h:panelGroup rendered="#{empty WizardManager.bean.taskMetadataNode}">
+<h:panelGroup rendered="#{WizardManager.bean.taskMetadataNode == null}">
    <f:verbatim>
       <%PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc");%>
       <table><tr><td>
@@ -37,10 +37,14 @@
    </f:verbatim>
 </h:panelGroup>
 
-<a:panel id="props-panel" label="#{msg.properties}" rendered="#{not empty WizardManager.bean.taskMetadataNode}"
-      border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+<h:panelGroup rendered="#{WizardManager.bean.taskMetadataNode != null}">
+   <a:panel id="props-panel" label="#{msg.properties}" border="white" bgcolor="white" 
+            titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
       
-   <r:propertySheetGrid id="task-props" value="#{WizardManager.bean.taskMetadataNode}" 
-                        var="taskProps" columns="1" externalConfig="true" />
-</a:panel>
+      <r:propertySheetGrid id="task-props" value="#{WizardManager.bean.taskMetadataNode}" 
+                           var="taskProps" columns="1" externalConfig="true" />
+   </a:panel>
+</h:panelGroup>
+
+
          

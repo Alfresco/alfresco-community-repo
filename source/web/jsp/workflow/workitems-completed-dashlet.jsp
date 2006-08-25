@@ -14,7 +14,7 @@
          <a:sortLink label="#{msg.title}" value="name" mode="case-insensitive" styleClass="header"/>
       </f:facet>
       <f:facet name="small-icon">
-         <h:graphicImage url="/images/icons/View_details.gif" />
+         <h:graphicImage url="/images/icons/completed_workflow_item.gif" />
       </f:facet>
       <h:outputText value="#{r.name}" />
    </a:column>
@@ -66,7 +66,7 @@
       <f:facet name="header">
          <h:outputText value="#{msg.actions}"/>
       </f:facet>
-      <r:actions value="completed_workitem_actions" context="#{r}" showLink="false" 
+      <r:actions value="dashlet_completed_actions" context="#{r}" showLink="false" 
                  styleClass="inlineAction" />
    </a:column>
    

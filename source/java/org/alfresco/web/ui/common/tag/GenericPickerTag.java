@@ -20,7 +20,6 @@ import javax.faces.FacesException;
 import javax.faces.component.UICommand;
 import javax.faces.component.UIComponent;
 import javax.faces.el.MethodBinding;
-import javax.faces.el.ValueBinding;
 
 import org.alfresco.web.ui.common.component.UIGenericPicker;
 
@@ -57,6 +56,7 @@ public class GenericPickerTag extends BaseComponentTag
       setBooleanProperty(component, "showContains", this.showContains);
       setBooleanProperty(component, "showAddButton", this.showAddButton);
       setBooleanProperty(component, "filterRefresh", this.filterRefresh);
+      setBooleanProperty(component, "multiSelect", this.multiSelect);
       setStringProperty(component, "addButtonLabel", this.addButtonLabel);
       setActionProperty((UICommand)component, this.action);
       setActionListenerProperty((UICommand)component, this.actionListener);
@@ -94,6 +94,7 @@ public class GenericPickerTag extends BaseComponentTag
       this.queryCallback = null;
       this.filters = null;
       this.filterRefresh = null;
+      this.multiSelect = null;
    }
    
    /**
@@ -205,8 +206,20 @@ public class GenericPickerTag extends BaseComponentTag
    {
       this.filterRefresh = filterRefresh;
    }
+   
+   /**
+    * Set the multiSelect
+    *
+    * @param mutliSelect      the multiSelect
+    */
+   public void setMultiSelect(String multiSelect)
+   {
+      this.multiSelect = multiSelect;
+   }
 
-
+   /** the multiSelect */
+   private String multiSelect;
+   
    /** the filterRefresh */
    private String filterRefresh;
    

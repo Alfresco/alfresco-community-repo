@@ -90,7 +90,7 @@
          <f:facet name="header">
             <h:outputText value="#{msg.actions}"/>
          </f:facet>
-         <r:actions id="actions-col-actions" value="workflow_item_collection_actions" 
+         <r:actions id="actions-col-actions" value="#{DialogManager.bean.packageItemActionGroup}" 
                     context="#{r}" showLink="false" styleClass="inlineAction" />
       </a:column>
       

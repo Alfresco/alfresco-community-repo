@@ -12,6 +12,7 @@ import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
@@ -205,6 +206,54 @@ public class StartWorkflowWizard extends BaseWizardBean
    public Node getTaskMetadataNode()
    {
       return this.startTaskNode;
+   }
+   
+   /**
+    * Returns the action group the current task uses for the workflow package
+    * 
+    * @return action group id
+    */
+   public String getPackageActionGroup()
+   {
+      String actionGroup = null;
+      
+      WorkflowDefinition flowDef = this.workflows.get(this.selectedWorkflow);
+      WorkflowTaskDefinition taskDef = flowDef.startTaskDefinition;
+      if (taskDef != null)
+      {
+         PropertyDefinition propDef = taskDef.metadata.getProperties().get(
+               WorkflowModel.PROP_PACKAGE_ACTION_GROUP);
+         if (propDef != null)
+         {
+            actionGroup = propDef.getDefaultValue();
+         }
+      }
+      
+      return actionGroup;
+   }
+   
+   /**
+    * Returns the action group the current task uses for each workflow package item
+    * 
+    * @return action group id
+    */
+   public String getPackageItemActionGroup()
+   {
+      String actionGroup = null;
+      
+      WorkflowDefinition flowDef = this.workflows.get(this.selectedWorkflow);
+      WorkflowTaskDefinition taskDef = flowDef.startTaskDefinition;
+      if (taskDef != null)
+      {
+         PropertyDefinition propDef = taskDef.metadata.getProperties().get(
+               WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP);
+         if (propDef != null)
+         {
+            actionGroup = propDef.getDefaultValue();
+         }
+      }
+      
+      return actionGroup;
    }
    
    /**

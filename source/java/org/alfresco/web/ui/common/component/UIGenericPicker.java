@@ -67,6 +67,7 @@ public class UIGenericPicker extends UICommand
    private Boolean showContains = null;
    private Boolean showAddButton = null;
    private Boolean filterRefresh = null;
+   private Boolean multiSelect = null;
    private String addButtonLabel;
    private Integer width = null;
    private Integer height = null;
@@ -118,6 +119,7 @@ public class UIGenericPicker extends UICommand
       currentResults = (SelectItem[])values[11];
       filters = (SelectItem[])values[12];
       filterRefresh = (Boolean)values[13];
+      multiSelect = (Boolean)values[14];
    }
    
    /**
@@ -125,7 +127,7 @@ public class UIGenericPicker extends UICommand
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[14];
+      Object values[] = new Object[15];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = showFilter;
@@ -141,6 +143,7 @@ public class UIGenericPicker extends UICommand
       values[11] = currentResults;
       values[12] = filters;
       values[13] = filterRefresh;
+      values[14] = multiSelect;
       return (values);
    }
    
@@ -354,7 +357,14 @@ public class UIGenericPicker extends UICommand
       out.write(Integer.toString(getHeight()));
       out.write("px' name='");
       out.write(clientId + FIELD_RESULTS);
-      out.write("' multiple>");
+      out.write("' id='");
+      out.write(clientId + FIELD_RESULTS);
+      out.write("'");
+      if (getMultiSelect() == true)
+      {
+         out.write(" multiple");
+      }
+      out.write(">");
       
       // results
       if (currentResults != null)
@@ -531,6 +541,28 @@ public class UIGenericPicker extends UICommand
    }
 
    /**
+    * @return true if multi select should be enabled.
+    */
+   public boolean getMultiSelect()
+   {
+      ValueBinding vb = getValueBinding("multiSelect");
+      if (vb != null)
+      {
+         this.multiSelect = (Boolean)vb.getValue(getFacesContext());
+      }
+      
+      return multiSelect != null ? multiSelect.booleanValue() : true;
+   }
+
+   /**
+    * @param multiSelect Flag to determine whether multi select is enabled
+    */
+   public void setMultiSelect(boolean multiSelect)
+   {
+      this.multiSelect = Boolean.valueOf(multiSelect);
+   }
+   
+   /**
     * @return Returns the width.
     */
    public int getWidth()
@@ -633,6 +665,7 @@ public class UIGenericPicker extends UICommand
    /**
     * Class representing the an action relevant to the Generic Selector component.
     */
+   @SuppressWarnings("serial")
    public static class PickerEvent extends ActionEvent
    {
       public PickerEvent(UIComponent component, int action, int filterIndex, String contains, String[] results)

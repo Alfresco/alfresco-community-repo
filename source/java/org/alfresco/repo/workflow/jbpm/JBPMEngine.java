@@ -66,6 +66,7 @@ import org.hibernate.Session;
 import org.hibernate.proxy.HibernateProxy;
 import org.jbpm.JbpmContext;
 import org.jbpm.JbpmException;
+import org.jbpm.context.exe.ContextInstance;
 import org.jbpm.db.GraphSession;
 import org.jbpm.db.TaskMgmtSession;
 import org.jbpm.graph.def.Node;
@@ -356,18 +357,28 @@ public class JBPMEngine extends BPMEngine
         {
             return (WorkflowPath) jbpmTemplate.execute(new JbpmCallback()
             {
+                @SuppressWarnings("synthetic-access")
                 public Object doInJbpm(JbpmContext context)
                 {
                     // initialise jBPM actor (for any processes that wish to record the initiator)
-                    context.setActorId(AuthenticationUtil.getCurrentUserName());
-                    
+                    String currentUserName = AuthenticationUtil.getCurrentUserName();
+                    context.setActorId(currentUserName);
+
                     // construct a new process
                     GraphSession graphSession = context.getGraphSession();
                     ProcessDefinition processDefinition = graphSession.loadProcessDefinition(getJbpmId(workflowDefinitionId));
                     ProcessInstance processInstance = new ProcessInstance(processDefinition);
-                    Token token = processInstance.getRootToken();
+                 
+                    // assign initial process context
+                    ContextInstance processContext = processInstance.getContextInstance();
+                    NodeRef initiatorPerson = mapNameToAuthority(currentUserName);
+                    if (initiatorPerson != null)
+                    {
+                        processContext.setVariable("initiator", new JBPMNode(initiatorPerson, serviceRegistry));
+                    }
 
                     // create the start task if one exists
+                    Token token = processInstance.getRootToken();
                     Task startTask = processInstance.getTaskMgmtInstance().getTaskMgmtDefinition().getStartTask();
                     if (startTask != null)
                     {
@@ -1507,6 +1518,11 @@ public class JBPMEngine extends BPMEngine
         workflowInstance.id = createGlobalId(new Long(instance.getId()).toString());
         workflowInstance.definition = createWorkflowDefinition(instance.getProcessDefinition());
         workflowInstance.active = !instance.hasEnded();
+        JBPMNode initiator = (JBPMNode)instance.getContextInstance().getVariable("initiator");
+        if (initiator != null)
+        {
+            workflowInstance.initiator = initiator.getNodeRef(); 
+        }
         workflowInstance.startDate = instance.getStart();
         workflowInstance.endDate = instance.getEnd();
         return workflowInstance;

@@ -27,6 +27,7 @@ import java.util.Map;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.TaskComponent;
 import org.alfresco.repo.workflow.WorkflowComponent;
@@ -55,6 +56,8 @@ import org.springframework.core.io.ClassPathResource;
  */
 public class JBPMEngineTest extends BaseSpringTest
 {
+    AuthenticationComponent authenticationComponent;
+    NodeService nodeService;
     WorkflowComponent workflowComponent;
     TaskComponent taskComponent;
     WorkflowDefinition testWorkflowDef;
@@ -64,6 +67,10 @@ public class JBPMEngineTest extends BaseSpringTest
     @Override
     protected void onSetUpInTransaction() throws Exception
     {
+        // run as system
+        authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
+        authenticationComponent.setCurrentUser("admin");
+        
         BPMEngineRegistry registry = (BPMEngineRegistry)applicationContext.getBean("bpm_engineRegistry");
         workflowComponent = registry.getWorkflowComponent("jbpm");
         taskComponent = registry.getTaskComponent("jbpm");
@@ -82,11 +89,18 @@ public class JBPMEngineTest extends BaseSpringTest
         assertTrue(workflowComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
 
         // get valid node ref
-        NodeService nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
+        nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
         testNodeRef = nodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "spacesStore"));
         nodeService.setProperty(testNodeRef, ContentModel.PROP_CREATED, new Date());
     }
 
+    
+    @Override
+    protected void onTearDownInTransaction()
+    {
+        authenticationComponent.clearCurrentSecurityContext();
+    }
+    
     
     public void testGetWorkflowDefinitions()
     {
@@ -168,6 +182,10 @@ public class JBPMEngineTest extends BaseSpringTest
         assertTrue(task.properties.containsKey(WorkflowModel.PROP_PRIORITY));
         assertTrue(task.properties.containsKey(WorkflowModel.PROP_PERCENT_COMPLETE));
         assertTrue(task.properties.containsKey(ContentModel.PROP_OWNER));
+        
+        NodeRef initiator = path.instance.initiator;
+        String initiatorUsername = (String)nodeService.getProperty(initiator, ContentModel.PROP_USERNAME);
+        assertEquals("admin", initiatorUsername);
     }
 
     
@@ -323,7 +341,7 @@ public class JBPMEngineTest extends BaseSpringTest
         assertEquals(1, tasks.size());
         WorkflowTask updatedTask = taskComponent.endTask(tasks.get(0).id, path.node.transitions[0].id);
         assertNotNull(updatedTask);
-        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks("System", WorkflowTaskState.COMPLETED);
+        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks("admin", WorkflowTaskState.COMPLETED);
         assertNotNull(completedTasks);
         completedTasks = filterTasksByWorkflowInstance(completedTasks, path.instance.id);
         assertEquals(1, completedTasks.size());
@@ -351,7 +369,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).id, null);
         assertNotNull(updatedTask);
         assertEquals(WorkflowTaskState.COMPLETED, updatedTask.state);
-        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks("System", WorkflowTaskState.COMPLETED);
+        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks("admin", WorkflowTaskState.COMPLETED);
         assertNotNull(completedTasks);
         completedTasks = filterTasksByWorkflowInstance(completedTasks, path.instance.id);
         assertEquals(1, completedTasks.size());

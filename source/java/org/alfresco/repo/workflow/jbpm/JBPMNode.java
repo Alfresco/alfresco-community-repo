@@ -19,7 +19,6 @@ package org.alfresco.repo.workflow.jbpm;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.alfresco.repo.jscript.Node;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;

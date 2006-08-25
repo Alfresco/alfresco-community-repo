@@ -18,6 +18,8 @@ package org.alfresco.service.cmr.workflow;
 
 import java.util.Date;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+
 
 /**
  * Workflow Instance Data Object
@@ -34,11 +36,8 @@ public class WorkflowInstance
     /** Is this Workflow instance still "in-flight" or has it completed? */
     public boolean active;
 
-    /** Workflow Definition */
-    public WorkflowDefinition definition;
-
-    /** Start Task Instance (optional) */
-    public WorkflowTask startTask;
+    /** Initiator (cm:person) - null if System initiated */
+    public NodeRef initiator;
 
     /** Workflow Start Date */
     public Date startDate;
@@ -46,6 +45,9 @@ public class WorkflowInstance
     /** Workflow End Date */
     public Date endDate;
     
+    /** Workflow Definition */
+    public WorkflowDefinition definition;
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */

@@ -16,7 +16,7 @@
                <expression>
                   function result()
                   {
-                     return ("Process instance = " + executionContext.processInstance.id + ", testNode children = " + testNode.children.length);
+                     return ("Initiator: " + initiator.properties["cm:userName"] + ", process instance = " + executionContext.processInstance.id + ", testNode children = " + testNode.children.length);
                   }
                   result();
                </expression>

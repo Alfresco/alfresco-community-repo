@@ -232,6 +232,8 @@ public class HibernateNodeTest extends BaseSpringTest
         assoc1.setIsPrimary(true);
         assoc1.setTypeQName(QName.createQName(null, "type1"));
         assoc1.setQname(QName.createQName(null, "number1"));
+        assoc1.setChildNodeName("number1");
+        assoc1.setChildNodeNameCrc(1);
         assoc1.buildAssociation(containerNode, contentNode);
         getSession().save(assoc1);
 
@@ -240,6 +242,8 @@ public class HibernateNodeTest extends BaseSpringTest
         assoc2.setIsPrimary(true);
         assoc2.setTypeQName(QName.createQName(null, "type2"));
         assoc2.setQname(QName.createQName(null, "number2"));
+        assoc2.setChildNodeName("number2");
+        assoc2.setChildNodeNameCrc(2);
         assoc2.buildAssociation(containerNode, contentNode);
         getSession().save(assoc2);
         
@@ -384,6 +388,8 @@ public class HibernateNodeTest extends BaseSpringTest
         assoc1.setIsPrimary(true);
         assoc1.setTypeQName(QName.createQName(null, "type1"));
         assoc1.setQname(QName.createQName(null, "number1"));
+        assoc1.setChildNodeName("number1");
+        assoc1.setChildNodeNameCrc(1);
         assoc1.buildAssociation(containerNode, contentNode1);
         getSession().save(assoc1);
         // create an association to content 2
@@ -391,6 +397,8 @@ public class HibernateNodeTest extends BaseSpringTest
         assoc2.setIsPrimary(true);
         assoc2.setTypeQName(QName.createQName(null, "type2"));
         assoc2.setQname(QName.createQName(null, "number2"));
+        assoc2.setChildNodeName("number2");
+        assoc2.setChildNodeNameCrc(2);
         assoc2.buildAssociation(containerNode, contentNode2);
         getSession().save(assoc2);
         
@@ -419,6 +427,8 @@ public class HibernateNodeTest extends BaseSpringTest
         assoc3.setIsPrimary(false);
         assoc3.setTypeQName(QName.createQName(null, "type3"));
         assoc3.setQname(QName.createQName(null, "number3"));
+        assoc3.setChildNodeName("number3");
+        assoc3.setChildNodeNameCrc(2);
         assoc3.buildAssociation(containerNode, contentNode2);  // check whether the children are pulled in for this
         getSession().save(assoc3);
 

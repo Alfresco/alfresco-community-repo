@@ -54,6 +54,17 @@
 				</xsd:complexType>
 			</xsd:element>
 			
+			<xsd:element name="writeContent" maxOccurs="unbounded" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+	                  <xsd:element name="property" type="xsd:string"/>
+	                  <xsd:element name="content" type="xsd:base64Binary"/>
+	                  <xsd:element name="format" type="cms:ContentFormat"/>
+					  <xsd:group ref="cml:Where"></xsd:group>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>				
+			
 			<xsd:element name="delete" maxOccurs="unbounded" minOccurs="0">
 				<xsd:complexType>
 					<xsd:sequence>

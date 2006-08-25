@@ -227,6 +227,14 @@
       />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
+        qname="ns:>CML>writeContent"
+        type="java:org.alfresco.repo.webservice.types.CMLWriteContent"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
         qname="ns:>CML>removeAspect"
         type="java:org.alfresco.repo.webservice.types.CMLRemoveAspect"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"

@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.webservice;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,11 +37,15 @@ import org.alfresco.repo.webservice.types.CMLRemoveAspect;
 import org.alfresco.repo.webservice.types.CMLRemoveAssociation;
 import org.alfresco.repo.webservice.types.CMLRemoveChild;
 import org.alfresco.repo.webservice.types.CMLUpdate;
+import org.alfresco.repo.webservice.types.CMLWriteContent;
+import org.alfresco.repo.webservice.types.ContentFormat;
 import org.alfresco.repo.webservice.types.NamedValue;
 import org.alfresco.repo.webservice.types.ParentReference;
 import org.alfresco.repo.webservice.types.Predicate;
 import org.alfresco.repo.webservice.types.Reference;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -64,12 +70,14 @@ public class CMLUtil
     private static final String REMOVE_CHILD = "removeChild";
     private static final String CREATE_ASSOCIATION = "createAssociation";
     private static final String REMOVE_ASSOCIATION = "removeAssociation";
+    private static final String WRITE_CONTENT = "writeContent";
     
     private NodeService nodeService;
     private SearchService searchService;
     private NamespaceService namespaceService;
     private CopyService copyService;
     private DictionaryService dictionaryService;
+    private ContentService contentService;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -94,6 +102,11 @@ public class CMLUtil
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
     }
     
     /**
@@ -144,6 +157,15 @@ public class CMLUtil
             for (CMLUpdate update : updates)
             {
                 executeCMLUpdate(update, context, results);
+            }
+        }
+        
+        CMLWriteContent[] writes = cml.getWriteContent();
+        if (writes != null)
+        {
+            for (CMLWriteContent write : writes)
+            {
+                executeCMLWriteContent(write, context, results);
             }
         }
         
@@ -373,6 +395,34 @@ public class CMLUtil
             // Get the result
             results.add(createResult(UPDATE, null, nodeRef, nodeRef));
         }        
+    }
+    
+    private void executeCMLWriteContent(CMLWriteContent write, ExecutionContext context, List<UpdateResult> results)
+    {
+        // Get the nodes and content property
+        List<NodeRef> nodeRefs = getNodeRefList(write.getWhere_id(), write.getWhere(), context);
+        QName property = QName.createQName(write.getProperty());
+        ContentFormat format = write.getFormat();
+        byte[] content = write.getContent();
+        
+        for (NodeRef nodeRef : nodeRefs)
+        {            
+            //Get the content writer
+            ContentWriter writer = this.contentService.getWriter(nodeRef, property, true);
+            
+            // Set the content format details (if they have been specified)
+            if (format != null)
+            {
+                writer.setEncoding(format.getEncoding());
+                writer.setMimetype(format.getMimetype());
+            }
+            
+            // Write the content 
+            InputStream is = new ByteArrayInputStream(content);
+            writer.putContent(is);
+            
+            results.add(createResult(WRITE_CONTENT, null, nodeRef, nodeRef));
+        }
     }
     
     private void executeCMLDelete(CMLDelete delete, ExecutionContext context, List<UpdateResult> results)

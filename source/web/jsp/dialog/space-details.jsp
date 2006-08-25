@@ -113,14 +113,14 @@
                                     </r:permissionEvaluator>
                                  </f:facet>
                               </h:panelGroup>
-                              <a:panel label="#{msg.dashboard_view}" id="dashboard-panel" progressive="true" facetsId="dashboard-panel-facets"
+                              <a:panel label="#{msg.custom_view}" id="dashboard-panel" progressive="true" facetsId="dashboard-panel-facets"
                                        border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
                                        expanded='#{SpaceDetailsBean.panels["dashboard-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <table width=100% cellspacing=0 cellpadding=0 border=0>
                                     <tr>
                                        <td align=left>
                                           <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write" id="evalApply">
-                                             <a:actionLink id="actDashboard" value="#{msg.apply_dashboard}" rendered="#{SpaceDetailsBean.templatable == false}" action="dialog:applyTemplate" />
+                                             <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{SpaceDetailsBean.templatable == false}" action="dialog:applyTemplate" />
                                           </r:permissionEvaluator>
                                           <a:panel id="template-panel" rendered="#{SpaceDetailsBean.templatable == true}">
                                              <div style="padding:4px;border: 1px dashed #cccccc">

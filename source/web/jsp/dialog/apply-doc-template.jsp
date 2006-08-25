@@ -69,7 +69,7 @@
                               <h:graphicImage url="/images/icons/preview_large.gif"/>
                            </td>
                            <td>
-                              <div class="mainTitle"><h:outputText value="#{msg.apply_dashboard}" /> '<h:outputText value="#{DocumentDetailsBean.name}" />'</div>
+                              <div class="mainTitle"><h:outputText value="#{msg.apply_template}" /> '<h:outputText value="#{DocumentDetailsBean.name}" />'</div>
                               <div class="mainSubText"><h:outputText value="#{msg.apply_dashboard_doc_info}" /></div>
                            </td>
                         </tr>

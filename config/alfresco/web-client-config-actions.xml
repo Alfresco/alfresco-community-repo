@@ -372,6 +372,17 @@
             </params>
          </action>
          
+         <!-- Email Space Users -->
+         <action id="email_space_users">
+            <label-id>email_space_users</label-id>
+            <image>/images/icons/email_users.gif</image>
+            <action>dialog:emailSpaceUsers</action>
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
          <!-- Manage Deleted Items -->
          <action id="manage_deleted_items">
             <evaluator>org.alfresco.web.action.evaluator.ShortcutNodeEvaluator</evaluator>
@@ -601,6 +612,7 @@
             <action idref="take_ownership_space" />
             <action idref="manage_space_users" />
             <action idref="manage_space_rules" />
+            <action idref="email_space_users" />
             <action idref="preview_space" />
             <action idref="run_action" />
          </action-group>

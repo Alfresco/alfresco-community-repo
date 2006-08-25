@@ -519,3 +519,12 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 	padding: 4px;
 	-moz-border-radius: 4px;
 }
+
+.userGroupPickerList
+{
+   padding: 2px;
+   background-color: #EEEEEE;
+   border-width: 1px;
+   border-style: solid;
+   border-color: #AAAAAA;
+}

@@ -87,7 +87,7 @@
                                  <a:listItem value="details" label="#{msg.details_view}" />
                                  <a:listItem value="icons" label="#{msg.view_icon}" />
                                  <a:listItem value="list" label="#{msg.view_browse}" />
-                                 <a:listItem value="dashboard" label="#{msg.dashboard_view}" />
+                                 <a:listItem value="dashboard" label="#{msg.custom_view}" />
                               </a:modeList>
                            </td>
                         </tr>
@@ -110,7 +110,7 @@
                   <td>
                      <div style="padding:4px">
                      
-                     <a:panel id="dashboard-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.dashboard}">
+                     <a:panel id="dashboard-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.custom_view}">
                         
                         <r:template id="template" template="#{NavigationBean.currentNodeTemplate}" model="#{NavigationBean.templateModel}" />
                         

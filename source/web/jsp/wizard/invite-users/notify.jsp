@@ -134,7 +134,7 @@
                                  <tr>
                                     <td style="padding-left:16px"><h:outputText value="#{msg.subject}"/>:</td>
                                     <td>
-                                       <h:inputText id="subject" value="#{InviteSpaceUsersWizard.subject}" size="75" maxlength="1024" />&nbsp;*
+                                       <h:inputText id="subject" value="#{InviteSpaceUsersWizard.mailHelper.subject}" size="75" maxlength="1024" />&nbsp;*
                                     </td>
                                  </tr>
                                  
@@ -146,12 +146,12 @@
                                              <td><h:outputText value="#{msg.action_mail_template}"/>:</td>
                                              <td>
                                                 <%-- Templates drop-down selector --%>
-                                                <h:selectOneMenu value="#{InviteSpaceUsersWizard.template}">
+                                                <h:selectOneMenu value="#{InviteSpaceUsersWizard.mailHelper.template}">
                                                    <f:selectItems value="#{TemplateSupportBean.emailTemplates}" />
                                                 </h:selectOneMenu>
                                              </td>
-                                             <td><h:commandButton value="#{msg.insert_template}" actionListener="#{InviteSpaceUsersWizard.insertTemplate}" styleClass="wizardButton" /></td>
-                                             <td><h:commandButton value="#{msg.discard_template}" actionListener="#{InviteSpaceUsersWizard.discardTemplate}" styleClass="wizardButton" disabled="#{InviteSpaceUsersWizard.usingTemplate == null}" /></td>
+                                             <td><h:commandButton value="#{msg.insert_template}" actionListener="#{InviteSpaceUsersWizard.mailHelper.insertTemplate}" styleClass="wizardButton" /></td>
+                                             <td><h:commandButton value="#{msg.discard_template}" actionListener="#{InviteSpaceUsersWizard.mailHelper.discardTemplate}" styleClass="wizardButton" disabled="#{InviteSpaceUsersWizard.mailHelper.usingTemplate == null}" /></td>
                                           </tr>
                                        </table>
                                     </td>
@@ -160,8 +160,8 @@
                                  <tr>
                                     <td style="padding-left:16px"><h:outputText value="#{msg.message}"/>:</td>
                                     <td>
-                                       <h:inputTextarea value="#{InviteSpaceUsersWizard.body}" 
-                                                        rows="4" cols="75" disabled="#{InviteSpaceUsersWizard.usingTemplate != null}" />
+                                       <h:inputTextarea value="#{InviteSpaceUsersWizard.mailHelper.body}" 
+                                                        rows="4" cols="75" disabled="#{InviteSpaceUsersWizard.mailHelper.usingTemplate != null}" />
                                     </td>
                                  </tr>
                                  

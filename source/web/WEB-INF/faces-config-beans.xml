@@ -1881,6 +1881,40 @@
       </managed-property>
    </managed-bean>
    
+   <managed-bean>
+      <description>
+         The bean that backs up the Email Space Users Dialog
+      </description>
+      <managed-bean-name>EmailSpaceUsersDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.users.EmailSpaceUsersDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>personService</property-name>
+         <value>#{PersonService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>authorityService</property-name>
+         <value>#{AuthorityService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>mailSender</property-name>
+         <value>#{mailService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   
    <!-- ==================== COMPONENT GENERATOR BEANS ==================== -->
    <managed-bean>
       <description>
@@ -2034,6 +2068,7 @@
       <managed-bean-class>org.alfresco.web.bean.generator.HeaderSeparatorGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
+   
    
    <!-- ==================== AJAX BEANS ==================== -->
    

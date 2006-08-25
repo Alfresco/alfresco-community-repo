@@ -185,7 +185,7 @@
                                  <a:listItem value="details" label="#{msg.details_view}" />
                                  <a:listItem value="icons" label="#{msg.view_icon}" />
                                  <a:listItem value="list" label="#{msg.view_browse}" />
-                                 <a:listItem value="dashboard" label="#{msg.dashboard_view}" disabled="#{!NavigationBean.currentNodeHasTemplate}" />
+                                 <a:listItem value="dashboard" label="#{msg.custom_view}" disabled="#{!NavigationBean.currentNodeHasTemplate}" />
                               </a:modeList>
                            </td>
                         </tr>

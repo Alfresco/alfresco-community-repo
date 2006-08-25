@@ -16,6 +16,7 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
@@ -46,6 +47,7 @@ public class ManageWorkItemDialog extends BaseDialogBean
    protected WorkflowService workflowService;
    protected Node workItemNode;
    protected WorkflowTask workItem;
+   protected WorkflowInstance workflowInstance;
    protected WorkflowTransition[] transitions;
    protected List<Node> resources;
    protected WorkItemCompleteResolver completeResolver = new WorkItemCompleteResolver();
@@ -73,6 +75,9 @@ public class ManageWorkItemDialog extends BaseDialogBean
          WorkflowTaskDefinition taskDef = this.workItem.definition;
          this.workItemNode = new TransientNode(taskDef.metadata.getName(),
                   "task_" + System.currentTimeMillis(), this.workItem.properties);
+         
+         // get access to the workflow instance for the work item
+         this.workflowInstance = this.workItem.path.instance;
       }
    }
    
@@ -311,6 +316,16 @@ public class ManageWorkItemDialog extends BaseDialogBean
    public Node getWorkItemNode()
    {
       return this.workItemNode;
+   }
+   
+   /**
+    * Returns the WorkflowInstance that the current task belongs to
+    * 
+    * @return The workflow instance
+    */
+   public WorkflowInstance getWorkflowInstance()
+   {
+      return this.workflowInstance;
    }
    
    /**

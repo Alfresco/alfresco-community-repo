@@ -110,3 +110,12 @@
    <%-- Put the package actions here --%>
    
 </a:panel>
+
+<h:outputText styleClass="paddingRow" value="&nbsp;" escape="false" />
+
+<a:panel id="workflow-summary-panel" label="#{msg.part_of_workflow}"
+         border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+
+   <r:workflowSummary value="#{DialogManager.bean.workflowInstance}" styleClass="workflowSummary" />
+
+</a:panel>

@@ -105,15 +105,18 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
                 ContentModel.TYPE_CONTENT).getChildRef();
         
         // Add a couple of rules to the folder
-        Rule rule1 = this.ruleService.createRule(RuleType.INBOUND);
+        Rule rule1 = new Rule();
+        rule1.setRuleType(RuleType.INBOUND);
         Action action1 = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
         action1.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);
-        rule1.addAction(action1);
+        rule1.setAction(action1);
         this.ruleService.saveRule(folder, rule1);
-        Rule rule2 = this.ruleService.createRule(RuleType.INBOUND);
+        
+        Rule rule2 = new Rule();
+        rule2.setRuleType(RuleType.INBOUND);
         Action action2 = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
         action2.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
-        rule2.addAction(action2);
+        rule2.setAction(action2);
         this.ruleService.saveRule(folder, rule2);
         
         // Check the the docs don't have the aspects yet
@@ -125,7 +128,7 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
         assertTrue(this.nodeService.exists(folder));
         
         // Execute the action
-        ActionImpl action = new ActionImpl(ID, ExecuteAllRulesActionExecuter.NAME, null);
+        ActionImpl action = new ActionImpl(null, ID, ExecuteAllRulesActionExecuter.NAME, null);
         this.executer.execute(action, folder);
         
         assertTrue(this.nodeService.hasAspect(doc1, ContentModel.ASPECT_VERSIONABLE));

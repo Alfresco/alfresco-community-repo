@@ -219,6 +219,16 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
+                <property name="test:verbatim">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
             </properties>
             <mandatory-aspects>
                 <aspect>test:testAspect</aspect>

@@ -26,6 +26,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.version.common.counter.VersionCounterService;
 import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
@@ -56,6 +57,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
     protected AuthenticationService authenticationService;
     protected TransactionService transactionService;
     protected MutableAuthenticationDao authenticationDAO;
+    protected NodeArchiveService nodeArchiveService;
 	
     /*
      * Data used by tests
@@ -136,6 +138,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         this.authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
         this.authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("alfDaoImpl");
+        this.nodeArchiveService = (NodeArchiveService) applicationContext.getBean("nodeArchiveService");
         
         authenticationService.clearCurrentSecurityContext();
         

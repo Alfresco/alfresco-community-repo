@@ -42,6 +42,9 @@
         <property name="maxPoolSize" >
             <value>${db.pool.max}</value>
         </property>
+        <property name="maxIdleTime" >
+            <value>${db.pool.maxIdleTime}</value>
+        </property>
         <property name="numHelperThreads" >
             <value>1</value>
         </property>
@@ -624,6 +627,13 @@
 
     <!-- Referenceable -->
     <bean id="referenceableAspect" class="org.alfresco.repo.node.ReferenceableAspect" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+    </bean>
+    
+    <!-- Temporary Aspect -->
+    <bean id="temporaryAspect" class="org.alfresco.repo.node.TemporaryAspect" init-method="init">
         <property name="policyComponent">
             <ref bean="policyComponent" />
         </property>

@@ -33,13 +33,25 @@ public class AssociationExistsException extends RuntimeException
     private QName qname;
     
     /**
-     * @param sourceRef the source of the association
-     * @param targetRef the target of the association
-     * @param qname the qualified name of the association
+     * @see #AssociationExistsException(NodeRef, NodeRef, QName, Throwable)
      */
     public AssociationExistsException(NodeRef sourceRef, NodeRef targetRef, QName qname)
     {
         super();
+        this.sourceRef = sourceRef;
+        this.targetRef = targetRef;
+        this.qname = qname;
+    }
+
+    /**
+     * @param sourceRef the source of the association
+     * @param targetRef the target of the association
+     * @param qname the qualified name of the association
+     * @param cause a causal exception
+     */
+    public AssociationExistsException(NodeRef sourceRef, NodeRef targetRef, QName qname, Throwable cause)
+    {
+        super(cause);
         this.sourceRef = sourceRef;
         this.targetRef = targetRef;
         this.qname = qname;

@@ -127,6 +127,14 @@ public interface ContentService
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype);
     
     /**
+     * Fetch the transformer that is capable of transforming image content.
+     * 
+     * @return Returns a transformer that can be used, or null if one was not available
+     */
+    @Auditable
+    public ContentTransformer getImageTransformer();
+    
+    /**
      * Returns whether a transformer exists that can read the content from
      * the reader and write the content back out to the writer.
      * <p>

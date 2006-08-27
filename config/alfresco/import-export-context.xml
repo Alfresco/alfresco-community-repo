@@ -218,6 +218,7 @@
                 <prop key="version.major">${version.major}</prop>
                 <prop key="version.minor">${version.minor}</prop>
                 <prop key="version.revision">${version.revision}</prop>
+                <prop key="version.build">${version.build}</prop>
                 <prop key="version.label">${version.label}</prop>
                 <prop key="version.schema">${version.schema}</prop>
                 <prop key="version.edition">${version.edition}</prop>
@@ -254,10 +255,12 @@
                 <prop key="spaces.guest_home.childname">${spaces.guest_home.childname}</prop>
                 <prop key="system.system_container.childname">${system.system_container.childname}</prop>
                 <prop key="system.people_container.childname">${system.people_container.childname}</prop>
+                <prop key="system.workflow_container.childname">${system.workflow_container.childname}</prop>
                 <prop key="spaces.dictionary.childname">${spaces.dictionary.childname}</prop>
                 <prop key="spaces.templates.childname">${spaces.templates.childname}</prop>
                 <prop key="spaces.templates.content.childname">${spaces.templates.content.childname}</prop>
                 <prop key="spaces.templates.email.childname">${spaces.templates.email.childname}</prop>
+                <prop key="spaces.templates.rss.childname">${spaces.templates.rss.childname}</prop>
                 <prop key="spaces.savedsearches.childname">${spaces.savedsearches.childname}</prop>
                 <prop key="spaces.scripts.childname">${spaces.scripts.childname}</prop>
             </props>

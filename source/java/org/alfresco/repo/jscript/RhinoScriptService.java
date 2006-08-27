@@ -28,18 +28,16 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Wrapper;
 
 /**
  * Implementation of the ScriptService using the Rhino JavaScript engine.
@@ -50,30 +48,18 @@ public class RhinoScriptService implements ScriptService
 {
     private static final Logger logger = Logger.getLogger(RhinoScriptService.class);
     
-    /** The permission-safe node service */
-    private NodeService nodeService;
+    /** Repository Service Registry */
+    private ServiceRegistry services;
     
-    /** The Content Service to use */
-    private ContentService contentService;
-    
+
     /**
-     * Set the node service
+     * Set the Service Registry
      * 
-     * @param nodeService       The permission-safe node service
+     * @param  service registry
      */
-    public void setNodeService(NodeService nodeService)
+    public void setServiceRegistry(ServiceRegistry services)
     {
-        this.nodeService = nodeService;
-    }
-    
-    /**
-     * Set the content service
-     * 
-     * @param contentService    The ContentService to use
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
+        this.services = services;
     }
     
     /**
@@ -85,6 +71,11 @@ public class RhinoScriptService implements ScriptService
         if (scriptClasspath == null)
         {
             throw new IllegalArgumentException("Script ClassPath is mandatory.");
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Executing script: " + scriptClasspath);
         }
         
         Reader reader = null;
@@ -123,10 +114,15 @@ public class RhinoScriptService implements ScriptService
             throw new IllegalArgumentException("Script NodeRef is mandatory.");
         }
         
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Executing script: " + scriptRef.toString());
+        }
+        
         Reader reader = null;
         try
         {
-            if (this.nodeService.exists(scriptRef) == false)
+            if (this.services.getNodeService().exists(scriptRef) == false)
             {
                 throw new AlfrescoRuntimeException("Script Node does not exist: " + scriptRef);
             }
@@ -135,7 +131,7 @@ public class RhinoScriptService implements ScriptService
             {
                 contentProp = ContentModel.PROP_CONTENT;
             }
-            ContentReader cr = this.contentService.getReader(scriptRef, contentProp);
+            ContentReader cr = this.services.getContentService().getReader(scriptRef, contentProp);
             if (cr == null || cr.exists() == false)
             {
                 throw new AlfrescoRuntimeException("Script Node content not found: " + scriptRef);
@@ -166,6 +162,11 @@ public class RhinoScriptService implements ScriptService
         if (script == null || script.length() == 0)
         {
             throw new IllegalArgumentException("Script argument is mandatory.");
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Executing script:\n" + script);
         }
         
         Reader reader = null;
@@ -207,24 +208,47 @@ public class RhinoScriptService implements ScriptService
         {
             // The easiest way to embed Rhino is just to create a new scope this way whenever
             // you need one. However, initStandardObjects is an expensive method to call and it
-            // allocates a fair amount of memory.  ImporterTopLevel provides a scope allowing 
-            // the import of java classes and packages.
-            Scriptable topLevelScope = new ImporterTopLevel(cx);
+            // allocates a fair amount of memory.
             Scriptable scope = cx.initStandardObjects();
-            scope.setParentScope(topLevelScope);
+
+            // there's always a model, if only to hold the util objects
+            if (model == null)
+            {
+                model = new HashMap<String, Object>();
+            }
+            
+            // add useful util objects
+            model.put("actions", new Actions(services));
+            model.put("logger", new ScriptLogger());
             
             // insert supplied object model into root of the default scope
-            if (model != null)
             {
                 for (String key : model.keySet())
                 {
-                    Object jsObject = Context.javaToJS(model.get(key), scope);
+                    // set the root scope on appropriate objects
+                    // this is used to allow native JS object creation etc.
+                    Object obj = model.get(key);
+                    if (obj instanceof Scopeable)
+                    {
+                        ((Scopeable)obj).setScope(scope);
+                    }
+                    
+                    // convert/wrap each object to JavaScript compatible
+                    Object jsObject = Context.javaToJS(obj, scope);
+                    
+                    // insert into the root scope ready for access by the script
                     ScriptableObject.putProperty(scope, key, jsObject);
                 }
             }
             
             // execute the script
             Object result = cx.evaluateReader(scope, reader, "AlfrescoScript", 1, null);
+            
+            // extract java object result if wrapped by rhinoscript 
+            if (result instanceof Wrapper)
+            {
+                result = ((Wrapper)result).unwrap();
+            }
             
             return result;
         }
@@ -234,7 +258,7 @@ public class RhinoScriptService implements ScriptService
         }
         finally
         {
-            cx.exit();
+            Context.exit();
             
             if (logger.isDebugEnabled())
             {
@@ -317,7 +341,6 @@ public class RhinoScriptService implements ScriptService
             model.put("space", new Node(space, services, resolver));
         }
         
-        // add other useful util objects
         model.put("search", new Search(services, companyHome.getStoreRef(), resolver));
         
         return model;

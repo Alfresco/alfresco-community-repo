@@ -1,127 +1,191 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8.00"
 	Name="CAlfrescoApp"
 	ProjectGUID="{055DCC85-2D1A-4594-B2BE-ED292D2BF26D}"
 	RootNamespace="CAlfrescoApp"
-	Keyword="MFCProj">
+	Keyword="MFCProj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="Debug"
 			IntermediateDirectory="Debug"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
-			CharacterSet="1">
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="false"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\includes"
-				PreprocessorDefinitions="UNICODE"
-				MinimalRebuild="TRUE"
+				PreprocessorDefinitions="UNICODE,_CRT_SECURE_NO_DEPRECATE"
+				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				TreatWChar_tAsBuiltInType="TRUE"
+				TreatWChar_tAsBuiltInType="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="4"/>
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="4"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+				AdditionalIncludeDirectories="$(IntDir)"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="mpr.lib shell32.lib"
 				OutputFile="$(OutDir)/Alfresco.exe"
 				LinkIncremental="2"
-				GenerateDebugInformation="TRUE"
+				GenerateDebugInformation="true"
 				SubSystem="2"
-				TargetMachine="1"/>
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="FALSE"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-				AdditionalIncludeDirectories="$(IntDir)"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="Release"
 			IntermediateDirectory="Release"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
-			CharacterSet="1">
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="false"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories=".\includes"
-				PreprocessorDefinitions="UNICODE"
-				MinimalRebuild="FALSE"
+				PreprocessorDefinitions="UNICODE,_CRT_SECURE_NO_DEPRECATE"
+				MinimalRebuild="false"
 				RuntimeLibrary="2"
-				TreatWChar_tAsBuiltInType="TRUE"
+				TreatWChar_tAsBuiltInType="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+				AdditionalIncludeDirectories="$(IntDir)"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="mpr.lib shell32.lib"
 				OutputFile="$(OutDir)/Alfresco.exe"
 				LinkIncremental="1"
-				GenerateDebugInformation="TRUE"
+				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				TargetMachine="1"/>
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="FALSE"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-				AdditionalIncludeDirectories="$(IntDir)"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -130,165 +194,227 @@
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
 			<File
-				RelativePath=".\CAlfrescoApp.cpp">
+				RelativePath=".\CAlfrescoApp.cpp"
+				>
 			</File>
 			<File
-				RelativePath=".\CAlfrescoAppDlg.cpp">
+				RelativePath=".\CAlfrescoAppDlg.cpp"
+				>
 			</File>
 			<File
-				RelativePath=".\FileStatusDialog.cpp">
-			</File>
-			<File
-				RelativePath=".\stdafx.cpp">
+				RelativePath=".\stdafx.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
+						UsePrecompiledHeader="1"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
+						UsePrecompiledHeader="1"
+					/>
 				</FileConfiguration>
 			</File>
 			<Filter
 				Name="util"
-				Filter="">
+				>
 				<File
-					RelativePath=".\source\util\ByteArray.cpp">
+					RelativePath=".\source\util\ByteArray.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\source\util\DataBuffer.cpp">
+					RelativePath=".\source\util\DataBuffer.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\source\util\DataPacker.cpp">
+					RelativePath=".\source\util\DataPacker.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\source\util\Exception.cpp">
+					RelativePath=".\source\util\Exception.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\source\util\FileName.cpp">
+					RelativePath=".\source\util\FileName.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\source\util\Integer.cpp">
+					RelativePath=".\source\util\Integer.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\source\util\Long.cpp">
+					RelativePath=".\source\util\Long.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\source\util\String.cpp">
+					RelativePath=".\source\util\String.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\source\util\System.cpp">
+					RelativePath=".\source\util\System.cpp"
+					>
 				</File>
 			</Filter>
 			<Filter
 				Name="alfresco"
-				Filter="">
+				>
 				<File
-					RelativePath=".\source\alfresco\Alfresco.cpp">
+					RelativePath=".\source\alfresco\Alfresco.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\source\alfresco\Desktop.cpp"
+					>
 				</File>
 			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
 			<File
-				RelativePath=".\CAlfrescoApp.h">
+				RelativePath=".\CAlfrescoApp.h"
+				>
 			</File>
 			<File
-				RelativePath=".\CAlfrescoAppDlg.h">
+				RelativePath=".\CAlfrescoAppDlg.h"
+				>
 			</File>
 			<File
-				RelativePath=".\FileStatusDialog.h">
+				RelativePath=".\Resource.h"
+				>
 			</File>
 			<File
-				RelativePath=".\Resource.h">
-			</File>
-			<File
-				RelativePath=".\stdafx.h">
+				RelativePath=".\stdafx.h"
+				>
 			</File>
 			<Filter
 				Name="util"
-				Filter="">
+				>
 				<File
-					RelativePath=".\includes\util\ByteArray.h">
+					RelativePath=".\includes\util\ByteArray.h"
+					>
 				</File>
 				<File
-					RelativePath=".\includes\util\DataBuffer.h">
+					RelativePath=".\includes\util\DataBuffer.h"
+					>
 				</File>
 				<File
-					RelativePath=".\includes\util\DataPacker.h">
+					RelativePath=".\includes\util\DataPacker.h"
+					>
 				</File>
 				<File
-					RelativePath=".\includes\util\Exception.h">
+					RelativePath=".\includes\util\Exception.h"
+					>
 				</File>
 				<File
-					RelativePath=".\includes\util\FileName.h">
+					RelativePath=".\includes\util\FileName.h"
+					>
 				</File>
 				<File
-					RelativePath=".\includes\util\Integer.h">
+					RelativePath=".\includes\util\Integer.h"
+					>
 				</File>
 				<File
-					RelativePath=".\includes\util\JavaTypes.h">
+					RelativePath=".\includes\util\JavaTypes.h"
+					>
 				</File>
 				<File
-					RelativePath=".\includes\util\Long.h">
+					RelativePath=".\includes\util\Long.h"
+					>
 				</File>
 				<File
-					RelativePath=".\includes\util\String.h">
+					RelativePath=".\includes\util\String.h"
+					>
 				</File>
 				<File
-					RelativePath=".\includes\util\System.h">
+					RelativePath=".\includes\util\System.h"
+					>
 				</File>
 				<File
-					RelativePath=".\includes\util\Types.h">
+					RelativePath=".\includes\util\Types.h"
+					>
 				</File>
 			</Filter>
 			<Filter
 				Name="alfresco"
-				Filter="">
+				>
 				<File
-					RelativePath=".\includes\alfresco\Alfresco.hpp">
+					RelativePath=".\includes\alfresco\Alfresco.hpp"
+					>
+				</File>
+				<File
+					RelativePath=".\includes\alfresco\Desktop.hpp"
+					>
 				</File>
 			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
 			<File
-				RelativePath=".\alfresco.ico">
+				RelativePath=".\alfresco.ico"
+				>
 			</File>
 			<File
-				RelativePath=".\res\CAlfrescoApp.ico">
+				RelativePath=".\res\CAlfrescoApp.ico"
+				>
 			</File>
 			<File
-				RelativePath=".\CAlfrescoApp.rc">
+				RelativePath=".\CAlfrescoApp.rc"
+				>
 			</File>
 			<File
-				RelativePath=".\res\CAlfrescoApp.rc2">
+				RelativePath=".\res\CAlfrescoApp.rc2"
+				>
 			</File>
 		</Filter>
 		<File
 			RelativePath=".\CAlfrescoApp.htm"
-			DeploymentContent="TRUE">
+			DeploymentContent="true"
+			>
 		</File>
 		<File
-			RelativePath=".\res\CAlfrescoApp.manifest">
+			RelativePath=".\res\CAlfrescoApp.manifest"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\ReadMe.txt">
+			RelativePath=".\ReadMe.txt"
+			>
 		</File>
 	</Files>
 	<Globals>
 		<Global
 			Name="RESOURCE_FILE"
-			Value="CAlfrescoApp.rc"/>
+			Value="CAlfrescoApp.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

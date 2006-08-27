@@ -20,6 +20,7 @@ import java.security.NoSuchAlgorithmException;
 import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.filesys.server.SrvSession;
+import org.alfresco.filesys.server.auth.AuthContext;
 import org.alfresco.filesys.server.auth.CifsAuthenticator;
 import org.alfresco.filesys.server.auth.ClientInfo;
 import org.alfresco.filesys.server.auth.NTLanManAuthContext;
@@ -182,26 +183,22 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
     }
 
     /**
-     * Generate a challenge key
+     * Return an authentication context for the new session
      * 
-     * @param sess SrvSession
-     * @return byte[]
+     * @return AuthContext
      */
-    public byte[] getChallengeKey(SrvSession sess)
+    public AuthContext getAuthContext( SMBSrvSession sess)
     {
-        // In MD4 mode we generate the challenge locally
-
-        byte[] key = null;
-        
         // Check if the client is already authenticated, and it is not a null logon
-        
+
+    	AuthContext authCtx = null;
+    	
         if ( sess.hasAuthenticationContext() && sess.hasAuthenticationToken() &&
                 sess.getClientInformation().getLogonType() != ClientInfo.LogonNull)
         {
             // Return the previous challenge, user is already authenticated
 
-            NTLanManAuthContext authCtx = (NTLanManAuthContext) sess.getAuthenticationContext();
-            key = authCtx.getChallenge();
+            authCtx = (NTLanManAuthContext) sess.getAuthenticationContext();
             
             // DEBUG
             
@@ -210,11 +207,10 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
         }
         else if ( m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
         {
-            // Generate a new challenge key, pack the key and return
-    
-            key = new byte[8];
-    
-            DataPacker.putIntelLong(m_random.nextLong(), key, 0);
+            // Create a new authentication context for the session
+
+            authCtx = new NTLanManAuthContext();
+            sess.setAuthenticationContext( authCtx);
         }
         else
         {
@@ -233,14 +229,17 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
             // Get the challenge from the token
             
             if ( authToken.getChallenge() != null)
-                key = authToken.getChallenge().getBytes();
+            {
+            	authCtx = new NTLanManAuthContext( authToken.getChallenge().getBytes());
+            	sess.setAuthenticationContext( authCtx);
+            }
         }
 
-        // Return the challenge
+        // Return the authentication context
         
-        return key;
+        return authCtx;
     }
-
+    
     /**
      * Perform MD4 user authentication
      * 

@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterService;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -312,5 +313,13 @@ public class ServiceDescriptorRegistry
     public ScriptService getScriptService()
     {
         return (ScriptService)getService(SCRIPT_SERVICE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getWorkflowService()
+     */
+    public WorkflowService getWorkflowService()
+    {
+        return (WorkflowService)getService(WORKFLOW_SERVICE);
     }
 }

@@ -56,24 +56,8 @@ public interface Node
     
     public void setTypeQName(QName typeQName);
 
-//    public NodeStatus getStatus();
-//    
-//    public void setStatus(NodeStatus status);
-//    
     public Set<QName> getAspects();
     
-    /**
-     * @return Returns all the regular associations for which this node is a target 
-     */
-    public Collection<NodeAssoc> getSourceNodeAssocs();
-
-    /**
-     * @return Returns all the regular associations for which this node is a source 
-     */
-    public Collection<NodeAssoc> getTargetNodeAssocs();
-
-    public Collection<ChildAssoc> getChildAssocs();
-
     public Collection<ChildAssoc> getParentAssocs();
 
     public Map<QName, PropertyValue> getProperties();

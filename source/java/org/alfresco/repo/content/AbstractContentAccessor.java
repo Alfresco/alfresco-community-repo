@@ -150,14 +150,6 @@ public abstract class AbstractContentAccessor implements ContentAccessor
         }
     }
     
-    /**
-     * Derived classes must implement this to help determine if the underlying
-     * IO Channel is still open.
-     * 
-     * @return Returns true if the underlying IO Channel is open
-     */
-    protected abstract boolean isChannelOpen();
-    
     public String getContentUrl()
     {
         return contentUrl;

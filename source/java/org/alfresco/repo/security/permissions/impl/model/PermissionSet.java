@@ -19,6 +19,7 @@ package org.alfresco.repo.security.permissions.impl.model;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -30,7 +31,7 @@ import org.dom4j.Element;
  * Store and read the definition of a permission set
  * @author andyh
  */
-public class PermissionSet implements XMLModelInitialisable
+public final class PermissionSet implements XMLModelInitialisable
 {
     private static final String TYPE = "type";
     private static final String PERMISSION_GROUP = "permissionGroup";
@@ -44,7 +45,7 @@ public class PermissionSet implements XMLModelInitialisable
     
     private boolean exposeAll;
     
-    private Set<PermissionGroup> permissionGroups = new HashSet<PermissionGroup>();
+    private Set<PermissionGroup> permissionGroups = new LinkedHashSet<PermissionGroup>();
     
     private Set<Permission> permissions = new HashSet<Permission>();
     
@@ -104,7 +105,4 @@ public class PermissionSet implements XMLModelInitialisable
     {
         return exposeAll;
     }
-    
-    
-
 }

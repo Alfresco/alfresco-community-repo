@@ -66,7 +66,8 @@ public class FileFolderServiceImplTest extends TestCase
     private static final String NAME_L1_FILE_A = "L1- File A";
     private static final String NAME_L1_FILE_B = "L1- File B";
     private static final String NAME_L1_FILE_C = "L1- File C (%_)";
-    private static final String NAME_DUPLICATE = "DUPLICATE";
+    private static final String NAME_CHECK_FILE = "CHECK_FILE";
+    private static final String NAME_CHECK_FOLDER = "CHECK_FOLDER";
     
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
@@ -258,11 +259,11 @@ public class FileFolderServiceImplTest extends TestCase
      */
     public void testGetByName() throws Exception
     {
-        FileInfo fileInfo = getByName(NAME_DUPLICATE, true);
+        FileInfo fileInfo = getByName(NAME_CHECK_FOLDER, true);
         assertNotNull(fileInfo);
         assertTrue(fileInfo.isFolder());
 
-        fileInfo = getByName(NAME_DUPLICATE, false);
+        fileInfo = getByName(NAME_CHECK_FILE, false);
         assertNotNull(fileInfo);
         assertFalse(fileInfo.isFolder());
     }
@@ -308,6 +309,10 @@ public class FileFolderServiceImplTest extends TestCase
         // make sure that it is an immediate child of the root
         List<FileInfo> checkFileInfos = fileFolderService.search(workingRootNodeRef, NAME_L1_FOLDER_A, false);
         assertEquals("Folder not moved to root", 1, checkFileInfos.size());
+        // rename properly
+        FileInfo checkFileInfo = fileFolderService.move(folderToMoveRef, null, "new name");
+        checkFileInfos = fileFolderService.search(workingRootNodeRef, checkFileInfo.getName(), false);
+        assertEquals("Folder not renamed in root", 1, checkFileInfos.size());
         // attempt illegal rename (existing)
         try
         {
@@ -318,10 +323,6 @@ public class FileFolderServiceImplTest extends TestCase
         {
             // expected
         }
-        // rename properly
-        FileInfo checkFileInfo = fileFolderService.move(folderToMoveRef, null, "new name");
-        checkFileInfos = fileFolderService.search(workingRootNodeRef, checkFileInfo.getName(), false);
-        assertEquals("Folder not renamed in root", 1, checkFileInfos.size());
     }
     
     public void testCopy() throws Exception
@@ -417,19 +418,20 @@ public class FileFolderServiceImplTest extends TestCase
     {
         // create a completely new path below the root
         List<String> namePath = new ArrayList<String>(4);
-        namePath.add("A");
-        namePath.add("B");
-        namePath.add("C");
-        namePath.add("D");
+        namePath.add("AAA");
+        namePath.add("BBB");
+        namePath.add("CCC");
+        namePath.add("DDD");
         
         FileInfo lastFileInfo = fileFolderService.makeFolders(rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
         assertNotNull("First makeFolder failed", lastFileInfo);
         // check that a repeat works
+        
         FileInfo lastFileInfoAgain = fileFolderService.makeFolders(rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
         assertNotNull("Repeat makeFolders failed", lastFileInfoAgain);
         assertEquals("Repeat created new leaf", lastFileInfo.getNodeRef(), lastFileInfoAgain.getNodeRef());
         // check that it worked
-        List<FileInfo> checkInfos = fileFolderService.search(rootNodeRef, "D", false, true, true);
+        List<FileInfo> checkInfos = fileFolderService.search(rootNodeRef, "DDD", false, true, true);
         assertEquals("Expected to find a result", 1, checkInfos.size());
         // get the path
         List<FileInfo> checkPathInfos = fileFolderService.getNamePath(rootNodeRef, checkInfos.get(0).getNodeRef());
@@ -440,6 +442,27 @@ public class FileFolderServiceImplTest extends TestCase
             assertEquals("Path mismatch", namePath.get(i), checkInfo.getName());
             i++;
         }
+    }
+    
+    /**
+     * Lucene only indexes terms that are 3 characters or more
+     */
+    public void testMakeFoldersShortNames() throws Exception
+    {
+        // create a completely new path below the root
+        List<String> namePath = new ArrayList<String>(4);
+        namePath.add("A");
+        namePath.add("B");
+        namePath.add("C");
+        namePath.add("D");
+        
+        FileInfo lastFileInfo = fileFolderService.makeFolders(rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
+        assertNotNull("First makeFolder failed", lastFileInfo);
+        // check that a repeat works
+        
+        FileInfo lastFileInfoAgain = fileFolderService.makeFolders(rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
+        assertNotNull("Repeat makeFolders failed", lastFileInfoAgain);
+        assertEquals("Repeat created new leaf", lastFileInfo.getNodeRef(), lastFileInfoAgain.getNodeRef());
     }
     
     public void testGetNamePath() throws Exception
@@ -471,6 +494,22 @@ public class FileFolderServiceImplTest extends TestCase
         {
             // expected
         }
+    }
+    
+    public void testSearchSimple() throws Exception
+    {
+        FileInfo folderInfo = getByName(NAME_L0_FOLDER_A, true);
+        assertNotNull(folderInfo);
+        NodeRef folderNodeRef = folderInfo.getNodeRef();
+        // search for a file that is not there
+        NodeRef phantomNodeRef = fileFolderService.searchSimple(folderNodeRef, "aaaaaaa");
+        assertNull("Found non-existent node by name", phantomNodeRef);
+        // search for a file that is there
+        NodeRef fileNodeRef = fileFolderService.searchSimple(folderNodeRef, NAME_L1_FILE_A);
+        assertNotNull("Didn't find file", fileNodeRef);
+        // double check
+        FileInfo checkInfo = getByName(NAME_L1_FILE_A, false);
+        assertEquals("Incorrect node found", checkInfo.getNodeRef(), fileNodeRef);
     }
     
     public void testResolveNamePath() throws Exception
@@ -523,5 +562,21 @@ public class FileFolderServiceImplTest extends TestCase
         assertNotNull("Reader is null", reader);
         String checkContent = reader.getContentString();
         assertEquals("Content mismatch", content, checkContent);
+    }
+    
+    public void testLongFileNames() throws Exception
+    {
+        String fileName = 
+            "12345678901234567890123456789012345678901234567890" +
+            "12345678901234567890123456789012345678901234567890" +
+            "12345678901234567890123456789012345678901234567890" +
+            "12345678901234567890123456789012345678901234567890" +
+            "12345678901234567890123456789012345678901234567890" +
+            "12345678901234567890123456789012345678901234567890";
+        FileInfo fileInfo = fileFolderService.create(workingRootNodeRef, fileName, ContentModel.TYPE_CONTENT);
+        // see if we can get it again
+        NodeRef fileNodeRef = fileFolderService.searchSimple(workingRootNodeRef, fileName);
+        assertNotNull("Long filename not found", fileNodeRef);
+        assertEquals(fileInfo.getNodeRef(), fileNodeRef);
     }
 }

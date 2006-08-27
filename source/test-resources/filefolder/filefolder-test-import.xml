@@ -43,15 +43,15 @@
 	<cm:folder>
 		<cm:name>L0- Folder C</cm:name>
 		<cm:contains>
-            <!-- L1 files -->
+         <!-- L1 files -->
 			<cm:content>
-				<cm:name>DUPLICATE</cm:name>
+				<cm:name>CHECK_FILE</cm:name>
 				<cm:content>contentUrl=classpath:quick/quick.txt|mimetype=text/plain|size=|encoding=</cm:content>
 			</cm:content>
-            <!-- L2 folders -->
-            <cm:folder>
-                <cm:name>DUPLICATE</cm:name>
-            </cm:folder>
+         <!-- L2 folders -->
+         <cm:folder>
+             <cm:name>CHECK_FOLDER</cm:name>
+         </cm:folder>
 		</cm:contains>
 	</cm:folder>
 

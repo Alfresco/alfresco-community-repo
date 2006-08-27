@@ -890,4 +890,50 @@ public abstract class CifsAuthenticator
         }
     }
     
+    /**
+     * Map the case insensitive logon name to the internal person object user name
+     * 
+     * @param userName String
+     * @return String
+     */
+    protected final String mapUserNameToPerson(String userName)
+    {
+        // Get the home folder for the user
+        
+        UserTransaction tx = m_transactionService.getUserTransaction();
+        String personName = null;
+        
+        try
+        {
+            tx.begin();
+            personName = m_personService.getUserIdentifier( userName);
+            tx.commit();
+        }
+        catch (Throwable ex)
+        {
+            try
+            {
+                tx.rollback();
+            }
+            catch (Throwable ex2)
+            {
+                logger.error("Failed to rollback transaction", ex2);
+            }
+            
+            // Re-throw the exception
+            
+            if (ex instanceof RuntimeException)
+            {
+                throw (RuntimeException) ex;
+            }
+            else
+            {
+                throw new RuntimeException("Error during execution of transaction.", ex);
+            }
+        }
+        
+        // Return the person name
+        
+        return personName;
+    }
 }

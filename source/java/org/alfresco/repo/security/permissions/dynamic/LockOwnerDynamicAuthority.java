@@ -16,10 +16,13 @@
  */
 package org.alfresco.repo.security.permissions.dynamic;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -28,6 +31,9 @@ public class LockOwnerDynamicAuthority implements DynamicAuthority, Initializing
 {
     
     private LockService lockService;
+    
+    private NodeService nodeService;
+    
 
     public LockOwnerDynamicAuthority()
     {
@@ -36,7 +42,19 @@ public class LockOwnerDynamicAuthority implements DynamicAuthority, Initializing
 
     public boolean hasAuthority(NodeRef nodeRef, String userName)
     {
-        return lockService.getLockStatus(nodeRef) == LockStatus.LOCK_OWNER;
+        if(lockService.getLockStatus(nodeRef) == LockStatus.LOCK_OWNER)
+        {
+            return true;
+        }
+        if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        {
+            NodeRef originial =  DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE));
+            return  (lockService.getLockStatus(originial) == LockStatus.LOCK_OWNER);
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public String getAuthority()
@@ -48,7 +66,11 @@ public class LockOwnerDynamicAuthority implements DynamicAuthority, Initializing
     {
         if(lockService == null)
         {
-            throw new IllegalStateException("A lock service must be set");
+            throw new IllegalStateException("The LockService must be set");
+        }
+        if(nodeService == null)
+        {
+            throw new IllegalStateException("The NodeService service must be set");
         }
         
     }
@@ -56,6 +78,12 @@ public class LockOwnerDynamicAuthority implements DynamicAuthority, Initializing
     public void setLockService(LockService lockService)
     {
         this.lockService = lockService;
+    }
+    
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
     
     

@@ -25,6 +25,7 @@ import java.util.Map;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.domain.AppliedPatch;
 import org.alfresco.service.cmr.admin.PatchException;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.apache.commons.logging.Log;
@@ -50,6 +51,7 @@ public class PatchServiceImpl implements PatchService
     private static Log logger = LogFactory.getLog(PatchServiceImpl.class);
     
     private DescriptorService descriptorService;
+    private RuleService ruleService;
     private PatchDaoService patchDaoService;
     private List<Patch> patches;
 
@@ -67,6 +69,11 @@ public class PatchServiceImpl implements PatchService
     {
         this.patchDaoService = patchDaoService;
     }
+    
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
+    }
 
     public void registerPatch(Patch patch)
     {
@@ -75,31 +82,50 @@ public class PatchServiceImpl implements PatchService
 
     public boolean applyOutstandingPatches()
     {
-        // construct a map of all known patches by ID
-        Map<String, Patch> allPatchesById = new HashMap<String, Patch>(23);
-        for (Patch patch : patches)
-        {
-            allPatchesById.put(patch.getId(), patch);
-        }
-        // construct a list of executed patches by ID
-        Map<String, AppliedPatch> appliedPatchesById = new HashMap<String, AppliedPatch>(23);
-        List<AppliedPatch> appliedPatches = patchDaoService.getAppliedPatches();
-        for (AppliedPatch appliedPatch : appliedPatches)
-        {
-            appliedPatchesById.put(appliedPatch.getId(), appliedPatch);
-        }
-        // go through all the patches and apply them where necessary
         boolean success = true;
-        for (Patch patch : allPatchesById.values())
+        
+        try
         {
-            // apply the patch
-            success = applyPatchAndDependencies(patch, appliedPatchesById);
-            if (!success)
+        // Diable rules whilst processing the patches
+        this.ruleService.disableRules();
+        try
+        {
+            // construct a map of all known patches by ID
+            Map<String, Patch> allPatchesById = new HashMap<String, Patch>(23);
+            for (Patch patch : patches)
             {
-                // we failed to apply a patch or one of its dependencies - terminate
-                break;
+                allPatchesById.put(patch.getId(), patch);
             }
+            // construct a list of executed patches by ID
+            Map<String, AppliedPatch> appliedPatchesById = new HashMap<String, AppliedPatch>(23);
+            List<AppliedPatch> appliedPatches = patchDaoService.getAppliedPatches();
+            for (AppliedPatch appliedPatch : appliedPatches)
+            {
+                appliedPatchesById.put(appliedPatch.getId(), appliedPatch);
+            }
+        
+            // go through all the patches and apply them where necessary        
+            for (Patch patch : allPatchesById.values())
+            {
+                // apply the patch
+                success = applyPatchAndDependencies(patch, appliedPatchesById);
+                if (!success)
+                {
+                    // we failed to apply a patch or one of its dependencies - terminate
+                    break;
+                }
+            }        
         }
+        finally
+        {
+            this.ruleService.enableRules();
+        }
+        }
+        catch (Throwable exception)
+        {
+            exception.printStackTrace();
+        }
+        
         // done
         return success;
     }

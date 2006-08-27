@@ -26,6 +26,7 @@ import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionServiceException;
@@ -604,6 +605,76 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size());                
+                
+                return null;
+            }
+        });
+    }
+    
+    public void testAutoRemovalOfVersionHistory()
+    {
+    	StoreRef spacesStoreRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+    	NodeRef root = this.dbNodeService.getRootNode(spacesStoreRef);
+    	
+    	HashMap<QName, Serializable> props2 = new HashMap<QName, Serializable>();
+        props2.put(ContentModel.PROP_NAME, "test.txt");
+        final NodeRef nodeRef = this.dbNodeService.createNode(
+                root, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("{test}MyVersionableNode2"),
+                ContentModel.TYPE_CONTENT,
+                props2).getChildRef();
+        this.dbNodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+        
+        setComplete();
+        endTransaction();
+        
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+            	VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());
+                
+            	// Delete the node
+                VersionServiceImplTest.this.dbNodeService.deleteNode(nodeRef);
+                
+                return null;
+            }
+        });
+        
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+            	// Get the archived noderef
+            	NodeRef archivedNodeRef = VersionServiceImplTest.this.nodeArchiveService.getArchivedNode(nodeRef);
+            	
+            	// The archived noderef should still have a link to the version history
+            	VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(archivedNodeRef);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size()); 
+                
+                // Delete the node for good
+                VersionServiceImplTest.this.dbNodeService.deleteNode(archivedNodeRef);
+                
+                return null;
+            }
+        });
+        
+        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+            	// Get the archived noderef
+            	NodeRef archivedNodeRef = VersionServiceImplTest.this.nodeArchiveService.getArchivedNode(nodeRef);
+            	
+            	// Check that the version histories have been deleted
+            	VersionHistory versionHistory12 = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
+                assertNull(versionHistory12);
+            	VersionHistory versionHistory23 = VersionServiceImplTest.this.versionService.getVersionHistory(archivedNodeRef);
+                assertNull(versionHistory23);
                 
                 return null;
             }

@@ -9,28 +9,51 @@
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
       <import uri="http://www.alfresco.org/model/action/1.0" prefix="act"/>
       <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
    </imports>
    
    <namespaces>
       <namespace uri="http://www.alfresco.org/model/rule/1.0" prefix="rule"/>
    </namespaces>
 
-   
    <types>
    
 	  <type name="rule:rule">
 	     <title>Rule</title>
-	     <parent>act:compositeaction</parent>
-	     <properties>
+         <parent>sys:base</parent>
+         <properties>
             <property name="rule:ruleType">
                <type>d:text</type>
                <mandatory>true</mandatory>
+               <multiple>true</multiple>
             </property>
             <property name="rule:applyToChildren">
                <type>d:boolean</type>
                <mandatory>true</mandatory>
             </property>
-         </properties>
+            <property name="rule:executeAsynchronously">
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="rule:disabled">
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+               <default>false</default>
+            </property>
+         </properties>          
+         <associations>
+            <child-association name="rule:action">
+               <target>
+                  <class>act:action</class>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </target>
+            </child-association>
+         </associations>          
+		 <mandatory-aspects>
+		 	<aspect>cm:titled</aspect>
+		    <aspect>cm:auditable</aspect>
+         </mandatory-aspects>
 	  </type>
 
 	</types>
@@ -48,6 +71,10 @@
                </target>
             </child-association>
          </associations>  
+      </aspect>
+      
+      <aspect name="rule:ignoreInheritedRules">
+         <title>Ignore Inherited Rules</title>           
       </aspect>
          
 	</aspects>

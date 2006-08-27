@@ -145,7 +145,7 @@ public class AssocSourceMultiplicityIntegrityEvent extends AbstractIntegrityEven
         }
         if ((mandatory && actualSize == 0) || (!allowMany && actualSize > 1))
         {
-            String parentOrSourceStr = (assocDef.isChild() ? "child" : "target");
+            String parentOrSourceStr = (assocDef.isChild() ? "parent" : "source");
             IntegrityRecord result = new IntegrityRecord(
                     "The association " + parentOrSourceStr + " multiplicity has been violated: \n" +
                     "   Association: " + assocDef + "\n" +

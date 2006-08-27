@@ -9,7 +9,7 @@
    <class
          name="org.alfresco.repo.domain.hibernate.VersionCountImpl"
          proxy="org.alfresco.repo.domain.VersionCount"
-         table="version_count"
+         table="alf_version_count"
          dynamic-update="false"
          dynamic-insert="false"
          select-before-update="false"

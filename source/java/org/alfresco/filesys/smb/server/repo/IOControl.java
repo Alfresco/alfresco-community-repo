@@ -21,7 +21,7 @@ import org.alfresco.filesys.smb.NTIOCtl;
 /**
  * Content Disk Driver I/O Control Codes Class
  * 
- * <p>contains I/O control codes and status codes used by the content disk driver I/O control
+ * <p>Contains I/O control codes and status codes used by the content disk driver I/O control
  * implementation.
  * 
  * @author gkspencer
@@ -30,24 +30,20 @@ public class IOControl
 {
     // Custom I/O control codes
     
-    public static final int CmdProbe      = NTIOCtl.FsCtlCustom;
-    public static final int CmdFileStatus = NTIOCtl.FsCtlCustom + 1;
-    public static final int CmdCheckOut   = NTIOCtl.FsCtlCustom + 2;
-    public static final int CmdCheckIn    = NTIOCtl.FsCtlCustom + 3;
+    public static final int CmdProbe      		= NTIOCtl.FsCtlCustom;
+    public static final int CmdFileStatus 		= NTIOCtl.FsCtlCustom + 1;
+    // Version 1 CmdCheckOut = NTIOCtl.FsCtlCustom + 2
+    // Version 1 CmdCheckIn  = NTIOCtl.FsCtlCustom + 3
+    public static final int CmdGetActionInfo	= NTIOCtl.FsCtlCustom + 4;
+    public static final int CmdRunAction   		= NTIOCtl.FsCtlCustom + 5;
 
     // I/O control request/response signature
     
     public static final String Signature   = "ALFRESCO";
     
-    // I/O control status codes
+    // I/O control interface version id
     
-    public static final int StsSuccess          = 0;
-    
-    public static final int StsError            = 1;
-    public static final int StsFileNotFound     = 2;
-    public static final int StsAccessDenied     = 3;
-    public static final int StsBadParameter     = 4;
-    public static final int StsNotWorkingCopy   = 5;
+    public static final int Version				= 2;
     
     // Boolean field values
     

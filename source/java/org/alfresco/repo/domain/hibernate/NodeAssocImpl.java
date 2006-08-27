@@ -57,17 +57,6 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
         // add the forward associations
         this.setTarget(targetNode);
         this.setSource(sourceNode);
-        // add the inverse associations
-        sourceNode.getTargetNodeAssocs().add(this);
-        targetNode.getSourceNodeAssocs().add(this);
-    }
-    
-    public void removeAssociation()
-    {
-        // maintain inverse assoc from source node to this instance
-        this.getSource().getTargetNodeAssocs().remove(this);
-        // maintain inverse assoc from target node to this instance
-        this.getTarget().getSourceNodeAssocs().remove(this);
     }
     
     public AssociationRef getNodeAssocRef()

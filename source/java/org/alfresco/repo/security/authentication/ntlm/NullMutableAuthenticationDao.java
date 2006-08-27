@@ -294,18 +294,6 @@ public class NullMutableAuthenticationDao implements MutableAuthenticationDao
         
 //        return null;
     }
-    
-    /**
-     * Are user names case sensitive?
-     * 
-     * @return
-     */
-    public boolean getUserNamesAreCaseSensitive()
-    {
-        throw new AlfrescoRuntimeException("Not implemented");
-        
-//        return false;
-    }
 
     /**
      * Return the user details for the specified user

@@ -156,6 +156,13 @@ public class AuthorityServiceImpl implements AuthorityService
 
     public void addAuthority(String parentName, String childName)
     {
+        if (AuthorityType.getAuthorityType(childName).equals(AuthorityType.USER))
+        {
+            if(!personService.personExists(childName))
+            {
+                throw new AuthorityException("The person "+childName+" does not exist and can not be added to a group");
+            }
+        }
         authorityDAO.addAuthority(parentName, childName);
     }
 

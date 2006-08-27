@@ -25,7 +25,7 @@ import org.alfresco.service.cmr.repository.TemplateNode;
  * 
  * @author Kevin Roast
  */
-public final class XPathResultsMap extends BasePathResultsMap
+public class XPathResultsMap extends BasePathResultsMap
 {
    /**
     * Constructor

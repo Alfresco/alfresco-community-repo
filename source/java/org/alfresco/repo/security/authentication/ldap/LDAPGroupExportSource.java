@@ -19,7 +19,6 @@ package org.alfresco.repo.security.authentication.ldap;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.HashMap;

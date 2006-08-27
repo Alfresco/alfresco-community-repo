@@ -74,7 +74,7 @@ public class SetPropertyValueActionExecuterTest extends BaseSpringTest
     public void testExecution()
     {
         // Execute the action
-        ActionImpl action = new ActionImpl(ID, SetPropertyValueActionExecuter.NAME, null);
+        ActionImpl action = new ActionImpl(null, ID, SetPropertyValueActionExecuter.NAME, null);
         action.setParameterValue(SetPropertyValueActionExecuter.PARAM_PROPERTY, ContentModel.PROP_NAME);
         action.setParameterValue(SetPropertyValueActionExecuter.PARAM_VALUE, TEST_VALUE);
         this.executer.execute(action, this.nodeRef);

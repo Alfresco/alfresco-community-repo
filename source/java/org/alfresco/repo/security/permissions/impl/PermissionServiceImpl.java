@@ -18,6 +18,7 @@ package org.alfresco.repo.security.permissions.impl;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -25,7 +26,10 @@ import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.providers.dao.User;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
@@ -41,6 +45,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
@@ -100,6 +105,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
      */
     private List<DynamicAuthority> dynamicAuthorities;
 
+    private PolicyComponent policyComponent;
+
     /*
      * Standard spring construction.
      */
@@ -150,13 +157,24 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     /**
      * Set the permissions access cache.
      * 
-     * @param accessCache a transactionally safe cache
+     * @param accessCache
+     *            a transactionally safe cache
      */
     public void setAccessCache(SimpleCache<Serializable, AccessStatus> accessCache)
     {
         this.accessCache = accessCache;
     }
 
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+    
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+    {
+        accessCache.clear();
+    }
+    
     public void afterPropertiesSet() throws Exception
     {
         if (dictionaryService == null)
@@ -187,6 +205,13 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             throw new IllegalArgumentException("Property 'accessCache' has not been set");
         }
+        if (policyComponent == null)
+        {
+            throw new IllegalArgumentException("Property 'policyComponent' has not been set");
+        }
+        
+        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"), ContentModel.ASPECT_AUDITABLE, new JavaBehaviour(this, "onMoveNode"));
+    
     }
 
     //
@@ -329,7 +354,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     public Set<String> getSettablePermissions(QName type)
     {
         Set<PermissionReference> settable = getSettablePermissionReferences(type);
-        Set<String> strings = new HashSet<String>(settable.size());
+        Set<String> strings = new LinkedHashSet<String>(settable.size());
         for (PermissionReference pr : settable)
         {
             strings.add(getPermission(pr));
@@ -421,15 +446,17 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     }
     
     /**
-     * Key for a cache object is built from all the known Authorities (which can change
-     * dynamically so they must all be used) the NodeRef ID and the permission reference itself.
-     * This gives a unique key for each permission test.
+     * Key for a cache object is built from all the known Authorities (which can
+     * change dynamically so they must all be used) the NodeRef ID and the
+     * permission reference itself. This gives a unique key for each permission
+     * test.
      */
-    static Serializable generateKey(Set<String> auths, NodeRef ref, PermissionReference perm)
+    static Serializable generateKey(Set<String> auths, NodeRef nodeRef, PermissionReference perm)
     {
-        HashSet<Serializable> key = new HashSet<Serializable>(auths);
-        key.add(ref.getId());
+        LinkedHashSet<Serializable> key = new LinkedHashSet<Serializable>();
         key.add(perm.toString());
+        key.addAll(auths); 
+        key.add(nodeRef);
         return key;
     }
 

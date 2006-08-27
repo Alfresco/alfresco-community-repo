@@ -72,11 +72,9 @@ public class DescriptorServiceTest extends BaseSpringTest
         String minor = serverDescriptor.getVersionMinor();
         String revision = serverDescriptor.getVersionRevision();
         String label = serverDescriptor.getVersionLabel();
+        String build = serverDescriptor.getVersionBuild();
         String version = major + "." + minor + "."  + revision;
-        if (label != null && label.length() > 0)
-        {
-            version += " (" + label + ")";
-        }
+        version = buildVersionString(version, label, build);
         
         assertEquals(version, serverDescriptor.getVersion());
         
@@ -94,11 +92,9 @@ public class DescriptorServiceTest extends BaseSpringTest
         String minor = repoDescriptor.getVersionMinor();
         String revision = repoDescriptor.getVersionRevision();
         String label = repoDescriptor.getVersionLabel();
+        String build = repoDescriptor.getVersionBuild();
         String version = major + "." + minor + "."  + revision;
-        if (label != null && label.length() > 0)
-        {
-            version += " (" + label + ")";
-        }
+        version = buildVersionString(version, label, build);
         
         assertEquals(version, repoDescriptor.getVersion());
         
@@ -106,4 +102,43 @@ public class DescriptorServiceTest extends BaseSpringTest
         assertTrue("Repository schema version must be greater than -1", schemaVersion > -1);
     }
         
+    private String buildVersionString(String version, String label, String build)
+    {
+       StringBuilder builder = new StringBuilder(version);
+       
+       boolean hasLabel = (label != null && label.length() > 0);
+       boolean hasBuild = (build != null && build.length() > 0);
+            
+       // add opening bracket if either a label or build number is present
+       if (hasLabel || hasBuild)
+       {
+           builder.append(" (");
+       }
+      
+       // add label if present
+       if (hasLabel)
+       {
+           builder.append(label);
+       }
+      
+       // add build number is present
+       if (hasBuild)
+       {
+           // if there is also a label we need a separating space
+           if (hasLabel)
+           {
+               builder.append(" ");
+           }
+         
+           builder.append(build);
+       }
+      
+       // add closing bracket if either a label or build number is present
+       if (hasLabel || hasBuild)
+       {
+           builder.append(")");
+       }
+      
+       return builder.toString();
+    }
 }

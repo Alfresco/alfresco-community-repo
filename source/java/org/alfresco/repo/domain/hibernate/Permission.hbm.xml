@@ -8,7 +8,7 @@
     <class 
         name="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"
         proxy="org.alfresco.repo.domain.DbAccessControlList"
-        table="access_control_list"
+        table="alf_access_control_list"
         dynamic-insert="false"
         dynamic-update="false"
         select-before-update="false" 
@@ -36,7 +36,7 @@
     <class 
         name="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl"
         proxy="org.alfresco.repo.domain.DbAccessControlEntry"
-        table="access_control_entry"
+        table="alf_access_control_entry"
         dynamic-insert="false"
         dynamic-update="false"
         select-before-update="false"
@@ -81,7 +81,7 @@
     <class
         name="org.alfresco.repo.domain.hibernate.DbPermissionImpl"
         proxy="org.alfresco.repo.domain.DbPermission"
-        table="permission"
+        table="alf_permission"
         dynamic-insert="false"
         dynamic-update="false"
         select-before-update="false"
@@ -102,7 +102,7 @@
     <class
         name="org.alfresco.repo.domain.hibernate.DbAuthorityImpl"
         proxy="org.alfresco.repo.domain.DbAuthority"
-        table="authority"
+        table="alf_authority"
         dynamic-insert="false"
         dynamic-update="false"
         select-before-update="false"
@@ -113,7 +113,7 @@
 
         <set
             name="externalKeys"
-            table="auth_ext_keys"
+            table="alf_auth_ext_keys"
             lazy="true"
             sort="unsorted"
             fetch="select"

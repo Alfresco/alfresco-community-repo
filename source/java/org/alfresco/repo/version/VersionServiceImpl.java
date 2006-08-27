@@ -373,6 +373,9 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
                 ContentModel.PROP_VERSION_LABEL, 
                 version.getVersionLabel());
         
+        // Invoke the policy behaviour
+        invokeAfterCreateVersion(nodeRef, version);
+        
         // Return the data object representing the newly created version
         return version;
     }
@@ -384,15 +387,15 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
     {
         VersionHistory versionHistory = null;
         
-        if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
+        if (this.nodeService.exists(nodeRef) == true)
         {
-            NodeRef versionHistoryRef = getVersionHistoryNodeRef(nodeRef);
-            if (versionHistoryRef != null)
-            {
-                versionHistory = buildVersionHistory(versionHistoryRef, nodeRef);
-            }
+        	NodeRef versionHistoryRef = getVersionHistoryNodeRef(nodeRef);
+        	if (versionHistoryRef != null)
+        	{
+        		versionHistory = buildVersionHistory(versionHistoryRef, nodeRef);
+        	}
         }
-            
+           
         return versionHistory;
     }       
 	
@@ -1078,7 +1081,7 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
 			// Delete the version history node
 			this.dbNodeService.deleteNode(versionHistoryNodeRef);
 			
-			if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
+			if (this.nodeService.exists(nodeRef) == true && this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
 			{
 				// Reset the version label property on the versionable node
 				this.nodeService.setProperty(nodeRef, ContentModel.PROP_VERSION_LABEL, null);

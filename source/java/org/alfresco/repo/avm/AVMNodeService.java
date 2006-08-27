@@ -1134,7 +1134,6 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      * @see QName
      * @see org.alfresco.service.namespace.RegexQNamePattern#MATCH_ALL
      */
-    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "typeQNamePattern", "qnamePattern"})
     public List<ChildAssociationRef> getChildAssocs(
             NodeRef nodeRef,
             QNamePattern typeQNamePattern,
@@ -1158,6 +1157,32 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         return result;
     }
     
+    /**
+     * Get a child NodeRef by name.
+     * @param nodeRef The parent node.
+     * @param assocTypeQName The type of the Child Association.
+     * @param childName The name of the child to get.
+     */
+    public NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName)
+    {
+        if (!assocTypeQName.equals(ContentModel.ASSOC_CONTAINS))
+        {
+            return null;
+        }
+        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        try
+        {
+            AVMNodeDescriptor child = fAVMService.lookup((Integer)avmVersionPath[0],
+                                                         (String)avmVersionPath[1]);
+            return AVMNodeConverter.ToNodeRef((Integer)avmVersionPath[0],
+                                              child.getPath());
+        }
+        catch (AVMException e)
+        {
+            return null;
+        }
+    }
+
     /**
      * Fetches the primary parent-child relationship.
      * <p>

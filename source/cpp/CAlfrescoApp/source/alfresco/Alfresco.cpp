@@ -40,6 +40,10 @@ AlfrescoInterface::AlfrescoInterface(String& path) {
 
 	m_handle  = INVALID_HANDLE_VALUE;
 
+	// Default the protocol version
+
+	m_protocolVersion = 1;
+
 	// Check if the path is to a mapped drive
 
 	String alfPath = path;
@@ -136,8 +140,17 @@ bool AlfrescoInterface::isAlfrescoFolder( void) {
 	bool alfFolder = false;
 
 	try {
+
+		// Check if the remote server is an Alfresco CIFS server
+
 		sendIOControl( FSCTL_ALFRESCO_PROBE, reqbuf, respbuf);
 		alfFolder = true;
+
+		// Get the protocol version, if available
+
+		respbuf.getInt();	// status
+		if ( respbuf.getAvailableLength() >= 4)
+			m_protocolVersion = respbuf.getInt();
 	}
 	catch ( Exception ex) {
 	}
@@ -229,102 +242,102 @@ PTR_AlfrescoFileInfo AlfrescoInterface::getFileInformation( const wchar_t* fileN
 }
 
 /**
- * Check in a working copy file
- *
- * @param fileName const wchar_t*
- * @param keepCheckedOut bool
- */
-void AlfrescoInterface::checkIn( const wchar_t* fileName, bool keepCheckedOut) {
+* Return Alfresco action information for the specified executable
+*
+* @param fileName const wchar_t*
+* @return AlfrescoActionInfo
+*/
+AlfrescoActionInfo AlfrescoInterface::getActionInformation( const wchar_t* exeName) {
 
 	// Check if the folder handle is valid
 
 	if ( m_handle == INVALID_HANDLE_VALUE)
 		throw BadInterfaceException();
 
-	// Build the file information I/O control request
+	// Build the action information I/O control request
 
 	DataBuffer reqbuf( 256);
-	DataBuffer respbuf( 128);
+	DataBuffer respbuf( 512);
 
 	reqbuf.putFixedString( IOSignature, IOSignatureLen);
-	reqbuf.putString( fileName);
-	reqbuf.putInt( keepCheckedOut ? True : False);
+	reqbuf.putString( exeName);
 
-	sendIOControl( FSCTL_ALFRESCO_CHECKIN, reqbuf, respbuf);
+	sendIOControl( FSCTL_ALFRESCO_GETACTIONINFO, reqbuf, respbuf);
 
-	// Get the status code
+	// Unpack the request status
 
-	unsigned int stsCode = respbuf.getInt();
-	if ( stsCode == StsSuccess)
-		return;
-	else {
+	AlfrescoActionInfo actionInfo;
 
-		// Get the error message, if available
+	unsigned int reqSts = respbuf.getInt();
+	if ( reqSts == StsSuccess) {
 
-		String errMsg;
+		// Unpack the action name, attributes and pre-action flags
 
-		if ( respbuf.getAvailableLength() > 0)
-			errMsg = respbuf.getString();
-		else {
-			errMsg = "Error code ";
-			errMsg.append( Integer::toString( stsCode));
-		}
+		String name = respbuf.getString();
+		unsigned int attr = respbuf.getInt();
+		unsigned int preActions = respbuf.getInt();
+		String confirmMsg = respbuf.getString();
 
-		// Throw an exception
+		// Create the action information
 
-		throw Exception( errMsg);
+		actionInfo.setName(name);
+		actionInfo.setAttributes(attr);
+		actionInfo.setPreProcessActions(preActions);
+		actionInfo.setPseudoName( exeName);
+		actionInfo.setConfirmationMessage( confirmMsg);
 	}
+
+	// Return the action information
+
+	return actionInfo;
 }
 
 /**
- * Check out a file and return the working copy file name
+ * Run a desktop action
  *
- * @param fileName const wchar_t*
- * @param workingCopy String&
+ * @param action AlfrescoActionInfo&
+ * @param params DesktopParams&
+ * @return DesktopResponse
  */
-void AlfrescoInterface::checkOut( const wchar_t* fileName, String& workingCopy) {
+DesktopResponse AlfrescoInterface::runAction(AlfrescoActionInfo& action, DesktopParams& params) {
 
 	// Check if the folder handle is valid
 
 	if ( m_handle == INVALID_HANDLE_VALUE)
 		throw BadInterfaceException();
 
-	// Build the file information I/O control request
+	// Build the run action I/O control request
 
-	DataBuffer reqbuf( 256);
+	DataBuffer reqbuf( 1024);
 	DataBuffer respbuf( 256);
 
 	reqbuf.putFixedString( IOSignature, IOSignatureLen);
-	reqbuf.putString( fileName);
+	reqbuf.putString( action.getName());
+	reqbuf.putInt((unsigned int)params.numberOfTargets());
 
-	sendIOControl( FSCTL_ALFRESCO_CHECKOUT, reqbuf, respbuf);
+	for ( unsigned int i = 0; i < params.numberOfTargets(); i++) {
 
-	// Get the status code
+		// Pack the current target details
 
-	unsigned int stsCode = respbuf.getInt();
-	if ( stsCode == StsSuccess) {
+		const DesktopTarget* pTarget = params.getTarget(i);
 
-		// Get the working copy file name
-
-		workingCopy = respbuf.getString();
+		reqbuf.putInt(pTarget->isType());
+		reqbuf.putString(pTarget->getTarget());
 	}
-	else {
 
-		// Get the error message, if available
+	// Send the run action request
 
-		String errMsg;
+	sendIOControl( FSCTL_ALFRESCO_RUNACTION, reqbuf, respbuf);
 
-		if ( respbuf.getAvailableLength() > 0)
-			errMsg = respbuf.getString();
-		else {
-			errMsg = "Error code ";
-			errMsg.append( Integer::toString( stsCode));
-		}
+	// Unpack the run action response
 
-		// Throw an exception
+	unsigned int actionSts = respbuf.getInt();
+	String actionMsg = respbuf.getString();
 
-		throw Exception( errMsg);
-	}
+	// Return the desktop response
+
+	DesktopResponse response(actionSts, actionMsg);
+	return response;
 }
 
 /**
@@ -438,4 +451,68 @@ bool AlfrescoFileInfo::operator<( const AlfrescoFileInfo& finfo) {
 	if ( finfo.getName().compareTo( getName()) < 0)
 		return true;
 	return false;
+}
+
+/**
+ * Default constructor
+ */
+AlfrescoActionInfo::AlfrescoActionInfo(void) {
+	m_attributes = 0;
+	m_clientPreActions = 0;
+}
+
+/**
+ * Class constructor
+ *
+ * @param name const String&
+ * @param attr const unsigned int
+ * @param preActions const unsigned int
+ */
+AlfrescoActionInfo::AlfrescoActionInfo( const String& name, const unsigned int attr, const unsigned int preActions) {
+	m_name = name;
+	m_attributes = attr;
+	m_clientPreActions = preActions;
+}
+
+/**
+ * Return the action information as a string
+ *
+ * @return const String
+ */
+const String AlfrescoActionInfo::toString(void) const {
+	String str = L"[";
+
+	str.append(getName());
+	str.append(L":");
+	str.append(getPseudoName());
+	str.append(L":Attr=0x");
+	str.append(Integer::toHexString(getAttributes()));
+	str.append(L":preActions=0x");
+	str.append(Integer::toHexString(getPreProcessActions()));
+
+	if ( hasConfirmationMessage()) {
+		str.append(L":Conf=");
+		str.append(getConfirmationMessage());
+	}
+	str.append(L"]");
+
+	return str;
+}
+
+/**
+ * Assignment operator
+ *
+ * @param actionInfo const AlfrescoActionInfo&
+ * @return AlfrescoActionInfo&
+ */
+AlfrescoActionInfo& AlfrescoActionInfo::operator=( const AlfrescoActionInfo& actionInfo) {
+	setName(actionInfo.getName());
+	setPseudoName(actionInfo.getPseudoName());
+
+	setAttributes(actionInfo.getAttributes());
+	setPreProcessActions(actionInfo.getPreProcessActions());
+
+	setConfirmationMessage(actionInfo.getConfirmationMessage());
+
+	return *this;
 }

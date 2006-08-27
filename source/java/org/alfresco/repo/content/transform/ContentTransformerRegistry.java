@@ -25,11 +25,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.content.MimetypeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.Assert;
 
 /**
  * Holds and provides the most appropriate content transformer for
@@ -47,7 +44,6 @@ public class ContentTransformerRegistry
     private static final Log logger = LogFactory.getLog(ContentTransformerRegistry.class);
     
     private List<ContentTransformer> transformers;
-    private MimetypeMap mimetypeMap;
     /** Cache of previously used transactions */
     private Map<TransformationKey, List<ContentTransformer>> transformationCache;
     /** Controls read access to the transformation cache */
@@ -58,11 +54,8 @@ public class ContentTransformerRegistry
     /**
      * @param mimetypeMap all the mimetypes available to the system
      */
-    public ContentTransformerRegistry(MimetypeMap mimetypeMap)
+    public ContentTransformerRegistry()
     {
-        Assert.notNull(mimetypeMap, "The MimetypeMap is mandatory");
-        this.mimetypeMap = mimetypeMap;
-        
         this.transformers = new ArrayList<ContentTransformer>(10);
         transformationCache = new HashMap<TransformationKey, List<ContentTransformer>>(17);
         
@@ -143,16 +136,6 @@ public class ContentTransformerRegistry
      */
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)
     {
-        // check that the mimetypes are valid
-        if (!mimetypeMap.getMimetypes().contains(sourceMimetype))
-        {
-            throw new AlfrescoRuntimeException("Unknown source mimetype: " + sourceMimetype);
-        }
-        if (!mimetypeMap.getMimetypes().contains(targetMimetype))
-        {
-            throw new AlfrescoRuntimeException("Unknown target mimetype: " + targetMimetype);
-        }
-        
         TransformationKey key = new TransformationKey(sourceMimetype, targetMimetype);
         List<ContentTransformer> transformers = null;
         transformationCacheReadLock.lock();

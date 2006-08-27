@@ -252,13 +252,13 @@ public abstract class AbstractContentTransformer implements ContentTransformer
         finally
         {
             // check that the reader and writer are both closed
-            if (!reader.isClosed())
+            if (reader.isChannelOpen())
             {
                 logger.error("Content reader not closed by transformer: \n" +
                         "   reader: " + reader + "\n" +
                         "   transformer: " + this);
             }
-            if (!writer.isClosed())
+            if (writer.isChannelOpen())
             {
                 logger.error("Content writer not closed by transformer: \n" +
                         "   writer: " + writer + "\n" +

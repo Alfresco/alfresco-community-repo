@@ -18,10 +18,17 @@ package org.alfresco.repo.template;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateException;
+import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.apache.log4j.Logger;
 
@@ -32,7 +39,17 @@ import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 
 /**
- * FreeMarker implementation the template processor interface
+ * FreeMarker implementation of the template processor interface.
+ * <p>
+ * Service to process FreeMarker template files loaded from various sources including
+ * the classpath, repository and directly from a String.
+ * <p>
+ * The template is processed against a data model generally consisting of a map of
+ * named objects. FreeMarker can natively handle any POJO objects using standard bean
+ * notation syntax. It has support for walking List objects. A 'standard' data model
+ * helper is provided to help generate an object model containing well known objects
+ * such as the Company Home, User Home and current User nodes. It also provides helpful
+ * util classes to process Date objects and repository specific custom methods. 
  * 
  * @author Kevin Roast
  */
@@ -46,9 +63,6 @@ public class FreeMarkerProcessor implements TemplateProcessor
     
     /** Pseudo path to String based template */
     private static final String PATH = "string://fixed";
-    
-    /** FreeMarker processor configuration */
-    private Configuration config = null;
     
     /** The permission-safe node service */
     private NodeService nodeService;
@@ -83,25 +97,21 @@ public class FreeMarkerProcessor implements TemplateProcessor
      */
     private Configuration getConfig()
     {
-        if (this.config == null)
-        {
-            Configuration config = new Configuration();
-            
-            // setup template cache
-            config.setCacheStorage(new MruCacheStorage(20, 0));
-            
-            // use our custom loader to find templates on the ClassPath
-            config.setTemplateLoader(new ClassPathRepoTemplateLoader(nodeService, contentService));
-            
-            // use our custom object wrapper that can deal with QNameMap objects directly
-            config.setObjectWrapper(new QNameAwareObjectWrapper());
-            
-            // rethrow any exception so we can deal with them
-            config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-            
-            this.config = config;
-        }
-        return this.config;
+        Configuration config = new Configuration();
+        
+        // setup template cache
+        config.setCacheStorage(new MruCacheStorage(2, 0));
+        
+        // use our custom loader to find templates on the ClassPath
+        config.setTemplateLoader(new ClassPathRepoTemplateLoader(nodeService, contentService));
+        
+        // use our custom object wrapper that can deal with QNameMap objects directly
+        config.setObjectWrapper(new QNameAwareObjectWrapper());
+        
+        // rethrow any exception so we can deal with them
+        config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+        
+        return config;
     }
     
     /**
@@ -115,6 +125,9 @@ public class FreeMarkerProcessor implements TemplateProcessor
     private Configuration getStringConfig(String path, String template)
     {
         Configuration config = new Configuration();
+        
+        // setup template cache
+        config.setCacheStorage(new MruCacheStorage(2, 0));
         
         // use our custom loader to load a template directly from a String
         StringTemplateLoader stringTemplateLoader = new StringTemplateLoader();
@@ -242,5 +255,57 @@ public class FreeMarkerProcessor implements TemplateProcessor
         {
             throw new TemplateException(MSG_ERROR_TEMPLATE_IO, new Object[] {template}, ioerr);
         }
+    }
+    
+    /**
+     * Create the default data-model available to templates as global objects.
+     * <p>
+     * 'companyhome' - the Company Home node<br>
+     * 'userhome' - the current user home space node<br>
+     * 'person' - the node representing the current user Person<br>
+     * 'template' - the node representing the template itself (may not be available)
+     * <p>
+     * Also adds various helper util objects and methods.
+     * 
+     * @param services      ServiceRegistry
+     * @param person        The current user Person Node
+     * @param companyHome   The CompanyHome ref
+     * @param userHome      The User home space ref
+     * @param template      Optional ref to the template itself
+     * @param resolver      Image resolver to resolve icon images etc.
+     * 
+     * @return A Map of Templatable Node objects and util objects.
+     */
+    public static Map<String, Object> buildDefaultModel(
+            ServiceRegistry services,
+            NodeRef person, NodeRef companyHome, NodeRef userHome, NodeRef template,
+            TemplateImageResolver imageResolver)
+    {
+        Map<String, Object> model = new HashMap<String, Object>(16, 1.0f);
+        
+        // supply the Company Home space as "companyhome"
+        model.put("companyhome", new TemplateNode(companyHome, services, imageResolver));
+        
+        // supply the users Home Space as "userhome"
+        model.put("userhome", new TemplateNode(userHome, services, imageResolver));
+        
+        // supply the current user Node as "person"
+        model.put("person", new TemplateNode(person, services, imageResolver));
+        
+        // add the template itself as "template" if it comes from content on a node
+        if (template != null)
+        {
+            model.put("template", new TemplateNode(template, services, imageResolver));
+        }
+        
+        // current date/time is useful to have and isn't supplied by FreeMarker by default
+        model.put("date", new Date());
+        
+        // add custom method objects
+        model.put("hasAspect", new HasAspectMethod());
+        model.put("message", new I18NMessageMethod());
+        model.put("dateCompare", new DateCompareMethod());
+        
+        return model;
     }
 }

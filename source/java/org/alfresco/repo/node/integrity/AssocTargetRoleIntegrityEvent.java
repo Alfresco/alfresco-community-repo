@@ -21,14 +21,10 @@ import java.util.List;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Event to check the association target role name
@@ -37,8 +33,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AssocTargetRoleIntegrityEvent extends AbstractIntegrityEvent
 {
-    private static Log logger = LogFactory.getLog(AssocTargetRoleIntegrityEvent.class);
-    
     public AssocTargetRoleIntegrityEvent(
             NodeService nodeService,
             DictionaryService dictionaryService,
@@ -51,7 +45,6 @@ public class AssocTargetRoleIntegrityEvent extends AbstractIntegrityEvent
     
     public void checkIntegrity(List<IntegrityRecord> eventResults)
     {
-        NodeRef sourceNodeRef = getNodeRef();
         QName assocTypeQName = getTypeQName();
         QName assocQName = getQName();
         
@@ -80,7 +73,6 @@ public class AssocTargetRoleIntegrityEvent extends AbstractIntegrityEvent
         
         // perform required checks
         checkAssocQNameRegex(eventResults, childAssocDef, assocQName);
-        checkAssocQNameDuplicate(eventResults, childAssocDef, sourceNodeRef, assocQName);
     }
 
     /**
@@ -106,41 +98,6 @@ public class AssocTargetRoleIntegrityEvent extends AbstractIntegrityEvent
                         "   Name assigned: " + assocRoleQName);
                 eventResults.add(result);
             }
-        }
-    }
-
-    /**
-     * Checks that the association name matches the constraints imposed by the model.
-     */
-    protected void checkAssocQNameDuplicate(
-            List<IntegrityRecord> eventResults,
-            ChildAssociationDefinition assocDef,
-            NodeRef sourceNodeRef,
-            QName assocQName)
-    {
-        if (assocDef.getDuplicateChildNamesAllowed())
-        {
-            // nothing to do
-            return;
-        }
-        QName assocTypeQName = assocDef.getName();
-        // see if there is another association with the same name
-        try
-        {
-            List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(sourceNodeRef, assocTypeQName, assocQName);
-            // duplicates not allowed
-            if (childAssocs.size() > 1)
-            {
-                IntegrityRecord result = new IntegrityRecord(
-                        "Duplicate child associations are not allowed: \n" +
-                        "   Association: " + assocDef + "\n" +
-                        "   Name: " + assocQName);
-                eventResults.add(result);
-            }
-        }
-        catch (InvalidNodeRefException e)
-        {
-            // node has gone
         }
     }
 }

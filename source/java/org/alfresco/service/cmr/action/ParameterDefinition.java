@@ -41,6 +41,11 @@ public interface ParameterDefinition
 	 */
 	public QName getType();
 	
+    /**
+     * Is multi-valued?
+     */
+    public boolean isMultiValued();
+    
 	/**
 	 * Indicates whether the parameter is mandatory or not.
 	 * <p>

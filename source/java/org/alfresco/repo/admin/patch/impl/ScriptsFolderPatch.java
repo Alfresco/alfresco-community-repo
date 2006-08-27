@@ -188,7 +188,7 @@ public class ScriptsFolderPatch extends AbstractPatch
         }
         else
         {
-            // we have the saved searches folder noderef
+            // we have the scripts folder noderef
             this.scriptsFolderNodeRef = nodeRefs.get(0);
         }
     }
@@ -238,49 +238,47 @@ public class ScriptsFolderPatch extends AbstractPatch
     private void createFolder()
     {
         // get required properties
-        String savedSearchesChildName = configuration.getProperty(PROPERTY_SCRIPTS_FOLDER_CHILDNAME);
-        if (savedSearchesChildName == null)
+        String scriptsChildName = configuration.getProperty(PROPERTY_SCRIPTS_FOLDER_CHILDNAME);
+        if (scriptsChildName == null)
         {
             throw new PatchException("Bootstrap property '" + PROPERTY_SCRIPTS_FOLDER_CHILDNAME + "' is not present");
         }
         
-        String savedSearchesName = messageSource.getMessage(
+        String folderName = messageSource.getMessage(
                 PROPERTY_SCRIPTS_FOLDER_NAME,
                 null,
                 I18NUtil.getLocale());
-        if (savedSearchesName == null || savedSearchesName.length() == 0)
+        if (folderName == null || folderName.length() == 0)
         {
             throw new PatchException("Bootstrap property '" + PROPERTY_SCRIPTS_FOLDER_NAME + "' is not present");
         }
 
-        String savedSearchesDescription = messageSource.getMessage(
+        String folderDescription = messageSource.getMessage(
                 PROPERTY_SCRIPTS_FOLDER_DESCRIPTION,
                 null,
                 I18NUtil.getLocale());
-        if (savedSearchesDescription == null || savedSearchesDescription.length() == 0)
+        if (folderDescription == null || folderDescription.length() == 0)
         {
             throw new PatchException("Bootstrap property '" + PROPERTY_SCRIPTS_FOLDER_DESCRIPTION + "' is not present");
         }
 
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(7);
-        properties.put(ContentModel.PROP_NAME, savedSearchesName);
-        properties.put(ContentModel.PROP_TITLE, savedSearchesName);
-        properties.put(ContentModel.PROP_DESCRIPTION, savedSearchesDescription);
+        properties.put(ContentModel.PROP_NAME, folderName);
+        properties.put(ContentModel.PROP_TITLE, folderName);
+        properties.put(ContentModel.PROP_DESCRIPTION, folderDescription);
         properties.put(ContentModel.PROP_ICON, PROPERTY_ICON);
         
         // create the node
         ChildAssociationRef childAssocRef = nodeService.createNode(
                 dictionaryNodeRef,
                 ContentModel.ASSOC_CONTAINS,
-                QName.resolveToQName(namespaceService, savedSearchesChildName),
+                QName.resolveToQName(namespaceService, scriptsChildName),
                 ContentModel.TYPE_FOLDER,
                 properties);
         scriptsFolderNodeRef = childAssocRef.getChildRef();
         
-        // add the required aspects
+        // finally add the required aspects
         nodeService.addAspect(scriptsFolderNodeRef, ContentModel.ASPECT_UIFACETS, null);
-        
-        // done
     }
     
     private void importContent() throws IOException

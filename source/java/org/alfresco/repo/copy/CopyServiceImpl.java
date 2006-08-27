@@ -444,26 +444,29 @@ public class CopyServiceImpl implements CopyService
 	 * @param destinationNodeRef	the destination node reference
 	 */
     private void copyPermissions(NodeRef sourceNodeRef, NodeRef destinationNodeRef) 
-	{
-		// Get the permission details of the source node reference
-    	Set<AccessPermission> permissions = this.permissionService.getAllSetPermissions(sourceNodeRef);
-    	boolean includeInherited = this.permissionService.getInheritParentPermissions(sourceNodeRef);
-    	
-    	AccessStatus writePermission = permissionService.hasPermission(destinationNodeRef, PermissionService.CHANGE_PERMISSIONS);
-        if (this.authenticationService.isCurrentUserTheSystemUser() || writePermission.equals(AccessStatus.ALLOWED))
+    {
+        if(this.permissionService.hasPermission(sourceNodeRef, PermissionService.READ_PERMISSIONS) == AccessStatus.ALLOWED)
         {
-	    	// Set the permission values on the destination node    	
-	    	for (AccessPermission permission : permissions) 
-	    	{
-	    		this.permissionService.setPermission(
-	    				destinationNodeRef, 
-	    				permission.getAuthority(), 
-	    				permission.getPermission(), 
-	    				permission.getAccessStatus().equals(AccessStatus.ALLOWED));
-			}
-	    	this.permissionService.setInheritParentPermissions(destinationNodeRef, includeInherited);
+            // Get the permission details of the source node reference
+            Set<AccessPermission> permissions = this.permissionService.getAllSetPermissions(sourceNodeRef);
+            boolean includeInherited = this.permissionService.getInheritParentPermissions(sourceNodeRef);
+            
+            AccessStatus writePermission = permissionService.hasPermission(destinationNodeRef, PermissionService.CHANGE_PERMISSIONS);
+            if (writePermission.equals(AccessStatus.ALLOWED) || this.authenticationService.isCurrentUserTheSystemUser() )
+            {
+                // Set the permission values on the destination node    	
+                for (AccessPermission permission : permissions) 
+                {
+                    this.permissionService.setPermission(
+                            destinationNodeRef, 
+                            permission.getAuthority(), 
+                            permission.getPermission(), 
+                            permission.getAccessStatus().equals(AccessStatus.ALLOWED));
+                }
+                this.permissionService.setInheritParentPermissions(destinationNodeRef, includeInherited);
+            }
         }
-	}
+    }
 
 	/**
 	 * Gets the copy details.  This calls the appropriate policies that have been registered
@@ -536,7 +539,13 @@ public class CopyServiceImpl implements CopyService
 		ClassDefinition classDefinition = this.dictionaryService.getClass(classRef);	
 		if (classDefinition != null)
 		{
-             // Copy the properties
+            if (classDefinition.isAspect() == true)
+            {
+                // make sure any aspects without any properties or associations are copied
+                copyDetails.addAspect(classRef);
+            }
+
+            // Copy the properties
             Map<QName,PropertyDefinition> propertyDefinitions = classDefinition.getProperties();
             for (QName propertyName : propertyDefinitions.keySet()) 
             {

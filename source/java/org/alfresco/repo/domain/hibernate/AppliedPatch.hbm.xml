@@ -9,7 +9,7 @@
    <class
          name="org.alfresco.repo.domain.hibernate.AppliedPatchImpl"
          proxy="org.alfresco.repo.domain.AppliedPatch"
-         table="applied_patch"
+         table="alf_applied_patch"
          dynamic-update="false"
          dynamic-insert="false"
          select-before-update="false"

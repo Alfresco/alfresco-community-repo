@@ -18,7 +18,9 @@ package org.alfresco.repo.dictionary;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -52,8 +54,8 @@ public class DictionaryDAOImpl implements DictionaryDAO
     // Namespace Data Access
     private NamespaceDAO namespaceDAO;
 
-    // Map of namespace to model name
-    private Map<String,QName> namespaceToModel = new HashMap<String,QName>();
+    // Map of Namespace URI usages to Models
+    private Map<String, List<CompiledModel>> uriToModels = new HashMap<String, List<CompiledModel>>();
     
     // Map of model name to compiled model
     private Map<QName,CompiledModel> compiledModels = new HashMap<QName,CompiledModel>();
@@ -90,7 +92,11 @@ public class DictionaryDAOImpl implements DictionaryDAO
             {
                 namespaceDAO.removePrefix(namespace.getPrefix());
                 namespaceDAO.removeURI(namespace.getUri());
-                namespaceToModel.remove(namespace.getUri());
+                unmapUriToModel(namespace.getUri(), previousVersion);
+            }
+            for (M2Namespace importNamespace : previousVersion.getM2Model().getImports())
+            {
+            	unmapUriToModel(importNamespace.getUri(), previousVersion);
             }
         }
         
@@ -99,7 +105,11 @@ public class DictionaryDAOImpl implements DictionaryDAO
         {
             namespaceDAO.addURI(namespace.getUri());
             namespaceDAO.addPrefix(namespace.getPrefix(), namespace.getUri());
-            namespaceToModel.put(namespace.getUri(), modelName);
+            mapUriToModel(namespace.getUri(), compiledModel);
+        }
+        for (M2Namespace importNamespace : model.getImports())
+        {
+        	mapUriToModel(importNamespace.getUri(), compiledModel);
         }
         
         // Publish new Model Definition
@@ -115,6 +125,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
     }
     
+
     /**
      * @see org.alfresco.repo.dictionary.DictionaryDAO#removeModel(org.alfresco.service.namespace.QName)
      */
@@ -129,7 +140,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
             {
                 namespaceDAO.removePrefix(namespace.getPrefix());
                 namespaceDAO.removeURI(namespace.getUri());
-                namespaceToModel.remove(namespace.getUri());
+                unmapUriToModel(namespace.getUri(), compiledModel);
             }
             
             // Remove the model from the list
@@ -137,18 +148,61 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
     }
 
+
+    /**
+     * Map Namespace URI to Model
+     * 
+     * @param uri   namespace uri
+     * @param model   model
+     */
+    private void mapUriToModel(String uri, CompiledModel model)
+    {
+    	List<CompiledModel> models = uriToModels.get(uri);
+    	if (models == null)
+    	{
+    		models = new ArrayList<CompiledModel>();
+    		uriToModels.put(uri, models);
+    	}
+    	if (!models.contains(model))
+    	{
+    		models.add(model);
+    	}
+    }
+
     
     /**
-     * @param uri  the namespace uri
-     * @return the compiled model which defines the specified namespace
+     * Unmap Namespace URI from Model
+     * 
+     * @param uri  namespace uri
+     * @param model   model
      */
-    private CompiledModel getCompiledModelForNamespace(String uri)
+    private void unmapUriToModel(String uri, CompiledModel model)
     {
-        QName modelName = namespaceToModel.get(uri);
-        return (modelName == null) ? null : getCompiledModel(modelName); 
+    	List<CompiledModel> models = uriToModels.get(uri);
+    	if (models != null)
+    	{
+    		models.remove(model);
+    	}
+    }
+
+    
+    /**
+     * Get Models mapped to Namespace Uri
+     * 
+     * @param uri   namespace uri
+     * @return   mapped models 
+     */
+    private List<CompiledModel> getModelsForUri(String uri)
+    {
+    	List<CompiledModel> models = uriToModels.get(uri);
+    	if (models == null)
+    	{
+    		models = Collections.emptyList(); 
+    	}
+    	return models;
     }
     
-
+    
     /**
      * @param modelName  the model name
      * @return the compiled model of the given name
@@ -170,8 +224,16 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public DataTypeDefinition getDataType(QName typeName)
     {
-        CompiledModel model = getCompiledModelForNamespace(typeName.getNamespaceURI());
-        return (model == null) ? null : model.getDataType(typeName);
+        List<CompiledModel> models = getModelsForUri(typeName.getNamespaceURI());
+        for (CompiledModel model : models)
+        {
+        	DataTypeDefinition dataType = model.getDataType(typeName);
+        	if (dataType != null)
+        	{
+        		return dataType;
+        	}
+        }
+        return null;
     }
 
 
@@ -207,8 +269,16 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public TypeDefinition getType(QName typeName)
     {
-        CompiledModel model = getCompiledModelForNamespace(typeName.getNamespaceURI());
-        return (model == null) ? null : model.getType(typeName);
+        List<CompiledModel> models = getModelsForUri(typeName.getNamespaceURI());
+        for (CompiledModel model : models)
+        {
+        	TypeDefinition type = model.getType(typeName);
+        	if (type != null)
+        	{
+        		return type;
+        	}
+        }
+        return null;
     }
 
 
@@ -217,8 +287,16 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public AspectDefinition getAspect(QName aspectName)
     {
-        CompiledModel model = getCompiledModelForNamespace(aspectName.getNamespaceURI());
-        return (model == null) ? null : model.getAspect(aspectName);
+        List<CompiledModel> models = getModelsForUri(aspectName.getNamespaceURI());
+        for (CompiledModel model : models)
+        {
+        	AspectDefinition aspect = model.getAspect(aspectName);
+        	if (aspect != null)
+        	{
+        		return aspect;
+        	}
+        }
+        return null;
     }
 
 
@@ -227,8 +305,16 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public ClassDefinition getClass(QName className)
     {
-        CompiledModel model = getCompiledModelForNamespace(className.getNamespaceURI());
-        return (model == null) ? null : model.getClass(className);
+        List<CompiledModel> models = getModelsForUri(className.getNamespaceURI());
+        for (CompiledModel model : models)
+        {
+        	ClassDefinition classDef = model.getClass(className);
+        	if (classDef != null)
+        	{
+        		return classDef;
+        	}
+        }
+        return null;
     }
 
     
@@ -237,23 +323,52 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public PropertyDefinition getProperty(QName propertyName)
     {
-        CompiledModel model = getCompiledModelForNamespace(propertyName.getNamespaceURI());
-        return (model == null) ? null : model.getProperty(propertyName);
+        List<CompiledModel> models = getModelsForUri(propertyName.getNamespaceURI());
+        for (CompiledModel model : models)
+        {
+        	PropertyDefinition propDef = model.getProperty(propertyName);
+        	if (propDef != null)
+        	{
+        		return propDef;
+        	}
+        }
+        return null;
     }
+
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.ModelQuery#getConstraint(org.alfresco.service.namespace.QName)
+     */
     public ConstraintDefinition getConstraint(QName constraintQName)
     {
-        CompiledModel model = getCompiledModelForNamespace(constraintQName.getNamespaceURI());
-        return (model == null) ? null : model.getConstraint(constraintQName);
+        List<CompiledModel> models = getModelsForUri(constraintQName.getNamespaceURI());
+        for (CompiledModel model : models)
+        {
+        	ConstraintDefinition constraintDef = model.getConstraint(constraintQName);
+        	if (constraintDef != null)
+        	{
+        		return constraintDef;
+        	}
+        }
+        return null;
     }
+    
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.impl.ModelQuery#getAssociation(org.alfresco.repo.ref.QName)
      */
     public AssociationDefinition getAssociation(QName assocName)
     {
-        CompiledModel model = getCompiledModelForNamespace(assocName.getNamespaceURI());
-        return (model == null) ? null : model.getAssociation(assocName);
+        List<CompiledModel> models = getModelsForUri(assocName.getNamespaceURI());
+        for (CompiledModel model : models)
+        {
+        	AssociationDefinition assocDef = model.getAssociation(assocName);
+        	if (assocDef != null)
+        	{
+        		return assocDef;
+        	}
+        }
+        return null;
     }
 
     

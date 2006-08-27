@@ -107,7 +107,7 @@ public class DictionaryComponent implements DictionaryService
      */
     public Collection<QName> getAllTypes()
     {
-        Collection<QName> types = new ArrayList<QName>();
+        Collection<QName> types = new ArrayList<QName>(100);
         for (QName model : getAllModels())
         {
             types.addAll(getTypes(model));
@@ -136,7 +136,7 @@ public class DictionaryComponent implements DictionaryService
      */
     public Collection<QName> getAllAspects()
     {
-        Collection<QName> aspects = new ArrayList<QName>();
+        Collection<QName> aspects = new ArrayList<QName>(64);
         for (QName model : getAllModels())
         {
             aspects.addAll(getAspects(model));

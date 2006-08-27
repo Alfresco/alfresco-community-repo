@@ -186,6 +186,15 @@ public class DictionaryDAOTest extends TestCase
         ClassDefinition fileClassDef = service.getClass(testFileQName);
         assertTrue("File type should have the archive flag", fileClassDef.isArchive());
 
+        QName testFileDerivedQName = QName.createQName(TEST_URL, "file-derived");
+        ClassDefinition fileDerivedClassDef = service.getClass(testFileDerivedQName);
+        assertTrue("Direct derived File type should have the archive flag", fileDerivedClassDef.isArchive());
+
+        QName testFileDerivedNoArchiveQName = QName.createQName(TEST_URL, "file-derived-no-archive");
+        ClassDefinition fileDerivedNoArchiveClassDef = service.getClass(testFileDerivedNoArchiveQName);
+        assertFalse("Derived File with archive override type should NOT have the archive flag",
+                fileDerivedNoArchiveClassDef.isArchive());
+
         QName testFolderQName = QName.createQName(TEST_URL, "folder");
         ClassDefinition folderClassDef = service.getClass(testFolderQName);
         assertFalse("Folder type should not have the archive flag", folderClassDef.isArchive());

@@ -695,7 +695,7 @@ void String::append (const String& str) {
  */
 void String::append (const unsigned int ival) {
 	wchar_t buf[32];
-	swprintf( buf, L"%u", ival);
+	swprintf( buf, 32, L"%u", ival);
 
 	m_string += buf;
 }
@@ -707,7 +707,7 @@ void String::append (const unsigned int ival) {
 */
 void String::append (const unsigned long lval) {
 	wchar_t buf[32];
-	swprintf( buf, L"%lu", lval);
+	swprintf( buf, 32, L"%lu", lval);
 
 	m_string += buf;
 }
@@ -719,7 +719,7 @@ void String::append (const unsigned long lval) {
 */
 void String::append (const LONG64 l64val) {
 	wchar_t buf[32];
-	swprintf( buf, L"%I64u", l64val);
+	swprintf( buf, 32, L"%I64u", l64val);
 
 	m_string += buf;
 }

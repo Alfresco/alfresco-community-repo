@@ -207,6 +207,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             writer.addDocument(doc);
 
             ii.closeDeltaIndexWriter(guid);
+ 
             ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
             ii.setPreparedState(guid, new HashSet<NodeRef>(), 1, false);
             ii.getDeletions(guid);

@@ -62,6 +62,16 @@ public interface FileFolderService
     public List<FileInfo> listFolders(NodeRef contextNodeRef);
 
     /**
+     * Get a simple list of nodes that have the given name within the parent node
+     * 
+     * @param contextNodeRef the parent node
+     * @param name the name of the node to search for
+     * @return Returns the node that has the given name - or null if not found
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "name"})
+    public NodeRef searchSimple(NodeRef contextNodeRef, String name);
+
+    /**
      * Searches for all files and folders with the matching name pattern,
      * using wildcard characters <b>*</b> and <b>?</b>.
      * 

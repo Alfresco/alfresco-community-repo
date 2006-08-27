@@ -135,8 +135,8 @@ public class LockBehaviourImplTest extends BaseSpringTest
         TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);  
         
-        permissionService.setPermission(rootNodeRef, GOOD_USER_NAME.toLowerCase(), PermissionService.ALL_PERMISSIONS, true);
-        permissionService.setPermission(rootNodeRef, BAD_USER_NAME.toLowerCase(), PermissionService.READ, true);
+        permissionService.setPermission(rootNodeRef, GOOD_USER_NAME, PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setPermission(rootNodeRef, BAD_USER_NAME, PermissionService.READ, true);
     }   
     
     /**

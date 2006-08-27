@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.rule;
 import java.util.List;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -44,6 +45,26 @@ public interface RuleService
      */
     @Auditable(parameters = {"name"})
     public RuleType getRuleType(String name);
+    
+    /**
+     * Enable rules for the current thread
+     */
+    @Auditable
+    public void enableRules();
+    
+    /**
+     * Diable rules for the current thread
+     */
+    @Auditable
+    public void disableRules();
+    
+    /**
+     * Indicates whether rules are currently enabled or not
+     * 
+     * @return  true if rules are enabled, false otherwise
+     */
+    @Auditable
+    public boolean isEnabled();
     
     /**
      * Indicates wether the rules for a given node are enabled or not.  If the 
@@ -150,26 +171,13 @@ public interface RuleService
     public int countRules(NodeRef nodeRef);
     
     /**
-     * Get the rule given its id.
+     * Get the rule given its node reference
      * 
      * @param nodeRef the node reference
-     * @param ruleId the rule id
-     * @return the rule corresponding ot the id
+     * @return the rule corresponding to the node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "ruleId"})
-    public Rule getRule(NodeRef nodeRef, String ruleId);
-	
-	/**
-     * Helper method to create a new rule.
-     * <p>
-     * Call add rule once the details of the rule have been specified in order
-     * to associate the rule with a node reference.
-     * 
-     * @param ruleTypeName	the name of the rule type
-     * @return 				the created rule
-     */
-    @Auditable(parameters = {"ruleTypeName"})
-    public Rule createRule(String ruleTypeName);
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    public Rule getRule(NodeRef nodeRef);
 
     /**
      * Saves the details of the rule to the specified node reference.
@@ -198,4 +206,25 @@ public interface RuleService
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public void removeAllRules(NodeRef nodeRef);
+    
+    /**
+     * Returns the owning node reference for a rule.  
+     * 
+     * @param rule  the rule
+     * @return      the owning node reference
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"rule"})
+    public NodeRef getOwningNodeRef(Rule rule);
+    
+    /**
+     * Returns the owning node reference for an action.  Returns null for an unsaved action or one that is not 
+     * parented by a rule.
+     * 
+     * NOTE: this method is temporary and will be removed in future versions.  It should only be used with good reason.
+     * 
+     * @param action    the action
+     * @return          the owning node reference
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"action"})
+    public NodeRef getOwningNodeRef(Action action);
 }

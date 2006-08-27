@@ -9,7 +9,7 @@
    <class
          name="org.alfresco.repo.domain.hibernate.StoreImpl"
          proxy="org.alfresco.repo.domain.Store"
-         table="store"
+         table="alf_store"
          dynamic-update="false"
          dynamic-insert="false"
          select-before-update="false"

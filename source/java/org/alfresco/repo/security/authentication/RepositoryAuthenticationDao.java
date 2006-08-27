@@ -31,6 +31,7 @@ import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -54,6 +55,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 
     private NamespacePrefixResolver namespacePrefixResolver;
 
+    @SuppressWarnings("unused")
     private DictionaryService dictionaryService;
 
     private SearchService searchService;
@@ -97,19 +99,22 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         this.searchService = searchService;
     }
 
-    public UserDetails loadUserByUsername(String caseSensitiveUserName) throws UsernameNotFoundException,
+    public UserDetails loadUserByUsername(String incomingUserName) throws UsernameNotFoundException,
             DataAccessException
     {
-        String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
-        NodeRef userRef = getUserOrNull(userName);
+        NodeRef userRef = getUserOrNull(incomingUserName);
         if (userRef == null)
         {
-            throw new UsernameNotFoundException("Could not find user by userName: " + caseSensitiveUserName);
+            throw new UsernameNotFoundException("Could not find user by userName: " + incomingUserName);
         }
 
         Map<QName, Serializable> properties = nodeService.getProperties(userRef);
         String password = DefaultTypeConverter.INSTANCE.convert(String.class, properties
                 .get(ContentModel.PROP_PASSWORD));
+
+        // Report back the user name as stored on the user
+        String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties
+                .get(ContentModel.PROP_USER_USERNAME));
 
         GrantedAuthority[] gas = new GrantedAuthority[1];
         gas[0] = new GrantedAuthorityImpl("ROLE_AUTHENTICATED");
@@ -119,12 +124,20 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         return ud;
     }
 
-    public NodeRef getUserOrNull(String caseSensitiveUserName)
+    public NodeRef getUserOrNull(String searchUserName)
     {
-        String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
+        if(searchUserName == null)
+        {
+            return null;
+        }
+        if(searchUserName.length() == 0)
+        {
+            return null;
+        }
+        
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("@usr\\:username:" + userName);
+        sp.setQuery("@usr\\:username:\"" + searchUserName + "\"");
         sp.addStore(STOREREF_USERS);
         sp.excludeDataInTheCurrentTransaction(false);
 
@@ -134,6 +147,8 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         {
             rs = searchService.query(sp);
 
+            NodeRef returnRef = null;
+
             for (ResultSetRow row : rs)
             {
 
@@ -142,12 +157,39 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
                 {
                     String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
                             nodeRef, ContentModel.PROP_USER_USERNAME));
-                    if (realUserName.equals(userName))
+
+                    if (userNamesAreCaseSensitive)
                     {
-                        return nodeRef;
+                        if (realUserName.equals(searchUserName))
+                        {
+                            if(returnRef == null)
+                            {
+                               returnRef = nodeRef;
+                            }
+                            else
+                            {
+                                throw new AlfrescoRuntimeException("Found more than one user for "+searchUserName+ " (case sensitive)");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (realUserName.equalsIgnoreCase(searchUserName))
+                        {
+                            if(returnRef == null)
+                            {
+                               returnRef = nodeRef;
+                            }
+                            else
+                            {
+                                throw new AlfrescoRuntimeException("Found more than one user for "+searchUserName+ " (case insensitive)");
+                            }
+                        }
                     }
                 }
             }
+            
+            return returnRef;
         }
         finally
         {
@@ -156,21 +198,18 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
                 rs.close();
             }
         }
-
-        return null;
     }
 
     public void createUser(String caseSensitiveUserName, char[] rawPassword) throws AuthenticationException
     {
-        String userName = userNamesAreCaseSensitive ? caseSensitiveUserName : caseSensitiveUserName.toLowerCase();
-        NodeRef userRef = getUserOrNull(userName);
+        NodeRef userRef = getUserOrNull(caseSensitiveUserName);
         if (userRef != null)
         {
-            throw new AuthenticationException("User already exists: " + userName);
+            throw new AuthenticationException("User already exists: " + caseSensitiveUserName);
         }
         NodeRef typesNode = getUserFolderLocation();
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        properties.put(ContentModel.PROP_USER_USERNAME, userName);
+        properties.put(ContentModel.PROP_USER_USERNAME, caseSensitiveUserName);
         String salt = null; // GUID.generate();
         properties.put(ContentModel.PROP_SALT, salt);
         properties.put(ContentModel.PROP_PASSWORD, passwordEncoder.encodePassword(new String(rawPassword), salt));
@@ -178,11 +217,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         properties.put(ContentModel.PROP_CREDENTIALS_EXPIRE, Boolean.valueOf(false));
         properties.put(ContentModel.PROP_ENABLED, Boolean.valueOf(true));
         properties.put(ContentModel.PROP_ACCOUNT_LOCKED, Boolean.valueOf(false));
-        nodeService.createNode(
-                typesNode,
-                ContentModel.ASSOC_CHILDREN,
-                ContentModel.TYPE_USER,
-                ContentModel.TYPE_USER,
+        nodeService.createNode(typesNode, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_USER, ContentModel.TYPE_USER,
                 properties);
 
     }
@@ -190,11 +225,10 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     private NodeRef getUserFolderLocation()
     {
         QName qnameAssocSystem = QName.createQName("sys", "system", namespacePrefixResolver);
-        QName qnameAssocUsers = QName.createQName("sys", "people", namespacePrefixResolver);  // see AR-527
+        QName qnameAssocUsers = QName.createQName("sys", "people", namespacePrefixResolver); // see
+        // AR-527
         NodeRef rootNode = nodeService.getRootNode(STOREREF_USERS);
-        List<ChildAssociationRef> results = nodeService.getChildAssocs(
-                rootNode,
-                RegexQNamePattern.MATCH_ALL,
+        List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNode, RegexQNamePattern.MATCH_ALL,
                 qnameAssocSystem);
         NodeRef sysNodeRef = null;
         if (results.size() == 0)
@@ -205,10 +239,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         {
             sysNodeRef = results.get(0).getChildRef();
         }
-        results = nodeService.getChildAssocs(
-                sysNodeRef,
-                RegexQNamePattern.MATCH_ALL,
-                qnameAssocUsers);
+        results = nodeService.getChildAssocs(sysNodeRef, RegexQNamePattern.MATCH_ALL, qnameAssocUsers);
         NodeRef userNodeRef = null;
         if (results.size() == 0)
         {

@@ -133,8 +133,11 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
                     {
                         for (Rule rule : rules)
                         {                     
-                            // Apply the rule to the child node
-                            this.actionService.executeAction(rule, child);
+                            Action action = rule.getAction();
+                            if (action != null)
+                            {
+                                this.actionService.executeAction(action, child);
+                            }
                         }
                     }
                 }

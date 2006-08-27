@@ -53,6 +53,13 @@ public interface Descriptor
     public String getVersionLabel();
     
     /**
+     * Gets the build number 
+     * 
+     * @return  the build number i.e. build-1
+     */
+    public String getVersionBuild();
+    
+    /**
      * Gets the full version number
      * 
      * @return  full version number as major.minor.revision (label)

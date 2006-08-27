@@ -46,7 +46,6 @@ public class TcpipNetBIOSHostAnnouncer extends HostAnnouncer
     // Broadcast address and port
 
     private InetAddress m_bcastAddr;
-    private int m_bcastPort = RFCNetBIOSProtocol.DATAGRAM;
 
     // NetBIOS datagram
 
@@ -140,7 +139,7 @@ public class TcpipNetBIOSHostAnnouncer extends HostAnnouncer
     public final void setBroadcastAddress(String addr, int port) throws UnknownHostException
     {
         m_bcastAddr = InetAddress.getByName(addr);
-        m_bcastPort = port;
+        m_port = port;
     }
 
     /**
@@ -198,11 +197,15 @@ public class TcpipNetBIOSHostAnnouncer extends HostAnnouncer
      */
     protected void sendAnnouncement(String hostName, byte[] buf, int offset, int len) throws Exception
     {
-
+    	// DEBUG
+    	
+    	if ( logger.isDebugEnabled())
+    		logger.debug("Send NetBIOS host announcement to " + m_bcastAddr.getHostAddress() + ", port " + getPort());
+    	
         // Send the host announce datagram
 
         m_nbdgram.SendDatagram(NetBIOSDatagram.DIRECT_GROUP, hostName, NetBIOSName.FileServer, getDomain(),
-                NetBIOSName.MasterBrowser, buf, len, offset);
+                NetBIOSName.MasterBrowser, buf, len, offset, m_bcastAddr, getPort());
     }
 
     /**

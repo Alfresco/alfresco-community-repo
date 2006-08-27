@@ -123,6 +123,17 @@
             </child-association>
          </associations>
       </aspect>
+      
+      <aspect name="app:feedsource">
+         <title>Feed Source</title>
+         <properties>
+            <property name="app:template">
+               <title>Feed Template</title>
+               <type>d:noderef</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+      </aspect>
 
 	</aspects>
 	

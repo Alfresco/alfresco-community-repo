@@ -38,17 +38,17 @@ public class AVMServiceTestBase extends TestCase
     /**
      * The AVMService we are testing.
      */
-    protected AVMService fService;
+    protected static AVMService fService;
 
     /**
      * The reaper thread.
      */
-    protected OrphanReaper fReaper;
+    protected static OrphanReaper fReaper;
     
     /**
      * The application context.
      */
-    protected FileSystemXmlApplicationContext fContext;
+    protected static FileSystemXmlApplicationContext fContext;
     
     /**
      * The start time of actual work for a test.
@@ -63,9 +63,12 @@ public class AVMServiceTestBase extends TestCase
     @Override
     protected void setUp() throws Exception
     {
-        fContext = new FileSystemXmlApplicationContext("config/alfresco/avm-test-context.xml");
-        fService = (AVMService)fContext.getBean("AVMService");
-        fReaper = (OrphanReaper)fContext.getBean("orphanReaper");
+        if (fContext == null)
+        {
+            fContext = new FileSystemXmlApplicationContext("config/alfresco/avm-test-context.xml");
+            fService = (AVMService)fContext.getBean("AVMService");
+            fReaper = (OrphanReaper)fContext.getBean("orphanReaper");
+        }
         fStartTime = System.currentTimeMillis();
     }
 
@@ -83,10 +86,11 @@ public class AVMServiceTestBase extends TestCase
         {
             fService.purgeAVMStore(desc.getName());
         }
-        fContext.close();
-        File alfData = new File("alf_data");
-        File target = new File("alf_data" + now);
-        alfData.renameTo(target);
+        fService.createAVMStore("main");
+        // fContext.close();
+        // File alfData = new File("alf_data");
+        // File target = new File("alf_data" + now);
+        // alfData.renameTo(target);
     }
     
     /**

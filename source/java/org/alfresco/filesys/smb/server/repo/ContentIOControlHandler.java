@@ -19,11 +19,8 @@ package org.alfresco.filesys.smb.server.repo;
 import java.io.FileNotFoundException;
 
 import org.alfresco.filesys.server.SrvSession;
-import org.alfresco.filesys.server.filesys.DiskDeviceContext;
-import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.IOControlNotImplementedException;
 import org.alfresco.filesys.server.filesys.NetworkFile;
-import org.alfresco.filesys.server.filesys.NotifyChange;
 import org.alfresco.filesys.server.filesys.TreeConnection;
 import org.alfresco.filesys.smb.NTIOCtl;
 import org.alfresco.filesys.smb.SMBException;
@@ -33,7 +30,6 @@ import org.alfresco.filesys.smb.server.repo.ContentDiskDriver;
 import org.alfresco.filesys.smb.server.repo.IOControlHandler;
 import org.alfresco.filesys.util.DataBuffer;
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -55,14 +51,10 @@ public class ContentIOControlHandler implements IOControlHandler
     
     private static final Log logger = LogFactory.getLog(ContentIOControlHandler.class);
     
-    // Services and helpers
-    
-    private CifsHelper cifsHelper;
-    private TransactionService transactionService;
-    private NodeService nodeService;
-    private CheckOutCheckInService checkInOutService;
+    // Filesystem driver and context
     
     private ContentDiskDriver contentDriver;
+    private ContentContext contentContext;
     
     /**
      * Default constructor
@@ -75,21 +67,64 @@ public class ContentIOControlHandler implements IOControlHandler
      * Initalize the I/O control handler
      *
      * @param contentDriver ContentDiskDriver
-     * @param cifsHelper CifsHelper
-     * @param transService TransactionService
-     * @param nodeService NodeService
-     * @param cociService CheckOutCheckInService
+     * @param contentContext ContentContext
      */
-    public void initialize( ContentDiskDriver contentDriver, CifsHelper cifsHelper,
-        TransactionService transService, NodeService nodeService, CheckOutCheckInService cociService)
+    public void initialize( ContentDiskDriver contentDriver, ContentContext contentContext)
     {
-        this.contentDriver = contentDriver;
-        this.cifsHelper = cifsHelper;
-        this.transactionService = transService;
-        this.nodeService = nodeService;
-        this.checkInOutService = cociService;
+        this.contentDriver  = contentDriver;
+        this.contentContext = contentContext;
     }
 
+    /**
+     * Return the CIFS helper
+     * 
+     * @return CifsHelper
+     */
+    public final CifsHelper getCifsHelper()
+    {
+    	return contentDriver.getCifsHelper();
+    }
+    
+    /**
+     * Return the transaction service
+     * 
+     * @return TransactionService
+     */
+    public final TransactionService getTransactionService()
+    {
+    	return contentDriver.getTransactionService();
+    }
+    
+    /**
+     * Return the node service
+     * 
+     * @return NodeService
+     */
+    public final NodeService getNodeService()
+    {
+    	return contentDriver.getNodeService();
+    }
+    
+    /**
+     * Return the filesystem driver
+     * 
+     * @return ContentDiskDriver
+     */
+    public final ContentDiskDriver getContentDriver()
+    {
+    	return contentDriver;
+    }
+    
+    /**
+     * Return the filesystem context
+     * 
+     * @return ContentContext
+     */
+    public final ContentContext getContentContext()
+    {
+    	return contentContext;
+    }
+    
     /**
      * Process a filesystem I/O control request
      * 
@@ -140,7 +175,7 @@ public class ContentIOControlHandler implements IOControlHandler
         {
             folderNode = contentDriver.getNodeForPath(tree, netFile.getFullName());
             
-            if ( cifsHelper.isDirectory( folderNode) == false)
+            if ( getCifsHelper().isDirectory( folderNode) == false)
                 folderNode = null;
         }
         catch ( FileNotFoundException ex)
@@ -155,9 +190,9 @@ public class ContentIOControlHandler implements IOControlHandler
         
         // Debug
         
-        if ( logger.isInfoEnabled()) {
-            logger.info("IO control func=0x" + Integer.toHexString(ioFunc) + ", fid=" + fid + ", buffer=" + dataBuf);
-            logger.info("  Folder nodeRef=" + folderNode);
+        if ( logger.isDebugEnabled()) {
+            logger.debug("IO control func=0x" + Integer.toHexString(ioFunc) + ", fid=" + fid + ", buffer=" + dataBuf);
+            logger.debug("  Folder nodeRef=" + folderNode);
         }
 
         // Check if the I/O control code is one of our custom codes
@@ -166,48 +201,49 @@ public class ContentIOControlHandler implements IOControlHandler
         
         switch ( ioFunc)
         {
-        // Probe to check if this is an Alfresco CIFS server
-        
-        case IOControl.CmdProbe:
-            
-            // Return a buffer with the signature
-            
-            retBuffer = new DataBuffer(IOControl.Signature.length());
-            retBuffer.putFixedString(IOControl.Signature, IOControl.Signature.length());
-            retBuffer.putInt(IOControl.StsSuccess);
-            break;
-            
-        // Get file information for a file within the current folder
-            
-        case IOControl.CmdFileStatus:
-
-            // Process the file status request
-            
-            retBuffer = procIOFileStatus( sess, tree, dataBuf, folderNode);
-            break;
-            
-        // Check-in file request
-            
-        case IOControl.CmdCheckIn:
-            
-            // Process the check-in request
-            
-            retBuffer = procIOCheckIn( sess, tree, dataBuf, folderNode, netFile);
-            break;
-            
-        // Check-out file request
-            
-        case IOControl.CmdCheckOut:
-            
-            // Process the check-out request
-            
-            retBuffer = procIOCheckOut( sess, tree, dataBuf, folderNode, netFile);
-            break;
-            
-        // Unknown I/O control code
-            
-        default:
-            throw new IOControlNotImplementedException();
+	        // Probe to check if this is an Alfresco CIFS server
+	        
+	        case IOControl.CmdProbe:
+	            
+	            // Return a buffer with the signature and protocol version
+	            
+	            retBuffer = new DataBuffer(IOControl.Signature.length());
+	            retBuffer.putFixedString(IOControl.Signature, IOControl.Signature.length());
+	            retBuffer.putInt(DesktopAction.StsSuccess);
+	            retBuffer.putInt(IOControl.Version);
+	            break;
+	            
+	        // Get file information for a file within the current folder
+	            
+	        case IOControl.CmdFileStatus:
+	
+	            // Process the file status request
+	            
+	            retBuffer = procIOFileStatus( sess, tree, dataBuf, folderNode);
+	            break;
+	
+	        // Get action information for the specified executable path
+	            
+	        case IOControl.CmdGetActionInfo:
+	        	
+	        	// Process the get action information request
+	        	
+	        	retBuffer = procGetActionInfo(sess, tree, dataBuf, folderNode, netFile);
+	        	break;
+	        	
+	        // Run the named action
+	        	
+	        case IOControl.CmdRunAction:
+	
+	        	// Process the run action request
+	        	
+	        	retBuffer = procRunAction(sess, tree, dataBuf, folderNode, netFile);
+	        	break;
+	        	
+	        // Unknown I/O control code
+	            
+	        default:
+	            throw new IOControlNotImplementedException();
         }
         
         // Return the reply buffer, may be null
@@ -228,12 +264,14 @@ public class ContentIOControlHandler implements IOControlHandler
     {
         // Start a transaction
         
-        sess.beginTransaction( transactionService, true);
+        sess.beginTransaction( getTransactionService(), true);
         
         // Get the file name from the request
         
         String fName = reqBuf.getString( true);
-        logger.info("  File status, fname=" + fName);
+
+        if ( logger.isDebugEnabled())
+        	logger.debug("  File status, fname=" + fName);
 
         // Create a response buffer
         
@@ -246,7 +284,7 @@ public class ContentIOControlHandler implements IOControlHandler
         
         try
         {
-            childNode = cifsHelper.getNodeRef( folderNode, fName);
+            childNode = getCifsHelper().getNodeRef( folderNode, fName);
         }
         catch (FileNotFoundException ex)
         {
@@ -258,29 +296,29 @@ public class ContentIOControlHandler implements IOControlHandler
         {
             // Return an error response
             
-            respBuf.putInt(IOControl.StsFileNotFound);
+            respBuf.putInt(DesktopAction.StsFileNotFound);
             return respBuf;
         }
 
         // Check if this is a file or folder node
         
-        if ( cifsHelper.isDirectory( childNode))
+        if ( getCifsHelper().isDirectory( childNode))
         {
             // Only return the status and node type for folders
             
-            respBuf.putInt(IOControl.StsSuccess);
+            respBuf.putInt(DesktopAction.StsSuccess);
             respBuf.putInt(IOControl.TypeFolder);
         }
         else
         {
             // Indicate that this is a file node
             
-            respBuf.putInt(IOControl.StsSuccess);
+            respBuf.putInt(DesktopAction.StsSuccess);
             respBuf.putInt(IOControl.TypeFile);
 
             // Check if this file is a working copy
             
-            if ( nodeService.hasAspect( childNode, ContentModel.ASPECT_WORKING_COPY))
+            if ( getNodeService().hasAspect( childNode, ContentModel.ASPECT_WORKING_COPY))
             {
                 // Indicate that this is a working copy
                 
@@ -288,16 +326,16 @@ public class ContentIOControlHandler implements IOControlHandler
                 
                 // Get the owner username and file it was copied from
                 
-                String owner = (String) nodeService.getProperty( childNode, ContentModel.PROP_WORKING_COPY_OWNER);
+                String owner = (String) getNodeService().getProperty( childNode, ContentModel.PROP_WORKING_COPY_OWNER);
                 String copiedFrom = null;
                 
-                if ( nodeService.hasAspect( childNode, ContentModel.ASPECT_COPIEDFROM))
+                if ( getNodeService().hasAspect( childNode, ContentModel.ASPECT_COPIEDFROM))
                 {
                     // Get the path of the file the working copy was generated from
                     
-                    NodeRef fromNode = (NodeRef) nodeService.getProperty( childNode, ContentModel.PROP_COPY_REFERENCE);
+                    NodeRef fromNode = (NodeRef) getNodeService().getProperty( childNode, ContentModel.PROP_COPY_REFERENCE);
                     if ( fromNode != null)
-                        copiedFrom = (String) nodeService.getProperty( fromNode, ContentModel.PROP_NAME);
+                        copiedFrom = (String) getNodeService().getProperty( fromNode, ContentModel.PROP_NAME);
                 }
                 
                 // Pack the owner and copied from values
@@ -314,15 +352,15 @@ public class ContentIOControlHandler implements IOControlHandler
             
             // Check the lock status of the file
             
-            if ( nodeService.hasAspect( childNode, ContentModel.ASPECT_LOCKABLE))
+            if ( getNodeService().hasAspect( childNode, ContentModel.ASPECT_LOCKABLE))
             {
                 // Get the lock type and owner
                 
-                String lockTypeStr = (String) nodeService.getProperty( childNode, ContentModel.PROP_LOCK_TYPE);
+                String lockTypeStr = (String) getNodeService().getProperty( childNode, ContentModel.PROP_LOCK_TYPE);
                 String lockOwner = null;
                 
                 if ( lockTypeStr != null)
-                    lockOwner = (String) nodeService.getProperty( childNode, ContentModel.PROP_LOCK_OWNER);
+                    lockOwner = (String) getNodeService().getProperty( childNode, ContentModel.PROP_LOCK_OWNER);
                 
                 // Pack the lock type, and owner if there is a lock on the file
                 
@@ -345,7 +383,7 @@ public class ContentIOControlHandler implements IOControlHandler
             
             // Get the content data details for the file
             
-            ContentData contentData = (ContentData) nodeService.getProperty( childNode, ContentModel.PROP_CONTENT);
+            ContentData contentData = (ContentData) getNodeService().getProperty( childNode, ContentModel.PROP_CONTENT);
             
             if ( contentData != null)
             {
@@ -371,9 +409,9 @@ public class ContentIOControlHandler implements IOControlHandler
         
         return respBuf;
     }
-    
+
     /**
-     * Process the check in I/O request
+     * Process the get action information request
      * 
      * @param sess Server session
      * @param tree Tree connection
@@ -382,208 +420,208 @@ public class ContentIOControlHandler implements IOControlHandler
      * @param netFile NetworkFile for the folder
      * @return DataBuffer
      */
-    private final DataBuffer procIOCheckIn( SrvSession sess, TreeConnection tree, DataBuffer reqBuf, NodeRef folderNode,
+    private final DataBuffer procGetActionInfo( SrvSession sess, TreeConnection tree, DataBuffer reqBuf, NodeRef folderNode,
             NetworkFile netFile)
     {
-        // Start a transaction
+        // Get the executable file name from the request
         
-        sess.beginTransaction( transactionService, false);
-        
-        // Get the file name from the request
-        
-        String fName = reqBuf.getString( true);
-        boolean keepCheckedOut = reqBuf.getInt() == IOControl.True ? true : false;
-        
-        logger.info("  CheckIn, fname=" + fName + ", keepCheckedOut=" + keepCheckedOut);
+        String exeName = reqBuf.getString( true);
+
+        if ( logger.isDebugEnabled())
+        	logger.debug("  Get action info, exe=" + exeName);
 
         // Create a response buffer
         
         DataBuffer respBuf = new DataBuffer(256);
         respBuf.putFixedString(IOControl.Signature, IOControl.Signature.length());
         
-        // Get the node for the file/folder
+        // Get the desktop actions list
         
-        NodeRef childNode = null;
-        
-        try
+        DesktopActionTable deskActions = contentContext.getDesktopActions();
+        if ( deskActions == null)
         {
-            childNode = cifsHelper.getNodeRef( folderNode, fName);
+        	respBuf.putInt(DesktopAction.StsNoSuchAction);
+        	return respBuf;
         }
-        catch (FileNotFoundException ex)
+        
+        // Convert the executable name to an action name
+        
+        DesktopAction deskAction = deskActions.getActionViaPseudoName(exeName);
+        if ( deskAction == null)
         {
+        	respBuf.putInt(DesktopAction.StsNoSuchAction);
+        	return respBuf;
+        }
+        
+        // Return the desktop action details
+        
+        respBuf.putInt(DesktopAction.StsSuccess);
+        respBuf.putString(deskAction.getName(), true);
+        respBuf.putInt(deskAction.getAttributes());
+        respBuf.putInt(deskAction.getPreProcessActions());
+        
+        String confirmStr = deskAction.getConfirmationString();
+        respBuf.putString(confirmStr != null ? confirmStr : "", true);
+        
+        // Return the response
+        
+        return respBuf;
+    }
+    
+    /**
+     * Process the run action request
+     * 
+     * @param sess Server session
+     * @param tree Tree connection
+     * @param reqBuf Request buffer
+     * @param folderNode NodeRef of parent folder
+     * @param netFile NetworkFile for the folder
+     * @return DataBuffer
+     */
+    private final DataBuffer procRunAction( SrvSession sess, TreeConnection tree, DataBuffer reqBuf, NodeRef folderNode,
+            NetworkFile netFile)
+    {
+    	// Get the name of the action to run
+    	
+    	String actionName = reqBuf.getString(true);
+    	
+    	if ( logger.isDebugEnabled())
+    		logger.debug("  Run action, name=" + actionName);
+
+        // Create a response buffer
+        
+        DataBuffer respBuf = new DataBuffer(256);
+        respBuf.putFixedString(IOControl.Signature, IOControl.Signature.length());
+        
+    	// Find the action handler
+    	
+        DesktopActionTable deskActions = contentContext.getDesktopActions();
+        DesktopAction action = null;
+        
+        if ( deskActions != null)
+        	action = deskActions.getAction(actionName);
+
+        if ( action == null)
+        {
+        	respBuf.putInt(DesktopAction.StsNoSuchAction);
+        	respBuf.putString("", true);
+        	return respBuf;
         }
 
-        // Check if the file/folder was found
+        // Start a transaction
         
-        if ( childNode == null)
-        {
-            // Return an error response
-            
-            respBuf.putInt(IOControl.StsFileNotFound);
-            return respBuf;
-        }
-
-        // Check if this is a file or folder node
+        sess.beginTransaction( getTransactionService(), true);
         
-        if ( cifsHelper.isDirectory( childNode))
+        // Get the list of targets for the action
+        
+        int targetCnt = reqBuf.getInt();
+        DesktopParams deskParams = new DesktopParams(sess, folderNode, netFile);
+        
+        while ( reqBuf.getAvailableLength() > 4 && targetCnt > 0)
         {
-            // Return an error status, attempt to check in a folder
+        	// Get the desktop target details
+        	
+        	int typ = reqBuf.getInt();
+        	String path = reqBuf.getString(true);
+        	
+        	DesktopTarget target = new DesktopTarget(typ, path);
+        	deskParams.addTarget(target);
+        	
+        	// Find the node for the target path
+        	
+            NodeRef childNode = null;
             
-            respBuf.putInt(IOControl.StsBadParameter);
-        }
-        else
-        {
-            // Check if this file is a working copy
-            
-            if ( nodeService.hasAspect( childNode, ContentModel.ASPECT_WORKING_COPY))
+            try
             {
-                try
-                {
-                    // Check in the file
-                    
-                    checkInOutService.checkin( childNode, null, null, keepCheckedOut);
+            	// Check if the target path is relative to the folder we are working in or the root of the filesystem
+            	
+            	if ( path.startsWith("\\"))
+            	{
+            		// Path is relative to the root of the filesystem
+            		
+            		childNode = getCifsHelper().getNodeRef(contentContext.getRootNode(), path);
+            	}
+            	else
+            	{
+            		// Path is relative to the folder we are working in
+            	
+            		childNode = getCifsHelper().getNodeRef( folderNode, path);
+            	}
+            }
+            catch (FileNotFoundException ex)
+            {
+            }
 
-                    // Check in was successful
-                    
-                    respBuf.putInt( IOControl.StsSuccess);
-                    
-                    // Check if there are any file/directory change notify requests active
-
-                    DiskDeviceContext diskCtx = (DiskDeviceContext) tree.getContext();
-                    if (diskCtx.hasChangeHandler()) {
-                        
-                        // Build the relative path to the checked in file
-
-                        String fileName = FileName.buildPath( netFile.getFullName(), null, fName, FileName.DOS_SEPERATOR);
-                        
-                        // Queue a file deleted change notification
-                        
-                        diskCtx.getChangeHandler().notifyFileChanged(NotifyChange.ActionRemoved, fileName);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Return an error status and message
-                    
-                    respBuf.setPosition( IOControl.Signature.length());
-                    respBuf.putInt(IOControl.StsError);
-                    respBuf.putString( ex.getMessage(), true, true);
-                }
+            // If the node is not valid then return an error status
+            
+            if (childNode != null)
+            {
+            	// Set the node ref for the target
+            	
+            	target.setNode(childNode);
             }
             else
             {
-                // Not a working copy
-                
-                respBuf.putInt(IOControl.StsNotWorkingCopy);
+            	// Build an error response
+            	
+            	respBuf.putInt(DesktopAction.StsFileNotFound);
+            	respBuf.putString("Cannot find noderef for path " + path, true);
+            	
+            	return respBuf;
             }
+            
+        	// Update the target count
+        	
+        	targetCnt--;
         }
         
-        // Return the response
+        // DEBUG
         
-        return respBuf;
-    }    
-
-    /**
-     * Process the check out I/O request
-     * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param reqBuf Request buffer
-     * @param folderNode NodeRef of parent folder
-     * @param netFile NetworkFile for the folder
-     * @return DataBuffer
-     */
-    private final DataBuffer procIOCheckOut( SrvSession sess, TreeConnection tree, DataBuffer reqBuf, NodeRef folderNode,
-            NetworkFile netFile)
-    {
-        // Start a transaction
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("    Desktop params: " + deskParams.numberOfTargetNodes());
+        	for ( int i = 0; i < deskParams.numberOfTargetNodes(); i++) {
+        		DesktopTarget target = deskParams.getTarget(i);
+        		logger.debug("      " + target);
+        	}
+        }
         
-        sess.beginTransaction( transactionService, false);
+        // Run the desktop action
         
-        // Get the file name from the request
-        
-        String fName = reqBuf.getString( true);
-        
-        logger.info("  CheckOut, fname=" + fName);
-
-        // Create a response buffer
-        
-        DataBuffer respBuf = new DataBuffer(256);
-        respBuf.putFixedString(IOControl.Signature, IOControl.Signature.length());
-        
-        // Get the node for the file/folder
-        
-        NodeRef childNode = null;
+        DesktopResponse deskResponse = null;
         
         try
         {
-            childNode = cifsHelper.getNodeRef( folderNode, fName);
+        	// Run the desktop action
+        	
+        	deskResponse = action.runAction(deskParams);
         }
-        catch (FileNotFoundException ex)
+        catch (Exception ex)
         {
+        	// Create an error response
+        	
+        	deskResponse = new DesktopResponse(DesktopAction.StsError, ex.getMessage());
         }
-
-        // Check if the file/folder was found
         
-        if ( childNode == null)
-        {
-            // Return an error response
-            
-            respBuf.putInt(IOControl.StsFileNotFound);
-            return respBuf;
-        }
-
-        // Check if this is a file or folder node
+        // Pack the action response
         
-        if ( cifsHelper.isDirectory( childNode))
+        if ( deskResponse != null)
         {
-            // Return an error status, attempt to check in a folder
-            
-            respBuf.putInt(IOControl.StsBadParameter);
+        	// Pack the status
+        	
+        	respBuf.putInt(deskResponse.getStatus());
+        	respBuf.putString(deskResponse.hasStatusMessage() ? deskResponse.getStatusMessage() : "", true);
         }
         else
         {
-            try
-            {
-                // Check out the file
-                
-                NodeRef workingCopyNode = checkInOutService.checkout( childNode);
-
-                // Get the working copy file name
-                
-                String workingCopyName = (String) nodeService.getProperty( workingCopyNode, ContentModel.PROP_NAME);
-                
-                // Check out was successful, pack the working copy name
-                
-                respBuf.putInt( IOControl.StsSuccess);
-                respBuf.putString( workingCopyName, true, true);
-                
-                // Check if there are any file/directory change notify requests active
-
-                DiskDeviceContext diskCtx = (DiskDeviceContext) tree.getContext();
-                if (diskCtx.hasChangeHandler()) {
-                    
-                    // Build the relative path to the checked in file
-
-                    String fileName = FileName.buildPath( netFile.getFullName(), null, workingCopyName, FileName.DOS_SEPERATOR);
-                    
-                    // Queue a file added change notification
-                    
-                    diskCtx.getChangeHandler().notifyFileChanged(NotifyChange.ActionAdded, fileName);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Return an error status and message
-                
-                respBuf.setPosition( IOControl.Signature.length());
-                respBuf.putInt(IOControl.StsError);
-                respBuf.putString( ex.getMessage(), true, true);
-            }
+        	// Pack an error response
+        	
+        	respBuf.putInt(DesktopAction.StsError);
+        	respBuf.putString("Action did not return response", true);
         }
         
         // Return the response
         
-        return respBuf;
-    }    
+    	return respBuf;
+    }
 }

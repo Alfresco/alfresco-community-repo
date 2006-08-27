@@ -21,7 +21,6 @@ import java.net.Socket;
 import java.net.SocketException;
 
 import org.alfresco.filesys.server.config.ServerConfiguration;
-import org.alfresco.filesys.smb.TcpipSMB;
 
 /**
  * Native SMB Session Socket Handler Class
@@ -153,7 +152,7 @@ public class TcpipSMBSessionSocketHandler extends SessionSocketHandler
 
         // Create the NetBIOS SMB handler
 
-        SessionSocketHandler sessHandler = new TcpipSMBSessionSocketHandler(server, TcpipSMB.PORT, config
+        SessionSocketHandler sessHandler = new TcpipSMBSessionSocketHandler(server, config.getTcpipSMBPort(), config
                 .getSMBBindAddress(), sockDbg);
 
         sessHandler.initialize();
@@ -168,6 +167,6 @@ public class TcpipSMBSessionSocketHandler extends SessionSocketHandler
         // DEBUG
 
         if (logger.isDebugEnabled() && sockDbg)
-            logger.debug("Native SMB TCP session handler created");
+            logger.debug("Native SMB TCP session handler created on port " + config.getTcpipSMBPort());
     }
 }

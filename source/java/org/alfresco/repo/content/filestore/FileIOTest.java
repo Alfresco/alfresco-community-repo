@@ -22,6 +22,9 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.zip.CRC32;
 
 import junit.framework.TestCase;
 
@@ -110,5 +113,31 @@ public class FileIOTest extends TestCase
         // reread
         countRead = channelRead.read(bufferRead);
         assertEquals("Expected full read", 26, countRead);
+    }
+    
+    public void testCrcPerformance() throws Exception
+    {
+        long before = System.nanoTime();
+        int count = 1000000;
+        Set<Long> results = new HashSet<Long>(count);
+        boolean negatives = false;
+        for (int i = 0; i < count; i++)
+        {
+            CRC32 crc = new CRC32();
+            crc.update(Integer.toString(i).getBytes());
+            long value = crc.getValue();
+            if (value < 0)
+            {
+                negatives = true;
+            }
+            if (!results.add(value))
+            {
+                System.out.println("Duplicate on " + i);
+            }
+        }
+        long after = System.nanoTime();
+        long delta = after - before;
+        double aveNs = (double)delta / (double)count;
+        System.out.println(String.format("CRC32: %10.2f ns per item.  Negatives=" + negatives, aveNs));
     }
 }

@@ -41,6 +41,9 @@
 				<property name="sys:versionLabel">
 					<type>d:text</type>
 				</property>
+            <property name="sys:versionBuild">
+               <type>d:text</type>
+            </property>
 				<property name="sys:versionSchema">
 					<type>d:int</type>
 					<mandatory enforced="true">true</mandatory>
@@ -126,6 +129,11 @@
 		<aspect name="sys:incomplete">
 			<title>Incomplete</title>
 		</aspect>
+      
+      <!-- aspect to tag temporary nodes -->
+      <aspect name="sys:temporary">
+         <title>Temporary</title>
+      </aspect>
       
       <!-- details stored on archived nodes -->
       <aspect name="sys:archived">

@@ -27,7 +27,7 @@ using namespace Alfresco;
  */
 String Integer::toHexString( const unsigned int ival) {
 	char buf[32];
-	itoa(ival, buf, 16);
+	_itoa(ival, buf, 16);
 	return String(buf);
 }
 
@@ -52,7 +52,7 @@ String Integer::toHexString( BUFPTR ptr) {
  */
 String Integer::toString( unsigned int ival, unsigned int radix) {
 	char buf[32];
-	itoa(ival, buf, radix);
+	_itoa(ival, buf, radix);
 	return String(buf);
 }
 

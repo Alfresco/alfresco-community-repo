@@ -67,6 +67,28 @@ public interface ChildAssoc extends Comparable<ChildAssoc>
     public void setTypeQName(QName assocTypeQName);
 
     /**
+     * @return Returns the child node name.  This may be truncated, in which case it
+     *      will end with <b>...</b>
+     */
+    public String getChildNodeName();
+    
+    /**
+     * @param childNodeName the name of the child node, which may be truncated and
+     *      terminated with <b>...</b> in order to not exceed 50 characters.
+     */
+    public void setChildNodeName(String childNodeName);
+    
+    /**
+     * @return Returns the crc value for the child node name.
+     */
+    public long getChildNodeNameCrc();
+    
+    /**
+     * @param crc the crc value
+     */
+    public void setChildNodeNameCrc(long crc);
+    
+    /**
      * @return Returns the qualified name of this association 
      */
     public QName getQname();

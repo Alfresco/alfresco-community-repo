@@ -44,13 +44,40 @@
 			<!-- Mark locked files as offline --> 
 		    <offlineFiles/>
 
-			<!-- Client side drag and drop application for check in/out via CIFS -->
-<!--			 
-            <dragAndDrop>
-               <filename>__Alfresco.exe</filename>
-               <path>alfresco/desktop/Alfresco.exe</path>
-            </dragAndDrop>
--->		  
+			<!-- Desktop actions -->
+			<!-- Uses a client-side application to trigger a server-side action               -->
+			<!--   Echo - displays a message echoed from the server                           -->
+			<!--   URL  - launches a URL via the Windows shell                                -->
+			<!--   CmdLine - launches the Notepad application                                 -->
+			<!--   CheckInOut - checks files in/out, drag and drop files onto the application -->
+<!--
+			<desktopActions>
+				<global>
+                    <path>alfresco/desktop/Alfresco.exe</path>
+				</global>
+				
+				<action>
+					<class>org.alfresco.filesys.smb.server.repo.desk.EchoDesktopAction</class>
+					<name>Echo</name>
+			        <filename>__AlfrescoEcho.exe</filename>
+				</action>
+				<action>
+					<class>org.alfresco.filesys.smb.server.repo.desk.URLDesktopAction</class>
+					<name>URL</name>
+			        <filename>__AlfrescoURL.exe</filename>
+				</action>
+				<action>
+					<class>org.alfresco.filesys.smb.server.repo.desk.CmdLineDesktopAction</class>
+					<name>CmdLine</name>
+			        <filename>__AlfrescoCmd.exe</filename>
+				</action>
+				<action>
+					<class>org.alfresco.filesys.smb.server.repo.desk.CheckInOutDesktopAction</class>
+					<name>CheckInOut</name>
+			        <filename>__AlfrescoCheckInOut.exe</filename>
+				</action>
+			</desktopActions>
+-->			 
 			 			 
 <!--
             <accessControl default="Write">

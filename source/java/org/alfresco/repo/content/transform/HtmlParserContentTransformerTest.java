@@ -25,8 +25,6 @@ import org.alfresco.repo.content.MimetypeMap;
  */
 public class HtmlParserContentTransformerTest extends AbstractContentTransformerTest
 {
-    private static final String SOME_CONTENT = "azAz10!£$%^&*()\t\r\n";
-    
     private ContentTransformer transformer;
     
     @Override

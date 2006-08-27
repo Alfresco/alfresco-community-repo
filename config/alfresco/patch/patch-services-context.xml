@@ -37,6 +37,9 @@
         <property name="descriptorService">
             <ref bean="descriptorComponent" />
         </property>
+        <property name="ruleService">
+            <ref bean="ruleService" />
+        </property>
         <property name="patchDaoService">
             <ref bean="patchDaoComponent" />
         </property>
@@ -340,7 +343,6 @@
             <ref bean="searchService"/>
         </property>
     </bean>
-    
     <bean id="patch.scriptsFolder" class="org.alfresco.repo.admin.patch.impl.ScriptsFolderPatch" parent="basePatch">
         <property name="id"><value>patch.scriptsFolder</value></property>
         <property name="description"><value>patch.scriptsFolder.description</value></property>
@@ -359,8 +361,7 @@
             <ref bean="importerComponent" />
         </property>
     </bean>
-    
-    
+
     <bean id="patch.topLevelGroupParentChildAssociationTypePatch" class="org.alfresco.repo.admin.patch.impl.TopLevelGroupParentChildAssociationTypePatch" parent="basePatch">
         <property name="id"><value>patch.topLevelGroupParentChildAssociationTypePatch</value></property>
         <property name="description"><value>patch.topLevelGroupParentChildAssociationTypePatch.description</value></property>
@@ -369,4 +370,107 @@
         <property name="targetSchema"><value>14</value></property>
     </bean>
     
+    <bean id="patch.actionRuleDecouplingPatch" class="org.alfresco.repo.admin.patch.impl.ActionRuleDecouplingPatch" parent="basePatch">
+        <property name="id"><value>patch.actionRuleDecouplingPatch</value></property>
+        <property name="description"><value>patch.actionRuleDecouplingPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>14</value></property>
+        <property name="targetSchema"><value>15</value></property>
+    </bean>
+    
+    <bean id="patch.systemWorkflowFolderPatch" class="org.alfresco.repo.admin.patch.impl.SystemWorkflowFolderPatch" parent="basePatch">
+        <property name="id"><value>patch.systemWorkflowFolderPatch</value></property>
+        <property name="description"><value>patch.systemWorkflowFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>15</value></property>
+        <property name="targetSchema"><value>16</value></property>
+        <property name="workflowPackageImpl" ref="workflowPackageImpl"/>
+    </bean>
+    
+    <bean id="patch.rssTemplatesFolderPatch" class="org.alfresco.repo.admin.patch.impl.RSSTemplatesFolderPatch" parent="basePatch">
+        <property name="id"><value>patch.rssFolder</value></property>
+        <property name="description"><value>patch.rssTemplatesFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>16</value></property>
+        <property name="targetSchema"><value>17</value></property>
+        <property name="rssTemplatesACP"><value>alfresco/templates/rss_templates.acp</value></property>
+        <!-- helper beans for execution -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="messageSource">
+            <ref bean="bootstrapSpacesMessageSource" />
+        </property>
+        <property name="importerService">
+            <ref bean="importerComponent" />
+        </property>
+        <property name="permissionService">
+            <ref bean="permissionService"/>
+        </property>
+    </bean>
+    
+    <bean id="patch.uifacetsTemplatesPatch" class="org.alfresco.repo.admin.patch.impl.UIFacetsAspectRemovalPatch" parent="basePatch">
+        <property name="id"><value>patch.uifacetsTemplates</value></property>
+        <property name="description"><value>patch.uifacetsAspectRemovalPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>17</value></property>
+        <property name="targetSchema"><value>18</value></property>
+        <!-- helper beans for execution -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="messageSource">
+            <ref bean="bootstrapSpacesMessageSource" />
+        </property>
+    </bean>
+    
+    <bean id="patch.guestPersonPermission2" class="org.alfresco.repo.admin.patch.impl.GuestPersonPermissionPatch2" parent="basePatch" >
+        <property name="id"><value>patch.guestPersonPermission2</value></property>
+        <property name="description"><value>patch.guestPersonPermission2.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>18</value></property>
+        <property name="targetSchema"><value>19</value></property>
+        <!-- helper beans for execution -->
+        <property name="permissionService">
+            <ref bean="permissionService"/>
+        </property>
+        <property name="personService">
+            <ref bean="personService"/>
+        </property>
+    </bean>
+    
+    <bean id="patch.schemaUpdateScript-V1.4-1" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.schemaUpdateScript-V1.4-1</value></property>
+        <property name="description"><value>patch.patch.schemaUpgradeScriptPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>19</value></property>
+        <property name="targetSchema"><value>20</value></property>
+        <property name="scriptName">
+            <value>AlfrescoSchemaUpdate-1.4-1-xxx.sql</value>
+        </property>
+    </bean>
+    <bean id="patch.uniqueChildName" class="org.alfresco.repo.admin.patch.impl.UniqueChildNamePatch" parent="basePatch" >
+        <property name="id"><value>patch.uniqueChildName</value></property>
+        <property name="description"><value>patch.uniqueChildName.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>19</value></property>
+        <property name="targetSchema"><value>20</value></property>
+        <!-- helper beans -->
+        <property name="sessionFactory">
+            <ref bean="sessionFactory" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="nodeDaoService">
+            <ref bean="nodeDaoService" />
+        </property>
+        <!-- dependent on upgrade script 1.4-1 having being run -->
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.schemaUpdateScript-V1.4-1" />
+            </list>
+        </property>
+    </bean>
+
 </beans>

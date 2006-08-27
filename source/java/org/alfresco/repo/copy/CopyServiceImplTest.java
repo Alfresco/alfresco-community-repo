@@ -376,17 +376,20 @@ public class CopyServiceImplTest extends BaseSpringTest
     public void testCopyNodeWithRules()
     {
         // Create a new rule and add it to the source noderef
-        Rule rule = this.ruleService.createRule(RuleType.INBOUND);
+        Rule rule = new Rule();
+        rule.setRuleType(RuleType.INBOUND);
         
         Map<String, Serializable> props = new HashMap<String, Serializable>(1);
         props.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);
         Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME, props);
-        rule.addAction(action);
+        rule.setAction(action);
         
         ActionCondition actionCondition = this.actionService.createActionCondition(NoConditionEvaluator.NAME);
-        rule.addActionCondition(actionCondition);
+        action.addActionCondition(actionCondition);
         
         this.ruleService.saveRule(this.sourceNodeRef, rule);
+        assertNotNull(rule.getNodeRef());
+        assertEquals(this.sourceNodeRef, this.ruleService.getOwningNodeRef(rule));
         
         //System.out.println(
         //        NodeStoreInspector.dumpNodeStore(this.nodeService, this.storeRef));
@@ -403,20 +406,22 @@ public class CopyServiceImplTest extends BaseSpringTest
         //System.out.println(
          //          NodeStoreInspector.dumpNodeStore(this.nodeService, this.storeRef));
         
-        checkCopiedNode(this.sourceNodeRef, copy, true, true, true);
-        
-        //assertTrue(this.configurableService.isConfigurable(copy));
-        //assertNotNull(this.configurableService.getConfigurationFolder(copy));
-        //assertFalse(this.configurableService.getConfigurationFolder(this.sourceNodeRef) == this.configurableService.getConfigurationFolder(copy));
+        checkCopiedNode(this.sourceNodeRef, copy, true, true, true);   
         
         assertTrue(this.nodeService.hasAspect(copy, RuleModel.ASPECT_RULES));
         assertTrue(this.ruleService.hasRules(copy));
         assertTrue(this.ruleService.rulesEnabled(copy));
+        
         List<Rule> copiedRules = this.ruleService.getRules(copy);
         assertEquals(1, copiedRules.size());
         Rule copiedRule = copiedRules.get(0);
-        assertFalse(rule.getId() == copiedRule.getId());
-        assertEquals(rule.getAction(0).getActionDefinitionName(), copiedRule.getAction(0).getActionDefinitionName());
+        
+        assertNotNull(copiedRule.getNodeRef());
+        assertFalse(copiedRule.getNodeRef().equals(rule.getNodeRef()));
+        assertEquals(rule.getTitle(), copiedRule.getTitle());
+        assertEquals(rule.getDescription(), copiedRule.getDescription());
+        assertEquals(copy, this.ruleService.getOwningNodeRef(copiedRule));
+        assertEquals(rule.getAction().getActionDefinitionName(), copiedRule.getAction().getActionDefinitionName());
         
         // Now copy the node without copying the children and check that the rules have been copied
         NodeRef copy2 = this.copyService.copy(
@@ -441,8 +446,11 @@ public class CopyServiceImplTest extends BaseSpringTest
         List<Rule> copiedRules2 = this.ruleService.getRules(copy2);
         assertEquals(1, copiedRules.size());
         Rule copiedRule2 = copiedRules2.get(0);
-        assertFalse(rule.getId() == copiedRule2.getId());
-        assertEquals(rule.getAction(0).getActionDefinitionName(), copiedRule2.getAction(0).getActionDefinitionName());                                
+        assertFalse(rule.getNodeRef().equals(copiedRule2.getNodeRef()));
+        assertEquals(rule.getTitle(), copiedRule2.getTitle());
+        assertEquals(rule.getDescription(), copiedRule2.getDescription());
+        assertEquals(this.ruleService.getOwningNodeRef(copiedRule2), copy2);
+        assertEquals(rule.getAction().getActionDefinitionName(), copiedRule2.getAction().getActionDefinitionName());                                
     }
 	
 	public void testCopyToExistingNode()
@@ -531,11 +539,12 @@ public class CopyServiceImplTest extends BaseSpringTest
         params.put(MoveActionExecuter.PARAM_DESTINATION_FOLDER, nodeTwo);
         params.put(MoveActionExecuter.PARAM_ASSOC_TYPE_QNAME, TEST_CHILD_ASSOC_TYPE_QNAME);
         params.put(MoveActionExecuter.PARAM_ASSOC_QNAME, QName.createQName("{test}ruleCopy"));
-        Rule rule = this.ruleService.createRule(RuleType.INBOUND);
-        ActionCondition condition = this.actionService.createActionCondition(NoConditionEvaluator.NAME);
-        rule.addActionCondition(condition);
+        Rule rule = new Rule();
+        rule.setRuleType(RuleType.INBOUND);        
         Action action = this.actionService.createAction(CopyActionExecuter.NAME, params);
-        rule.addAction(action);
+        ActionCondition condition = this.actionService.createActionCondition(NoConditionEvaluator.NAME);
+        action.addActionCondition(condition);
+        rule.setAction(action);
         this.ruleService.saveRule(nodeOne, rule);
 		
 		// Do a deep copy
@@ -609,10 +618,8 @@ public class CopyServiceImplTest extends BaseSpringTest
 		assertEquals(1, rules.size());
 		Rule copiedRule = rules.get(0);
 		assertNotNull(copiedRule);
-		List<Action> ruleActions = copiedRule.getActions();
-		assertNotNull(ruleActions);
-		assertEquals(1, ruleActions.size());
-		Action ruleAction = ruleActions.get(0);
+		Action ruleAction = copiedRule.getAction();
+		assertNotNull(ruleAction);
 		NodeRef value = (NodeRef)ruleAction.getParameterValue(MoveActionExecuter.PARAM_DESTINATION_FOLDER);
 		assertNotNull(value);
 		assertEquals(nodeTwoCopy, value);

@@ -18,7 +18,6 @@
 package org.alfresco.filesys.smb.server.repo;
 
 import org.alfresco.filesys.server.filesys.IOCtlInterface;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
 
@@ -34,11 +33,7 @@ public interface IOControlHandler extends IOCtlInterface
      * 
      *
      * @param contentDriver ContentDiskDriver
-     * @param cifsHelper CifsHelper
-     * @param transService TransactionService
-     * @param nodeService NodeService
-     * @param cociService CheckOutCheckInService
+     * @param contentContext ContentContext
      */
-    public void initialize( ContentDiskDriver contentDriver, CifsHelper cifsHelper,
-            TransactionService transService, NodeService nodeService, CheckOutCheckInService cociService);
+    public void initialize( ContentDiskDriver contentDriver, ContentContext contentContext);
 }

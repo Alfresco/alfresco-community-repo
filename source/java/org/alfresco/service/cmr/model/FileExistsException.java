@@ -16,29 +16,37 @@
  */
 package org.alfresco.service.cmr.model;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
  * Common, checked exception thrown when an operation fails because
  * of a name clash.
  * 
  * @author Derek Hulley
  */
-public class FileExistsException extends Exception
+public class FileExistsException extends RuntimeException
 {
     private static final long serialVersionUID = -4133713912784624118L;
     
-    private FileInfo existing;
+    private NodeRef parentNodeRef;
+    private String name;
 
-    public FileExistsException(FileInfo existing)
+    public FileExistsException(NodeRef parentNodeRef, String name)
     {
-        super("" +
-                (existing.isFolder() ? "Folder " : "File ") +
-                existing.getName() +
+        super("Existing file or folder " +
+                name +
                 " already exists");
-        this.existing = existing;
+        this.parentNodeRef = parentNodeRef;
+        this.name = name;
     }
 
-    public FileInfo getExisting()
+    public NodeRef getParentNodeRef()
     {
-        return existing;
+        return parentNodeRef;
+    }
+
+    public String getName()
+    {
+        return name;
     }
 }

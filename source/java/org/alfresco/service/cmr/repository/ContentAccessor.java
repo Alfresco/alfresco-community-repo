@@ -26,6 +26,13 @@ import org.alfresco.service.transaction.TransactionService;
 public interface ContentAccessor
 {    
     /**
+     * Gets the open/close state of the underlying IO Channel.
+     * 
+     * @return Returns true if the underlying IO Channel is open
+     */
+    public boolean isChannelOpen();
+    
+    /**
      * Use this method to register any interest in events against underlying
      * content streams. 
      * {@link #getContentOutputStream() output stream}.

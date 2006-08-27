@@ -23,6 +23,8 @@ import java.io.OutputStream;
 import javax.transaction.RollbackException;
 import javax.transaction.UserTransaction;
 
+import junit.framework.TestCase;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.transform.ContentTransformer;
@@ -43,18 +45,21 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.BaseSpringTest;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
+import org.springframework.context.ApplicationContext;
 
 /**
  * @see org.alfresco.repo.content.RoutingContentService
  * 
  * @author Derek Hulley
  */
-public class RoutingContentServiceTest extends BaseSpringTest
+public class RoutingContentServiceTest extends TestCase
 {
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    
     private static final String SOME_CONTENT = "ABC";
         
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/RoutingContentServiceTest";
@@ -62,24 +67,30 @@ public class RoutingContentServiceTest extends BaseSpringTest
     private ContentService contentService;
     private PolicyComponent policyComponent;
     private NodeService nodeService;
+    private AuthenticationComponent authenticationComponent;
+    private UserTransaction txn;
     private NodeRef rootNodeRef;
     private NodeRef contentNodeRef;
-    private AuthenticationComponent authenticationComponent;
     
     public RoutingContentServiceTest()
     {
     }
     
     @Override
-    public void onSetUpInTransaction() throws Exception
+    public void setUp() throws Exception
     {
-        super.onSetUpInTransaction();
-        nodeService = (NodeService) applicationContext.getBean("dbNodeService");
-        contentService = (ContentService) applicationContext.getBean(ServiceRegistry.CONTENT_SERVICE.getLocalName());
-        this.policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
-        this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
+        nodeService = (NodeService) ctx.getBean("dbNodeService");
+        contentService = (ContentService) ctx.getBean(ServiceRegistry.CONTENT_SERVICE.getLocalName());
+        this.policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
+        this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         
+        // authenticate
         this.authenticationComponent.setSystemUserAsCurrentUser();
+        
+        // start the transaction
+        txn = getUserTransaction();
+        txn.begin();
+        
         // create a store and get the root node
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, getName());
         if (!nodeService.exists(storeRef))
@@ -103,7 +114,7 @@ public class RoutingContentServiceTest extends BaseSpringTest
     }
     
     @Override
-    protected void onTearDownInTransaction() throws Exception
+    public void tearDown() throws Exception
     {
         try
         {
@@ -113,12 +124,22 @@ public class RoutingContentServiceTest extends BaseSpringTest
         {
             // ignore
         }
-        super.onTearDownInTransaction();
+        try
+        {
+            if (txn != null)
+            {
+                txn.rollback();
+            }
+        }
+        catch (Throwable e)
+        {
+            // ignore
+        }
     }
     
     private UserTransaction getUserTransaction()
     {
-        TransactionService transactionService = (TransactionService)applicationContext.getBean("transactionComponent");
+        TransactionService transactionService = (TransactionService) ctx.getBean("transactionComponent");
         return (UserTransaction) transactionService.getUserTransaction();
     }
     
@@ -236,8 +257,8 @@ public class RoutingContentServiceTest extends BaseSpringTest
         assertFalse("Reader should indicate that content is missing", reader.exists());
         
         // check the indexing doesn't spank everthing
-        setComplete();
-        endTransaction();
+        txn.commit();
+        txn = null;
     }
 	
 	/**
@@ -405,8 +426,8 @@ public class RoutingContentServiceTest extends BaseSpringTest
     public void testConcurrentWritesNoTxn() throws Exception
     {
         // ensure that the transaction is ended - ofcourse, we need to force a commit
-        setComplete();
-        endTransaction();
+        txn.commit();
+        txn = null;
         
         ContentWriter writer1 = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
         ContentWriter writer2 = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
@@ -425,8 +446,8 @@ public class RoutingContentServiceTest extends BaseSpringTest
     public void testConcurrentWritesWithSingleTxn() throws Exception
     {
         // want to operate in a user transaction
-        setComplete();
-        endTransaction();
+        txn.commit();
+        txn = null;
         
         UserTransaction txn = getUserTransaction();
         txn.begin();
@@ -472,8 +493,8 @@ public class RoutingContentServiceTest extends BaseSpringTest
     public synchronized void testConcurrentWritesWithMultipleTxns() throws Exception
     {
         // commit node so that threads can see node
-        setComplete();
-        endTransaction();
+        txn.commit();
+        txn = null;
         
         UserTransaction txn = getUserTransaction();
         txn.begin();
@@ -527,8 +548,8 @@ public class RoutingContentServiceTest extends BaseSpringTest
     public void testTransformation() throws Exception
     {
         // commit node so that threads can see node
-        setComplete();
-        endTransaction();
+        txn.commit();
+        txn = null;
         
         UserTransaction txn = getUserTransaction();
         txn.begin();
@@ -654,5 +675,28 @@ public class RoutingContentServiceTest extends BaseSpringTest
                 isDone = true;
             }
         }
+    }
+
+    /**
+     * Check that the system is able to handle the uploading of content with an unknown mimetype.
+     * The unknown mimetype should be preserved, but treated just like an octet stream.
+     */
+    public void testUnknownMimetype() throws Exception
+    {
+        String bogusMimetype = "text/bamboozle";
+        // get a writer onto the node
+        ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(bogusMimetype);
+        
+        // write something in
+        writer.putContent(SOME_CONTENT);
+        
+        // commit the transaction to ensure that it goes in OK
+        txn.commit();
+        
+        // so far, so good
+        ContentReader reader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+        assertNotNull("Should be able to get reader", reader);
+        assertEquals("Unknown mimetype was changed", bogusMimetype, reader.getMimetype());
     }
 }

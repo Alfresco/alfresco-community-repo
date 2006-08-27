@@ -81,13 +81,11 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.util.StopWatch;
 
 /**
- * @author Roy Wetherall
+ * @author Roy Wetherall 
  */
 public class RuleServiceCoverageTest extends TestCase
 {
-    //private static final ContentData CONTENT_DATA_TEXT = new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, "UTF-8");
-    
-	/**
+    /**
 	 * Application context used during the test
 	 */
 	static ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:alfresco/application-context.xml");
@@ -109,6 +107,7 @@ public class RuleServiceCoverageTest extends TestCase
     private ActionService actionService;
     private ContentTransformerRegistry transformerRegistry;
     private CopyService copyService;
+    private AuthenticationComponent authenticationComponent;
     
     /**
      * Category related values
@@ -147,9 +146,10 @@ public class RuleServiceCoverageTest extends TestCase
         this.actionService = serviceRegistry.getActionService();
         this.transactionService = serviceRegistry.getTransactionService();
         this.transformerRegistry = (ContentTransformerRegistry)applicationContext.getBean("contentTransformerRegistry");
+        this.authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
-        authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+        //authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+        authenticationComponent.setSystemUserAsCurrentUser();
             
         this.testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);
@@ -159,11 +159,7 @@ public class RuleServiceCoverageTest extends TestCase
                 this.rootNodeRef,
 				ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
-                ContentModel.TYPE_CONTAINER).getChildRef();
-        
-        // Create and authenticate the user used in the tests
-        //TestWithUserUtils.createUser(USER_NAME, PWD, this.rootNodeRef, this.nodeService, this.authenticationService);
-        //TestWithUserUtils.authenticateUser(USER_NAME, PWD, this.rootNodeRef, this.authenticationService);        
+                ContentModel.TYPE_CONTAINER).getChildRef();      
     }
 	
 	private Rule createRule(
@@ -173,11 +169,14 @@ public class RuleServiceCoverageTest extends TestCase
 			String conditionName, 
 			Map<String, Serializable> conditionParams)
 	{
-		Rule rule = this.ruleService.createRule(ruleTypeName);
+		Rule rule = new Rule();
+        rule.setRuleType(ruleTypeName);        
+        
+        Action action = this.actionService.createAction(actionName, actionParams);        
         ActionCondition condition = this.actionService.createActionCondition(conditionName, conditionParams);
-        rule.addActionCondition(condition);
-        Action action = this.actionService.createAction(actionName, actionParams);
-        rule.addAction(action);        
+        action.addActionCondition(condition);
+        rule.setAction(action);  
+        
         return rule;
 	}
     
@@ -226,8 +225,8 @@ public class RuleServiceCoverageTest extends TestCase
     /**
      * Check async rule execution
      */
-    public void testAsyncRuleExecution()
-    {
+    public void testAsyncRuleExecution() 
+    {        
         final NodeRef newNodeRef = TransactionUtil.executeInUserTransaction(
                 this.transactionService,
                 new TransactionUtil.TransactionWork<NodeRef>()
@@ -323,9 +322,9 @@ public class RuleServiceCoverageTest extends TestCase
         params2.put(ContentModel.PROP_APPROVE_MOVE.toString(), false);
         
         // Test that rule can be updated and execute correctly
-        rule.removeAllActions();
+        //rule.removeAllActions();
         Action action2 = this.actionService.createAction(AddFeaturesActionExecuter.NAME, params2);
-        rule.addAction(action2);
+        rule.setAction(action2);
         this.ruleService.saveRule(this.nodeRef, rule);
         
         NodeRef newNodeRef2 = this.nodeService.createNode(
@@ -341,6 +340,46 @@ public class RuleServiceCoverageTest extends TestCase
         
         // System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.testStoreRef));        
     }   
+    
+    public void testDisableIndividualRules()
+    {
+        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        params.put("aspect-name", ContentModel.ASPECT_CONFIGURABLE);        
+        
+        Rule rule = createRule(
+                RuleType.INBOUND, 
+                AddFeaturesActionExecuter.NAME, 
+                params, 
+                NoConditionEvaluator.NAME, 
+                null);
+        rule.setRuleDisabled(true);
+        
+        this.ruleService.saveRule(this.nodeRef, rule);
+
+        NodeRef newNodeRef = this.nodeService.createNode(
+                this.nodeRef,
+                ContentModel.ASSOC_CHILDREN,                
+                QName.createQName(TEST_NAMESPACE, "children"),
+                ContentModel.TYPE_CONTENT,
+                getContentProperties()).getChildRef();         
+        addContentToNode(newNodeRef);
+        assertFalse(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_CONFIGURABLE));  
+        
+        Rule rule2 = this.ruleService.getRule(rule.getNodeRef());
+        rule2.setRuleDisabled(false);
+        this.ruleService.saveRule(this.nodeRef, rule2);
+        
+        // Re-try the test now the rule has been re-enabled
+        NodeRef newNodeRef2 = this.nodeService.createNode(
+                this.nodeRef,
+                ContentModel.ASSOC_CHILDREN,                
+                QName.createQName(TEST_NAMESPACE, "children"),
+                ContentModel.TYPE_CONTENT,
+                getContentProperties()).getChildRef();         
+        addContentToNode(newNodeRef2);
+        assertTrue(this.nodeService.hasAspect(newNodeRef2, ContentModel.ASPECT_CONFIGURABLE));  
+        
+    }
     
     public void testDisableRule()
     {
@@ -427,15 +466,15 @@ public class RuleServiceCoverageTest extends TestCase
                 getContentProperties()).getChildRef();
         addContentToNode(contentToCopy);
         
-        // Create the rule and add to folder
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
-        params.put("aspect-name", ContentModel.ASPECT_TEMPLATABLE);             
+        params.put("aspect-name", ContentModel.ASPECT_TEMPLATABLE);        
+        
         Rule rule = createRule(
                 RuleType.INBOUND, 
                 AddFeaturesActionExecuter.NAME, 
                 params, 
                 NoConditionEvaluator.NAME, 
-                null);   
+                null);  
         rule.applyToChildren(true);
         this.ruleService.saveRule(copyToFolder, rule);
         
@@ -1232,9 +1271,9 @@ public class RuleServiceCoverageTest extends TestCase
         // Test begins with
         Map<String, Serializable> condParamsBegins = new HashMap<String, Serializable>(1);
         condParamsBegins.put(ComparePropertyValueEvaluator.PARAM_VALUE, "bob*");
-        rule.removeAllActionConditions();
+        rule.getAction().removeAllActionConditions();
         ActionCondition condition1 = this.actionService.createActionCondition(ComparePropertyValueEvaluator.NAME, condParamsBegins);
-        rule.addActionCondition(condition1);
+        rule.getAction().addActionCondition(condition1);
         this.ruleService.saveRule(this.nodeRef, rule);
         Map<QName, Serializable> propsx = new HashMap<QName, Serializable>();
         propsx.put(ContentModel.PROP_NAME, "mybobbins.doc");
@@ -1264,9 +1303,9 @@ public class RuleServiceCoverageTest extends TestCase
         // Test ends with
         Map<String, Serializable> condParamsEnds = new HashMap<String, Serializable>(1);
         condParamsEnds.put(ComparePropertyValueEvaluator.PARAM_VALUE, "*s.doc");
-        rule.removeAllActionConditions();
+        rule.getAction().removeAllActionConditions();
         ActionCondition condition2 = this.actionService.createActionCondition(ComparePropertyValueEvaluator.NAME, condParamsEnds);
-        rule.addActionCondition(condition2);
+        rule.getAction().addActionCondition(condition2);
         this.ruleService.saveRule(this.nodeRef, rule);
         Map<QName, Serializable> propsa = new HashMap<QName, Serializable>();
         propsa.put(ContentModel.PROP_NAME, "bobbins.document");
@@ -1546,5 +1585,63 @@ public class RuleServiceCoverageTest extends TestCase
 		{
 			throw new RuntimeException(exception);
 		}
+    }
+    
+    public void testAsyncExecutionWithPotentialLoop()
+    {
+        if (this.transformerRegistry.getTransformer(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_TEXT_PLAIN) != null)
+        {
+    		try
+    		{
+    	        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+    			params.put(TransformActionExecuter.PARAM_MIME_TYPE, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+    	        params.put(TransformActionExecuter.PARAM_DESTINATION_FOLDER, this.nodeRef);
+    	        params.put(TransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, ContentModel.ASSOC_CONTAINS);
+    	        params.put(TransformActionExecuter.PARAM_ASSOC_QNAME, QName.createQName(TEST_NAMESPACE, "transformed"));
+    	        
+    	        Rule rule = createRule(
+    	        		RuleType.INBOUND, 
+    	        		TransformActionExecuter.NAME, 
+    	        		params, 
+    	        		NoConditionEvaluator.NAME, 
+    	        		null);
+    	        rule.setExecuteAsynchronously(true);
+    	        rule.setTitle("Transform document to text");
+    	        
+    	        UserTransaction tx0 = transactionService.getUserTransaction();
+    			tx0.begin();   			
+    	        this.ruleService.saveRule(this.nodeRef, rule);
+    	        tx0.commit();    	        
+    	
+    	        UserTransaction tx = transactionService.getUserTransaction();
+    			tx.begin();
+    			
+    			Map<QName, Serializable> props =new HashMap<QName, Serializable>(1);
+    	        props.put(ContentModel.PROP_NAME, "test.xls");
+    			
+    			// Create the node at the root
+    	        NodeRef newNodeRef = this.nodeService.createNode(
+    	                this.nodeRef,
+                        ContentModel.ASSOC_CHILDREN,                
+    	                QName.createQName(TEST_NAMESPACE, "origional"),
+    	                ContentModel.TYPE_CONTENT,
+    	                props).getChildRef(); 
+    			
+    			// Set some content on the origional
+    			ContentWriter contentWriter = this.contentService.getWriter(newNodeRef, ContentModel.PROP_CONTENT, true);
+                contentWriter.setMimetype(MimetypeMap.MIMETYPE_EXCEL);
+    			File testFile = AbstractContentTransformerTest.loadQuickTestFile("xls");
+    			contentWriter.putContent(testFile);
+    			
+    			tx.commit();
+    	        
+                // Sleep to ensure work is done b4 execution is canceled
+    			Thread.sleep(10000);    			
+    		}
+    		catch (Exception exception)
+    		{
+    			throw new RuntimeException(exception);
+    		}
+        }
     }
 }

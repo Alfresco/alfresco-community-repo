@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -96,13 +97,16 @@ public class PermissionModel implements ModelDAO, InitializingBean
     private AccessStatus defaultPermission;
 
     // Cache granting permissions
-    private HashMap<PermissionReference, Set<PermissionReference>> grantingPermissions = new HashMap<PermissionReference, Set<PermissionReference>>();
+    private HashMap<PermissionReference, Set<PermissionReference>> grantingPermissions =
+        new HashMap<PermissionReference, Set<PermissionReference>>();
 
     // Cache grantees
-    private HashMap<PermissionReference, Set<PermissionReference>> granteePermissions = new HashMap<PermissionReference, Set<PermissionReference>>();
+    private HashMap<PermissionReference, Set<PermissionReference>> granteePermissions =
+        new HashMap<PermissionReference, Set<PermissionReference>>();
 
     // Cache the mapping of extended groups to the base
-    private HashMap<PermissionGroup, PermissionGroup> groupsToBaseGroup = new HashMap<PermissionGroup, PermissionGroup>();
+    private HashMap<PermissionGroup, PermissionGroup> groupsToBaseGroup =
+        new HashMap<PermissionGroup, PermissionGroup>();
 
     private HashMap<String, PermissionReference> uniqueMap;
 
@@ -111,7 +115,13 @@ public class PermissionModel implements ModelDAO, InitializingBean
     private HashMap<PermissionReference, PermissionGroup> permissionGroupMap;
 
     private HashMap<String, PermissionReference> permissionReferenceMap;
-
+    
+    private Map<QName, LinkedHashSet<PermissionReference>> cachedTypePermissionsExposed =
+        new HashMap<QName, LinkedHashSet<PermissionReference>>(128, 1.0f);
+    
+    private Map<QName, LinkedHashSet<PermissionReference>> cachedTypePermissionsUnexposed =
+        new HashMap<QName, LinkedHashSet<PermissionReference>>(128, 1.0f);
+    
     public PermissionModel()
     {
         super();
@@ -206,7 +216,6 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
             globalPermissions.add(globalPermission);
         }
-
     }
 
     /*
@@ -274,20 +283,35 @@ public class PermissionModel implements ModelDAO, InitializingBean
     {
         return getAllPermissionsImpl(type, true);
     }
-
+    
+    @SuppressWarnings("unchecked")
     private Set<PermissionReference> getAllPermissionsImpl(QName type, boolean exposedOnly)
     {
-        Set<PermissionReference> permissions = new HashSet<PermissionReference>();
-        if (dictionaryService.getClass(type).isAspect())
+        Map<QName, LinkedHashSet<PermissionReference>> cache;
+        if (exposedOnly)
         {
-            addAspectPermissions(type, permissions, exposedOnly);
+            cache = this.cachedTypePermissionsExposed;
         }
         else
         {
-            mergeGeneralAspectPermissions(permissions, exposedOnly);
-            addTypePermissions(type, permissions, exposedOnly);
+            cache = this.cachedTypePermissionsUnexposed;
         }
-        return permissions;
+        LinkedHashSet<PermissionReference> permissions = cache.get(type);
+        if (permissions == null)
+        {
+            permissions = new LinkedHashSet<PermissionReference>();
+            if (dictionaryService.getClass(type).isAspect())
+            {
+                addAspectPermissions(type, permissions, exposedOnly);
+            }
+            else
+            {
+                mergeGeneralAspectPermissions(permissions, exposedOnly);
+                addTypePermissions(type, permissions, exposedOnly);
+            }
+            cache.put(type, permissions);
+        }
+        return (Set<PermissionReference>)permissions.clone();
     }
 
     /**
@@ -378,7 +402,6 @@ public class PermissionModel implements ModelDAO, InitializingBean
         }
     }
     
-    
     private void mergeGeneralAspectPermissions(Set<PermissionReference> target, boolean exposedOnly)
     {
         for(QName aspect : dictionaryService.getAllAspects())
@@ -399,11 +422,15 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     public Set<PermissionReference> getExposedPermissionsImpl(NodeRef nodeRef, boolean exposedOnly)
     {
-
+        //
+        // TODO: cache permissions based on type and exposed flag
+        //       create JMeter test to see before/after effect!
+        //
         QName typeName = nodeService.getType(nodeRef);
+        
         Set<PermissionReference> permissions = getAllPermissions(typeName);
         mergeGeneralAspectPermissions(permissions, exposedOnly);
-        // Add non mandatory aspects..
+        // Add non mandatory aspects...
         Set<QName> defaultAspects = new HashSet<QName>();
         for (AspectDefinition aspDef : dictionaryService.getType(typeName).getDefaultAspects())
         {
@@ -417,7 +444,6 @@ public class PermissionModel implements ModelDAO, InitializingBean
             }
         }
         return permissions;
-
     }
 
     public synchronized Set<PermissionReference> getGrantingPermissions(PermissionReference permissionReference)

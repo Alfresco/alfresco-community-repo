@@ -40,12 +40,16 @@ public interface PersonService
 {
     /**
      * Get a person by userName. The person is store in the repository. The
-     * person may be created as a side effect of this call, depending on
-     * the setting to {@link #setCreateMissingPeople(boolean) create missing people or not}.
+     * person may be created as a side effect of this call, depending on the
+     * setting to
+     * {@link #setCreateMissingPeople(boolean) create missing people or not}.
      * 
-     * @param userName - the userName key to find the person
+     * @param userName -
+     *            the userName key to find the person
      * @return Returns the person node, either existing or new
-     * @throws NoSuchPersonException if the user doesn't exist and could not be created automatically
+     * @throws NoSuchPersonException
+     *             if the user doesn't exist and could not be created
+     *             automatically
      * 
      * @see #setCreateMissingPeople(boolean)
      * @see #createMissingPeople()
@@ -56,12 +60,13 @@ public interface PersonService
     /**
      * Check if a person exists.
      * 
-     * @param userName the user name
+     * @param userName
+     *            the user name
      * @return Returns true if the user exists, otherwise false
      */
     @Auditable(parameters = {"userName"})
     public boolean personExists(String userName);
-    
+
     /**
      * Does this service create people on demand if they are missing. If this is
      * true, a call to getPerson() will create a person if they are missing.
@@ -74,13 +79,14 @@ public interface PersonService
     /**
      * Set if missing people should be created.
      * 
-     * @param createMissing set to true to create people
+     * @param createMissing
+     *            set to true to create people
      * 
      * @see #getPerson(String)
      */
     @Auditable(parameters = {"createMissing"})
     public void setCreateMissingPeople(boolean createMissing);
-    
+
     /**
      * Get the list of properties that are mutable. Some service may only allow
      * a limited list of properties to be changed. This may be those persisted
@@ -96,8 +102,10 @@ public interface PersonService
      * Set the properties on a person - some of these may be persisted in
      * different locations.
      * 
-     * @param userName - the user for which the properties should be set.
-     * @param properties - the map of properties to set (as the NodeService)
+     * @param userName -
+     *            the user for which the properties should be set.
+     * @param properties -
+     *            the map of properties to set (as the NodeService)
      */
     @Auditable(parameters = {"userName", "properties"})
     public void setPersonProperties(String userName, Map<QName, Serializable> properties);
@@ -111,9 +119,8 @@ public interface PersonService
     public boolean isMutable();
 
     /**
-     * Create a new person with the given properties.
-     * The userName is one of the properties.
-     * Users with duplicate userNames are not allowed.
+     * Create a new person with the given properties. The userName is one of the
+     * properties. Users with duplicate userNames are not allowed.
      * 
      * @param properties
      * @return
@@ -128,15 +135,15 @@ public interface PersonService
      */
     @Auditable(parameters = {"userName"})
     public void deletePerson(String userName);
-    
+
     /**
      * Get all the people we know about.
      * 
-     * @return a set of people in no specific order. 
+     * @return a set of people in no specific order.
      */
     @Auditable
     public Set<NodeRef> getAllPeople();
-    
+
     /**
      * Return the container that stores people.
      * 
@@ -152,4 +159,17 @@ public interface PersonService
      */
     @Auditable
     public boolean getUserNamesAreCaseSensitive();
+
+    /**
+     * Given the case sensitive user name find the approriate identifier from the person service.
+     * If the system is case sensitive it will return the same string.
+     * If case insentive it will return the common object.
+     * If the user does not exist it will return null;
+     * 
+     * @param caseSensitiveUserName
+     * @return
+     */
+
+    public String getUserIdentifier(String caseSensitiveUserName);
+
 }

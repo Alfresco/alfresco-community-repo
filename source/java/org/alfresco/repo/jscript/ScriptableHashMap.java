@@ -16,17 +16,21 @@
  */
 package org.alfresco.repo.jscript;
 
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
-import org.alfresco.service.namespace.NamespacePrefixResolver;
-import org.alfresco.service.namespace.QNameMap;
 import org.mozilla.javascript.Scriptable;
 
 /**
  * @author Kevin Roast
  */
-public class ScriptableHashMap<K,V> extends HashMap implements Scriptable
+public class ScriptableHashMap<K,V> extends LinkedHashMap<K, V> implements Scriptable
 {
+    private static final long serialVersionUID = 3664761893203964569L;
+    
+    private Scriptable parentScope;
+    private Scriptable prototype;
+    
     /**
      * @see org.mozilla.javascript.Scriptable#getClassName()
      */
@@ -56,7 +60,14 @@ public class ScriptableHashMap<K,V> extends HashMap implements Scriptable
      */
     public Object get(int index, Scriptable start)
     {
-        return null;
+        Object value =  null;
+        int i=0;
+        Iterator itrValues = this.values().iterator();
+        while (i++ <= index && itrValues.hasNext())
+        {
+            value = itrValues.next();
+        }
+        return value;
     }
 
     /**
@@ -73,16 +84,17 @@ public class ScriptableHashMap<K,V> extends HashMap implements Scriptable
      */
     public boolean has(int index, Scriptable start)
     {
-        return false;
+        return (index >= 0 && this.values().size() > index);
     }
 
     /**
      * @see org.mozilla.javascript.Scriptable#put(java.lang.String, org.mozilla.javascript.Scriptable, java.lang.Object)
      */
+    @SuppressWarnings("unchecked")
     public void put(String name, Scriptable start, Object value)
     {
         // add the property to the underlying QName map
-        put(name, value);
+        put((K)name, (V)value);
     }
 
     /**
@@ -90,6 +102,7 @@ public class ScriptableHashMap<K,V> extends HashMap implements Scriptable
      */
     public void put(int index, Scriptable start, Object value)
     {
+        // TODO: implement?
     }
 
     /**
@@ -106,6 +119,17 @@ public class ScriptableHashMap<K,V> extends HashMap implements Scriptable
      */
     public void delete(int index)
     {
+        int i=0;
+        Iterator itrKeys = this.keySet().iterator();
+        while (i <= index && itrKeys.hasNext())
+        {
+            Object key = itrKeys.next();
+            if (i == index)
+            {
+                remove(key);
+                break;
+            }
+        }
     }
 
     /**
@@ -113,7 +137,7 @@ public class ScriptableHashMap<K,V> extends HashMap implements Scriptable
      */
     public Scriptable getPrototype()
     {
-        return null;
+        return this.prototype;
     }
 
     /**
@@ -121,6 +145,7 @@ public class ScriptableHashMap<K,V> extends HashMap implements Scriptable
      */
     public void setPrototype(Scriptable prototype)
     {
+        this.prototype = prototype;
     }
 
     /**
@@ -128,7 +153,7 @@ public class ScriptableHashMap<K,V> extends HashMap implements Scriptable
      */
     public Scriptable getParentScope()
     {
-        return null;
+        return this.parentScope;
     }
 
     /**
@@ -136,6 +161,7 @@ public class ScriptableHashMap<K,V> extends HashMap implements Scriptable
      */
     public void setParentScope(Scriptable parent)
     {
+        this.parentScope = parent;
     }
 
     /**
@@ -143,7 +169,7 @@ public class ScriptableHashMap<K,V> extends HashMap implements Scriptable
      */
     public Object[] getIds()
     {
-        return null;
+        return keySet().toArray();
     }
 
     /**

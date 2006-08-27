@@ -40,6 +40,9 @@ public class ActionImpl extends ParameterizedItemImpl
      */
     private static final long serialVersionUID = 3258135760426186548L;
     
+    /** The node reference for the action */
+    private NodeRef nodeRef;
+    
     /**
      * The title 
      */
@@ -91,11 +94,6 @@ public class ActionImpl extends ParameterizedItemImpl
     private String runAsUserName;
     
     /**
-     * The owning node reference
-     */
-    private NodeRef owningNodeRef;
-    
-    /**
      * The chain of actions that have lead to this action
      */
     private Set<String> actionChain;
@@ -108,30 +106,32 @@ public class ActionImpl extends ParameterizedItemImpl
     /**
      * Constructor
      * 
+     * @param nodeRef               the action node reference (null if not saved)
      * @param id					the action id
      * @param actionDefinitionName  the name of the action definition
      */
-    public ActionImpl(String id, String actionDefinitionName, NodeRef owningNodeRef)
+    public ActionImpl(NodeRef nodeRef, String id, String actionDefinitionName)
     {
-        this(id, actionDefinitionName, owningNodeRef, null);
+        this(nodeRef, id, actionDefinitionName, null);       
     }
 
     /**
      * Constructor 
      * 
+     * @param nodeRef               the action node reference (null if not saved)
      * @param id					the action id
      * @param actionDefinitionName  the action definition name
      * @param parameterValues       the parameter values
      */
     public ActionImpl(
+            NodeRef nodeRef,
     		String id,
     		String actionDefinitionName, 
-            NodeRef owningNodeRef,
             Map<String, Serializable> parameterValues)
     {
         super(id, parameterValues);
+        this.nodeRef = nodeRef;
         this.actionDefinitionName = actionDefinitionName;
-        this.owningNodeRef = owningNodeRef;
     }
     
     /**
@@ -165,19 +165,6 @@ public class ActionImpl extends ParameterizedItemImpl
 	{
 		this.description = description;
 	}
-    
-    /**
-     * @see org.alfresco.service.cmr.action.Action#getOwningNodeRef()
-     */
-    public NodeRef getOwningNodeRef()
-    {
-        return this.owningNodeRef;
-    }
-    
-    public void setOwningNodeRef(NodeRef owningNodeRef)
-    {
-        this.owningNodeRef = owningNodeRef;
-    }
 	
 	/**
 	 * @see org.alfresco.service.cmr.action.Action#getExecuteAsychronously()
@@ -391,5 +378,23 @@ public class ActionImpl extends ParameterizedItemImpl
     public void setRunAsUser(String runAsUserName)
     {
         this.runAsUserName = runAsUserName;
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.action.Action#getNodeRef()
+     */
+    public NodeRef getNodeRef()
+    {
+        return this.nodeRef;
+    }
+    
+    /**
+     * Set the node reference
+     * 
+     * @param nodeRef   the node reference
+     */
+    public void setNodeRef(NodeRef nodeRef)
+    {
+        this.nodeRef = nodeRef;
     }
 }

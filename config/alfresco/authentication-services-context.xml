@@ -255,12 +255,8 @@
         <property name="createMissingPeople">
            <value>${server.transaction.allow-writes}</value>
         </property>
-        <!-- Set is user names are case sensitive - taken from the    -->
-        <!-- repository wide setting - you are advised not to change  -->
-        <!-- this setting.                                            -->
-        <!-- This value should be ${user.name.caseSensitive}          -->
-        <property name="userNamesAreCaseSensitive">
-           <value>${user.name.caseSensitive}</value>
+		<property name="userNamesAreCaseSensitive">
+          <value>${user.name.caseSensitive}</value>
         </property>
     </bean>
 

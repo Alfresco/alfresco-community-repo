@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -41,10 +42,6 @@ import org.apache.commons.logging.LogFactory;
 public class NetBIOSNameServer extends NetworkServer implements Runnable
 {
     private static final Log logger = LogFactory.getLog("org.alfresco.smb.protocol.netbios");
-
-    // Server version
-
-    private static final String ServerVersion = "3.5.0";
 
     // Various NetBIOS packet sizes
 
@@ -412,7 +409,7 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
 
                     // Allocate the datagram packet, using the add name buffer
 
-                    DatagramPacket pkt = new DatagramPacket(buf, len, dest, getPort());
+                    DatagramPacket pkt = new DatagramPacket(buf, len, dest, RFCNetBIOSProtocol.NAME_PORT);
 
                     // Send the add name request
 
@@ -469,7 +466,7 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
 
                     // Allocate the datagram packet, using the refresh name buffer
 
-                    DatagramPacket pkt = new DatagramPacket(buf, len, dest, getPort());
+                    DatagramPacket pkt = new DatagramPacket(buf, len, dest, RFCNetBIOSProtocol.NAME_PORT);
 
                     // Send the refresh name request
 
@@ -525,7 +522,7 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
 
                     // Allocate the datagram packet, using the add name buffer
 
-                    DatagramPacket pkt = new DatagramPacket(buf, len, dest, getPort());
+                    DatagramPacket pkt = new DatagramPacket(buf, len, dest, RFCNetBIOSProtocol.NAME_PORT);
 
                     // Send the add name request
 
@@ -683,7 +680,12 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
     {
         super("NetBIOS", config);
 
+        // Set the NetBIOS name server port
+        
+        setServerPort( config.getNetBIOSNamePort());
+        
         // Perform common constructor code
+        
         commonConstructor();
     }
 
@@ -694,11 +696,6 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
      */
     private final void commonConstructor() throws SocketException
     {
-
-        // Set the server version
-
-        setVersion(ServerVersion);
-
         // Allocate the local and remote name tables
 
         m_localNames = new Vector<NetBIOSName>();
@@ -712,7 +709,6 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
         // Set the local address to bind the server to, and server port
 
         setBindAddress(getConfiguration().getNetBIOSBindAddress());
-        setServerPort(RFCNetBIOSProtocol.NAME_PORT);
 
         // Copy the WINS server addresses, if set
 
@@ -1481,6 +1477,54 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
                             && addrs[i].getHostAddress().equals("0.0.0.0") == false)
                         ipList.add(addrs[i].getAddress());
                 }
+
+                // Check if the address list is empty, use the network interface list to get the local IP addresses
+                
+                if ( ipList.size() == 0)
+                {
+	            	// Enumerate the network adapter list
+	            	
+	            	Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();
+	            	
+	            	if ( niEnum != null)
+	            	{
+	            		while ( niEnum.hasMoreElements())
+	            		{
+	            			// Get the current network interface
+	            			
+	            			NetworkInterface ni = niEnum.nextElement();
+	            			
+	            			// Enumerate the addresses for the network adapter
+	            			
+	            			Enumeration<InetAddress> niAddrs = ni.getInetAddresses();
+	            			if ( niAddrs != null)
+	            			{
+	            				// Check for any valid addresses
+	            				
+	            				while ( niAddrs.hasMoreElements())
+	            				{
+	            					InetAddress curAddr = niAddrs.nextElement();
+	            					
+	            					if ( curAddr.getHostAddress().equals("127.0.0.1") == false &&
+	            							curAddr.getHostAddress().equals("0.0.0.0") == false)
+	            						ipList.add( curAddr.getAddress());
+	            				}
+	            			}
+	            		}
+	            		
+	            		// DEBUG
+	            		
+	            		if ( ipList.size() > 0 && logger.isDebugEnabled())
+	            			logger.debug("Found " + ipList.size() + " addresses using interface list");
+	            	}
+                }
+                else
+                {
+                	// DBEUG
+                	
+            		if ( logger.isDebugEnabled())
+            			logger.debug("Found " + ipList.size() + " addresses using host name lookup");
+                }
                 
                 // Check if any addresses were added to the list
                 
@@ -1716,7 +1760,6 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
     protected final void sendPacket(NetBIOSPacket nbpkt, int len, InetAddress replyAddr, int replyPort)
             throws java.io.IOException
     {
-
         // Allocate the datagram packet, using the add name buffer
 
         DatagramPacket pkt = new DatagramPacket(nbpkt.getBuffer(), len, replyAddr, replyPort);

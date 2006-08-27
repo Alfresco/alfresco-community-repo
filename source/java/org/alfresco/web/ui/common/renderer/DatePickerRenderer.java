@@ -36,6 +36,9 @@ import javax.faces.convert.ConverterException;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.web.app.Application;
+import org.alfresco.web.ui.common.Utils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author kevinr
@@ -51,6 +54,12 @@ public class DatePickerRenderer extends BaseRenderer
    private static final String FIELD_DAY = "_day";
    private static final String FIELD_HOUR = "_hour";
    private static final String FIELD_MINUTE = "_minute";
+   private static final String FIELD_CMD = "_cmd";
+   private static final int CMD_SET = 1;
+   private static final int CMD_RESET = 2;
+   private static final int CMD_TODAY = 3;
+   
+   private static final Log logger = LogFactory.getLog(DatePickerRenderer.class);
 
    /**
     * @see javax.faces.render.Renderer#decode(javax.faces.context.FacesContext, javax.faces.component.UIComponent)
@@ -66,26 +75,68 @@ public class DatePickerRenderer extends BaseRenderer
          // TODO: should check for disabled/readonly here - no need to decode
          String clientId = component.getClientId(context);
          Map params = context.getExternalContext().getRequestParameterMap();
-         String year = (String)params.get(clientId + FIELD_YEAR);
-         if (year != null)
+         
+         // see if a command was invoked
+         String cmd = (String)params.get(clientId + FIELD_CMD);
+         if (cmd != null && cmd.length() > 0)
          {
-            // found data for our component
-            String month = (String)params.get(clientId + FIELD_MONTH);
-            String day = (String)params.get(clientId + FIELD_DAY);
-            String hour = (String)params.get(clientId + FIELD_HOUR);
-            String minute = (String)params.get(clientId + FIELD_MINUTE);
+            int action = Integer.parseInt(cmd);
             
-            // we encode the values needed for the component as we see fit
-            int[] parts = new int[5];
-            parts[0] = Integer.parseInt(year);
-            parts[1] = Integer.parseInt(month);
-            parts[2] = Integer.parseInt(day);
-            parts[3] = Integer.parseInt(hour);
-            parts[4] = Integer.parseInt(minute);
-            
-            // save the data in an object for our component as the "EditableValueHolder"
-            // all UI Input Components support this interface for the submitted value
-            ((EditableValueHolder)component).setSubmittedValue(parts);
+            switch (action)
+            {
+               case CMD_RESET:
+               {
+                  // set the submitted value to be null
+                  ((EditableValueHolder)component).setSubmittedValue(null);
+                  
+                  // set the component value to be null too
+                  ((EditableValueHolder)component).setValue(null);
+                  
+                  break;
+               }
+               
+               default:
+               {
+                  // the user is either trying to set the date for the first
+                  // time or set it back to today's date, create the parts array 
+                  // to represent this and set as the submitted value
+                  int[] parts = new int[5];
+                  
+                  Calendar date = Calendar.getInstance();
+                  parts[0] = date.get(Calendar.YEAR);
+                  parts[1] = date.get(Calendar.MONTH);
+                  parts[2] = date.get(Calendar.DAY_OF_MONTH);
+                  parts[3] = date.get(Calendar.HOUR_OF_DAY);
+                  parts[4] = date.get(Calendar.MINUTE);
+                  
+                  ((EditableValueHolder)component).setSubmittedValue(parts);
+               }
+            }
+         }
+         else
+         {
+            // a command was not invoked so decode the date the user set (if present)
+            String year = (String)params.get(clientId + FIELD_YEAR);
+            if (year != null)
+            {
+               // found data for our component
+               String month = (String)params.get(clientId + FIELD_MONTH);
+               String day = (String)params.get(clientId + FIELD_DAY);
+               String hour = (String)params.get(clientId + FIELD_HOUR);
+               String minute = (String)params.get(clientId + FIELD_MINUTE);
+               
+               // we encode the values needed for the component as we see fit
+               int[] parts = new int[5];
+               parts[0] = Integer.parseInt(year);
+               parts[1] = Integer.parseInt(month);
+               parts[2] = Integer.parseInt(day);
+               parts[3] = Integer.parseInt(hour);
+               parts[4] = Integer.parseInt(minute);
+               
+               // save the data in an object for our component as the "EditableValueHolder"
+               // all UI Input Components support this interface for the submitted value
+               ((EditableValueHolder)component).setSubmittedValue(parts);
+            }
          }
       }
       catch (NumberFormatException nfe)
@@ -124,6 +175,9 @@ public class DatePickerRenderer extends BaseRenderer
       if (component.isRendered() == true)
       {
          Date date = null;
+         String clientId = component.getClientId(context);
+         ResponseWriter out = context.getResponseWriter();
+         String cmdFieldName = clientId + FIELD_CMD;
          
          // this is part of the spec:
          // first you attempt to build the date from the submitted value
@@ -136,57 +190,119 @@ public class DatePickerRenderer extends BaseRenderer
          {
             // second if no submitted value is found, default to the current value
             Object value = ((ValueHolder)component).getValue();
-            // finally check for null value and create default if needed
-            date = value instanceof Date ? (Date)value : new Date();
+            if (value instanceof Date)
+            {
+               date = (Date)value;
+            }
          }
          
-         // get the attributes from the component we need for rendering
-         int nStartYear;
-         Integer startYear = (Integer)component.getAttributes().get("startYear");
-         if (startYear != null)
+         // create a flag to show if the component is disabled
+         Boolean disabled = (Boolean)component.getAttributes().get("disabled");
+         if (disabled == null)
          {
-            nStartYear = startYear.intValue();
+            disabled = Boolean.FALSE;
+         }
+            
+         if (date != null)
+         {
+            // get the attributes from the component we need for rendering
+            int nStartYear;
+            Integer startYear = (Integer)component.getAttributes().get("startYear");
+            if (startYear != null)
+            {
+               nStartYear = startYear.intValue();
+            }
+            else
+            {
+               nStartYear = new Date().getYear() + 1900 + 2;   // for "effectivity date" searches
+            }
+            
+            int nYearCount = 25;
+            Integer yearCount = (Integer)component.getAttributes().get("yearCount");
+            if (yearCount != null)
+            {
+               nYearCount = yearCount.intValue();
+            }
+            
+            // now we render the output for our component
+            // we create 3 drop-down menus for day, month and year and 
+            // two text fields for the hour and minute 
+            
+            // note that we build a client id for our form elements that we are then
+            // able to decode() as above.
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(date);
+            renderMenu(out, component, getDays(), calendar.get(Calendar.DAY_OF_MONTH), clientId + FIELD_DAY);
+            renderMenu(out, component, getMonths(), calendar.get(Calendar.MONTH), clientId + FIELD_MONTH);
+            renderMenu(out, component, getYears(nStartYear, nYearCount), calendar.get(Calendar.YEAR), clientId + FIELD_YEAR);
+            
+            // make sure we have a flag to determine whether to show the time
+            Boolean showTime = (Boolean)component.getAttributes().get("showTime");
+            if (showTime == null)
+            {
+               showTime = Boolean.FALSE;
+            }
+            
+            out.write("&nbsp;");
+            renderTimeElement(out, component, calendar.get(Calendar.HOUR_OF_DAY), clientId + FIELD_HOUR, showTime.booleanValue());
+            if (showTime.booleanValue())
+            {
+               out.write("&nbsp;:&nbsp;");
+            }
+            renderTimeElement(out, component, calendar.get(Calendar.MINUTE), clientId + FIELD_MINUTE, showTime.booleanValue());
+            out.write("&nbsp;");
+            
+            // render 2 links (if the component is not disabled) to allow the user to reset the
+            // date back to null or to select today's date
+            if (disabled.booleanValue() == false)
+            {
+               out.write("<input type=\"button\" onclick=\"");
+               out.write(Utils.generateFormSubmit(context, component, cmdFieldName, Integer.toString(CMD_TODAY)));
+               out.write("\" value=\"");
+               out.write(Application.getMessage(context, "today"));
+               out.write("\">&nbsp;<input type=\"button\" onclick=\"");
+               out.write(Utils.generateFormSubmit(context, component, cmdFieldName, Integer.toString(CMD_RESET)));
+               out.write("\" value=\"");
+               out.write(Application.getMessage(context, "none"));
+               out.write("\">");
+            }
          }
          else
          {
-            nStartYear = new Date().getYear() + 1900 + 2;   // for "effectivity date" searches
+            // Render a link indicating there isn't a date set (unless the property is disabled)
+            out.write("<div style=\"padding: 3px;");
+            if (disabled.booleanValue() == false)
+            {
+               out.write("\"><a href=\"#\" title=\"");
+               out.write(Application.getMessage(context, "click_to_set_date"));
+               out.write("\" onclick=\"");
+               out.write(Utils.generateFormSubmit(context, component, cmdFieldName, Integer.toString(CMD_SET)));
+               out.write("\">");
+            }
+            else
+            {
+               out.write(" color: #666666; font-style: italic;\">");
+            }
+            out.write(Application.getMessage(context, "none"));
+            if (disabled.booleanValue() == false)
+            {
+               out.write("</a>");
+            }
+            out.write("</div>");
          }
          
-         int nYearCount = 25;
-         Integer yearCount = (Integer)component.getAttributes().get("yearCount");
-         if (yearCount != null)
+         // also output a hidden field containing the current value of the date, this will
+         // allow JavaScript to determine if a value is set for validation purposes.
+         out.write("<input type=\"hidden\" ");
+         outputAttribute(out, clientId, "id");
+         outputAttribute(out, clientId, "name");
+         String strValue = "";
+         if (date != null)
          {
-            nYearCount = yearCount.intValue();
+            strValue = date.toString();
          }
-         
-         // now we render the output for our component
-         // we create 3 drop-down menus for day, month and year and 
-         // two text fields for the hour and minute 
-         String clientId = component.getClientId(context);
-         ResponseWriter out = context.getResponseWriter();
-         
-         // note that we build a client id for our form elements that we are then
-         // able to decode() as above.
-         Calendar calendar = new GregorianCalendar();
-         calendar.setTime(date);
-         renderMenu(out, component, getDays(), calendar.get(Calendar.DAY_OF_MONTH), clientId + FIELD_DAY);
-         renderMenu(out, component, getMonths(), calendar.get(Calendar.MONTH), clientId + FIELD_MONTH);
-         renderMenu(out, component, getYears(nStartYear, nYearCount), calendar.get(Calendar.YEAR), clientId + FIELD_YEAR);
-         
-         // make sure we have a flag to determine whether to show the time
-         Boolean showTime = (Boolean)component.getAttributes().get("showTime");
-         if (showTime == null)
-         {
-            showTime = Boolean.FALSE;
-         }
-         
-         out.write("&nbsp;");
-         renderTimeElement(out, component, calendar.get(Calendar.HOUR_OF_DAY), clientId + FIELD_HOUR, showTime.booleanValue());
-         if (showTime.booleanValue())
-         {
-            out.write("&nbsp;:&nbsp;");
-         }
-         renderTimeElement(out, component, calendar.get(Calendar.MINUTE), clientId + FIELD_MINUTE, showTime.booleanValue());
+         outputAttribute(out, strValue, "value");
+         out.write("/>");
       }
    }
    

@@ -229,6 +229,7 @@ public class ActionsConfigElement extends ConfigElementAdapter
       public String Action;
       public String Href;
       public String Target;
+      public String Script;
       public String Onclick;
    }
    

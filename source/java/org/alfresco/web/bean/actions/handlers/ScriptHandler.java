@@ -35,11 +35,6 @@ public class ScriptHandler extends BaseActionHandler
       String id = (String)actionProps.get(PROP_SCRIPT);
       NodeRef scriptRef = new NodeRef(Repository.getStoreRef(), id);
       repoProps.put(ScriptActionExecutor.PARAM_SCRIPTREF, scriptRef);
-      
-      NavigationBean navBean = (NavigationBean)FacesHelper.getManagedBean(
-            FacesContext.getCurrentInstance(), "NavigationBean");
-      repoProps.put(ScriptActionExecutor.PARAM_SPACEREF, 
-            navBean.getCurrentNode().getNodeRef());
    }
 
    public void prepareForEdit(Map<String, Serializable> actionProps,

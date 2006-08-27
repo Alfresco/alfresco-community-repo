@@ -5,6 +5,9 @@
 
       <dialogs>
       
+         <!--                           -->
+         <!-- Content and Space Dialogs -->
+         
          <!-- Definition of the create space dialog -->
          <dialog name="createSpace" page="/jsp/spaces/create-space-dialog.jsp" managed-bean="CreateSpaceDialog"
                  icon="/images/icons/create_space_large.gif" title-id="create_space" 
@@ -16,7 +19,7 @@
                  description-id="editspace_description" />
          
          <!-- Definition of the delete space dialog -->
-         <dialog name="deleteSpace" page="/jsp/dialog/delete.jsp" managed-bean="DeleteSpaceDialog" 
+         <dialog name="deleteSpace" page="/jsp/dialog/delete-space.jsp" managed-bean="DeleteSpaceDialog" 
                  icon="/images/icons/delete_large.gif" title-id="delete_space" 
                  description-id="delete_space_info" />
          
@@ -77,7 +80,16 @@
                  
          <dialog name="createDiscussion" page="/jsp/forums/create-topic-dialog.jsp" managed-bean="CreateDiscussionDialog"
                  icon="/images/icons/create_topic_large.gif" title-id="create_topic" 
-                 description-id="create_topic_description" error-message-id="error_create_topic_dialog" /> 
+                 description-id="create_topic_description" error-message-id="error_create_topic_dialog" />
+         
+         
+         <!--               -->
+         <!-- Other Dialogs -->
+         
+         <!-- Definition of the create forums dialog -->
+         <dialog name="emailSpaceUsers" page="/jsp/users/email-space-users.jsp" managed-bean="EmailSpaceUsersDialog"
+                 icon="/images/icons/email_users_large.gif" title-id="email_space_users" 
+                 description-id="email_space_users_desc" />
       </dialogs>
    </config>
    

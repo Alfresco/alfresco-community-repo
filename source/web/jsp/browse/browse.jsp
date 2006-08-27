@@ -108,7 +108,11 @@
                               </td>
                               <td>
                                  <%-- Summary --%>
-                                 <div class="mainTitle"><h:outputText value="#{NavigationBean.nodeProperties.name}" id="msg2" />&nbsp;<a:actionLink image="/images/icons/opennetwork.gif" value="#{msg.network_folder} #{NavigationBean.nodeProperties.cifsPathLabel}" showLink="false" href="#{NavigationBean.nodeProperties.cifsPath}" rendered="#{NavigationBean.nodeProperties.cifsPath != null}" target="new" id="cifs" /></div>
+                                 <div class="mainTitle">
+                                    <h:outputText value="#{NavigationBean.nodeProperties.name}" id="msg2" />&nbsp;
+                                    <a:actionLink image="/images/icons/opennetwork.gif" value="#{msg.network_folder} #{NavigationBean.nodeProperties.cifsPathLabel}" showLink="false" href="#{NavigationBean.nodeProperties.cifsPath}" rendered="#{NavigationBean.nodeProperties.cifsPath != null}" target="new" id="cifs" />&nbsp;
+                                    <a:actionLink id="actRSS" value="#{msg.rss_feed_link}" showLink="false" image="/images/icons/rss.gif" href="#{NavigationBean.RSSFeedURL}" rendered="#{NavigationBean.RSSFeed == true}" />
+                                 </div>
                                  <div class="mainSubText"><h:outputText value="#{msg.view_description}" id="msg3" /></div>
                                  <div class="mainSubText"><h:outputText value="#{NavigationBean.nodeProperties.description}" id="msg4" /></div>
                               </td>
@@ -181,7 +185,7 @@
                                  <a:listItem value="details" label="#{msg.details_view}" />
                                  <a:listItem value="icons" label="#{msg.view_icon}" />
                                  <a:listItem value="list" label="#{msg.view_browse}" />
-                                 <a:listItem value="dashboard" label="#{msg.dashboard_view}" disabled="#{!NavigationBean.currentNodeHasTemplate}" />
+                                 <a:listItem value="dashboard" label="#{msg.custom_view}" disabled="#{!NavigationBean.currentNodeHasTemplate}" />
                               </a:modeList>
                            </td>
                         </tr>

@@ -19,6 +19,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
+import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -67,6 +68,7 @@ public class CreateRuleWizard extends BaseActionWizard
    protected boolean runInBackground;
    protected boolean applyToSubSpaces;
    protected boolean editingCondition;
+   protected boolean ruleDisabled;
    
    private static final Log logger = LogFactory.getLog(CreateRuleWizard.class);
 
@@ -84,6 +86,7 @@ public class CreateRuleWizard extends BaseActionWizard
       this.condition = null;
       this.applyToSubSpaces = false;
       this.runInBackground = false;
+      this.ruleDisabled = false;
       this.conditions = null;
       
       this.allConditionsProperties = new ArrayList<Map<String, Serializable>>();
@@ -100,7 +103,9 @@ public class CreateRuleWizard extends BaseActionWizard
       Node currentSpace = this.browseBean.getActionSpace();
       
       // create the new rule
-      Rule rule = this.ruleService.createRule(this.getType());
+      //Rule rule = this.ruleService.createRule(this.getType());
+      Rule rule = new Rule();
+      rule.setRuleType(this.getType());
 
       // setup the rule
       outcome = setupRule(context, rule, outcome);
@@ -189,12 +194,13 @@ public class CreateRuleWizard extends BaseActionWizard
       
       String backgroundYesNo = this.runInBackground ? bundle.getString("yes") : bundle.getString("no");
       String subSpacesYesNo = this.applyToSubSpaces ? bundle.getString("yes") : bundle.getString("no");
+      String ruleDisabledYesNo = this.ruleDisabled ? bundle.getString("yes") : bundle.getString("no");
       
       return buildSummary(
             new String[] {bundle.getString("rule_type"), bundle.getString("name"), bundle.getString("description"),
-                          bundle.getString("apply_to_sub_spaces"), bundle.getString("run_in_background"),
+                          bundle.getString("apply_to_sub_spaces"), bundle.getString("run_in_background"), bundle.getString("rule_disabled"),
                           bundle.getString("conditions"), bundle.getString("actions")},
-            new String[] {this.type, this.title, this.description, subSpacesYesNo, backgroundYesNo, 
+            new String[] {this.type, this.title, this.description, subSpacesYesNo, backgroundYesNo, ruleDisabledYesNo,
                           conditionsSummary.toString(), actionsSummary.toString()});
    }
    
@@ -202,6 +208,21 @@ public class CreateRuleWizard extends BaseActionWizard
    protected String getErrorMessageId()
    {
       return "error_rule";
+   }
+   
+   protected CompositeAction getCompositeAction(Rule rule)
+   {
+       // Get the composite action
+       Action ruleAction = rule.getAction();
+       if (ruleAction == null)
+       {
+           throw new AlfrescoRuntimeException("Rule does not have associated action.");          
+       }
+       else if ((ruleAction instanceof CompositeAction) == false)
+       {
+           throw new AlfrescoRuntimeException("Rules with non-composite actions are not currently supported by the UI");
+       }
+       return (CompositeAction)ruleAction;
    }
 
    // ------------------------------------------------------------------------------
@@ -438,6 +459,22 @@ public class CreateRuleWizard extends BaseActionWizard
    }
 
    /**
+    * @return Returns whether the rule is disabled or not.
+    */
+   public boolean getRuleDisabled()
+   {
+       return this.ruleDisabled;
+   }
+   
+   /**
+    * @param ruleDisabled Sets whether the rule is disabled or not
+    */
+   public void setRuleDisabled(boolean ruleDisabled)
+   {
+       this.ruleDisabled = ruleDisabled;
+   }
+   
+   /**
     * @return Returns the type.
     */
    public String getType()
@@ -650,6 +687,10 @@ public class CreateRuleWizard extends BaseActionWizard
       rule.setDescription(this.description);
       rule.applyToChildren(this.applyToSubSpaces);
       rule.setExecuteAsynchronously(this.runInBackground);
+      rule.setRuleDisabled(this.ruleDisabled);
+      
+      CompositeAction compositeAction = this.actionService.createCompositeAction();
+      rule.setAction(compositeAction);
       
       // add all the conditions to the rule
       for (Map<String, Serializable> condParams : this.allConditionsProperties)
@@ -674,7 +715,7 @@ public class CreateRuleWizard extends BaseActionWizard
          Boolean not = (Boolean)condParams.get(BaseConditionHandler.PROP_CONDITION_NOT);
          condition.setInvertCondition(((Boolean)not).booleanValue());
          
-         rule.addActionCondition(condition);
+         compositeAction.addActionCondition(condition);
       }
       
       // add all the actions to the rule
@@ -696,7 +737,7 @@ public class CreateRuleWizard extends BaseActionWizard
          // add the action to the rule
          Action action = this.actionService.createAction(actionName);
          action.setParameterValues(repoActionParams);
-         rule.addAction(action);
+         compositeAction.addAction(action);
       }
       
       return outcome;

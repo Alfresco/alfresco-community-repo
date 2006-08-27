@@ -33,7 +33,7 @@ import org.alfresco.web.bean.repository.Repository;
  * 
  * @author Kevin Roast
  */
-public final class DiscussNodeEvaluator implements ActionEvaluator
+public class DiscussNodeEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -60,6 +60,3 @@ public final class DiscussNodeEvaluator implements ActionEvaluator
       return result;
    }
 }
-/*
-<a:booleanEvaluator value="#{r.beingDiscussed == true}">
-*/

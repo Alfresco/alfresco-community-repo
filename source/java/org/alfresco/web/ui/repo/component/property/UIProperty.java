@@ -178,7 +178,8 @@ public class UIProperty extends PropertySheetItem
       {
          // if we are trying to edit a NodeRef or Path property type set it to read-only as 
          // these are internal properties that shouldn't be edited.
-         if (typeName.equals(DataTypeDefinition.NODE_REF) || typeName.equals(DataTypeDefinition.PATH))
+         if (typeName.equals(DataTypeDefinition.NODE_REF) || typeName.equals(DataTypeDefinition.PATH) || 
+             typeName.equals(DataTypeDefinition.CONTENT))
          {
             logger.warn("Setting property " + propDef.getName().toString() + " to read-only as it can not be edited");
             control.getAttributes().put("disabled", Boolean.TRUE);

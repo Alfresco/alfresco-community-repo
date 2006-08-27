@@ -52,6 +52,10 @@
          <!-- see org.alfresco.service.cmr.security.PermissionService for allowed values -->
          <home-space-permission>Consumer</home-space-permission>
          
+         <!-- The default location to display when the browse screen is first shown -->
+         <!-- This value should be one of 'companyhome', 'userhome', 'guesthome' or 'myalfresco' -->
+         <initial-location>userhome</initial-location>
+         
          <!-- the URL to the client Help file -->
          <help-url>http://www.alfresco.org/help/webclient</help-url>
          
@@ -136,6 +140,7 @@
       <!-- which match the name are forwared to the class instance -->
       <command-servlet>
          <command-processor name="workflow" class="org.alfresco.web.app.servlet.command.WorkflowCommandProcessor" />
+         <command-processor name="task" class="org.alfresco.web.app.servlet.command.TaskCommandProcessor" />
          <command-processor name="script" class="org.alfresco.web.app.servlet.command.ScriptCommandProcessor" />
       </command-servlet>
    </config>
@@ -184,14 +189,16 @@
             <dashlet id="getting-started" label-id="dashlet_gettingstarted_label"
                   description-id="dashlet_gettingstarted_desc"
                   jsp="/jsp/dashboards/dashlets/getting-started.jsp" allow-narrow="false" />
+            <dashlet id="workitems-todo" label-id="my_workitems_todo_title" description-id="my_workitems_todo_desc"
+                  jsp="/jsp/workflow/workitems-todo-dashlet.jsp" allow-narrow="false" />
+            <dashlet id="workitems-completed" label-id="my_workitems_completed_title" description-id="my_workitems_completed_desc"
+                  jsp="/jsp/workflow/workitems-completed-dashlet.jsp" allow-narrow="false" />
             <!-- TEMP! -->
+            <dashlet id="process-list" label="Workflows" description="List of workflows you may start"
+                  jsp="/jbpm/process_list.jsp" allow-narrow="true" />
             <dashlet id="my-docs-template" label="My Documents"
                   description="My Documents Template Page"
                   jsp="/jsp/dashboards/dashlets/my-docs.jsp" allow-narrow="true" />
-            <dashlet id="task-list" label="My Tasklist To-do" description="List of your tasks still to complete"
-                  jsp="/jsp/dashboards/dashlets/tasklist-todo.jsp" allow-narrow="false" />
-            <dashlet id="task-list-complete" label="My Tasks Completed" description="List of your completed tasks"
-                  jsp="/jsp/dashboards/dashlets/tasklist-completed.jsp" allow-narrow="false" />
             <dashlet id="content-checkedout" label="My Checkedout Content" description="List of the content checked out to you"
                   jsp="/jsp/dashboards/dashlets/content-checkedout.jsp" allow-narrow="false" />
             <dashlet id="calculator" label="Calculator" description="A small calculator applet"
@@ -234,6 +241,7 @@
       <!-- The list of content and/or folder types shown in the specialise-type action -->
       <specialise-types>
       </specialise-types>
+      
       <!-- The list of aspects to show in the add/remove features action -->
       <!-- and the has-aspect condition -->
       <aspects>
@@ -248,6 +256,16 @@
          <aspect name="localizable"/>
          <aspect name="emailed"/>
       </aspects>
+      <!-- List of aspects to only show in the add features action -->
+      <aspects-add>
+      </aspects-add>
+      <!-- List of aspects to only show in the remove features action -->
+      <aspects-remove>
+      </aspects-remove>
+      <!-- List of aspects to only show in the has aspect condition -->
+      <aspects-test>
+      </aspects-test>
+      
       <!-- The list of transformers to show in the transform actions -->
       <transformers>
          <transformer name="application/vnd.oasis.opendocument.text"/>

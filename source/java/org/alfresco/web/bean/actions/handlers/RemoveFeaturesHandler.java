@@ -49,7 +49,7 @@ public class RemoveFeaturesHandler extends BaseActionHandler
       String aspect = (String)actionProps.get(PROP_ASPECT);
          
       // find the label used by looking through the SelectItem list
-      for (SelectItem item : ((BaseActionWizard)wizard).getAspects())
+      for (SelectItem item : ((BaseActionWizard)wizard).getRemovableAspects())
       {
          if (item.getValue().equals(aspect))
          {

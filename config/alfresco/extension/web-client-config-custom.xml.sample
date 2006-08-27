@@ -22,9 +22,9 @@
          <language locale="it_IT">Italian</language>
          <language locale="ja_JP">Japanese</language>
          <language locale="du_NL">Dutch</language>
-         <language locale="pt_BR">Portugese (Brazillian)</language>
+         <language locale="pt_BR">Portuguese (Brazilian)</language>
          <language locale="ru_RU">Russian</language>
-         <language locale="fi_FI">Finish</language>
+         <language locale="fi_FI">Finnish</language>
          <language locale="tr_TR">Turkish</language>
          <language locale="zh_CN">Simplified Chinese</language>
       </languages>

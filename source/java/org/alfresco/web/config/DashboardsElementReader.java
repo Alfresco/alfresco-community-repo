@@ -46,6 +46,7 @@ public class DashboardsElementReader implements ConfigElementReader
    public static final String ATTR_LABELID = "label-id";
    public static final String ATTR_DESCRIPTIONID = "description-id";
    public static final String ATTR_JSP = "jsp";
+   public static final String ATTR_CONFIGJSP = "config-jsp";
    public static final String ATTR_ALLOWNARROW = "allow-narrow";
    
    /**
@@ -165,6 +166,7 @@ public class DashboardsElementReader implements ConfigElementReader
          def.AllowNarrow = Boolean.parseBoolean(allowNarrow);
       }
       def.JSPPage = getMandatoryDashletAttributeValue(config, ATTR_JSP);
+      def.ConfigJSPPage = config.attributeValue(ATTR_CONFIGJSP);
       String label = config.attributeValue(ATTR_LABEL);
       String labelId = config.attributeValue(ATTR_LABELID);
       if ((label == null || label.length() == 0) && (labelId == null || labelId.length() == 0))

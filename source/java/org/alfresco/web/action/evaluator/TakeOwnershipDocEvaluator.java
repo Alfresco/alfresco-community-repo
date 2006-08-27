@@ -24,7 +24,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Kevin Roast
  */
-public final class TakeOwnershipDocEvaluator implements ActionEvaluator
+public class TakeOwnershipDocEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)

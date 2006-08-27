@@ -28,14 +28,10 @@ public interface AjaxCommand
     * 
     * @param facesContext FacesContext
     * @param expression The binding expression
-    * <!-- @param responseMimeType The response mime-type -->
     * @param request The request
     * @param response The response
     */
-   public abstract void execute(FacesContext facesContext, 
-				String expression,
-				//				String responseMimeType,
-				HttpServletRequest request,
-				HttpServletResponse response) 
-       throws ServletException, IOException;
+   public abstract void execute(FacesContext facesContext, String expression,
+         HttpServletRequest request, HttpServletResponse response) 
+         throws ServletException, IOException;
 }

@@ -287,37 +287,34 @@ public abstract class UserMembersBean implements IContextListener
          tx.begin();
          
          // Return all the permissions set against the current node
-         // for any authentication instance (user).
+         // for any authentication instance (user/group).
          // Then combine them into a single list for each authentication found. 
-         Map<String, List<String>> permissionMap = new HashMap<String, List<String>>(13, 1.0f);
+         Map<String, List<String>> permissionMap = new HashMap<String, List<String>>(8, 1.0f);
          Set<AccessPermission> permissions = permissionService.getAllSetPermissions(getNode().getNodeRef());
-         if (permissions != null)
+         for (AccessPermission permission : permissions)
          {
-            for (AccessPermission permission : permissions)
+            // we are only interested in Allow and not groups/owner etc.
+            if (permission.getAccessStatus() == AccessStatus.ALLOWED &&
+                (permission.getAuthorityType() == AuthorityType.USER ||
+                 permission.getAuthorityType() == AuthorityType.GROUP ||
+                 permission.getAuthorityType() == AuthorityType.GUEST ||
+                 permission.getAuthorityType() == AuthorityType.EVERYONE))
             {
-               // we are only interested in Allow and not groups/owner etc.
-               if (permission.getAccessStatus() == AccessStatus.ALLOWED &&
-                   (permission.getAuthorityType() == AuthorityType.USER ||
-                    permission.getAuthorityType() == AuthorityType.GROUP ||
-                    permission.getAuthorityType() == AuthorityType.GUEST ||
-                    permission.getAuthorityType() == AuthorityType.EVERYONE))
+               String authority = permission.getAuthority();
+               
+               List<String> userPermissions = permissionMap.get(authority);
+               if (userPermissions == null)
                {
-                  String authority = permission.getAuthority();
-                  
-                  List<String> userPermissions = permissionMap.get(authority);
-                  if (userPermissions == null)
-                  {
-                     // create for first time
-                     userPermissions = new ArrayList<String>(4);
-                     permissionMap.put(authority, userPermissions);
-                  }
-                  // add the permission name for this authority
-                  userPermissions.add(permission.getPermission());
+                  // create for first time
+                  userPermissions = new ArrayList<String>(4);
+                  permissionMap.put(authority, userPermissions);
                }
+               // add the permission name for this authority
+               userPermissions.add(permission.getPermission());
             }
          }
          
-         // for each authentication (username key) found we get the Person
+         // for each authentication (username/group key) found we get the Person
          // node represented by it and use that for our list databinding object
          personNodes = new ArrayList<Map>(permissionMap.size());
          for (String authority : permissionMap.keySet())
@@ -337,7 +334,7 @@ public abstract class UserMembersBean implements IContextListener
                   // it is much better for performance to do this now rather than during page bind
                   Map<String, Object> props = node.getProperties(); 
                   props.put("fullName", ((String)props.get("firstName")) + ' ' + ((String)props.get("lastName")));
-                  props.put("roles", listToString(context, permissionMap.get(authority)));
+                  props.put("roles", roleListToString(context, permissionMap.get(authority)));
                   props.put("icon", WebResources.IMAGE_PERSON);
                   
                   personNodes.add(node);
@@ -357,7 +354,7 @@ public abstract class UserMembersBean implements IContextListener
                }
                node.put("userName", authority);
                node.put("id", authority);
-               node.put("roles", listToString(context, permissionMap.get(authority)));
+               node.put("roles", roleListToString(context, permissionMap.get(authority)));
                node.put("icon", WebResources.IMAGE_GROUP);
                personNodes.add(node);
             }
@@ -369,7 +366,7 @@ public abstract class UserMembersBean implements IContextListener
       catch (InvalidNodeRefException refErr)
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               context, Repository.ERROR_NODEREF), new Object[] {"root"}) );
+               context, Repository.ERROR_NODEREF), new Object[] {refErr.getNodeRef()}) );
          personNodes = Collections.<Map>emptyList();
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
@@ -384,7 +381,16 @@ public abstract class UserMembersBean implements IContextListener
       return personNodes;
    }
    
-   private static String listToString(FacesContext context, List<String> list)
+   /**
+    * Convert a list of user Roles to a comma separated string list. Each individual role
+    * will be looked up in message bundle to convert to a human readable string value.
+    * 
+    * @param context    FacesContext
+    * @param list       List of Role names
+    * 
+    * @return Comma separated string of human readable roles
+    */
+   public static String roleListToString(FacesContext context, List<String> list)
    {
       StringBuilder buf = new StringBuilder();
       

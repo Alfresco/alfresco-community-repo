@@ -26,7 +26,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Kevin Roast
  */
-public final class CancelCheckoutDocEvaluator implements ActionEvaluator
+public class CancelCheckoutDocEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -37,6 +37,3 @@ public final class CancelCheckoutDocEvaluator implements ActionEvaluator
               node.hasAspect(ContentModel.ASPECT_WORKING_COPY));
    }
 }
-/*
-<a:booleanEvaluator value="#{r.cancelCheckOut == true}">
-*/

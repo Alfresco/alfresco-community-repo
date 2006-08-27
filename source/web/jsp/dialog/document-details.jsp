@@ -120,20 +120,19 @@
                               <h:panelGroup id="dashboard-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write" id="evalChange">
-                                       <a:actionLink id="actModify" value="#{msg.modify}" action="applyTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
-                                       <a:actionLink id="actRemove" value="#{msg.remove}" action="#{DocumentDetailsBean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
+                                       <a:actionLink id="actModify" value="#{msg.modify}" action="dialog:applyTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
+                                       <a:actionLink id="actRemove" value="#{msg.remove}" actionListener="#{DocumentDetailsBean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
                                     </r:permissionEvaluator>
                                  </f:facet>
                               </h:panelGroup>
-                              <a:panel label="#{msg.dashboard_view}" id="dashboard-panel" progressive="true" facetsId="dashboard-panel-facets"
+                              <a:panel label="#{msg.custom_view}" id="dashboard-panel" progressive="true" facetsId="dashboard-panel-facets"
                                        border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
                                        expanded='#{DocumentDetailsBean.panels["dashboard-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
                                  <table width=100% cellspacing=0 cellpadding=0 border=0>
                                     <tr>
                                        <td align=left>
                                           <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write" id="evalApply">
-                                             <a:actionLink id="actDashboard" value="#{msg.apply_dashboard}" rendered="#{DocumentDetailsBean.templatable == false}"
-                                                   action="applyTemplate" />
+                                             <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{DocumentDetailsBean.templatable == false}" action="dialog:applyTemplate" />
                                           </r:permissionEvaluator>
                                           <a:panel id="template-panel" rendered="#{DocumentDetailsBean.templatable == true}">
                                              <div style="padding:4px;border: 1px dashed #cccccc">

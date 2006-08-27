@@ -32,7 +32,7 @@ import org.alfresco.web.bean.repository.Repository;
  * 
  * @author Kevin Roast
  */
-public final class ForumsCheckinDocEvaluator implements ActionEvaluator
+public class ForumsCheckinDocEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -67,6 +67,3 @@ public final class ForumsCheckinDocEvaluator implements ActionEvaluator
       return allow;
    }
 }
-/*
-<a:booleanEvaluator value="#{r.checkIn == true}">
-*/

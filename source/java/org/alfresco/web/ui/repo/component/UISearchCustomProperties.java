@@ -78,6 +78,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
    /**
     * @see javax.faces.component.UIComponentBase#encodeBegin(javax.faces.context.FacesContext)
     */
+   @SuppressWarnings("unchecked")
    public void encodeBegin(FacesContext context) throws IOException
    {
       if (isRendered() == false)
@@ -133,6 +134,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
     * 
     * @param context FacesContext
     */
+   @SuppressWarnings("unchecked")
    private void createComponentsFromConfig(FacesContext context)
    {
       DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
@@ -236,6 +238,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
     * 
     * @return UIComponent
     */
+   @SuppressWarnings("unchecked")
    private UIComponent generateControl(FacesContext context, PropertyDefinition propDef, String displayLabel, String beanBinding)
    {
       UIComponent control = null;
@@ -264,6 +267,22 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
       else if (typeName.equals(DataTypeDefinition.DATETIME) || typeName.equals(DataTypeDefinition.DATE))
       {
          Boolean showTime = Boolean.valueOf(typeName.equals(DataTypeDefinition.DATETIME));
+         
+         // create value bindings for the start year and year count attributes
+         ValueBinding startYearBind = null;
+         ValueBinding yearCountBind = null;
+         
+         if (showTime)
+         {
+            startYearBind = facesApp.createValueBinding("#{DateTimePickerGenerator.startYear}");
+            yearCountBind = facesApp.createValueBinding("#{DateTimePickerGenerator.yearCount}");
+         }
+         else
+         {
+            startYearBind = facesApp.createValueBinding("#{DatePickerGenerator.startYear}");
+            yearCountBind = facesApp.createValueBinding("#{DatePickerGenerator.yearCount}");
+         }
+         
          
          // Need to output component for From and To date selectors and labels
          // also neeed checkbox for enable/disable state - requires an outer wrapper component
@@ -298,7 +317,8 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          UIInput inputFromDate = (UIInput)facesApp.createComponent(ComponentConstants.JAVAX_FACES_INPUT);
          inputFromDate.setId(context.getViewRoot().createUniqueId());
          inputFromDate.setRendererType(RepoConstants.ALFRESCO_FACES_DATE_PICKER_RENDERER);
-         inputFromDate.getAttributes().put("yearCount", new Integer(30));
+         inputFromDate.setValueBinding("startYear", startYearBind);
+         inputFromDate.setValueBinding("yearCount", yearCountBind);
          inputFromDate.getAttributes().put("showTime", showTime);
          ValueBinding vbFromDate = facesApp.createValueBinding(
             "#{" + beanBinding + "[\"" + PREFIX_DATE_FROM + propDef.getName().toString() + "\"]}");
@@ -316,7 +336,8 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          UIInput inputToDate = (UIInput)facesApp.createComponent(ComponentConstants.JAVAX_FACES_INPUT);
          inputToDate.setId(context.getViewRoot().createUniqueId());
          inputToDate.setRendererType(RepoConstants.ALFRESCO_FACES_DATE_PICKER_RENDERER);
-         inputToDate.getAttributes().put("yearCount", new Integer(30));
+         inputToDate.setValueBinding("startYear", startYearBind);
+         inputToDate.setValueBinding("yearCount", yearCountBind);
          inputToDate.getAttributes().put("showTime", showTime);
          ValueBinding vbToDate = facesApp.createValueBinding(
             "#{" + beanBinding + "[\"" + PREFIX_DATE_TO + propDef.getName().toString() + "\"]}");
@@ -333,8 +354,8 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          // any other type is represented as an input text field
          control = (UIInput)facesApp.createComponent(ComponentConstants.JAVAX_FACES_INPUT);
          control.setRendererType(ComponentConstants.JAVAX_FACES_TEXT);
-         control.getAttributes().put("size", "28");
-         control.getAttributes().put("maxlength", "1024");
+         control.setValueBinding("size", facesApp.createValueBinding("#{TextFieldGenerator.size}"));
+         control.setValueBinding("maxlength", facesApp.createValueBinding("#{TextFieldGenerator.maxLength}"));
          control.setValueBinding(VALUE, vb);
       }
       

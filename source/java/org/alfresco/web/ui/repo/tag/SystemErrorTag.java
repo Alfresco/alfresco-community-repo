@@ -39,6 +39,8 @@ import org.alfresco.web.bean.ErrorBean;
  */
 public class SystemErrorTag extends TagSupport
 {
+   private static final long serialVersionUID = -7336055169875448199L;
+   
    private static final String MSG_RETURN_TO_APP = "return_to_application";
    private static final String MSG_HIDE_DETAILS  = "hide_details";
    private static final String MSG_SHOW_DETAILS  = "show_details";
@@ -123,6 +125,21 @@ public class SystemErrorTag extends TagSupport
 
       if (errorBean != null)
       {
+         errorMessage = errorBean.getLastErrorMessage();
+         errorDetails = errorBean.getStackTrace();
+      }
+      else
+      {
+         // if we reach here the error was caught by the declaration in web.xml so
+         // pull all the information from the request and create the error bean
+         Throwable error = (Throwable)pageContext.getRequest().getAttribute("javax.servlet.error.exception");
+         String uri = (String)pageContext.getRequest().getAttribute("javax.servlet.error.request_uri");
+         
+         // create and store the ErrorBean
+         errorBean = new ErrorBean();
+         pageContext.getSession().setAttribute(ErrorBean.ERROR_BEAN_NAME, errorBean);
+         errorBean.setLastError(error);
+         errorBean.setReturnPage(uri);
          errorMessage = errorBean.getLastErrorMessage();
          errorDetails = errorBean.getStackTrace();
       }
@@ -253,6 +270,11 @@ public class SystemErrorTag extends TagSupport
       catch (IOException ioe)
       {
          throw new JspException(ioe);
+      }
+      finally
+      {
+         // clear out the error bean otherwise the next error could be hidden
+         pageContext.getSession().removeAttribute(ErrorBean.ERROR_BEAN_NAME);
       }
       
       return SKIP_BODY;

@@ -40,6 +40,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_FROMEMAILADDRESS = "from-email-address";
    public static final String ELEMENT_SHELFVISIBLE = "shelf-visible";
    public static final String ELEMENT_AJAX_ENABLED = "ajax-enabled";
+   public static final String ELEMENT_INITIALLOCATION = "initial-location";
    
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
@@ -143,6 +144,13 @@ public class ClientElementReader implements ConfigElementReader
          if (ajaxEnabled != null)
          {
             configElement.setAjaxEnabled(Boolean.parseBoolean(ajaxEnabled.getTextTrim()));
+         }
+         
+         // get the initial location
+         Element initialLocation = element.element(ELEMENT_INITIALLOCATION);
+         if (initialLocation != null)
+         {
+            configElement.setInitialLocation(initialLocation.getTextTrim());
          }
       }
       

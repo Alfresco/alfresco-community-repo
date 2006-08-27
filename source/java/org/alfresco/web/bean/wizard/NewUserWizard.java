@@ -462,12 +462,7 @@ public class NewUserWizard extends AbstractWizardBean
          else
          {
             if (this.password.equals(this.confirm))
-            {
-               if (!this.personService.getUserNamesAreCaseSensitive())
-               {
-                  this.userName = this.userName.toLowerCase();
-               }
-                
+            {   
                // create properties for Person type from submitted Form data
                Map<QName, Serializable> props = new HashMap<QName, Serializable>(7, 1.0f);
                props.put(ContentModel.PROP_USERNAME, this.userName);

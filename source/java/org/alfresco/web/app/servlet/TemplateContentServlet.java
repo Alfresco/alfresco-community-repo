@@ -142,7 +142,7 @@ public class TemplateContentServlet extends BaseServlet
          
          templateRef = pathInfo.NodeRef;
       }
-      else if (tokenCount == 7)
+      else if (tokenCount >= 7)
       {
          StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
          templateRef = new NodeRef(storeRef, t.nextToken());
@@ -157,7 +157,7 @@ public class TemplateContentServlet extends BaseServlet
       
       if (nodeRef == null)
       {
-         throw new TemplateException("Not enough arguments supplied in URL.");
+         throw new TemplateException("Not enough elements supplied in URL or no 'path' argument specified.");
       }
       
       // get the services we need to retrieve the content
@@ -268,7 +268,6 @@ public class TemplateContentServlet extends BaseServlet
       TemplateNode node = new TemplateNode(nodeRef, services, this.imageResolver);
       root.put("space", node);
       root.put("document", node);
-      root.put("template", new TemplateNode(templateRef, services, this.imageResolver));
       
       // add URL arguments as a map called 'args' to the root of the model
       Map<String, String> args = new HashMap<String, String>(8, 1.0f);

@@ -20,7 +20,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -30,16 +29,10 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -47,20 +40,16 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
-import org.alfresco.web.bean.TemplateSupportBean;
+import org.alfresco.web.bean.TemplateMailHelperBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.ui.common.SortableSelectItem;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIGenericPicker;
-import org.alfresco.web.ui.repo.component.template.DefaultModelHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.mail.javamail.MimeMessagePreparator;
 
 /**
  * @author Kevin Roast
@@ -96,6 +85,9 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    /** personService bean reference */
    protected PersonService personService;
    
+   /** Helper providing template based mailing facilities */
+   protected TemplateMailHelperBean mailHelper;
+   
    /** datamodel for table of roles for users */
    private DataModel userRolesDataModel = null;
    
@@ -104,12 +96,6 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    
    /** dialog state */
    private String notify = NOTIFY_YES;
-   private String subject = null;
-   private String body = null;
-   private String automaticText = null;
-   private String template = null;
-   private String usingTemplate = null;
-   private String finalBody;
    
    /**
     * @return a cached list of available permissions for the type being dealt with
@@ -175,11 +161,9 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
       
       notify = NOTIFY_YES;
       userGroupRoles = new ArrayList<UserGroupRole>(8);
-      subject = "";
-      body = "";
-      automaticText = "";
-      template = null;
-      usingTemplate = null;
+      mailHelper = new TemplateMailHelperBean();
+      mailHelper.setMailSender(mailSender);
+      mailHelper.setNodeService(nodeService);
    }
 
    /**
@@ -239,7 +223,8 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
                {
                   if (this.personService.personExists(authority) == true)
                   {
-                     notifyUser(this.personService.getPerson(authority), nodeRef, from, userGroupRole.getRole());
+                     this.mailHelper.notifyUser(
+                           this.personService.getPerson(authority), nodeRef, from, userGroupRole.getRole());
                   }
                }
                else if (authType.equals(AuthorityType.GROUP))
@@ -250,7 +235,8 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
                   {
                      if (this.personService.personExists(userAuth) == true)
                      {
-                        notifyUser(this.personService.getPerson(userAuth), nodeRef, from, userGroupRole.getRole());
+                        this.mailHelper.notifyUser(
+                              this.personService.getPerson(userAuth), nodeRef, from, userGroupRole.getRole());
                      }
                   }
                }
@@ -272,65 +258,6 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
       }
       
       return outcome;
-   }
-   
-   /**
-    * Send an email notification to the specified User authority
-    * 
-    * @param person     Person node representing the user
-    * @param node       Node they are invited too
-    * @param from       From text message
-    * @param roleText   The role display label for the user invite notification
-    */
-   private void notifyUser(NodeRef person, NodeRef node, final String from, String roleText)
-   {
-      final String to = (String)this.nodeService.getProperty(person, ContentModel.PROP_EMAIL);
-      
-      if (to != null && to.length() != 0)
-      {
-         String body = this.body;
-         if (this.usingTemplate != null)
-         {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            
-            // use template service to format the email
-            NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.usingTemplate);
-            ServiceRegistry services = Repository.getServiceRegistry(fc);
-            Map<String, Object> model = DefaultModelHelper.buildDefaultModel(
-                  services, Application.getCurrentUser(fc), templateRef);
-            model.put("role", roleText);
-            model.put("space", new TemplateNode(node, Repository.getServiceRegistry(fc), null));
-            
-            body = services.getTemplateService().processTemplate("freemarker", templateRef.toString(), model);
-         }
-         this.finalBody = body;
-         
-         MimeMessagePreparator mailPreparer = new MimeMessagePreparator()
-         {
-            public void prepare(MimeMessage mimeMessage) throws MessagingException
-            {
-               MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
-               message.setTo(to);
-               message.setSubject(subject);
-               message.setText(finalBody);
-               message.setFrom(from);
-            }
-         };
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Sending notification email to: " + to + "\n...with subject:\n" + subject + "\n...with body:\n" + body);
-         
-         try
-         {
-            // Send the message
-            this.mailSender.send(mailPreparer);
-         }
-         catch (Throwable e)
-         {
-            // don't stop the action but let admins know email is not getting sent
-            logger.error("Failed to send email to " + to, e);
-         }
-      }
    }
    
    /**
@@ -553,43 +480,6 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    }
    
    /**
-    * Action handler called to insert a template as the email body
-    */
-   public void insertTemplate(ActionEvent event)
-   {
-      if (this.template != null && this.template.equals(TemplateSupportBean.NO_SELECTION) == false)
-      {
-         // get the content of the template so the user can get a basic preview of it
-         try
-         {
-            NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.template);
-            ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
-            ContentReader reader = cs.getReader(templateRef, ContentModel.PROP_CONTENT);
-            if (reader != null && reader.exists())
-            {
-               this.body = reader.getContentString();
-               
-               this.usingTemplate = this.template;
-            }
-         }
-         catch (Throwable err)
-         {
-            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-         }
-      }
-   }
-   
-   /**
-    * Action handler called to discard the template from the email body
-    */
-   public void discardTemplate(ActionEvent event)
-   {
-      this.body = this.automaticText;
-      usingTemplate = null;
-   }
-   
-   /**
     * @return Returns the notify listbox selection.
     */
    public String getNotify()
@@ -605,70 +495,6 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
       this.notify = notify;
    }
    
-   /**
-    * @return Returns the email body text.
-    */
-   public String getBody()
-   {
-      return this.body;
-   }
-
-   /**
-    * @param body The email body text to set.
-    */
-   public void setBody(String body)
-   {
-      this.body = body;
-   }
-
-   /**
-    * @return Returns the email subject text.
-    */
-   public String getSubject()
-   {
-      return this.subject;
-   }
-
-   /**
-    * @param subject The email subject text to set.
-    */
-   public void setSubject(String subject)
-   {
-      this.subject = subject;
-   }
-   
-   /**
-    * @return Returns the email template Id
-    */
-   public String getTemplate()
-   {
-      return this.template;
-   }
-
-   /**
-    * @param template The email template to set.
-    */
-   public void setTemplate(String template)
-   {
-      this.template = template;
-   }
-   
-   /**
-    * @return Returns if a template has been inserted by a user for email body.
-    */
-   public String getUsingTemplate()
-   {
-      return this.usingTemplate;
-   }
-
-   /**
-    * @param usingTemplate Template that has been inserted by a user for the email body.
-    */
-   public void setUsingTemplate(String usingTemplate)
-   {
-      this.usingTemplate = usingTemplate;
-   }
-
    /**
     * @see org.alfresco.web.bean.wizard.AbstractWizardBean#getStepDescription()
     */
@@ -771,7 +597,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
                personName}) );
          
          // default the subject line to an informative message
-         this.subject = buf.toString();
+         this.mailHelper.setSubject(buf.toString());
          
          // add the rest of the automatic body text
          buf.append("\r\n\r\n");
@@ -790,10 +616,9 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
          
          buf.append(roleText);
          
-         this.automaticText = buf.toString();
-         
-         // default the body content to this text
-         this.body = this.automaticText;
+         // set the body content and default text to this text
+         this.mailHelper.setAutomaticText(buf.toString());
+         this.mailHelper.setBody(this.mailHelper.getAutomaticText());
       }
       
       return outcome;
@@ -825,7 +650,15 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
       }
       
       return outcome;
-   }   
+   }
+   
+   /**
+    * @return TemplateMailHelperBean instance for this wizard
+    */
+   public TemplateMailHelperBean getMailHelper()
+   {
+      return this.mailHelper;
+   }
    
    /**
     * Simple wrapper class to represent a user/group and a role combination

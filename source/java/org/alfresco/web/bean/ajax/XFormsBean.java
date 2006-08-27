@@ -196,6 +196,7 @@ public class XFormsBean
      * HTTPConnectors. Instance loading and submission then uses these cookies. Important for
      * applications using auth.
      */
+    @SuppressWarnings("unchecked")
     private static void storeCookies(final javax.servlet.http.Cookie[] cookiesIn,
 				     final ChibaBean chibaBean){
 	if (cookiesIn != null) {

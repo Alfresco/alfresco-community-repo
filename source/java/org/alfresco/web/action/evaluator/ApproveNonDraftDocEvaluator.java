@@ -25,7 +25,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Kevin Roast
  */
-public final class ApproveNonDraftDocEvaluator implements ActionEvaluator
+public class ApproveNonDraftDocEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -37,6 +37,3 @@ public final class ApproveNonDraftDocEvaluator implements ActionEvaluator
               node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false);
    }
 }
-/*
-<a:booleanEvaluator value='#{r["app:approveStep"] != null && r.workingCopy == false && r.locked == false}'>
-*/

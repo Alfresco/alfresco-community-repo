@@ -50,6 +50,7 @@ public class ActionsElementReader implements ConfigElementReader
    public static final String ELEMENT_ONCLICK = "onclick";
    public static final String ELEMENT_HREF = "href";
    public static final String ELEMENT_TARGET = "target";
+   public static final String ELEMENT_SCRIPT = "script";
    public static final String ELEMENT_PARAMS = "params";
    public static final String ELEMENT_PARAM = "param";
    public static final String ATTRIBUTE_ID = "id";
@@ -252,6 +253,7 @@ public class ActionsElementReader implements ConfigElementReader
       actionDef.TooltipMsg = actionElement.elementTextTrim(ELEMENT_TOOLTIPMSG);
       actionDef.Href = actionElement.elementTextTrim(ELEMENT_HREF);
       actionDef.Target = actionElement.elementTextTrim(ELEMENT_TARGET);
+      actionDef.Script = actionElement.elementTextTrim(ELEMENT_SCRIPT);
       actionDef.Action = actionElement.elementTextTrim(ELEMENT_ACTION);
       actionDef.ActionListener = actionElement.elementTextTrim(ELEMENT_ACTIONLISTENER);
       actionDef.Onclick = actionElement.elementTextTrim(ELEMENT_ONCLICK);

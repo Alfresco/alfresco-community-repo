@@ -30,7 +30,7 @@ import org.alfresco.web.bean.repository.Repository;
  * 
  * @author Kevin Roast
  */
-public final class EditDocWebDavEvaluator implements ActionEvaluator
+public class EditDocWebDavEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -59,7 +59,3 @@ public final class EditDocWebDavEvaluator implements ActionEvaluator
       return result;
    }
 }
-/*
-<a:booleanEvaluator value="#{(r.locked == false && r.workingCopy == false) || r.owner == true}">
-   <a:booleanEvaluator value="#{r.editLinkType == 'cifs'}">
-*/

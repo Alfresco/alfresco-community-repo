@@ -101,6 +101,10 @@ public class UIPanel extends UICommand
       
       // determine whether we have any adornments
       String label = getLabel();
+      if (label != null)
+      {
+         label = Utils.encode(label);
+      }
       if (label != null || isProgressive() == true || titleComponent != null)
       {
          this.hasAdornments = true;
@@ -156,11 +160,11 @@ public class UIPanel extends UICommand
          
          if (isExpanded() == true)
          {
-            out.write(Utils.buildImageTag(context, WebResources.IMAGE_EXPANDED, 11, 11, ""));
+            out.write(Utils.buildImageTag(context, WebResources.IMAGE_EXPANDED, 11, 11, label));
          }
          else
          {
-            out.write(Utils.buildImageTag(context, WebResources.IMAGE_COLLAPSED, 11, 11, ""));
+            out.write(Utils.buildImageTag(context, WebResources.IMAGE_COLLAPSED, 11, 11, label));
          }
          
          out.write("</a>&nbsp;&nbsp;");
@@ -174,11 +178,11 @@ public class UIPanel extends UICommand
          Utils.outputAttribute(out, getAttributes().get("styleClass"), "class");
          out.write('>');
          
-         out.write(Utils.encode(label));
+         out.write(label);    // already encoded above
          
          out.write("</span>");
       }
-
+      
       if (this.hasAdornments)
       {
          out.write("</td>");

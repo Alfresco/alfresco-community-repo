@@ -27,13 +27,16 @@
             <style>padding:4px</style>
             <style-class>inlineAction</style-class>
             <image>/images/icons/edit_icon.gif</image>
-            <!-- action, action-listener, onclick, href and target action attributes supported -->
+            <!-- action, action-listener, onclick, href and target action attributes are supported -->
             <action-listener>#{CheckinCheckoutBean.editFile}</action-listener>
             <action>editDocument</action>
             <href>http://...</href>
             <target>new</target>
             <onclick>javascript:myhandler</onclick>
-            <!-- params specify the f:param tags to be generated as children of the action component -->
+            <!-- script attribute for specifying a javascript file to execute - by Path or NodeRef -->
+            <script>/Company Home/Data Dictionary/Scripts/myjavascript.js</script>
+            <!-- params specify the <f:param> tags to be generated as children of the action component -->
+            <!-- accessable by an ActionEvent handler or passed directly as href/script URL arguments -->
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -379,8 +382,20 @@
             </params>
          </action>
          
+         <!-- Email Space Users -->
+         <action id="email_space_users">
+            <label-id>email_space_users</label-id>
+            <image>/images/icons/email_users.gif</image>
+            <action>dialog:emailSpaceUsers</action>
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
          <!-- Manage Deleted Items -->
          <action id="manage_deleted_items">
+            <evaluator>org.alfresco.web.action.evaluator.ShortcutNodeEvaluator</evaluator>
             <label-id>manage_deleted_items</label-id>
             <image>/images/icons/trashcan.gif</image>
             <action>dialog:manageDeletedItems</action>
@@ -486,6 +501,12 @@
             <action-listener>#{RulesBean.reapplyRules}</action-listener>
          </action>
          
+         <!-- Ignore Inherited Rules -->
+         <action id="ignore-inherited-rules">
+         	<label>#{RulesBean.ignoreInheritedRulesLabelId}</label>
+            <image>/images/icons/reapply_rules.gif</image>
+            <action-listener>#{RulesBean.ignoreInheritedRules}</action-listener>
+         </action>         
          
          <!-- the 'action-group' elements define unique blocks of actions that reference the actions
               as defined above and can override or supply display elements for the group of actions -->
@@ -602,6 +623,7 @@
             <action idref="take_ownership_space" />
             <action idref="manage_space_users" />
             <action idref="manage_space_rules" />
+            <action idref="email_space_users" />
             <action idref="preview_space" />
             <action idref="run_action" />
          </action-group>
@@ -629,6 +651,7 @@
          <!-- Actions Menu for Manage Rules screen -->
          <action-group id="rules_actions_menu">
          	<action idref="reapply-rules" />
+         	<action idref="ignore-inherited-rules" />
          </action-group>
          
       </actions>

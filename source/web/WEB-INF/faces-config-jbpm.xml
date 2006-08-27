@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE faces-config 
+PUBLIC "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.0//EN"
+                            "http://java.sun.com/dtd/web-facesconfig_1_0.dtd">
+<faces-config>
+
+  <managed-bean>
+    <managed-bean-name>userBean</managed-bean-name>
+    <managed-bean-class>org.jbpm.webapp.bean.AlfrescoUserBean</managed-bean-class>
+    <managed-bean-scope>session</managed-bean-scope>
+    <managed-property>
+      <property-name>authenticationService</property-name>
+      <value>#{AuthenticationService}</value>
+    </managed-property>
+  </managed-bean>
+  
+  <managed-bean>
+    <managed-bean-name>homeBean</managed-bean-name>
+    <managed-bean-class>org.jbpm.webapp.bean.HomeBean</managed-bean-class>
+    <managed-bean-scope>session</managed-bean-scope>
+    <managed-property>
+      <property-name>taskBean</property-name>
+      <value>#{taskBean}</value>
+    </managed-property>
+    <managed-property>
+      <property-name>userBean</property-name>
+      <value>#{userBean}</value>
+    </managed-property>
+    <managed-property>
+      <property-name>jbpmConfiguration</property-name>
+      <value>#{jbpm_configuration}</value>
+    </managed-property>
+  </managed-bean>
+  
+  <managed-bean>
+    <managed-bean-name>taskBean</managed-bean-name>
+    <managed-bean-class>org.jbpm.webapp.bean.TaskBean</managed-bean-class>
+    <managed-bean-scope>session</managed-bean-scope>
+    <managed-property>
+      <property-name>userBean</property-name>
+      <value>#{userBean}</value>
+    </managed-property>
+  </managed-bean>
+
+  <managed-bean>
+    <managed-bean-name>monitoringBean</managed-bean-name>
+    <managed-bean-class>org.jbpm.webapp.bean.MonitoringBean</managed-bean-class>
+    <managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+ 
+  <navigation-rule>
+    <from-view-id>/jbpm/login.jsp</from-view-id>    
+    <navigation-case>        
+      <from-outcome>home</from-outcome>      
+      <to-view-id>/jbpm/home.jsp</to-view-id>    
+    </navigation-case>  
+  </navigation-rule>
+
+  <navigation-rule>
+    <from-view-id>/jbpm/home.jsp</from-view-id>    
+    <navigation-case>        
+      <from-outcome>login</from-outcome>      
+      <to-view-id>/jbpm/login.jsp</to-view-id>    
+    </navigation-case>  
+  </navigation-rule>
+
+  <navigation-rule>
+    <from-view-id>/jbpm/home.jsp</from-view-id>    
+    <navigation-case>        
+      <from-outcome>task</from-outcome>      
+      <to-view-id>/jbpm/task.jsp</to-view-id>    
+    </navigation-case>  
+  </navigation-rule>
+
+  <navigation-rule>
+    <from-view-id>/jbpm/task.jsp</from-view-id>    
+    <navigation-case>        
+      <from-outcome>login</from-outcome>      
+      <to-view-id>/jbpm/login.jsp</to-view-id>    
+    </navigation-case>  
+  </navigation-rule>
+
+  <navigation-rule>
+    <from-view-id>/jbpm/task.jsp</from-view-id>    
+    <navigation-case>        
+      <from-outcome>home</from-outcome>      
+      <to-view-id>/jbpm/home.jsp</to-view-id>    
+    </navigation-case>  
+  </navigation-rule>
+
+  <navigation-rule>
+    <from-view-id>/jsp/dashboards/container.jsp</from-view-id>    
+    <navigation-case>        
+      <from-outcome>task</from-outcome>      
+      <to-view-id>/jbpm/task_view.jsp</to-view-id>    
+    </navigation-case>  
+  </navigation-rule>
+
+  <navigation-rule>
+    <from-view-id>/jbpm/task_view.jsp</from-view-id>    
+    <navigation-case>        
+      <from-outcome>home</from-outcome>      
+      <to-view-id>/jsp/dashboards/container.jsp</to-view-id>    
+    </navigation-case>  
+  </navigation-rule>
+
+  <navigation-rule>
+    <from-view-id>/jbpm/monitor.jsp</from-view-id>    
+    <navigation-case>        
+      <from-outcome>processDefinitions</from-outcome>      
+      <to-view-id>/jbpm/process_definitions.jsp</to-view-id>    
+    </navigation-case>  
+    <navigation-case>        
+      <from-outcome>showSearchInstances</from-outcome>      
+      <to-view-id>/jbpm/search_instances.jsp</to-view-id>    
+    </navigation-case>  
+  </navigation-rule>
+
+  <navigation-rule>
+    <from-view-id>/jbpm/process_definitions.jsp</from-view-id>    
+    <navigation-case>        
+      <from-outcome>processInstances</from-outcome>      
+      <to-view-id>/jbpm/process_instances.jsp</to-view-id>    
+    </navigation-case>  
+  </navigation-rule>
+
+  <navigation-rule>
+    <from-view-id>/jbpm/inspect_instance.jsp</from-view-id>    
+    <navigation-case>        
+      <from-outcome>processInstances</from-outcome>      
+      <to-view-id>/jbpm/process_instances.jsp</to-view-id>    
+    </navigation-case>  
+    <navigation-case>        
+      <from-outcome>showTransitions</from-outcome>      
+      <to-view-id>/jbpm/inspect_instance_transitions.jsp</to-view-id>    
+    </navigation-case>     
+  </navigation-rule>
+
+  <navigation-rule>
+    <from-view-id>*</from-view-id>    
+    <navigation-case>        
+      <from-outcome>inspectInstance</from-outcome>      
+      <to-view-id>/jbpm/inspect_instance.jsp</to-view-id>    
+    </navigation-case>  
+  </navigation-rule>
+  
+</faces-config>

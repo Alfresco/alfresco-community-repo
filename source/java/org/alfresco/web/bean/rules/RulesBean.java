@@ -27,10 +27,13 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.web.app.Application;
@@ -55,6 +58,8 @@ public class RulesBean implements IContextListener
 {
    private static final String MSG_ERROR_DELETE_RULE = "error_delete_rule";
    private static final String MSG_REAPPLY_RULES_SUCCESS = "reapply_rules_success";
+   private static final String MSG_IGNORE_INHERTIED_RULES = "ignore_inherited_rules";
+   private static final String MSG_INCLUDE_INHERITED_RULES = "include_inherited_rules";
    private static final String LOCAL = "local";
    private static final String INHERITED = "inherited";
    
@@ -67,6 +72,7 @@ public class RulesBean implements IContextListener
    private Rule currentRule;
    private UIRichList richList;
    private ActionService actionService;
+   private NodeService nodeService;
    
    
    /**
@@ -116,7 +122,11 @@ public class RulesBean implements IContextListener
       // wrap them all passing the current space
       for (Rule rule : repoRules)
       {
-         WrappedRule wrapped = new WrappedRule(rule, getSpace().getNodeRef());
+         Date createdDate = (Date)this.nodeService.getProperty(rule.getNodeRef(), ContentModel.PROP_CREATED);
+         Date modifiedDate = (Date)this.nodeService.getProperty(rule.getNodeRef(), ContentModel.PROP_MODIFIED);
+         boolean isLocal = getSpace().getNodeRef().equals(this.ruleService.getOwningNodeRef(rule));        
+         
+         WrappedRule wrapped = new WrappedRule(rule, isLocal, createdDate, modifiedDate);
          this.rules.add(wrapped);
       }
       
@@ -138,13 +148,13 @@ public class RulesBean implements IContextListener
          if (logger.isDebugEnabled())
             logger.debug("Rule clicked, it's id is: " + id);
          
-         this.currentRule = this.ruleService.getRule(
-               getSpace().getNodeRef(), id);
+         this.currentRule = this.ruleService.getRule(new NodeRef(id));
+               //getSpace().getNodeRef(), id);
          
          // refresh list
          contextUpdated();
       }
-   }
+   }  
    
    /**
     * Reapply the currently defines rules to the
@@ -191,6 +201,52 @@ public class RulesBean implements IContextListener
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                fc, Repository.ERROR_GENERIC), e.getMessage()), e);
       }
+   }
+   
+   /**
+    * Gets the label id from the ignore inhertied action
+    * 
+    * @return   the message id  
+    */
+   public String getIgnoreInheritedRulesLabelId()
+   {
+       FacesContext fc = FacesContext.getCurrentInstance();
+       String result = Application.getMessage(fc, MSG_IGNORE_INHERTIED_RULES);
+       
+       if (this.nodeService.hasAspect(this.getSpace().getNodeRef(), RuleModel.ASPECT_IGNORE_INHERITED_RULES) == true)
+       {
+           result = Application.getMessage(fc, MSG_INCLUDE_INHERITED_RULES);
+       }
+       return result;
+   }
+   
+   public boolean getIgnoreInheritedRules()
+   {
+       return this.nodeService.hasAspect(this.getSpace().getNodeRef(), RuleModel.ASPECT_IGNORE_INHERITED_RULES);
+   }
+   
+   /**
+    * Action listener to ignore (or include) inherited rules.
+    * 
+    * @param event  the action event object  
+    */
+   public void ignoreInheritedRules(ActionEvent event)
+   {
+       NodeRef nodeRef = this.getSpace().getNodeRef();
+       if (this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == true)
+       {
+           this.nodeService.removeAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES);
+       }
+       else
+       {
+           this.nodeService.addAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
+       }
+       
+       // force the list to be re-queried when the page is refreshed
+       if (this.richList != null)
+       {
+          this.richList.setValue(null);
+       }
    }
    
    /**
@@ -306,6 +362,16 @@ public class RulesBean implements IContextListener
    {
       this.actionService = actionService;
    }
+   
+   /**
+    * Set the node service to use
+    * 
+    * @param nodeService    the node service
+    */
+   public void setNodeService(NodeService nodeService)
+   {
+       this.nodeService = nodeService;
+   }
 
    
    // ------------------------------------------------------------------------------
@@ -330,7 +396,9 @@ public class RulesBean implements IContextListener
    public static class WrappedRule
    {
       private Rule rule;
-      private NodeRef ruleNode;
+      private boolean isLocal;
+      private Date createdDate;
+      private Date modifiedDate;
       
       /**
        * Constructs a RuleWrapper object
@@ -338,10 +406,12 @@ public class RulesBean implements IContextListener
        * @param rule The rule we are wrapping
        * @param ruleNode The node the rules belong to 
        */
-      public WrappedRule(Rule rule, NodeRef ruleNode)
+      public WrappedRule(Rule rule, boolean isLocal, Date createdDate, Date modifiedDate)
       {
          this.rule = rule;
-         this.ruleNode = ruleNode;
+         this.isLocal = isLocal;
+         this.createdDate = createdDate;
+         this.modifiedDate = modifiedDate;
       }
       
       /**
@@ -362,7 +432,7 @@ public class RulesBean implements IContextListener
        */
       public boolean getLocal()
       {
-         return ruleNode.equals(this.rule.getOwningNodeRef());
+         return this.isLocal;
       }
 
       /** Methods to support sorting of the rules list in a table  */
@@ -374,7 +444,7 @@ public class RulesBean implements IContextListener
        */
       public String getId()
       {
-         return this.rule.getId();
+         return this.rule.getNodeRef().toString();
       }
       
       /**
@@ -404,7 +474,7 @@ public class RulesBean implements IContextListener
        */
       public Date getCreatedDate()
       {
-         return this.rule.getCreatedDate();
+         return this.createdDate;
       }
       
       /**
@@ -414,7 +484,7 @@ public class RulesBean implements IContextListener
        */
       public Date getModifiedDate()
       {
-         return this.rule.getModifiedDate();
+         return this.modifiedDate;
       }
    }
 }

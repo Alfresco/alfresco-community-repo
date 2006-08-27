@@ -2,6 +2,7 @@ package org.alfresco.web.bean.dialog;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
@@ -19,6 +20,7 @@ import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
 
 /**
@@ -96,12 +98,17 @@ public abstract class BaseDialogBean implements IDialogBean
             
             // rollback the transaction
             try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-            Utils.addErrorMessage(formatErrorMessage(e));
+            Utils.addErrorMessage(formatErrorMessage(e), e);
             outcome = getErrorOutcome(e);
          }
       }
       
       return outcome;
+   }
+   
+   public List<DialogButtonConfig> getAdditionalButtons()
+   {
+      return null;
    }
 
    public String getCancelButtonLabel()

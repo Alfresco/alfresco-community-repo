@@ -28,7 +28,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Kevin Roast
  */
-public final class ShortcutNodeEvaluator implements ActionEvaluator
+public class ShortcutNodeEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -40,6 +40,3 @@ public final class ShortcutNodeEvaluator implements ActionEvaluator
       return (nav.getIsGuest() == false);
    }
 }
-/*
-rendered="#{NavigationBean.isGuest == false}"
-*/

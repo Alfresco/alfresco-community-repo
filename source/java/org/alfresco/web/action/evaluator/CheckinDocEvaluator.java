@@ -26,7 +26,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Kevin Roast
  */
-public final class CheckinDocEvaluator implements ActionEvaluator
+public class CheckinDocEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -37,6 +37,3 @@ public final class CheckinDocEvaluator implements ActionEvaluator
               node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == true);
    }
 }
-/*
-<a:booleanEvaluator value="#{r.checkIn == true}">
-*/

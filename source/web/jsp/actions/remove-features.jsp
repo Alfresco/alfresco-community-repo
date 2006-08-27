@@ -106,7 +106,7 @@
                                     <td><nobr><h:outputText value="#{msg.select_feature}"/></nobr></td>
                                     <td width="90%">
                                        <h:selectOneMenu value="#{WizardManager.bean.actionProperties.aspect}">
-                                          <f:selectItems value="#{WizardManager.bean.aspects}" />
+                                          <f:selectItems value="#{WizardManager.bean.removableAspects}" />
                                        </h:selectOneMenu>
                                     </td>
                                  </tr>

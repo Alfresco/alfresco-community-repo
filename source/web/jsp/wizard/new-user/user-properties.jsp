@@ -205,6 +205,23 @@
                                     </td>
                                  </tr>
                                  
+                                 <a:panel id="home-info-panel" rendered="#{NewUserWizard.editMode}">
+                                 <tr>
+                                    <td colspan=2>
+                                       <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
+                                       <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                          <tr>
+                                             <td valign=top style="padding-top:2px" width=20><h:graphicImage url="/images/icons/info_icon.gif" width="16" height="16"/></td>
+                                             <td class="mainSubText">
+                                                <h:outputText value="#{msg.user_change_homespace_info}" />
+                                             </td>
+                                          </tr>
+                                       </table>
+                                       <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
+                                    </td>
+                                 </tr>
+                                 </a:panel>
+                                 
                                  <tr><td colspan="2" class="paddingRow"></td></tr>
                                  <tr>
                                     <td colspan="2"><h:outputText value="#{NewUserWizard.stepInstructions}" /></td>

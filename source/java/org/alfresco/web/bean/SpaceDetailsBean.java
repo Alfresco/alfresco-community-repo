@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.TemplateContentServlet;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
@@ -46,8 +47,6 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  */
 public class SpaceDetailsBean extends BaseDetailsBean
 {
-   private static final String OUTCOME_RETURN = "showSpaceDetails";
-   
    private static final String MSG_HAS_FOLLOWING_CATEGORIES = "has_following_categories_space";
    private static final String MSG_NO_CATEGORIES_APPLIED = "no_categories_applied_space";
    private static final String MSG_ERROR_UPDATE_CATEGORY = "error_update_category";
@@ -59,6 +58,9 @@ public class SpaceDetailsBean extends BaseDetailsBean
    /** Category details */
    private NodeRef addedCategory;
    private List categories;
+   
+   /** RSS Template ID */
+   private String rssTemplate;
    
    
    // ------------------------------------------------------------------------------
@@ -148,14 +150,6 @@ public class SpaceDetailsBean extends BaseDetailsBean
    protected String getPropertiesPanelId()
    {
       return "space-props";
-   }
-
-   /**
-    * @see org.alfresco.web.bean.BaseDetailsBean#getReturnOutcome()
-    */
-   protected String getReturnOutcome()
-   {
-      return OUTCOME_RETURN;
    }
    
    
@@ -306,8 +300,8 @@ public class SpaceDetailsBean extends BaseDetailsBean
       {
          // we know for now that the general classifiable aspect only will be
          // applied so we can retrive the categories property direclty
-         Collection categories = (Collection)this.nodeService.getProperty(getSpace().getNodeRef(), 
-               ContentModel.PROP_CATEGORIES);
+         Collection<NodeRef> categories = (Collection<NodeRef>)this.nodeService.getProperty(
+                 getSpace().getNodeRef(), ContentModel.PROP_CATEGORIES);
          
          if (categories == null || categories.size() == 0)
          {
@@ -319,16 +313,13 @@ public class SpaceDetailsBean extends BaseDetailsBean
                   MSG_HAS_FOLLOWING_CATEGORIES));
             
             builder.append("<ul>");
-            for (Object obj : categories)
+            for (NodeRef ref : categories)
             {
-               if (obj instanceof NodeRef)
+               if (this.nodeService.exists(ref))
                {
-                  if (this.nodeService.exists((NodeRef)obj))
-                  {
-                     builder.append("<li>");
-                     builder.append(Repository.getNameForNode(this.nodeService, (NodeRef)obj));
-                     builder.append("</li>");
-                  }
+                  builder.append("<li>");
+                  builder.append(Repository.getNameForNode(this.nodeService, ref));
+                  builder.append("</li>");
                }
             }
             builder.append("</ul>");
@@ -473,5 +464,118 @@ public class SpaceDetailsBean extends BaseDetailsBean
    public boolean isLocked()
    {
       return getSpace().isLocked();
+   }
+   
+   /**
+    * @return true if the current space has an RSS feed applied
+    */
+   public boolean isRSSFeed()
+   {
+      return hasRSSFeed(getSpace());
+   }
+   
+   /**
+    * @return true if the current space has an RSS feed applied
+    */
+   public static boolean hasRSSFeed(Node space)
+   {
+      return (space.hasAspect(ContentModel.ASPECT_FEEDSOURCE) &&
+              space.getProperties().get(ContentModel.PROP_FEEDTEMPLATE) != null);
+   }
+   
+   /**
+    * @return RSS Feed URL for the current space
+    */
+   public String getRSSFeedURL()
+   {
+      return buildRSSFeedURL(getSpace());
+   }
+   
+   /**
+    * Build URL for an RSS space based on the 'feedsource' aspect property.
+    *  
+    * @param space  Node to build RSS template URL for
+    *  
+    * @return URL for the RSS feed for a space
+    */
+   public static String buildRSSFeedURL(Node space)
+   {
+      // build RSS feed template URL from selected template and the space NodeRef and
+      // add the guest=true URL parameter - this is required for no login access and
+      // add the mimetype=text/xml URL parameter - required to return correct stream type
+      return TemplateContentServlet.generateURL(space.getNodeRef(),
+                (NodeRef)space.getProperties().get(ContentModel.PROP_FEEDTEMPLATE))
+                    + "/rss.xml?guest=true" + "&mimetype=text%2Fxml";
+   }
+
+   /**
+    * @return Returns the current RSS Template ID.
+    */
+   public String getRSSTemplate()
+   {
+      // return current template if it exists
+      NodeRef ref = (NodeRef)getNode().getProperties().get(ContentModel.PROP_FEEDTEMPLATE);
+      return ref != null ? ref.getId() : this.rssTemplate;
+   }
+
+   /**
+    * @param rssTemplate The RSS Template Id to set.
+    */
+   public void setRSSTemplate(String rssTemplate)
+   {
+      this.rssTemplate = rssTemplate;
+   }
+   
+   /**
+    * Action handler to apply the selected RSS Template and FeedSource aspect to the current Space
+    */
+   public void applyRSSTemplate(ActionEvent event)
+   {
+      if (this.rssTemplate != null && this.rssTemplate.equals(TemplateSupportBean.NO_SELECTION) == false)
+      {
+         try
+         {
+            // apply the feedsource aspect if required 
+            if (getNode().hasAspect(ContentModel.ASPECT_FEEDSOURCE) == false)
+            {
+               this.nodeService.addAspect(getNode().getNodeRef(), ContentModel.ASPECT_FEEDSOURCE, null);
+            }
+            
+            // get the selected template Id from the Template Picker
+            NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.rssTemplate);
+            
+            // set the template NodeRef into the templatable aspect property
+            this.nodeService.setProperty(getNode().getNodeRef(), ContentModel.PROP_FEEDTEMPLATE, templateRef); 
+            
+            // reset node details for next refresh of details page
+            getNode().reset();
+         }
+         catch (Exception e)
+         {
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
+         }
+      }
+   }
+   
+   /**
+    * Action handler to remove a RSS template from the current Space
+    */
+   public void removeRSSTemplate(ActionEvent event)
+   {
+      try
+      {
+         // clear template property
+         this.nodeService.setProperty(getNode().getNodeRef(), ContentModel.PROP_FEEDTEMPLATE, null);
+         this.nodeService.removeAspect(getNode().getNodeRef(), ContentModel.ASPECT_FEEDSOURCE);
+         
+         // reset node details for next refresh of details page
+         getNode().reset();
+      }
+      catch (Exception e)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
+      }
    }
 }

@@ -17,6 +17,7 @@
 package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import javax.faces.el.ValueBinding;
 
 import org.alfresco.config.Config;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.config.ActionsConfigElement;
@@ -369,6 +371,7 @@ public class UIActions extends SelfRenderingComponent
                control.setOnclick(actionDef.Onclick);
             }
          }
+         
          if (actionDef.Href != null)
          {
             if (UIComponentTagUtils.isValueReference(actionDef.Href))
@@ -380,6 +383,29 @@ public class UIActions extends SelfRenderingComponent
                control.setHref(actionDef.Href);
             }
          }
+         else if (actionDef.Script != null && actionDef.Script.length() != 0)
+         {
+            // found a script reference - may be a Path or a NodeRef
+            StringBuilder scriptHref = new StringBuilder(100);
+            scriptHref.append("/command/script/execute");
+            if (actionDef.Script.charAt(0) == '/')
+            {
+               // found a Path - encode it as a URL argument
+               scriptHref.append("?scriptPath=");
+               scriptHref.append(Utils.replace(URLEncoder.encode(actionDef.Script, "UTF-8"), "+", "%20"));
+            }
+            else
+            {
+               // found a NodeRef string, encode as URL elements
+               NodeRef ref = new NodeRef(actionDef.Script);
+               scriptHref.append('/').append(ref.getStoreRef().getProtocol())
+                         .append('/').append(ref.getStoreRef().getIdentifier())
+                         .append('/').append(ref.getId());
+            }
+            // set the full script execution URL as the href for the control
+            control.setHref(scriptHref.toString());
+         }
+         
          control.setTarget(actionDef.Target);
          control.setImage(actionDef.Image);
          

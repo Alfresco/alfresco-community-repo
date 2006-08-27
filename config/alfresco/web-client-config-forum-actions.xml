@@ -60,7 +60,7 @@
          <!-- Discuss document or space e.g. jump to Forums view for this node -->
          <action id="create_forum_node">
             <permissions>
-               <permission allow="true">CreateChildren</permission>
+               <permission allow="true">Collaborator</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.CreateForumNodeEvaluator</evaluator>
             <label-id>start_discussion</label-id>

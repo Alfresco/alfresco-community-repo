@@ -26,7 +26,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Kevin Roast
  */
-public final class RejectDocEvaluator implements ActionEvaluator
+public class RejectDocEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -37,6 +37,3 @@ public final class RejectDocEvaluator implements ActionEvaluator
               node.isLocked() == false);
    }
 }
-/*
-<a:booleanEvaluator value='#{r["app:rejectStep"] != null && r.workingCopy == false && r.locked == false}'>
-*/

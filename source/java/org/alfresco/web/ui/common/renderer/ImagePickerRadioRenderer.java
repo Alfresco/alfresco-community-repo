@@ -50,6 +50,7 @@ public class ImagePickerRadioRenderer extends BaseRenderer
    private int columns;
    private int position;
    private boolean open;
+   private boolean imageSelected = false;
    
    // ------------------------------------------------------------------------------
    // Renderer implemenation
@@ -89,6 +90,7 @@ public class ImagePickerRadioRenderer extends BaseRenderer
       this.columns = 1;
       this.position = 0;
       this.open = false;
+      this.imageSelected = false;
       
       ResponseWriter out = context.getResponseWriter();
       
@@ -210,6 +212,14 @@ public class ImagePickerRadioRenderer extends BaseRenderer
       
       ResponseWriter out = context.getResponseWriter();
       out.write("</table>");
+      
+      // if we didn't select any image, default to the first one
+      if (this.imageSelected == false)
+      {
+         out.write("\n<script type='text/javascript'>document.getElementById('");
+         out.write(component.getClientId(context));
+         out.write("').checked = true;</script>\n");
+      }
    }
 
    /**
@@ -275,6 +285,7 @@ public class ImagePickerRadioRenderer extends BaseRenderer
       if (itemValue != null && itemValue.equals(currentValue))
       {
          out.write(" checked='true'");
+         this.imageSelected = true;
       }
       
       if (tooltip != null)

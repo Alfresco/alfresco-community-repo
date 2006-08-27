@@ -759,7 +759,8 @@ public class CheckinCheckoutBean
       {
          try
          {
-            tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
+            FacesContext context = FacesContext.getCurrentInstance();
+            tx = Repository.getUserTransaction(context);
             tx.begin();
             
             if (LOGGER.isDebugEnabled())
@@ -778,8 +779,10 @@ public class CheckinCheckoutBean
             {
                // add the content to an anonymous but permanent writer location
                // we can then retrieve the URL to the content to to be set on the node during checkin
-               ContentWriter writer = this.contentService.getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, false);
-               // TODO: Adjust the mimetype
+               ContentWriter writer = this.contentService.getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
+               // also update the mime type in case a different type of file is uploaded
+               String mimeType = Repository.getMimeTypeForFileName(context, this.fileName);
+               writer.setMimetype(mimeType);
                writer.putContent(this.file);
                contentUrl = writer.getContentUrl();
             }
@@ -846,7 +849,8 @@ public class CheckinCheckoutBean
       {
          try
          {
-            tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
+            FacesContext context = FacesContext.getCurrentInstance();
+            tx = Repository.getUserTransaction(context);
             tx.begin();
             
             if (LOGGER.isDebugEnabled())
@@ -854,7 +858,12 @@ public class CheckinCheckoutBean
             
             // get an updating writer that we can use to modify the content on the current node
             ContentWriter writer = this.contentService.getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
-            writer.putContent(this.file);
+            
+            // also update the mime type in case a different type of file is uploaded
+            String mimeType = Repository.getMimeTypeForFileName(context, this.fileName);
+            writer.setMimetype(mimeType);
+            
+            writer.putContent(this.file);            
             
             // commit the transaction
             tx.commit();

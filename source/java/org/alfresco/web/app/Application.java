@@ -71,6 +71,7 @@ public class Application
    private static String spaceTemplatesFolderName;
    private static String contentTemplatesFolderName;
    private static String emailTemplatesFolderName;
+   private static String rssTemplatesFolderName;
    private static String savedSearchesFolderName;
    private static String scriptsFolderName;
    private static String guestHomeFolderName;
@@ -374,6 +375,22 @@ public class Application
    public static String getEmailTemplatesFolderName(FacesContext context)
    {
       return getEmailTemplatesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return Returns the RSS templates folder name
+    */
+   public static String getRSSTemplatesFolderName(ServletContext context)
+   {
+      return getRSSTemplatesFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return Returns the RSS templates folder name
+    */
+   public static String getRSSTemplatesFolderName(FacesContext context)
+   {
+      return getRSSTemplatesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
    }
    
    /**
@@ -748,6 +765,24 @@ public class Application
       }
       
       return emailTemplatesFolderName;
+   }
+   
+   /**
+    * Returns the RSS Templates folder name
+    * 
+    * @param context The spring context
+    * @return The RSS folder name
+    */
+   private static String getRSSTemplatesFolderName(WebApplicationContext context)
+   {
+      if (rssTemplatesFolderName == null)
+      {
+         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
+         Properties configuration = bootstrap.getConfiguration();
+         rssTemplatesFolderName = configuration.getProperty("spaces.templates.rss.childname");
+      }
+      
+      return rssTemplatesFolderName;
    }
    
    /**

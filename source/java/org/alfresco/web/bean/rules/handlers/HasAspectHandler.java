@@ -49,7 +49,7 @@ public class HasAspectHandler extends BaseConditionHandler
          
       String label = null;
       String aspectName = (String)conditionProps.get(PROP_ASPECT);
-      for (SelectItem item : ((CreateRuleWizard)wizard).getAspects())
+      for (SelectItem item : ((CreateRuleWizard)wizard).getTestableAspects())
       {
          if (item.getValue().equals(aspectName))
          {

@@ -42,7 +42,7 @@ import org.dom4j.io.XMLWriter;
  * 
  * @author Kevin Roast
  */
-final class PageConfig
+public final class PageConfig
 {
    private static Log logger = LogFactory.getLog(DashboardManager.class);
    
@@ -55,7 +55,7 @@ final class PageConfig
    private static final String ATTR_REFID = "idref";
    
    private List<Page> pages = new ArrayList<Page>(4);
-   private int currentPageIndex = 0;
+   private Page currentPage = null;
    
    
    /**
@@ -86,13 +86,30 @@ final class PageConfig
     */
    public Page getCurrentPage()
    {
-      if (currentPageIndex < pages.size())
+      if (this.currentPage == null)
       {
-         return pages.get(currentPageIndex);
+         if (this.pages.size() != 0)
+         {
+            this.currentPage = pages.get(0);
+         }
       }
-      else
+      return this.currentPage;
+   }
+   
+   /**
+    * Set the current Page for the cnfig
+    * 
+    * @param pageId     ID of the page to set as current
+    */
+   public void setCurrentPage(String pageId)
+   {
+      for (Page page : pages)
       {
-         return null;
+         if (page.getId().equals(pageId))
+         {
+            this.currentPage = page;
+            break;
+         }
       }
    }
    

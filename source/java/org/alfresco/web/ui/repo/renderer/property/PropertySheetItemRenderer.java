@@ -70,8 +70,6 @@ public class PropertySheetItemRenderer extends BaseRenderer
          UIComponent label = children.get(0);
          UIComponent control = children.get(1);
          
-         out.write("</td>");
-         
          // encode the mandatory marker component if present
          if (count == 3)
          {

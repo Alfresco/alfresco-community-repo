@@ -71,7 +71,7 @@
                            </td>
                            <td>
                               <div class="mainTitle"><h:outputText value="#{msg.title_about}" /></div>
-                              <div class="mainSubText"><h:outputText value="#{msg.version}" />: <h:outputText value='#{version["version.edition"]} - v#{version["version.major"]}.#{version["version.minor"]}.#{version["version.revision"]}' /> <h:outputText rendered='#{version["version.label"] != ""}' value='(#{version["version.label"]})' /></div>
+                              <div class="mainSubText"><h:outputText value="#{msg.version}" />:&nbsp;<h:outputText value="#{AboutBean.edition}" />&nbsp;-&nbsp;v<h:outputText value="#{AboutBean.version}" /></div>
                            </td>
                         </tr>
                      </table>

@@ -29,7 +29,7 @@ import org.alfresco.web.bean.repository.Repository;
  * 
  * @author Kevin Roast
  */
-public final class UpdateDocEvaluator implements ActionEvaluator
+public class UpdateDocEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -45,6 +45,3 @@ public final class UpdateDocEvaluator implements ActionEvaluator
                node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false)));
    }
 }
-/*
-<a:booleanEvaluator value="#{(r.locked == false && r.workingCopy == false) || r.owner == true}">
-*/

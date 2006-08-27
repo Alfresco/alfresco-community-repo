@@ -148,5 +148,6 @@ public class DashboardsConfigElement extends ConfigElementAdapter
       public String Description;
       public String DescriptionId;
       public String JSPPage;
+      public String ConfigJSPPage;
    }
 }

@@ -36,8 +36,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Lighweight client side representation of a node held in the repository. 
@@ -48,28 +46,25 @@ public class Node implements Serializable
 {
    private static final long serialVersionUID = 3544390322739034169L;
 
-   protected static final Log logger = LogFactory.getLog(Node.class);
-   
    protected NodeRef nodeRef;
-   private String name;
-   private QName type;
-   private String path;
-   private String id;
-   private Set<QName> aspects = null;
-   private Map<String, Boolean> permissions;
-   private Boolean locked = null;
-   private Boolean workingCopyOwner = null;
+   protected String name;
+   protected QName type;
+   protected String path;
+   protected String id;
+   protected Set<QName> aspects = null;
+   protected Map<String, Boolean> permissions;
+   protected Boolean locked = null;
+   protected Boolean workingCopyOwner = null;
    protected QNameNodeMap<String, Object> properties;
    protected boolean propsRetrieved = false;
    protected ServiceRegistry services = null;
+   protected boolean childAssocsRetrieved = false;
+   protected QNameNodeMap childAssociations;
+   protected boolean assocsRetrieved = false;
+   protected QNameNodeMap associations;
    
-   private boolean childAssocsRetrieved = false;
-   private QNameNodeMap childAssociations;
    private Map<String, Map<String, ChildAssociationRef>> childAssociationsAdded;
    private Map<String, Map<String, ChildAssociationRef>> childAssociationsRemoved;
-   
-   private boolean assocsRetrieved = false;
-   private QNameNodeMap associations;
    private Map<String, Map<String, AssociationRef>> associationsAdded;
    private Map<String, Map<String, AssociationRef>> associationsRemoved;
    
@@ -94,7 +89,7 @@ public class Node implements Serializable
    /**
     * @return All the properties known about this node.
     */
-   public Map<String, Object> getProperties()
+   public final Map<String, Object> getProperties()
    {
       if (this.propsRetrieved == false)
       {
@@ -120,7 +115,7 @@ public class Node implements Serializable
    {
       if (this.assocsRetrieved == false)
       {
-         associations = new QNameNodeMap(getServiceRegistry().getNamespaceService(), this);
+         this.associations = new QNameNodeMap(getServiceRegistry().getNamespaceService(), this);
          
          List<AssociationRef> assocs = getServiceRegistry().getNodeService().getTargetAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
          
@@ -341,7 +336,7 @@ public class Node implements Serializable
     * 
     * @return true if the permission is applied to the node for this user, false otherwise
     */
-   public final boolean hasPermission(String permission)
+   public boolean hasPermission(String permission)
    {
       Boolean valid = null;
       if (permissions != null)

@@ -100,6 +100,7 @@
                               <f:subview id="dash-body">
                      				<jsp:include page="<%=Application.getDashboardManager().getLayoutPage()%>" />
                      			</f:subview>
+                              <a:errors message="#{msg.error_dashboard}" styleClass="errorMessage" />
                            </td>
                         </tr>
                      </table>

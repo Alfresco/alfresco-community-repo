@@ -11,7 +11,7 @@
    <!-- ************************************** -->
    <!-- Copyright Alfresco Software, Inc. 2005 -->
    <!-- ************************************** -->
-   <wsdl:import namespace="http://www.alfresco.org/ws/model/content/1.0" location="types.xsd"/>
+   <wsdl:import namespace="http://www.alfresco.org/ws/model/content/1.0" location="../wsdl/types.xsd"/>
    <wsdl:types>
       <schema elementFormDefault="qualified" targetNamespace="http://www.alfresco.org/ws/service/classification/1.0" xmlns="http://www.w3.org/2001/XMLSchema">
          <element name="getClassifications">

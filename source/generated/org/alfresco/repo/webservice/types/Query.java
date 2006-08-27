@@ -8,7 +8,7 @@
 package org.alfresco.repo.webservice.types;
 
 public class Query  implements java.io.Serializable {
-    private org.alfresco.repo.webservice.types.QueryLanguageEnum language;
+    private java.lang.String language;
 
     private java.lang.String statement;
 
@@ -16,7 +16,7 @@ public class Query  implements java.io.Serializable {
     }
 
     public Query(
-           org.alfresco.repo.webservice.types.QueryLanguageEnum language,
+           java.lang.String language,
            java.lang.String statement) {
            this.language = language;
            this.statement = statement;
@@ -28,7 +28,7 @@ public class Query  implements java.io.Serializable {
      * 
      * @return language
      */
-    public org.alfresco.repo.webservice.types.QueryLanguageEnum getLanguage() {
+    public java.lang.String getLanguage() {
         return language;
     }
 
@@ -38,7 +38,7 @@ public class Query  implements java.io.Serializable {
      * 
      * @param language
      */
-    public void setLanguage(org.alfresco.repo.webservice.types.QueryLanguageEnum language) {
+    public void setLanguage(java.lang.String language) {
         this.language = language;
     }
 
@@ -110,7 +110,7 @@ public class Query  implements java.io.Serializable {
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("language");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "language"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "QueryLanguageEnum"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();

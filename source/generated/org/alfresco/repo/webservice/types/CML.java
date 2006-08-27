@@ -16,6 +16,8 @@ public class CML  implements java.io.Serializable {
 
     private org.alfresco.repo.webservice.types.CMLUpdate[] update;
 
+    private org.alfresco.repo.webservice.types.CMLWriteContent[] writeContent;
+
     private org.alfresco.repo.webservice.types.CMLDelete[] delete;
 
     private org.alfresco.repo.webservice.types.CMLMove[] move;
@@ -38,6 +40,7 @@ public class CML  implements java.io.Serializable {
            org.alfresco.repo.webservice.types.CMLAddAspect[] addAspect,
            org.alfresco.repo.webservice.types.CMLRemoveAspect[] removeAspect,
            org.alfresco.repo.webservice.types.CMLUpdate[] update,
+           org.alfresco.repo.webservice.types.CMLWriteContent[] writeContent,
            org.alfresco.repo.webservice.types.CMLDelete[] delete,
            org.alfresco.repo.webservice.types.CMLMove[] move,
            org.alfresco.repo.webservice.types.CMLCopy[] copy,
@@ -49,6 +52,7 @@ public class CML  implements java.io.Serializable {
            this.addAspect = addAspect;
            this.removeAspect = removeAspect;
            this.update = update;
+           this.writeContent = writeContent;
            this.delete = delete;
            this.move = move;
            this.copy = copy;
@@ -168,6 +172,34 @@ public class CML  implements java.io.Serializable {
 
     public void setUpdate(int i, org.alfresco.repo.webservice.types.CMLUpdate _value) {
         this.update[i] = _value;
+    }
+
+
+    /**
+     * Gets the writeContent value for this CML.
+     * 
+     * @return writeContent
+     */
+    public org.alfresco.repo.webservice.types.CMLWriteContent[] getWriteContent() {
+        return writeContent;
+    }
+
+
+    /**
+     * Sets the writeContent value for this CML.
+     * 
+     * @param writeContent
+     */
+    public void setWriteContent(org.alfresco.repo.webservice.types.CMLWriteContent[] writeContent) {
+        this.writeContent = writeContent;
+    }
+
+    public org.alfresco.repo.webservice.types.CMLWriteContent getWriteContent(int i) {
+        return this.writeContent[i];
+    }
+
+    public void setWriteContent(int i, org.alfresco.repo.webservice.types.CMLWriteContent _value) {
+        this.writeContent[i] = _value;
     }
 
 
@@ -390,6 +422,9 @@ public class CML  implements java.io.Serializable {
             ((this.update==null && other.getUpdate()==null) || 
              (this.update!=null &&
               java.util.Arrays.equals(this.update, other.getUpdate()))) &&
+            ((this.writeContent==null && other.getWriteContent()==null) || 
+             (this.writeContent!=null &&
+              java.util.Arrays.equals(this.writeContent, other.getWriteContent()))) &&
             ((this.delete==null && other.getDelete()==null) || 
              (this.delete!=null &&
               java.util.Arrays.equals(this.delete, other.getDelete()))) &&
@@ -460,6 +495,17 @@ public class CML  implements java.io.Serializable {
                  i<java.lang.reflect.Array.getLength(getUpdate());
                  i++) {
                 java.lang.Object obj = java.lang.reflect.Array.get(getUpdate(), i);
+                if (obj != null &&
+                    !obj.getClass().isArray()) {
+                    _hashCode += obj.hashCode();
+                }
+            }
+        }
+        if (getWriteContent() != null) {
+            for (int i=0;
+                 i<java.lang.reflect.Array.getLength(getWriteContent());
+                 i++) {
+                java.lang.Object obj = java.lang.reflect.Array.get(getWriteContent(), i);
                 if (obj != null &&
                     !obj.getClass().isArray()) {
                     _hashCode += obj.hashCode();
@@ -581,6 +627,14 @@ public class CML  implements java.io.Serializable {
         elemField.setFieldName("update");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/cml/1.0", "update"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/cml/1.0", ">CML>update"));
+        elemField.setMinOccurs(0);
+        elemField.setNillable(false);
+        elemField.setMaxOccursUnbounded(true);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("writeContent");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/cml/1.0", "writeContent"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/cml/1.0", ">CML>writeContent"));
         elemField.setMinOccurs(0);
         elemField.setNillable(false);
         elemField.setMaxOccursUnbounded(true);

@@ -206,7 +206,7 @@ public class NamedValue  implements java.io.Serializable {
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "values"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setMinOccurs(0);
-        elemField.setNillable(false);
+        elemField.setNillable(true);
         elemField.setMaxOccursUnbounded(true);
         typeDesc.addFieldDesc(elemField);
     }

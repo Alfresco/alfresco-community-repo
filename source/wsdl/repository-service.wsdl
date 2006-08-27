@@ -13,15 +13,15 @@
    <!-- ************************************** -->
    <!-- Copyright Alfresco Software, Inc. 2005 -->
    <!-- ************************************** -->
-   <wsdl:import namespace="http://www.alfresco.org/ws/headers/1.0" location="headers.xsd" />
-   <wsdl:import namespace="http://www.alfresco.org/ws/cml/1.0" location="cml.xsd"/>
+   <wsdl:import namespace="http://www.alfresco.org/ws/headers/1.0" location="../wsdl/headers.xsd" />
+   <wsdl:import namespace="http://www.alfresco.org/ws/cml/1.0" location="../wsdl/cml.xsd"/>
    <wsdl:types>
       <schema elementFormDefault="qualified" targetNamespace="http://www.alfresco.org/ws/service/repository/1.0" xmlns="http://www.w3.org/2001/XMLSchema">
          
          <element name="createStore">
          	<complexType>
                <sequence>
-                  <element name="scheme" type="cms:StoreEnum"/>
+                  <element name="scheme" type="xsd:string"/>
                   <element name="address" type="xsd:string"/>
                </sequence>
             </complexType>
@@ -192,6 +192,7 @@
             <sequence>
                <element name="statement" type="xsd:string"/>
                <element name="updateCount" type="cms:ResultSet" nillable="true"/>
+               <element name="sourceId" type="xsd:string" nillable="true"/>
                <element name="source" type="cms:Reference" nillable="true"/>
                <element name="destination" type="cms:Reference" nillable="true"/>
             </sequence>

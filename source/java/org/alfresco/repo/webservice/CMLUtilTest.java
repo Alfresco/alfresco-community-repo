@@ -34,6 +34,8 @@ import org.alfresco.repo.webservice.types.CMLRemoveAspect;
 import org.alfresco.repo.webservice.types.CMLRemoveAssociation;
 import org.alfresco.repo.webservice.types.CMLRemoveChild;
 import org.alfresco.repo.webservice.types.CMLUpdate;
+import org.alfresco.repo.webservice.types.CMLWriteContent;
+import org.alfresco.repo.webservice.types.ContentFormat;
 import org.alfresco.repo.webservice.types.NamedValue;
 import org.alfresco.repo.webservice.types.ParentReference;
 import org.alfresco.repo.webservice.types.Predicate;
@@ -41,6 +43,8 @@ import org.alfresco.repo.webservice.types.Reference;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -57,6 +61,7 @@ public class CMLUtilTest extends BaseSpringTest
 {
     private static final ContentData CONTENT_DATA_TEXT_UTF8 = new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, "UTF-8");
     private static final ContentData CONTENT_DATA_HTML_UTF16 = new ContentData(null, MimetypeMap.MIMETYPE_HTML, 0L, "UTF-16");
+    private static final String TEST_CONTENT = "This is some test content";
     
     private CMLUtil cmlUtil;
     private NodeService nodeService;
@@ -67,6 +72,7 @@ public class CMLUtilTest extends BaseSpringTest
     private SearchService searchService;
     private NodeRef folderNodeRef;
     private AuthenticationComponent authenticationComponent;
+    private ContentService contentService;
 
     @Override
     protected String[] getConfigLocations()
@@ -82,6 +88,7 @@ public class CMLUtilTest extends BaseSpringTest
         this.searchService = (SearchService)this.applicationContext.getBean("searchService");
         this.namespaceService = (NamespaceService)this.applicationContext.getBean("namespaceService");
         this.authenticationComponent = (AuthenticationComponent) this.applicationContext.getBean("authenticationComponent");
+        this.contentService = (ContentService)this.applicationContext.getBean("contentService");
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
         
@@ -210,6 +217,32 @@ public class CMLUtilTest extends BaseSpringTest
         
         assertEquals("updatedName", this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_NAME));
         assertEquals(CONTENT_DATA_HTML_UTF16, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_CONTENT));
+    }
+    
+    public void testWriteContent()
+    {
+        CMLWriteContent write = new CMLWriteContent();
+        write.setWhere(createPredicate(this.nodeRef));
+        write.setProperty(ContentModel.PROP_CONTENT.toString());
+        ContentFormat format = new ContentFormat(MimetypeMap.MIMETYPE_TEXT_PLAIN, "UTF-8");
+        write.setFormat(format);
+        write.setContent(TEST_CONTENT.getBytes());
+        
+        CML cml = new CML();
+        cml.setWriteContent(new CMLWriteContent[]{write});
+        
+        UpdateResult[] result = this.cmlUtil.executeCML(cml);
+        assertNotNull(result);
+        assertEquals(1, result.length);
+        
+        UpdateResult updateResult = result[0];
+        assertEquals("writeContent", updateResult.getStatement());
+        assertNotNull(updateResult.getSource());
+        assertNotNull(updateResult.getDestination());
+        
+        ContentReader reader = this.contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
+        assertNotNull(reader);
+        assertEquals(reader.getContentString(), TEST_CONTENT);
     }
     
     public void testDelete()

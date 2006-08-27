@@ -49,6 +49,9 @@
       <property name="dictionaryService">
          <ref bean="DictionaryService"/>
       </property>
+      <property name="contentService">
+      	<ref bean="ContentService"/>
+      </property>
    </bean>
    
    <!-- Implementations of each exposed web service -->

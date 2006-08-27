@@ -111,13 +111,16 @@ public class AssociatedQuerySession extends AbstractQuerySession
                 // get the data for the row and build up the columns structure
                 Map<QName, Serializable> props = nodeService
                         .getProperties(childNodeRef);
-                NamedValue[] columns = new NamedValue[props.size()];
+                NamedValue[] columns = new NamedValue[props.size()+1];
                 int col = 0;
                 for (QName propName : props.keySet())
                 {
                     columns[col] = Utils.createNamedValue(dictionaryService, propName, props.get(propName)); 
                     col++;
                 }
+                
+                // Now add the system columns containing the association details
+                columns[col] = new NamedValue(SYS_COL_ASSOC_TYPE, Boolean.FALSE, assoc.getTypeQName().toString(), null);
 
                 ResultSetRow row = new ResultSetRow();
                 row.setRowIndex(x);

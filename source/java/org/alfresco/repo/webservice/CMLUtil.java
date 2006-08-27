@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.webservice;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,11 +37,15 @@ import org.alfresco.repo.webservice.types.CMLRemoveAspect;
 import org.alfresco.repo.webservice.types.CMLRemoveAssociation;
 import org.alfresco.repo.webservice.types.CMLRemoveChild;
 import org.alfresco.repo.webservice.types.CMLUpdate;
+import org.alfresco.repo.webservice.types.CMLWriteContent;
+import org.alfresco.repo.webservice.types.ContentFormat;
 import org.alfresco.repo.webservice.types.NamedValue;
 import org.alfresco.repo.webservice.types.ParentReference;
 import org.alfresco.repo.webservice.types.Predicate;
 import org.alfresco.repo.webservice.types.Reference;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -64,12 +70,14 @@ public class CMLUtil
     private static final String REMOVE_CHILD = "removeChild";
     private static final String CREATE_ASSOCIATION = "createAssociation";
     private static final String REMOVE_ASSOCIATION = "removeAssociation";
+    private static final String WRITE_CONTENT = "writeContent";
     
     private NodeService nodeService;
     private SearchService searchService;
     private NamespaceService namespaceService;
     private CopyService copyService;
     private DictionaryService dictionaryService;
+    private ContentService contentService;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -94,6 +102,11 @@ public class CMLUtil
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
     }
     
     /**
@@ -144,6 +157,15 @@ public class CMLUtil
             for (CMLUpdate update : updates)
             {
                 executeCMLUpdate(update, context, results);
+            }
+        }
+        
+        CMLWriteContent[] writes = cml.getWriteContent();
+        if (writes != null)
+        {
+            for (CMLWriteContent write : writes)
+            {
+                executeCMLWriteContent(write, context, results);
             }
         }
         
@@ -253,7 +275,7 @@ public class CMLUtil
             context.addId(id, nodeRef);
         }
 
-        results.add(createResult(CREATE, null, nodeRef));
+        results.add(createResult(CREATE, id, null, nodeRef));
     }
     
     /**
@@ -277,10 +299,14 @@ public class CMLUtil
         return properties;
     }
     
-    private UpdateResult createResult(String cmd, NodeRef sourceNodeRef, NodeRef destinationNodeRef)
+    private UpdateResult createResult(String cmd, String sourceId, NodeRef sourceNodeRef, NodeRef destinationNodeRef)
     {
         UpdateResult result = new UpdateResult();
         result.setStatement(cmd);
+        if (sourceId != null)
+        {
+            result.setSourceId(sourceId);
+        }
         if (sourceNodeRef != null)
         {
             result.setSource(Utils.convertToReference(sourceNodeRef));
@@ -313,7 +339,7 @@ public class CMLUtil
             this.nodeService.addAspect(nodeRef, aspectQName, properties);
             
             // Create the result
-            results.add(createResult(ADD_ASPECT, nodeRef, nodeRef));
+            results.add(createResult(ADD_ASPECT, null, nodeRef, nodeRef));
         }        
     }
     
@@ -331,7 +357,7 @@ public class CMLUtil
             this.nodeService.removeAspect(nodeRef, aspectQName);
             
             // Create the result
-            results.add(createResult(REMOVE_ASPECT, nodeRef, nodeRef));
+            results.add(createResult(REMOVE_ASPECT, null, nodeRef, nodeRef));
         } 
     }
     
@@ -367,8 +393,36 @@ public class CMLUtil
             this.nodeService.setProperties(nodeRef, currentProps);
             
             // Get the result
-            results.add(createResult(UPDATE, nodeRef, nodeRef));
+            results.add(createResult(UPDATE, null, nodeRef, nodeRef));
         }        
+    }
+    
+    private void executeCMLWriteContent(CMLWriteContent write, ExecutionContext context, List<UpdateResult> results)
+    {
+        // Get the nodes and content property
+        List<NodeRef> nodeRefs = getNodeRefList(write.getWhere_id(), write.getWhere(), context);
+        QName property = QName.createQName(write.getProperty());
+        ContentFormat format = write.getFormat();
+        byte[] content = write.getContent();
+        
+        for (NodeRef nodeRef : nodeRefs)
+        {            
+            //Get the content writer
+            ContentWriter writer = this.contentService.getWriter(nodeRef, property, true);
+            
+            // Set the content format details (if they have been specified)
+            if (format != null)
+            {
+                writer.setEncoding(format.getEncoding());
+                writer.setMimetype(format.getMimetype());
+            }
+            
+            // Write the content 
+            InputStream is = new ByteArrayInputStream(content);
+            writer.putContent(is);
+            
+            results.add(createResult(WRITE_CONTENT, null, nodeRef, nodeRef));
+        }
     }
     
     private void executeCMLDelete(CMLDelete delete, ExecutionContext context, List<UpdateResult> results)
@@ -380,7 +434,7 @@ public class CMLUtil
             this.nodeService.deleteNode(nodeRef);
             
             // Create the result
-            results.add(createResult(DELETE, nodeRef, null));
+            results.add(createResult(DELETE, null, nodeRef, null));
         }
     }
     
@@ -408,7 +462,7 @@ public class CMLUtil
                 NodeRef newNodeRef = this.nodeService.moveNode(nodeToMove, destinationNodeRef, assocType, assocName).getChildRef();
                 
                 // Create the result
-                results.add(createResult(MOVE, nodeToMove, newNodeRef));
+                results.add(createResult(MOVE, null, nodeToMove, newNodeRef));
             }
         }
     }    
@@ -474,7 +528,7 @@ public class CMLUtil
                 NodeRef newNodeRef = this.copyService.copy(nodeToCopy, destinationNodeRef, assocType, assocName, copyChildren);
                 
                 // Create the result
-                results.add(createResult(COPY, nodeToCopy, newNodeRef));
+                results.add(createResult(COPY, null, nodeToCopy, newNodeRef));
             }
         }
         
@@ -504,7 +558,7 @@ public class CMLUtil
                 this.nodeService.addChild(nodeRef, whereNodeRef, assocType, assocName);
                 
                 // Create the result
-                results.add(createResult(ADD_CHILD, nodeRef, whereNodeRef));
+                results.add(createResult(ADD_CHILD, null, nodeRef, whereNodeRef));
             }
         }
     }    
@@ -520,7 +574,7 @@ public class CMLUtil
                 this.nodeService.removeChild(parentNodeRef, childNodeRef);
                 
                 // Create the result
-                results.add(createResult(REMOVE_CHILD, parentNodeRef, null));
+                results.add(createResult(REMOVE_CHILD, null, parentNodeRef, null));
             }
         }
         
@@ -540,7 +594,7 @@ public class CMLUtil
                     this.nodeService.createAssociation(fromNodeRef, toNodeRef, assocType);
                     
                     // Create the result
-                    results.add(createResult(CREATE_ASSOCIATION, fromNodeRef, toNodeRef));
+                    results.add(createResult(CREATE_ASSOCIATION, null, fromNodeRef, toNodeRef));
                 }
             }
         }        
@@ -560,7 +614,7 @@ public class CMLUtil
                     this.nodeService.removeAssociation(fromNodeRef, toNodeRef, assocType);
                     
                     // Create the result
-                    results.add(createResult(REMOVE_ASSOCIATION, fromNodeRef, toNodeRef));
+                    results.add(createResult(REMOVE_ASSOCIATION, null, fromNodeRef, toNodeRef));
                 }
             }
         }        
@@ -569,15 +623,22 @@ public class CMLUtil
     private class ExecutionContext
     {
         private Map<String, NodeRef> idMap = new HashMap<String, NodeRef>();
+        private Map<NodeRef, String> nodeRefMap = new HashMap<NodeRef, String>();
         
         public void addId(String id, NodeRef nodeRef)
         {
             this.idMap.put(id, nodeRef);
+            this.nodeRefMap.put(nodeRef, id);
         }
         
         public NodeRef getNodeRef(String id)
         {
             return this.idMap.get(id);
+        }
+        
+        public String getId(NodeRef nodeRef)
+        {
+            return this.nodeRefMap.get(nodeRef);
         }
     }
 }

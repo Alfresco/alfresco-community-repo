@@ -30,6 +30,11 @@ class AVMAspectNameImpl implements AVMAspectName, Serializable
     private static final long serialVersionUID = -6282415309583571934L;
 
     /**
+     * The Primary Key.
+     */
+    private Long fID;
+    
+    /**
      * The Node that has the named aspect.
      */
     private AVMNode fNode;
@@ -82,6 +87,24 @@ class AVMAspectNameImpl implements AVMAspectName, Serializable
         return fName;
     }
 
+    /**
+     * Set the primary key (For Hibernate)
+     * @param id The primary key.
+     */
+    protected void setId(Long id)
+    {
+        fID = id;
+    }
+    
+    /**
+     * Get the primary key (For Hibernate)
+     * @return The primary key.
+     */
+    protected Long getId()
+    {
+        return fID;
+    }
+    
     @Override
     public boolean equals(Object obj)
     {

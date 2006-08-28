@@ -31,6 +31,11 @@ class AVMNodePropertyImpl implements AVMNodeProperty, Serializable
     private static final long serialVersionUID = -7194228119659288619L;
 
     /**
+     * The primary key.
+     */
+    private Long fID;
+    
+    /**
      * The node that owns this.
      */
     private AVMNode fNode;
@@ -104,5 +109,44 @@ class AVMNodePropertyImpl implements AVMNodeProperty, Serializable
     public void setValue(PropertyValue value)
     {
         fValue = value;
+    }
+
+    /**
+     * Set the primary key. (For Hibernate)
+     * @param id The primary key.
+     */
+    protected void setId(Long id)
+    {
+        fID = id;
+    }
+    
+    /**
+     * Get the primary key. (For Hibernate)
+     * @return The primary key.
+     */
+    protected Long getId()
+    {
+        return fID;
+    }
+    
+    @Override
+    public boolean equals(Object other)
+    {
+        if (this == other)
+        {
+            return true;
+        }
+        if (!(other instanceof AVMNodeProperty))
+        {
+            return false;
+        }
+        AVMNodeProperty o = (AVMNodeProperty)other;
+        return fNode.equals(o.getNode()) && fName.equals(o.getName());
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        return fNode.hashCode() + fName.hashCode();
     }
 }

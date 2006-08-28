@@ -31,6 +31,11 @@ class AVMStorePropertyImpl implements AVMStoreProperty, Serializable
     private static final long serialVersionUID = -5419606158990318723L;
 
     /**
+     * The Primary Key.
+     */
+    private Long fID;
+    
+    /**
      * The store that owns this property.
      */
     private AVMStore fStore;
@@ -101,6 +106,45 @@ class AVMStorePropertyImpl implements AVMStoreProperty, Serializable
     public void setValue(PropertyValue value)
     {
         fValue = value;
+    }
+    
+    /**
+     * Set the primary key. (For Hibernate)
+     * @param id The primary key.
+     */
+    protected void setId(Long id)
+    {
+        fID = id;
+    }
+    
+    /**
+     * Get the primary key. (For Hibernate)
+     * @return The primary key.
+     */
+    protected Long getId()
+    {
+        return fID;
+    }
+    
+    @Override
+    public boolean equals(Object other)
+    {
+        if (this == other)
+        {
+            return true;
+        }
+        if (!(other instanceof AVMStoreProperty))
+        {
+            return false;
+        }
+        AVMStoreProperty o = (AVMStoreProperty)other;
+        return fStore.equals(o.getStore()) && fName.equals(o.getName());
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        return fStore.hashCode() + fName.hashCode();
     }
 }
 

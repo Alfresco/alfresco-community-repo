@@ -28,6 +28,11 @@ class NewInAVMStoreImpl implements NewInAVMStore, Serializable
     private static final long serialVersionUID = 1905996612150732182L;
 
     /**
+     * The Primary Key.
+     */
+    private Long fID;
+    
+    /**
      * The AVMStore.
      */
     private AVMStore fAVMStore;
@@ -85,6 +90,46 @@ class NewInAVMStoreImpl implements NewInAVMStore, Serializable
     public void setAvmStore(AVMStore store)
     {
         fAVMStore = store;
+    }
+    
+    /**
+     * Set the primary key. (For Hibernate)
+     * @param id The primary key.
+     */
+    protected void setId(Long id)
+    {
+        fID = id;
+    }
+    
+    /**
+     * Get the primary key. (For Hibernate)
+     * @return The primary key.
+     */
+    protected Long getId()
+    {
+        return fID;
+    }
+    
+    @Override
+    public boolean equals(Object other)
+    {
+        if (this == other)
+        {
+            return true;
+        }
+        if (!(other instanceof NewInAVMStore))
+        {
+            return false;
+        }
+        NewInAVMStore o = (NewInAVMStore)other;
+        return fAVMStore.equals(o.getAvmStore()) &&
+               fNode.equals(o.getNode());
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        return fAVMStore.hashCode() + fNode.hashCode();
     }
 }
 

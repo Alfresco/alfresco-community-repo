@@ -55,8 +55,12 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
      */
     public ChildEntry getByNameParent(String name, DirectoryNode parent)
     {
-        ChildEntry query = new ChildEntryImpl(name, parent, null);
-        return (ChildEntry)getSession().get(ChildEntryImpl.class, (Serializable)query);
+        Query query = getSession().createQuery(
+                "from ChildEntryImpl ce where ce.name = :name and ce.parent = :parent");
+        query.setString("name", name);
+        query.setEntity("parent", parent);
+        query.setCacheable(true);
+        return (ChildEntry)query.uniqueResult();
     }
     
     /**

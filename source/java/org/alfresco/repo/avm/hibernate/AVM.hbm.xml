@@ -128,24 +128,23 @@
 	</class>
 	<class name="ChildEntryImpl" proxy="ChildEntry" table="avm_child_entries" optimistic-lock="version">
 		<cache usage="read-write"/>
-		<composite-id>
-			<key-property name="name" type="string" column="name">
-			</key-property>
-			<key-many-to-one name="parent" column="parent_id" class="DirectoryNodeImpl">
-			</key-many-to-one>
-		</composite-id>
+		<id name="id" column="id" type="long">
+			<generator class="native"/>
+		</id>
 		<version name="vers" column="vers" type="long"/>
+		<property name="name" type="string" column="name" index="child_name_index" not-null="true"/>
+		<many-to-one name="parent" column="parent_id" class="DirectoryNodeImpl" not-null="true"/>
 		<many-to-one name="child" column="child_id" class="AVMNodeImpl"
-			not-null="true">
-		</many-to-one>
+			not-null="true"/>
 	</class>
 	<class table="avm_deleted_children" name="DeletedChildImpl" proxy="DeletedChild">
 	    <cache usage="read-write"/>
-		<composite-id>
-			<key-property name="name" column="name" type="string"/>
-			<key-many-to-one name="parent" class="LayeredDirectoryNodeImpl"
+	    <id name="id" column="id" type="long">
+	    	<generator class="native"/>
+	    </id>
+		<property name="name" column="name" type="string" index="deleted_child_name_index"/>
+		<many-to-one name="parent" class="LayeredDirectoryNodeImpl"
 				column="parent_id"/>
-		</composite-id>
 	</class>
 	<class name="HistoryLinkImpl" proxy="HistoryLink" table="avm_history_links">
 		<composite-id>
@@ -160,16 +159,19 @@
 		</composite-id>
 	</class>
 	<class name="NewInAVMStoreImpl" proxy="NewInAVMStore" table="new_in_avm_store_nodes">
-		<composite-id>
-			<key-many-to-one name="avmStore" class="AVMStoreImpl" column="avm_store_id"/>
-			<key-many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
-		</composite-id>
+		<cache usage="read-write"/>
+		<id name="id" column="id" type="long">
+			<generator class="native"/>
+		</id>
+		<many-to-one name="avmStore" class="AVMStoreImpl" column="avm_store_id"/>
+		<many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
 	</class>
 	<class name="AVMNodePropertyImpl" proxy="AVMNodeProperty" table="avm_node_properties">
-		<composite-id>
-			<key-many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
-		    <key-property name="name" column="qname" type="QName" length="200"/>
-		</composite-id>
+		<id name="id" column="id" type="long">
+			<generator class="native"/>
+		</id>
+		<many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
+	    <property name="name" column="qname" type="QName" length="200" index="node_property_name_index"/>
 		<component class="org.alfresco.repo.domain.PropertyValue" name="value">
             <property name="actualType" column="actual_type" type="string" length="15" not-null="true" />
             <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
@@ -183,10 +185,11 @@
        </component>
 	</class>
 	<class name="AVMStorePropertyImpl" proxy="AVMStoreProperty" table="avm_store_properties">
-		<composite-id>
-			<key-many-to-one name="store" class="AVMStoreImpl" column="avm_store_id"/>
-			<key-property name="name" column="qname" type="QName" length="200"/>
-		</composite-id>
+		<id name="id" column="id" type="long">
+			<generator class="native"/>
+		</id>
+		<many-to-one name="store" class="AVMStoreImpl" column="avm_store_id"/>
+		<property name="name" column="qname" type="QName" length="200" index="store_property_name_index"/>
 		<component class="org.alfresco.repo.domain.PropertyValue" name="value">
             <property name="actualType" column="actual_type" type="string" length="15" not-null="true" />
             <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
@@ -201,10 +204,11 @@
 	</class>
 	<!-- Aspect name table for AVM Nodes. -->		
 	<class name="AVMAspectNameImpl" proxy="AVMAspectName" table="avm_aspects">
-		<composite-id>
-			<key-many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
-			<key-property name="name" column="qname" type="QName" length="200"/>
-		</composite-id>
+		<id name="id" column="id" type="long">
+			<generator class="native"/>
+		</id>
+		<many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
+		<property name="name" column="qname" type="QName" length="200"/>
 	</class>
 	<query name="ChildEntry.ByNameParent">
 	<![CDATA[

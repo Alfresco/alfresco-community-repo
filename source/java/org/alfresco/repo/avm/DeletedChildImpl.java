@@ -28,6 +28,11 @@ class DeletedChildImpl implements DeletedChild, Serializable
     private static final long serialVersionUID = 4997060636280774719L;
 
     /**
+     * The Primary Key.
+     */
+    private Long fID;
+    
+    /**
      * The name of the deleted child.
      */
     private String fName;
@@ -120,5 +125,23 @@ class DeletedChildImpl implements DeletedChild, Serializable
     public int hashCode()
     {
         return fParent.hashCode() + fName.hashCode();
+    }
+    
+    /**
+     * Set the primary key. (For Hibernate)
+     * @param id The primary key.
+     */
+    protected void setId(Long id)
+    {
+        fID = id;
+    }
+    
+    /**
+     * Get the primary key. (For Hibernate)
+     * @return The primary key.
+     */
+    protected Long getId()
+    {
+        return fID;
     }
 }

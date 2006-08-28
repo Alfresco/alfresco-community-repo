@@ -28,6 +28,11 @@ class ChildEntryImpl implements ChildEntry, Serializable
     private static final long serialVersionUID = -307752114272916930L;
 
     /**
+     * The primary key.
+     */
+    private Long fID;
+    
+    /**
      * The name of the entry.
      */
     private String fName;
@@ -169,5 +174,23 @@ class ChildEntryImpl implements ChildEntry, Serializable
     protected void setVers(long vers)
     {
         fVers = vers;
+    }
+    
+    /**
+     * Set the primary key. (For Hibernate)
+     * @param id
+     */
+    protected void setId(Long id)
+    {
+        fID = id;
+    }
+
+    /**
+     * Get the primary key. (For Hibernate).
+     * @return The primary key.
+     */
+    protected Long getId()
+    {
+        return fID;
     }
 }

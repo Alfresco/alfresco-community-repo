@@ -63,12 +63,15 @@
    </bean>
    
    <!-- AVMNodeService -->
-   <bean id="avmNodeService" class="org.alfresco.repo.avm.AVMNodeService">
+   <bean id="avmNodeService" class="org.alfresco.repo.avm.AVMNodeService" init-method="init">
 		<property name="dictionaryService">
 			<ref bean="dictionaryService"/>
 		</property>
 		<property name="avmService">
 			<ref bean="AVMService"/>
+		</property>
+		<property name="policyComponent">
+			<ref bean="policyComponent"/>
 		</property>
 	</bean>
 		

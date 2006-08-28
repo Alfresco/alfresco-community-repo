@@ -19,6 +19,7 @@ package org.alfresco.repo.avm;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,12 +31,12 @@ import java.util.SortedMap;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
-import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -111,9 +112,14 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     public StoreRef createStore(String protocol, String identifier) throws StoreExistsException
     {
         StoreRef result = new StoreRef(StoreRef.PROTOCOL_AVM, identifier);
+        invokeBeforeCreateStore(ContentModel.TYPE_STOREROOT, result);
         try
         {
             fAVMService.createAVMStore(identifier);
+            NodeRef rootRef = getRootNode(result);
+            addAspect(rootRef, ContentModel.ASPECT_ROOT,
+                      Collections.<QName, Serializable>emptyMap());
+            invokeOnCreateStore(rootRef);
             return result;
         }
         catch (AVMExistsException e)
@@ -247,6 +253,11 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             throw new InvalidNodeRefException("Read only store.", parentRef);
         }
         String avmPath = (String)avmVersionPath[1];
+        // Invoke policy behavior.
+        invokeBeforeUpdateNode(parentRef);
+        invokeBeforeCreateNode(parentRef, assocTypeQName, assocQName, nodeTypeQName);
+        // Look up the type definition in the dictionary.
+        TypeDefinition nodeTypeDef = dictionaryService.getType(nodeTypeQName);
         // Do the creates for supported types, or error out.
         try
         {
@@ -262,6 +273,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             {
                 throw new InvalidTypeException("Invalid node type for AVM.", nodeTypeQName);
             }
+            addDefaultPropertyValues(nodeTypeDef, properties);
+            // TODO Add default aspects to the child..
         }
         catch (AVMNotFoundException e)
         {
@@ -273,7 +286,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         String newAVMPath = AVMNodeConverter.ExtendAVMPath(avmPath, nodeName);
         NodeRef childRef = AVMNodeConverter.ToNodeRef(-1, newAVMPath);
-        // TODO Q? Is properties ever null?
+        addDefaultPropertyValues(nodeTypeDef, properties);
+        addDefaultAspects(nodeTypeDef, newAVMPath, properties);
         Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>();
         for (QName qname : properties.keySet())
         {
@@ -284,13 +298,18 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             props.put(qname, new PropertyValue(null, properties.get(qname)));
         }
         fAVMService.setNodeProperties(newAVMPath, props);
-        return 
+        ChildAssociationRef ref = 
             new ChildAssociationRef(assocTypeQName,
                                     parentRef,
                                     assocQName,
                                     childRef,
                                     true,
                                     -1);
+        invokeOnCreateNode(ref);
+        invokeOnUpdateNode(parentRef);
+        // TODO invokeOnUpdateProperties
+        
+        return ref;
     }
     
     /**
@@ -357,12 +376,14 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         String dstParent = (String)dst[1];
         String dstName = assocQName.getLocalName();
+        // TODO Invoke policy behavior. Not quite sure how to translate this.
         // Actually perform the rename and return a pseudo 
         // ChildAssociationRef.
         try
         {
             fAVMService.rename(srcParent, srcName, dstParent, dstName);
             String dstPath = AVMNodeConverter.ExtendAVMPath(dstParent, dstName);
+            // TODO Invoke policy behaviors.  Not sure how to translate that.
             return new ChildAssociationRef(assocTypeQName,
                                            newParentRef,
                                            assocQName,
@@ -479,6 +500,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             throw new InvalidAspectException("The aspect is invalid: " + aspectTypeQName, 
                                              aspectTypeQName);
         }
+        // Invoke policy behaviors.
+        invokeBeforeUpdateNode(nodeRef);
+        invokeBeforeAddAspect(nodeRef, aspectTypeQName);
         // Crack the nodeRef.
         Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         int version = (Integer)avmVersionPath[0];
@@ -508,6 +532,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         try
         {
             fAVMService.addAspect(avmPath, aspectTypeQName);
+            // Invoke policy behaviors.
+            invokeOnUpdateNode(nodeRef);
+            invokeOnAddAspect(nodeRef, aspectTypeQName);
         }
         catch (AVMNotFoundException e)
         {
@@ -524,13 +551,16 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     private void addDefaultAspects(ClassDefinition classDef, String path, 
                                    Map<QName, Serializable> properties)
     {
+        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
         // Get mandatory aspects.
         List<AspectDefinition> defaultAspectDefs = classDef.getDefaultAspects();
         // add all the aspects (and there dependent aspects recursively).
         for (AspectDefinition def : defaultAspectDefs)
         {
+            invokeBeforeAddAspect(nodeRef, def.getName());
             fAVMService.addAspect(path, def.getName());
             addDefaultPropertyValues(def, properties);
+            invokeOnAddAspect(nodeRef, def.getName());
             // recurse
             addDefaultAspects(def, path, properties);
         }
@@ -548,6 +578,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     public void removeAspect(NodeRef nodeRef, QName aspectTypeQName)
             throws InvalidNodeRefException, InvalidAspectException
     {
+        // Invoke policy behaviors.
+        invokeBeforeUpdateNode(nodeRef);
+        invokeBeforeRemoveAspect(nodeRef, aspectTypeQName);
         AspectDefinition def = dictionaryService.getAspect(aspectTypeQName);
         if (def == null)
         {
@@ -576,6 +609,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                     fAVMService.deleteNodeProperty(path, propertyName);
                 }
             }
+            // Invoke policy behaviors.
+            invokeOnUpdateNode(nodeRef);
+            invokeOnRemoveAspect(nodeRef, aspectTypeQName);
         }
         catch (AVMNotFoundException e)
         {
@@ -673,6 +709,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public void deleteNode(NodeRef nodeRef) throws InvalidNodeRefException
     {
+        // Invoke policy behaviors.
+        invokeBeforeDeleteNode(nodeRef);
         Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         if ((Integer)avmVersionPath[0] != -1)
         {
@@ -686,6 +724,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         try
         {
             fAVMService.removeNode(avmPathBase[0], avmPathBase[1]);
+            // Invoke policy behaviors.
+            // TODO invokeOnDeleteNode() Need to fake up ChildAssocRef.
         }
         catch (AVMNotFoundException e)
         {
@@ -726,6 +766,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
     {
+        // Invoke policy behaviors.
+        // TODO Have to fake up ChildAssocRef.
         Object [] parentVersionPath = AVMNodeConverter.ToAVMVersionPath(parentRef);
         if ((Integer)parentVersionPath[0] >= 0)
         {
@@ -746,6 +788,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         try
         {
             fAVMService.removeNode(childPathBase[0], childPathBase[1]);
+            // Invoke policy behaviors.
+            // TODO Need to fake up ChildAssocRef.
         }
         catch (AVMNotFoundException e)
         {
@@ -918,6 +962,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         try
         {
+            // Invoke policy behaviors.
+            invokeBeforeUpdateNode(nodeRef);
             fAVMService.deleteNodeProperties((String)avmVersionPath[1]);
             Map<QName, PropertyValue> values = new HashMap<QName, PropertyValue>();
             for (QName qName : properties.keySet())
@@ -931,6 +977,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 values.put(qName, new PropertyValue(null, properties.get(qName)));
             }
             fAVMService.setNodeProperties((String)avmVersionPath[1], values);
+            // Invoke policy behaviors.
+            invokeOnUpdateNode(nodeRef);
         }
         catch (AVMNotFoundException e)
         {
@@ -979,6 +1027,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public void setProperty(NodeRef nodeRef, QName qname, Serializable value) throws InvalidNodeRefException
     {
+        // Invoke policy behaviors.
+        invokeBeforeUpdateNode(nodeRef);
         Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         // TODO Just until we can set built in properties on AVM Nodes.
         if (isBuiltInProperty(qname))
@@ -995,6 +1045,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         try
         {
             fAVMService.setNodeProperty((String)avmVersionPath[1], qname, new PropertyValue(null, value));
+            // Invoke policy behaviors.
+            invokeOnUpdateNode(nodeRef);
         }
         catch (AVMNotFoundException e)
         {
@@ -1291,8 +1343,6 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             String [] splitPath = AVMNodeConverter.SplitBase(currPath);
             String parentPath = splitPath[0];
             String name = splitPath[1];
-            // TODO Remove when understood.
-            fgLogger.error("parentpath = " + parentPath);
             ChildAssociationRef caRef =
                 new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
                                         AVMNodeConverter.ToNodeRef(version, parentPath),
@@ -1308,8 +1358,6 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                                                             AVMNodeConverter.ToNodeRef(version, 
                                                                                        currPath));
         path.prepend(new Path.ChildAssocElement(caRef));
-        // TODO Get rid of this when you figure this out.
-        fgLogger.error(path);
         return path;
     }
     

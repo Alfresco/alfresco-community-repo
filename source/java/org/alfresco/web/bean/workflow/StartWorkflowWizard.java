@@ -1,14 +1,18 @@
 package org.alfresco.web.bean.workflow;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -23,10 +27,14 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
+import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,6 +50,11 @@ public class StartWorkflowWizard extends BaseWizardBean
    protected Map<String, WorkflowDefinition> workflows;
    protected WorkflowService workflowService;
    protected Node startTaskNode;
+   protected List<Node> resources;
+   protected List<String> packageItemsToAdd;
+   protected UIRichList packageItemsRichList;
+   protected String[] itemsToAdd;
+   protected boolean isItemBeingAdded = false;
    protected boolean nextButtonDisabled = false;
    
    private static final Log logger = LogFactory.getLog(StartWorkflowWizard.class);
@@ -65,6 +78,31 @@ public class StartWorkflowWizard extends BaseWizardBean
       }
       
       this.startTaskNode = null;
+      this.resources = null;
+      this.itemsToAdd = null;
+      this.packageItemsToAdd = new ArrayList<String>();
+      this.isItemBeingAdded = false;
+      if (this.packageItemsRichList != null)
+      {
+         this.packageItemsRichList.setValue(null);
+      }
+      
+      // TODO: Does this need to be in a read-only transaction??
+      
+      // add the item the workflow wizard was started on to the list of resources
+      String itemToWorkflowId = this.parameters.get("item-to-workflow");
+      if (itemToWorkflowId != null && itemToWorkflowId.length() > 0)
+      {
+         // create the node ref for the item and determine its type
+         NodeRef itemToWorkflow = new NodeRef(Repository.getStoreRef(), itemToWorkflowId);
+         QName type = this.nodeService.getType(itemToWorkflow);
+
+         if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
+             this.dictionaryService.isSubClass(type, ContentModel.TYPE_FILELINK))
+         {
+            this.packageItemsToAdd.add(itemToWorkflow.toString());
+         }
+      }
    }
    
    @Override
@@ -80,23 +118,17 @@ public class StartWorkflowWizard extends BaseWizardBean
       Map<QName, Serializable> params = WorkflowBean.prepareWorkItemParams(this.startTaskNode);
       
       // create a workflow package for the attached items and add them
-      String itemToWorkflowId = this.parameters.get("item-to-workflow");
-      if (itemToWorkflowId != null && itemToWorkflowId.length() > 0)
+      if (this.packageItemsToAdd.size() > 0)
       {
-         // create the node ref for the item and determine its type
-         NodeRef itemToWorkflow = new NodeRef(Repository.getStoreRef(), itemToWorkflowId);
-         QName type = this.nodeService.getType(itemToWorkflow);
+         NodeRef workflowPackage = this.workflowService.createPackage(null);
          
-         NodeRef workflowPackage = null;
-         if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
-             this.dictionaryService.isSubClass(type, ContentModel.TYPE_FILELINK))
+         for (String addedItem : this.packageItemsToAdd)
          {
-            // create a workflow package and add the given item to workflow as a child
-            workflowPackage = this.workflowService.createPackage(null);
-            this.nodeService.addChild(workflowPackage, itemToWorkflow, 
+            NodeRef addedNodeRef = new NodeRef(addedItem);
+            this.nodeService.addChild(workflowPackage, addedNodeRef, 
                   ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
                   QName.createValidLocalName((String)this.nodeService.getProperty(
-                        itemToWorkflow, ContentModel.PROP_NAME))));
+                        addedNodeRef, ContentModel.PROP_NAME))));
          }
          
          // add the workflow package to the parameter map
@@ -176,8 +208,130 @@ public class StartWorkflowWizard extends BaseWizardBean
    }
    
    // ------------------------------------------------------------------------------
+   // Event Handlers
+   
+   /**
+    * Prepares the dialog to allow the user to add an item to the workflow package
+    * 
+    * @param event The event
+    */
+   public void prepareForAdd(ActionEvent event)
+   {
+      this.isItemBeingAdded = true;
+   }
+   
+   /**
+    * Cancels the adding of an item to the workflow package
+    * 
+    * @param event The event
+    */
+   public void cancelAddPackageItems(ActionEvent event)
+   {
+      this.isItemBeingAdded = false;
+   }
+   
+   /**
+    * Adds items to the workflow package
+    * 
+    * @param event The event
+    */
+   public void addPackageItems(ActionEvent event)
+   {
+      if (this.itemsToAdd != null)
+      {
+         for (String item : this.itemsToAdd)
+         {
+            this.packageItemsToAdd.add(item);
+               
+            if (logger.isDebugEnabled())
+               logger.debug("Added item to the added list: " + item);
+         }
+         
+         // reset the rich list so it re-renders
+         this.packageItemsRichList.setValue(null);
+      }
+      
+      this.isItemBeingAdded = false;
+      this.itemsToAdd = null;
+   }
+   
+   /**
+    * Removes an item from the workflow package
+    * 
+    * @param event The event containing a reference to the item to remove
+    */
+   public void removePackageItem(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String nodeRef = new NodeRef(Repository.getStoreRef(), params.get("id")).toString();
+      
+      if (this.packageItemsToAdd.contains(nodeRef))
+      {
+         // remove the item from the added list if it was added in this dialog session
+         this.packageItemsToAdd.remove(nodeRef);
+         
+         if (logger.isDebugEnabled())
+            logger.debug("Removed item from the added list: " + nodeRef);
+      }
+      
+      // reset the rich list so it re-renders
+      this.packageItemsRichList.setValue(null);
+   }
+
+   // ------------------------------------------------------------------------------
    // Bean Getters and Setters
 
+   /**
+    * Returns a String array of NodeRef's that are being added to the workflow package
+    * 
+    * @return String array of NodeRef's
+    */
+   public String[] getItemsToAdd()
+   {
+      return this.itemsToAdd;
+   }
+   
+   /**
+    * Sets the NodeRef's to add as items to the workflow package
+    * 
+    * @param itemsToAdd NodeRef's to add to the workflow package
+    */
+   public void setItemsToAdd(String[] itemsToAdd)
+   {
+      this.itemsToAdd = itemsToAdd;
+   }
+   
+   /**
+    * Determines whether an item is currently being added to the workflow package
+    * 
+    * @return true if an item is being added
+    */
+   public boolean isItemBeingAdded()
+   {
+      return this.isItemBeingAdded;
+   }
+   
+   /**
+    * Sets the rich list being used for the workflow package items
+    * 
+    * @param richList The rich list instance
+    */
+   public void setPackageItemsRichList(UIRichList richList)
+   {
+      this.packageItemsRichList = richList;
+   }
+   
+   /**
+    * Returns the rich list being used for the workflow package items
+    * 
+    * @return The rich list instance
+    */
+   public UIRichList getPackageItemsRichList()
+   {
+      return this.packageItemsRichList;
+   }
+   
    /**
     * Returns the workflow selected by the user
     * 
@@ -317,6 +471,59 @@ public class StartWorkflowWizard extends BaseWizardBean
       return availableWorkflows;
    }
 
+   /**
+    * Returns a list of resources associated with this work item
+    * i.e. the children of the workflow package
+    * 
+    * @return The list of nodes
+    */
+   public List<Node> getResources()
+   {
+      this.resources = new ArrayList<Node>(4);
+      
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+         
+         for (String newItem : this.packageItemsToAdd)
+         {
+            NodeRef nodeRef = new NodeRef(newItem);
+            if (this.nodeService.exists(nodeRef))
+            {
+               // create our Node representation
+               MapNode node = new MapNode(nodeRef, this.nodeService, true);
+               this.browseBean.setupCommonBindingProperties(node);
+               
+               // add property resolvers to show path information
+               node.addPropertyResolver("path", this.browseBean.resolverPath);
+               node.addPropertyResolver("displayPath", this.browseBean.resolverDisplayPath);
+               
+               this.resources.add(node);
+            }
+            else
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("Ignoring " + nodeRef + " as it has been removed from the repository");
+            }
+         }
+         
+         // commit the transaction
+         tx.commit();
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         this.resources = Collections.<Node>emptyList();
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
+      
+      return this.resources;
+   }
+   
    /**
     * Sets the workflow service to use
     * 

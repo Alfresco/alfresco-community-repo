@@ -130,7 +130,7 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
       
       Set<String> mailedAuthorities = new HashSet<String>(usersGroups.size());
       
-      // walk the list of users/groups to notify
+      // walk the list of users/groups to notify - handle duplicates along the way
       for (Map node : usersGroups)
       {
          String authority = (String)node.get(PROP_USERNAME);
@@ -254,31 +254,47 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
             tx = Repository.getUserTransaction(context, true);
             tx.begin();
             
-            // Return all the permissions set against the current node
-            // for any authentication instance (user/group).
-            // Then combine them into a single list for each authentication found. 
+            // Return all the permissions set against the current node for any authentication
+            // instance (user/group), walking the parent space inheritance chain.
+            // Then combine them into a single list for each authentication found.
+            String currentAuthority = Application.getCurrentUser(context).getUserName();
             Map<String, List<String>> permissionMap = new HashMap<String, List<String>>(8, 1.0f);
-            Set<AccessPermission> permissions = permissionService.getAllSetPermissions(getSpace().getNodeRef());
-            for (AccessPermission permission : permissions)
+            NodeRef spaceRef = getSpace().getNodeRef();
+            while (spaceRef != null)
             {
-               // we are only interested in Allow and not groups/owner etc.
-               if (permission.getAccessStatus() == AccessStatus.ALLOWED &&
-                   (permission.getAuthorityType() == AuthorityType.USER ||
-                    permission.getAuthorityType() == AuthorityType.GROUP ||
-                    permission.getAuthorityType() == AuthorityType.GUEST ||
-                    permission.getAuthorityType() == AuthorityType.EVERYONE))
+               Set<AccessPermission> permissions = permissionService.getAllSetPermissions(spaceRef);
+               for (AccessPermission permission : permissions)
                {
-                  String authority = permission.getAuthority();
-                  
-                  List<String> userPermissions = permissionMap.get(authority);
-                  if (userPermissions == null)
+                  // we are only interested in Allow and not Guest/Everyone/owner
+                  if (permission.getAccessStatus() == AccessStatus.ALLOWED &&
+                      (permission.getAuthorityType() == AuthorityType.USER ||
+                       permission.getAuthorityType() == AuthorityType.GROUP))
                   {
-                     // create for first time
-                     userPermissions = new ArrayList<String>(4);
-                     permissionMap.put(authority, userPermissions);
+                     String authority = permission.getAuthority();
+                     
+                     if (currentAuthority.equals(authority) == false)
+                     {
+                        List<String> userPermissions = permissionMap.get(authority);
+                        if (userPermissions == null)
+                        {
+                           // create for first time
+                           userPermissions = new ArrayList<String>(4);
+                           permissionMap.put(authority, userPermissions);
+                        }
+                        // add the permission name for this authority
+                        userPermissions.add(permission.getPermission());
+                     }
                   }
-                  // add the permission name for this authority
-                  userPermissions.add(permission.getPermission());
+               }
+               
+               // walk parent inheritance chain until root or no longer inherits
+               if (permissionService.getInheritParentPermissions(spaceRef))
+               {
+                  spaceRef = nodeService.getPrimaryParent(spaceRef).getParentRef();
+               }
+               else
+               {
+                  spaceRef = null;
                }
             }
             
@@ -316,79 +332,6 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
       }
       return this.usersGroups;
    }
-
-   /**
-    * Build a Map representing a user/group with a set of useful property values required
-    * by the UIUserGroupPicker UI component.
-    * 
-    * @param authority     User/Group authority
-    * @param roles         Role text for the authority
-    * 
-    * @return Map
-    */
-   private Map buildAuthorityMap(String authority, String roles)
-   {
-      Map node = null;
-      
-      if (AuthorityType.getAuthorityType(authority) == AuthorityType.GUEST ||
-          this.personService.personExists(authority))
-      {
-         NodeRef nodeRef = this.personService.getPerson(authority);
-         if (nodeRef != null)
-         {
-            // create our Node representation
-            node = new MapNode(nodeRef);
-            
-            // set data binding properties
-            // this will also force initialisation of the props now during the UserTransaction
-            // it is much better for performance to do this now rather than during page bind
-            Map<String, Object> props = ((MapNode)node).getProperties(); 
-            props.put(PROP_FULLNAME, ((String)props.get("firstName")) + ' ' + ((String)props.get("lastName")));
-            props.put(PROP_ICON, WebResources.IMAGE_PERSON);
-            props.put(PROP_ISGROUP, false);
-         }
-      }
-      else if (AuthorityType.getAuthorityType(authority) == AuthorityType.GROUP)
-      {
-         // need a map (dummy node) to represent props for this Group Authority
-         node = new HashMap<String, Object>(8, 1.0f);
-         if (authority.startsWith(PermissionService.GROUP_PREFIX) == true)
-         {
-            node.put(PROP_FULLNAME, authority.substring(PermissionService.GROUP_PREFIX.length()));
-         }
-         else
-         {
-            node.put(PROP_FULLNAME, authority);
-         }
-         node.put(PROP_USERNAME, authority);
-         node.put(PROP_ID, authority);
-         node.put(PROP_ICON, WebResources.IMAGE_GROUP);
-         node.put(PROP_ISGROUP, true);
-         node.put(PROP_EXPANDED, false);
-      }
-      if (node != null)
-      {
-         // add the common properties
-         node.put(PROP_ROLES, roles);
-         node.put(PROP_PARENT, null);
-         
-         if (this.userGroupLookup.get(authority) != null)
-         {
-            // this authority already exists in the list somewhere else - mark as duplicate
-            node.put(PROP_DUPLICATE, true);
-            node.put(PROP_SELECTED, false);
-         }
-         else
-         {
-            // add to table for the first time, not a duplicate
-            this.userGroupLookup.put(authority, node);
-            node.put(PROP_DUPLICATE, false);
-            node.put(PROP_SELECTED, true);
-         }
-      }
-      
-      return node;
-   }
    
    /**
     * @return TemplateMailHelperBean instance for this wizard
@@ -396,6 +339,29 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
    public TemplateMailHelperBean getMailHelper()
    {
       return this.mailHelper;
+   }
+   
+   /**
+    * @return true if any authorities are selected, false otherwise
+    */
+   public boolean getFinishButtonDisabled()
+   {
+      boolean disabled = true;
+      
+      if (this.usersGroups != null)
+      {
+         for (Map userGroup : this.usersGroups)
+         {
+            if (((Boolean)userGroup.get(PROP_EXPANDED)) == false &&
+                ((Boolean)userGroup.get(PROP_SELECTED)) == true)
+            {
+               disabled = false;
+               break;
+            }
+         }
+      }
+      
+      return disabled;
    }
    
    
@@ -435,16 +401,25 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
                   {
                      // expand the list for this group by adding the immediate child authorities
                      boolean selected = (Boolean)userGroup.get(PROP_SELECTED);
+                     String currentAuthority =
+                        Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName();
                      Set<String> authorities = authorityService.getContainedAuthorities(
                            null, pickerEvent.Authority, true);
                      for (String authority : authorities)
                      {
-                        Map node = buildAuthorityMap(authority, (String)userGroup.get(PROP_ROLES));
-                        if (node != null)
+                        if (currentAuthority.equals(authority) == false)
                         {
-                           node.put(PROP_PARENT, userGroup);
-                           node.put(PROP_SELECTED, selected);
-                           this.usersGroups.add(++index, node);
+                           if (AuthorityType.getAuthorityType(authority) == AuthorityType.USER ||
+                               AuthorityType.getAuthorityType(authority) == AuthorityType.GROUP)
+                           {
+                              Map node = buildAuthorityMap(authority, (String)userGroup.get(PROP_ROLES));
+                              if (node != null)
+                              {
+                                 node.put(PROP_PARENT, userGroup);
+                                 node.put(PROP_SELECTED, selected);
+                                 this.usersGroups.add(++index, node);
+                              }
+                           }
                         }
                      }
                   }
@@ -493,5 +468,82 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
             }
          }
       }
+   }
+   
+   
+   // ------------------------------------------------------------------------------
+   // Private helpers
+   
+   /**
+    * Build a Map representing a user/group with a set of useful property values required
+    * by the UIUserGroupPicker UI component.
+    * 
+    * @param authority     User/Group authority
+    * @param roles         Role text for the authority
+    * 
+    * @return Map
+    */
+   private Map buildAuthorityMap(String authority, String roles)
+   {
+      Map node = null;
+      
+      if (AuthorityType.getAuthorityType(authority) == AuthorityType.GUEST ||
+          this.personService.personExists(authority))
+      {
+         NodeRef nodeRef = this.personService.getPerson(authority);
+         if (nodeRef != null)
+         {
+            // create our Node representation
+            node = new MapNode(nodeRef);
+            
+            // set data binding properties
+            // this will also force initialisation of the props now during the UserTransaction
+            // it is much better for performance to do this now rather than during page bind
+            Map<String, Object> props = ((MapNode)node).getProperties(); 
+            props.put(PROP_FULLNAME, ((String)props.get("firstName")) + ' ' + ((String)props.get("lastName")));
+            props.put(PROP_ICON, WebResources.IMAGE_PERSON);
+            props.put(PROP_ISGROUP, false);
+         }
+      }
+      else if (AuthorityType.getAuthorityType(authority) == AuthorityType.GROUP)
+      {
+         // need a map (dummy node) to represent props for this Group Authority
+         node = new HashMap<String, Object>(8, 1.0f);
+         if (authority.startsWith(PermissionService.GROUP_PREFIX) == true)
+         {
+            node.put(PROP_FULLNAME, authority.substring(PermissionService.GROUP_PREFIX.length()));
+         }
+         else
+         {
+            node.put(PROP_FULLNAME, authority);
+         }
+         node.put(PROP_USERNAME, authority);
+         node.put(PROP_ID, authority);
+         node.put(PROP_ICON, WebResources.IMAGE_GROUP);
+         node.put(PROP_ISGROUP, true);
+      }
+      if (node != null)
+      {
+         // add the common properties
+         node.put(PROP_ROLES, roles);
+         node.put(PROP_PARENT, null);
+         node.put(PROP_EXPANDED, false);
+         
+         if (this.userGroupLookup.get(authority) != null)
+         {
+            // this authority already exists in the list somewhere else - mark as duplicate
+            node.put(PROP_DUPLICATE, true);
+            node.put(PROP_SELECTED, false);
+         }
+         else
+         {
+            // add to table for the first time, not a duplicate
+            this.userGroupLookup.put(authority, node);
+            node.put(PROP_DUPLICATE, false);
+            node.put(PROP_SELECTED, true);
+         }
+      }
+      
+      return node;
    }
 }

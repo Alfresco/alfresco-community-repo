@@ -24,22 +24,27 @@
 <script type="text/javascript">
    
    window.onload = pageLoaded;
+   var okEnabled;
    
    function pageLoaded()
    {
       document.getElementById("dialog:dialog-body:subject").focus();
+      okEnabled = !document.getElementById("dialog:finish-button").disabled;
       checkButtonState();
    }
    
    function checkButtonState()
    {
-      if (document.getElementById("dialog:dialog-body:subject").value.length == 0)
+      if (okEnabled)
       {
-         document.getElementById("dialog:finish-button").disabled = true;
-      }
-      else
-      {
-         document.getElementById("dialog:finish-button").disabled = false;
+         if (document.getElementById("dialog:dialog-body:subject").value.length == 0)
+         {
+            document.getElementById("dialog:finish-button").disabled = true;
+         }
+         else
+         {
+            document.getElementById("dialog:finish-button").disabled = false;
+         }
       }
    }
 </script>

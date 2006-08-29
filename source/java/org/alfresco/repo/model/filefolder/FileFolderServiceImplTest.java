@@ -336,6 +336,10 @@ public class FileFolderServiceImplTest extends TestCase
         // make sure that it is an immediate child of the root
         List<FileInfo> checkFileInfos = fileFolderService.search(workingRootNodeRef, NAME_L1_FOLDER_A, false);
         assertEquals("Folder not copied to root", 1, checkFileInfos.size());
+        // copy properly
+        FileInfo checkFileInfo = fileFolderService.copy(folderToCopyRef, null, "new name");
+        checkFileInfos = fileFolderService.search(workingRootNodeRef, checkFileInfo.getName(), false);
+        assertEquals("Folder not renamed in root", 1, checkFileInfos.size());
         // attempt illegal copy (existing)
         try
         {
@@ -346,10 +350,6 @@ public class FileFolderServiceImplTest extends TestCase
         {
             // expected
         }
-        // copy properly
-        FileInfo checkFileInfo = fileFolderService.copy(folderToCopyRef, null, "new name");
-        checkFileInfos = fileFolderService.search(workingRootNodeRef, checkFileInfo.getName(), false);
-        assertEquals("Folder not renamed in root", 1, checkFileInfos.size());
     }
     
     public void testCreateFolder() throws Exception

@@ -586,13 +586,20 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         else
         {
-            // copy the node
-            targetNodeRef = copyService.copy(
-                    sourceNodeRef,
-                    targetParentRef,
-                    assocRef.getTypeQName(),
-                    qname,
-                    true);
+            try
+            {
+                // copy the node
+                targetNodeRef = copyService.copy(
+                        sourceNodeRef,
+                        targetParentRef,
+                        assocRef.getTypeQName(),
+                        qname,
+                        true);
+            }
+            catch (DuplicateChildNodeNameException e)
+            {
+                throw new FileExistsException(targetParentRef, newName);
+            }
         }
        
         // Only update the name if it has changed

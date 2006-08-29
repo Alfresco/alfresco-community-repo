@@ -16,7 +16,6 @@
  */
 package org.alfresco.repo.cache;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import net.sf.ehcache.Cache;
@@ -100,13 +99,6 @@ public class EhCacheAdapter<K extends Serializable, V extends Serializable>
 
     public void clear()
     {
-        try
-        {
-            cache.removeAll();
-        }
-        catch (IOException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to clear cache", e);
-        }
+        cache.removeAll();
     }
 }

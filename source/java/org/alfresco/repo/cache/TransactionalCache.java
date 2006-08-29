@@ -16,7 +16,6 @@
  */
 package org.alfresco.repo.cache;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
@@ -438,15 +437,8 @@ public class TransactionalCache<K extends Serializable, V extends Serializable>
             // and also serves to ensure that the shared cache will be ignored
             // for the remainder of the transaction
             txnData.isClearOn = true;
-            try
-            {
-                txnData.updatedItemsCache.removeAll();
-                txnData.removedItemsCache.removeAll();
-            }
-            catch (IOException e)
-            {
-                throw new AlfrescoRuntimeException("Failed to clear caches", e);
-            }
+            txnData.updatedItemsCache.removeAll();
+            txnData.removedItemsCache.removeAll();
         }
         else            // no transaction
         {

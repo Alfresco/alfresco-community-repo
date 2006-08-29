@@ -13,7 +13,7 @@
    <!-- EH Cache Manager to produce in-transaction EH Caches -->
    <!-- ==================================================== -->
    
-   <bean name="transactionalEHCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" >
+   <bean name="transactionalEHCacheManager" class="org.alfresco.repo.cache.EhCacheManagerFactoryBean" >
       <property name="configLocation">
          <value>classpath:alfresco/ehcache-transactional.xml</value>
       </property>

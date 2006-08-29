@@ -2223,4 +2223,29 @@ public class AVMServiceTest extends AVMServiceTestBase
             fail();
         }
     }
+    
+    /**
+     * Test case insensitivity.
+     */
+    public void testCaseInsensitive()
+    {
+        try
+        {
+            setupBasicTree();
+            try
+            {
+                fService.createFile("main:/a/b/c", "Foo").close();
+                fail();
+            }
+            catch (AVMExistsException e)
+            {
+                // Do nothing.
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
 }

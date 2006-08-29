@@ -19,6 +19,7 @@ package org.alfresco.repo.avm;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.apache.log4j.Logger;
 
 /**
  * Utility for going back and forth between the AVM world and
@@ -27,6 +28,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
  */
 public class AVMNodeConverter
 {
+    private static Logger fgLogger = Logger.getLogger(AVMNodeConverter.class);
+    
     /**
      * Get a NodeRef corresponding to the given path and version.
      * @param version The version id.
@@ -42,6 +45,7 @@ public class AVMNodeConverter
         }
         StoreRef storeRef = ToStoreRef(pathParts[0]);
         String translated = version + pathParts[1];
+        translated = translated.replaceAll("/+", ";");
         return new NodeRef(storeRef, translated);
     }
     
@@ -64,7 +68,13 @@ public class AVMNodeConverter
     {
         StoreRef store = nodeRef.getStoreRef();
         String translated = nodeRef.getId();
+        translated = translated.replace(';', '/');
         int off = translated.indexOf("/");
+        if (off == -1)
+        {
+            fgLogger.error(translated);
+            throw new AVMException("Bad Node Reference.");
+        }
         int version = Integer.parseInt(translated.substring(0, off));
         String path = translated.substring(off);
         Object [] result = new Object[2];

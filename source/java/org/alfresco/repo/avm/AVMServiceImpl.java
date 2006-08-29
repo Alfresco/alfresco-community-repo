@@ -263,9 +263,9 @@ public class AVMServiceImpl implements AVMService
      */
     public OutputStream createFile(final String path, final String name)
     {
-        if (path == null || name == null)
+        if (path == null || name == null || !FileNameValidator.IsValid(name))
         {
-            throw new AVMBadArgumentException("Illegal null argument.");
+            throw new AVMBadArgumentException("Illegal argument.");
         }
         class TxnCallback implements RetryingTransactionCallback
         {
@@ -281,7 +281,6 @@ public class AVMServiceImpl implements AVMService
         return doit.out;
     }
 
-    // TODO Eliminate this.
     /**
      * Create a file with content specified by the InputStream.
      * Guaranteed to be created atomically.
@@ -291,9 +290,9 @@ public class AVMServiceImpl implements AVMService
      */
     public void createFile(final String path, final String name, InputStream in)
     {
-        if (path == null || name == null || in == null)
+        if (path == null || name == null || in == null || !FileNameValidator.IsValid(name))
         {
-            throw new AVMBadArgumentException("Illegal null argument.");
+            throw new AVMBadArgumentException("Illegal argument.");
         }
         // Save the contents to temp space.
         final File temp;
@@ -339,9 +338,9 @@ public class AVMServiceImpl implements AVMService
      */
     public void createDirectory(final String path, final String name)
     {
-        if (path == null || name == null)
+        if (path == null || name == null || !FileNameValidator.IsValid(name))
         {
-            throw new AVMBadArgumentException("Illegal null argument.");
+            throw new AVMBadArgumentException("Illegal argument.");
         }
         class TxnCallback implements RetryingTransactionCallback
         {
@@ -362,9 +361,10 @@ public class AVMServiceImpl implements AVMService
      */
     public void createLayeredFile(final String srcPath, final String parent, final String name)
     {
-        if (srcPath == null || parent == null || name == null)
+        if (srcPath == null || parent == null || name == null || 
+            !FileNameValidator.IsValid(name))
         {
-            throw new AVMBadArgumentException("Illegal null argument.");
+            throw new AVMBadArgumentException("Illegal argument.");
         }
         class TxnCallback implements RetryingTransactionCallback
         {
@@ -385,9 +385,10 @@ public class AVMServiceImpl implements AVMService
      */
     public void createLayeredDirectory(final String srcPath, final String parent, final String name)
     {
-        if (srcPath == null || parent == null || name == null)
+        if (srcPath == null || parent == null || name == null ||
+            !FileNameValidator.IsValid(name))
         {
-            throw new AVMBadArgumentException("Illegal null argument.");
+            throw new AVMBadArgumentException("Illegal argument.");
         }
         class TxnCallback implements RetryingTransactionCallback
         {
@@ -406,9 +407,9 @@ public class AVMServiceImpl implements AVMService
      */
     public void createAVMStore(final String name)
     {
-        if (name == null)
+        if (name == null || !FileNameValidator.IsValid(name))
         {
-            throw new AVMBadArgumentException("Name is null.");
+            throw new AVMBadArgumentException("Bad Name.");
         }
         class TxnCallback implements RetryingTransactionCallback
         {
@@ -431,9 +432,10 @@ public class AVMServiceImpl implements AVMService
     public void createBranch(final int version, final String srcPath, final String dstPath,
             final String name)
     {
-        if (srcPath == null || dstPath == null || name == null)
+        if (srcPath == null || dstPath == null || name == null ||
+            !FileNameValidator.IsValid(name))
         {
-            throw new AVMBadArgumentException("Illegal null argument.");
+            throw new AVMBadArgumentException("Illegal argument.");
         }
         class TxnCallback implements RetryingTransactionCallback
         {
@@ -479,9 +481,10 @@ public class AVMServiceImpl implements AVMService
     public void rename(final String srcParent, final String srcName, final String dstParent,
             final String dstName)
     {
-        if (srcParent == null || srcName == null || dstParent == null || dstName == null)
+        if (srcParent == null || srcName == null || dstParent == null || dstName == null ||
+            !FileNameValidator.IsValid(dstName))
         {
-            throw new AVMBadArgumentException("Illegal null argument.");
+            throw new AVMBadArgumentException("Illegal argument.");
         }
         class TxnCallback implements RetryingTransactionCallback
         {

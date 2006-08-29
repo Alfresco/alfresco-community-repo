@@ -111,9 +111,9 @@
          </action>
          
          <action id="add_package_item">
-            <label-id>add</label-id>
+            <label-id>add_resource</label-id>
             <image>/images/icons/add_item.gif</image>
-            <action>null</action>
+            <action-listener>#{DialogManager.bean.prepareForAdd}</action-listener>
          </action>
          
          <action id="remove_package_item">

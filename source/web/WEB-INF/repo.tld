@@ -209,11 +209,17 @@
    
    <tag>
       <name>associationEditor</name>
-      <tag-class>org.alfresco.web.ui.repo.tag.AssociationEditorTag</tag-class>
+      <tag-class>org.alfresco.web.ui.repo.tag.property.AssociationEditorTag</tag-class>
       <body-content>JSP</body-content>
       
       <attribute>
-         <name>assocationName</name>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>associationName</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
@@ -329,11 +335,17 @@
    
    <tag>
       <name>childAssociationEditor</name>
-      <tag-class>org.alfresco.web.ui.repo.tag.ChildAssociationEditorTag</tag-class>
+      <tag-class>org.alfresco.web.ui.repo.tag.property.ChildAssociationEditorTag</tag-class>
       <body-content>JSP</body-content>
       
       <attribute>
-         <name>assocationName</name>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>associationName</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
@@ -716,6 +728,60 @@
       
       <attribute>
          <name>disabled</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
+   <tag>
+      <name>contentSelector</name>
+      <tag-class>org.alfresco.web.ui.repo.tag.ContentSelectorTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>availableOptionsSize</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>multiSelect</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>binding</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+
+      <attribute>
+         <name>style</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>

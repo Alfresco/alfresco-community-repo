@@ -106,8 +106,18 @@
       </a:column>
       --%>
    </a:richList>
+
+   <h:panelGrid columns="1" styleClass="paddingRow">
+      <r:actions context="#{DialogManager.bean.workItemNode}" value="#{DialogManager.bean.packageActionGroup}" />
+   </h:panelGrid>
    
-   <%-- Put the package actions here --%>
+   <h:panelGrid columns="1" rendered="#{DialogManager.bean.itemBeingAdded}" styleClass="selector" style="margin-top: 6px;">
+      <r:contentSelector value="#{DialogManager.bean.itemsToAdd}" styleClass="" />
+      <h:panelGrid columns="2">
+         <h:commandButton value="#{msg.add_to_list_button}" actionListener="#{DialogManager.bean.addPackageItems}" />
+         <h:commandButton value="#{msg.cancel}" actionListener="#{DialogManager.bean.cancelAddPackageItems}" />
+      </h:panelGrid>
+   </h:panelGrid>
    
 </a:panel>
 

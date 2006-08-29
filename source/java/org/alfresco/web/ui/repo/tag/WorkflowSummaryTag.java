@@ -32,7 +32,7 @@ public class WorkflowSummaryTag extends HtmlComponentTag
     */
    public String getComponentType()
    {
-      return "org.alfresco.faces.Workflow";
+      return "org.alfresco.faces.WorkflowSummary";
    }
 
    /**

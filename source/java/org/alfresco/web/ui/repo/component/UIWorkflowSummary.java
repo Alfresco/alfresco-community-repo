@@ -30,7 +30,7 @@ public class UIWorkflowSummary extends SelfRenderingComponent
    @Override
    public String getFamily()
    {
-      return "org.alfresco.faces.Workflow";
+      return "org.alfresco.faces.WorkflowSummary";
    }
    
    @Override

@@ -35,14 +35,6 @@
       <h:outputText value="#{r['bpm:taskId']}" />
    </a:column>
    
-   <%-- Type column --%>
-   <a:column style="text-align:left">
-      <f:facet name="header">
-         <a:sortLink label="#{msg.type}" value="type" styleClass="header"/>
-      </f:facet>
-      <h:outputText value="#{r.type}" />
-   </a:column>
-   
    <%-- Source column --%>
    <a:column style="text-align:left">
       <f:facet name="header">

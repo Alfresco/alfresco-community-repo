@@ -144,6 +144,10 @@
       <component-class>org.alfresco.web.ui.repo.component.UIUserGroupPicker</component-class>
    </component>
    
+   <component>
+      <component-type>org.alfresco.faces.WorkflowSummary</component-type>
+      <component-class>org.alfresco.web.ui.repo.component.UIWorkflowSummary</component-class>
+   </component>
    
    <!-- ==================== CONVERTERS ==================== -->
    <component>

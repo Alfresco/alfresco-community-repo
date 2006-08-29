@@ -194,8 +194,6 @@
             <dashlet id="workitems-completed" label-id="my_workitems_completed_title" description-id="my_workitems_completed_desc"
                   jsp="/jsp/workflow/workitems-completed-dashlet.jsp" allow-narrow="false" />
             <!-- TEMP! -->
-            <dashlet id="process-list" label="Workflows" description="List of workflows you may start"
-                  jsp="/jbpm/process_list.jsp" allow-narrow="true" />
             <dashlet id="my-docs-template" label="My Documents"
                   description="My Documents Template Page"
                   jsp="/jsp/dashboards/dashlets/my-docs.jsp" allow-narrow="true" />

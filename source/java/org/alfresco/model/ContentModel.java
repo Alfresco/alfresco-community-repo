@@ -77,6 +77,7 @@ public interface ContentModel
     static final QName PROP_SYS_VERSION_SCHEMA = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "versionSchema");
     static final QName PROP_SYS_VERSION_EDITION = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "versionEdition"); 
 
+    
     //
     // Content Model Definitions
     //
@@ -183,6 +184,12 @@ public interface ContentModel
     public static final QName PROP_ADDRESSEE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "addressee");
     public static final QName PROP_ADDRESSEES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "addressees");
     public static final QName PROP_SUBJECT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "subjectline");
+    
+    // countable aspect
+    public static final QName ASPECT_COUNTABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "countable");
+    public static final QName PROP_HITS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "hits");
+    public static final QName PROP_COUNTER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "counter");
+    
     
     //
     // Application Model Definitions

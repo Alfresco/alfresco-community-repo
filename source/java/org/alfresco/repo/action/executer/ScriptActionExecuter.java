@@ -32,9 +32,13 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
 
 /**
+ * Action to execute a JavaScript. The script has access to the default model.
+ * The actionedUponNodeRef is added to the default model as the 'document' and the owning
+ * NodeRef is added as the 'space'.
+ * 
  * @author Kevin Roast
  */
-public class ScriptActionExecutor extends ActionExecuterAbstractBase
+public class ScriptActionExecuter extends ActionExecuterAbstractBase
 {
     public static final String NAME = "script";
     public static final String PARAM_SCRIPTREF = "script-ref";

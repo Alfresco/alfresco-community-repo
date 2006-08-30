@@ -57,6 +57,10 @@
          <from-outcome>dashboard</from-outcome>
          <to-view-id>/jsp/browse/dashboard.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>addContent</from-outcome>
+         <to-view-id>/jsp/content/add-content-dialog.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <!-- rule to get to the Advanced Search page from anywhere -->
@@ -97,10 +101,6 @@
    <!-- Browse screen action outcomes -->
    <navigation-rule>
       <from-view-id>/jsp/browse/browse.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>addContent</from-outcome>
-         <to-view-id>/jsp/content/add-content-dialog.jsp</to-view-id>
-      </navigation-case>
       <!-- showDocDetails and showSpaceDetails moved to /jsp/* above -->
       <navigation-case>
          <from-outcome>checkoutFile</from-outcome>

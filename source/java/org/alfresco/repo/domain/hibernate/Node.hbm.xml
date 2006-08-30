@@ -160,10 +160,10 @@
             <column name="child_node_id" />
          </many-to-one>
          <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" unique-key="UIDX_CHILD_NAME" />
+         <property name="qname" column="qname" type="QName" length="255" not-null="true" />
       </natural-id>
       <property name="childNodeName" column="child_node_name" type="string" length="50" not-null="true" unique-key="UIDX_CHILD_NAME" />
       <property name="childNodeNameCrc" column="child_node_name_crc" type="long" not-null="true" unique-key="UIDX_CHILD_NAME" />
-      <property name="qname" column="qname" type="QName" length="255" not-null="true" />
       <property name="isPrimary" column="is_primary" />
       <property name="index" column="assoc_index" />
    </class>

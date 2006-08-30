@@ -189,16 +189,20 @@
             <dashlet id="getting-started" label-id="dashlet_gettingstarted_label"
                   description-id="dashlet_gettingstarted_desc"
                   jsp="/jsp/dashboards/dashlets/getting-started.jsp" allow-narrow="false" />
+            <dashlet id="my-docs-template" label-id="dashlet_mydocuments"
+                  description-id="dashlet_mydocuments_desc"
+                  jsp="/jsp/dashboards/dashlets/my-docs.jsp" allow-narrow="true" />
+            <dashlet id="content-checkedout" label-id="dashlet_checkedoutdocs"
+                  description-id="dashlet_checkedoutdocs_desc"
+                  jsp="/jsp/dashboards/dashlets/checkedout-docs.jsp" allow-narrow="false" />
+            <dashlet id="my-images" label-id="dashlet_myimages"
+                  description-id="dashlet_myimages_desc"
+                  jsp="/jsp/dashboards/dashlets/my-images.jsp" allow-narrow="false" />
             <dashlet id="tasks-todo" label-id="my_tasks_todo_title" description-id="my_tasks_todo_desc"
                   jsp="/jsp/workflow/tasks-todo-dashlet.jsp" allow-narrow="false" />
             <dashlet id="tasks-completed" label-id="my_tasks_completed_title" description-id="my_tasks_completed_desc"
                   jsp="/jsp/workflow/tasks-completed-dashlet.jsp" allow-narrow="false" />
             <!-- TEMP! -->
-            <dashlet id="my-docs-template" label="My Documents"
-                  description="My Documents Template Page"
-                  jsp="/jsp/dashboards/dashlets/my-docs.jsp" allow-narrow="true" />
-            <dashlet id="content-checkedout" label="My Checkedout Content" description="List of the content checked out to you"
-                  jsp="/jsp/dashboards/dashlets/content-checkedout.jsp" allow-narrow="false" />
             <dashlet id="calculator" label="Calculator" description="A small calculator applet"
                   jsp="/jsp/dashboards/dashlets/calculator.jsp" allow-narrow="true" />
             <dashlet id="calendar" label="Calendar" description="A small calendar application"

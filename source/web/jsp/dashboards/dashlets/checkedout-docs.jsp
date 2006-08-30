@@ -17,4 +17,4 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
 <%-- Note that this template is loaded from the classpath --%>
-<r:template template="/alfresco/templates/my_docs.ftl" />
+<r:template template="/alfresco/templates/checkedout_docs.ftl" />

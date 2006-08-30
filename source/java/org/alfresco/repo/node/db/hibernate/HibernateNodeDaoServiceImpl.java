@@ -383,12 +383,12 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
          * if the association is recreated subsequently.
          */
         
-        String uuid = childNode.getUuid();
+        String tempUuid = GUID.generate();
         
         ChildAssoc assoc = new ChildAssocImpl();
         assoc.setTypeQName(assocTypeQName);
-        assoc.setChildNodeName(getShortName(uuid));
-        assoc.setChildNodeNameCrc(getCrc(uuid));
+        assoc.setChildNodeName(getShortName(tempUuid));
+        assoc.setChildNodeNameCrc(getCrc(tempUuid));
         assoc.setQname(qname);
         assoc.setIsPrimary(isPrimary);
         assoc.buildAssociation(parentNode, childNode);
@@ -424,7 +424,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         String childNameNew = null;
         if (childName == null)
         {
-            childNameNew = childAssoc.getChild().getUuid();
+            childNameNew = childAssoc.getId().toString();
         }
         else
         {

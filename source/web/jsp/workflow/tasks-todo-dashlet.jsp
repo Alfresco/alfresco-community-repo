@@ -3,7 +3,7 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<a:richList id="completed-work-items-list" viewMode="details" value="#{WorkflowBean.workItemsCompleted}" var="r"
+<a:richList id="tasks-todo-list" viewMode="details" value="#{WorkflowBean.tasksToDo}" var="r"
             styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" 
             altRowStyleClass="recordSetRowAlt" width="100%" pageSize="10"
             initialSortColumn="name" initialSortDescending="true">
@@ -14,9 +14,17 @@
          <a:sortLink label="#{msg.title}" value="name" mode="case-insensitive" styleClass="header"/>
       </f:facet>
       <f:facet name="small-icon">
-         <h:graphicImage url="/images/icons/completed_workflow_item.gif" />
+         <h:panelGroup>
+            <a:actionLink value="#{r.name}" image="/images/icons/workflow_task.gif" showLink="false"
+                          actionListener="#{DialogManager.setupParameters}" action="dialog:manageTask">
+               <f:param name="id" value="#{r.id}" />
+            </a:actionLink>
+         </h:panelGroup>
       </f:facet>
-      <h:outputText value="#{r.name}" />
+      <a:actionLink value="#{r.name}" actionListener="#{DialogManager.setupParameters}" 
+                    action="dialog:manageTask">
+         <f:param name="id" value="#{r.id}" />
+      </a:actionLink>
    </a:column>
    
    <%-- Task id column --%>
@@ -35,22 +43,30 @@
       <h:outputText value="#{r.sourceSpaceName}" />
    </a:column>
    
-   <%-- Completed date column --%>
+   <%-- Due date column --%>
    <a:column style="text-align:left">
       <f:facet name="header">
-         <a:sortLink label="#{msg.completed_on}" value="bpm:completionDate" styleClass="header"/>
+         <a:sortLink label="#{msg.due_date}" value="bpm:startDate" styleClass="header"/>
       </f:facet>
-      <h:outputText value="#{r['bpm:completionDate']}">
+      <h:outputText value="#{r['bpm:dueDate']}">
          <a:convertXMLDate type="both" pattern="#{msg.date_pattern}" />
       </h:outputText>
    </a:column>
    
-   <%-- Outcome column --%>
+   <%-- Status column --%>
    <a:column style="text-align:left">
       <f:facet name="header">
-         <a:sortLink label="#{msg.outcome}" value="outcome" styleClass="header"/>
+         <a:sortLink label="#{msg.status}" value="bpm:status" styleClass="header"/>
       </f:facet>
-      <h:outputText value="#{r.outcome}" />
+      <h:outputText value="#{r['bpm:status']}" />
+   </a:column>
+   
+   <%-- Priority column --%>
+   <a:column style="text-align:left">
+      <f:facet name="header">
+         <a:sortLink label="#{msg.priority}" value="bpm:priority" styleClass="header"/>
+      </f:facet>
+      <h:outputText value="#{r['bpm:priority']}" />
    </a:column>
    
    <%-- Actions column --%>
@@ -58,11 +74,9 @@
       <f:facet name="header">
          <h:outputText value="#{msg.actions}"/>
       </f:facet>
-      <r:actions value="dashlet_completed_actions" context="#{r}" showLink="false" 
+      <r:actions value="dashlet_todo_actions" context="#{r}" showLink="false" 
                  styleClass="inlineAction" />
    </a:column>
    
    <a:dataPager styleClass="pager" />
 </a:richList>
-
-<h:message for="completed-work-items-list" styleClass="statusMessage" />

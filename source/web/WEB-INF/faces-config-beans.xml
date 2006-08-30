@@ -1704,10 +1704,10 @@
    
    <managed-bean>
       <description>
-         The bean that backs up the Manage WorkItem Dialog
+         The bean that backs up the Manage Task Dialog
       </description>
-      <managed-bean-name>ManageWorkItemDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.workflow.ManageWorkItemDialog</managed-bean-class>
+      <managed-bean-name>ManageTaskDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.workflow.ManageTaskDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1824,10 +1824,10 @@
    
    <managed-bean>
       <description>
-         The bean that backs up the Reassign Work Item Dialog
+         The bean that backs up the Reassign Task Dialog
       </description>
-      <managed-bean-name>ReassignWorkItemDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.workflow.ReassignWorkItemDialog</managed-bean-class>
+      <managed-bean-name>ReassignTaskDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.workflow.ReassignTaskDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>

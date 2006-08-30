@@ -39,20 +39,20 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Bean implementation for the "Manage WorkItem" dialog.
+ * Bean implementation for the "Manage Task" dialog.
  * 
  * @author gavinc
  */
-public class ManageWorkItemDialog extends BaseDialogBean
+public class ManageTaskDialog extends BaseDialogBean
 {
    protected WorkflowService workflowService;
-   protected Node workItemNode;
-   protected WorkflowTask workItem;
+   protected Node taskNode;
+   protected WorkflowTask task;
    protected WorkflowInstance workflowInstance;
    protected WorkflowTransition[] transitions;
    protected NodeRef workflowPackage;
    protected List<Node> resources;
-   protected WorkItemCompleteResolver completeResolver = new WorkItemCompleteResolver();
+   protected TaskCompleteResolver completeResolver = new TaskCompleteResolver();
    protected UIRichList packageItemsRichList;
    protected List<String> packageItemsToAdd;
    protected List<String> packageItemsToRemove;
@@ -62,7 +62,7 @@ public class ManageWorkItemDialog extends BaseDialogBean
    protected static final String ID_PREFIX = "transition_";
    protected static final String CLIENT_ID_PREFIX = "dialog:" + ID_PREFIX;
    
-   private static final Log logger = LogFactory.getLog(ManageWorkItemDialog.class);
+   private static final Log logger = LogFactory.getLog(ManageTaskDialog.class);
 
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -73,8 +73,8 @@ public class ManageWorkItemDialog extends BaseDialogBean
       super.init(parameters);
       
       // reset variables
-      this.workItem = null;
-      this.workItemNode = null;
+      this.task = null;
+      this.taskNode = null;
       this.workflowInstance = null;
       this.transitions = null;
       this.workflowPackage = null;
@@ -90,20 +90,20 @@ public class ManageWorkItemDialog extends BaseDialogBean
       
       // get the task details
       String taskId = this.parameters.get("id");
-      this.workItem = this.workflowService.getTaskById(taskId);
+      this.task = this.workflowService.getTaskById(taskId);
       
-      if (this.workItem != null)
+      if (this.task != null)
       {
-         // setup a transient node to represent the work item we're managing
-         WorkflowTaskDefinition taskDef = this.workItem.definition;
-         this.workItemNode = new TransientNode(taskDef.metadata.getName(),
-                  "task_" + System.currentTimeMillis(), this.workItem.properties);
+         // setup a transient node to represent the task we're managing
+         WorkflowTaskDefinition taskDef = this.task.definition;
+         this.taskNode = new TransientNode(taskDef.metadata.getName(),
+                  "task_" + System.currentTimeMillis(), this.task.properties);
          
-         // get access to the workflow instance for the work item
-         this.workflowInstance = this.workItem.path.instance;
+         // get access to the workflow instance for the task
+         this.workflowInstance = this.task.path.instance;
          
          // setup the workflow package for the task
-         Serializable obj = this.workItem.properties.get(WorkflowModel.ASSOC_PACKAGE);
+         Serializable obj = this.task.properties.get(WorkflowModel.ASSOC_PACKAGE);
          // TODO: remove this workaroud where JBPM may return a String and not the NodeRef
          if (obj instanceof NodeRef)
          {
@@ -115,8 +115,8 @@ public class ManageWorkItemDialog extends BaseDialogBean
          }
          
          if (logger.isDebugEnabled())
-            logger.debug("Found workflow package for work item '" + 
-                  this.workItem.id + "': " + this.workflowPackage );
+            logger.debug("Found workflow package for task '" + 
+                  this.task.id + "': " + this.workflowPackage );
       }
    }
    
@@ -125,10 +125,10 @@ public class ManageWorkItemDialog extends BaseDialogBean
          throws Exception
    {
       if (logger.isDebugEnabled())
-         logger.debug("Saving task: " + this.workItem.id);
+         logger.debug("Saving task: " + this.task.id);
       
       // prepare the edited parameters for saving
-      Map<QName, Serializable> params = WorkflowBean.prepareWorkItemParams(this.workItemNode);
+      Map<QName, Serializable> params = WorkflowBean.prepareTaskParams(this.taskNode);
       
       // remove any items the user selected to remove 
       if (this.workflowPackage != null && this.packageItemsToRemove != null && 
@@ -155,7 +155,7 @@ public class ManageWorkItemDialog extends BaseDialogBean
       }
       
       // update the task with the updated parameters
-      this.workflowService.updateTask(this.workItem.id, params, null, null);
+      this.workflowService.updateTask(this.task.id, params, null, null);
       
       return outcome;
    }
@@ -165,11 +165,11 @@ public class ManageWorkItemDialog extends BaseDialogBean
    {
       List<DialogButtonConfig> buttons = null;
 
-      if (this.workItem != null)
+      if (this.task != null)
       {
-         // get the transitions available from this work item and 
+         // get the transitions available from this task and 
          // show them in the dialog as additional buttons
-         this.transitions = this.workItem.path.node.transitions;
+         this.transitions = this.task.path.node.transitions;
 
          if (this.transitions != null)
          {
@@ -207,7 +207,7 @@ public class ManageWorkItemDialog extends BaseDialogBean
       String outcome = getDefaultFinishOutcome();
       
       if (logger.isDebugEnabled())
-         logger.debug("Transitioning work item: " + this.workItemNode.getId());
+         logger.debug("Transitioning task: " + this.taskNode.getId());
       
       // to find out which transition button was pressed we need
       // to look for the button's id in the request parameters,
@@ -237,19 +237,19 @@ public class ManageWorkItemDialog extends BaseDialogBean
             tx.begin();
             
             // prepare the edited parameters for saving
-            Map<QName, Serializable> params = WorkflowBean.prepareWorkItemParams(this.workItemNode);
+            Map<QName, Serializable> params = WorkflowBean.prepareTaskParams(this.taskNode);
       
             // update the task with the updated parameters
-            this.workflowService.updateTask(this.workItem.id, params, null, null);
+            this.workflowService.updateTask(this.task.id, params, null, null);
          
             // signal the selected transition to the workflow task
-            this.workflowService.endTask(this.workItem.id, selectedTransition);
+            this.workflowService.endTask(this.task.id, selectedTransition);
             
             // commit the changes
             tx.commit();
             
             if (logger.isDebugEnabled())
-               logger.debug("Ended work item with transition: " + selectedTransition);
+               logger.debug("Ended task with transition: " + selectedTransition);
          }
          catch (Throwable e)
          {
@@ -428,13 +428,13 @@ public class ManageWorkItemDialog extends BaseDialogBean
    }
    
    /**
-    * Returns the Node representing the work item
+    * Returns the Node representing the task
     * 
     * @return The node
     */
-   public Node getWorkItemNode()
+   public Node getTaskNode()
    {
-      return this.workItemNode;
+      return this.taskNode;
    }
    
    /**
@@ -454,7 +454,7 @@ public class ManageWorkItemDialog extends BaseDialogBean
     */
    public String getPackageActionGroup()
    {
-      return (String)this.workItem.properties.get(
+      return (String)this.task.properties.get(
             WorkflowModel.PROP_PACKAGE_ACTION_GROUP);
    }
    
@@ -465,12 +465,12 @@ public class ManageWorkItemDialog extends BaseDialogBean
     */
    public String getPackageItemActionGroup()
    {
-      return (String)this.workItem.properties.get(
+      return (String)this.task.properties.get(
             WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP);
    }
    
    /**
-    * Returns a list of resources associated with this work item
+    * Returns a list of resources associated with this task
     * i.e. the children of the workflow package
     * 
     * @return The list of nodes
@@ -568,7 +568,7 @@ public class ManageWorkItemDialog extends BaseDialogBean
       }
       else if (logger.isDebugEnabled())
       {
-         logger.debug("Failed to find workflow package for work item: " + this.workItem.id);
+         logger.debug("Failed to find workflow package for task: " + this.task.id);
       }
       
       return this.resources;
@@ -610,13 +610,13 @@ public class ManageWorkItemDialog extends BaseDialogBean
    /**
     * Property resolver to determine if the given node has been flagged as complete
     */
-   protected class WorkItemCompleteResolver implements NodePropertyResolver
+   protected class TaskCompleteResolver implements NodePropertyResolver
    {
       public Object get(Node node)
       {
          String result = Application.getMessage(FacesContext.getCurrentInstance(), "no");
          
-         List<NodeRef> completedItems = (List<NodeRef>)workItem.properties.get(
+         List<NodeRef> completedItems = (List<NodeRef>)task.properties.get(
                WorkflowModel.PROP_COMPLETED_ITEMS);
          
          if (completedItems != null && completedItems.size() > 0 && 

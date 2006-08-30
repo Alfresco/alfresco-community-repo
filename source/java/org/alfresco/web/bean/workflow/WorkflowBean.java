@@ -39,8 +39,8 @@ public class WorkflowBean
 {
    protected NodeService nodeService;
    protected WorkflowService workflowService;
-   protected List<Node> workItems;
-   protected List<Node> completedWorkItems;
+   protected List<Node> tasks;
+   protected List<Node> completedTasks;
    
    private static final Log logger = LogFactory.getLog(WorkflowBean.class);
    
@@ -48,12 +48,12 @@ public class WorkflowBean
    // Bean Getters and Setters
    
    /**
-    * Returns a list of nodes representing the to do work items the 
+    * Returns a list of nodes representing the to do tasks the 
     * current user has.
     * 
-    * @return List of to do work items
+    * @return List of to do tasks
     */
-   public List<Node> getWorkItemsToDo()
+   public List<Node> getTasksToDo()
    {
       // get the current username
       FacesContext context = FacesContext.getCurrentInstance();
@@ -71,14 +71,14 @@ public class WorkflowBean
                userName, WorkflowTaskState.IN_PROGRESS);
          
          // create a list of transient nodes to represent
-         this.workItems = new ArrayList<Node>(tasks.size());
+         this.tasks = new ArrayList<Node>(tasks.size());
          for (WorkflowTask task : tasks)
          {
-            Node node = createWorkItem(task);
-            this.workItems.add(node);
+            Node node = createTask(task);
+            this.tasks.add(node);
             
             if (logger.isDebugEnabled())
-               logger.debug("Added to do work item: " + node);
+               logger.debug("Added to do task: " + node);
          }
          
          // commit the changes
@@ -88,19 +88,19 @@ public class WorkflowBean
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage("Failed to get to do work items: " + e.toString(), e);
+         Utils.addErrorMessage("Failed to get to do tasks: " + e.toString(), e);
       }
       
-      return this.workItems;
+      return this.tasks;
    }
    
    /**
-    * Returns a list of nodes representing the completed work items the 
+    * Returns a list of nodes representing the completed tasks the 
     * current user has.
     * 
-    * @return List of completed work items
+    * @return List of completed tasks
     */
-   public List<Node> getWorkItemsCompleted()
+   public List<Node> getTasksCompleted()
    {
       // get the current username
       FacesContext context = FacesContext.getCurrentInstance();
@@ -118,14 +118,14 @@ public class WorkflowBean
                userName, WorkflowTaskState.COMPLETED);
          
          // create a list of transient nodes to represent
-         this.completedWorkItems = new ArrayList<Node>(tasks.size());
+         this.completedTasks = new ArrayList<Node>(tasks.size());
          for (WorkflowTask task : tasks)
          {
-            Node node = createWorkItem(task);
-            this.completedWorkItems.add(node);
+            Node node = createTask(task);
+            this.completedTasks.add(node);
             
             if (logger.isDebugEnabled())
-               logger.debug("Added completed work item: " + node);
+               logger.debug("Added completed task: " + node);
          }
          
          // commit the changes
@@ -135,10 +135,10 @@ public class WorkflowBean
       {
          // rollback the transaction
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage("Failed to get completed work items: " + e.toString(), e);
+         Utils.addErrorMessage("Failed to get completed tasks: " + e.toString(), e);
       }
       
-      return this.completedWorkItems;
+      return this.completedTasks;
    }
    
    /**
@@ -164,7 +164,7 @@ public class WorkflowBean
    // ------------------------------------------------------------------------------
    // Helper methods
 
-   public static Map<QName, Serializable> prepareWorkItemParams(Node node)
+   public static Map<QName, Serializable> prepareTaskParams(Node node)
    {
       Map<QName, Serializable> params = new HashMap<QName, Serializable>();
       
@@ -211,7 +211,7 @@ public class WorkflowBean
     * 
     * @param task The task to create a representation of
     */
-   protected TransientMapNode createWorkItem(WorkflowTask task)
+   protected TransientMapNode createTask(WorkflowTask task)
    {
       // get the type of the task
       WorkflowTaskDefinition taskDef = task.definition;

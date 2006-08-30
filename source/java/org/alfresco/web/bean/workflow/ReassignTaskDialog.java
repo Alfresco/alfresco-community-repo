@@ -29,18 +29,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Bean implementation for the "Reassign Work Item" dialog
+ * Bean implementation for the "Reassign Task" dialog
  * 
  * @author gavinc
  */
-public class ReassignWorkItemDialog extends BaseDialogBean
+public class ReassignTaskDialog extends BaseDialogBean
 {
-   protected String workItemId;
+   protected String taskId;
    
    protected WorkflowService workflowService;
    protected PersonService personService;
    
-   private static final Log logger = LogFactory.getLog(ReassignWorkItemDialog.class);   
+   private static final Log logger = LogFactory.getLog(ReassignTaskDialog.class);   
 
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -50,10 +50,10 @@ public class ReassignWorkItemDialog extends BaseDialogBean
    {
       super.init(parameters);
       
-      this.workItemId = this.parameters.get("workitem-id");
-      if (this.workItemId == null || this.workItemId.length() == 0)
+      this.taskId = this.parameters.get("task-id");
+      if (this.taskId == null || this.taskId.length() == 0)
       {
-         throw new IllegalArgumentException("Reassign workitem dialog called without task id");
+         throw new IllegalArgumentException("Reassign task dialog called without task id");
       }
    }
    
@@ -62,7 +62,7 @@ public class ReassignWorkItemDialog extends BaseDialogBean
          throws Exception
    {
       if (logger.isDebugEnabled())
-         logger.debug("Reassigning work item with id: " + this.workItemId);
+         logger.debug("Reassigning task with id: " + this.taskId);
       
       UIComponent picker = context.getViewRoot().findComponent("dialog:dialog-body:user-picker");
       
@@ -76,7 +76,7 @@ public class ReassignWorkItemDialog extends BaseDialogBean
             String userName = user[0];
             Map<QName, Serializable> params = new HashMap<QName, Serializable>(1);
             params.put(ContentModel.PROP_OWNER, userName);
-            this.workflowService.updateTask(this.workItemId, params, null, null);
+            this.workflowService.updateTask(this.taskId, params, null, null);
          }
          else
          {
@@ -91,7 +91,7 @@ public class ReassignWorkItemDialog extends BaseDialogBean
       }
       
       if (logger.isDebugEnabled())
-         logger.debug("Reassigning work item with id: " + this.workItemId);
+         logger.debug("Reassigning task with id: " + this.taskId);
       
       return outcome;
    }
@@ -99,7 +99,7 @@ public class ReassignWorkItemDialog extends BaseDialogBean
    @Override
    protected String getErrorMessageId()
    {
-      return "error_reassign_workitem";
+      return "error_reassign_task";
    }
    
    // ------------------------------------------------------------------------------

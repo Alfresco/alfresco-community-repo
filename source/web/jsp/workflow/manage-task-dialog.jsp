@@ -19,11 +19,11 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<a:panel id="props-panel" label="#{msg.workitem_properties}" 
+<a:panel id="props-panel" label="#{msg.task_properties}" 
          border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
    
-   <r:propertySheetGrid id="work-item-props" value="#{DialogManager.bean.workItemNode}" 
-                       var="workItemProps" columns="1" externalConfig="true" />
+   <r:propertySheetGrid id="task-props" value="#{DialogManager.bean.taskNode}"
+                       var="taskProps" columns="1" externalConfig="true" />
 </a:panel>
 
 <h:outputText styleClass="paddingRow" value="&nbsp;" escape="false" />
@@ -108,7 +108,7 @@
    </a:richList>
 
    <h:panelGrid columns="1" styleClass="paddingRow">
-      <r:actions context="#{DialogManager.bean.workItemNode}" value="#{DialogManager.bean.packageActionGroup}" />
+      <r:actions context="#{DialogManager.bean.taskNode}" value="#{DialogManager.bean.packageActionGroup}" />
    </h:panelGrid>
    
    <h:panelGrid columns="1" rendered="#{DialogManager.bean.itemBeingAdded}" styleClass="selector" style="margin-top: 6px;">

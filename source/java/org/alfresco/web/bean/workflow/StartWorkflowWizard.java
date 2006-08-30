@@ -115,7 +115,7 @@ public class StartWorkflowWizard extends BaseWizardBean
          logger.debug("Starting workflow: " + this.selectedWorkflow);
       
       // prepare the parameters from the current state of the property sheet
-      Map<QName, Serializable> params = WorkflowBean.prepareWorkItemParams(this.startTaskNode);
+      Map<QName, Serializable> params = WorkflowBean.prepareTaskParams(this.startTaskNode);
       
       // create a workflow package for the attached items and add them
       if (this.packageItemsToAdd.size() > 0)
@@ -472,7 +472,7 @@ public class StartWorkflowWizard extends BaseWizardBean
    }
 
    /**
-    * Returns a list of resources associated with this work item
+    * Returns a list of resources associated with this task
     * i.e. the children of the workflow package
     * 
     * @return The list of nodes

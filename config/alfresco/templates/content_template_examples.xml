@@ -7,8 +7,8 @@
     </view:aspects>
     <view:properties>
       <app:editInline>true</app:editInline>
-      <cm:description>Displays basic information about the current document</cm:description>
-      <cm:content>contentUrl=classpath:alfresco/templates/content/examples/doc_info.ftl|mimetype=text/plain|size=636|encoding=UTF-8</cm:content>
+      <cm:description>Displays useful information about the current document</cm:description>
+      <cm:content>contentUrl=classpath:alfresco/templates/content/examples/doc_info.ftl|mimetype=text/plain|size=1884|encoding=UTF-8</cm:content>
       <cm:title>doc_info.ftl</cm:title>
       <cm:name>doc_info.ftl</cm:name>
     </view:properties>
@@ -84,20 +84,6 @@
     </view:properties>
     <view:associations></view:associations>
   </cm:content>
-  <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:RSS_2.0_recent_docs.ftl">
-    <view:aspects>
-      <cm:titled></cm:titled>
-      <app:inlineeditable></app:inlineeditable>
-    </view:aspects>
-    <view:properties>
-      <app:editInline>true</app:editInline>
-      <cm:description>Renders a valid RSS2.0 XML document showing the documents in the current space created or modified in the last 7 days. The template should be configured to use the appropriate server and port before use.</cm:description>
-      <cm:content>contentUrl=classpath:alfresco/templates/content/examples/RSS_2.0_recent_docs.ftl|mimetype=text/plain|size=1917|encoding=UTF-8</cm:content>
-      <cm:title>RSS_2.0_recent_docs.ftl</cm:title>
-      <cm:name>RSS_2.0_recent_docs.ftl</cm:name>
-    </view:properties>
-    <view:associations></view:associations>
-  </cm:content>
   <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:recent_docs.ftl">
     <view:aspects>
       <cm:titled></cm:titled>
@@ -137,20 +123,6 @@
       <cm:content>contentUrl=classpath:alfresco/templates/content/examples/my_docs_inline.ftl|mimetype=text/plain|size=652|encoding=UTF-8</cm:content>
       <cm:title>my_docs_inline.ftl</cm:title>
       <cm:name>my_docs_inline.ftl</cm:name>
-    </view:properties>
-    <view:associations></view:associations>
-  </cm:content>
-  <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:xpath_search.ftl">
-    <view:aspects>
-      <cm:titled></cm:titled>
-      <app:inlineeditable></app:inlineeditable>
-    </view:aspects>
-    <view:properties>
-      <app:editInline>true</app:editInline>
-      <cm:description>Example of using XPath and Lucene searches within a template.</cm:description>
-      <cm:content>contentUrl=classpath:alfresco/templates/content/examples/xpath_search.ftl|mimetype=text/plain|size=1109|encoding=UTF-8</cm:content>
-      <cm:title>xpath_search.ftl</cm:title>
-      <cm:name>xpath_search.ftl</cm:name>
     </view:properties>
     <view:associations></view:associations>
   </cm:content>

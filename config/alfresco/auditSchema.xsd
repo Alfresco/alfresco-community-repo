@@ -32,7 +32,9 @@
     
     <!-- Abstract Filter entry -->
     
-    <xs:complexType name="Filter" abstract="true"/>
+    <xs:complexType name="Filter" abstract="true">
+         <xs:attribute name="invert" type="xs:boolean" default="false"/>
+    </xs:complexType>
     
     <!-- Simple Filter entry -->
     <!--
@@ -47,17 +49,17 @@
         A simple value (intended for use with non node arguments)
     
     -->
-    <xs:simpleType name="KeyFilterType">
+    <xs:simpleType name="KeyFilterMode">
         <xs:restriction base="xs:string">
             <xs:enumeration value="path"/>
             <xs:enumeration value="type"/>
             <xs:enumeration value="aspect"/>
-            <xs:enumeration value="id"/>
+            <xs:enumeration value="node_ref"/>
             <xs:enumeration value="all"/>
             <xs:enumeration value="xpath"/>
             <xs:enumeration value="value"/>
-            <xs:enumeration value="protocol"/>
-            <xs:enumeration value="store"/>
+            <xs:enumeration value="store_protocol"/>
+            <xs:enumeration value="store_identifier"/>
         </xs:restriction>
     </xs:simpleType>
     
@@ -102,7 +104,7 @@
                 <xs:sequence>
                     <xs:element name="Expression" type="xs:string"/>
                 </xs:sequence>
-                <xs:attribute name="type" type="a:KeyFilterType" use="required"/>
+                <xs:attribute name="mode" type="a:KeyFilterMode" use="required"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -196,6 +198,7 @@
             <xs:extension base="a:MandatoryAuditEntry">
                 <xs:sequence>
                     <xs:element name="Service" type="a:Service" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="Application" type="a:Application" minOccurs="0" maxOccurs="unbounded"/>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>

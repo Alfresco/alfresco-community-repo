@@ -124,4 +124,21 @@
         name="org.alfresco.repo.domain.hibernate.DbAuthorityImpl.externalKeys" 
         maxElementsInMemory="5000"
         />
+    <!-- Audit caches -->
+      <cache 
+        name="org.alfresco.repo.audit.hibernate.AuditConfigImpl" 
+        maxElementsInMemory="2"
+        eternal="true" 
+        overflowToDisk="false"/>
+     <cache 
+        name="org.alfresco.repo.audit.hibernate.AuditDateImpl" 
+        maxElementsInMemory="2"
+        eternal="true" 
+        overflowToDisk="false"/>
+     <cache 
+        name="org.alfresco.repo.audit.hibernate.AuditSourceImpl" 
+        maxElementsInMemory="2000"
+        eternal="true" 
+        overflowToDisk="false"/>
+    
 </ehcache>

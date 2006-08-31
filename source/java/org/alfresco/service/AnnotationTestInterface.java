@@ -21,6 +21,7 @@ package org.alfresco.service;
  * 
  * @author Andy Hind
  */
+@PublicService
 public interface AnnotationTestInterface
 {
     @Auditable()

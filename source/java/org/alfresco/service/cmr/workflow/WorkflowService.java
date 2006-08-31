@@ -21,6 +21,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -32,6 +34,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author davidc
  */
+@PublicService
 public interface WorkflowService
 {
     //
@@ -46,6 +49,7 @@ public interface WorkflowService
      * @param  mimetype  the mimetype of the workflow definition
      * @return  workflow deployment descriptor
      */
+    @Auditable(parameters = {"engineId", "workflowDefinition", "mimetype"})
     public WorkflowDeployment deployDefinition(String engineId, InputStream workflowDefinition, String mimetype);
     
     /**
@@ -57,6 +61,7 @@ public interface WorkflowService
      * @param workflowDefinition  the content object containing the definition
      * @return  workflow deployment descriptor
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"workflowDefinition"})
     public WorkflowDeployment deployDefinition(NodeRef workflowDefinition);
 
     /**
@@ -70,6 +75,7 @@ public interface WorkflowService
      * @param  mimetype  the mimetype of the definition
      * @return  true => already deployed
      */
+    @Auditable(parameters = {"engineId", "workflowDefinition", "mimetype"})
     public boolean isDefinitionDeployed(String engineId, InputStream workflowDefinition, String mimetype);
     
     /**
@@ -79,6 +85,7 @@ public interface WorkflowService
      *  
      * @param workflowDefinitionId  the id of the definition to undeploy
      */
+    @Auditable(parameters = {"workflowDefinitionId"})
     public void undeployDefinition(String workflowDefinitionId);
 
     /**
@@ -86,6 +93,7 @@ public interface WorkflowService
      * 
      * @return  the deployed workflow definitions
      */
+    @Auditable
     public List<WorkflowDefinition> getDefinitions();
     
     /**
@@ -94,6 +102,7 @@ public interface WorkflowService
      * @param workflowDefinitionId  the workflow definition id
      * @return  the deployed workflow definition
      */
+    @Auditable(parameters = {"workflowDefinitionId"})
     public WorkflowDefinition getDefinitionById(String workflowDefinitionId);
 
     /**
@@ -117,6 +126,7 @@ public interface WorkflowService
      * @param parameters  the initial set of parameters used to populate the "Start Task" properties
      * @return  the initial workflow path
      */
+    @Auditable(parameters = {"workflowDefinitionId", "parameters"})
     public WorkflowPath startWorkflow(String workflowDefinitionId, Map<QName, Serializable> parameters);
 
     /**
@@ -126,6 +136,7 @@ public interface WorkflowService
      * @param templateDefinition  the node representing the Start Task properties
      * @return  the initial workflow path
      */
+    @Auditable(parameters = {"templateDefinition"})
     public WorkflowPath startWorkflowFromTemplate(NodeRef templateDefinition);
     
     /**
@@ -134,6 +145,7 @@ public interface WorkflowService
      * @param workflowDefinitionId  the workflow definition id
      * @return  the list of "in-fligth" workflow instances
      */
+    @Auditable(parameters = {"workflowDefinitionId"})
     public List<WorkflowInstance> getActiveWorkflows(String workflowDefinitionId);
     
     /**
@@ -142,6 +154,7 @@ public interface WorkflowService
      * @param workflowId  workflow instance id
      * @return  the list of workflow paths
      */
+    @Auditable(parameters = {"workflowId"})
     public List<WorkflowPath> getWorkflowPaths(String workflowId);
     
     /**
@@ -150,6 +163,7 @@ public interface WorkflowService
      * @param workflowId  the workflow instance to cancel
      * @return  an updated representation of the workflow instance
      */
+    @Auditable(parameters = {"workflowId"})
     public WorkflowInstance cancelWorkflow(String workflowId);
 
     /**
@@ -159,6 +173,7 @@ public interface WorkflowService
      * @param transition  the transition to follow (or null, for the default transition)
      * @return  the updated workflow path
      */
+    @Auditable(parameters = {"pathId", "transitionId"})
     public WorkflowPath signal(String pathId, String transitionId);
 
     /**
@@ -167,6 +182,7 @@ public interface WorkflowService
      * @param pathId  the path id
      * @return  the list of associated tasks
      */
+    @Auditable(parameters = {"pathId"})
     public List<WorkflowTask> getTasksForWorkflowPath(String pathId);
     
 
@@ -180,6 +196,7 @@ public interface WorkflowService
      * @param taskId  the task id
      * @return  the task
      */
+    @Auditable(parameters = {"taskId"})
     public WorkflowTask getTaskById(String taskId);
     
     /**
@@ -189,6 +206,7 @@ public interface WorkflowService
      * @param state  filter by specified workflow task state
      * @return  the list of assigned tasks
      */
+    @Auditable(parameters = {"authority", "state"})
     public List<WorkflowTask> getAssignedTasks(String authority, WorkflowTaskState state);
     
     /**
@@ -197,6 +215,7 @@ public interface WorkflowService
      * @param authority   the authority
      * @return  the list of pooled tasks
      */
+    @Auditable(parameters = {"authority"})
     public List<WorkflowTask> getPooledTasks(String authority);
     
     /**
@@ -208,6 +227,7 @@ public interface WorkflowService
      * @param remove  the map of items to dis-associate with the task (or null, if none to remove)
      * @return  the update task
      */
+    @Auditable(parameters = {"taskId", "properties", "add", "remove"})
     public WorkflowTask updateTask(String taskId, Map<QName, Serializable> properties, Map<QName, List<NodeRef>> add, Map<QName, List<NodeRef>> remove);
     
     /**
@@ -217,6 +237,7 @@ public interface WorkflowService
      * @param transition  the task transition to take on completion (or null, for the default transition)
      * @return  the updated task
      */
+    @Auditable(parameters = {"taskId", "transitionId"})
     public WorkflowTask endTask(String taskId, String transitionId);
     
     /**
@@ -227,6 +248,7 @@ public interface WorkflowService
      * @param container  (optional) a pre-created container (e.g. folder, versioned folder or layered folder)
      * @return  the workflow package
      */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"container"})
     public NodeRef createPackage(NodeRef container);
     
 }

@@ -17,6 +17,7 @@
 package org.alfresco.service.cmr.security;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -24,6 +25,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Andy Hind
  */
+@PublicService
 public interface OwnableService
 {
     /**

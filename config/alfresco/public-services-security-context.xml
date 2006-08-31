@@ -712,4 +712,20 @@
     
     <bean id="ScriptService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
     
+    <!-- ================ -->
+    <!-- Workflow Service -->
+    <!-- ================ -->
+    
+    <!-- TODO: Add workflow security -->
+    
+    <bean id="WorkflowService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
+    <!-- ============= -->
+    <!-- Audit Service -->
+    <!-- ============= -->
+    
+    <!-- TODO: Add audit security -->
+    
+    <bean id="AuditService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
 </beans>

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -28,6 +29,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Roy Wetherall
  */
+@PublicService
 public interface ActionService
 {
 	/**

@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.search;
 import java.util.Collection;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -37,6 +38,7 @@ import org.alfresco.service.namespace.QName;
  * @author Andy Hind
  *
  */
+@PublicService
 public interface CategoryService
 {
     /**

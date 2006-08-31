@@ -19,6 +19,7 @@ package org.alfresco.service.transaction;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.service.NotAuditable;
+import org.alfresco.service.PublicService;
 
 /**
  * Contract for retrieving access to a user transaction.
@@ -29,6 +30,7 @@ import org.alfresco.service.NotAuditable;
  * 
  * @author David Caruana
  */
+@PublicService
 public interface TransactionService
 {
     /**

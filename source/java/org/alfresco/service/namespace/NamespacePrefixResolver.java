@@ -19,6 +19,7 @@ package org.alfresco.service.namespace;
 import java.util.Collection;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 
 /**
  * The <code>NamespacePrefixResolver</code> provides a mapping between
@@ -26,6 +27,7 @@ import org.alfresco.service.Auditable;
  * 
  * @author David Caruana
  */
+@PublicService
 public interface NamespacePrefixResolver
 {
     /**

@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -31,6 +32,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
+@PublicService
 public interface VersionService
 {
     /**

@@ -29,8 +29,10 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.web.app.servlet.ExternalAccessServlet;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.dialog.DialogManager;
+import org.alfresco.web.bean.dialog.DialogState;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.wizard.WizardManager;
+import org.alfresco.web.bean.wizard.WizardState;
 import org.alfresco.web.config.DialogsConfigElement;
 import org.alfresco.web.config.NavigationConfigElement;
 import org.alfresco.web.config.NavigationElementReader;
@@ -589,16 +591,51 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       // or any overridden outcome that may be present
       if (getViewStack(context).empty() == false)
       {
-         String newViewId = (String)getViewStack(context).pop();
-      
          // is there an overidden outcome?
          String overriddenOutcome = getOutcomeOverride(outcome);
          if (overriddenOutcome == null)
          {
             // there isn't an overidden outcome so go back to the previous view
             if (logger.isDebugEnabled())
-               logger.debug("Closing " + closingItem + ", going back to view id: " + newViewId);
-         
+               logger.debug("Closing " + closingItem + ", going back to previous page");
+            
+            // if the top of the stack is not a dialog or wizard just get the
+            // view id and navigate back to it.
+            
+            // if the top of the stack is a dialog or wizard retrieve the state
+            // and setup the appropriate manager with that state, then get the
+            // appropriate container page and navigate to it.
+            
+            Object topOfStack = getViewStack(context).pop();
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Popped item from the top of the view stack: " + topOfStack);
+            
+            String newViewId = null;
+            
+            if (topOfStack instanceof String)
+            {
+               newViewId = (String)topOfStack;
+            }
+            else if (topOfStack instanceof DialogState)
+            {
+               // restore the dialog state and get the dialog container viewId
+               Application.getDialogManager().restoreState((DialogState)topOfStack);
+               newViewId = getDialogContainer(context);
+            }
+            else if (topOfStack instanceof WizardState)
+            {
+               // restore the wizard state and get the wizard container viewId
+               Application.getWizardManager().restoreState((WizardState)topOfStack);
+               newViewId = getWizardContainer(context);
+            }
+            else
+            {
+               if (logger.isWarnEnabled())
+                  logger.warn("Invalid object found on view stack: " + topOfStack);
+            }
+            
+            // go to the appropraite page
             goToView(context, newViewId);
          }
          else
@@ -656,33 +693,66 @@ public class AlfrescoNavigationHandler extends NavigationHandler
     * 
     * @param context FacesContext
     */
+   @SuppressWarnings("unchecked")
    protected void addCurrentViewToStack(FacesContext context)
    {
-      // if we are opening a wizard or dialog push the current view
-      // id on to the stack, but only if it is different than the 
-      // current view at the top (you can't launch a dialog from
-      // the same page 2 times in a row!)
+      // if the current viewId is either the dialog or wizard container page
+      // we need to save the state of the current dialog or wizard to the stack
       
-      // TODO: This wouldn't happen if we could be sure a dialog is 
-      //       ALWAYS exited properly, look into a way of ensuring
-      //       dialogs get closed if a user navigates away from the page,
-      //       would a PhaseListener help in any way??
+      // If the current view is a normal page and it is not the same as the 
+      // view currently at the top of the stack (you can't launch a dialog from
+      // the same page 2 times in a row so it must mean the user navigated away
+      // from the first dialog) just add the viewId to the stack
       
+      // work out what to add to the stack
       String viewId = context.getViewRoot().getViewId();
-      
-      if (getViewStack(context).empty() || 
-          viewId.equals(getViewStack(context).peek()) == false)
+      String dialogContainer = getDialogContainer(context);
+      String wizardContainer = getWizardContainer(context);
+      Object objectForStack = null;
+      if (viewId.equals(dialogContainer))
       {
-         getViewStack(context).push(viewId);
-      
-         if (logger.isDebugEnabled())
-            logger.debug("Pushed current view to stack: " + viewId);
+         DialogManager dlgMgr = Application.getDialogManager();
+         objectForStack = dlgMgr.getState();
+      }
+      else if (viewId.equals(wizardContainer))
+      {
+         WizardManager wizMgr = Application.getWizardManager();
+         objectForStack = wizMgr.getState();
       }
       else
       {
-         if (getViewStack(context).empty() == false && logger.isDebugEnabled())
+         objectForStack = viewId;
+      }
+
+      // if the stack is currently empty add the item
+      Stack stack = getViewStack(context);
+      if (stack.empty())
+      {
+         stack.push(objectForStack);
+      
+         if (logger.isDebugEnabled())
+            logger.debug("Pushed item to view stack: " + objectForStack);
+      }
+      else
+      {
+         // if the item to go on to the stack and the top of
+         // stack are both Strings and equals to each other
+         // don't add anything to the stack to stop it 
+         // growing unecessarily
+         Object topOfStack = stack.peek();
+         if (objectForStack instanceof String && 
+             topOfStack instanceof String &&
+             topOfStack.equals(objectForStack))
          {
-            logger.debug("current view is already top the view stack!");
+            if (logger.isDebugEnabled())
+               logger.debug("current view is already top of the view stack!");
+         }
+         else
+         {
+            stack.push(objectForStack);
+      
+            if (logger.isDebugEnabled())
+               logger.debug("Pushed item to view stack: " + objectForStack);
          }
       }
    }
@@ -725,13 +795,13 @@ public class AlfrescoNavigationHandler extends NavigationHandler
     *         the users session, will never be null
     */
    @SuppressWarnings("unchecked")
-   private Stack<String> getViewStack(FacesContext context)
+   private Stack getViewStack(FacesContext context)
    {
-      Stack<String> viewStack = (Stack)context.getExternalContext().getSessionMap().get(VIEW_STACK);
+      Stack viewStack = (Stack)context.getExternalContext().getSessionMap().get(VIEW_STACK);
       
       if (viewStack == null)
       {
-         viewStack = new Stack<String>();
+         viewStack = new Stack();
          context.getExternalContext().getSessionMap().put(VIEW_STACK, viewStack);
       }
       

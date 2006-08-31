@@ -121,7 +121,18 @@ public class ManageTaskDialog extends BaseDialogBean
                   this.task.id + "': " + this.workflowPackage );
       }
    }
-   
+
+   @Override
+   public void restored()
+   {
+      // reset the workflow package rich list so everything gets re-evaluated
+      if (this.packageItemsRichList != null)
+      {
+         this.packageItemsRichList.setValue(null);
+         this.packageItemsRichList = null;
+      }
+   }
+
    @Override
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception

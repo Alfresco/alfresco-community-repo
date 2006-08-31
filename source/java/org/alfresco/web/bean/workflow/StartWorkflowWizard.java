@@ -85,6 +85,7 @@ public class StartWorkflowWizard extends BaseWizardBean
       if (this.packageItemsRichList != null)
       {
          this.packageItemsRichList.setValue(null);
+         this.packageItemsRichList = null;
       }
       
       // TODO: Does this need to be in a read-only transaction??
@@ -102,6 +103,17 @@ public class StartWorkflowWizard extends BaseWizardBean
          {
             this.packageItemsToAdd.add(itemToWorkflow.toString());
          }
+      }
+   }
+   
+   @Override
+   public void restored()
+   {
+      // reset the workflow package rich list so everything gets re-evaluated
+      if (this.packageItemsRichList != null)
+      {
+         this.packageItemsRichList.setValue(null);
+         this.packageItemsRichList = null;
       }
    }
    

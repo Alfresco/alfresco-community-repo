@@ -12,6 +12,7 @@ import javax.faces.event.ActionEvent;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.bean.dialog.DialogState;
 import org.alfresco.web.config.WizardsConfigElement.ConditionalPageConfig;
 import org.alfresco.web.config.WizardsConfigElement.PageConfig;
 import org.alfresco.web.config.WizardsConfigElement.StepConfig;
@@ -26,16 +27,12 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-public class WizardManager
+public final class WizardManager
 {
    private static Log logger = LogFactory.getLog(WizardManager.class);
    
-   protected int currentStep = 1;
-   protected PageConfig currentPageCfg;
-   protected WizardConfig currentWizardConfig;
-   protected IWizardBean currentWizard;
-   protected List<StepConfig> steps;
-   protected Map<String, String> currentWizardParams;
+   private WizardState currentWizardState; 
+   private Map<String, String> paramsToApply;
    
    /**
     * Action handler used to setup parameters for the wizard being launched
@@ -49,7 +46,7 @@ public class WizardManager
       if (component instanceof UIActionLink)
       {
          // store the parameters
-         this.currentWizardParams = ((UIActionLink)component).getParameterMap();
+         this.paramsToApply = ((UIActionLink)component).getParameterMap();
       }
    }
    
@@ -60,29 +57,51 @@ public class WizardManager
     */
    public void setCurrentWizard(WizardConfig config)
    {
-      this.currentStep = 1;
-      this.currentWizardConfig = config;
-      
-      String beanName = this.currentWizardConfig.getManagedBean();
-      this.currentWizard = (IWizardBean)FacesHelper.getManagedBean(
+      String beanName = config.getManagedBean();
+      IWizardBean wizard = (IWizardBean)FacesHelper.getManagedBean(
             FacesContext.getCurrentInstance(), beanName);
       
-      if (this.currentWizard == null)
+      if (wizard == null)
       {
          throw new AlfrescoRuntimeException("Failed to find managed bean '" + beanName + "'");
       }
       
       // initialise the managed bean
-      this.currentWizard.init(this.currentWizardParams);
+      wizard.init(this.paramsToApply);
       
       // reset the current parameters so subsequent wizards don't get them
-      this.currentWizardParams = null;
+      this.paramsToApply = null;
       
-      // get the steps for the wizard
-      this.steps = this.currentWizardConfig.getStepsAsList();
+      // create the WizardState object
+      this.currentWizardState = new WizardState(config, wizard);
       
       // setup the first step
       determineCurrentPage();
+   }
+   
+   /**
+    * Returns the state of the currently active wizard
+    * 
+    * @return Current wizard's state
+    */
+   public WizardState getState()
+   {
+      return this.currentWizardState;
+   }
+   
+   /**
+    * Restores the wizard represented by the given WizardState object.
+    * NOTE: The wizard's restored() method is also called during this
+    * method.
+    * 
+    * @param state The WizardState for the wizard to restore
+    */
+   public void restoreState(WizardState state)
+   {
+      this.currentWizardState = state;
+      
+      // retrieve the wizard and call it's restored() method
+      this.currentWizardState.getWizard().restored();
    }
    
    /**
@@ -92,7 +111,7 @@ public class WizardManager
     */
    public WizardConfig getCurrentWizard()
    {
-      return this.currentWizardConfig;
+      return this.currentWizardState.getConfig();
    }
    
    /**
@@ -102,7 +121,7 @@ public class WizardManager
     */
    public IWizardBean getBean()
    {
-      return this.currentWizard;
+      return this.currentWizardState.getWizard();
    }
    
    /**
@@ -112,7 +131,7 @@ public class WizardManager
     */
    public String getIcon()
    {
-      return this.currentWizardConfig.getIcon();
+      return this.currentWizardState.getConfig().getIcon();
    }
    
    /**
@@ -123,7 +142,7 @@ public class WizardManager
    public String getErrorMessage()
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), 
-            this.currentWizardConfig.getErrorMessageId());
+            this.currentWizardState.getConfig().getErrorMessageId());
    }
    
    /**
@@ -133,7 +152,7 @@ public class WizardManager
     */
    public String getTitle()
    {
-      String title = this.currentWizardConfig.getTitleId();
+      String title = this.currentWizardState.getConfig().getTitleId();
       
       if (title != null)
       {
@@ -141,7 +160,7 @@ public class WizardManager
       }
       else
       {
-         title = this.currentWizardConfig.getTitle();
+         title = this.currentWizardState.getConfig().getTitle();
       }
       
       return title;
@@ -154,7 +173,7 @@ public class WizardManager
     */
    public String getDescription()
    {
-      String desc = this.currentWizardConfig.getDescriptionId();
+      String desc = this.currentWizardState.getConfig().getDescriptionId();
       
       if (desc != null)
       {
@@ -162,7 +181,7 @@ public class WizardManager
       }
       else
       {
-         desc = this.currentWizardConfig.getDescription();
+         desc = this.currentWizardState.getConfig().getDescription();
       }
       
       return desc;
@@ -175,7 +194,7 @@ public class WizardManager
     */
    public int getCurrentStep()
    {
-      return this.currentStep;
+      return this.currentWizardState.getCurrentStep();
    }
    
    /**
@@ -185,7 +204,7 @@ public class WizardManager
     */
    public String getCurrentStepAsString()
    {
-      return Integer.toString(this.currentStep);
+      return Integer.toString(this.currentWizardState.getCurrentStep());
    }
    
    /**
@@ -197,7 +216,8 @@ public class WizardManager
     */
    public String getCurrentStepName()
    {
-      return ((StepConfig)this.steps.get(this.currentStep-1)).getName();
+      return ((StepConfig)this.currentWizardState.getSteps().get(
+            this.currentWizardState.getCurrentStep()-1)).getName();
    }
 
    /**
@@ -207,12 +227,12 @@ public class WizardManager
     */
    public List<UIListItem> getStepItems()
    {
-      List<UIListItem> items = new ArrayList<UIListItem>(this.steps.size());
+      List<UIListItem> items = new ArrayList<UIListItem>(this.currentWizardState.getSteps().size());
       
-      for (int x = 0; x < this.steps.size(); x++)
+      for (int x = 0; x < this.currentWizardState.getSteps().size(); x++)
       {
          String uiStepNumber = Integer.toString(x + 1);
-         StepConfig stepCfg = this.steps.get(x);
+         StepConfig stepCfg = this.currentWizardState.getSteps().get(x);
          UIListItem item = new UIListItem();
          item.setValue(uiStepNumber);
          
@@ -255,7 +275,7 @@ public class WizardManager
     */
    public String getPage()
    {
-      return this.currentPageCfg.getPath();
+      return this.currentWizardState.getCurrentPageCfg().getPath();
    }
    
    /**
@@ -265,7 +285,7 @@ public class WizardManager
     */
    public String getStepTitle()
    {
-      String title = this.currentPageCfg.getTitleId();
+      String title = this.currentWizardState.getCurrentPageCfg().getTitleId();
       
       if (title != null)
       {
@@ -273,7 +293,7 @@ public class WizardManager
       }
       else
       {
-         title = this.currentPageCfg.getTitle();
+         title = this.currentWizardState.getCurrentPageCfg().getTitle();
       }
       
       return title;
@@ -286,7 +306,7 @@ public class WizardManager
     */
    public String getStepDescription()
    {
-      String desc = this.currentPageCfg.getDescriptionId();
+      String desc = this.currentWizardState.getCurrentPageCfg().getDescriptionId();
       
       if (desc != null)
       {
@@ -294,7 +314,7 @@ public class WizardManager
       }
       else
       {
-         desc = this.currentPageCfg.getDescription();
+         desc = this.currentWizardState.getCurrentPageCfg().getDescription();
       }
       
       return desc;
@@ -307,7 +327,7 @@ public class WizardManager
     */
    public String getStepInstructions()
    {
-      String instruction = this.currentPageCfg.getInstructionId();
+      String instruction = this.currentWizardState.getCurrentPageCfg().getInstructionId();
       
       if (instruction != null)
       {
@@ -315,7 +335,7 @@ public class WizardManager
       }
       else
       {
-         instruction = this.currentPageCfg.getInstruction();
+         instruction = this.currentWizardState.getCurrentPageCfg().getInstruction();
       }
       
       return instruction;
@@ -328,7 +348,7 @@ public class WizardManager
     */
    public String getNextButtonLabel()
    {
-      return this.currentWizard.getNextButtonLabel();
+      return this.currentWizardState.getWizard().getNextButtonLabel();
    }
    
    /**
@@ -338,13 +358,13 @@ public class WizardManager
     */
    public boolean getNextButtonDisabled()
    {
-      if (this.currentStep == this.steps.size())
+      if (this.currentWizardState.getCurrentStep() == this.currentWizardState.getSteps().size())
       {
          return true;
       }
       else
       {
-         return this.currentWizard.getNextButtonDisabled();
+         return this.currentWizardState.getWizard().getNextButtonDisabled();
       }
    }
    
@@ -355,7 +375,7 @@ public class WizardManager
     */
    public String getBackButtonLabel()
    {
-      return this.currentWizard.getBackButtonLabel();
+      return this.currentWizardState.getWizard().getBackButtonLabel();
    }
    
    /**
@@ -365,7 +385,7 @@ public class WizardManager
     */
    public boolean getBackButtonDisabled()
    {
-      if (this.currentStep == 1)
+      if (this.currentWizardState.getCurrentStep() == 1)
       {
          return true;
       }
@@ -382,7 +402,7 @@ public class WizardManager
     */
    public String getCancelButtonLabel()
    {
-      return this.currentWizard.getCancelButtonLabel();
+      return this.currentWizardState.getWizard().getCancelButtonLabel();
    }
    
    /**
@@ -392,7 +412,7 @@ public class WizardManager
     */
    public String getFinishButtonLabel()
    {
-      return this.currentWizard.getFinishButtonLabel();
+      return this.currentWizardState.getWizard().getFinishButtonLabel();
    }
    
    /**
@@ -402,13 +422,13 @@ public class WizardManager
     */
    public boolean getFinishButtonDisabled()
    {
-      if (this.currentStep == this.steps.size())
+      if (this.currentWizardState.getCurrentStep() == this.currentWizardState.getSteps().size())
       {
          return false;
       }
       else
       {
-         return this.currentWizard.getFinishButtonDisabled();
+         return this.currentWizardState.getWizard().getFinishButtonDisabled();
       }
    }
    
@@ -419,13 +439,16 @@ public class WizardManager
     */
    public void next()
    {
-      this.currentStep++;
+      // calculate next step number and update wizard state
+      int currentStep = this.currentWizardState.getCurrentStep();
+      currentStep++;
+      this.currentWizardState.setCurrentStep(currentStep);
       
       if (logger.isDebugEnabled())
-         logger.debug("next called, current step is now: " + this.currentStep);
+         logger.debug("next called, current step is now: " + this.currentWizardState.getCurrentStep());
       
       // tell the wizard the next button has been pressed
-      this.currentWizard.next();
+      this.currentWizardState.getWizard().next();
       
       determineCurrentPage();
    }
@@ -437,13 +460,16 @@ public class WizardManager
     */
    public void back()
    {
-      this.currentStep--;
+      // calculate next step number and update wizard state
+      int currentStep = this.currentWizardState.getCurrentStep();
+      currentStep--;
+      this.currentWizardState.setCurrentStep(currentStep);
       
       if (logger.isDebugEnabled())
-         logger.debug("back called, current step is now: " + this.currentStep);
+         logger.debug("back called, current step is now: " + this.currentWizardState.getCurrentStep());
       
       // tell the wizard the back button has been pressed
-      this.currentWizard.back();
+      this.currentWizardState.getWizard().back();
       
       determineCurrentPage();
    }
@@ -455,7 +481,7 @@ public class WizardManager
     */
    public String finish()
    {
-      return this.currentWizard.finish();
+      return this.currentWizardState.getWizard().finish();
    }
    
    /**
@@ -465,7 +491,7 @@ public class WizardManager
     */
    public String cancel()
    {
-      return this.currentWizard.cancel();
+      return this.currentWizardState.getWizard().cancel();
    }
    
    /**
@@ -473,10 +499,14 @@ public class WizardManager
     */
    protected void determineCurrentPage()
    {
-      this.currentPageCfg = null;
+      // reset the current page config in the state object
+      this.currentWizardState.setCurrentPageCfg(null);
+      
+      PageConfig currentPageCfg = null;
       
       // get the config for the current step position
-      StepConfig stepCfg = this.steps.get(this.currentStep-1);
+      StepConfig stepCfg = this.currentWizardState.getSteps().get(
+            this.currentWizardState.getCurrentStep()-1);
       
       // is the step conditional?
       if (stepCfg.hasConditionalPages())
@@ -497,25 +527,28 @@ public class WizardManager
             Object obj = vb.getValue(context);
             if (obj instanceof Boolean && ((Boolean)obj).booleanValue())
             {
-               this.currentPageCfg = pageCfg;
+               currentPageCfg = pageCfg;
                break;
             }
          }
       }
       
       // if none of the conditions passed use the default page
-      if (this.currentPageCfg == null)
+      if (currentPageCfg == null)
       {
-         this.currentPageCfg = stepCfg.getDefaultPage();
+         currentPageCfg = stepCfg.getDefaultPage();
       }
       
-      if (this.currentPageCfg == null)
+      if (currentPageCfg == null)
       {
          throw new AlfrescoRuntimeException("Failed to determine page for step '" + stepCfg.getName() +
                "'. Make sure a default page is configured.");
       }
       
+      // save the current page config in the state object
+      this.currentWizardState.setCurrentPageCfg(currentPageCfg);
+      
       if (logger.isDebugEnabled())
-         logger.debug("Config for current page: " + this.currentPageCfg);
+         logger.debug("Config for current page: " + this.currentWizardState.getCurrentPageCfg());
    }
 }

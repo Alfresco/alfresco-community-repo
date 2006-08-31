@@ -76,6 +76,10 @@
             <action idref="start_workflow" />
          </action-group>
          
+         <action-group id="manage_task_actions">
+            <action idref="reassign_task" />
+         </action-group>
+         
          <action-group id="dashlet_todo_actions">
             <action idref="reassign_task" />
          </action-group>

@@ -93,7 +93,8 @@
       
          <dialog name="manageTask" page="/jsp/workflow/manage-task-dialog.jsp"
                  managed-bean="ManageTaskDialog" icon="/images/icons/manage_workflow_task_large.gif" 
-                 title-id="manage_task_title" description-id="manage_task_desc" />
+                 title-id="manage_task_title" description-id="manage_task_desc" 
+                 actions-config-id="manage_task_actions" />
                  
          <dialog name="viewCompletedTask" page="/jsp/workflow/view-completed-task-dialog.jsp"
                  managed-bean="ViewCompletedTaskDialog" icon="/images/icons/completed_workflow_task_large.gif" 

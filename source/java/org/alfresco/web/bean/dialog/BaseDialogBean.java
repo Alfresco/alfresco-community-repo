@@ -58,6 +58,11 @@ public abstract class BaseDialogBean implements IDialogBean
       this.isFinished = false;
    }
    
+   public void restored()
+   {
+      // do nothing by default, subclasses can override if necessary
+   }
+   
    public String cancel()
    {
       return getDefaultCancelOutcome();

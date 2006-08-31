@@ -20,6 +20,11 @@ public interface IDialogBean
    public void init(Map<String, String> parameters);
    
    /**
+    * Called when the dialog is restored after a nested dialog is closed
+    */
+   public void restored();
+   
+   /**
     * Method handler called when the cancel button of the dialog is pressed
     * 
     * @return The outcome to return

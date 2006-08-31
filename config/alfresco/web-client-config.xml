@@ -202,11 +202,6 @@
                   jsp="/jsp/workflow/tasks-todo-dashlet.jsp" allow-narrow="false" />
             <dashlet id="tasks-completed" label-id="my_tasks_completed_title" description-id="my_tasks_completed_desc"
                   jsp="/jsp/workflow/tasks-completed-dashlet.jsp" allow-narrow="false" />
-            <!-- TEMP! -->
-            <dashlet id="calculator" label="Calculator" description="A small calculator applet"
-                  jsp="/jsp/dashboards/dashlets/calculator.jsp" allow-narrow="true" />
-            <dashlet id="calendar" label="Calendar" description="A small calendar application"
-                  jsp="/jsp/dashboards/dashlets/calendar.jsp" allow-narrow="true" />
          </dashlets>
       </dashboards>
    </config>

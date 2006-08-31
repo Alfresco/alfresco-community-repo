@@ -29,7 +29,6 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.poi.poifs.eventfilesystem.POIFSReader;
 import org.apache.poi.poifs.eventfilesystem.POIFSReaderEvent;
@@ -130,7 +129,8 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
     private static final String ENCODING_UNICODE = "001F";
     
     private static final String SUBSTG_MESSAGEBODY = "1000";
-    private static final String SUBSTG_RECIPIENTEMAIL = "39FE";
+    private static final String SUBSTG_RECIPIENTEMAIL = "39FE";      // 7bit email address
+    private static final String SUBSTG_RECIPIENTSEARCH = "300B";     // address 'search' variant
     private static final String SUBSTG_RECEIVEDEMAIL = "0076";
     private static final String SUBSTG_SENDEREMAIL = "0C1F";
     private static final String SUBSTG_DATE = "0047";
@@ -159,6 +159,27 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
             {
                 receipientEmails.get().add(convertExchangeAddress(extractText()));
             }
+            else if (type.equals(SUBSTG_RECIPIENTSEARCH))
+            {
+                String email = extractText(ENCODING_TEXT);
+                int smptIndex = email.indexOf("SMTP:");
+                if (smptIndex != -1)
+                {
+                    /* also may be used for SUBSTG_RECIPIENTTRANSPORT = "5FF7"; 
+                       with search for SMPT followed by a null char */
+                    
+                    // this is a secondary mechanism for encoding a receipient email address
+                    // the 7 bit email address may not have been set by Outlook - so this is needed instead
+                    // handle null character at end of string
+                    int endIndex = email.length();
+                    if (email.codePointAt(email.length() - 1) == 0)
+                    {
+                        endIndex--;
+                    }
+                    email = email.substring(smptIndex + 5, endIndex);
+                    receipientEmails.get().add(email);
+                }
+            }
             else if (type.equals(SUBSTG_RECEIVEDEMAIL))
             {
                 destination.put(ContentModel.PROP_ADDRESSEE, convertExchangeAddress(extractText()));
@@ -169,8 +190,8 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
             }
             else if (type.equals(SUBSTG_DATE))
             {
-                // the date is not really plain text - but it's easier to parse as such
-                String date = extractText();
+                // the date is not "really" plain text - but it's appropriate to parse as such
+                String date = extractText(ENCODING_TEXT);
                 int valueIndex = date.indexOf("l=");
                 if (valueIndex != -1)
                 {
@@ -204,14 +225,27 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
         private String extractText()
             throws IOException
         {
+            return extractText(this.encoding);
+        }
+        
+        /**
+         * Extract the text from the stream based on the encoding
+         * 
+         * @return String
+         * 
+         * @throws IOException
+         */
+        private String extractText(String encoding)
+            throws IOException
+        {
             byte[] data = new byte[stream.available()];
             stream.read(data);
             
-            if (this.encoding.equals(ENCODING_TEXT) || this.encoding.equals(ENCODING_BINARY))
+            if (encoding.equals(ENCODING_TEXT) || encoding.equals(ENCODING_BINARY))
             {
                 return new String(data);
             }
-            else if (this.encoding.equals(ENCODING_UNICODE))
+            else if (encoding.equals(ENCODING_UNICODE))
             {
                 // convert double-byte encoding to single byte for String conversion
                 byte[] b = new byte[data.length >> 1];

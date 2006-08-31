@@ -185,6 +185,10 @@ public interface ContentModel
     public static final QName PROP_ADDRESSEES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "addressees");
     public static final QName PROP_SUBJECT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "subjectline");
     
+    // mounted aspect
+    public static final QName ASPECT_MOUNTED = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "mounted");
+    public static final QName PROP_MOUNTPOINT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "mountpoint");
+    
     //
     // Application Model Definitions
     //

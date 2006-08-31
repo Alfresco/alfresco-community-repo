@@ -7,6 +7,8 @@ import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -111,6 +113,13 @@ public class AVMContext implements ApplicationContextAware
      * The DictionaryService
      */
     private DictionaryService fDictionaryService;
+        
+    /**
+     * The Node Service.
+     */
+    private NodeService fNodeService;
+    
+    private AuthenticationService fAuthenticationService;
     
     /**
      * The application context.
@@ -273,5 +282,27 @@ public class AVMContext implements ApplicationContextAware
             fDictionaryService = (DictionaryService)fAppContext.getBean("dictionaryService");
         }
         return fDictionaryService;
+    }
+    
+    /**
+     * Get the NodeService
+     * @return The Node service.
+     */
+    public NodeService getNodeService()
+    {
+        if (fNodeService == null)
+        {
+            fNodeService = (NodeService)fAppContext.getBean("NodeService");
+        }
+        return fNodeService;
+    }
+    
+    public AuthenticationService getAuthenticationService()
+    {
+        if (fAuthenticationService == null)
+        {
+            fAuthenticationService = (AuthenticationService)fAppContext.getBean("AuthenticationService");
+        }
+        return fAuthenticationService;
     }
 }

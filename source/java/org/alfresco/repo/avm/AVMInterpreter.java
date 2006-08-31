@@ -24,11 +24,21 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.util.BulkLoader;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.apache.log4j.Logger;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
@@ -37,11 +47,18 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
  */
 public class AVMInterpreter
 {
+    private static Logger fgLogger = Logger.getLogger(AVMInterpreter.class);
+
     /**
      * The service interface.
      */
     private AVMService fService;
-
+    
+    /**
+     * The Node service.
+     */
+    private NodeService fNodeService;
+    
     /**
      * The reader for interaction.
      */
@@ -91,6 +108,11 @@ public class AVMInterpreter
         fLoader = loader;
     }
     
+    public void setNodeService(NodeService service)
+    {
+        fNodeService = service;
+    }
+    
     /**
      * A Read-Eval-Print loop.
      */
@@ -124,7 +146,7 @@ public class AVMInterpreter
      */
     public String interpretCommand(String line, BufferedReader in)
     {
-        String[] command = line.split("\\s+");
+        String[] command = line.split(",\\s+");
         if (command.length == 0)
         {
             command = new String[1];
@@ -410,6 +432,48 @@ public class AVMInterpreter
                 AVMNodeDescriptor right = fService.lookup(Integer.parseInt(command[4]), command[3]);
                 AVMNodeDescriptor ca = fService.getCommonAncestor(left, right);
                 out.println(ca);
+            }
+            else if (command[0].equals("mount"))
+            {
+                if (command.length != 5)
+                {
+                    return "Syntax Error.";
+                }
+                int version = Integer.parseInt(command[1]);
+                String avmPath = command[2];
+                String alfPath = command[3];
+                String mountName = command[4];
+                String [] components = alfPath.split("/");
+                NodeRef nodeRef = fNodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"));
+                for (String name : components)
+                {
+                    fgLogger.error(name);
+                    List<ChildAssociationRef> children = 
+                        fNodeService.getChildAssocs(nodeRef);
+                    for (ChildAssociationRef child : children)
+                    {
+                        fgLogger.error(" " + child.getQName());
+                        if (child.getQName().getLocalName().equals(name))
+                        {
+                            nodeRef = child.getChildRef();
+                            break;
+                        }
+                    }
+                }
+                Map<QName, Serializable> properties = 
+                    new HashMap<QName, Serializable>();
+                properties.put(ContentModel.PROP_NAME, mountName);
+                ChildAssociationRef childRef =
+                    fNodeService.createNode(nodeRef, ContentModel.ASSOC_CONTAINS, 
+                            QName.createQName(NamespaceService.APP_MODEL_1_0_URI, mountName),
+                            ContentModel.TYPE_FOLDER,
+                            properties);
+                properties.clear();
+                properties.put(ContentModel.PROP_MOUNTPOINT, 
+                        AVMNodeConverter.ToNodeRef(version, avmPath));
+                fNodeService.addAspect(childRef.getChildRef(),
+                                       ContentModel.ASPECT_MOUNTED,
+                                       properties);
             }
             else
             {

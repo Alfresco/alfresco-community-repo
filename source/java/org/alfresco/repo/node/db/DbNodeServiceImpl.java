@@ -31,6 +31,7 @@ import java.util.Stack;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.AVMContext;
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
@@ -252,6 +253,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Assert.notNull(assocTypeQName);
         Assert.notNull(assocQName);
         
+        // get the parent node
+        Node parentNode = getNodeNotNull(parentRef);
+        
+        if (parentNode.getAspects().contains(ContentModel.ASPECT_MOUNTED))
+        {
+            NodeRef mounted = (NodeRef)parentNode.getProperties().get(ContentModel.PROP_MOUNTPOINT).
+                              getValue(DataTypeDefinition.NODE_REF);
+            return AVMContext.fgInstance.getNodeService().createNode(mounted,
+                    assocTypeQName,
+                    assocQName,
+                    nodeTypeQName,
+                    properties);
+        }
+        
         // null property map is allowed
         if (properties == null)
         {      
@@ -287,9 +302,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // create the node instance
         Node childNode = nodeDaoService.newNode(store, newId, nodeTypeQName);
-        
-        // get the parent node
-        Node parentNode = getNodeNotNull(parentRef);
         
         // Set the default property values
         addDefaultPropertyValues(nodeTypeDef, properties);
@@ -711,6 +723,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
     {
         Node parentNode = getNodeNotNull(parentRef);
+        
+        if (parentNode.getAspects().contains(ContentModel.ASPECT_MOUNTED))
+        {
+            NodeRef mounted =
+                (NodeRef)parentNode.getProperties().get(ContentModel.PROP_MOUNTPOINT).
+                getValue(DataTypeDefinition.NODE_REF);
+            AVMContext.fgInstance.getNodeService().removeChild(mounted, childRef);
+            return;
+        }
+        
         Node childNode = getNodeNotNull(childRef);
         Long childNodeId = childNode.getId();
         
@@ -995,6 +1017,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern)
     {
         Node node = getNodeNotNull(nodeRef);
+        if (node.getAspects().contains(ContentModel.ASPECT_MOUNTED))
+        {
+            NodeRef mounted = (NodeRef)node.getProperties().get(ContentModel.PROP_MOUNTPOINT).
+                              getValue(DataTypeDefinition.NODE_REF);
+            return AVMContext.fgInstance.getNodeService().getChildAssocs(mounted, 
+                                                                         typeQNamePattern, 
+                                                                         qnamePattern);
+        }
         // get the assocs pointing from it
         Collection<ChildAssociationRef> childAssocRefs = nodeDaoService.getChildAssocRefs(node);
         // shortcut if there are no assocs
@@ -1031,6 +1061,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName)
     {
         Node node = getNodeNotNull(nodeRef);
+        if (node.getAspects().contains(ContentModel.ASPECT_MOUNTED))
+        {
+            NodeRef mounted = (NodeRef)node.getProperties().get(ContentModel.PROP_MOUNTPOINT).
+                              getValue(DataTypeDefinition.NODE_REF);
+            return AVMContext.fgInstance.getNodeService().getChildByName(mounted, 
+                                                                         assocTypeQName, 
+                                                                         childName);
+        }
         ChildAssoc childAssoc = nodeDaoService.getChildAssoc(node, assocTypeQName, childName);
         if (childAssoc != null)
         {

@@ -683,6 +683,16 @@
          </properties>
       </aspect>
       
+      <aspect name="cm:mounted">
+      	<title>Mounted</title>
+      	<properties>
+      		<property name="cm:mountpoint">
+      			<title>Mountpoint</title>
+      			<type>d:noderef</type>
+      		</property>
+      	</properties>
+      </aspect>
+      
    </aspects>
 
 </model>

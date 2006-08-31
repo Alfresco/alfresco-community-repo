@@ -88,7 +88,7 @@
             <label-id>checkin</label-id>
             <image>/images/icons/CheckIn_icon.gif</image>
             <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
-            <action>checkinFile</action>
+            <action>dialog:checkinFile</action>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -100,7 +100,7 @@
             <label-id>checkout</label-id>
             <image>/images/icons/CheckOut_icon.gif</image>
             <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
-            <action>checkoutFile</action>
+            <action>dialog:checkoutFile</action>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -112,7 +112,7 @@
             <label-id>undocheckout</label-id>
             <image>/images/icons/undo_checkout.gif</image>
             <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
-            <action>undoCheckoutFile</action>
+            <action>dialog:undoCheckoutFile</action>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -200,7 +200,7 @@
             <label-id>update</label-id>
             <image>/images/icons/update.gif</image>
             <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
-            <action>updateFile</action>
+            <action>dialog:updateFile</action>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>

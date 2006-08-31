@@ -862,9 +862,10 @@
       </navigation-case>
    </navigation-rule>
 
-   <!-- Overridden dialog:close rules -->
    <navigation-rule>
       <from-view-id>/jsp/dialog/container.jsp</from-view-id>
+      
+      <!-- Overridden dialog:close navigation rules for forums -->
       <navigation-case>
          <from-outcome>forumsDeleted</from-outcome>
          <to-view-id>/jsp/forums/forums.jsp</to-view-id>
@@ -876,6 +877,37 @@
       <navigation-case>
          <from-outcome>topicDeleted</from-outcome>
          <to-view-id>/jsp/forums/forum.jsp</to-view-id>
+      </navigation-case>
+   
+      <!-- Workflow navigation rules for actions on workflow package items -->
+   
+      <navigation-case>
+         <from-outcome>checkoutFile</from-outcome>
+         <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>checkinFile</from-outcome>
+         <to-view-id>/jsp/dialog/checkin-file.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>undoCheckoutFile</from-outcome>
+         <to-view-id>/jsp/dialog/undocheckout-file.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>updateFile</from-outcome>
+         <to-view-id>/jsp/dialog/update-file.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>editFile</from-outcome>
+         <to-view-id>/jsp/dialog/edit-file.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>editHtmlInline</from-outcome>
+         <to-view-id>/jsp/dialog/edit-html-inline.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>editTextInline</from-outcome>
+         <to-view-id>/jsp/dialog/edit-text-inline.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

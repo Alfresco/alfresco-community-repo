@@ -14,9 +14,15 @@
          <a:sortLink label="#{msg.title}" value="name" mode="case-insensitive" styleClass="header"/>
       </f:facet>
       <f:facet name="small-icon">
-         <h:graphicImage url="/images/icons/completed_workflow_task.gif" />
+         <a:actionLink value="#{r.name}" image="/images/icons/completed_workflow_task.gif" showLink="false"
+                       actionListener="#{DialogManager.setupParameters}" action="dialog:viewCompletedTask">
+            <f:param name="id" value="#{r.id}" />
+         </a:actionLink>
       </f:facet>
-      <h:outputText value="#{r.name}" />
+      <a:actionLink value="#{r.name}" actionListener="#{DialogManager.setupParameters}" 
+                    action="dialog:viewCompletedTask">
+         <f:param name="id" value="#{r.id}" />
+      </a:actionLink>
    </a:column>
    
    <%-- Task id column --%>

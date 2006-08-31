@@ -1,7 +1,9 @@
 package org.alfresco.web.bean.repository;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -10,6 +12,8 @@ import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -93,11 +97,64 @@ public class TransientNode extends Node
                {
                   if (assocDef.isChild())
                   {
-                     this.childAssociations.put(item, data.get(item));
+                     // TODO: handle lists of NodeRef's
+                     NodeRef child = null;
+                     Object obj = data.get(item);
+                     if (obj instanceof String)
+                     {
+                        child = new NodeRef((String)obj);
+                     }
+                     else if (obj instanceof NodeRef)
+                     {
+                        child = (NodeRef)obj;
+                     }
+                     else if (obj instanceof List)
+                     {
+                        if (logger.isWarnEnabled())
+                           logger.warn("0..* child associations are not supported yet");
+                     }
+                     
+                     if (child != null)
+                     {
+                        // create a child association reference, add it to a list and add the list
+                        // to the list of child associations for this node
+                        List<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>(1);
+                        ChildAssociationRef childRef = new ChildAssociationRef(assocDef.getName(), this.nodeRef,
+                              null, child);
+                        assocs.add(childRef);
+                        
+                        this.childAssociations.put(item, assocs);
+                     }
                   }
                   else
                   {
-                     this.associations.put(item, data.get(item));
+                     // TODO: handle lists of NodeRef's
+                     NodeRef target = null;
+                     Object obj = data.get(item);
+                     if (obj instanceof String)
+                     {
+                        target = new NodeRef((String)obj);
+                     }
+                     else if (obj instanceof NodeRef)
+                     {
+                        target = (NodeRef)obj;
+                     }
+                     else if (obj instanceof List)
+                     {
+                        if (logger.isWarnEnabled())
+                           logger.warn("0..* associations are not supported yet");
+                     }
+                     
+                     if (target != null)
+                     {
+                        // create a association reference, add it to a list and add the list
+                        // to the list of associations for this node
+                        List<AssociationRef> assocs = new ArrayList<AssociationRef>(1);
+                        AssociationRef assocRef = new AssociationRef(this.nodeRef, assocDef.getName(), target);
+                        assocs.add(assocRef);
+                        
+                        this.associations.put(item, assocs);
+                     }
                   }
                }
             }
@@ -140,7 +197,7 @@ public class TransientNode extends Node
       // don't reset anything otherwise we'll lose our data
       // with no way of getting it back!!
    }
-
+   
    @Override
    public String toString()
    {

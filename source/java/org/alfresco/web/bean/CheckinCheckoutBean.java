@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
@@ -492,12 +493,18 @@ public class CheckinCheckoutBean
       Node node = getWorkingDocument();
       if (node != null)
       {
+         // reset the underlying node
+         if (this.browseBean.getDocument() != null)
+         {
+            this.browseBean.getDocument().reset();
+         }
+         
          // clean up and clear action context
          clearUpload();
          setDocument(null);
          setWorkingDocument(null);
-         
-         outcome = "browse";
+
+         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
       }
       else
       {
@@ -522,7 +529,7 @@ public class CheckinCheckoutBean
          setDocument(null);
          setWorkingDocument(null);
          
-         outcome = "browse";
+         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
       }
       else
       {
@@ -570,7 +577,7 @@ public class CheckinCheckoutBean
                   // navigate to appropriate screen
                   FacesContext fc = FacesContext.getCurrentInstance();
                   this.navigator.setupDispatchContext(node);
-                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "editTextInline");
+                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editTextInline");
                }
                else
                {
@@ -581,7 +588,7 @@ public class CheckinCheckoutBean
                   // navigate to appropriate screen
                   FacesContext fc = FacesContext.getCurrentInstance();
                   this.navigator.setupDispatchContext(node);
-                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "editHtmlInline");
+                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editHtmlInline");
                }
             }
          }
@@ -591,7 +598,7 @@ public class CheckinCheckoutBean
             // normal downloadable document
             FacesContext fc = FacesContext.getCurrentInstance();
             this.navigator.setupDispatchContext(node);
-            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "editFile");
+            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editFile");
          }
       }
    }
@@ -628,8 +635,8 @@ public class CheckinCheckoutBean
             setDocument(null);
             setDocumentContent(null);
             setEditorOutput(null);
-            
-            outcome = "browse";
+
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
          }
          catch (Throwable err)
          {
@@ -664,7 +671,7 @@ public class CheckinCheckoutBean
             
             clearUpload();
             
-            outcome = "browse";
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
          }
          catch (Throwable err)
          {
@@ -711,10 +718,10 @@ public class CheckinCheckoutBean
             {
                throw new IllegalStateException("Node supplied for undo checkout has neither Working Copy or Locked aspect!");
             }
-            
+         
             clearUpload();
             
-            outcome = "browse";
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
          }
          catch (Throwable err)
          {
@@ -801,7 +808,8 @@ public class CheckinCheckoutBean
             setDocument(null);
             clearUpload();
             
-            outcome = "browse";
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+                      AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
          }
          catch (Throwable err)
          {
@@ -857,7 +865,7 @@ public class CheckinCheckoutBean
             setDocument(null);
             clearUpload();
             
-            outcome = "browse";
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
          }
          catch (Throwable err)
          {
@@ -883,7 +891,7 @@ public class CheckinCheckoutBean
       // reset the state
       clearUpload();
       
-      return "browse";
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
    
    /**

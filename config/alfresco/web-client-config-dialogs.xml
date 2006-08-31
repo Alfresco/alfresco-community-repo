@@ -23,6 +23,12 @@
                  icon="/images/icons/delete_large.gif" title-id="delete_space" 
                  description-id="delete_space_info" />
          
+         <!-- Definition of the view content properties dialog -->
+         <dialog name="viewContentProperties" page="/jsp/content/view-content-properties.jsp" 
+                 managed-bean="ViewContentPropertiesDialog" icon="/images/icons/details_large.gif"
+                 title-id="view_content_properties" description-id="view_content_description" 
+                 show-ok-button="false"  />
+                 
          <!-- Definition of the set content properties dialog -->
          <dialog name="setContentProperties" page="/jsp/content/edit-content-properties.jsp" 
                  managed-bean="SetContentPropertiesDialog" icon="/images/icons/details_large.gif"
@@ -82,7 +88,26 @@
                  icon="/images/icons/create_topic_large.gif" title-id="create_topic" 
                  description-id="create_topic_description" error-message-id="error_create_topic_dialog" />
          
-         
+         <!--                  -->
+         <!-- Workflow Dialogs -->
+      
+         <dialog name="manageTask" page="/jsp/workflow/manage-task-dialog.jsp"
+                 managed-bean="ManageTaskDialog" icon="/images/icons/manage_workflow_task_large.gif" 
+                 title-id="manage_task_title" description-id="manage_task_desc" />
+                 
+         <dialog name="viewCompletedTask" page="/jsp/workflow/view-completed-task-dialog.jsp"
+                 managed-bean="ViewCompletedTaskDialog" icon="/images/icons/completed_workflow_task_large.gif" 
+                 title-id="view_completed_task_title" description-id="view_completed_task_desc" 
+                 show-ok-button="false" />
+                 
+         <dialog name="cancelWorkflow" page="/jsp/workflow/cancel-workflow-dialog.jsp"
+                 managed-bean="CancelWorkflowDialog" icon="/images/icons/cancel_workflow_large.gif" 
+                 title-id="cancel_workflow" description-id="cancel_workflow_info" />
+                 
+         <dialog name="reassignTask" page="/jsp/workflow/reassign-task-dialog.jsp"
+                 managed-bean="ReassignTaskDialog" icon="/images/icons/reassign_workflow_task_large.gif" 
+                 title-id="reassign_task_title" description-id="reassign_task_desc" />
+                 
          <!--               -->
          <!-- Other Dialogs -->
          

@@ -11,7 +11,7 @@
             <label-id>checkin</label-id>
             <image>/images/icons/CheckIn_icon.gif</image>
             <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
-            <action>checkinFile</action>
+            <action>dialog:checkinFile</action>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>

@@ -1,0 +1,114 @@
+<alfresco-config>
+
+   <config>
+      <actions>
+         <action id="start_workflow">
+            <label-id>start_workflow</label-id>
+            <image>/images/icons/new_workflow.gif</image>
+            <action>wizard:startWorkflow</action>
+            <action-listener>#{WizardManager.setupParameters}</action-listener>
+            <params>
+               <param name="item-to-workflow">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <action id="reassign_task">
+            <label-id>reassign</label-id>
+            <image>/images/icons/reassign_task.gif</image>
+            <action>dialog:reassignTask</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="task-id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <action id="cancel_workflow">
+            <label-id>cancel_workflow</label-id>
+            <image>/images/icons/cancel_workflow.gif</image>
+            <action>dialog:cancelWorkflow</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="workflow-instance-id">#{actionContext.workflowInstanceId}</param>
+               <param name="workflow-instance-name">#{actionContext.workflowInstanceName}</param>
+            </params>
+         </action>
+         
+         <action id="add_package_item">
+            <label-id>add_resource</label-id>
+            <image>/images/icons/add_item.gif</image>
+            <action-listener>#{DialogManager.bean.prepareForAdd}</action-listener>
+         </action>
+         
+         <action id="remove_package_item">
+            <label-id>remove</label-id>
+            <image>/images/icons/remove_item.gif</image>
+            <action-listener>#{DialogManager.bean.removePackageItem}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <action id="view_content_properties">
+            <label-id>view_properties</label-id>
+            <image>/images/icons/View_details.gif</image>
+            <action>dialog:viewContentProperties</action>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <action id="edit_content_properties">
+            <label-id>edit_properties</label-id>
+            <image>/images/icons/Change_details.gif</image>
+            <action>dialog:editContentProperties</action>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <action-group id="document_browse_menu">
+            <action idref="start_workflow" />
+         </action-group>
+         
+         <action-group id="doc_details_actions">
+            <action idref="start_workflow" />
+         </action-group>
+         
+         <action-group id="dashlet_todo_actions">
+            <action idref="reassign_task" />
+         </action-group>
+         
+         <action-group id="dashlet_completed_actions">
+            <action idref="cancel_workflow" />
+         </action-group>
+         
+         <action-group id="workflow_item_read_actions">
+            <action idref="view_content_properties" />
+         </action-group>
+         
+         <action-group id="workflow_item_collection_actions">
+            <action idref="view_content_properties" />
+            <action idref="remove_package_item" />
+         </action-group>
+         
+         <action-group id="workflow_item_edit_actions">
+            <action idref="view_content_properties" />
+            <action idref="edit_content_properties" />
+            <action idref="edit_doc_http" />
+            <action idref="edit_doc_webdav" />
+            <action idref="edit_doc_cifs" />
+            <action idref="update_doc" />
+            <action idref="checkout_doc" />
+            <action idref="checkin_doc" />
+            <action idref="cancelcheckout_doc" />
+         </action-group>
+         
+         <action-group id="workflow_collection_actions">
+            <action idref="add_package_item" />
+         </action-group>
+      </actions>
+   </config>
+   
+</alfresco-config>

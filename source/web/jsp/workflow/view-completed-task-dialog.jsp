@@ -23,7 +23,7 @@
          border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
    
    <r:propertySheetGrid id="task-props" value="#{DialogManager.bean.taskNode}"
-                       var="taskProps" columns="1" externalConfig="true" />
+                       var="taskProps" columns="1" externalConfig="true" mode="view" />
 </a:panel>
 
 <h:outputText styleClass="paddingRow" value="&nbsp;" escape="false" />
@@ -85,41 +85,7 @@
             <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
          </h:outputText>
       </a:column>
-                        
-      <%-- Actions column --%>
-      <a:column actions="true" style="text-align:left">
-         <f:facet name="header">
-            <h:outputText value="#{msg.actions}"/>
-         </f:facet>
-         <r:actions value="#{DialogManager.bean.packageItemActionGroup}" 
-                    context="#{r}" showLink="false" styleClass="inlineAction" />
-      </a:column>
-      
-      <%-- Completed column --%>
-      <%--
-      <a:column style="text-align:left">
-         <f:facet name="header">
-            <h:outputText value="#{msg.completed}" />
-         </f:facet>
-         <a:actionLink value="#{r.completed}" actionListener="#{DialogManager.bean.togglePackageItemComplete}">
-            <f:param name="id" value="#{r.id}" />
-         </a:actionLink>
-      </a:column>
-      --%>
-   </a:richList>
-
-   <h:panelGrid columns="1" styleClass="paddingRow">
-      <r:actions context="#{DialogManager.bean.taskNode}" value="#{DialogManager.bean.packageActionGroup}" />
-   </h:panelGrid>
-   
-   <h:panelGrid columns="1" rendered="#{DialogManager.bean.itemBeingAdded}" styleClass="selector" style="margin-top: 6px;">
-      <r:contentSelector value="#{DialogManager.bean.itemsToAdd}" styleClass="" />
-      <h:panelGrid columns="2">
-         <h:commandButton value="#{msg.add_to_list_button}" actionListener="#{DialogManager.bean.addPackageItems}" />
-         <h:commandButton value="#{msg.cancel}" actionListener="#{DialogManager.bean.cancelAddPackageItems}" />
-      </h:panelGrid>
-   </h:panelGrid>
-   
+   </a:richList>   
 </a:panel>
 
 <h:outputText styleClass="paddingRow" value="&nbsp;" escape="false" />

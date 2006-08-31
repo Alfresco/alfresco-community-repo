@@ -24,6 +24,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.MapNode;
@@ -60,7 +61,7 @@ public class ManageTaskDialog extends BaseDialogBean
    protected boolean isItemBeingAdded = false;
 
    protected static final String ID_PREFIX = "transition_";
-   protected static final String CLIENT_ID_PREFIX = "dialog:" + ID_PREFIX;
+   protected static final String CLIENT_ID_PREFIX = AlfrescoNavigationHandler.DIALOG_PREFIX + ID_PREFIX;
    
    private static final Log logger = LogFactory.getLog(ManageTaskDialog.class);
 
@@ -86,6 +87,7 @@ public class ManageTaskDialog extends BaseDialogBean
       if (this.packageItemsRichList != null)
       {
          this.packageItemsRichList.setValue(null);
+         this.packageItemsRichList = null;
       }
       
       // get the task details

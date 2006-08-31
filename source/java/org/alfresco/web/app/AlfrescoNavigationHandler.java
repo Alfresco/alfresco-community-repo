@@ -47,9 +47,9 @@ import org.apache.commons.logging.LogFactory;
 public class AlfrescoNavigationHandler extends NavigationHandler
 {
    public final static String OUTCOME_SEPARATOR = ":";
-   public final static String DIALOG_PREXIX = "dialog" + OUTCOME_SEPARATOR;
+   public final static String DIALOG_PREFIX = "dialog" + OUTCOME_SEPARATOR;
    public final static String WIZARD_PREFIX = "wizard" + OUTCOME_SEPARATOR;
-   public final static String CLOSE_DIALOG_OUTCOME = DIALOG_PREXIX + "close";
+   public final static String CLOSE_DIALOG_OUTCOME = DIALOG_PREFIX + "close";
    public final static String CLOSE_WIZARD_OUTCOME = WIZARD_PREFIX + "close";
    
    protected final static String CONFIG_NAV_BEAN = "NavigationBean";
@@ -135,7 +135,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
    {
       boolean dialog = false;
       
-      if (outcome != null && outcome.startsWith(DIALOG_PREXIX))
+      if (outcome != null && outcome.startsWith(DIALOG_PREFIX))
       {
          dialog = true;
       }

@@ -1,5 +1,4 @@
 <#-- Shows some general info about the current document, including NodeRef and aspects applied -->
-<h3>General document info</h3>
 <#if document?exists>
    <h4>Current Document Info:</h4>
    <b>Name:</b> ${document.name}<br>
@@ -24,13 +23,17 @@
    <#list props as t>
       <#-- If the property exists -->
       <#if document.properties[t]?exists>
-         <#-- If it is a date, format it accordingly-->
+         <#-- If it is a date, format it accordingly -->
          <#if document.properties[t]?is_date>
-            <tr><td>${t} = ${document.properties[t]?date}</td></tr>
+            <tr><td>${t} = ${document.properties[t]?datetime}</td></tr>
          
-         <#-- If it is a boolean, format it accordingly-->
+         <#-- If it is a boolean, format it accordingly -->
          <#elseif document.properties[t]?is_boolean>
             <tr><td>${t} = ${document.properties[t]?string("yes", "no")}</td></tr>
+         
+         <#-- If it is a collection, enumerate it -->
+         <#elseif document.properties[t]?is_enumerable>
+            <tr><td>${t} = <#list document.properties[t] as i>${i} </#list></td></tr>
          
          <#-- Otherwise treat it as a string -->
          <#else>

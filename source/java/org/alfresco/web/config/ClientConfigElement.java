@@ -40,7 +40,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private String editLinkType = "http";
    private String homeSpacePermission = null;
    private boolean ajaxEnabled = false;
-   private String initialLocation = null;
+   private String initialLocation = "myalfresco";
    
    /**
     * Default Constructor

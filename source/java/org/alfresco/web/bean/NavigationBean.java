@@ -127,6 +127,14 @@ public class NavigationBean
    }
    
    /**
+    * @param preferences The UserPreferencesBean to set
+    */
+   public void setUserPreferencesBean(UserPreferencesBean preferences)
+   {
+      this.preferences = preferences;
+   }
+   
+   /**
     * @return the User object representing the current instance for this user 
     */
    public User getCurrentUser()
@@ -507,13 +515,8 @@ public class NavigationBean
    {
       if (this.location == null)
       {
-         // get the initial location from the client config
-         String initialLocation = clientConfig.getInitialLocation();
-         if (initialLocation == null || initialLocation.length() == 0)
-         {
-            initialLocation = LOCATION_HOME;
-         }
-         processToolbarLocation(initialLocation, false);
+         // get the initial location from the user preferences
+         processToolbarLocation(this.preferences.getStartLocation(), false);
       }
       
       return this.location;
@@ -798,10 +801,10 @@ public class NavigationBean
    private static Logger s_logger = Logger.getLogger(NavigationBean.class);
    
    /** constant values used by the toolbar location modelist control */
-   static final String LOCATION_COMPANY    = "companyhome";
-   static final String LOCATION_HOME       = "userhome";
-   static final String LOCATION_GUEST      = "guesthome";
-   static final String LOCATION_MYALFRESCO = "myalfresco";
+   public static final String LOCATION_COMPANY    = "companyhome";
+   public static final String LOCATION_HOME       = "userhome";
+   public static final String LOCATION_GUEST      = "guesthome";
+   public static final String LOCATION_MYALFRESCO = "myalfresco";
    
    private static final String MSG_MYALFRESCO = "my_alfresco";
    
@@ -827,6 +830,9 @@ public class NavigationBean
    
    /** Client configuration object */
    protected ClientConfigElement clientConfig = null;
+   
+   /** The user preferences bean reference */
+   protected UserPreferencesBean preferences;
    
    /** Cached path to our CIFS server and top level node DIR */
    private String cifsServerPath;

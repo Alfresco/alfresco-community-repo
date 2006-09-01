@@ -31,6 +31,10 @@
          <property-name>browseBean</property-name>
          <value>#{BrowseBean}</value>
       </managed-property>
+      <managed-property>
+         <property-name>userPreferencesBean</property-name>
+         <value>#{UserPreferencesBean}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -59,6 +63,10 @@
       <managed-property>
          <property-name>ruleService</property-name>
          <value>#{RuleService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>userPreferencesBean</property-name>
+         <value>#{UserPreferencesBean}</value>
       </managed-property>
    </managed-bean>
    
@@ -1991,6 +1999,15 @@
          <property-name>navigationBean</property-name>
          <value>#{NavigationBean}</value>
       </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the User Preferences page
+      </description>
+      <managed-bean-name>UserPreferencesBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.UserPreferencesBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
    </managed-bean>
    
    

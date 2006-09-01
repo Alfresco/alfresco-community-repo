@@ -37,6 +37,7 @@ public class DashboardsConfigElement extends ConfigElementAdapter
    
    private Map<String, LayoutDefinition> layoutDefs = new LinkedHashMap<String, LayoutDefinition>(4, 1.0f);
    private Map<String, DashletDefinition> dashletDefs = new LinkedHashMap<String, DashletDefinition>(8, 1.0f);
+   private boolean allowGuestConfig = false;
    
    /**
     * Default constructor
@@ -77,7 +78,22 @@ public class DashboardsConfigElement extends ConfigElementAdapter
       combinedElement.layoutDefs.putAll(this.layoutDefs);
       combinedElement.layoutDefs.putAll(newElement.layoutDefs);
       
+      if (newElement.allowGuestConfig != combinedElement.allowGuestConfig)
+      {
+         combinedElement.allowGuestConfig = newElement.allowGuestConfig;
+      }
+      
       return combinedElement;
+   }
+   
+   /*package*/ void setAllowGuestConfig(boolean allow)
+   {
+      this.allowGuestConfig = allow;
+   }
+   
+   public boolean getAllowGuestConfig()
+   {
+      return this.allowGuestConfig;
    }
    
    /*package*/ void addLayoutDefinition(LayoutDefinition def)

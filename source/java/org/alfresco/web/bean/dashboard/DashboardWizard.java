@@ -126,6 +126,14 @@ public class DashboardWizard extends BaseWizardBean
    // Dashboard Wizard bean getters
    
    /**
+    * @return true to allow the Guest user to configure the dashboard, false otherwise
+    */
+   public boolean getAllowGuestConfig()
+   {
+      return DashboardManager.getDashboardConfig().getAllowGuestConfig();
+   }
+   
+   /**
     * @return The currently selected layout ID - used by the Dynamic Description component
     */
    public String getLayout()

@@ -77,7 +77,6 @@ public abstract class BaseServlet extends HttpServlet
       validRedirectJSPs.add("/jsp/forums/forums.jsp");
       validRedirectJSPs.add("/jsp/users/users.jsp");
       validRedirectJSPs.add("/jsp/trashcan/trash-list.jsp");
-      validRedirectJSPs.add("/jsp/dashboards/container.jsp");
    }
    
    private static Log logger = LogFactory.getLog(BaseServlet.class);
@@ -156,10 +155,15 @@ public abstract class BaseServlet extends HttpServlet
       throws IOException
    {
       // authentication failed - so end servlet execution and redirect to login page
-      // also save the full requested URL so the login page knows where to redirect too later
       res.sendRedirect(req.getContextPath() + FACES_SERVLET + Application.getLoginPage(sc));
+      
+      // save the full requested URL so the login page knows where to redirect too later
       String uri = req.getRequestURI();
-      String url = uri + (req.getQueryString() != null ? ("?" + req.getQueryString()) : "");
+      String url = uri;
+      if (req.getQueryString() != null && req.getQueryString().length() != 0)
+      {
+         url += "?" + req.getQueryString();
+      }
       if (uri.indexOf(req.getContextPath() + FACES_SERVLET) != -1)
       {
          // if we find a JSF servlet reference in the URI then we need to check if the rest of the

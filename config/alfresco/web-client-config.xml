@@ -53,8 +53,8 @@
          <home-space-permission>Consumer</home-space-permission>
          
          <!-- The default location to display when the browse screen is first shown -->
-         <!-- This value should be one of 'companyhome', 'userhome', 'guesthome' or 'myalfresco' -->
-         <initial-location>userhome</initial-location>
+         <!-- This value should be one of 'myalfresco', 'userhome', 'companyhome' or 'guesthome' -->
+         <initial-location>myalfresco</initial-location>
          
          <!-- the URL to the client Help file -->
          <help-url>http://www.alfresco.org/help/webclient</help-url>
@@ -170,7 +170,7 @@
       <!-- Dashboard layouts and available dashlets for the My Alfresco pages -->
       <dashboards>
          <layouts>
-            <!-- the "default" layout - will be used for all users initially -->
+            <!-- the mandatory "default" layout - will be used for all users initially -->
             <layout id="default" columns="1" column-length="5" image="/images/icons/layout_single_column.gif"
                   label-id="layout_single_label" description-id="layout_single_desc"
                   jsp="/jsp/dashboards/layouts/single-column.jsp" />
@@ -186,6 +186,7 @@
          </layouts>
          <dashlets>
             <!-- this is the default dashlet shown in the default layout initially -->
+            <!-- the default dashlet must have the id of 'getting-started' -->
             <dashlet id="getting-started" label-id="dashlet_gettingstarted_label"
                   description-id="dashlet_gettingstarted_desc"
                   jsp="/jsp/dashboards/dashlets/getting-started.jsp" allow-narrow="false" />
@@ -203,6 +204,8 @@
             <dashlet id="tasks-completed" label-id="my_tasks_completed_title" description-id="my_tasks_completed_desc"
                   jsp="/jsp/workflow/tasks-completed-dashlet.jsp" allow-narrow="false" />
          </dashlets>
+         <!-- set true allow the Guest user to configure the dashboard view - false by default -->
+         <allow-guest-config>false</allow-guest-config>
       </dashboards>
    </config>
    

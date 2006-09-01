@@ -71,7 +71,12 @@
       <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0">
          <h:graphicImage value="/images/icons/create_space_large.gif" width="32" height="32" />
          <h:panelGroup>
-            <a:actionLink style="font-weight:bold" value="#{msg.gettingstarted_createspace}" action="#{GettingStartedBean.createSpace}" />
+            <a:booleanEvaluator value="#{NavigationBean.isGuest == false}">
+               <a:actionLink style="font-weight:bold" value="#{msg.gettingstarted_createspace}" action="#{GettingStartedBean.createSpace}" />
+            </a:booleanEvaluator>
+            <a:booleanEvaluator value="#{NavigationBean.isGuest == true}">
+               <h:outputText style="font-weight:bold" value="#{msg.gettingstarted_createspace}" />
+            </a:booleanEvaluator>
             <f:verbatim><br></f:verbatim>
             <h:outputText value="#{msg.gettingstarted_createspace_desc}" />
          </h:panelGroup>
@@ -80,7 +85,12 @@
       <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0">
          <h:graphicImage value="/images/icons/add_content_large.gif" width="32" height="32" />
          <h:panelGroup>
-            <a:actionLink style="font-weight:bold" value="#{msg.gettingstarted_addcontent}" action="#{GettingStartedBean.addContent}" actionListener="#{AddContentDialog.start}" />
+            <a:booleanEvaluator value="#{NavigationBean.isGuest == false}">
+               <a:actionLink style="font-weight:bold" value="#{msg.gettingstarted_addcontent}" action="#{GettingStartedBean.addContent}" actionListener="#{AddContentDialog.start}" />
+            </a:booleanEvaluator>
+            <a:booleanEvaluator value="#{NavigationBean.isGuest == true}">
+               <h:outputText style="font-weight:bold" value="#{msg.gettingstarted_addcontent}" />
+            </a:booleanEvaluator>
             <f:verbatim><br></f:verbatim>
             <h:outputText value="#{msg.gettingstarted_addcontent_desc}" />
          </h:panelGroup>
@@ -89,7 +99,12 @@
       <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0">
          <h:graphicImage value="/images/icons/new_content_large.gif" width="32" height="32" />
          <h:panelGroup>
-            <a:actionLink style="font-weight:bold" value="#{msg.gettingstarted_createcontent}" action="#{GettingStartedBean.createContent}" />
+            <a:booleanEvaluator value="#{NavigationBean.isGuest == false}">
+               <a:actionLink style="font-weight:bold" value="#{msg.gettingstarted_createcontent}" action="#{GettingStartedBean.createContent}" />
+            </a:booleanEvaluator>
+            <a:booleanEvaluator value="#{NavigationBean.isGuest == true}">
+               <h:outputText style="font-weight:bold" value="#{msg.gettingstarted_createcontent}" />
+            </a:booleanEvaluator>
             <f:verbatim><br></f:verbatim>
             <h:outputText value="#{msg.gettingstarted_createcontent_desc}" />
          </h:panelGroup>

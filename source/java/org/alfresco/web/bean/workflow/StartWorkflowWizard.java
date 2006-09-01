@@ -129,6 +129,9 @@ public class StartWorkflowWizard extends BaseWizardBean
       // prepare the parameters from the current state of the property sheet
       Map<QName, Serializable> params = WorkflowBean.prepareTaskParams(this.startTaskNode);
       
+      if (logger.isDebugEnabled())
+         logger.debug("Starting workflow with parameters: " + params);
+      
       // create a workflow package for the attached items and add them
       if (this.packageItemsToAdd.size() > 0)
       {

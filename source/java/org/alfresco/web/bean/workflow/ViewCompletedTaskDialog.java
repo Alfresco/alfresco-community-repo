@@ -37,4 +37,12 @@ public class ViewCompletedTaskDialog extends ManageTaskDialog
    {
       return null;
    }
+   
+   @Override
+   public String getTitle()
+   {
+      String titleStart = Application.getMessage(FacesContext.getCurrentInstance(), "view_completed_task_title");
+         
+      return titleStart + ": " + this.task.title;
+   }
 }

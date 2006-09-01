@@ -130,6 +130,16 @@ public abstract class BaseDialogBean implements IDialogBean
       return true;
    }
 
+   public String getTitle()
+   {
+      return null;
+   }
+   
+   public String getDescription()
+   {
+      return null;
+   }
+
    /**
     * @param browseBean The BrowseBean to set.
     */

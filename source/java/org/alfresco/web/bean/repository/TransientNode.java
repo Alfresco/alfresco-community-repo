@@ -58,9 +58,6 @@ public class TransientNode extends Node
       
       // initialise the node
       initNode(data);
-      
-      if (logger.isDebugEnabled())
-         logger.debug("Constructed transient node: " + this);
    }
 
    /**

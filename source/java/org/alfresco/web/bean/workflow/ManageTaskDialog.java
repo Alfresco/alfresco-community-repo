@@ -59,11 +59,11 @@ public class ManageTaskDialog extends BaseDialogBean
    protected List<String> packageItemsToRemove;
    protected String[] itemsToAdd;
    protected boolean isItemBeingAdded = false;
-
+   
+   protected final Log logger = LogFactory.getLog(getClass());
+   
    protected static final String ID_PREFIX = "transition_";
    protected static final String CLIENT_ID_PREFIX = AlfrescoNavigationHandler.DIALOG_PREFIX + ID_PREFIX;
-   
-   private static final Log logger = LogFactory.getLog(ManageTaskDialog.class);
 
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -117,8 +117,11 @@ public class ManageTaskDialog extends BaseDialogBean
          }
          
          if (logger.isDebugEnabled())
-            logger.debug("Found workflow package for task '" + 
-                  this.task.id + "': " + this.workflowPackage );
+         {
+            logger.debug("Task: " + this.task);
+            logger.debug("Trasient node: " + this.taskNode);
+            logger.debug("Workflow package: " + this.workflowPackage );
+         }
       }
    }
 
@@ -142,6 +145,9 @@ public class ManageTaskDialog extends BaseDialogBean
       
       // prepare the edited parameters for saving
       Map<QName, Serializable> params = WorkflowBean.prepareTaskParams(this.taskNode);
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Saving task with parameters: " + params);
       
       // remove any items the user selected to remove 
       if (this.workflowPackage != null && this.packageItemsToRemove != null && 
@@ -210,7 +216,21 @@ public class ManageTaskDialog extends BaseDialogBean
    {
       return false;
    }
-
+   
+   @Override
+   public String getTitle()
+   {
+      String titleStart = Application.getMessage(FacesContext.getCurrentInstance(), "manage_task_title");
+         
+      return titleStart + ": " + this.task.title;
+   }
+   
+   @Override
+   public String getDescription()
+   {
+      return this.task.description;
+   }
+      
    // ------------------------------------------------------------------------------
    // Event handlers
 
@@ -220,7 +240,7 @@ public class ManageTaskDialog extends BaseDialogBean
       String outcome = getDefaultFinishOutcome();
       
       if (logger.isDebugEnabled())
-         logger.debug("Transitioning task: " + this.taskNode.getId());
+         logger.debug("Transitioning task: " + this.task.id);
       
       // to find out which transition button was pressed we need
       // to look for the button's id in the request parameters,
@@ -252,6 +272,9 @@ public class ManageTaskDialog extends BaseDialogBean
             // prepare the edited parameters for saving
             Map<QName, Serializable> params = WorkflowBean.prepareTaskParams(this.taskNode);
       
+            if (logger.isDebugEnabled())
+               logger.debug("Transitioning task with parameters: " + params);
+            
             // update the task with the updated parameters
             this.workflowService.updateTask(this.task.id, params, null, null);
          

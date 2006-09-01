@@ -199,9 +199,6 @@ public class WorkflowBean
          params.put(assocQName, (Serializable)targets);
       }
       
-      if (logger.isDebugEnabled())
-         logger.debug("Prepared parameters: " + params);
-      
       return params;
    }
    

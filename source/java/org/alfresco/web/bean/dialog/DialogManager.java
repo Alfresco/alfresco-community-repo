@@ -140,15 +140,23 @@ public final class DialogManager
     */
    public String getTitle()
    {
-      String title = this.currentDialogState.getConfig().getTitleId();
+      // try and get the title directly from the dialog
+      String title = this.currentDialogState.getDialog().getTitle();
       
-      if (title != null)
+      if (title == null)
       {
-         title = Application.getMessage(FacesContext.getCurrentInstance(), title);
-      }
-      else
-      {
-         title = this.currentDialogState.getConfig().getTitle();
+         // try and get the title via a message bundle key
+         title = this.currentDialogState.getConfig().getTitleId();
+         
+         if (title != null)
+         {
+            title = Application.getMessage(FacesContext.getCurrentInstance(), title);
+         }
+         else
+         {
+            // try and get the title from the configuration
+            title = this.currentDialogState.getConfig().getTitle();
+         }
       }
       
       return title;
@@ -161,15 +169,23 @@ public final class DialogManager
     */
    public String getDescription()
    {
-      String desc = this.currentDialogState.getConfig().getDescriptionId();
+      // try and get the description directly from the dialog
+      String desc = this.currentDialogState.getDialog().getDescription();
       
-      if (desc != null)
+      if (desc == null)
       {
-         desc = Application.getMessage(FacesContext.getCurrentInstance(), desc);
-      }
-      else
-      {
-         desc = this.currentDialogState.getConfig().getDescription();
+         // try and get the description via a message bundle key
+         desc = this.currentDialogState.getConfig().getDescriptionId();
+         
+         if (desc != null)
+         {
+            desc = Application.getMessage(FacesContext.getCurrentInstance(), desc);
+         }
+         else
+         {
+            // try and get the description from the configuration
+            desc = this.currentDialogState.getConfig().getDescription();
+         }
       }
       
       return desc;

@@ -1,0 +1,4 @@
+--
+-- Insert post-creation scripts here
+-- This is a generic fallback for cases where specific dialects are not catered for
+--

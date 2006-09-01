@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    '-//Hibernate/Hibernate Mapping DTD 3.0//EN' 
+    'http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd'>
+
+<hibernate-mapping>
+
+   <class
+         name="org.alfresco.repo.domain.hibernate.TransactionImpl"
+         proxy="org.alfresco.repo.domain.Transaction"
+         table="alf_transaction"
+         dynamic-update="false"
+         dynamic-insert="false"
+         select-before-update="false" 
+         lazy="true" 
+         optimistic-lock="version"  >
+      <!-- auto-generated ID -->
+      <id name="id" column="id" type="long" >
+         <generator class="native" />
+      </id>
+      <!-- forward assoc to server IP -->
+      <many-to-one
+            name="server"
+            class="org.alfresco.repo.domain.hibernate.ServerImpl"
+            column="server_id"
+            lazy="proxy"
+            fetch="select"
+            unique="false"
+            not-null="false"
+            cascade="none" />
+      <property name="changeTxnId" column="change_txn_id" type="string" length="56" not-null="true" index="CHANGE_TXN_ID"/>
+   </class>
+
+   <class
+         name="org.alfresco.repo.domain.hibernate.ServerImpl"
+         proxy="org.alfresco.repo.domain.Server"
+         table="alf_server"
+         dynamic-update="false"
+         dynamic-insert="false"
+         select-before-update="false" 
+         lazy="true" 
+         optimistic-lock="version"  >
+      <!-- auto-generated ID -->
+      <id name="id" column="id" type="long" >
+         <generator class="native" />
+      </id>
+      <natural-id>
+         <property name="ipAddress" column="ip_address" type="string" length="15" not-null="true" />
+      </natural-id>
+   </class>
+
+   <query name="server.getServerByIpAddress">
+      select
+         server
+      from
+         org.alfresco.repo.domain.hibernate.ServerImpl as server
+      where
+         server.ipAddress = :ipAddress
+   </query>
+
+</hibernate-mapping>

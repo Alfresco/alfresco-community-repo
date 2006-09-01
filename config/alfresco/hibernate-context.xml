@@ -30,6 +30,9 @@
         </property>
     </bean>
     <bean id="sessionFactoryBase" abstract="true">
+        <property name="schemaUpdate">
+           <value>false</value>
+        </property>
         <property name="mappingResources">
             <list>
                 <!--  -->
@@ -38,6 +41,7 @@
                 
                 <value>org/alfresco/repo/domain/hibernate/Node.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Store.hbm.xml</value>
+                <value>org/alfresco/repo/domain/hibernate/Transaction.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/VersionCount.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/AppliedPatch.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Permission.hbm.xml</value>
@@ -150,6 +154,8 @@
                 <prop key="org.alfresco.repo.domain.hibernate.ChildAssocImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.NodeAssocImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.StoreImpl">${cache.strategy}</prop>
+                <prop key="org.alfresco.repo.domain.hibernate.TransactionImpl">${cache.strategy}</prop>
+                <prop key="org.alfresco.repo.domain.hibernate.ServerImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.VersionCountImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.AppliedPatchImpl">${cache.strategy}</prop>
                 
@@ -204,7 +210,7 @@
       </property>
    </bean>
 	
-   <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl" >
+   <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl">
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
       </property>

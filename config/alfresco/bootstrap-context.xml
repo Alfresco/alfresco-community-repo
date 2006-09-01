@@ -25,6 +25,31 @@
 
 <beans>
 
+   <!-- ensure that the schema is bootstrapped -->
+   <bean id="schemaBootstrap" class="org.alfresco.repo.domain.schema.SchemaBootstrap" >
+      <property name="localSessionFactory">
+         <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
+      </property>
+      <property name="updateSchema">
+         <value>${db.schema.update}</value>
+      </property>
+      <property name="postCreateScriptUrls">
+         <list>
+            <value>classpath:alfresco/dbscripts/create/1.4/${db.script.dialect}/sample.sql</value>
+         </list>
+      </property>
+      <property name="validateUpdateScriptPatches">
+         <list>
+         </list>
+      </property>
+      <property name="applyUpdateScriptPatches">
+         <list>
+            <ref bean="patch.schemaUpdateScript-V1.4-1" />
+            <ref bean="patch.schemaUpdateScript-V1.4-2" />
+         </list>
+      </property>
+   </bean>
+
 	<!-- Bootstrap Files -->
 
     <bean id="systemInfoBootstrap" parent="systemInfoImporter">

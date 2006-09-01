@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeKey;
 import org.alfresco.repo.domain.NodeStatus;
+import org.alfresco.repo.domain.Transaction;
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -34,15 +35,16 @@ public class NodeStatusImpl implements NodeStatus, Serializable
 
     private NodeKey key;
     private Node node;
-    private String changeTxnId;
+    private Transaction transaction;
     
+    @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(50);
         sb.append("NodeStatus")
           .append("[key=").append(key)
           .append(", node=").append(node == null ? null : node.getNodeRef())
-          .append(", txn=").append(changeTxnId)
+          .append(", txn=").append(transaction)
           .append("]");
         return sb.toString();
     }
@@ -85,14 +87,14 @@ public class NodeStatusImpl implements NodeStatus, Serializable
         this.node = node;
     }
 
-    public String getChangeTxnId()
+    public Transaction getTransaction()
     {
-        return changeTxnId;
+        return transaction;
     }
 
-    public void setChangeTxnId(String txnId)
+    public void setTransaction(Transaction transaction)
     {
-        this.changeTxnId = txnId;
+        this.transaction = transaction;
     }
 
     public boolean isDeleted()

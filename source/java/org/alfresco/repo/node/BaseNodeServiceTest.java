@@ -1630,10 +1630,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         NodeRef defRef = pathDefRef.getChildRef();
         
         // now browse down using the node service
-        NodeRef checkParentRef = nodeService.getChildByName(rootNodeRef, ASSOC_TYPE_QNAME_TEST_CHILDREN, parentRef.getId());
-        assertNotNull("First level, non-named node not found", checkParentRef);
-        assertEquals(parentRef, checkParentRef);
-        NodeRef checkAbcRef = nodeService.getChildByName(checkParentRef, ASSOC_TYPE_QNAME_TEST_CONTAINS, "abc");
+        NodeRef checkAbcRef = nodeService.getChildByName(parentRef, ASSOC_TYPE_QNAME_TEST_CONTAINS, "abc");
         assertNotNull("Second level, named node 'ABC' not found", checkAbcRef);
         assertEquals(abcRef, checkAbcRef);
         NodeRef checkDefRef = nodeService.getChildByName(checkAbcRef, ASSOC_TYPE_QNAME_TEST_CONTAINS, "def");

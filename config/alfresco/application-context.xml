@@ -22,8 +22,8 @@
     <import resource="classpath:alfresco/authentication-services-context.xml" />
     <import resource="classpath:alfresco/policy-context.xml" />
     <import resource="classpath:alfresco/import-export-context.xml" />
-    <import resource="classpath:alfresco/workflow-context.xml" />
     <import resource="classpath:alfresco/bootstrap-context.xml" />
+    <import resource="classpath:alfresco/workflow-context.xml" />
     <import resource="classpath:alfresco/jcr-api-context.xml" />
     <import resource="classpath:alfresco/audit-services-context.xml" />
     <import resource="classpath*:alfresco/patch/*-context.xml" />

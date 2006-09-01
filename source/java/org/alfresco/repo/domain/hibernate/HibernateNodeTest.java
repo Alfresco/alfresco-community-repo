@@ -31,8 +31,10 @@ import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeKey;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.StoreKey;
+import org.alfresco.repo.domain.Transaction;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -53,8 +55,11 @@ import org.hibernate.exception.ConstraintViolationException;
 public class HibernateNodeTest extends BaseSpringTest
 {
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/HibernateNodeTest";
+    private static int i = 0;
     
     private Store store;
+    private Server server;
+    private Transaction transaction;
     
     public HibernateNodeTest()
     {
@@ -68,6 +73,18 @@ public class HibernateNodeTest extends BaseSpringTest
 		store.setKey(storeKey);
         // persist so that it is present in the hibernate cache
         getSession().save(store);
+        
+        server = (Server) getSession().get(ServerImpl.class, new Long(1));
+        if (server == null)
+        {
+            server = new ServerImpl();
+            server.setIpAddress("" + "i_" + System.currentTimeMillis());
+            getSession().save(server);
+        }
+        transaction = new TransactionImpl();
+        transaction.setServer(server);
+        transaction.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        getSession().save(transaction);
     }
     
     protected void onTearDownInTransaction()
@@ -108,7 +125,7 @@ public class HibernateNodeTest extends BaseSpringTest
         // create the node status
         NodeStatus nodeStatus = new NodeStatusImpl();
         nodeStatus.setKey(key);
-        nodeStatus.setChangeTxnId("txn:123");
+        nodeStatus.setTransaction(transaction);
         getSession().save(nodeStatus);
         
         // create a new Node
@@ -131,7 +148,7 @@ public class HibernateNodeTest extends BaseSpringTest
         node = nodeStatus.getNode();
         assertNotNull("Node was not attached to status", node);
         // change the values
-        nodeStatus.setChangeTxnId("txn:456");
+        transaction.setChangeTxnId("txn:456");
         // delete the node
         getSession().delete(node);
         
@@ -351,7 +368,7 @@ public class HibernateNodeTest extends BaseSpringTest
         NodeStatus containerNodeStatus = new NodeStatusImpl();
         containerNodeStatus.setKey(containerNodeKey);
         containerNodeStatus.setNode(containerNode);
-        containerNodeStatus.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        containerNodeStatus.setTransaction(transaction);
         getSession().save(containerNodeStatus);
         // make content node 1
         Node contentNode1 = new NodeImpl();
@@ -366,7 +383,7 @@ public class HibernateNodeTest extends BaseSpringTest
         NodeStatus contentNodeStatus1 = new NodeStatusImpl();
         contentNodeStatus1.setKey(contentNodeKey1);
         contentNodeStatus1.setNode(contentNode1);
-        contentNodeStatus1.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        contentNodeStatus1.setTransaction(transaction);
         getSession().save(contentNodeStatus1);
         // make content node 2
         Node contentNode2 = new NodeImpl();
@@ -381,7 +398,7 @@ public class HibernateNodeTest extends BaseSpringTest
         NodeStatus contentNodeStatus2 = new NodeStatusImpl();
         contentNodeStatus2.setKey(contentNodeKey2);
         contentNodeStatus2.setNode(contentNode2);
-        contentNodeStatus2.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        contentNodeStatus2.setTransaction(transaction);
         getSession().save(contentNodeStatus2);
         // create an association to content 1
         ChildAssoc assoc1 = new ChildAssocImpl();

@@ -16,9 +16,14 @@
  */
 package org.alfresco.repo.node.db.hibernate;
 
+import java.io.Serializable;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -28,13 +33,17 @@ import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.NodeKey;
 import org.alfresco.repo.domain.NodeStatus;
+import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.StoreKey;
+import org.alfresco.repo.domain.Transaction;
 import org.alfresco.repo.domain.hibernate.ChildAssocImpl;
 import org.alfresco.repo.domain.hibernate.NodeAssocImpl;
 import org.alfresco.repo.domain.hibernate.NodeImpl;
 import org.alfresco.repo.domain.hibernate.NodeStatusImpl;
+import org.alfresco.repo.domain.hibernate.ServerImpl;
 import org.alfresco.repo.domain.hibernate.StoreImpl;
+import org.alfresco.repo.domain.hibernate.TransactionImpl;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionalDao;
@@ -71,9 +80,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_TARGET_ASSOCS = "node.GetTargetAssocs";
     private static final String QUERY_GET_SOURCE_ASSOCS = "node.GetSourceAssocs";
     private static final String QUERY_GET_CONTENT_DATA_STRINGS = "node.GetContentDataStrings";
+    private static final String QUERY_GET_SERVER_BY_IPADDRESS = "server.getServerByIpAddress";
     
     /** a uuid identifying this unique instance */
-    private String uuid;
+    private final String uuid;
+    
+    private final ReadLock serverReadLock;
+    private final WriteLock serverWriteLock;
+    private Server server;
 
     /**
      * 
@@ -81,6 +95,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public HibernateNodeDaoServiceImpl()
     {
         this.uuid = GUID.generate();
+
+        ReentrantReadWriteLock serverReadWriteLock = new ReentrantReadWriteLock();
+        serverReadLock = serverReadWriteLock.readLock();
+        serverWriteLock = serverReadWriteLock.writeLock();
     }
 
     /**
@@ -108,6 +126,93 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         return uuid.hashCode();
     }
 
+    /**
+     * Gets/creates the <b>server</b> instance to use for the life of this instance
+     */
+    private Server getServer()
+    {
+        // get readlock
+        serverReadLock.lock();
+        try
+        {
+            if (server != null)
+            {
+                return server;
+            }
+        }
+        finally
+        {
+            serverReadLock.unlock();
+        }
+        // get the write lock
+        serverWriteLock.lock();
+        try
+        {
+            final String ipAddress = InetAddress.getLocalHost().getHostAddress();
+            HibernateCallback callback = new HibernateCallback()
+            {
+                public Object doInHibernate(Session session)
+                {
+                    Query query = session
+                            .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_SERVER_BY_IPADDRESS)
+                            .setString("ipAddress", ipAddress);
+                    return query.uniqueResult();
+                }
+            };
+            server = (Server) getHibernateTemplate().execute(callback);
+            // create it if it doesn't exist
+            if (server == null)
+            {
+                server = new ServerImpl();
+                server.setIpAddress(ipAddress);
+                try
+                {
+                    getSession().save(server);
+                }
+                catch (DataIntegrityViolationException e)
+                {
+                    // get it again
+                    server = (Server) getHibernateTemplate().execute(callback);
+                    if (server == null)
+                    {
+                        throw new AlfrescoRuntimeException("Unable to create server instance: " + ipAddress);
+                    }
+                }
+            }
+            return server;
+        }
+        catch (Exception e)
+        {
+            throw new AlfrescoRuntimeException("Failed to create server instance", e);
+        }
+        finally
+        {
+            serverWriteLock.unlock();
+        }
+    }
+    
+    private static final String RESOURCE_KEY_TRANSACTION_ID = "hibernate.transaction.id";
+    private Transaction getCurrentTransaction()
+    {
+        Transaction transaction = null;
+        Serializable txnId = (Serializable) AlfrescoTransactionSupport.getResource(RESOURCE_KEY_TRANSACTION_ID);
+        if (txnId == null)
+        {
+            // no transaction instance has been bound to the transaction
+            transaction = new TransactionImpl();
+            transaction.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+            transaction.setServer(getServer());
+            txnId = getHibernateTemplate().save(transaction);
+            // bind the id
+            AlfrescoTransactionSupport.bindResource(RESOURCE_KEY_TRANSACTION_ID, txnId);
+        }
+        else
+        {
+            transaction = (Transaction) getHibernateTemplate().get(TransactionImpl.class, txnId);
+        }
+        return transaction;
+    }
+    
     /**
      * Does this <tt>Session</tt> contain any changes which must be
      * synchronized with the store?
@@ -218,7 +323,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             status = new NodeStatusImpl();
             status.setKey(nodeKey);
-            status.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+            status.setTransaction(getCurrentTransaction());
             getHibernateTemplate().save(status);
         }
         // done
@@ -237,7 +342,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
         else
         {
-            status.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+            status.getTransaction().setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
         }
     }
 
@@ -259,13 +364,13 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             // If that is the case, then the session has to be flushed so that the database
             // constraints aren't violated as the node creation will write to the database to
             // get an ID
-            if (status.getChangeTxnId().equals(AlfrescoTransactionSupport.getTransactionId()))
+            if (status.getTransaction().getChangeTxnId().equals(AlfrescoTransactionSupport.getTransactionId()))
             {
                 // flush
                 getHibernateTemplate().flush();
             }
         }
-
+        
         // build a concrete node based on a bootstrap type
         Node node = new NodeImpl();
         // set other required properties
@@ -277,7 +382,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
 
         // set required status properties
         status.setNode(node);
-        status.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        // assign a transaction
+        if (status.getTransaction() == null)
+        {
+            status.setTransaction(getCurrentTransaction());
+        }
         // persist the nodestatus
         getHibernateTemplate().save(status);
 
@@ -331,7 +440,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         NodeRef nodeRef = node.getNodeRef();
         NodeStatus nodeStatus = getNodeStatus(nodeRef, true);
         nodeStatus.setNode(null);
-        nodeStatus.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+        nodeStatus.getTransaction().setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
         // finally delete the node
         getHibernateTemplate().delete(node);
         // flush to ensure constraints can't be violated
@@ -371,7 +480,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     {
         /*
          * This initial child association creation will fail IFF there is already
-         * an association of the given type between the two nodes.  For new association
+         * an association of the given type and name between the two nodes.  For new association
          * creation, this can only occur if two transactions attempt to create a secondary
          * child association between the same two nodes.  As this is unlikely, it is
          * appropriate to just throw a runtime exception and let the second transaction
@@ -383,28 +492,18 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
          * if the association is recreated subsequently.
          */
         
-        String uuid = childNode.getUuid();
+        // assign a random name to the node
+        String randomName = GUID.generate();
         
         ChildAssoc assoc = new ChildAssocImpl();
         assoc.setTypeQName(assocTypeQName);
-        assoc.setChildNodeName(getShortName(uuid));
-        assoc.setChildNodeNameCrc(getCrc(uuid));
+        assoc.setChildNodeName(randomName);
+        assoc.setChildNodeNameCrc(-1L);         // random names compete only with each other
         assoc.setQname(qname);
         assoc.setIsPrimary(isPrimary);
         assoc.buildAssociation(parentNode, childNode);
         // persist it, catching the duplicate child name
-        try
-        {
-            getHibernateTemplate().save(assoc);
-        }
-        catch (DataIntegrityViolationException e)
-        {
-            throw new AlfrescoRuntimeException("An association already exists between the two nodes: \n" +
-                    "   parent: " + parentNode.getId() + "\n" +
-                    "   child: " + childNode.getId() + "\n" +
-                    "   assoc: " + assocTypeQName,
-                    e);
-        }
+        getHibernateTemplate().save(assoc);
         // done
         return assoc;
     }
@@ -422,17 +521,22 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
          */
         
         String childNameNew = null;
+        long crc = -1;
         if (childName == null)
         {
-            childNameNew = childAssoc.getChild().getUuid();
+            // random names compete only with each other, i.e. not at all
+            childNameNew = GUID.generate();
+            crc = -1;
         }
         else
         {
+            // assigned names compete exactly
             childNameNew = childName.toLowerCase();
+            crc = getCrc(childNameNew);
         }
 
         final String childNameNewShort = getShortName(childNameNew);
-        final long childNameNewCrc = getCrc(childNameNew);
+        final long childNameNewCrc = crc;
         
         // check if the name has changed
         if (childAssoc.getChildNodeNameCrc() == childNameNewCrc)

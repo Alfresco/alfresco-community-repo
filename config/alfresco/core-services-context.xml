@@ -60,9 +60,6 @@
         </property>
     </bean>
 
-    <!-- use around method calls to debug - see class comments for details -->
-    <bean id="methodCallLogAdvice" class="org.alfresco.util.debug.MethodCallLogAdvice" />
-
     <!--                        -->
     <!-- I18N                   -->
     <!--                        -->
@@ -79,6 +76,7 @@
     			<value>alfresco.messages.template-service</value>
     			<value>alfresco.messages.lock-service</value>
     			<value>alfresco.messages.patch-service</value>
+    			<value>alfresco.messages.schema-update</value>
     			<value>alfresco.messages.webdav-messages</value>
     		</list>
     	</property>

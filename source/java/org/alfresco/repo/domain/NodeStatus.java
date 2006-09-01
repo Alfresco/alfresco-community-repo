@@ -41,9 +41,9 @@ public interface NodeStatus
     
     public void setNode(Node node);
     
-    public String getChangeTxnId();
+    public Transaction getTransaction();
     
-    public void setChangeTxnId(String txnId);
+    public void setTransaction(Transaction transaction);
     
     public boolean isDeleted();
 }

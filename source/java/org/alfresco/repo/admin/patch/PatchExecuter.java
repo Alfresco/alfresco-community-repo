@@ -60,7 +60,7 @@ public class PatchExecuter implements ApplicationListener
     {
         logger.info(I18NUtil.getMessage(MSG_CHECKING));
         
-        Date before = new Date(System.currentTimeMillis() - 20000L);  // 20 seconds ago
+        Date before = new Date(System.currentTimeMillis() - 60000L);  // 60 seconds ago
         patchService.applyOutstandingPatches();
         Date after = new Date(System .currentTimeMillis() + 20000L);  // 20 seconds ahead
         

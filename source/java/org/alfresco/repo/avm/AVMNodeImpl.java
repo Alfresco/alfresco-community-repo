@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.namespace.QName;
 
@@ -55,6 +56,11 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
      * The rootness of this node.
      */
     private boolean fIsRoot;
+
+    /**
+     * The ACL on this node.
+     */
+    private DbAccessControlList fACL;
     
     /**
      * Default constructor.
@@ -75,9 +81,15 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
         fVersionID = -1;
         fIsRoot = false;
         long time = System.currentTimeMillis();
-        fBasicAttributes = new BasicAttributesImpl("britt",
-                                                   "britt",
-                                                   "britt",
+        String user = 
+            AVMContext.fgInstance.getAuthenticationComponent().getCurrentUserName();
+        if (user == null)
+        {
+            user = AVMContext.fgInstance.getAuthenticationComponent().getSystemUserName();
+        }
+        fBasicAttributes = new BasicAttributesImpl(user,
+                                                   user,
+                                                   user,
                                                    time,
                                                    time,
                                                    time);
@@ -265,7 +277,14 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void updateModTime()
     {
+        String user = 
+            AVMContext.fgInstance.getAuthenticationComponent().getCurrentUserName();
+        if (user == null)
+        {
+            user = AVMContext.fgInstance.getAuthenticationComponent().getSystemUserName();
+        }
         fBasicAttributes.setModDate(System.currentTimeMillis());
+        fBasicAttributes.setLastModifier(user);
     }
     
     /**
@@ -363,5 +382,23 @@ abstract class AVMNodeImpl implements AVMNode, Serializable
     public void deleteProperties()
     {
         AVMContext.fgInstance.fAVMNodePropertyDAO.deleteAll(this);
+    }
+    
+    /**
+     * Set the ACL on this node.
+     * @param acl The ACL to set.
+     */
+    public void setAcl(DbAccessControlList acl)
+    {
+        fACL = acl;
+    }
+    
+    /**
+     * Get the ACL on this node.
+     * @return The ACL on this node.
+     */
+    public DbAccessControlList getAcl()
+    {
+        return fACL;
     }
 }

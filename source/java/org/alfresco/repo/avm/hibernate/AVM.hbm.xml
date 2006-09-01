@@ -41,6 +41,9 @@
 			<property name="accessDate" type="long" not-null="true"/>
 		</component>
 		<property name="isRoot" column="is_root" type="boolean"/>
+		<!-- ACL -->
+		<many-to-one name="acl" column="acl_id" 
+			class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"/>
 		<!-- Directories, two flavors. -->
 		<subclass name="DirectoryNodeImpl" 
 		          proxy="DirectoryNode" 

@@ -4,6 +4,7 @@
 package org.alfresco.repo.avm;
 
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -119,7 +120,7 @@ public class AVMContext implements ApplicationContextAware
      */
     private NodeService fNodeService;
     
-    private AuthenticationService fAuthenticationService;
+    private AuthenticationComponent fAuthenticationComponent;
     
     /**
      * The application context.
@@ -297,12 +298,12 @@ public class AVMContext implements ApplicationContextAware
         return fNodeService;
     }
     
-    public AuthenticationService getAuthenticationService()
+    public AuthenticationComponent getAuthenticationComponent()
     {
-        if (fAuthenticationService == null)
+        if (fAuthenticationComponent == null)
         {
-            fAuthenticationService = (AuthenticationService)fAppContext.getBean("AuthenticationService");
+            fAuthenticationComponent = (AuthenticationComponent)fAppContext.getBean("authenticationComponent");
         }
-        return fAuthenticationService;
+        return fAuthenticationComponent;
     }
 }

@@ -19,7 +19,6 @@ package org.alfresco.repo.avm;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +68,7 @@ public class AVMServiceTestBase extends TestCase
             fService = (AVMService)fContext.getBean("AVMService");
             fReaper = (OrphanReaper)fContext.getBean("orphanReaper");
         }
+        fService.createAVMStore("main");
         fStartTime = System.currentTimeMillis();
     }
 
@@ -86,7 +86,6 @@ public class AVMServiceTestBase extends TestCase
         {
             fService.purgeAVMStore(desc.getName());
         }
-        fService.createAVMStore("main");
         // fContext.close();
         // File alfData = new File("alf_data");
         // File target = new File("alf_data" + now);

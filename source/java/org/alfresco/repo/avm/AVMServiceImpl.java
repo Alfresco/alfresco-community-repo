@@ -60,23 +60,6 @@ public class AVMServiceImpl implements AVMService
     }
     
     /**
-     * Final initialization of the service.  Must be called only on a 
-     * fully initialized instance.
-     */
-    public void init()
-    {
-        try
-        {
-            createAVMStore("main");
-            fgLogger.info("Created new main AVMStore");
-        }
-        catch (AVMExistsException e)
-        {
-            fgLogger.info("AVMStore main already exists");
-        }
-    }
-    
-    /**
      * Set the Retrying Transaction wrapper.
      * @param txn
      */

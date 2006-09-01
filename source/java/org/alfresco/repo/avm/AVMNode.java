@@ -18,6 +18,7 @@ package org.alfresco.repo.avm;
 
 import java.util.Map;
 
+import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.namespace.QName;
 
@@ -171,4 +172,16 @@ interface AVMNode
      * Delete all properties from this node.
      */
     public void deleteProperties();
+    
+    /**
+     * Set an ACL on this node.
+     * @param acl The ACL to set.
+     */
+    public void setAcl(DbAccessControlList acl);
+    
+    /**
+     * Get the ACL on this node.
+     * @return The ACL on this node.
+     */
+    public DbAccessControlList getAcl();
 }

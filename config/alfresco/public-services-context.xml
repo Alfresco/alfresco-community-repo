@@ -973,7 +973,7 @@
     
     <!-- The AVMService -->
     
-    <bean id="AVMService" class="org.alfresco.repo.avm.AVMServiceImpl" init-method="init">
+    <bean id="AVMService" class="org.alfresco.repo.avm.AVMServiceImpl">
 	    <property name="retryingTransaction">
 	    	<ref bean="retryingTransaction"/>
 	    </property>

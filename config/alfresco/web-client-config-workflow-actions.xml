@@ -36,13 +36,13 @@
          <action id="add_package_item">
             <label-id>add_resource</label-id>
             <image>/images/icons/add_item.gif</image>
-            <action-listener>#{DialogManager.bean.prepareForAdd}</action-listener>
+            <action-listener>#{Container.bean.prepareForAdd}</action-listener>
          </action>
          
          <action id="remove_package_item">
             <label-id>remove</label-id>
             <image>/images/icons/remove_item.gif</image>
-            <action-listener>#{DialogManager.bean.removePackageItem}</action-listener>
+            <action-listener>#{Container.bean.removePackageItem}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -74,10 +74,6 @@
          
          <action-group id="doc_details_actions">
             <action idref="start_workflow" />
-         </action-group>
-         
-         <action-group id="manage_task_actions">
-            <action idref="reassign_task" />
          </action-group>
          
          <action-group id="dashlet_todo_actions">

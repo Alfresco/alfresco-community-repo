@@ -109,29 +109,13 @@
             <f:facet name="header">
                <h:outputText value="#{msg.actions}"/>
             </f:facet>
-            <%-- TODO: need to drive this dynamically from the model - need support for #{CurrentContainer....} 
             <r:actions id="actions-col-actions" value="#{WizardManager.bean.packageItemActionGroup}" 
                        context="#{r}" showLink="false" styleClass="inlineAction" />
-            --%>
-            <a:actionLink value="#{msg.view_details}" action="dialog:showDocDetails" image="/images/icons/View_details.gif" 
-                          showLink="false" actionListener="#{BrowseBean.setupContentAction}" styleClass="inlineAction">
-               <f:param name="id" value="#{r.id}" />
-            </a:actionLink>
-            <a:actionLink value="#{msg.remove}" image="/images/icons/remove_item.gif" styleClass="inlineAction"
-                          showLink="false" actionListener="#{WizardManager.bean.removePackageItem}">
-               <f:param name="id" value="#{r.id}" />
-            </a:actionLink>
          </a:column>
       </a:richList>
    
       <h:panelGrid columns="1" styleClass="paddingRow">
-         <%-- TODO: need to drive this dynamically from the model - need support for #{CurrentContainer....} 
          <r:actions context="#{WizardManager.bean.taskMetadataNode}" value="#{WizardManager.bean.packageActionGroup}" />
-         --%>
-         <a:actionLink value="#{msg.add_resource}" image="/images/icons/add_item.gif" 
-                       actionListener="#{WizardManager.bean.prepareForAdd}" styleClass="inlineAction">
-            <f:param name="id" value="#{r.id}" />
-         </a:actionLink>
       </h:panelGrid>
       
       <h:panelGrid columns="1" rendered="#{WizardManager.bean.itemBeingAdded}" styleClass="selector" style="margin-top: 6px;">

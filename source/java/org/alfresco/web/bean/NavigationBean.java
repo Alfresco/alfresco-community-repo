@@ -260,6 +260,15 @@ public class NavigationBean
       }
       else if (LOCATION_MYALFRESCO.equals(location))
       {
+         // make sure we set a current node ID as some screens expect this
+         if (getCurrentNodeId() == null)
+         {
+            String homeSpaceId = Application.getCurrentUser(context).getHomeSpaceId();
+            NodeRef homeSpaceRef = new NodeRef(Repository.getStoreRef(), homeSpaceId);
+            setCurrentNodeId(homeSpaceRef.getId());
+         }
+         
+         // create a breadcrumb handler for this special case location (not a node)
          List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
          elements.add(new IBreadcrumbHandler()
             {

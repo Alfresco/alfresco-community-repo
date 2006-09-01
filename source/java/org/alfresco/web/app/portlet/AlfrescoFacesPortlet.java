@@ -33,6 +33,7 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.UnavailableException;
 
+import org.alfresco.config.ConfigService;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -43,7 +44,9 @@ import org.alfresco.web.app.servlet.AuthenticationStatus;
 import org.alfresco.web.bean.ErrorBean;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.LoginBean;
+import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.config.ClientConfigElement;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.portlet.PortletFileUpload;
@@ -259,7 +262,18 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                // perform the forward to the page processed by the Faces servlet
                response.setContentType("text/html");
                request.getPortletSession().setAttribute(PortletUtil.PORTLET_REQUEST_FLAG, "true");
-               nonFacesRequest(request, response, "/jsp/browse/browse.jsp");
+               
+               // get the start location as configured by the web-client config
+               ConfigService configService = (ConfigService)ctx.getBean("webClientConfigService");
+               ClientConfigElement configElement = (ClientConfigElement)configService.getGlobalConfig().getConfigElement("client");
+               if (NavigationBean.LOCATION_MYALFRESCO.equals(configElement.getInitialLocation()))
+               {
+                  nonFacesRequest(request, response, "/jsp/dashboards/container.jsp");
+               }
+               else
+               {
+                  nonFacesRequest(request, response, "/jsp/browse/browse.jsp");
+               }
             }
             else
             {

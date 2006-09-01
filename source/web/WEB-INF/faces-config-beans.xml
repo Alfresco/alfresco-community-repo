@@ -2155,17 +2155,44 @@
       <managed-bean-class>org.alfresco.web.bean.generator.SeparatorGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-	
-	<managed-bean>
+   
+   <managed-bean>
       <description>
-         Bean that generates a header separator component
+         Bean that generates a label separator component
       </description>
-      <managed-bean-name>HeaderSeparatorGenerator</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.generator.HeaderSeparatorGenerator</managed-bean-class>
+      <managed-bean-name>LabelSeparatorGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.LabelSeparatorGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
    
+   <managed-bean>
+      <description>
+         Bean that generates a label separator component rendered as a heading
+      </description>
+      <managed-bean-name>HeaderSeparatorGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.LabelSeparatorGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+      <managed-property>
+         <property-name>styleClass</property-name>
+         <value>wizardSectionHeading mainSubTitle</value>
+      </managed-property>
+   </managed-bean>
    
+   <!--
+   <managed-bean>
+      <description>
+         Bean that generates a HTML separator component
+      </description>
+      <managed-bean-name>MyCustomSeparatorGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.HtmlSeparatorGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+      <managed-property>
+         <property-name>html</property-name>
+         <value><![CDATA[This is <i>my</i> custom header]]></value>
+      </managed-property>
+   </managed-bean>
+   -->
+    
    <!-- ==================== AJAX BEANS ==================== -->
    
    <managed-bean>

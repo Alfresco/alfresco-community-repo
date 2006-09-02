@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -222,6 +223,10 @@ class AVMCrawler implements Runnable
         catch (Exception e)
         {
             if (e instanceof AVMException)
+            {
+                return;
+            }
+            if (e instanceof AlfrescoRuntimeException)
             {
                 return;
             }

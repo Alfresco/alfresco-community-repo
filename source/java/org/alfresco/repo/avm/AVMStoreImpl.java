@@ -352,8 +352,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
         NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, fName + ":" + path);
         ContentWriter writer = 
             AVMContext.fgInstance.getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-        // TODO This can't perform very well.
-        setContentData(path, writer.getContentData());
+        // TODO This can't perform very well. What this gets down to
+        // is that integration with ContentService is awkward.
+        // setContentData(path, writer.getContentData());
         return writer;
     }
     

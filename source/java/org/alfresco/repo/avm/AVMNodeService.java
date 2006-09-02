@@ -1037,17 +1037,25 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         // Invoke policy behaviors.
         invokeBeforeUpdateNode(nodeRef);
         Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        if ((Integer)avmVersionPath[0] >= 0)
+        {
+            throw new InvalidNodeRefException("Read only store.", nodeRef);
+        }
         // TODO Just until we can set built in properties on AVM Nodes.
         if (isBuiltInProperty(qname))
         {
             if (qname.equals(ContentModel.PROP_CONTENT))
             {
+                try
+                {
+                    fAVMService.setContentData((String)avmVersionPath[1], (ContentData)value);
+                }
+                catch (ClassCastException e)
+                {
+                    throw new AVMException("Invalid ContentData.");
+                }
             }
             return;
-        }
-        if ((Integer)avmVersionPath[0] >= 0)
-        {
-            throw new InvalidNodeRefException("Read only store.", nodeRef);
         }
         try
         {

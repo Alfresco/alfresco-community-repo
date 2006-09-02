@@ -288,6 +288,10 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      */
     private long getFileLength()
     {
+        if (fContentURL == null)
+        {
+            return 0L;
+        }
         ContentReader reader = AVMContext.fgInstance.getContentStore().getReader(fContentURL);
         return reader.getSize();
     }
